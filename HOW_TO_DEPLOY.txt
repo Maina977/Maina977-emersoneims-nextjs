@@ -1,0 +1,51 @@
+========================================
+  HOW TO DEPLOY - SIMPLE STEPS
+========================================
+
+METHOD 1: Double-Click (Easiest)
+---------------------------------
+1. Double-click the file: deploy-now.bat
+2. Wait for deployment to complete
+3. Follow instructions on screen
+
+
+METHOD 2: Command Prompt
+-------------------------
+1. Open Command Prompt (not PowerShell)
+2. Type these commands ONE AT A TIME:
+
+   cd C:\Users\PC\my-app
+   
+   npx vercel@latest --prod
+
+3. When asked "Set up and deploy?", type: Y
+4. Follow the prompts
+
+
+METHOD 3: If Not Logged In
+---------------------------
+1. First, login to Vercel:
+   npx vercel@latest login
+
+2. Then deploy:
+   npx vercel@latest --prod
+
+
+IMPORTANT NOTES:
+----------------
+- Use Command Prompt (cmd.exe), NOT PowerShell
+- If you see "scripts disabled" error, use Command Prompt
+- The deployment will take a few minutes
+- You'll need to authenticate if not logged in
+
+
+AFTER DEPLOYMENT:
+-----------------
+1. Visit: https://vercel.com/dashboard
+2. Add domain: www.emersoneims.com
+3. Configure DNS as instructed
+4. Wait for DNS propagation
+
+========================================
+
+

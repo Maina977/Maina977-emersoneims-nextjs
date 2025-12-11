@@ -1,0 +1,51 @@
+========================================
+  QUICK DEPLOYMENT INSTRUCTIONS
+  Emerson EIMS - www.emersoneims.com
+========================================
+
+SIMPLE METHOD (Recommended):
+---------------------------
+1. Open Command Prompt or PowerShell
+2. Navigate to project folder:
+   cd C:\Users\PC\my-app
+
+3. Run deployment:
+   npx vercel@latest --prod
+
+4. If not logged in, it will prompt you to authenticate
+5. Follow the prompts to complete deployment
+
+
+ALTERNATIVE METHOD:
+-------------------
+1. Double-click: deploy-now.bat
+   (This will run the deployment command)
+
+
+WHAT HAPPENS:
+------------
+- Vercel will build your project automatically
+- You'll be asked to confirm deployment
+- After deployment, you'll get a URL
+- Configure your domain in Vercel Dashboard
+
+
+AFTER DEPLOYMENT:
+-----------------
+1. Go to: https://vercel.com/dashboard
+2. Select your project
+3. Go to Settings > Domains
+4. Add: www.emersoneims.com
+5. Follow DNS configuration instructions
+6. Wait for DNS propagation (up to 48 hours)
+
+
+TROUBLESHOOTING:
+---------------
+- If build fails: Check that all dependencies are installed
+- If login fails: Run "npx vercel@latest login" first
+- If domain fails: Check DNS settings in your domain provider
+
+========================================
+
+

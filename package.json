@@ -1,0 +1,59 @@
+{
+  "name": "emerson-eims",
+  "version": "1.0.0",
+  "description": "Emerson EIMS - Energy Infrastructure Management System with WordPress Integration",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "export": "next build && next export",
+    "analyze": "ANALYZE=true next build",
+    "clean": "rm -rf .next out node_modules/.cache",
+    "deploy": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1",
+    "deploy:prod": "npx vercel@latest --prod",
+    "deploy:preview": "npx vercel@latest"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^9.0.0-rc.10",
+    "@types/three": "^0.181.0",
+    "chart.js": "^4.5.1",
+    "framer-motion": "^12.23.25",
+    "gsap": "^3.12.5",
+    "next": "16.0.7",
+    "react": "^19.2.1",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "^19.2.1",
+    "react-helmet-async": "^2.0.5",
+    "three": "^0.181.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.7",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "nextjs",
+    "react",
+    "wordpress",
+    "energy",
+    "infrastructure",
+    "three.js",
+    "webgl"
+  ],
+  "author": "Emerson EIMS",
+  "license": "MIT"
+}

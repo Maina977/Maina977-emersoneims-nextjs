@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "WORDPRESS_SITE_URL": "https://www.emersoneims.com",
+    "WORDPRESS_API_URL": "https://www.emersoneims.com/wp-json/wp/v2",
+    "NEXT_PUBLIC_SITE_URL": "https://emersoneims-nextjs.vercel.app"
+  }
+}

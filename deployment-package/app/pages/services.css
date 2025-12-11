@@ -1,0 +1,281 @@
+/* services.css - EmersonEIMS Premium Service Platform */
+/* Complete CSS with all fixes and enhancements */
+
+:root {
+    /* Core Colors */
+    --bg-primary: #0a0f14;
+    --bg-secondary: #111822;
+    --bg-tertiary: #1a222e;
+    
+    --text-primary: #e6f7ff;
+    --text-secondary: #b7dcef;
+    --text-muted: #8fa8c2;
+    
+    --neon-primary: #00ffff;
+    --neon-secondary: #00e6e6;
+    --neon-accent: #8a2be2;
+    --neon-success: #2ed573;
+    --neon-warning: #ffa502;
+    --neon-error: #ff4757;
+    --neon-info: #2f8af5;
+    
+    --neon-glow: rgba(0, 255, 255, 0.45);
+    --neon-glow-strong: rgba(0, 255, 255, 0.8);
+    
+    /* Gradients */
+    --gradient-neon: linear-gradient(135deg, var(--neon-primary), var(--neon-accent));
+    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    --gradient-accent: linear-gradient(90deg, var(--neon-accent), #9d4edd);
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-neon: 0 0 20px var(--neon-glow);
+    --shadow-neon-strong: 0 0 40px var(--neon-glow-strong);
+    
+    /* Borders */
+    --border-primary: 1px solid rgba(255, 255, 255, 0.12);
+    --border-secondary: 1px solid rgba(255, 255, 255, 0.08);
+    --border-neon: 1px solid var(--neon-primary);
+    --border-radius: 12px;
+    --border-radius-lg: 20px;
+    --border-radius-full: 999px;
+    
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    
+    /* Transitions */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Typography */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+    
+    /* Z-indices */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal: 1040;
+    --z-popover: 1050;
+    --z-tooltip: 1060;
+  }
+  
+  /* Reset & Base Styles */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+  
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: var(--space-md);
+    letter-spacing: -0.025em;
+  }
+  
+  h1 { font-size: 3.5rem; }
+  h2 { font-size: 2.5rem; }
+  h3 { font-size: 1.75rem; }
+  h4 { font-size: 1.25rem; }
+  
+  @media (max-width: 768px) {
+    h1 { font-size: 2.5rem; }
+    h2 { font-size: 2rem; }
+    h3 { font-size: 1.5rem; }
+  }
+  
+  p {
+    margin-bottom: var(--space-md);
+    color: var(--text-secondary);
+  }
+  
+  a {
+    color: var(--neon-primary);
+    text-decoration: none;
+    transition: var(--transition-fast);
+  }
+  
+  a:hover {
+    color: var(--neon-secondary);
+    text-decoration: underline;
+  }
+  
+  /* Layout */
+  .section-pad {
+    padding: var(--space-3xl) var(--space-xl);
+    position: relative;
+  }
+  
+  @media (max-width: 768px) {
+    .section-pad {
+      padding: var(--space-2xl) var(--space-md);
+    }
+  }
+  
+  .grid-two {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+  
+  @media (min-width: 992px) {
+    .grid-two {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3xl);
+    }
+  }
+  
+  .grid-three {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  
+  @media (min-width: 768px) {
+    .grid-three {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .grid-three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  /* Cards */
+  .card {
+    background: var(--gradient-card);
+    border: var(--border-primary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-xl);
+    backdrop-filter: blur(20px);
+    transition: var(--transition-base);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gradient-neon);
+    opacity: 0;
+    transition: var(--transition-base);
+  }
+  
+  .card:hover {
+    border-color: rgba(0, 255, 255, 0.3);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg), var(--shadow-neon);
+  }
+  
+  .card:hover::before {
+    opacity: 1;
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .card-badge {
+    background: var(--gradient-neon);
+    color: white;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--border-radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Buttons */
+  .btn-neon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    background: transparent;
+    border: var(--border-neon);
+    border-radius: var(--border-radius-full);
+    color: var(--neon-primary);
+    font-weight: 500;
+    text-decoration: none;
+    transition: var(--transition-base);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .btn-neon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-neon);
+    transition: var(--transition-base);
+    z-index: -1;
+  }
+  
+  .btn-neon:hover {
+    color: white;
+    text-decoration: none;
+    box-shadow: var(--shadow-neon);
+    transform: translateY(-2px);
+  }
+  
+  .btn-neon:hover::before {
+    left: 0;
+  }
+  
+  .btn-neon:active {
+    transform: translateY(0);
+  }
+  
+  .btn-neon.small {
+    padding: var(--space-sm) var(--space-lg);
+    font-size: 0.875rem;
+  }
+  
+  .btn-neon.large {
+    padding: var(--space-lg) var(--space-2xl);
+    font-size: 1.125rem;
+  }
