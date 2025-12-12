@@ -14,10 +14,6 @@
     "WORDPRESS_API_URL": "https://www.emersoneims.com/wp-json/wp/v2",
     "NEXT_PUBLIC_SITE_URL": "https://emersoneims.com"
   },
-  "domains": [
-    "emersoneims.com",
-    "www.emersoneims.com"
-  ],
   "rewrites": [
     {
       "source": "/wp-admin/:path*",
