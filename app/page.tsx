@@ -105,12 +105,17 @@ export default function AwwwardsHomepage() {
   }, []);
   
   // Memoized config for performance
-  const performanceConfig = useMemo(() => ({
-    dpr: Math.min(window.devicePixelRatio || 1, windowWidth < 768 ? 1 : 1.5),
-    shadows: windowWidth > 1024,
-    particles: windowWidth > 768 ? 2000 : 800,
-    quality: (windowWidth < 768 ? 'medium' : 'high') as 'low' | 'medium' | 'high'
-  }), [windowWidth]);
+  const performanceConfig = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return { dpr: 1, shadows: false, particles: 800, quality: 'medium' as const };
+    }
+    return {
+      dpr: Math.min(window.devicePixelRatio || 1, windowWidth < 768 ? 1 : 1.5),
+      shadows: windowWidth > 1024,
+      particles: windowWidth > 768 ? 2000 : 800,
+      quality: (windowWidth < 768 ? 'medium' : 'high') as 'low' | 'medium' | 'high'
+    };
+  }, [windowWidth]);
   
   // ARIA live announcements
   const pageStatus = isLoaded ? 'Experience fully loaded' : 'Loading intelligent power interface';
@@ -285,25 +290,36 @@ export default function AwwwardsHomepage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
             >
-              <button 
+              <motion.button 
                 className="cta-primary"
                 aria-label="Explore our intelligent power solutions"
                 data-magnetic="true"
                 data-cursor="action"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  const element = document.querySelector('#services');
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
               >
                 <span className="cta-text">Explore Intelligence</span>
                 <span className="cta-shine" aria-hidden="true" />
                 <span className="cta-sparkle" aria-hidden="true" />
-              </button>
+              </motion.button>
               
-              <button 
+              <motion.button 
                 className="cta-secondary"
                 aria-label="Launch interactive diagnostics demo"
                 data-magnetic="true"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  window.location.href = '/diagnostics';
+                }}
               >
                 <span className="cta-icon" aria-hidden="true">▶</span>
                 <span>Live Demo</span>
-              </button>
+              </motion.button>
             </motion.div>
             
             {/* Scroll indicator with physics */}

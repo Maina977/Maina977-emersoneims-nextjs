@@ -27,6 +27,11 @@
 *.pem
 *.log
 
+# Exclude misspelled folders
+app/componets/
+app/PC/
+deployment-package/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

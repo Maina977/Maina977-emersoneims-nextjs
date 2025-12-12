@@ -1,17 +1,17 @@
 import React, { Suspense, lazy, useState, useEffect, useMemo } from "react";
 import { HelmetProvider } from "react-helmet-async";
-import SEOHead from "../componets/contact us/SEOHead";
-import ErrorBoundary from "../componets/contact us/ErrorBoundary";
-import AdaptivePerformanceMonitor from "../componets/contact us/AdaptivePerformanceMonitor";
+import SEOHead from "../components/contact/SEOHead";
+import ErrorBoundary from "../components/contact/ErrorBoundary";
+import AdaptivePerformanceMonitor from "../components/contact/AdaptivePerformanceMonitor";
 
 // Lazy-load only heavy or non-critical sections
-const HeroSection = lazy(() => import("../componets/contact us/HeroSection"));
-const CallUs = lazy(() => import("../componets/contact us/CallUs"));
-const EmailUs = lazy(() => import("../componets/contact us/EmailUs"));
-const VisitUs = lazy(() => import("../componets/contact us/VisitUs"));
-const Gallery = lazy(() => import("../componets/contact us/Gallery"));
-const ContactForm = lazy(() => import("../componets/contact us/ContactForm"));
-const CountiesGrid = lazy(() => import("../componets/contact us/CountiesGrid"));
+const HeroSection = lazy(() => import("../components/contact/HeroSection"));
+const CallUs = lazy(() => import("../components/contact/CallUs"));
+const EmailUs = lazy(() => import("../components/contact/EmailUs"));
+const VisitUs = lazy(() => import("../components/contact/VisitUs"));
+const Gallery = lazy(() => import("../components/contact/Gallery"));
+const ContactForm = lazy(() => import("../components/contact/ContactForm"));
+const CountiesGrid = lazy(() => import("../components/contact/CountiesGrid"));
 
 // 🔍 Smart tier initializer (runs once, client-side only)
 const getInitialPerformanceTier = () => {

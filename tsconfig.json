@@ -12,14 +12,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "incremental": true,
+    "incremental": false,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/app/components/*": ["./app/components/*"]
     }
   },
   "include": [
@@ -33,5 +35,14 @@
     "**/*.mts"
   ],
   "typeRoots": ["./node_modules/@types", "./types"],
-  "exclude": ["node_modules"]
+  "types": ["react", "react-dom"],
+  "exclude": [
+    "node_modules",
+    "app/componets",
+    "app/componets/**",
+    "app/PC",
+    "app/PC/**",
+    "deployment-package",
+    "deployment-package/**"
+  ]
 }

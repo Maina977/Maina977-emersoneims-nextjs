@@ -2,19 +2,19 @@
 import React, { Suspense, useState, lazy } from "react";
 import { HelmetProvider } from "react-helmet-async";
 
-const SEOHead = lazy(() => import("../componets/common/SEOHead"));
-const ErrorBoundary = lazy(() => import("../componets/common/ErrorBoundary"));
-const AdaptivePerformanceMonitor = lazy(() => import("../componets/common/AdaptivePerformanceMonitor"));
-const DieselGenerators = lazy(() => import("../componets/service/DieselGenerators"));
-const SolarEnergy = lazy(() => import("../componets/service/SolarEnergy"));
-const HighVoltage = lazy(() => import("../componets/service/HighVoltage"));
-const UPSSystems = lazy(() => import("../componets/service/UPSSystems"));
-const MotorRewinding = lazy(() => import("../componets/service/MotorRewinding"));
-const Fabrication = lazy(() => import("../componets/service/Fabrication"));
-const WaterSystems = lazy(() => import("../componets/service/WaterSystems"));
-const HVACSystems = lazy(() => import("../componets/service/HVACSystems"));
-const Incinerators = lazy(() => import("../componets/service/Incinerators"));
-const CrossServiceOptimizers = lazy(() => import("../componets/service/CrossServiceOptimizers"));
+const SEOHead = lazy(() => import("../components/common/SEOHead"));
+const ErrorBoundary = lazy(() => import("../components/common/ErrorBoundary"));
+const AdaptivePerformanceMonitor = lazy(() => import("../components/common/AdaptivePerformanceMonitor"));
+const DieselGenerators = lazy(() => import("../components/service/DieselGenerators"));
+const SolarEnergy = lazy(() => import("../components/service/SolarEnergy"));
+const HighVoltage = lazy(() => import("../components/service/HighVoltage"));
+const UPSSystems = lazy(() => import("../components/service/UPSSystems"));
+const MotorRewinding = lazy(() => import("../components/service/MotorRewinding"));
+const Fabrication = lazy(() => import("../components/service/Fabrication"));
+const WaterSystems = lazy(() => import("../components/service/WaterSystems"));
+const HVACSystems = lazy(() => import("../components/service/HVACSystems"));
+const Incinerators = lazy(() => import("../components/service/Incinerators"));
+const CrossServiceOptimizers = lazy(() => import("../components/service/CrossServiceOptimizers"));
 
 export default function ServicePage() {
   const [performanceTier, setPerformanceTier] = useState("high");

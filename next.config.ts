@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com';
 const WORDPRESS_SITE_URL = process.env.WORDPRESS_SITE_URL || 'https://www.emersoneims.com';
 const isStaticExport = process.env.WORDPRESS_INTEGRATION === 'true' && process.env.STATIC_EXPORT === 'true';
 
@@ -47,8 +47,22 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
 
-  // Webpack configuration for WordPress compatibility
+  // Transpile packages for ES modules compatibility (fixes "window is not defined" errors)
+  transpilePackages: [
+    '@react-three/fiber',
+    '@react-three/drei',
+    'three',
+    '@react-spring/three',
+  ],
+
+  // Webpack configuration for WordPress compatibility and path aliases
   webpack: (config, { isServer }) => {
+        // Add path alias for app components folder
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          '@/app/components': require('path').resolve(__dirname, 'app/components'),
+        };
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

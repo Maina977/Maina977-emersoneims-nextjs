@@ -1,6 +1,6 @@
 "use client";
 
-import SectionLead from "../componets/generators/SectionLead";
+import SectionLead from "../components/generators/SectionLead";
 import { useState } from "react";
 
 export default function ContactPage() {
@@ -305,7 +305,7 @@ export default function ContactPage() {
           <div className="bg-gradient-to-r from-brand-gold/10 to-yellow-500/10 p-12 rounded-2xl border border-brand-gold/30">
             <h2 className="text-3xl font-bold text-white mb-6">Ready to Power Your World?</h2>
             <p className="text-white/70 max-w-2xl mx-auto mb-8">
-              Contact us today and join thousands of satisfied clients across Kenya enjoying reliable power.
+              contact today and join thousands of satisfied clients across Kenya enjoying reliable power.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-6">
               <a href="tel:+254768860655" className="sci-fi-button px-10 py-4">

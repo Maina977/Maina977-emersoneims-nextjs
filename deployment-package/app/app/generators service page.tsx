@@ -1,4 +1,4 @@
-import SectionLead from "../componets/generators/SectionLead";
+import SectionLead from "../components/generators/SectionLead";
 
 export const metadata = {
   title: "Generator Services — EmersonEIMS",

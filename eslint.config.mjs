@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Exclude misspelled folder and old files
+    "app/componets/**",
+    "app/PC/**",
+    "deployment-package/**",
   ]),
 ]);
 

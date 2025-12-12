@@ -1,5 +1,5 @@
 import { COUNTIES } from "@/data/counties";
-import SectionLead from "../componets/generators/SectionLead";
+import SectionLead from "../components/generators/SectionLead";
 
 // Generate static metadata for better SEO
 export const metadata = {

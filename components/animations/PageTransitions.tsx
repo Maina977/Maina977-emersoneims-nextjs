@@ -23,7 +23,7 @@ export default function PageTransitions({ children }: { children: ReactNode }) {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: [0.43, 0.13, 0.23, 0.96],
+        ease: [0.43, 0.13, 0.23, 0.96] as const,
         staggerChildren: 0.1,
       },
     },
@@ -33,7 +33,7 @@ export default function PageTransitions({ children }: { children: ReactNode }) {
       scale: 0.98,
       transition: {
         duration: 0.4,
-        ease: [0.43, 0.13, 0.23, 0.96],
+        ease: [0.43, 0.13, 0.23, 0.96] as const,
       },
     },
   };

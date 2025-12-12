@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import SectionLead from "../componets/generators/SectionLead";
+import SectionLead from "../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
 

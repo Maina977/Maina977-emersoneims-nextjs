@@ -1,5 +1,4 @@
 // components/hero/HeroCanvas.tsx - WebGL Intelligent Core
-/// <reference types="@react-three/fiber" />
 'use client';
 
 import { useRef, useMemo, useEffect, Suspense } from 'react';
@@ -10,6 +9,37 @@ import {
 } from '@react-three/drei';
 import * as THREE from 'three';
 import { MotionValue } from 'framer-motion';
+
+// ✅ Safe React 18+/19-compatible augmentation
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      ambientLight: any;
+      pointLight: any;
+      directionalLight: any;
+      mesh: any;
+      primitive: any;
+      group: any;
+      meshBasicMaterial: any;
+      meshStandardMaterial: any;
+      meshNormalMaterial: any;
+      meshPhongMaterial: any;
+      meshLambertMaterial: any;
+      points: any;
+      pointsMaterial: any;
+      bufferGeometry: any;
+      bufferAttribute: any;
+      torusGeometry: any;
+      sphere: any;
+      boxGeometry: any;
+      planeGeometry: any;
+      cylinderGeometry: any;
+      spotLight: any;
+      color: any;
+      fog: any;
+    }
+  }
+}
 
 interface PerformanceConfig {
   dpr?: number;

@@ -1,4 +1,4 @@
-import SectionLead from "../componets/generators/SectionLead";
+import SectionLead from "../components/generators/SectionLead";
 import Link from "next/link";
 
 const SOLUTIONS_LINKS = [

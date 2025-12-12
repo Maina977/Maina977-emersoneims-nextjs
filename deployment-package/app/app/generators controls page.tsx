@@ -1,5 +1,5 @@
-import SectionLead from "../componets/generators/SectionLead";
-import ErrorFrequencyChart from "../componets/generators/ErrorFrequencyChart";
+import SectionLead from "../components/generators/SectionLead";
+import ErrorFrequencyChart from "../components/generators/ErrorFrequencyChart";
 
 export const metadata = {
   title: "Generator Controls & Automation — EmersonEIMS",

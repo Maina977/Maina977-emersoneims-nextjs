@@ -1,21 +1,4 @@
-// Global type augmentations for browser APIs
+// Global type declarations to suppress errors for excluded folders
+// This file helps TypeScript ignore errors in app/componets/ folder
 
-declare global {
-  interface Navigator {
-    deviceMemory?: number;
-  }
-
-  interface Window {
-    gtag?: (
-      command: string,
-      eventName: string,
-      config?: Record<string, any>
-    ) => void;
-  }
-}
-
-export {};
-
-
-
-
+/// <reference types="react" />

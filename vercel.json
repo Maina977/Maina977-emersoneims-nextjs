@@ -4,9 +4,32 @@
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
   "regions": ["iad1"],
+  "github": {
+    "enabled": true,
+    "autoAlias": true,
+    "autoJobCancelation": true
+  },
   "env": {
     "WORDPRESS_SITE_URL": "https://www.emersoneims.com",
     "WORDPRESS_API_URL": "https://www.emersoneims.com/wp-json/wp/v2",
-    "NEXT_PUBLIC_SITE_URL": "https://emersoneims-nextjs.vercel.app"
-  }
+    "NEXT_PUBLIC_SITE_URL": "https://emersoneims.com"
+  },
+  "domains": [
+    "emersoneims.com",
+    "www.emersoneims.com"
+  ],
+  "rewrites": [
+    {
+      "source": "/wp-admin/:path*",
+      "destination": "https://www.emersoneims.com/wp-admin/:path*"
+    },
+    {
+      "source": "/wp-content/:path*",
+      "destination": "https://www.emersoneims.com/wp-content/:path*"
+    },
+    {
+      "source": "/wp-json/:path*",
+      "destination": "https://www.emersoneims.com/wp-json/:path*"
+    }
+  ]
 }

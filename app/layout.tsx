@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Space_Grotesk, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import SiteSearchWrapper from "@/components/shared/SiteSearchWrapper";
 
 // Primary display font - Premium, elegant (Apple-level)
 const geistSans = Geist({
@@ -113,6 +114,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${playfairDisplay.variable} ${inter.variable} antialiased touch-manipulation`}
       >
+        <SiteSearchWrapper />
         {children}
       </body>
     </html>

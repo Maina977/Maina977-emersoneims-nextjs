@@ -67,7 +67,6 @@ export default function OptimizedImage({
                 setIsLoading(false);
               }}
               style={{
-                imageRendering: 'high-quality',
                 imageRendering: '-webkit-optimize-contrast',
               }}
             />

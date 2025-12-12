@@ -75,6 +75,8 @@ export default function NavigationBar({
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={`Navigate to ${item.label} page`}
+                aria-current={isActive(item.href) ? 'page' : undefined}
                 className={`relative text-sm font-medium transition-all duration-300 ease-out group ${
                   isActive(item.href)
                     ? 'text-amber-400'
@@ -101,8 +103,9 @@ export default function NavigationBar({
             {onThemeToggle && (
               <button
                 onClick={onThemeToggle}
+                type="button"
                 className="px-4 py-2 text-xs font-mono border border-gray-700 rounded hover:border-amber-500 transition-colors text-gray-300 hover:text-amber-400"
-                aria-label="Toggle theme"
+                aria-label="Toggle theme between engineering and high contrast modes"
               >
                 THEME
               </button>
@@ -111,9 +114,11 @@ export default function NavigationBar({
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             className="md:hidden text-gray-400 hover:text-amber-400"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
+            aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={isMobileMenuOpen}
           >
             <svg
               className="w-6 h-6"
@@ -155,6 +160,8 @@ export default function NavigationBar({
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
+                  aria-label={`Navigate to ${item.label} page`}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
                   className={`block w-full text-left px-4 py-2 rounded transition-colors ${
                     isActive(item.href)
                       ? 'bg-amber-500/20 text-amber-400'
@@ -166,8 +173,10 @@ export default function NavigationBar({
               ))}
               {onThemeToggle && (
                 <button
+                  type="button"
                   onClick={onThemeToggle}
                   className="block w-full text-left px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-amber-300 transition-colors"
+                  aria-label="Toggle theme between engineering and high contrast modes"
                 >
                   Toggle Theme
                 </button>
@@ -179,6 +188,7 @@ export default function NavigationBar({
     </motion.nav>
   );
 }
+
 
 
 

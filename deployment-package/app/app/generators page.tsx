@@ -1,7 +1,7 @@
-import SectionLead from "../componets/generators/SectionLead";
-import GeneratorCalculator from "../componets/generators/generatorscalculator";
-import MTBFChart from "../componets/generators/MTBFChart";
-import ErrorFrequencyChart from "../componets/generators/ErrorFrequencyChart";
+import SectionLead from "../components/generators/SectionLead";
+import GeneratorCalculator from "../components/generators/generatorscalculator";
+import MTBFChart from "../components/generators/MTBFChart";
+import ErrorFrequencyChart from "../components/generators/ErrorFrequencyChart";
 import { cumminsGenerators } from "../lib/data/cumminsgenerators";
 import { generatorServices } from "../lib/data/generatorservices";
 
