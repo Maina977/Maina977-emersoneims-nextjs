@@ -1,9 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
+interface NavItem {
+  href: string;
+  label: string;
+  submenu?: { href: string; label: string }[];
+}
 
 interface NavigationBarProps {
   activeSection?: string;
@@ -16,7 +22,9 @@ export default function NavigationBar({
 }: NavigationBarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const pathname = usePathname();
+  const submenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,15 +35,16 @@ export default function NavigationBar({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Apple-style consolidated navigation (5-6 items max)
   const navItems = [
     { href: '/', label: 'Home' },
-    { href: '/about-us', label: 'About Us' },
-    { href: '/service', label: 'Services' },
-    { href: '/solution', label: 'Solutions' },
-    { href: '/solar', label: 'Solar' },
-    { href: '/generators', label: 'Generator' },
-    { href: '/diagnostics', label: 'Diagnostics' },
-    { href: '/contact', label: 'Contact Us' },
+    { href: '/service', label: 'Solutions', submenu: [
+      { href: '/generators', label: 'Generators' },
+      { href: '/solar', label: 'Solar Energy' },
+      { href: '/diagnostics', label: 'Diagnostics' }
+    ]},
+    { href: '/about-us', label: 'About' },
+    { href: '/contact', label: 'Contact' },
   ];
 
   const isActive = (href: string) => {
@@ -47,56 +56,85 @@ export default function NavigationBar({
 
   return (
     <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled 
-          ? 'bg-gray-900/95 backdrop-blur-md border-b border-gray-800' 
+          ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' 
           : 'bg-transparent'
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="max-w-7xl mx-auto px-5vw py-4">
+      <div className="max-w-7xl mx-auto px-8 lg:px-12 py-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/">
             <motion.div
-              className="text-xl font-display font-bold text-amber-500 cursor-pointer"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="text-lg font-display font-semibold text-white tracking-tight cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              EMERSON EIMS
+              EMERSON
             </motion.div>
           </Link>
 
-          {/* Desktop Navigation - Premium Micro-interactions */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* Desktop Navigation - Apple-style minimal (5-6 items) */}
+          <div className="hidden md:flex items-center gap-12">
             {navItems.map((item) => (
-              <Link
+              <div
                 key={item.href}
-                href={item.href}
-                aria-label={`Navigate to ${item.label} page`}
-                aria-current={isActive(item.href) ? 'page' : undefined}
-                className={`relative text-sm font-medium transition-all duration-300 ease-out group ${
-                  isActive(item.href)
-                    ? 'text-amber-400'
-                    : 'text-gray-400 hover:text-amber-300'
-                }`}
+                className="relative"
+                onMouseEnter={() => item.submenu && setHoveredItem(item.href)}
+                onMouseLeave={() => setHoveredItem(null)}
               >
-                <span className="relative z-10">{item.label}</span>
-                {/* Underline animation - Apple/Nike level */}
-                <span 
-                  className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 transition-all duration-500 ease-out ${
-                    isActive(item.href) 
-                      ? 'w-full opacity-100' 
-                      : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-100'
+                <Link
+                  href={item.href}
+                  aria-label={`Navigate to ${item.label} page`}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                  aria-haspopup={item.submenu ? 'true' : undefined}
+                  className={`relative text-sm font-medium transition-all duration-300 ease-out group ${
+                    isActive(item.href)
+                      ? 'text-white'
+                      : 'text-gray-300 hover:text-white'
                   }`}
-                />
-                {/* Glow effect on hover */}
-                <span 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-300 bg-gradient-to-r from-amber-400 to-amber-600"
-                />
-              </Link>
+                >
+                  <span className="relative z-10">{item.label}</span>
+                  {/* Minimal underline - Apple style */}
+                  <span 
+                    className={`absolute bottom-0 left-0 h-[1px] bg-white transition-all duration-500 ease-out ${
+                      isActive(item.href) 
+                        ? 'w-full opacity-100' 
+                        : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-100'
+                    }`}
+                  />
+                </Link>
+                
+                {/* Submenu dropdown - Premium animation */}
+                {item.submenu && (
+                  <AnimatePresence>
+                    {hoveredItem === item.href && (
+                      <motion.div
+                        ref={submenuRef}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 mt-2 w-48 bg-black/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl py-2 z-50"
+                      >
+                        {item.submenu.map((subItem) => (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                )}
+              </div>
             ))}
 
             {/* Theme Toggle */}
@@ -104,7 +142,7 @@ export default function NavigationBar({
               <button
                 onClick={onThemeToggle}
                 type="button"
-                className="px-4 py-2 text-xs font-mono border border-gray-700 rounded hover:border-amber-500 transition-colors text-gray-300 hover:text-amber-400"
+                className="px-3 py-1.5 text-xs font-mono border border-white/20 rounded hover:border-white/40 transition-colors text-gray-400 hover:text-white"
                 aria-label="Toggle theme between engineering and high contrast modes"
               >
                 THEME
@@ -115,7 +153,7 @@ export default function NavigationBar({
           {/* Mobile Menu Button */}
           <button
             type="button"
-            className="md:hidden text-gray-400 hover:text-amber-400"
+            className="md:hidden text-text-secondary hover:text-text-primary transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={isMobileMenuOpen}
@@ -153,29 +191,45 @@ export default function NavigationBar({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="md:hidden mt-4 space-y-2"
+              className="md:hidden mt-6 space-y-1"
             >
               {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  aria-label={`Navigate to ${item.label} page`}
-                  aria-current={isActive(item.href) ? 'page' : undefined}
-                  className={`block w-full text-left px-4 py-2 rounded transition-colors ${
-                    isActive(item.href)
-                      ? 'bg-amber-500/20 text-amber-400'
-                      : 'text-gray-400 hover:bg-gray-800 hover:text-amber-300'
-                  }`}
-                >
-                  {item.label}
-                </Link>
+                <div key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    aria-label={`Navigate to ${item.label} page`}
+                    aria-current={isActive(item.href) ? 'page' : undefined}
+                    className={`block w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                      isActive(item.href)
+                        ? 'bg-white/10 text-text-primary'
+                        : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                  {/* Mobile Submenu */}
+                  {item.submenu && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {item.submenu.map((subItem) => (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block px-4 py-2 text-sm text-text-tertiary hover:text-text-primary transition-colors"
+                        >
+                          {subItem.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
               {onThemeToggle && (
                 <button
                   type="button"
                   onClick={onThemeToggle}
-                  className="block w-full text-left px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-amber-300 transition-colors"
+                  className="block w-full text-left px-4 py-3 rounded-lg text-text-secondary hover:bg-white/5 hover:text-text-primary transition-colors"
                   aria-label="Toggle theme between engineering and high contrast modes"
                 >
                   Toggle Theme

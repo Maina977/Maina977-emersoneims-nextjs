@@ -1,0 +1,87 @@
+import SectionLead from "@/components/generator/SectionLead";
+import { cumminsFuelData } from "@/data/cumminsGenerators";
+
+export const metadata = {
+  title: "Cummins Generator Models & Specifications — EmersonEIMS",
+  description: "Explore Cummins generators from 20–2000 kVA. Verified specs, fuel curves, alternator makes, and warranty details.",
+};
+
+export default function GeneratorModelsPage() {
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-black to-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <SectionLead
+          title="Cummins Generator Models & Specifications"
+          subtitle="Explore our full lineup from 20–2000 kVA with verified technical data and cinematic visuals."
+          centered
+        />
+
+        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {cumminsFuelData.map((gen) => (
+            <article
+              key={gen.model}
+              className="p-6 rounded-xl border border-gray-800 bg-black/50 shadow-neon hover:shadow-gold transition-all duration-300 hover:scale-[1.02]"
+            >
+              <h2 className="text-2xl font-bold text-brand-gold">{gen.model}</h2>
+              <p className="mt-2 text-lg text-white/80">{gen.kva} kVA • {gen.phase}-phase</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-white/70">Engine: <span className="text-white">{gen.engine}</span></p>
+                <p className="text-white/70">Alternator: <span className="text-white">{gen.alternator}</span></p>
+                <p className="text-white/70">Warranty: <span className="text-green-400">{gen.warrantyYears} years</span></p>
+              </div>
+
+              {gen.image && (
+                <div className="mt-6 overflow-hidden rounded-lg">
+                  <img
+                    src={gen.image}
+                    alt={`${gen.model} generator`}
+                    className="w-full h-48 object-cover hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+              )}
+
+              {gen.fuelConsumptionLitresPerHour && (
+                <div className="mt-6 p-4 bg-gray-900/50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-brand-gold mb-3">Fuel Consumption (L/h)</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-center p-2 bg-black/30 rounded">
+                      <p className="text-sm text-white/60">25% Load</p>
+                      <p className="text-white font-semibold">{gen.fuelConsumptionLitresPerHour.at25pctLoad} L</p>
+                    </div>
+                    <div className="text-center p-2 bg-black/30 rounded">
+                      <p className="text-sm text-white/60">50% Load</p>
+                      <p className="text-white font-semibold">{gen.fuelConsumptionLitresPerHour.at50pctLoad} L</p>
+                    </div>
+                    <div className="text-center p-2 bg-black/30 rounded">
+                      <p className="text-sm text-white/60">75% Load</p>
+                      <p className="text-white font-semibold">{gen.fuelConsumptionLitresPerHour.at75pctLoad} L</p>
+                    </div>
+                    <div className="text-center p-2 bg-black/30 rounded">
+                      <p className="text-sm text-white/60">100% Load</p>
+                      <p className="text-white font-semibold">{gen.fuelConsumptionLitresPerHour.at100pctLoad} L</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <a 
+                  href="/generator#calculator" 
+                  className="sci-fi-button flex-1 text-center py-3"
+                >
+                  Calculate ROI
+                </a>
+                <a 
+                  href={`/specs/${gen.model.toLowerCase().replace(/\s+/g, '-')}`}
+                  className="sci-fi-outline flex-1 text-center py-3"
+                >
+                  Spec Sheet
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}

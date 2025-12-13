@@ -44,3 +44,6 @@ echo   4. Configure DNS in Hostinger
 echo.
 pause
 
+
+
+

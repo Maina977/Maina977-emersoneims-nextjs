@@ -51,3 +51,6 @@ Since homepage already uses root `components/`, keep consistency:
 This maintains consistency with existing structure.
 
 
+
+
+

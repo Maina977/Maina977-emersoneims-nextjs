@@ -75,3 +75,6 @@ wp-content/
 *.tmp
 *.temp
 .cache/
+
+.vercel
+.env*.local

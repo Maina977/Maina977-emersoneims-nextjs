@@ -1,145 +1,81 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+'use client';
+
+import { forwardRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import OptimizedImage from './OptimizedImage';
 
 interface OptimizedVideoProps {
   src: string;
-  poster?: string;
-  alt?: string;
-  autoplay?: boolean;
+  className?: string;
+  autoPlay?: boolean;
   loop?: boolean;
   muted?: boolean;
   playsInline?: boolean;
-  className?: string;
-  hollywoodGrading?: boolean;
-  priority?: boolean;
+  onLoadedData?: () => void;
+  poster?: string;
 }
 
-export default function OptimizedVideo({
-  src,
-  poster,
-  alt = 'Video',
-  autoplay = false,
-  loop = true,
-  muted = true,
-  playsInline = true,
-  className = '',
-  hollywoodGrading = true,
-  priority = false,
-}: OptimizedVideoProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(autoplay);
-  const [error, setError] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isInView, setIsInView] = useState(false);
+const OptimizedVideo = forwardRef<HTMLVideoElement, OptimizedVideoProps>(
+  (
+    {
+      src,
+      className = '',
+      autoPlay = false,
+      loop = false,
+      muted = true,
+      playsInline = true,
+      onLoadedData,
+      poster,
+    },
+    ref
+  ) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          if (autoplay && videoRef.current) {
-            videoRef.current.play().catch(() => {
-              // Autoplay failed, user interaction required
-            });
-          }
-        }
-      },
-      { threshold: 0.1 }
-    );
+    const handleLoad = () => {
+      setIsLoading(false);
+      if (onLoadedData) onLoadedData();
+    };
 
-    if (videoRef.current) {
-      observer.observe(videoRef.current);
-    }
+    const handleError = () => {
+      setError(true);
+      setIsLoading(false);
+    };
 
-    return () => observer.disconnect();
-  }, [autoplay]);
-
-  const handlePlay = () => {
-    if (videoRef.current) {
-      videoRef.current.play();
-      setIsPlaying(true);
-    }
-  };
-
-  const handlePause = () => {
-    if (videoRef.current) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    }
-  };
-
-  return (
-    <div className={`relative overflow-hidden ${className}`}>
-      {isLoading && poster && (
-        <div className="absolute inset-0 z-10">
-          <OptimizedImage
-            src={poster}
-            alt={alt}
-            hollywoodGrading={hollywoodGrading}
-            priority={priority}
-            className="w-full h-full"
-          />
+    if (error) {
+      return (
+        <div className={`w-full h-full bg-gray-900 flex items-center justify-center ${className}`}>
+          <span className="text-gray-500 text-sm">Video unavailable</span>
         </div>
-      )}
+      );
+    }
 
-      {error ? (
-        <div className="w-full h-full bg-gray-800 flex items-center justify-center min-h-[400px]">
-          <span className="text-gray-500 text-sm">Video failed to load</span>
-        </div>
-      ) : (
-        <motion.div
+    return (
+      <div className={`relative w-full h-full overflow-hidden ${className}`}>
+        {isLoading && (
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 animate-pulse" />
+        )}
+        <motion.video
+          ref={ref}
+          src={src}
+          className="w-full h-full object-cover"
+          autoPlay={autoPlay}
+          loop={loop}
+          muted={muted}
+          playsInline={playsInline}
+          poster={poster}
+          onLoadedData={handleLoad}
+          onError={handleError}
           initial={{ opacity: 0 }}
           animate={{ opacity: isLoading ? 0.3 : 1 }}
           transition={{ duration: 0.5 }}
-          className={`relative w-full h-full ${hollywoodGrading ? 'hollywood-grade' : ''}`}
-        >
-          <video
-            ref={videoRef}
-            src={src}
-            poster={poster}
-            autoPlay={autoplay}
-            loop={loop}
-            muted={muted}
-            playsInline={playsInline}
-            preload={priority ? 'auto' : 'metadata'}
-            className="w-full h-full object-cover"
-            onLoadedData={() => setIsLoading(false)}
-            onError={() => {
-              setError(true);
-              setIsLoading(false);
-            }}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-          />
+        />
+      </div>
+    );
+  }
+);
 
-          {!isPlaying && !autoplay && (
-            <button
-              onClick={handlePlay}
-              className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors group"
-              aria-label="Play video"
-            >
-              <motion.div
-                className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <svg
-                  className="w-8 h-8 text-gray-900 ml-1"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </motion.div>
-            </button>
-          )}
-        </motion.div>
-      )}
-    </div>
-  );
-}
+OptimizedVideo.displayName = 'OptimizedVideo';
 
-
+export default OptimizedVideo;

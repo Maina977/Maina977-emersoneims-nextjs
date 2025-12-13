@@ -65,3 +65,6 @@ This ensures they work from any directory.
 **You can run any script from anywhere - they all navigate to the correct directory automatically!**
 
 
+
+
+

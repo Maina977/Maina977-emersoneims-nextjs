@@ -1,0 +1,17 @@
+export const industries = [
+    { name: "Homes & Residential Estates", icon: "🏠", description: "Reliable backup power for households and gated communities." },
+    { name: "Banks & Financial Institutions", icon: "🏦", description: "Uninterrupted power for ATMs, branches, and data centers." },
+    { name: "Schools & Universities", icon: "🎓", description: "Powering classrooms, labs, and dormitories." },
+    { name: "Malls & Retail", icon: "🛍", description: "Ensuring seamless shopping experiences with uninterrupted power." },
+    { name: "Clubs & Restaurants", icon: "🍽", description: "Backup power for entertainment venues and hospitality." },
+    { name: "Hospitals & Clinics", icon: "🏥", description: "Critical power for operating theaters, ICUs, and labs." },
+    { name: "Farms & Agro‑processing", icon: "🌾", description: "Powering irrigation, cold storage, and processing plants." },
+    { name: "Government Institutions", icon: "🏛", description: "Reliable power for offices, ministries, and public services." },
+    { name: "Data Centers", icon: "💻", description: "High‑availability power for servers and cloud infrastructure." },
+    { name: "Funeral Homes & Churches", icon: "⛪", description: "Ensuring dignity and continuity during services." },
+    { name: "Hotels & Resorts", icon: "🏨", description: "Luxury hospitality powered by Cummins reliability." },
+    { name: "Industries & Factories", icon: "🏭", description: "Heavy‑duty power for manufacturing and production lines." },
+    { name: "Ships & Boats", icon: "🚢", description: "Marine‑grade Cummins generators for vessels and ports." },
+    { name: "Yachts", icon: "🛥", description: "Premium power solutions for private yachts." },
+    { name: "Petrol Stations", icon: "⛽", description: "Ensuring pumps and POS systems stay online." },
+  ];

@@ -1,0 +1,36 @@
+{
+    "Generators": {
+      "FuelConsumption": "LitersPerHour = (LoadKW * SpecificFuelConsumption) / Efficiency",
+      "PowerFactorCorrection": "RequiredKVAR = KW * (tan(arccos(TargetPF)) - tan(arccos(CurrentPF)))"
+    },
+    "Solar": {
+      "ArraySizing": "PanelsNeeded = (LoadKWh / (SunHours * PanelWatt * Derating))",
+      "BatteryAutonomy": "RequiredAh = (LoadWh / (SystemVoltage * DoD))"
+    },
+    "HighVoltage": {
+      "CableSizing": "Ampacity = (LoadCurrent / CorrectionFactors)",
+      "VoltageDrop": "VD% = (Length * ResistancePerMeter * Current) / (Voltage * 100)"
+    },
+    "UPS": {
+      "Runtime": "Minutes = (BatteryAh * Voltage * Efficiency) / LoadWatt"
+    },
+    "AC": {
+      "CoolingLoad": "BTU/hr = (Watts * 3.412)"
+    },
+    "MotorRewinding": {
+      "TurnsPerCoil": "Turns = (Voltage * 1000) / (4.44 * Frequency * Flux * Area)"
+    },
+    "Incinerators": {
+      "Airflow": "CFM = (FuelBurnRate * StoichiometricAir) / Efficiency"
+    },
+    "Controls": {
+      "ATSDelay": "TransferTime = (DetectionDelay + MechanicalDelay)"
+    },
+    "PowerWizard": {
+      "VoltageRegulation": "OutputVoltage = AVRSetting * ReferenceVoltage"
+    },
+    "DeepSea": {
+      "BatteryCheck": "VoltageDrop = (OpenCircuitVoltage - LoadVoltage)"
+    }
+  }
+  

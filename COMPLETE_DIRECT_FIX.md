@@ -34,3 +34,6 @@ xcopy "app\components\contact\*.*" "components\contact\" /E /I /Y
 Then test build.
 
 
+
+
+

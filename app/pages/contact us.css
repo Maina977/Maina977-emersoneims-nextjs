@@ -1,0 +1,303 @@
+:root {
+    --bg: #0a0f14;
+    --text: #e6f7ff;
+    --neon: #00ffff;
+    --neon-soft: rgba(0,255,255,0.5);
+    --error: #ff4d4f;
+    --success: #52c41a;
+  }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    margin: 0;
+    overflow-x: hidden;
+  }
+  
+  .section-pad {
+    padding: 4rem 1rem;
+  }
+  @media (min-width: 768px) {
+    .section-pad { padding: 6rem 2rem; }
+  }
+  @media (min-width: 1024px) {
+    .section-pad { padding: 8rem 3rem; }
+  }
+  
+  .hero--contact {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .hero-video {
+    position: absolute; 
+    inset: 0; 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    filter: saturate(1.2) contrast(1.1);
+  }
+  .hero-content {
+    position: relative; 
+    z-index: 2; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    min-height: 100vh; 
+    text-align: center;
+    padding: 2rem;
+  }
+  .hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+  }
+  @media (min-width: 768px) {
+    .hero-content h1 { font-size: 3.5rem; }
+  }
+  .cta-glow {
+    margin-top: 1rem; 
+    padding: 0.9rem 1.4rem; 
+    background: transparent; 
+    border: 1px solid var(--neon); 
+    color: var(--text);
+    border-radius: 999px; 
+    cursor: pointer; 
+    transition: transform .2s ease;
+    font-size: 1rem;
+    min-width: 140px;
+  }
+  .cta-glow:hover { 
+    transform: translateY(-2px); 
+  }
+  .cta-glow:focus {
+    outline: 2px solid var(--neon);
+    outline-offset: 2px;
+  }
+  
+  .call-us .orb-buttons {
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 1.5rem; 
+    max-width: 680px; 
+    margin: 2rem auto 0;
+  }
+  @media (min-width: 600px) {
+    .call-us .orb-buttons { 
+      grid-template-columns: 1fr 1fr; 
+    }
+  }
+  .orb {
+    padding: 1.2rem; 
+    border-radius: 999px; 
+    border: 1px solid var(--neon); 
+    background: rgba(0,0,0,0.3); 
+    color: var(--text);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .orb:focus {
+    outline: 2px solid var(--neon);
+    outline-offset: 2px;
+  }
+  
+  .email-us .input-wrap { 
+    max-width: 680px; 
+    margin: 0 auto 1.5rem; 
+    display: grid; 
+    gap: 0.5rem; 
+  }
+  .input-wrap label {
+    font-weight: 500;
+  }
+  .input-wrap input, .input-wrap textarea {
+    padding: 0.9rem 1rem; 
+    border-radius: 12px; 
+    border: 1px solid rgba(255,255,255,0.15); 
+    background: rgba(255,255,255,0.04); 
+    color: var(--text);
+    font-size: 1rem;
+  }
+  .input-wrap input:focus, .input-wrap textarea:focus {
+    outline: 2px solid var(--neon);
+    outline-offset: 2px;
+  }
+  .error-msg { 
+    color: var(--error); 
+    margin-top: 0.25rem; 
+    font-size: 0.875rem;
+  }
+  .success-msg { 
+    color: var(--success); 
+    margin-top: 0.5rem; 
+  }
+  .btn-neon { 
+    padding: 0.8rem 1.2rem; 
+    border-radius: 12px; 
+    border: 1px solid var(--neon); 
+    background: transparent; 
+    color: var(--text); 
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 120px;
+  }
+  .btn-neon:focus {
+    outline: 2px solid var(--neon);
+    outline-offset: 2px;
+  }
+  .btn-neon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .email-list { 
+    display: grid; 
+    gap: 1.5rem; 
+    max-width: 680px; 
+    margin: 3rem auto 0; 
+  }
+  .email-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.8rem; 
+  }
+  .email-icon { 
+    width: 12px; 
+    height: 12px; 
+    border-radius: 50%; 
+    background: var(--neon); 
+    flex-shrink: 0;
+  }
+  .email-item a {
+    color: var(--neon);
+    text-decoration: none;
+    font-size: 1.1rem;
+  }
+  .email-item a:hover {
+    text-decoration: underline;
+  }
+  
+  .visit-us address {
+    font-style: normal;
+    margin: 1rem 0 2rem;
+    font-size: 1.1rem;
+  }
+  .visit-us .map-wrap { 
+    margin-top: 2rem; 
+  }
+  .kenya-map { 
+    position: relative; 
+    height: 380px; 
+    background: radial-gradient(ellipse at center, rgba(0,255,255,0.08), transparent); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 16px; 
+  }
+  .nairobi-hub { 
+    position: absolute; 
+    left: 52%; 
+    top: 58%; 
+    width: 14px; 
+    height: 14px; 
+    border-radius: 50%; 
+    background: var(--neon); 
+  }
+  
+  .gallery .holographic-gallery {
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 1.5rem; 
+    max-width: 980px; 
+    margin: 2rem auto 0;
+  }
+  @media (min-width: 768px) {
+    .gallery .holographic-gallery { 
+      grid-template-columns: repeat(2, 1fr); 
+    }
+  }
+  @media (min-width: 1024px) {
+    .gallery .holographic-gallery { 
+      grid-template-columns: repeat(3, 1fr); 
+    }
+  }
+  .panel { 
+    background: rgba(255,255,255,0.04); 
+    border: 1px solid rgba(255,255,255,0.12); 
+    border-radius: 16px; 
+    padding: 1rem; 
+    backdrop-filter: blur(6px); 
+  }
+  .panel img { 
+    width: 100%; 
+    display: block; 
+    border-radius: 12px; 
+    aspect-ratio: 16/9;
+    object-fit: cover;
+  }
+  .panel figcaption {
+    margin-top: 0.75rem;
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  
+  .contact-form .vault-controls { 
+    margin-top: 2rem; 
+    display: flex; 
+    gap: 1rem; 
+    justify-content: center;
+  }
+  
+  .counties-grid .grid {
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+    gap: 1rem; 
+    max-width: 1100px; 
+    margin: 2rem auto 0;
+  }
+  .county-tile { 
+    border: 1px solid rgba(255,255,255,0.12); 
+    border-radius: 12px; 
+    padding: 1rem; 
+    background: rgba(255,255,255,0.03); 
+    transition: transform .2s ease; 
+  }
+  .county-tile:hover, .county-tile:focus { 
+    transform: translateY(-2px); 
+    outline: none; 
+    box-shadow: 0 0 12px var(--neon-soft); 
+  }
+  .county-tile h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+  .county-tile p {
+    margin: 0;
+    font-size: 0.875rem;
+    opacity: 0.8;
+  }
+  
+  .fps-monitor {
+    position: fixed; 
+    bottom: 12px; 
+    right: 12px; 
+    font-size: 12px; 
+    background: rgba(0,0,0,0.6); 
+    color: var(--neon);
+    padding: 6px 8px; 
+    border-radius: 8px; 
+    z-index: 9999;
+  }
+  
+  .loading { 
+    padding: 2rem; 
+    text-align: center; 
+    font-size: 1.2rem;
+  }
+  .error-fallback { 
+    padding: 2rem; 
+    text-align: center; 
+    color: var(--error); 
+    font-size: 1.2rem;
+  }

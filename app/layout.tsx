@@ -24,6 +24,7 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   display: 'swap',
   weight: ['300', '400', '500', '600', '700'],
+  preload: true,
 });
 
 // Elegant serif for hero text (Apple-level elegance)
@@ -32,6 +33,7 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
   display: 'swap',
   weight: ['400', '500', '600', '700', '800', '900'],
+  preload: true,
 });
 
 // Premium body font (Apple-level readability)
@@ -40,6 +42,7 @@ const inter = Inter({
   subsets: ["latin"],
   display: 'swap',
   weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  preload: true,
 });
 
 export const metadata: Metadata = {
