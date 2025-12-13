@@ -21,6 +21,9 @@ import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'fra
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+import LoadingOptimized from '@/components/loading/LoadingOptimized';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -106,7 +109,10 @@ export default function SOTDWinningHomepage() {
   }, []);
 
   return (
-    <>
+    <ErrorBoundary>
+      {/* Performance Monitor (Dev Only) */}
+      <PerformanceMonitor />
+
       {/* Premium Custom Cursor */}
       <Suspense fallback={null}>
         <CustomCursor enabled={!prefersReducedMotion} />
@@ -172,18 +178,7 @@ export default function SOTDWinningHomepage() {
             style={{ scale: generatorScale }}
           >
             <Suspense
-              fallback={
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <motion.div
-                      className="w-32 h-32 mx-auto mb-4 border-4 border-amber-400/30 border-t-amber-400 rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    />
-                    <p className="text-text-secondary">Initializing Advanced Generator...</p>
-                  </div>
-                </div>
-              }
+              fallback={<LoadingOptimized message="Initializing Advanced Generator..." />}
             >
               <AdvancedGeneratorScene
                 prefersReducedMotion={prefersReducedMotion}
@@ -519,7 +514,7 @@ export default function SOTDWinningHomepage() {
           </div>
         </section>
       </motion.div>
-    </>
+    </ErrorBoundary>
   );
 }
 

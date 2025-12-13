@@ -33,13 +33,10 @@ const CinematicNarrative = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-900/20 to-black z-0" />
       <OptimizedVideo
         src="https://assets.mixkit.co/videos/preview/mixkit-solar-panels-on-the-roof-of-a-house-41506-large.mp4"
-        alt="Solar panels on roof"
-        autoplay={true}
+        autoPlay={true}
         loop={true}
         muted={true}
         playsInline={true}
-        hollywoodGrading={true}
-        priority={true}
         className="absolute inset-0 w-full h-full object-cover opacity-50"
       />
       
@@ -844,13 +841,10 @@ export function AccessibleVideo({
       <OptimizedVideo
         src={src}
         poster={poster}
-        alt={title}
-        autoplay={autoPlay}
+        autoPlay={autoPlay}
         loop={true}
         muted={true}
         playsInline={true}
-        hollywoodGrading={true}
-        priority={true}
         className="w-full h-auto opacity-90"
       />
       <p id="video-desc" className="sr-only">{title}</p>

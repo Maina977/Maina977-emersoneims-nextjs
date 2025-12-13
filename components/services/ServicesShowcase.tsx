@@ -8,8 +8,8 @@ const NikeStyleServiceCard = lazy(() => import('./NikeStyleServiceCard'));
 const services = [
   {
     title: 'Generator Systems',
-    description: 'Premium diesel and gas generators engineered for reliability, efficiency, and performance. From 10 kVA to 2000 kVA, we power your future.',
-    image: '/images/services/generators.jpg',
+    description: 'Premium diesel and gas generators engineered for reliability, efficiency, and performance. From 10 kVA to 2000 kVA, we power your future with Cummins, Perkins, and Caterpillar certified systems.',
+    image: 'https://images.unsplash.com/photo-1621905251918-48116d1ba734?w=1200&h=800&fit=crop&q=80',
     href: '/generators',
     stats: [
       { label: 'Models', value: '50+' },
@@ -19,8 +19,8 @@ const services = [
   },
   {
     title: 'Solar Energy',
-    description: 'Transform sunlight into sustainable power. Our solar solutions range from residential installations to large-scale commercial farms.',
-    image: '/images/services/solar.jpg',
+    description: 'Transform sunlight into sustainable power. Our solar solutions range from residential installations to large-scale commercial farms, delivering 45% average savings across Kenya.',
+    image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1200&h=800&fit=crop&q=80',
     href: '/solar',
     stats: [
       { label: 'Capacity', value: '10MW+' },
@@ -30,8 +30,8 @@ const services = [
   },
   {
     title: 'Intelligent Diagnostics',
-    description: 'AI-powered diagnostic systems that predict, prevent, and optimize. Real-time monitoring for maximum uptime and efficiency.',
-    image: '/images/services/diagnostics.jpg',
+    description: 'AI-powered diagnostic systems that predict, prevent, and optimize. Real-time monitoring for maximum uptime and efficiency with 98.7% accuracy.',
+    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&h=800&fit=crop&q=80',
     href: '/diagnostics',
     stats: [
       { label: 'Accuracy', value: '98.7%' },

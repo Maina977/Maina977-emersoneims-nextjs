@@ -168,13 +168,10 @@ export default function GeneratorPage() {
         <OptimizedVideo
           src="https://www.emersoneims.com/wp-content/uploads/2025/10/FOR-TRIALS-IN-KADENCE-2.mp4"
           poster="https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png"
-          alt="Cummins Generator Warehouse"
-          autoplay={true}
+          autoPlay={true}
           loop={true}
           muted={true}
           playsInline={true}
-          hollywoodGrading={true}
-          priority={true}
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />

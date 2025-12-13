@@ -27,8 +27,8 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// Advanced Particle System
-function AdvancedParticles({ count = 1000 }) {
+// Advanced Particle System - Optimized for Performance
+function AdvancedParticles({ count = 500 }) {
   const mesh = useRef<THREE.Points>(null);
   const particles = useRef<Float32Array>(new Float32Array(count * 3));
 
@@ -331,19 +331,19 @@ export default function AdvancedGeneratorScene({
           <EnhancedGenerator />
         </Center>
 
-        {/* Advanced Effects */}
-        <AdvancedParticles count={1500} />
+        {/* Advanced Effects - Optimized Particle Count */}
+        <AdvancedParticles count={600} />
         <HolographicStreams />
         <EnergyWaves />
 
-        {/* Enhanced Sparkles */}
+        {/* Enhanced Sparkles - Optimized */}
         <Sparkles
-          count={200}
+          count={100}
           scale={[8, 8, 8]}
-          size={3}
-          speed={0.5}
+          size={2.5}
+          speed={0.4}
           color="#fbbf24"
-          opacity={0.8}
+          opacity={0.6}
         />
 
         {/* Shadows */}
