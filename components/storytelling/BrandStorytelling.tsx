@@ -26,8 +26,8 @@ const stories = [
   {
     title: 'Our Impact',
     content: 'Every generator that powers a hospital, every solar array that lights a school, every system that keeps a business running—these aren\'t just installations. They\'re investments in progress, resilience, and hope.',
-    stat: '2,450+',
-    statLabel: 'Lives Impacted',
+    stat: '500',
+    statLabel: 'Projects Completed',
   },
 ];
 

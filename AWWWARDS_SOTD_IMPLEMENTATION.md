@@ -220,3 +220,11 @@ All critical Awwwards SOTD requirements have been implemented:
 
 The website is now at **9.0-9.5/10** level. With professional video and photography content, it will reach **9.8-10/10** and be ready for Awwwards SOTD submission.
 
+
+
+
+
+
+
+
+

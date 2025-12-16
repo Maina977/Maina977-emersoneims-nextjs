@@ -1,0 +1,133 @@
+'use client';
+
+/**
+ * USER PROFILE & PREFERENCES
+ * Personalization system
+ */
+
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface UserPreferences {
+  language: string;
+  theme: 'light' | 'dark' | 'auto';
+  interests: string[];
+  savedProducts: string[];
+  recentViews: string[];
+}
+
+export default function UserProfile() {
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    language: 'en',
+    theme: 'dark',
+    interests: [],
+    savedProducts: [],
+    recentViews: [],
+  });
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    // Load preferences from localStorage
+    const saved = localStorage.getItem('userPreferences');
+    if (saved) {
+      try {
+        setPreferences(JSON.parse(saved));
+      } catch (error) {
+        console.warn('Failed to load preferences:', error);
+      }
+    }
+  }, []);
+
+  const savePreferences = (newPrefs: Partial<UserPreferences>) => {
+    const updated = { ...preferences, ...newPrefs };
+    setPreferences(updated);
+    localStorage.setItem('userPreferences', JSON.stringify(updated));
+  };
+
+  const addInterest = (interest: string) => {
+    if (!preferences.interests.includes(interest)) {
+      savePreferences({
+        interests: [...preferences.interests, interest],
+      });
+    }
+  };
+
+  const saveProduct = (productId: string) => {
+    if (!preferences.savedProducts.includes(productId)) {
+      savePreferences({
+        savedProducts: [...preferences.savedProducts, productId],
+      });
+    }
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-32 right-6 z-50 w-12 h-12 bg-gray-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-gray-800 transition-all border border-gray-700"
+        aria-label="User profile"
+      >
+        👤
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="fixed bottom-32 right-6 w-80 bg-gray-900 rounded-2xl shadow-2xl border border-gray-800 z-50 p-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <h3 className="text-xl font-bold text-white mb-4">Your Profile</h3>
+            
+            {/* Preferences */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Language</label>
+                <select
+                  value={preferences.language}
+                  onChange={(e) => savePreferences({ language: e.target.value })}
+                  className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700"
+                >
+                  <option value="en">English</option>
+                  <option value="sw">Swahili</option>
+                  <option value="fr">French</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Interests</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Generators', 'Solar', 'UPS', 'Diagnostics'].map((interest) => (
+                    <button
+                      key={interest}
+                      onClick={() => addInterest(interest)}
+                      className={`px-3 py-1 rounded-lg text-sm transition-all ${
+                        preferences.interests.includes(interest)
+                          ? 'bg-brand-gold text-black'
+                          : 'bg-gray-800 text-white hover:bg-gray-700'
+                      }`}
+                    >
+                      {interest}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {preferences.savedProducts.length > 0 && (
+                <div>
+                  <label className="text-sm text-gray-400 mb-2 block">Saved Products</label>
+                  <div className="text-white text-sm">
+                    {preferences.savedProducts.length} saved
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+

@@ -231,3 +231,11 @@ All critical issues have been addressed:
 
 The website now has a premium, cohesive design system that rivals Apple, Tesla, and Nike. With professional photography added, it will be ready for Awwwards SOTD submission.
 
+
+
+
+
+
+
+
+

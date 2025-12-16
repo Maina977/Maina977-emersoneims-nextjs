@@ -1,8 +1,18 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import OptimizedImage from "@/components/media/OptimizedImage";
+import { HeroHeading, SectionHeading } from "@/components/typography/CinematicHeadingVariants";
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
+import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+import HolographicLaser from '@/components/effects/HolographicLaser';
+
+// Lazy load WebGL scene
+const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
+const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
+const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
 
 // ==================== ENHANCEMENT 1: HIGH-CONTRAST COMPLIANCE LAYER ====================
 const ContrastComplianceLayer = () => {
@@ -93,14 +103,9 @@ const CompanyTimeline = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-black via-gray-900 to-black">
       <div className="max-w-7xl mx-auto px-4">
-        <motion.h2 
-          className="text-4xl md:text-5xl font-bold mb-12 text-center bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          Our Journey
-        </motion.h2>
+        <div className="mb-12">
+          <SectionHeading>Our Journey</SectionHeading>
+        </div>
         <div className="relative">
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 opacity-30" />
           <div className="space-y-12">
@@ -138,51 +143,74 @@ const CompanyTimeline = () => {
   );
 };
 
-// Team Members Component
-const TeamSection = () => {
-  const team = [
+// Partnerships & Certifications Component
+const PartnershipsSection = () => {
+  const clients = [
     {
-      name: "James Maina",
-      role: "Founder & CEO",
-      bio: "15+ years in energy infrastructure. Visionary leader driving Kenya's energy transformation.",
-      expertise: ["Strategic Planning", "Energy Systems", "Business Development"],
-      image: "https://www.emersoneims.com/wp-content/uploads/2025/11/team-1.jpg",
+      name: "Bigot Flowers",
+      category: "Agriculture & Horticulture",
+      description: "Reliable power solutions for flower farming operations, ensuring consistent energy supply for greenhouse climate control and processing facilities.",
+      logo: "/images/premium/case-flowers.jpg",
+      services: ["Generator Systems", "Power Backup", "Maintenance"],
     },
     {
-      name: "Dr. Sarah Wanjiku",
-      role: "Chief Technical Officer",
-      bio: "PhD in Electrical Engineering. Expert in hybrid solar systems and power electronics.",
-      expertise: ["Solar Systems", "Power Electronics", "System Design"],
-      image: "https://www.emersoneims.com/wp-content/uploads/2025/11/team-2.jpg",
+      name: "St. Austin Academy",
+      category: "Education",
+      description: "Comprehensive energy infrastructure for educational institutions, providing uninterrupted power for classrooms, laboratories, and administrative facilities.",
+      logo: "/images/premium/case-school.jpg",
+      services: ["Solar Solutions", "UPS Systems", "Grid Integration"],
     },
     {
-      name: "Michael Ochieng",
-      role: "Head of Engineering",
-      bio: "10+ years in generator systems and diagnostics. Master's in Mechanical Engineering.",
-      expertise: ["Generator Systems", "Diagnostics", "Maintenance"],
-      image: "https://www.emersoneims.com/wp-content/uploads/2025/11/team-3.jpg",
+      name: "Kivukoni International School",
+      category: "Education",
+      description: "Sustainable energy solutions for international school campuses, combining solar power with reliable backup systems for 24/7 operations.",
+      logo: "/images/premium/case-school.jpg",
+      services: ["Solar Installation", "Energy Storage", "Monitoring"],
     },
     {
-      name: "Grace Muthoni",
-      role: "Energy Analyst",
-      bio: "ROI modeling, tariff analysis, and load profiling specialist. Data-driven decision maker.",
-      expertise: ["ROI Analysis", "Load Profiling", "Energy Economics"],
-      image: "https://www.emersoneims.com/wp-content/uploads/2025/11/team-4.jpg",
+      name: "Greenheart Kilifi",
+      category: "Hospitality & Tourism",
+      description: "Eco-friendly energy solutions for coastal hospitality operations, integrating renewable energy with backup power for guest comfort and operational excellence.",
+      logo: "/images/premium/case-hotel.jpg",
+      services: ["Solar Power", "Generator Backup", "Energy Efficiency"],
     },
     {
-      name: "David Kimani",
-      role: "Project Manager",
-      bio: "Mission-critical deployments across hospitals and factories. PMP certified.",
-      expertise: ["Project Management", "Deployment", "Quality Assurance"],
-      image: "https://www.emersoneims.com/wp-content/uploads/2025/11/team-5.jpg",
+      name: "NTSA",
+      category: "Government Agency",
+      description: "Mission-critical power infrastructure for National Transport and Safety Authority operations, ensuring continuous service delivery across all facilities.",
+      logo: "/images/premium/case-government.jpg",
+      services: ["Power Systems", "Backup Solutions", "24/7 Support"],
     },
     {
-      name: "Linda Akinyi",
-      role: "Customer Success",
-      bio: "Ensuring client satisfaction and system performance. 24/7 support champion.",
-      expertise: ["Customer Relations", "Support", "Training"],
-      image: "https://www.emersoneims.com/wp-content/uploads/2025/11/team-6.jpg",
+      name: "AfRhearb Limited",
+      category: "Manufacturing & Industry",
+      description: "Industrial-grade power solutions for manufacturing operations, designed for high-demand production environments with maximum reliability.",
+      logo: "/images/premium/case-factory.jpg",
+      services: ["Industrial Generators", "Power Distribution", "Maintenance"],
     },
+    {
+      name: "Kimfay Limited",
+      category: "Business & Commerce",
+      description: "Tailored energy solutions for commercial operations, optimizing power consumption while ensuring business continuity through reliable backup systems.",
+      logo: "/images/premium/case-commercial.jpg",
+      services: ["Energy Audit", "Solar Solutions", "Power Management"],
+    },
+    {
+      name: "Sanergy Limited",
+      category: "Waste Management & Sanitation",
+      description: "Sustainable energy infrastructure for waste management facilities, powering processing operations with renewable energy and efficient backup systems.",
+      logo: "/images/premium/case-waste.jpg",
+      services: ["Solar Systems", "Generator Backup", "Energy Monitoring"],
+    },
+  ];
+
+  const certifications = [
+    { name: "ISO 9001:2015", description: "Quality Management Systems", icon: "🏆" },
+    { name: "ISO 14001:2015", description: "Environmental Management", icon: "🌱" },
+    { name: "OHSAS 18001", description: "Occupational Health & Safety", icon: "🛡️" },
+    { name: "NEMA Certified", description: "National Environment Management Authority", icon: "✅" },
+    { name: "EPRA Licensed", description: "Energy & Petroleum Regulatory Authority", icon: "⚡" },
+    { name: "NCA Licensed", description: "National Construction Authority", icon: "🏗️" },
   ];
 
   return (
@@ -194,44 +222,86 @@ const TeamSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          Meet Our Team
+          Trusted Clients & Certifications
         </motion.h2>
         <p className="text-xl text-gray-400 text-center mb-12 max-w-3xl mx-auto">
-          Experts dedicated to powering Kenya's future through intelligent energy solutions
+          Proud to power leading organizations across Kenya with reliable, sustainable energy solutions
         </p>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {team.map((member, index) => (
-            <motion.div
-              key={member.name}
-              className="group bg-gradient-to-br from-gray-900 to-black p-6 rounded-xl border border-gray-800 hover:border-amber-500/50 transition-all"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <div className="relative mb-4 overflow-hidden rounded-lg">
-                <OptimizedImage
-                  src={member.image}
-                  alt={member.name}
-                  width={400}
-                  height={400}
-                  className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                  hollywoodGrading={true}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{member.name}</h3>
-              <p className="text-amber-400 font-semibold mb-3">{member.role}</p>
-              <p className="text-gray-300 mb-4">{member.bio}</p>
-              <div className="flex flex-wrap gap-2">
-                {member.expertise.map((skill) => (
-                  <span key={skill} className="px-3 py-1 bg-amber-500/10 text-amber-400 text-sm rounded-full border border-amber-500/20">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
-          ))}
+
+        {/* Clients Grid */}
+        <div className="mb-16">
+          <h3 className="text-2xl font-bold text-white mb-4 text-center">Companies We Work With</h3>
+          <p className="text-gray-400 text-center mb-8 max-w-3xl mx-auto">
+            Trusted by leading organizations across Kenya for reliable, sustainable energy solutions
+          </p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {clients.map((client, index) => (
+              <motion.div
+                key={client.name}
+                className="group bg-gradient-to-br from-gray-900 to-black p-6 rounded-xl border border-gray-800 hover:border-amber-500/50 transition-all"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="relative mb-4 overflow-hidden rounded-lg h-40">
+                  <OptimizedImage
+                    src={client.logo}
+                    alt={`${client.name} client`}
+                    width={400}
+                    height={300}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <span className="text-xs text-amber-400 font-semibold uppercase tracking-wider">
+                      {client.category}
+                    </span>
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">{client.name}</h3>
+                <p className="text-gray-300 mb-4 text-xs leading-relaxed">{client.description}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {client.services.map((service) => (
+                    <span key={service} className="px-2 py-1 bg-amber-500/10 text-amber-400 text-xs rounded-full border border-amber-500/20">
+                      {service}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <motion.div
+            className="mt-8 text-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <p className="text-gray-400 text-lg">
+              <span className="text-amber-400 font-semibold">And many more</span> organizations across Kenya trust EmersonEIMS for their energy needs
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Certifications */}
+        <div>
+          <h3 className="text-2xl font-bold text-white mb-8 text-center">Certifications & Licenses</h3>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {certifications.map((cert, index) => (
+              <motion.div
+                key={cert.name}
+                className="bg-gradient-to-br from-gray-900 to-black p-6 rounded-xl border border-gray-800 hover:border-amber-500/50 transition-all"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="text-4xl mb-3">{cert.icon}</div>
+                <h4 className="text-xl font-bold text-white mb-2">{cert.name}</h4>
+                <p className="text-gray-400 text-sm">{cert.description}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -241,12 +311,12 @@ const TeamSection = () => {
 // Achievements & Awards Component
 const AchievementsSection = () => {
   const achievements = [
-    { metric: "2,450+", label: "Projects Completed", icon: "🏗️", color: "from-blue-500 to-blue-600" },
+    { metric: "500", label: "Projects Completed", icon: "🏗️", color: "from-blue-500 to-blue-600" },
     { metric: "47", label: "Counties Covered", icon: "📍", color: "from-green-500 to-green-600" },
     { metric: "98.7%", label: "System Uptime", icon: "⚡", color: "from-yellow-500 to-yellow-600" },
     { metric: "KSh 4.2B", label: "Client Savings", icon: "💰", color: "from-purple-500 to-purple-600" },
     { metric: "15+", label: "Years Experience", icon: "🎯", color: "from-red-500 to-red-600" },
-    { metric: "500+", label: "Team Members", icon: "👥", color: "from-cyan-500 to-cyan-600" },
+    { metric: "15+", label: "Industry Partners", icon: "🤝", color: "from-cyan-500 to-cyan-600" },
   ];
 
   const awards = [
@@ -288,6 +358,22 @@ const AchievementsSection = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Project Showcase Image */}
+        <motion.div
+          className="mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <OptimizedImage
+            src="https://emersoneims.com/wp-content/uploads/2025/11/IMG_20221119_172228_822-scaled.jpg"
+            alt="EmersonEIMS installation project showcase"
+            width={1920}
+            height={1080}
+            className="w-full rounded-xl border border-amber-500/20"
+          />
+        </motion.div>
 
         <div>
           <h3 className="text-2xl font-bold text-white mb-8 text-center">Awards & Recognition</h3>
@@ -371,14 +457,64 @@ const MissionVisionValues = () => {
   );
 };
 
+// Force dynamic rendering to prevent useSearchParams issues during static generation
+export const dynamic = 'force-dynamic';
+
 export default function AboutUsPage() {
-  const { scrollYProgress } = useScroll();
+  const [activeSection, setActiveSection] = useState('hero');
+  const prefersReducedMotion = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: containerRef });
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
 
+  // Section tracking for navigation
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const sections = containerRef.current.querySelectorAll('section');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id || 'hero');
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <main className="min-h-screen bg-black text-white">
-      <ContrastComplianceLayer />
+    <ErrorBoundary>
+      {/* Performance Monitor */}
+      <PerformanceMonitor />
+
+      {/* Premium Custom Cursor */}
+      <Suspense fallback={null}>
+        <CustomCursor enabled={!prefersReducedMotion} />
+      </Suspense>
+
+      {/* Navigation */}
+      <Suspense fallback={null}>
+        <TeslaStyleNavigation activeSection={activeSection} />
+      </Suspense>
+
+      <main ref={containerRef} className="min-h-screen bg-black text-white relative">
+        <ContrastComplianceLayer />
+        
+        {/* Holographic Laser Overlay */}
+        <HolographicLaser intensity="medium" color="#fbbf24" />
+        
+        {/* WebGL Background Scene */}
+        <Suspense fallback={null}>
+          <div className="fixed inset-0 -z-10 opacity-20">
+            <SimpleThreeScene />
+          </div>
+        </Suspense>
       
       {/* Hero Section */}
       <motion.section 
@@ -389,14 +525,25 @@ export default function AboutUsPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(251,191,36,0.1),transparent_50%)]" />
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 text-center">
-          <motion.h1 
-            className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+          {/* Company Logo */}
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
           >
-            About EmersonEIMS
-          </motion.h1>
+            <OptimizedImage
+              src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
+              alt="EmersonEIMS Logo"
+              width={400}
+              height={200}
+              className="mx-auto max-w-md"
+            />
+          </motion.div>
+          
+          <div className="mb-6">
+            <HeroHeading>About EmersonEIMS</HeroHeading>
+          </div>
           <motion.p 
             className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -423,8 +570,8 @@ export default function AboutUsPage() {
       {/* Company Timeline */}
       <CompanyTimeline />
 
-      {/* Team Section */}
-      <TeamSection />
+      {/* Partnerships & Certifications Section */}
+      <PartnershipsSection />
 
       {/* Achievements */}
       <AchievementsSection />
@@ -432,14 +579,9 @@ export default function AboutUsPage() {
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-amber-900/20 via-black to-amber-900/20">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <motion.h2 
-            className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            Join Us in Powering Kenya's Future
-          </motion.h2>
+            <div className="mb-6">
+              <SectionHeading>Join Us in Powering Kenya's Future</SectionHeading>
+            </div>
           <p className="text-xl text-gray-300 mb-8">
             Ready to transform your energy infrastructure? Let's build something extraordinary together.
           </p>
@@ -460,5 +602,6 @@ export default function AboutUsPage() {
         </div>
       </section>
     </main>
+    </ErrorBoundary>
   );
 }

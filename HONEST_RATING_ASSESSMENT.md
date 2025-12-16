@@ -149,3 +149,11 @@ We need:
 **With content and polish: 8.5-9.0/10 (would surpass most 2025 winners)**
 **With everything perfect: 9.0-9.5/10 (top-tier SOTD level)**
 
+
+
+
+
+
+
+
+

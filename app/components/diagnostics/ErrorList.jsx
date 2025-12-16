@@ -1,6 +1,6 @@
 'use client';
 
-import errorCodes from '@/app/app/data/diagnostic/errorCodes.json';
+import errorCodes from '@/app/data/diagnostic/errorCodes.json';
 
 export default function ErrorList({ service }) {
   const entries = errorCodes.filter(e => e.service === service);

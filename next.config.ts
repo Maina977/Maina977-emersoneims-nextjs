@@ -81,18 +81,55 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SITE_URL: SITE_URL,
   },
 
-  // Experimental features
+  // Experimental features - PERFORMANCE OPTIMIZED (Apple-Level)
   experimental: {
-    optimizePackageImports: ['@react-three/fiber', '@react-three/drei', 'three'],
+    optimizePackageImports: [
+      '@react-three/fiber',
+      '@react-three/drei',
+      'three',
+      'framer-motion',
+      'gsap',
+      'chart.js',
+      'react-chartjs-2',
+    ],
     optimizeCss: true, // Optimize CSS
+    optimizeServerReact: true, // Optimize server-side React rendering
+    serverActions: {
+      bodySizeLimit: '2mb', // Limit server action body size for security
+    },
+    // Enable partial prerendering for faster initial loads
+    ppr: false, // Set to true when stable
   },
+  
 
   // Turbopack configuration (Next.js 16 uses Turbopack by default)
   turbopack: {
     root: __dirname, // Fix lockfile warning
+    resolveAlias: {
+      // Optimize Three.js imports - use ES module path for Windows compatibility
+      'three': 'three',
+    },
   },
 
-  // Headers for performance
+  // Compression - Enable gzip and brotli
+  compress: true,
+
+  // Service Worker support
+  async rewrites() {
+    return [
+      {
+        source: '/sw.js',
+        destination: '/sw.js',
+      },
+    ];
+  },
+
+  // Power optimization
+  poweredByHeader: false, // Remove X-Powered-By header for security
+  // Note: SWC minification is enabled by default in Next.js 16
+
+  // Headers for performance and security (Note: Middleware handles most security headers)
+  // Apple-Level Performance: Aggressive Preloading
   async headers() {
     if (isStaticExport) return [];
     
@@ -101,26 +138,31 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: [
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: 'Link',
+            value: [
+              '</fonts/geist-sans.woff2>; rel=preload; as=font; type=font/woff2; crossorigin',
+              '</fonts/space-grotesk.woff2>; rel=preload; as=font; type=font/woff2; crossorigin',
+              '</fonts/inter.woff2>; rel=preload; as=font; type=font/woff2; crossorigin',
+            ].join(', '),
+          },
+        ],
+      },
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
           {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'cross-origin',
           },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
-          },
-          // Cache static assets
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
@@ -138,6 +180,15 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/media/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/models/:path*',
         headers: [
           {
             key: 'Cache-Control',

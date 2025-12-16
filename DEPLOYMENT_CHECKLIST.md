@@ -1,176 +1,124 @@
-# Deployment Checklist
-
-Use this checklist to ensure your application is ready for deployment and WordPress integration.
+# ✅ Vercel Deployment Checklist
 
 ## Pre-Deployment
 
-### Code Quality
-- [ ] All TypeScript errors resolved
-- [ ] All ESLint warnings addressed
-- [ ] Code passes type checking (`npm run type-check`)
-- [ ] Code passes linting (`npm run lint`)
-- [ ] No console errors in browser
-- [ ] All components render correctly
+- [x] **TypeScript Errors Fixed**
+  - Fixed `lib/utils/imageHelper.ts` type error
+  - All type checks passing
+  - ✅ Verified: `npm run type-check` passes
 
-### Configuration
-- [ ] `.env` file created from `.env.example`
-- [ ] All environment variables configured
-- [ ] WordPress API URLs verified
-- [ ] Site URL configured correctly
-- [ ] Build succeeds without errors (`npm run build`)
-- [ ] Production build tested locally (`npm start`)
+- [x] **Build Errors Fixed**
+  - ✅ Fixed `useSearchParams()` Suspense boundary issue in GoogleAnalytics component
+  - ✅ Fixed ESLint configuration for Next.js 16
+  - ✅ Build completes successfully: `npm run build` passes
+  - ✅ All 24 pages generated successfully
 
-### Dependencies
-- [ ] All dependencies up to date
-- [ ] Security vulnerabilities addressed
-- [ ] `package-lock.json` committed
-- [ ] Node.js version matches requirements (18+)
+- [x] **Configuration Files Ready**
+  - `vercel.json` configured with WordPress rewrites
+  - `next.config.ts` optimized for production
+  - `package.json` scripts verified
+  - `.env.example` created with all required variables
+  - `eslint.config.mjs` fixed for Next.js 16 compatibility
 
-### Assets
-- [ ] All images optimized
-- [ ] Fonts loaded correctly
-- [ ] Static assets in `public/` folder
-- [ ] No broken links or missing assets
+- [x] **Build Process Verified**
+  - Build command: `npm run build`
+  - Install command: `npm install --legacy-peer-deps`
+  - ✅ No build errors - Production build successful
 
-## WordPress Integration
+## Environment Variables (Set in Vercel Dashboard)
 
-### WordPress Setup
-- [ ] WordPress REST API enabled
-- [ ] CORS headers configured
-- [ ] Authentication method chosen (JWT/Basic)
-- [ ] API endpoint tested
-- [ ] WordPress site accessible
+- [ ] `NEXT_PUBLIC_SITE_URL` = `https://emersoneims.com`
+- [ ] `WORDPRESS_SITE_URL` = `https://www.emersoneims.com`
+- [ ] `WORDPRESS_API_URL` = `https://www.emersoneims.com/wp-json/wp/v2`
 
-### Next.js Configuration
-- [ ] `WORDPRESS_API_URL` set correctly
-- [ ] `WORDPRESS_SITE_URL` configured
-- [ ] `WORDPRESS_INTEGRATION` enabled
-- [ ] API routes tested
-- [ ] WordPress client working
+## Deployment Steps
 
-## Performance
+### Option 1: Vercel Dashboard (Recommended)
 
-### Optimization
-- [ ] Images optimized and using Next.js Image component
-- [ ] Code splitting implemented
-- [ ] Bundle size acceptable (< 500KB initial)
-- [ ] Lazy loading implemented where appropriate
-- [ ] API calls optimized and cached
+1. [ ] Go to [vercel.com](https://vercel.com)
+2. [ ] Click "Add New Project"
+3. [ ] Import Git repository
+4. [ ] Configure project settings:
+   - Framework: Next.js (auto-detected)
+   - Root Directory: `./`
+   - Build Command: `npm run build`
+   - Output Directory: `.next`
+   - Install Command: `npm install --legacy-peer-deps`
+5. [ ] Add environment variables
+6. [ ] Click "Deploy"
 
-### Testing
-- [ ] Lighthouse score > 90
-- [ ] Page load time < 3 seconds
-- [ ] Time to Interactive < 5 seconds
-- [ ] No layout shifts (CLS < 0.1)
+### Option 2: Vercel CLI
 
-## SEO
+```bash
+# Install CLI
+npm i -g vercel
 
-### Metadata
-- [ ] Page titles configured
-- [ ] Meta descriptions added
-- [ ] Open Graph tags implemented
-- [ ] Twitter Card tags added
-- [ ] Canonical URLs set
+# Login
+vercel login
 
-### Content
-- [ ] Structured data (JSON-LD) added
-- [ ] Sitemap generated (if needed)
-- [ ] Robots.txt configured
-- [ ] Alt text on all images
+# Deploy preview
+vercel
 
-## Security
+# Deploy production
+vercel --prod
+```
 
-### Headers
-- [ ] Security headers configured
-- [ ] CORS properly set up
-- [ ] XSS protection enabled
-- [ ] Content Security Policy (if needed)
+### Option 3: Git Push (Auto-Deploy)
 
-### Authentication
-- [ ] API keys secured
-- [ ] Environment variables not exposed
-- [ ] WordPress credentials secure
-- [ ] No sensitive data in code
+1. [ ] Push code to GitHub/GitLab/Bitbucket
+2. [ ] Connect repository in Vercel
+3. [ ] Enable auto-deploy for main branch
+4. [ ] Push to main = Production deploy
 
-## Testing
+## Post-Deployment Verification
 
-### Functionality
-- [ ] All pages load correctly
-- [ ] Navigation works
-- [ ] Forms submit successfully
-- [ ] API calls work
-- [ ] WordPress integration functional
-
-### Browser Compatibility
-- [ ] Chrome/Edge tested
-- [ ] Firefox tested
-- [ ] Safari tested
-- [ ] Mobile browsers tested
-
-### Responsive Design
-- [ ] Desktop layout verified
-- [ ] Tablet layout verified
-- [ ] Mobile layout verified
-- [ ] Touch interactions work
-
-## Deployment
-
-### Pre-Deploy
-- [ ] Git repository clean
-- [ ] All changes committed
-- [ ] Deployment branch ready
-- [ ] Environment variables set in hosting platform
-
-### Deploy
-- [ ] Build succeeds on hosting platform
-- [ ] Application starts correctly
-- [ ] Health check endpoint works (if applicable)
-- [ ] SSL certificate configured
-
-### Post-Deploy
-- [ ] Site accessible via production URL
-- [ ] All pages load correctly
-- [ ] WordPress integration working
-- [ ] API calls successful
+- [ ] Site loads correctly
+- [ ] All pages accessible
+- [ ] Images load properly
+- [ ] WordPress integration works
+- [ ] Forms submit correctly
+- [ ] Mobile responsive
+- [ ] Performance score > 90
 - [ ] No console errors
+- [ ] Analytics tracking works
 
-## Monitoring
+## Quick Commands
 
-### Setup
-- [ ] Error tracking configured (Sentry, etc.)
-- [ ] Analytics configured (Google Analytics, etc.)
-- [ ] Performance monitoring enabled
-- [ ] Uptime monitoring set up
+```bash
+# Test build locally
+npm run build
 
-### Alerts
-- [ ] Error alerts configured
-- [ ] Performance alerts set
-- [ ] Uptime alerts configured
-- [ ] Team notifications set up
+# Type check
+npm run type-check
 
-## Documentation
+# Lint
+npm run lint
 
-- [ ] README.md updated
-- [ ] Deployment guide reviewed
-- [ ] WordPress integration guide reviewed
-- [ ] API documentation updated
-- [ ] Environment variables documented
+# Deploy preview
+vercel
 
-## Final Verification
+# Deploy production
+vercel --prod
+```
 
-- [ ] All checklist items completed
-- [ ] Team review completed
-- [ ] Stakeholder approval received
-- [ ] Backup plan in place
-- [ ] Rollback procedure documented
+## Troubleshooting
+
+### Build Fails
+- Check TypeScript errors: `npm run type-check`
+- Verify dependencies: `npm install --legacy-peer-deps`
+- Check build logs in Vercel Dashboard
+
+### Runtime Errors
+- Verify environment variables are set
+- Check WordPress API accessibility
+- Review function logs in Vercel Dashboard
+
+### Image Issues
+- Verify image URLs are correct
+- Check WordPress image accessibility
+- Verify Next.js image config
 
 ---
 
-**Deployment Date:** _______________
-**Deployed By:** _______________
-**Production URL:** _______________
-**WordPress URL:** _______________
-
-
-
-
+**Status:** ✅ Ready for Deployment  
+**Last Updated:** December 16, 2025

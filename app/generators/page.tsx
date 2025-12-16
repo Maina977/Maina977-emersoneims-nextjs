@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SectionLead from "@/app/components/generators/SectionLead";
 import GeneratorCalculator from "@/app/components/generators/generatorscalculator";
 import MTBFChart from "@/app/components/generators/MTBFChart";
@@ -10,6 +12,20 @@ import { cumminsGenerators } from "@/app/lib/data/cumminsgenerators";
 import { generatorServices } from "@/app/lib/data/generatorservices";
 import OptimizedVideo from "@/components/media/OptimizedVideo";
 import OptimizedImage from "@/components/media/OptimizedImage";
+import HolographicLaser from '@/components/effects/HolographicLaser';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
+const FloatingUFOs = lazy(() => import('@/components/webgl/FloatingUFOs'));
+const InteractiveBlobs = lazy(() => import('@/components/webgl/InteractiveBlobs'));
+const AbstractFloatingShapes = lazy(() => import('@/components/webgl/AbstractFloatingShapes'));
+const ProductConfigurator = lazy(() => import('@/components/product/ProductConfigurator'));
+const Product360Viewer = lazy(() => import('@/components/product/Product360Viewer'));
+const ARPreview = lazy(() => import('@/components/ar/ARPreview'));
 
 // 3D Generator Viewer Component
 const Generator3DViewer = ({ generator }: { generator: typeof cumminsGenerators[0] }) => {
@@ -50,7 +66,7 @@ const Generator3DViewer = ({ generator }: { generator: typeof cumminsGenerators[
             alert('AR preview available on mobile devices. Scan QR code for AR experience.');
           }
         }}
-        className="mt-4 w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all"
+        className="mt-4 w-full cta-button-primary"
       >
         📱 View in AR
       </button>
@@ -158,8 +174,48 @@ export default function GeneratorPage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
 
+  // GSAP ScrollTrigger animations
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const sections = containerRef.current.querySelectorAll('section');
+    
+    sections.forEach((section) => {
+      gsap.fromTo(
+        section,
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          },
+        }
+      );
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+
   return (
-    <main ref={containerRef} className="min-h-screen bg-black">
+    <main ref={containerRef} className="min-h-screen bg-black relative">
+      {/* Holographic Laser Overlay */}
+      <HolographicLaser intensity="medium" color="#fbbf24" />
+      
+      {/* 3D Background Scene with Floating UFOs */}
+      <Suspense fallback={null}>
+        <div className="fixed inset-0 -z-10 opacity-20">
+          <ErrorBoundary fallback={null}>
+            <FloatingUFOs className="w-full h-full" interactive={false} />
+          </ErrorBoundary>
+        </div>
+      </Suspense>
       {/* Enhanced Hero Video */}
       <motion.section
         className="relative w-full h-screen overflow-hidden bg-black"
@@ -198,7 +254,7 @@ export default function GeneratorPage() {
           >
             From 20kVA to 2000kVA, verified specs, Hollywood‑grade visuals, and engineering mastery.
             <br />
-            <span className="text-amber-400">3D View • AR Preview • Real-time Monitoring</span>
+            <span className="text-[#fbbf24]">3D View • AR Preview • Real-time Monitoring</span>
           </motion.p>
           <motion.div
             className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
@@ -206,9 +262,9 @@ export default function GeneratorPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
           >
-            <a href="#models" className="sci-fi-button text-lg px-8 py-4">Explore Models</a>
-            <a href="#comparison" className="sci-fi-outline text-lg px-8 py-4">Compare Generators</a>
-            <a href="#3d-viewer" className="sci-fi-outline text-lg px-8 py-4">3D Viewer</a>
+            <a href="#models" className="cta-button-primary">Explore Models →</a>
+            <a href="#comparison" className="cta-button-secondary">Compare Generators →</a>
+            <a href="/contact" className="cta-button-secondary">Get Quote →</a>
           </motion.div>
         </motion.div>
 
@@ -222,6 +278,24 @@ export default function GeneratorPage() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* Interactive Blobs Section */}
+      <section className="relative py-20 bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <Suspense fallback={null}>
+            <ErrorBoundary fallback={null}>
+              <InteractiveBlobs className="w-full h-full" />
+            </ErrorBoundary>
+          </Suspense>
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4">
+          <SectionLead
+            title="Gravity-Defying Technology"
+            subtitle="Experience our cutting-edge generator technology in 3D"
+            centered
+          />
+        </div>
+      </section>
 
       {/* 3D Viewer Section */}
       <section id="3d-viewer" className="py-20 bg-gradient-to-b from-black to-gray-900">
@@ -240,7 +314,7 @@ export default function GeneratorPage() {
                 viewport={{ once: true }}
                 className="bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 p-6"
               >
-                <h3 className="text-2xl font-bold text-brand-gold mb-4">{gen.model}</h3>
+                <h3 className="text-2xl font-bold text-[#fbbf24] mb-4 font-display">{gen.model}</h3>
                 <Generator3DViewer generator={gen} />
                 <div className="mt-4 space-y-2">
                   <p className="text-white"><span className="text-gray-400">Power:</span> {gen.kva} kVA</p>
@@ -334,6 +408,50 @@ export default function GeneratorPage() {
         </div>
       </section>
 
+      {/* Spare Parts Section */}
+      <section className="py-16 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionLead
+            title="Genuine Spare Parts"
+            subtitle="Premium quality parts for optimal generator performance"
+            centered
+          />
+          
+          <motion.div
+            className="mt-12"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            <OptimizedImage
+              src="https://emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp"
+              alt="Generator spare parts inventory - EmersonEIMS"
+              width={1920}
+              height={1080}
+              className="w-full rounded-xl border border-amber-500/20"
+            />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Abstract Floating Shapes Section */}
+      <section className="relative py-20 bg-gradient-to-b from-gray-900 via-black to-gray-900 overflow-hidden">
+        <div className="absolute inset-0 opacity-25">
+          <Suspense fallback={null}>
+            <ErrorBoundary fallback={null}>
+              <AbstractFloatingShapes className="w-full h-full" interactive={true} />
+            </ErrorBoundary>
+          </Suspense>
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4">
+          <SectionLead
+            title="Advanced Engineering"
+            subtitle="Precision-crafted generators with unmatched reliability"
+            centered
+          />
+        </div>
+      </section>
+
       {/* Services Preview */}
       <section id="services" className="py-16 bg-gradient-to-b from-gray-900 to-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -351,9 +469,9 @@ export default function GeneratorPage() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="group bg-gradient-to-br from-black to-gray-900 rounded-xl p-6 border border-gray-800 hover:border-blue-500 transition-all hover:shadow-xl hover:shadow-blue-500/20"
+                className="group bg-gradient-to-br from-black to-gray-900 rounded-xl p-6 border border-gray-800 hover:border-[#fbbf24] transition-all hover:shadow-xl hover:shadow-[#fbbf24]/20"
               >
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <span className="text-2xl">⚡</span>
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{service}</h3>
@@ -363,8 +481,28 @@ export default function GeneratorPage() {
           </div>
           
           <div className="text-center mt-12">
-            <a href="/generators/services" className="sci-fi-button text-lg px-8 py-4" aria-label="View all generator services">
-              View All Services
+            <a href="/service" className="cta-button-primary" aria-label="View all generator services">
+              <span>View All Services →</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-br from-[#fbbf24]/10 via-black to-[#fbbf24]/10">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-[#fbbf24] to-[#f59e0b] bg-clip-text text-transparent font-display">
+            Ready to Power Your Business?
+          </h2>
+          <p className="text-xl text-gray-300 mb-8">
+            Get a free consultation and quote for your generator needs.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/contact" className="cta-button-primary">
+              <span>Get Free Consultation →</span>
+            </a>
+            <a href="/diagnostics" className="cta-button-secondary">
+              <span>Try Diagnostics Tool →</span>
             </a>
           </div>
         </div>

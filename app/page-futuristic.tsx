@@ -4,6 +4,7 @@ import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Link from 'next/link';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 if (typeof window !== 'undefined') {
@@ -139,14 +140,14 @@ export default function FuturisticHomepage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.1, duration: 1 }}
             >
-              <button className="cta-button-sci-fi-primary">
+              <Link href="/generators" className="cta-button-sci-fi-primary">
                 <span>Explore Generator</span>
                 <span className="cta-shine" />
-              </button>
-              <button className="cta-button-sci-fi-secondary">
+              </Link>
+              <Link href="/contact" className="cta-button-sci-fi-secondary">
                 <span>Request Quote</span>
                 <span className="cta-icon">→</span>
-              </button>
+              </Link>
             </motion.div>
 
             {/* Stats Bar */}
@@ -319,10 +320,10 @@ export default function FuturisticHomepage() {
                 Experience the reliability and performance of Cummins generators.
                 Get a custom quote for your project today.
               </p>
-              <button className="cta-button-sci-fi-primary text-lg px-12 py-4">
+              <Link href="/contact" className="cta-button-sci-fi-primary text-lg px-12 py-4">
                 <span>Get Started</span>
                 <span className="cta-shine" />
-              </button>
+              </Link>
             </motion.div>
           </div>
         </section>
@@ -330,4 +331,9 @@ export default function FuturisticHomepage() {
     </>
   );
 }
+
+
+
+
+
 

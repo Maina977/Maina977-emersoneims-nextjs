@@ -52,6 +52,16 @@
   border-top: 1px solid rgba(251, 191, 36, 0.3);
 }
 
+/* Shimmer animation for sci-fi effects */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .universal-diagnostic-machine,

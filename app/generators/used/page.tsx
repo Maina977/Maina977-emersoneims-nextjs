@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SectionLead from "@/app/components/generators/SectionLead";
 import OptimizedImage from "@/components/media/OptimizedImage";
+
+// Lazy load WebGL scene
+const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 
 const usedGenerators = [
   {
@@ -109,7 +112,6 @@ const ImageGallery = ({ images, brand }: { images: string[]; brand: string }) =>
                   width={800}
                   height={400}
                   className="w-full h-full object-cover"
-                  hollywoodGrading={true}
                 />
               </div>
             </motion.div>
@@ -179,7 +181,6 @@ const ImageGallery = ({ images, brand }: { images: string[]; brand: string }) =>
                 width={1200}
                 height={800}
                 className="max-w-full max-h-[90vh] object-contain"
-                hollywoodGrading={true}
               />
               <button
                 onClick={() => setIsLightboxOpen(false)}
@@ -340,8 +341,15 @@ export default function UsedGeneratorsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black to-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <main className="min-h-screen bg-gradient-to-b from-black to-gray-900 relative">
+      {/* WebGL Background Scene */}
+      <Suspense fallback={null}>
+        <div className="fixed inset-0 -z-10 opacity-15">
+          <SimpleThreeScene />
+        </div>
+      </Suspense>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -417,7 +425,7 @@ export default function UsedGeneratorsPage() {
               
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <a 
-                  href="/generator/contact" 
+                  href="/contact" 
                   className="sci-fi-button flex-1 text-center py-3"
                   aria-label={`Request quote for ${gen.brand} used generator`}
                 >

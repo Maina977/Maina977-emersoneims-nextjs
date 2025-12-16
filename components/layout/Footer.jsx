@@ -39,7 +39,7 @@ export default function Footer() {
   
         {/* Footer Bottom */}
         <div className="mt-8 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} EmersonEIMS. All Rights Reserved.
+          © 2025 EmersonEIMS. All Rights Reserved.
         </div>
       </footer>
     );

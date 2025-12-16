@@ -1,11 +1,25 @@
 'use client';
 
-import React, { Suspense, useState, lazy, useRef } from "react";
+import React, { Suspense, useState, lazy, useRef, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import OptimizedImage from "@/components/media/OptimizedImage";
+import HolographicLaser from '@/components/effects/HolographicLaser';
+import Link from 'next/link';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
+import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
+const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
+const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
 
 const SEOHead = lazy(() => import("@/components/contact/SEOHead"));
-const ErrorBoundary = lazy(() => import("@/components/contact/ErrorBoundary"));
 const AdaptivePerformanceMonitor = lazy(() => import("@/components/contact/AdaptivePerformanceMonitor"));
 const DieselGenerators = lazy(() => import("@/app/components/service/DieselGenerators"));
 const SolarEnergy = lazy(() => import("@/app/components/service/SolarEnergy"));
@@ -39,7 +53,7 @@ const ServiceHero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-amber-400 via-blue-400 to-amber-400 bg-clip-text text-transparent animate-gradient">
+          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-[#fbbf24] via-[#fcd34d] to-[#fbbf24] bg-clip-text text-transparent font-display">
             Premium Services
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
@@ -102,7 +116,7 @@ const ServiceNavigation = ({ onServiceSelect }: { onServiceSelect: (service: str
                 onServiceSelect(service.id);
                 document.getElementById(service.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
-              className={`flex-shrink-0 px-6 py-3 rounded-lg bg-gradient-to-r ${service.color} text-white font-semibold hover:scale-105 transition-all whitespace-nowrap`}
+              className={`flex-shrink-0 px-6 py-3 rounded-lg bg-gradient-to-r from-[#fbbf24] to-[#f59e0b] text-black font-bold hover:scale-105 transition-all whitespace-nowrap font-display`}
             >
               <span className="mr-2">{service.icon}</span>
               {service.name}
@@ -118,7 +132,7 @@ const ServiceNavigation = ({ onServiceSelect }: { onServiceSelect: (service: str
 const ServiceStats = () => {
   const stats = [
     { value: "10", label: "Service Categories", icon: "📋" },
-    { value: "2,450+", label: "Projects Completed", icon: "🏗️" },
+    { value: "500", label: "Projects Completed", icon: "🏗️" },
     { value: "98.7%", label: "Success Rate", icon: "✅" },
     { value: "24/7", label: "Support Available", icon: "🔄" },
   ];
@@ -137,7 +151,7 @@ const ServiceStats = () => {
               transition={{ delay: index * 0.1 }}
             >
               <div className="text-4xl mb-3">{stat.icon}</div>
-              <div className="text-4xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent mb-2">
+              <div className="text-4xl font-bold bg-gradient-to-r from-[#fbbf24] to-[#f59e0b] bg-clip-text text-transparent mb-2 font-display">
                 {stat.value}
               </div>
               <div className="text-gray-400">{stat.label}</div>
@@ -151,10 +165,75 @@ const ServiceStats = () => {
 
 export default function ServicePage() {
   const [performanceTier, setPerformanceTier] = useState("high");
+  const [activeSection, setActiveSection] = useState('hero');
+  const prefersReducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: containerRef });
+
+  // GSAP ScrollTrigger animations
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const sections = containerRef.current.querySelectorAll('section');
+    
+    sections.forEach((section) => {
+      gsap.fromTo(
+        section,
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          },
+        }
+      );
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+
+  // Section tracking for navigation
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const sections = containerRef.current.querySelectorAll('section');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id || 'hero');
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <>
+    <ErrorBoundary>
+      {/* Performance Monitor */}
+      <PerformanceMonitor />
+
+      {/* Premium Custom Cursor */}
+      <Suspense fallback={null}>
+        <CustomCursor enabled={!prefersReducedMotion} />
+      </Suspense>
+
+      {/* Navigation */}
+      <Suspense fallback={null}>
+        <TeslaStyleNavigation activeSection={activeSection} />
+      </Suspense>
+
       <Suspense fallback={
         <div className="min-h-screen bg-black flex items-center justify-center">
           <div className="text-center">
@@ -170,7 +249,17 @@ export default function ServicePage() {
         />
       </Suspense>
 
-      <main ref={containerRef} role="main" className="bg-black text-white">
+      <main ref={containerRef} role="main" className="bg-black text-white relative">
+        {/* Holographic Laser Overlay */}
+        <HolographicLaser intensity="medium" color="#fbbf24" />
+        
+        {/* 3D Background Scene */}
+        <Suspense fallback={null}>
+          <div className="fixed inset-0 -z-10 opacity-15">
+            <SimpleThreeScene />
+          </div>
+        </Suspense>
+
         {/* Hero Section */}
         <ServiceHero />
 
@@ -182,6 +271,26 @@ export default function ServicePage() {
 
         {/* Service Stats */}
         <ServiceStats />
+
+        {/* Visual Brand Element */}
+        <section className="py-12 bg-gradient-to-b from-black to-gray-900">
+          <div className="max-w-7xl mx-auto px-4">
+            <motion.div
+              className="flex justify-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+            >
+              <OptimizedImage
+                src="https://emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg"
+                alt="EmersonEIMS design graphic"
+                width={800}
+                height={400}
+                className="max-w-2xl opacity-80 hover:opacity-100 transition-opacity"
+              />
+            </motion.div>
+          </div>
+        </section>
 
         {/* Service Sections */}
         <ErrorBoundary>
@@ -228,29 +337,23 @@ export default function ServicePage() {
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-br from-amber-900/20 via-black to-amber-900/20">
           <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-[#fbbf24] to-[#f59e0b] bg-clip-text text-transparent font-display">
               Ready to Transform Your Energy Infrastructure?
             </h2>
             <p className="text-xl text-gray-300 mb-8">
               Let our experts design the perfect solution for your needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
-                href="/contact" 
-                className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-bold rounded-xl hover:from-amber-500 hover:to-amber-700 transition-all transform hover:scale-105"
-              >
-                Get Free Consultation
-              </a>
-              <a 
-                href="/diagnostics" 
-                className="px-8 py-4 border-2 border-amber-400 text-amber-400 font-bold rounded-xl hover:bg-amber-400/10 transition-all"
-              >
-                Try Diagnostics Tool
-              </a>
+              <Link href="/contact" className="cta-button-primary">
+                <span>Get Free Consultation →</span>
+              </Link>
+              <Link href="/diagnostics" className="cta-button-secondary">
+                <span>Try Diagnostics Tool →</span>
+              </Link>
             </div>
           </div>
         </section>
       </main>
-    </>
+    </ErrorBoundary>
   );
 }

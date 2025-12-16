@@ -1,0 +1,35 @@
+/* High Contrast Mode Styles */
+.high-contrast {
+  --bg-primary: #000000;
+  --bg-secondary: #1a1a1a;
+  --text-primary: #ffffff;
+  --text-secondary: #ffff00;
+  --border-color: #ffffff;
+  --brand-gold: #ffff00;
+}
+
+.high-contrast body {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.high-contrast * {
+  border-color: var(--border-color) !important;
+}
+
+.high-contrast .text-brand-gold,
+.high-contrast .bg-brand-gold {
+  color: var(--text-secondary) !important;
+  background: var(--text-secondary) !important;
+}
+
+.high-contrast a {
+  color: var(--text-secondary) !important;
+  text-decoration: underline !important;
+}
+
+.high-contrast button {
+  border: 2px solid var(--border-color) !important;
+}
+
+

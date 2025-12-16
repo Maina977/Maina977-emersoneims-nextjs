@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import errorCodes from '@/app/app/data/diagnostic/errorCodes.json';
+import errorCodes from '@/app/data/diagnostic/errorCodes.json';
 
 export default function GlobalSearch() {
   const [query, setQuery] = useState('');

@@ -2,18 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import MetalBezel from './MetalBezel';
+import { UNIVERSAL_SERVICES } from '@/lib/data/diagnosticServices';
 
-const SERVICES = [
-  'Solar Systems',
-  'Diesel Generators',
-  'Controls',
-  'AC & UPS',
-  'Automation',
-  'Pumps',
-  'Incinerators',
-  'Motors/Rewinding',
-  'Diagnostics Hub',
-];
+const SERVICES = UNIVERSAL_SERVICES;
 
 export default function NineInOneCalculator() {
   const [service, setService] = useState(SERVICES[0]);

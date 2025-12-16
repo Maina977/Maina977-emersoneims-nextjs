@@ -20,6 +20,7 @@ import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Link from 'next/link';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 if (typeof window !== 'undefined') {
@@ -232,7 +233,7 @@ export default function SOTDWinningHomepage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.1, duration: 1 }}
             >
-              <button className="cta-button-sci-fi-primary group">
+              <Link href="/generators" className="cta-button-sci-fi-primary group">
                 <span>Explore Generator</span>
                 <span className="cta-shine" />
                 <motion.span
@@ -240,8 +241,8 @@ export default function SOTDWinningHomepage() {
                   animate={{ rotate: [0, 360] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                 />
-              </button>
-              <button className="cta-button-sci-fi-secondary group">
+              </Link>
+              <Link href="/contact" className="cta-button-sci-fi-secondary group">
                 <span>Request Quote</span>
                 <span className="cta-icon">→</span>
                 <motion.span
@@ -249,7 +250,7 @@ export default function SOTDWinningHomepage() {
                   animate={{ rotate: [360, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                 />
-              </button>
+              </Link>
             </motion.div>
 
             {/* Premium Stats Bar */}
@@ -501,7 +502,7 @@ export default function SOTDWinningHomepage() {
                 across East Africa.
               </p>
               <div className="flex gap-6 justify-center flex-wrap">
-                <button className="cta-button-sci-fi-primary text-lg px-16 py-5 group relative overflow-hidden">
+                <Link href="/contact" className="cta-button-sci-fi-primary text-lg px-16 py-5 group relative overflow-hidden">
                   <span className="relative z-10">Get Started</span>
                   <span className="cta-shine" />
                   <motion.div
@@ -509,11 +510,11 @@ export default function SOTDWinningHomepage() {
                     animate={{ x: ['-100%', '100%'] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
                   />
-                </button>
-                <button className="cta-button-sci-fi-secondary text-lg px-16 py-5">
+                </Link>
+                <Link href="/contact" className="cta-button-sci-fi-secondary text-lg px-16 py-5">
                   <span>Schedule Consultation</span>
                   <span className="cta-icon">→</span>
-                </button>
+                </Link>
               </div>
             </motion.div>
           </div>
@@ -522,4 +523,9 @@ export default function SOTDWinningHomepage() {
     </>
   );
 }
+
+
+
+
+
 

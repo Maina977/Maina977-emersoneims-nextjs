@@ -2,12 +2,26 @@
 // Complete 10/10 implementation with all requested features
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
 // import Head from 'next/head'; // Not needed in Next.js App Router
 import OptimizedImage from '@/components/media/OptimizedImage';
 import OptimizedVideo from '@/components/media/OptimizedVideo';
+import HolographicLaser from '@/components/effects/HolographicLaser';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
+import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
+const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
+const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
 
 // ==================== PREMIUM ENHANCEMENTS ====================
 // These components ADD to your existing code without modifying it
@@ -650,7 +664,7 @@ const MicroInteractions = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { value: "98.7%", label: "System Uptime", icon: "⚡", color: "from-green-400 to-emerald-600" },
-          { value: "2,450+", label: "Projects", icon: "🏗️", color: "from-blue-400 to-blue-600" },
+          { value: "500", label: "Projects", icon: "🏗️", color: "from-blue-400 to-blue-600" },
           { value: "KSh 4.2B", label: "Client Savings", icon: "💰", color: "from-yellow-400 to-yellow-600" },
           { value: "47", label: "Counties Covered", icon: "📍", color: "from-purple-400 to-purple-600" },
         ].map((stat, i) => (
@@ -683,18 +697,18 @@ const MicroInteractions = () => {
             Ready for Your Energy Transformation?
           </h3>
           <p className="text-white/70 mb-6 max-w-2xl mx-auto">
-            Join 2,450+ satisfied clients who have switched to sustainable solar power
+            Join 500 satisfied clients who have switched to sustainable solar power
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="group px-8 py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50">
+            <Link href="/contact" className="group px-8 py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50">
               <span className="flex items-center justify-center space-x-2">
                 <span>Schedule Free Consultation</span>
                 <span className="transform group-hover:translate-x-1 transition-transform">→</span>
               </span>
-            </button>
-            <button className="px-8 py-4 border-2 border-yellow-300 text-yellow-300 font-bold rounded-xl text-lg hover:bg-yellow-300/10 transition-all duration-300 transform hover:scale-105">
+            </Link>
+            <Link href="/contact" className="px-8 py-4 border-2 border-yellow-300 text-yellow-300 font-bold rounded-xl text-lg hover:bg-yellow-300/10 transition-all duration-300 transform hover:scale-105">
               Download Brochure
-            </button>
+            </Link>
           </div>
         </div>
         
@@ -730,6 +744,11 @@ export const galleryImages = [
   { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/1-1.png", alt: "Solar showcase 1", width: 3840, height: 2160 },
   { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/5.png", alt: "Solar showcase 5", width: 3840, height: 2160 },
   { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/2.png", alt: "Solar showcase 2", width: 3840, height: 2160 },
+  { src: "https://emersoneims.com/wp-content/uploads/2025/11/solar-changeover-control-scaled.png", alt: "Solar changeover control system", width: 1920, height: 1080 },
+  { src: "https://emersoneims.com/wp-content/uploads/2025/11/BAT-5.png", alt: "Battery system installation", width: 1920, height: 1080 },
+  { src: "https://emersoneims.com/wp-content/uploads/2025/11/solar-hotel-heaters-scaled.png", alt: "Solar hotel heating system", width: 1920, height: 1080 },
+  { src: "https://emersoneims.com/wp-content/uploads/2025/11/11.png", alt: "Solar installation showcase", width: 1920, height: 1080 },
+  { src: "https://emersoneims.com/wp-content/uploads/2025/11/4-4.png", alt: "Solar system component", width: 1920, height: 1080 },
 ];
 
 export type Panel = {
@@ -823,7 +842,6 @@ export function AccessibleImage({
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 1200px"
         quality={100}
         priority={priority}
-        hollywoodGrading={true}
         className={className || "object-cover w-full h-auto"}
       />
       <figcaption className="sr-only">{alt}</figcaption>
@@ -898,20 +916,53 @@ export function CaseStudyList() {
   );
 }
 
-export function Team() {
-  const team = [
-    { name: "Lead Engineer", bio: "10+ years in hybrid solar systems and power electronics." },
-    { name: "Energy Analyst", bio: "ROI modeling, tariff analysis, and load profiling." },
-    { name: "Project Manager", bio: "Mission-critical deployments across hospitals and factories." },
+export function TechnologyPartners() {
+  const partners = [
+    { 
+      name: "SolarEdge", 
+      category: "Inverter Technology",
+      description: "Advanced power optimizers and monitoring systems for maximum solar efficiency.",
+      features: ["Power Optimizers", "Monitoring Platform", "25-Year Warranty"]
+    },
+    { 
+      name: "Tesla Powerwall", 
+      category: "Energy Storage",
+      description: "Premium battery storage solutions for 24/7 renewable energy availability.",
+      features: ["13.5kWh Capacity", "Grid Integration", "10-Year Warranty"]
+    },
+    { 
+      name: "SunPower", 
+      category: "Solar Panels",
+      description: "High-efficiency solar panels with industry-leading performance and durability.",
+      features: ["22%+ Efficiency", "25-Year Warranty", "Weather Resistant"]
+    },
   ];
   return (
-    <section aria-labelledby="team-heading" className="mx-auto max-w-7xl px-6 py-12">
-      <h2 id="team-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">The experts behind EmersonEIMS</h2>
+    <section aria-labelledby="partners-heading" className="mx-auto max-w-7xl px-6 py-12">
+      <h2 id="partners-heading" className="text-2xl md:text-3xl font-bold text-yellow-300 mb-4">
+        Premium Technology Partners
+      </h2>
+      <p className="text-white/70 mb-8 max-w-3xl">
+        We partner with world-leading manufacturers to deliver cutting-edge solar technology and unmatched reliability.
+      </p>
       <div className="mt-6 grid md:grid-cols-3 gap-6">
-        {team.map((m) => (
-          <div key={m.name} className="p-6 rounded-lg border border-white/10 bg-black/60">
-            <p className="font-semibold">{m.name}</p>
-            <p className="text-sm text-white/80 mt-2">{m.bio}</p>
+        {partners.map((partner) => (
+          <div key={partner.name} className="p-6 rounded-lg border border-white/10 bg-black/60 hover:border-yellow-400/50 transition-all">
+            <div className="mb-3">
+              <span className="text-xs text-yellow-400 font-semibold uppercase tracking-wider">
+                {partner.category}
+              </span>
+            </div>
+            <p className="font-bold text-lg text-white mb-2">{partner.name}</p>
+            <p className="text-sm text-white/80 mb-4">{partner.description}</p>
+            <ul className="space-y-1">
+              {partner.features.map((feature, idx) => (
+                <li key={idx} className="text-xs text-white/60 flex items-center gap-2">
+                  <span className="text-yellow-400">✓</span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
           </div>
         ))}
       </div>
@@ -1111,6 +1162,59 @@ const WeatherForecast = () => {
 // ==================== MAIN APPLICATION ====================
 export default function PremiumApp() {
   const [currentPage, setCurrentPage] = useState("home");
+  const [activeSection, setActiveSection] = useState('hero');
+  const prefersReducedMotion = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: containerRef });
+
+  // GSAP ScrollTrigger animations
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const sections = containerRef.current.querySelectorAll('section');
+    
+    sections.forEach((section) => {
+      gsap.fromTo(
+        section,
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          },
+        }
+      );
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+
+  // Section tracking for navigation
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const sections = containerRef.current.querySelectorAll('section');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id || 'hero');
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -1146,7 +1250,7 @@ export default function PremiumApp() {
       </div>;
       case "about": return <div className="mx-auto max-w-7xl px-6 py-12">
         <h1 className="text-4xl font-bold text-yellow-300">About EmersonEIMS</h1><p className="mt-3 text-white/80">Verified insights, technical depth, and design that inspires.</p>
-        <Team />
+        <TechnologyPartners />
         <section className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Talk to our engineers</button></section>
       </div>;
       default: return (
@@ -1286,7 +1390,31 @@ export default function PremiumApp() {
           }
         `}</style>
       
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
+      <ErrorBoundary>
+        {/* Performance Monitor */}
+        <PerformanceMonitor />
+
+        {/* Premium Custom Cursor */}
+        <Suspense fallback={null}>
+          <CustomCursor enabled={!prefersReducedMotion} />
+        </Suspense>
+
+        {/* Navigation */}
+        <Suspense fallback={null}>
+          <TeslaStyleNavigation activeSection={activeSection} />
+        </Suspense>
+
+        <div ref={containerRef} className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black relative">
+          {/* Holographic Laser Overlay */}
+          <HolographicLaser intensity="high" color="#fbbf24" />
+          
+          {/* 3D Background Scene */}
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 -z-10 opacity-15">
+              <SimpleThreeScene />
+            </div>
+          </Suspense>
+
         {/* Enhanced Premium Header */}
         <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/50" role="banner">
           <nav aria-label="Primary" className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
@@ -1369,15 +1497,15 @@ export default function PremiumApp() {
             
             <section aria-labelledby="footer-cta">
               <h2 id="footer-cta" className="text-xl font-bold text-white mb-6">Get started</h2>
-              <button
-                onClick={() => setCurrentPage("comparison")}
+              <Link
+                href="/contact"
                 className="group w-full px-6 py-4 rounded-xl bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-yellow-500/30 mb-4"
               >
                 <span className="flex items-center justify-center">
                   Get your tailored solar system
                   <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
                 </span>
-              </button>
+              </Link>
               <p className="text-white/60 text-sm">
                 Average 4.2 year ROI • 25-year warranty • 98.7% uptime
               </p>
@@ -1399,7 +1527,7 @@ export default function PremiumApp() {
           <div className="border-t border-white/10 py-6">
             <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row justify-between items-center">
               <p className="text-white/50 text-sm">
-                © {new Date().getFullYear()} EmersonEIMS. Premium Solar Solutions for Kenya.
+                © 2025 EmersonEIMS. All rights reserved.
               </p>
               <div className="flex space-x-6 mt-4 md:mt-0">
                 <button className="text-white/50 hover:text-yellow-300 transition-colors">Privacy</button>
@@ -1409,7 +1537,8 @@ export default function PremiumApp() {
             </div>
           </div>
         </footer>
-      </div>
+        </div>
+      </ErrorBoundary>
     </>
   );
 }
