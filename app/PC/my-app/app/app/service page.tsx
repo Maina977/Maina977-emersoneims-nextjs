@@ -27,6 +27,7 @@ export default function ServicePage() {
         <SEOHead
           title="EmersonEIMS Services | Generator Intelligence, Solar, UPS, HV Infrastructure & More"
           description="Ten premium service chapters. Calculators, charts, adaptive performance, and cinematic design that sells — built for Kenya and beyond."
+          keywords={["EmersonEIMS services", "generators", "solar", "UPS", "high voltage", "motor rewinding", "Kenya", "energy solutions"]}
         />
       </Suspense>
       <main role="main">
