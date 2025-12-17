@@ -185,6 +185,3 @@ export default function CustomerReviews({ reviews, productId }: CustomerReviewsP
   );
 }
 
-
-
-

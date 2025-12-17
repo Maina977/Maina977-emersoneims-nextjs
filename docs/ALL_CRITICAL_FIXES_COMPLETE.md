@@ -372,6 +372,3 @@ The website now has:
 **Status:** Production Ready  
 **Next:** Content integration and final testing
 
-
-
-

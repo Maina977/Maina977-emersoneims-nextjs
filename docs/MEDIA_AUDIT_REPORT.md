@@ -241,6 +241,3 @@ public/
 
 *This audit was generated automatically by the Media Assets Audit Script.*
 
-
-
-

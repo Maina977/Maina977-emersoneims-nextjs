@@ -37,6 +37,3 @@ To resolve the build error completely, you can:
 3. Add Google Analytics ID to environment variables
 4. Test analytics in production
 
-
-
-

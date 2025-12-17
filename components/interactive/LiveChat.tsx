@@ -243,6 +243,3 @@ export default function LiveChat({
   );
 }
 
-
-
-

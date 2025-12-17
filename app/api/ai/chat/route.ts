@@ -63,6 +63,3 @@ async function generateAIResponse(
   return `Thank you for your question! I'm here to help you with generators, solar systems, UPS, diagnostics, and all your energy infrastructure needs. Could you tell me more about what you're looking for?`;
 }
 
-
-
-

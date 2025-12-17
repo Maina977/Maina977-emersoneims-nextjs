@@ -216,6 +216,3 @@ npm install sharp --save-dev --legacy-peer-deps
 **System Version**: 1.0.0
 
 
-
-
-

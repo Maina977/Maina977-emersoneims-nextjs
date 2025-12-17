@@ -1,61 +1,40 @@
+// app/page.tsx - Awwwards SOTD Contender: "Intelligent Power Core"
 'use client';
 
-/**
- * AWWWARDS SOTD CONTENDER - EMERSON EIMS
- * Intelligent Power Core - Premium Homepage
- */
-
-import { Suspense, lazy, useEffect, useState, useRef, useMemo } from 'react';
+import { Suspense, lazy, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
-import { useWindowSize } from '@/hooks/useWindowSize';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import Link from 'next/link';
-import ErrorBoundary from '@/components/error/ErrorBoundary';
-import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+import { useWindowSize } from '@/hooks/useWindowSize';
 import LoadingSequence from '@/components/awwwards/LoadingSequence';
 import SkipAnimation from '@/components/accessibility/SkipAnimation';
 import EnhancedAccessibility from '@/components/accessibility/EnhancedAccessibility';
 import EmotionalNarrative from '@/components/narrative/EmotionalNarrative';
-import { Reveal, ParallaxReveal } from '@/components/animations/RevealAnimations';
-import HolographicLaser from '@/components/effects/HolographicLaser';
+import PageTransitions from '@/components/animations/PageTransitions';
+import { Reveal, ParallaxReveal, StaggerReveal } from '@/components/animations/RevealAnimations';
+
 // Lazy load heavy sections
 const HeroCanvas = lazy(() => import('@/components/hero/HeroCanvas'));
 const PowerJourney = lazy(() => import('@/components/narrative/PowerJourney'));
 const ServicesTeaser = lazy(() => import('@/components/services/ServicesTeaser'));
 const CaseStudies = lazy(() => import('@/components/cases/CaseStudies'));
 const TechnicalShowcase = lazy(() => import('@/components/technical/TechnicalShowcase'));
+
+// Performance-optimized static components
 const IntelligentCoreBadge = lazy(() => import('@/components/core/IntelligentCoreBadge'));
 const NavigationBar = lazy(() => import('@/components/navigation/NavigationBar'));
 const MicroInteractions = lazy(() => import('@/components/interactions/MicroInteractions'));
-const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
-const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
-const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
-const FullScreenHero = lazy(() => import('@/components/immersive/FullScreenHero'));
-const ProductConfigurator = lazy(() => import('@/components/product/ProductConfigurator'));
-const Product360Viewer = lazy(() => import('@/components/product/Product360Viewer'));
-const AdvancedParticles = lazy(() => import('@/components/webgl/AdvancedParticles'));
-const VideoTestimonials = lazy(() => import('@/components/content/VideoTestimonials'));
-const CustomerReviews = lazy(() => import('@/components/social/CustomerReviews'));
-
-// Skeleton loading component
-function SectionSkeleton() {
-  return (
-    <div className="section-skeleton">
-      <div className="skeleton-shimmer" />
-    </div>
-  );
-}
 
 export default function AwwwardsHomepage() {
   // State management
-  const [themeMode, setThemeMode] = useState<'engineering' | 'high-contrast'>('engineering');
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
-  const { width: windowWidth } = useWindowSize();
+  const [themeMode, setThemeMode] = useState<'engineering' | 'high-contrast'>('engineering');
   const prefersReducedMotion = useReducedMotion();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { width: windowWidth } = useWindowSize();
   
-  // Scroll hooks
+  // Refs for scroll and interaction
+  const containerRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end end']
@@ -124,68 +103,20 @@ export default function AwwwardsHomepage() {
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
-
-  // Section tracking
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const sections = containerRef.current.querySelectorAll('section');
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id || 'hero');
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
   
   // Memoized config for performance
-  const performanceConfig = useMemo(() => {
-    if (typeof window === 'undefined') {
-      return {
-        dpr: 1,
-        shadows: false,
-        particles: 800,
-        quality: 'medium' as const
-      };
-    }
-    return {
-      dpr: Math.min(window.devicePixelRatio || 1, windowWidth < 768 ? 1 : 1.5),
-      shadows: windowWidth > 1024,
-      particles: windowWidth > 768 ? 2000 : 800,
-      quality: (windowWidth < 768 ? 'medium' : 'high') as 'low' | 'medium' | 'high'
-    };
-  }, [windowWidth]);
+  const performanceConfig = useMemo(() => ({
+    dpr: Math.min(window.devicePixelRatio || 1, windowWidth < 768 ? 1 : 1.5),
+    shadows: windowWidth > 1024,
+    particles: windowWidth > 768 ? 2000 : 800,
+    quality: (windowWidth < 768 ? 'medium' : 'high') as 'low' | 'medium' | 'high'
+  }), [windowWidth]);
   
   // ARIA live announcements
   const pageStatus = isLoaded ? 'Experience fully loaded' : 'Loading intelligent power interface';
   
   return (
-    <ErrorBoundary>
-      {/* Performance Monitor */}
-      <PerformanceMonitor />
-
-      {/* Premium Custom Cursor */}
-      <Suspense fallback={null}>
-        <CustomCursor enabled={!prefersReducedMotion} />
-      </Suspense>
-
-      {/* Holographic Laser Overlay */}
-      <HolographicLaser intensity="medium" color="#fbbf24" />
-
-      {/* 3D Background Scene */}
-      <Suspense fallback={null}>
-        <div className="fixed inset-0 -z-10 opacity-15">
-          <SimpleThreeScene />
-        </div>
-      </Suspense>
-
+    <>
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {pageStatus}
       </div>
@@ -223,13 +154,17 @@ export default function AwwwardsHomepage() {
       >
         {/* Navigation - Sticky, minimal */}
         <Suspense fallback={<div className="navigation-placeholder" />}>
-          <TeslaStyleNavigation 
+          <NavigationBar 
             activeSection={activeSection}
+            onThemeToggle={() => setThemeMode(prev => 
+              prev === 'engineering' ? 'high-contrast' : 'engineering'
+            )}
           />
         </Suspense>
         
         {/* HERO SECTION - Award-winning first impression */}
         <motion.section 
+          ref={heroRef}
           className="hero-section"
           style={{ y: heroParallax }}
           role="region" 
@@ -350,8 +285,7 @@ export default function AwwwardsHomepage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
             >
-              <Link 
-                href="/solution"
+              <button 
                 className="cta-primary"
                 aria-label="Explore our intelligent power solutions"
                 data-magnetic="true"
@@ -360,17 +294,16 @@ export default function AwwwardsHomepage() {
                 <span className="cta-text">Explore Intelligence</span>
                 <span className="cta-shine" aria-hidden="true" />
                 <span className="cta-sparkle" aria-hidden="true" />
-              </Link>
+              </button>
               
-              <Link 
-                href="/diagnostics"
+              <button 
                 className="cta-secondary"
                 aria-label="Launch interactive diagnostics demo"
                 data-magnetic="true"
               >
                 <span className="cta-icon" aria-hidden="true">▶</span>
                 <span>Live Demo</span>
-              </Link>
+              </button>
             </motion.div>
             
             {/* Scroll indicator with physics */}
@@ -472,11 +405,7 @@ export default function AwwwardsHomepage() {
               
               <button 
                 className="view-code"
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    window.open('https://github.com/your-repo', '_blank');
-                  }
-                }}
+                onClick={() => window.open('https://github.com/your-repo', '_blank')}
                 aria-label="View source code on GitHub"
               >
                 View Source
@@ -485,6 +414,15 @@ export default function AwwwardsHomepage() {
           </div>
         </footer>
       </motion.div>
-    </ErrorBoundary>
+    </>
+  );
+}
+
+// Skeleton loading component
+function SectionSkeleton() {
+  return (
+    <div className="section-skeleton">
+      <div className="skeleton-shimmer" />
+    </div>
   );
 }

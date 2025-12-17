@@ -322,6 +322,3 @@ export default function FloatingUFOs({ className = '', interactive = true }: Flo
   );
 }
 
-
-
-

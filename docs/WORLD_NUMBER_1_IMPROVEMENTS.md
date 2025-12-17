@@ -457,6 +457,3 @@
 **Confidence Level:** 95%  
 **Expected Outcome:** World's #1 Energy Infrastructure Website
 
-
-
-

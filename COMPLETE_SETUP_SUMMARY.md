@@ -310,6 +310,3 @@ npm run process:images:force       # Reprocess all
 **Status**: ✅ **READY FOR PRODUCTION**
 
 
-
-
-

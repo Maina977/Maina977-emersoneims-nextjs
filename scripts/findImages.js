@@ -152,6 +152,3 @@ Locations with images:`);
 }
 
 
-
-
-

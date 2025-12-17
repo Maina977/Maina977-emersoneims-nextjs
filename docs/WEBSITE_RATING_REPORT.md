@@ -514,6 +514,3 @@ This website represents a **premium, Awwwards Site of the Day contender** that s
 **Rating Methodology:** Comprehensive evaluation against Awwwards SOTD criteria and premium brand standards  
 **Status:** ✅ **PRODUCTION READY - AWWWARDS CONTENDER**
 
-
-
-

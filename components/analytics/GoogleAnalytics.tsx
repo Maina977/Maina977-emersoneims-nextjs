@@ -5,13 +5,13 @@
  * Tracks page views and events to Google Analytics 4
  */
 
-import { useEffect, Suspense } from 'react';
+import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import Script from 'next/script';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
 
-function GoogleAnalyticsContent() {
+export default function GoogleAnalytics() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -53,17 +53,4 @@ function GoogleAnalyticsContent() {
     </>
   );
 }
-
-export default function GoogleAnalytics() {
-  if (!GA_ID) {
-    return null;
-  }
-
-  return (
-    <Suspense fallback={null}>
-      <GoogleAnalyticsContent />
-    </Suspense>
-  );
-}
-
 
