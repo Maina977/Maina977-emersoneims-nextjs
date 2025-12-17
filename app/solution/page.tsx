@@ -9,7 +9,7 @@ import OptimizedImage from "@/components/media/OptimizedImage";
 import OptimizedVideo from "@/components/media/OptimizedVideo";
 import AnimatedImage from "@/components/effects/AnimatedImage";
 import HolographicLaser from "@/components/effects/HolographicLaser";
-import SectionLead from "@/app/components/generators/SectionLead";
+import SectionLead from "@/components/generators/SectionLead";
 import CTAButton from "@/components/shared/CTAButton";
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
