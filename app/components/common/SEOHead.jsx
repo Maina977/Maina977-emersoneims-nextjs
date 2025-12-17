@@ -8,14 +8,20 @@ import { Helmet } from "react-helmet-async";
  * @param {Object} props
  * @param {string} props.title - Page title (required)
  * @param {string} props.description - Page description (required)
- * @param {string} props.keywords - SEO keywords (required)
+ * @param {string | string[]} [props.keywords] - SEO keywords (optional, accepts string or array)
  * @param {string} [props.canonical] - Canonical URL
  * @param {Object} [props.openGraph] - Open Graph metadata
+ * @typedef {Object} SEOHeadProps
+ * @property {string} title - Page title
+ * @property {string} description - Page description
+ * @property {string | string[]} [keywords] - SEO keywords (optional, accepts string or array)
+ * @property {string} [canonical] - Canonical URL
+ * @property {Object} [openGraph] - Open Graph metadata
  */
 export default function SEOHead({ title, description, keywords, canonical, openGraph }) {
-  // Convert keywords array to comma-separated string if needed
-  const keywordsString = Array.isArray(keywords) 
-    ? keywords.join(', ') 
+  // Normalize keywords: convert array to comma-separated string
+  const normalizedKeywords = Array.isArray(keywords)
+    ? keywords.join(", ")
     : (keywords || '');
   
   const orgSchema = {
@@ -62,7 +68,7 @@ export default function SEOHead({ title, description, keywords, canonical, openG
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      {keywordsString && <meta name="keywords" content={keywordsString} />}
+      {normalizedKeywords && <meta name="keywords" content={normalizedKeywords} />}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
