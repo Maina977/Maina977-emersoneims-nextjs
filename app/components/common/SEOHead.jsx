@@ -13,6 +13,11 @@ import { Helmet } from "react-helmet-async";
  * @param {Object} [props.openGraph] - Open Graph metadata
  */
 export default function SEOHead({ title, description, keywords, canonical, openGraph }) {
+  // Convert keywords array to comma-separated string if needed
+  const keywordsString = Array.isArray(keywords) 
+    ? keywords.join(', ') 
+    : (keywords || '');
+  
   const orgSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -57,7 +62,7 @@ export default function SEOHead({ title, description, keywords, canonical, openG
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      {keywords && <meta name="keywords" content={keywords} />}
+      {keywordsString && <meta name="keywords" content={keywordsString} />}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
