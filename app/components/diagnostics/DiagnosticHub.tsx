@@ -4,7 +4,9 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { UniversalDiagnosticMachine, DiagnosticCharts, DiagnosticSummary } from './index';
+import UniversalDiagnosticMachine from './UniversalDiagnosticMachine';
+import DiagnosticCharts from './DiagnosticCharts';
+import DiagnosticSummary from './DiagnosticSummary';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
