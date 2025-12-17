@@ -20,7 +20,7 @@ if (typeof window !== 'undefined') {
 // Lazy load heavy components
 const ErrorBoundary = lazy(() => import('@/components/error/ErrorBoundary'));
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
-const GeneratorControlDiagnosticHub = lazy(() => import('@/app/components/diagnostics/GeneratorControlDiagnosticHub'));
+const GeneratorControlDiagnosticHub = lazy(() => import('@/components/diagnostics/GeneratorControlDiagnosticHub'));
 const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
 const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
 

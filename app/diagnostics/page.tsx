@@ -16,15 +16,15 @@ if (typeof window !== 'undefined') {
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 
 const UniversalDiagnosticMachine = dynamic(
-  () => import('@/app/components/diagnostics/UniversalDiagnosticMachine'),
+  () => import('@/components/diagnostics/UniversalDiagnosticMachine'),
   { ssr: false }
 );
 const NineInOneCalculator = dynamic(
-  () => import('@/app/components/diagnostics/NineInOneCalculator'),
+  () => import('@/components/diagnostics/NineInOneCalculator'),
   { ssr: false }
 );
 const ServiceAnalytics = dynamic(
-  () => import('@/app/components/diagnostics/ServiceAnalytics'),
+  () => import('@/components/diagnostics/ServiceAnalytics'),
   { ssr: false }
 );
 
