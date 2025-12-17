@@ -21,15 +21,15 @@ const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaSty
 
 const SEOHead = lazy(() => import("@/components/contact/SEOHead"));
 const AdaptivePerformanceMonitor = lazy(() => import("@/components/contact/AdaptivePerformanceMonitor"));
-const DieselGenerators = lazy(() => import("@/app/components/service/DieselGenerators"));
-const SolarEnergy = lazy(() => import("@/app/components/service/SolarEnergy"));
-const HighVoltage = lazy(() => import("@/app/components/service/HighVoltage"));
-const UPSSystems = lazy(() => import("@/app/components/service/UPSSystems"));
-const MotorRewinding = lazy(() => import("@/app/components/service/MotorRewinding"));
-const Fabrication = lazy(() => import("@/app/components/service/Fabrication"));
-const WaterSystems = lazy(() => import("@/app/components/service/WaterSystems"));
-const HVACSystems = lazy(() => import("@/app/components/service/HVACSystems"));
-const Incinerators = lazy(() => import("@/app/components/service/Incinerators"));
+const DieselGenerators = lazy(() => import("@/components/service/DieselGenerators"));
+const SolarEnergy = lazy(() => import("@/components/service/SolarEnergy"));
+const HighVoltage = lazy(() => import("@/components/service/HighVoltage"));
+const UPSSystems = lazy(() => import("@/components/service/UPSSystems"));
+const MotorRewinding = lazy(() => import("@/components/service/MotorRewinding"));
+const Fabrication = lazy(() => import("@/components/service/Fabrication"));
+const WaterSystems = lazy(() => import("@/components/service/WaterSystems"));
+const HVACSystems = lazy(() => import("@/components/service/HVACSystems"));
+const Incinerators = lazy(() => import("@/components/service/Incinerators"));
 const CrossServiceOptimizers = lazy(() => import("@/app/components/service/CrossServiceOptimizers"));
 
 // Service Hero Section
