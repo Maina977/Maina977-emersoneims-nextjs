@@ -217,7 +217,16 @@ export default function DiagnosticSuitePage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
               >
-                <GeneratorControlDiagnosticHub />
+                <Suspense fallback={
+                  <div className="flex items-center justify-center p-20 bg-gray-900 rounded-xl border border-gray-800">
+                    <div className="text-center">
+                      <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                      <p className="text-white">Loading Generator Control Diagnostic Hub...</p>
+                    </div>
+                  </div>
+                }>
+                  <GeneratorControlDiagnosticHub />
+                </Suspense>
               </motion.div>
             </div>
           </motion.section>

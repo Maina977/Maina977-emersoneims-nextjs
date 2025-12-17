@@ -296,7 +296,16 @@ export default function DiagnosticsPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <UniversalDiagnosticMachine onSeverityUpdate={handleSeverityUpdate} />
+            <Suspense fallback={
+              <div className="flex items-center justify-center p-20 bg-gray-900 rounded-xl border border-gray-800">
+                <div className="text-center">
+                  <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-white">Loading Universal Diagnostic Machine...</p>
+                </div>
+              </div>
+            }>
+              <UniversalDiagnosticMachine onSeverityUpdate={handleSeverityUpdate} />
+            </Suspense>
           </motion.div>
         </div>
       </section>
@@ -309,7 +318,16 @@ export default function DiagnosticsPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <NineInOneCalculator />
+            <Suspense fallback={
+              <div className="flex items-center justify-center p-20 bg-gray-900 rounded-xl border border-gray-800">
+                <div className="text-center">
+                  <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-white">Loading 9-in-1 Engineering Calculator...</p>
+                </div>
+              </div>
+            }>
+              <NineInOneCalculator />
+            </Suspense>
           </motion.div>
         </div>
       </section>
@@ -322,7 +340,16 @@ export default function DiagnosticsPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <ServiceAnalytics questionsData={questionsData} />
+            <Suspense fallback={
+              <div className="flex items-center justify-center p-20 bg-gray-900 rounded-xl border border-gray-800">
+                <div className="text-center">
+                  <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-white">Loading Service Analytics Dashboard...</p>
+                </div>
+              </div>
+            }>
+              <ServiceAnalytics questionsData={questionsData} />
+            </Suspense>
           </motion.div>
         </div>
       </section>
