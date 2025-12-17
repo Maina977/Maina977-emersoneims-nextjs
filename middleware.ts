@@ -6,6 +6,22 @@ import type { NextRequest } from 'next/server';
  * Protects against XSS, CSRF, clickjacking, and other attacks
  */
 export function middleware(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  const hostname = request.headers.get('host') || '';
+  
+  // Redirect www to non-www (or vice versa - choose one)
+  // Option 1: Redirect www to non-www (recommended for SEO)
+  if (hostname.startsWith('www.')) {
+    url.hostname = hostname.replace('www.', '');
+    return NextResponse.redirect(url, 301);
+  }
+  
+  // Option 2: Redirect non-www to www (uncomment if preferred)
+  // if (!hostname.startsWith('www.') && hostname.includes('emersoneims.com')) {
+  //   url.hostname = `www.${hostname}`;
+  //   return NextResponse.redirect(url, 301);
+  // }
+  
   const response = NextResponse.next();
 
   // Security Headers
