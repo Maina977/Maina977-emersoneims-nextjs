@@ -27,7 +27,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Analyze generator load patterns and optimize performance',
     icon: '📊',
     features: ['Load profiling', 'Performance metrics', 'Optimization recommendations'],
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop',
+    image: '/images/premium/generator-detail.jpg',
   },
   {
     id: 'sensor-calibration',
@@ -35,7 +35,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Calibrate and monitor sensor readings for accurate diagnostics',
     icon: '⚙️',
     features: ['Sensor calibration tools', 'Real-time monitoring', 'Accuracy validation'],
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=600&fit=crop',
+    image: '/images/premium/technicians-at-work.jpg',
   },
   {
     id: 'technician-toolkit',
@@ -59,7 +59,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Track and monitor system reputation and performance metrics',
     icon: '⭐',
     features: ['Performance tracking', 'Reputation scoring', 'Trend analysis'],
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop',
+    image: '/images/premium/generator-detail.jpg',
   },
   {
     id: 'whatsapp-dispatch',
@@ -67,7 +67,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Dispatch technicians via WhatsApp integration',
     icon: '📱',
     features: ['WhatsApp integration', 'Automated dispatch', 'Status tracking'],
-    image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=600&fit=crop',
+    image: '/images/premium/workshop-maintenance.jpg',
   },
   {
     id: 'conversion-dashboard',
@@ -75,7 +75,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Business conversion metrics and analytics',
     icon: '📈',
     features: ['Conversion tracking', 'Analytics dashboard', 'Performance insights'],
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop',
+    image: '/images/premium/generator-detail.jpg',
   },
 ] as const;
 

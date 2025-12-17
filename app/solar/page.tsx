@@ -46,8 +46,9 @@ const CinematicNarrative = () => {
     <div className="relative h-[70vh] w-full overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-900/20 to-black z-0" />
       <OptimizedVideo
-        src="https://assets.mixkit.co/videos/preview/mixkit-solar-panels-on-the-roof-of-a-house-41506-large.mp4"
-        autoPlay={true}
+        src="https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png"
+        poster="https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png"
+        autoPlay={false}
         loop={true}
         muted={true}
         playsInline={true}

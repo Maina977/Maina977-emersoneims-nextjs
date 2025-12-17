@@ -341,12 +341,11 @@ export default function SolutionsHome() {
 
           {/* Third Paragraph with Video */}
           <div className="mb-16">
-            <OptimizedVideo
-              src="https://assets.mixkit.co/videos/preview/mixkit-solar-panels-on-the-roof-of-a-house-41506-large.mp4"
-              autoPlay={false}
-              loop={true}
-              muted={true}
-              playsInline={true}
+            <OptimizedImage
+              src="https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png"
+              alt="Solar energy solutions"
+              width={1920}
+              height={1080}
               className="w-full rounded-2xl overflow-hidden"
             />
           </div>

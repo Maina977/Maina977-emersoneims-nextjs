@@ -34,7 +34,7 @@ export function middleware(request: NextRequest) {
       "img-src 'self' data: https: blob:",
       "media-src 'self' data: https: blob:",
       "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://api.emersoneims.com https://vitals.vercel-insights.com wss: https://vercel.live",
-      "frame-src 'self' https://www.youtube.com https://player.vimeo.com", // Allow embeds from trusted sources
+      "frame-src 'self'", // No third-party embeds - only our own content
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
