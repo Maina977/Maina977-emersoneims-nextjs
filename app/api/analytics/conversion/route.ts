@@ -19,7 +19,7 @@ import {
   checkApiAuth, 
   createUnauthorizedResponse,
   addCorsHeaders 
-} from '../middleware';
+} from '@/app/api/middleware';
 
 export async function POST(request: NextRequest) {
   try {
