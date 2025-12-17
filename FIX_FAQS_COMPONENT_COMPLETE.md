@@ -63,3 +63,5 @@ The `app/componets/FAQs.tsx` file (misspelled folder) was using `React.FC` and `
 
 
 
+
+

@@ -202,15 +202,14 @@ const nextConfig: NextConfig = {
 
 // Add redirects only for server mode (not static export)
 if (!isStaticExport) {
-  nextConfig.redirects = async () => {
-    return [
-      {
-        source: '/home',
-        destination: '/',
-        permanent: true,
-      },
-    ];
-  };
+  nextConfig.redirects = async () => [
+    {
+      source: '/home',
+      destination: '/',
+      permanent: true,
+    },
+  ];
 }
 
 export default nextConfig;
+

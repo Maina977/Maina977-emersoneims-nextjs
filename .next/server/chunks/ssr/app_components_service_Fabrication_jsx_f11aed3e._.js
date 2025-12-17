@@ -1,0 +1,3 @@
+module.exports=[55696,a=>{"use strict";var b=a.i(87924);function c({performanceTier:a="high"}){return(0,b.jsx)("section",{id:"fab",className:"py-20 bg-gradient-to-b from-gray-900 to-black",children:(0,b.jsxs)("div",{className:"max-w-7xl mx-auto px-4",children:[(0,b.jsx)("h2",{className:"text-4xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-cyan-600 bg-clip-text text-transparent",children:"Fabrication"}),(0,b.jsx)("p",{className:"text-gray-300 text-lg",children:"Custom fabrication services."})]})})}a.s(["default",()=>c])}];
+
+//# sourceMappingURL=app_components_service_Fabrication_jsx_f11aed3e._.js.map

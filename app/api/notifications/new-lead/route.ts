@@ -7,6 +7,19 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    // Prevent circular calls - check if this is an internal request
+    const isInternalRequest = request.headers.get('x-internal-request') === 'true';
+    
+    // If this is NOT an internal request and we're calling ourselves, prevent loop
+    if (!isInternalRequest && request.nextUrl.origin.includes('emersoneims.com')) {
+      // This could be a circular call - log and return early
+      console.warn('⚠️ Potential circular notification call detected');
+      return NextResponse.json(
+        { success: false, error: 'Circular call prevented' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const { visitorId, conversionType, data, type } = body;
 
@@ -209,5 +222,7 @@ function generateEmailHTML(notification: any): string {
     </html>
   `;
 }
+
+
 
 

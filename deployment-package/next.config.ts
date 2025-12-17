@@ -99,15 +99,13 @@ if (!isStaticExport) {
     ];
   };
 
-  nextConfig.redirects = async () => {
-    return [
-      {
-        source: '/home',
-        destination: '/',
-        permanent: true,
-      },
-    ];
-  };
+  nextConfig.redirects = async () => [
+    {
+      source: '/home',
+      destination: '/',
+      permanent: true,
+    },
+  ];
 }
 
 export default nextConfig;

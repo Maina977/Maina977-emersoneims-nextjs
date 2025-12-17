@@ -1,0 +1,265 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/home",
+      "destination": "/",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/home(?:/)?$"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/:path*",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "</fonts/geist-sans.woff2>; rel=preload; as=font; type=font/woff2; crossorigin, </fonts/space-grotesk.woff2>; rel=preload; as=font; type=font/woff2; crossorigin, </fonts/inter.woff2>; rel=preload; as=font; type=font/woff2; crossorigin"
+        }
+      ],
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    },
+    {
+      "source": "/fonts/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
+        }
+      ],
+      "regex": "^/fonts(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    },
+    {
+      "source": "/_next/static/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ],
+      "regex": "^/_next/static(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    },
+    {
+      "source": "/images/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ],
+      "regex": "^/images(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    },
+    {
+      "source": "/media/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ],
+      "regex": "^/media(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    },
+    {
+      "source": "/models/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ],
+      "regex": "^/models(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    }
+  ],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [
+      {
+        "source": "/sw.js",
+        "destination": "/sw.js",
+        "regex": "^/sw\\.js(?:/)?$"
+      }
+    ],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/about-us",
+      "regex": "^/about\\-us(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/about\\-us(?:/)?$"
+    },
+    {
+      "page": "/api/ai/chat",
+      "regex": "^/api/ai/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai/chat(?:/)?$"
+    },
+    {
+      "page": "/api/ai/engagement-offer",
+      "regex": "^/api/ai/engagement\\-offer(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai/engagement\\-offer(?:/)?$"
+    },
+    {
+      "page": "/api/analytics/conversion",
+      "regex": "^/api/analytics/conversion(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/analytics/conversion(?:/)?$"
+    },
+    {
+      "page": "/api/analytics/dashboard",
+      "regex": "^/api/analytics/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/analytics/dashboard(?:/)?$"
+    },
+    {
+      "page": "/api/analytics/event",
+      "regex": "^/api/analytics/event(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/analytics/event(?:/)?$"
+    },
+    {
+      "page": "/api/analytics/visitor",
+      "regex": "^/api/analytics/visitor(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/analytics/visitor(?:/)?$"
+    },
+    {
+      "page": "/api/notifications/new-lead",
+      "regex": "^/api/notifications/new\\-lead(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/notifications/new\\-lead(?:/)?$"
+    },
+    {
+      "page": "/api/wordpress",
+      "regex": "^/api/wordpress(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/wordpress(?:/)?$"
+    },
+    {
+      "page": "/contact",
+      "regex": "^/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contact(?:/)?$"
+    },
+    {
+      "page": "/diagnostic-suite",
+      "regex": "^/diagnostic\\-suite(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/diagnostic\\-suite(?:/)?$"
+    },
+    {
+      "page": "/diagnostics",
+      "regex": "^/diagnostics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/diagnostics(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/generators",
+      "regex": "^/generators(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/generators(?:/)?$"
+    },
+    {
+      "page": "/generators/used",
+      "regex": "^/generators/used(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/generators/used(?:/)?$"
+    },
+    {
+      "page": "/manifest.webmanifest",
+      "regex": "^/manifest\\.webmanifest(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/manifest\\.webmanifest(?:/)?$"
+    },
+    {
+      "page": "/robots.txt",
+      "regex": "^/robots\\.txt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/robots\\.txt(?:/)?$"
+    },
+    {
+      "page": "/service",
+      "regex": "^/service(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/service(?:/)?$"
+    },
+    {
+      "page": "/sitemap.xml",
+      "regex": "^/sitemap\\.xml(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sitemap\\.xml(?:/)?$"
+    },
+    {
+      "page": "/solar",
+      "regex": "^/solar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/solar(?:/)?$"
+    },
+    {
+      "page": "/solution",
+      "regex": "^/solution(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/solution(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

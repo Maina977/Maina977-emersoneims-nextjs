@@ -1,0 +1,10 @@
+{
+  "[project]/components/shared/SiteSearch.tsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/shared/SiteSearch.tsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules_27c604b9._.js",
+      "static/chunks/components_shared_SiteSearch_tsx_206d3741._.js",
+      "static/chunks/components_shared_SiteSearch_tsx_09d46229._.js"
+    ]
+  }
+}

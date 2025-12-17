@@ -1,0 +1,15 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/solar/layout,_N_T_/solar/page,_N_T_/solar"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/solar/__PAGE__",
+    "/solar",
+    "/_index",
+    "/_head"
+  ]
+}

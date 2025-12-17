@@ -1,0 +1,149 @@
+{
+    "Generators": {
+      "subsystems": ["Canopy", "Exhaust", "ATS", "PowerFactor", "FuelSystem", "CoolingSystem"],
+      "errorCodes": [
+        {
+          "code": "GEN-CAN-001",
+          "issue": "Insufficient ventilation in generator canopy",
+          "severity": "HIGH"
+        }
+      ],
+      "diagnosticFlows": {
+        "GEN-CAN-001": [
+          { "check": "Measure airflow inside canopy", "threshold": "≥ 500 CFM", "tool": "Anemometer" },
+          { "check": "Inspect louvers and fans", "threshold": "All operational", "tool": "Visual inspection" },
+          { "action": "Install fans or redesign canopy", "verification": "Temp < 45°C under full load" }
+        ]
+      },
+      "formulas": {
+        "FuelConsumption": "LitersPerHour = (LoadKW * SpecificFuelConsumption) / Efficiency",
+        "PowerFactorCorrection": "RequiredKVAR = KW * (tan(arccos(TargetPF)) - tan(arccos(CurrentPF)))"
+      },
+      "telemetry": {
+        "Pressure": { "unit": "kPa", "min": 0, "max": 100, "value": 45 },
+        "FuelReservoir": { "unit": "%", "min": 0, "max": 100, "value": 72 },
+        "PowerFactor": { "unit": "pf", "min": 0.5, "max": 1.0, "value": 0.92 }
+      }
+    },
+    "Solar": {
+      "subsystems": ["Panels", "Batteries", "Inverters", "ChargeControllers", "CombinerBoxes", "DCDisconnects"],
+      "errorCodes": [
+        { "code": "SOL-INV-101", "issue": "DC input undervoltage", "severity": "MED" }
+      ],
+      "diagnosticFlows": {
+        "SOL-INV-101": [
+          { "check": "Measure DC bus voltage", "threshold": "≥ 48V", "tool": "Multimeter" },
+          { "check": "Check PV string configuration", "threshold": "Correct arrangement", "tool": "String diagram" },
+          { "action": "Reconfigure strings or replace inverter", "verification": "DC bus ≥ 48V" }
+        ]
+      },
+      "formulas": {
+        "ArraySizing": "PanelsNeeded = (LoadKWh / (SunHours * PanelWatt * Derating))",
+        "BatteryAutonomy": "RequiredAh = (LoadWh / (SystemVoltage * DoD))"
+      },
+      "telemetry": {
+        "PanelVoltage": { "unit": "V", "min": 0, "max": 600, "value": 420 },
+        "BatteryVoltage": { "unit": "V", "min": 0, "max": 60, "value": 48 }
+      }
+    },
+    "HighVoltage": {
+      "subsystems": ["PowerLines", "Transformers", "Breakers", "Relays", "Busbars", "Earthing", "SurgeProtection"],
+      "errorCodes": [
+        { "code": "HV-RET-301", "issue": "Excessive voltage drop on reticulation line", "severity": "HIGH" }
+      ],
+      "diagnosticFlows": {
+        "HV-RET-301": [
+          { "check": "Measure line voltage at load end", "threshold": "≥ 95% rated", "tool": "Voltmeter" },
+          { "check": "Inspect cable size and length", "threshold": "Correct ampacity", "tool": "Cable datasheet" },
+          { "action": "Upgrade cable size or reduce length", "verification": "Voltage drop ≤ 5%" }
+        ]
+      },
+      "formulas": {
+        "CableSizing": "Ampacity = (LoadCurrent / CorrectionFactors)",
+        "VoltageDrop": "VD% = (Length * ResistancePerMeter * Current) / (Voltage * 100)"
+      },
+      "telemetry": {
+        "LineVoltage": { "unit": "kV", "min": 0, "max": 33, "value": 11 },
+        "EarthingResistance": { "unit": "Ω", "min": 0, "max": 10, "value": 2.5 }
+      }
+    },
+    "UPS": {
+      "subsystems": ["Battery", "Rectifier", "Inverter", "Charger", "MonitoringSystem"],
+      "errorCodes": [
+        { "code": "UPS-BAT-201", "issue": "Battery autonomy below threshold", "severity": "MED" }
+      ],
+      "diagnosticFlows": {
+        "UPS-BAT-201": [
+          { "check": "Check battery Ah rating", "threshold": "≥ design spec", "tool": "Battery tester" },
+          { "check": "Measure runtime under load", "threshold": "≥ 30 min", "tool": "Load bank" },
+          { "action": "Replace batteries, recalibrate charger", "verification": "Runtime ≥ 30 min" }
+        ]
+      },
+      "formulas": {
+        "Runtime": "Minutes = (BatteryAh * Voltage * Efficiency) / LoadWatt"
+      },
+      "telemetry": {
+        "BatteryRuntime": { "unit": "min", "min": 0, "max": 120, "value": 45 },
+        "OutputVoltage": { "unit": "V", "min": 200, "max": 240, "value": 230 }
+      }
+    },
+    "AC": {
+      "subsystems": ["Cooling", "Ventilation", "Filters", "Compressors", "Condensers"],
+      "errorCodes": [
+        { "code": "AC-COOL-101", "issue": "Insufficient cooling capacity", "severity": "HIGH" }
+      ],
+      "diagnosticFlows": {
+        "AC-COOL-101": [
+          { "check": "Measure cooling load", "threshold": "≤ rated capacity", "tool": "BTU meter" },
+          { "check": "Check refrigerant pressure", "threshold": "Within spec", "tool": "Pressure gauge" },
+          { "action": "Recharge refrigerant or upgrade unit", "verification": "Ambient 22–25°C" }
+        ]
+      },
+      "formulas": {
+        "CoolingLoad": "BTU/hr = (Watts * 3.412)"
+      },
+      "telemetry": {
+        "CoolingLoad": { "unit": "BTU/hr", "min": 0, "max": 50000, "value": 32000 },
+        "AmbientTemp": { "unit": "°C", "min": 15, "max": 40, "value": 24 }
+      }
+    },
+    "MotorRewinding": {
+      "subsystems": ["Stator", "Rotor", "Bearings", "Insulation", "Alignment"],
+      "errorCodes": [
+        { "code": "MOT-REW-401", "issue": "Incorrect winding turns per coil", "severity": "HIGH" }
+      ],
+      "diagnosticFlows": {
+        "MOT-REW-401": [
+          { "check": "Compare winding spec", "threshold": "Matches OEM", "tool": "Diagram" },
+          { "check": "Measure resistance per phase", "threshold": "Balanced ±5%", "tool": "Ohmmeter" },
+          { "action": "Rewind stator correctly", "verification": "Resistance balanced ±5%" }
+        ]
+      },
+      "formulas": {
+        "TurnsPerCoil": "Turns = (Voltage * 1000) / (4.44 * Frequency * Flux * Area)"
+      },
+      "telemetry": {
+        "StatorResistance": { "unit": "Ω", "min": 0, "max": 10, "value": 3.2 }
+      }
+    },
+    "Incinerators": {
+      "subsystems": ["Chamber", "Burner", "Airflow", "Stack", "Refractory"],
+      "errorCodes": [
+        { "code": "INC-CHM-101", "issue": "Chamber temperature below burn threshold", "severity": "HIGH" }
+      ],
+      "diagnosticFlows": {
+        "INC-CHM-101": [
+          { "check": "Measure chamber temp", "threshold": "≥ 850°C", "tool": "Thermocouple" },
+          { "check": "Check burner fuel supply", "threshold": "Stable flow", "tool": "Flow meter" },
+          { "action": "Repair refractory or adjust fuel/air mix", "verification": "Chamber ≥ 850°C sustained" }
+        ]
+      },
+      "formulas": {
+        "Airflow": "CFM = (FuelBurnRate * StoichiometricAir) / Efficiency"
+      },
+      "telemetry": {
+        "ChamberTemp": { "unit": "°C", "min": 0, "max": 1200, "value": 850 },
+        "StackTemp": { "unit": "°C", "min": 0, "max": 600, "value": 320 }
+      }
+    }
+}

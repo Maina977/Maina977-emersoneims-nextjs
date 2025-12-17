@@ -46,3 +46,5 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
 }
 
 
+
+

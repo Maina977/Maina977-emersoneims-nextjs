@@ -1,0 +1,3 @@
+{
+  "/api/notifications/new-lead/route": "app/api/notifications/new-lead/route.js"
+}

@@ -1,0 +1,26 @@
+
+> emerson-eims@1.0.0 build
+> next build
+
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Environments: .env
+   - Experiments (use with caution):
+     ✓ optimizeCss
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 23.5s
+   Running TypeScript ...
+Failed to compile.
+
+./app/contact/page.tsx:53:8
+Type error: Property 'keywords' is missing in type '{ title: string; description: string; canonical: string; openGraph: { type: string; locale: string; url: string; siteName: string; images: { url: string; width: number; height: number; alt: string; }[]; }; }' but required in type '{ title: any; description: any; keywords: any; canonical: any; openGraph: any; }'.
+
+[0m [90m 51 |[39m   [36mreturn[39m (
+ [90m 52 |[39m     [33m<[39m[33m>[39m
+[31m[1m>[22m[39m[90m 53 |[39m       [33m<[39m[33mSEOHead[39m
+ [90m    |[39m        [31m[1m^[22m[39m
+ [90m 54 |[39m         title[33m=[39m[32m"Contact EmersonEIMS | Powering Kenya with Intelligence"[39m
+ [90m 55 |[39m         description[33m=[39m[32m"Reach EmersonEIMS via phone, email, or visit. A cinematic, sci‑fi contact experience spanning all 47 counties."[39m
+ [90m 56 |[39m         canonical[33m=[39m[32m"/contact"[39m[0m
+Next.js build worker exited with code: 1 and signal: null

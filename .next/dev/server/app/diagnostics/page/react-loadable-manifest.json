@@ -1,0 +1,32 @@
+{
+  "[project]/components/shared/SiteSearch.tsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/components/shared/SiteSearch.tsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules_27c604b9._.js",
+      "static/chunks/components_shared_SiteSearch_tsx_206d3741._.js",
+      "static/chunks/components_shared_SiteSearch_tsx_09d46229._.js"
+    ]
+  },
+  "[project]/app/components/diagnostics/ServiceAnalytics.jsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/app/components/diagnostics/ServiceAnalytics.jsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules_715f5c15._.js",
+      "static/chunks/app_components_diagnostics_74805f01._.js",
+      "static/chunks/app_components_diagnostics_ServiceAnalytics_jsx_e6d48465._.js"
+    ]
+  },
+  "[project]/app/components/diagnostics/NineInOneCalculator.jsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/app/components/diagnostics/NineInOneCalculator.jsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/app_components_diagnostics_4d17f880._.js",
+      "static/chunks/app_components_diagnostics_NineInOneCalculator_jsx_e6d48465._.js"
+    ]
+  },
+  "[project]/app/components/diagnostics/UniversalDiagnosticMachine.jsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/app/components/diagnostics/UniversalDiagnosticMachine.jsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/app_components_diagnostics_1ff55c1e._.js",
+      "static/chunks/app_components_diagnostics_UniversalDiagnosticMachine_jsx_e6d48465._.js"
+    ]
+  }
+}

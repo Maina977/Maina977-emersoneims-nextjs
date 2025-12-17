@@ -1,0 +1,22 @@
+{
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.suggest.autoImports": true,
+  "typescript.validate.enable": true,
+  "files.exclude": {
+    "**/app/componets": true,
+    "**/app/PC": true,
+    "**/deployment-package": true
+  },
+  "files.watcherExclude": {
+    "**/app/componets/**": true,
+    "**/app/PC/**": true,
+    "**/deployment-package/**": true
+  },
+  "search.exclude": {
+    "**/app/componets": true,
+    "**/app/PC": true,
+    "**/deployment-package": true
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}

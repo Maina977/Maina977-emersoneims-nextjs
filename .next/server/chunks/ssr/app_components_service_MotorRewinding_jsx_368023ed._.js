@@ -1,0 +1,3 @@
+module.exports=[76791,a=>{"use strict";var b=a.i(87924);function c({performanceTier:a="high"}){return(0,b.jsx)("section",{id:"motor",className:"py-20 bg-gradient-to-b from-black to-gray-900",children:(0,b.jsxs)("div",{className:"max-w-7xl mx-auto px-4",children:[(0,b.jsx)("h2",{className:"text-4xl font-bold mb-8 bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent",children:"Motor Rewinding"}),(0,b.jsx)("p",{className:"text-gray-300 text-lg",children:"Motor repair and rewinding services."})]})})}a.s(["default",()=>c])}];
+
+//# sourceMappingURL=app_components_service_MotorRewinding_jsx_368023ed._.js.map

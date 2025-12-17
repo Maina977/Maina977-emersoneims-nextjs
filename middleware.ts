@@ -125,12 +125,13 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
-// Apply middleware to all routes except static files and API routes that need different handling
+// Apply middleware to all routes except static files
+// API routes have their own middleware in app/api/middleware.ts
 export const config = {
   matcher: [
     /*
      * Match all request paths except:
-     * - api (API routes)
+     * - api (API routes - handled separately)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)

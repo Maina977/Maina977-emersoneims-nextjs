@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,97743,e=>{"use strict";let t=async()=>Promise.resolve();e.s(["default",0,t,"loadTextures",0,t])}]);

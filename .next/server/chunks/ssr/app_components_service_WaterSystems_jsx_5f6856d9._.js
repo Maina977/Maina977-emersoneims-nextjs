@@ -1,0 +1,3 @@
+module.exports=[72851,a=>{"use strict";var b=a.i(87924);function c({performanceTier:a="high"}){return(0,b.jsx)("section",{id:"water",className:"py-20 bg-gradient-to-b from-black to-gray-900",children:(0,b.jsxs)("div",{className:"max-w-7xl mx-auto px-4",children:[(0,b.jsx)("h2",{className:"text-4xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent",children:"Water Systems"}),(0,b.jsx)("p",{className:"text-gray-300 text-lg",children:"Water pumping and system solutions."})]})})}a.s(["default",()=>c])}];
+
+//# sourceMappingURL=app_components_service_WaterSystems_jsx_5f6856d9._.js.map

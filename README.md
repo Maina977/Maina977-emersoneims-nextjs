@@ -27,8 +27,8 @@ A modern Next.js application for energy infrastructure management with WordPress
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Maina977/emersoneims-nextjs.git
-   cd emersoneims-nextjs
+   git clone https://github.com/Maina977/Maina977-emersoneims-nextjs.git
+   cd Maina977-emersoneims-nextjs
    ```
 
 2. **Install dependencies**
