@@ -54,6 +54,7 @@ export default function ContactPage() {
       <SEOHead
         title="Contact EmersonEIMS | Powering Kenya with Intelligence"
         description="Reach EmersonEIMS via phone, email, or visit. A cinematic, sci‑fi contact experience spanning all 47 counties."
+        keywords={["contact EmersonEIMS", "Kenya", "Nairobi", "energy solutions", "generators", "solar", "UPS", "EmersonEIMS"]}
         canonical="/contact"
         openGraph={{
           type: "website",
