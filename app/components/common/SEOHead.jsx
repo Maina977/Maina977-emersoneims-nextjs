@@ -19,7 +19,11 @@ import { Helmet } from "react-helmet-async";
  * @property {Object} [openGraph] - Open Graph metadata
  */
 export default function SEOHead({ title, description, keywords, canonical, openGraph }) {
-  // Normalize keywords: convert array to comma-separated string
+  /**
+   * PERMANENT FIX: Normalize keywords to handle both string and string[]
+   * This allows pages to pass either format without breaking the build.
+   * Arrays are automatically converted to comma-separated strings for SEO.
+   */
   const normalizedKeywords = Array.isArray(keywords)
     ? keywords.join(", ")
     : (keywords || '');
