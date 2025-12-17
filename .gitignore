@@ -1,2 +1,14 @@
 node_modules
 .vercel
+.next
+out
+build
+dist
+*.log
+.DS_Store
+
+# Duplicate/problematic folders
+app/PC/
+app/componets/
+app/app/
+deployment-package/
