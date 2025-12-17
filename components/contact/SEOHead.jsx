@@ -9,7 +9,7 @@ import React from "react";
  * @param {Object} props
  * @param {string} props.title - Page title
  * @param {string} props.description - Page description
- * @param {string} props.keywords - SEO keywords (required)
+ * @param {string | string[]} [props.keywords] - SEO keywords (optional, accepts string or array)
  * @param {string} [props.canonical] - Canonical URL
  * @param {Object} [props.openGraph] - Open Graph metadata
  */
@@ -18,10 +18,10 @@ export default function SEOHead({ title, description, keywords, canonical, openG
   // This component is a no-op for App Router compatibility
   // Actual SEO is handled via metadata export in app/contact/layout.tsx
   
-  // Validate required props for TypeScript/development
-  if (!keywords) {
-    console.warn('SEOHead: keywords prop is required but was not provided');
-  }
+  // PERMANENT FIX: Normalize keywords to handle both string and string[]
+  const normalizedKeywords = Array.isArray(keywords)
+    ? keywords.join(", ")
+    : (keywords || '');
   
   return null;
 }

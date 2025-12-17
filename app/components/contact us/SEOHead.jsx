@@ -1,7 +1,24 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 
-export default function SEOHead({ title, description, canonical, openGraph }) {
+/**
+ * SEOHead - SEO metadata component
+ * @param {Object} props
+ * @param {string} props.title - Page title
+ * @param {string} props.description - Page description
+ * @param {string | string[]} [props.keywords] - SEO keywords (optional, accepts string or array)
+ * @param {string} [props.canonical] - Canonical URL
+ * @param {Object} [props.openGraph] - Open Graph metadata
+ */
+export default function SEOHead({ title, description, keywords, canonical, openGraph }) {
+  /**
+   * PERMANENT FIX: Normalize keywords to handle both string and string[]
+   * This allows pages to pass either format without breaking the build.
+   * Arrays are automatically converted to comma-separated strings for SEO.
+   */
+  const normalizedKeywords = Array.isArray(keywords)
+    ? keywords.join(", ")
+    : (keywords || '');
   const orgSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -46,6 +63,7 @@ export default function SEOHead({ title, description, canonical, openGraph }) {
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
+      {normalizedKeywords && <meta name="keywords" content={normalizedKeywords} />}
       <link rel="canonical" href={canonicalUrl} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
