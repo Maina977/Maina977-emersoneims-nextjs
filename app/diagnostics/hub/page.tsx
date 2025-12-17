@@ -7,7 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import dynamic from 'next/dynamic';
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import { HeroHeading, SectionHeading } from '@/components/typography/CinematicHeadingVariants';
-import DiagnosticHub from '@/components/diagnostics/DiagnosticHub';
+import { DiagnosticHub } from '@/components/diagnostics';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
