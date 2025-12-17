@@ -30,7 +30,7 @@ const Fabrication = lazy(() => import("@/components/service/Fabrication"));
 const WaterSystems = lazy(() => import("@/components/service/WaterSystems"));
 const HVACSystems = lazy(() => import("@/components/service/HVACSystems"));
 const Incinerators = lazy(() => import("@/components/service/Incinerators"));
-const CrossServiceOptimizers = lazy(() => import("@/app/components/service/CrossServiceOptimizers"));
+const CrossServiceOptimizers = lazy(() => import("@/components/service/CrossServiceOptimizers"));
 
 // Service Hero Section
 const ServiceHero = () => {
