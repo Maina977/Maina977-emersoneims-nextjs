@@ -19,7 +19,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Search and diagnose generator fault codes instantly',
     icon: '🔍',
     features: ['Real-time fault code database', 'Diagnostic recommendations', 'Solution suggestions'],
-    image: 'https://images.unsplash.com/photo-1581092160565-68d2cbb3b732?w=800&h=600&fit=crop',
+    image: '/images/premium/control-panel-main.jpg',
   },
   {
     id: 'load-analysis',
@@ -43,7 +43,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Comprehensive tools for field technicians',
     icon: '🛠️',
     features: ['Field diagnostics', 'Maintenance schedules', 'Repair guides'],
-    image: 'https://images.unsplash.com/photo-1581092160565-68d2cbb3b732?w=800&h=600&fit=crop',
+    image: '/images/premium/control-panel-main.jpg',
   },
   {
     id: 'spare-parts',
@@ -51,7 +51,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Intelligent spare parts recommendations and inventory',
     icon: '🔧',
     features: ['Parts recommendations', 'Inventory tracking', 'Order management'],
-    image: 'https://images.unsplash.com/photo-1581092160565-68d2cbb3b732?w=800&h=600&fit=crop',
+    image: '/images/premium/control-panel-main.jpg',
   },
   {
     id: 'reputation-monitor',
