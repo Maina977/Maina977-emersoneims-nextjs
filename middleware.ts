@@ -9,18 +9,17 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
   
-  // Redirect www to non-www (or vice versa - choose one)
-  // Option 1: Redirect www to non-www (recommended for SEO)
-  if (hostname.startsWith('www.')) {
+  // Domain redirect configuration
+  // Set to true to redirect www to non-www, false to allow both
+  const REDIRECT_WWW_TO_NON_WWW = process.env.REDIRECT_WWW === 'true';
+  
+  // Redirect www to non-www (optional - can be disabled)
+  // This ensures SEO consistency by having one canonical domain
+  if (REDIRECT_WWW_TO_NON_WWW && hostname.startsWith('www.')) {
     url.hostname = hostname.replace('www.', '');
+    url.protocol = 'https:';
     return NextResponse.redirect(url, 301);
   }
-  
-  // Option 2: Redirect non-www to www (uncomment if preferred)
-  // if (!hostname.startsWith('www.') && hostname.includes('emersoneims.com')) {
-  //   url.hostname = `www.${hostname}`;
-  //   return NextResponse.redirect(url, 301);
-  // }
   
   const response = NextResponse.next();
 
