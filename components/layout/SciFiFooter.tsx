@@ -92,15 +92,14 @@ export default function SciFiFooter() {
               viewport={{ once: true }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center font-bold text-black text-xl"
+                <img
+                  src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
+                  alt="EmersonEIMS Logo"
+                  className="w-12 h-12 object-contain"
                   style={{
-                    boxShadow: '0 0 20px oklch(0.75 0.20 200 / 0.5)',
-                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    filter: 'drop-shadow(0 0 10px oklch(0.75 0.20 200 / 0.5))',
                   }}
-                >
-                  E
-                </div>
+                />
                 <div>
                   <div className="text-xl font-bold font-mono text-cyan-300 tracking-wider">
                     EMERSON<span className="text-cyan-500">EIMS</span>

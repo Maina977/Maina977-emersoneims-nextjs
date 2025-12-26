@@ -9,27 +9,36 @@ import { useState, useEffect } from 'react';
 
 export default function HighContrastMode() {
   const [isEnabled, setIsEnabled] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    // Check localStorage
+    // Check localStorage on client-side only
     const saved = localStorage.getItem('highContrast');
-    if (saved === 'true') {
-      setIsEnabled(true);
+    const shouldEnable = saved === 'true';
+
+    setIsEnabled(shouldEnable);
+    if (shouldEnable) {
       document.documentElement.classList.add('high-contrast');
     }
+    setIsHydrated(true);
   }, []);
 
   const toggle = () => {
     const newState = !isEnabled;
     setIsEnabled(newState);
     localStorage.setItem('highContrast', newState.toString());
-    
+
     if (newState) {
       document.documentElement.classList.add('high-contrast');
     } else {
       document.documentElement.classList.remove('high-contrast');
     }
   };
+
+  // Don't render until hydrated to prevent hydration mismatch
+  if (!isHydrated) {
+    return null;
+  }
 
   return (
     <button

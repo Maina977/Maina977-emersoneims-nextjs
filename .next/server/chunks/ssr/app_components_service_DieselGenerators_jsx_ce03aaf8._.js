@@ -1,3 +1,0 @@
-module.exports=[83284,a=>{"use strict";var b=a.i(87924);function c({performanceTier:a="high"}){return(0,b.jsx)("section",{id:"diesel",className:"py-20 bg-gradient-to-b from-black to-gray-900",children:(0,b.jsxs)("div",{className:"max-w-7xl mx-auto px-4",children:[(0,b.jsx)("h2",{className:"text-4xl font-bold mb-8 bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent",children:"Diesel Generators"}),(0,b.jsx)("p",{className:"text-gray-300 text-lg",children:"Comprehensive diesel generator solutions and services."})]})})}a.s(["default",()=>c])}];
-
-//# sourceMappingURL=app_components_service_DieselGenerators_jsx_ce03aaf8._.js.map

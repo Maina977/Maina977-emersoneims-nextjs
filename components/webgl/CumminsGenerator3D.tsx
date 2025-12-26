@@ -222,7 +222,7 @@ function EnergyFlow() {
             Math.cos((i / 20) * Math.PI * 2) * 2,
           ]}
         >
-          <sphereGeometry args={[0.1, 8, 8]} />
+          <primitive object={new THREE.SphereGeometry(0.1, 8, 8)} />
           <meshStandardMaterial
             color="#fbbf24"
             emissive="#fbbf24"

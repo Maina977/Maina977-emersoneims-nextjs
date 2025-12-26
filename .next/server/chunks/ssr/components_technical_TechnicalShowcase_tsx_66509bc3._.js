@@ -1,3 +1,0 @@
-module.exports=[85832,a=>{"use strict";var b=a.i(87924);function c({prefersReducedMotion:a=!1,theme:c="engineering"}){return(0,b.jsx)("section",{className:"technical-showcase","data-theme":c,children:(0,b.jsxs)("div",{className:"technical-content",children:[(0,b.jsx)("h2",{children:"Technical Showcase"}),(0,b.jsx)("p",{children:"Interactive technical schematics and engineering visualizations"})]})})}a.s(["default",()=>c])}];
-
-//# sourceMappingURL=components_technical_TechnicalShowcase_tsx_66509bc3._.js.map

@@ -55,10 +55,10 @@ const maintenanceServices = [
 ];
 
 const questionsData = [
-  { service: 'Preventive Maintenance', count: 150 },
-  { service: 'Emergency Repairs', count: 45 },
-  { service: 'Major Overhaul', count: 12 },
-  { service: 'Remote Monitoring', count: 80 },
+  { service: 'Preventive Maintenance', count: 150, trend: 'up' as const, avgResolutionTime: 1.5, satisfaction: 4.8, revenue: 30000 },
+  { service: 'Emergency Repairs', count: 45, trend: 'stable' as const, avgResolutionTime: 2.3, satisfaction: 4.2, revenue: 9000 },
+  { service: 'Major Overhaul', count: 12, trend: 'down' as const, avgResolutionTime: 8.5, satisfaction: 4.0, revenue: 2400 },
+  { service: 'Remote Monitoring', count: 80, trend: 'up' as const, avgResolutionTime: 0.8, satisfaction: 4.9, revenue: 16000 },
 ];
 
 export default function MaintenancePage() {

@@ -9,6 +9,7 @@
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Mesh, Vector3, Color, ShaderMaterial } from 'three';
+import * as THREE from 'three';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
@@ -148,7 +149,7 @@ function Blob({ position, color, size, mousePosition }: BlobProps) {
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
     >
-      <icosahedronGeometry args={[size, 3]} />
+      <primitive object={new THREE.IcosahedronGeometry(size, 3)} />
       <primitive object={shaderMaterial} ref={materialRef} attach="material" />
     </mesh>
   );

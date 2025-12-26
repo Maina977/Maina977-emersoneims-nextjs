@@ -8,6 +8,7 @@
 import { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Mesh, Vector3, Color } from 'three';
+import * as THREE from 'three';
 import { PerspectiveCamera } from '@react-three/drei';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
@@ -51,7 +52,7 @@ function Particle({ position, velocity, color, size, life }: ParticleProps) {
 
   return (
     <mesh ref={meshRef} position={position}>
-      <sphereGeometry args={[size, 8, 8]} />
+      <primitive object={new THREE.SphereGeometry(size, 8, 8)} />
       <meshStandardMaterial
         color={color}
         emissive={color}

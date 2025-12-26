@@ -25,18 +25,25 @@ export default function LiveChat({
   supportEmail = 'support@emersoneims.com' 
 }: LiveChatProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Hello! How can I help you today?',
-      sender: 'ai',
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isHumanAvailable, setIsHumanAvailable] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsHydrated(true);
+    // Initialize with welcome message only after hydration
+    setMessages([
+      {
+        id: '1',
+        text: 'Hello! How can I help you today?',
+        sender: 'ai',
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

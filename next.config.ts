@@ -6,9 +6,8 @@ const isStaticExport = process.env.WORDPRESS_INTEGRATION === 'true' && process.e
 
 const nextConfig: NextConfig = {
   // Output configuration
-  // Use 'standalone' for server deployment, 'export' for static export to WordPress
   ...(isStaticExport ? { output: 'export' as const } : {}),
-  
+
   // Image optimization - EXTREME PERFORMANCE
   images: {
     unoptimized: isStaticExport,
@@ -31,15 +30,15 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840], // 4K support
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 31536000, // 1 year cache
+    minimumCacheTTL: 31536000,
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Enable React strict mode
+  // React strict mode
   reactStrictMode: true,
 
   // Compiler options
@@ -47,32 +46,56 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
 
-  // Transpile packages for ES modules compatibility (fixes "window is not defined" errors)
+  // Transpile packages
   transpilePackages: [
     '@react-three/fiber',
     '@react-three/drei',
     'three',
     '@react-spring/three',
+    '@upstash/redis',
   ],
 
-  // Webpack configuration for WordPress compatibility and path aliases
-  webpack: (config, { isServer }) => {
-        // Add path alias for app components folder
-        config.resolve.alias = {
-          ...config.resolve.alias,
-          '@/app/components': require('path').resolve(__dirname, 'app/components'),
-        };
+  // Webpack configuration - DISABLED when using Turbopack
+  // webpack: (config, { isServer }) => {
+  //   config.resolve.alias = {
+  //     ...config.resolve.alias,
+  //     '@/app/components': require('path').resolve(__dirname, 'app/components'),
+  //   };
 
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    return config;
-  },
+  //   if (!isServer) {
+  //     config.resolve.fallback = {
+  //       ...config.resolve.fallback,
+  //       fs: false,
+  //       net: false,
+  //       tls: false,
+  //     };
+  //   }
+
+  //   // Code splitting optimization
+  //   config.optimization = {
+  //     ...config.optimization,
+  //     splitChunks: {
+  //       chunks: 'all',
+  //       cacheGroups: {
+  //         framework: {
+  //           chunks: 'all',
+  //           name: 'framework',
+  //           test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+  //           priority: 40,
+  //           enforce: true,
+  //         },
+  //         lib: {
+  //           test: /[\\/]node_modules[\\/]/,
+  //           name: 'lib',
+  //           priority: 30,
+  //           chunks: 'all',
+  //         },
+  //       },
+  //     },
+  //   };
+
+  //   return config;
+  // },
 
   // Environment variables
   env: {
@@ -81,7 +104,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SITE_URL: SITE_URL,
   },
 
-  // Experimental features - PERFORMANCE OPTIMIZED (Apple-Level)
+  // Experimental features
   experimental: {
     optimizePackageImports: [
       '@react-three/fiber',
@@ -92,29 +115,18 @@ const nextConfig: NextConfig = {
       'chart.js',
       'react-chartjs-2',
     ],
-    optimizeCss: true, // Optimize CSS
-    optimizeServerReact: true, // Optimize server-side React rendering
+    optimizeCss: true,
+    optimizeServerReact: true,
     serverActions: {
-      bodySizeLimit: '2mb', // Limit server action body size for security
+      bodySizeLimit: '2mb',
     },
-    // Enable partial prerendering for faster initial loads
-    ppr: false, // Set to true when stable
-  },
-  
-
-  // Turbopack configuration (Next.js 16 uses Turbopack by default)
-  turbopack: {
-    root: __dirname, // Fix lockfile warning
-    resolveAlias: {
-      // Optimize Three.js imports - use ES module path for Windows compatibility
-      'three': 'three',
-    },
+    ppr: false,
   },
 
-  // Compression - Enable gzip and brotli
+  // Compression
   compress: true,
 
-  // Service Worker support
+  // Service Worker
   async rewrites() {
     return [
       {
@@ -125,14 +137,12 @@ const nextConfig: NextConfig = {
   },
 
   // Power optimization
-  poweredByHeader: false, // Remove X-Powered-By header for security
-  // Note: SWC minification is enabled by default in Next.js 16
+  poweredByHeader: false,
 
-  // Headers for performance and security (Note: Middleware handles most security headers)
-  // Apple-Level Performance: Aggressive Preloading
+  // Headers for performance
   async headers() {
     if (isStaticExport) return [];
-    
+
     return [
       {
         source: '/:path*',
@@ -200,7 +210,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Add redirects only for server mode (not static export)
+// Add redirects
 if (!isStaticExport) {
   nextConfig.redirects = async () => [
     {

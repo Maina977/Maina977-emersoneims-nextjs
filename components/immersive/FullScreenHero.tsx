@@ -7,7 +7,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Mesh, Vector3 } from 'three';
+import { Mesh, Vector3, SphereGeometry } from 'three';
 import { OrbitControls, PerspectiveCamera, Environment, Text } from '@react-three/drei';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -35,7 +35,7 @@ function HeroParticle({ position, speed }: HeroParticleProps) {
 
   return (
     <mesh ref={meshRef} position={position}>
-      <sphereGeometry args={[0.1, 8, 8]} />
+      <primitive object={new SphereGeometry(0.1, 8, 8)} />
       <meshStandardMaterial
         color="#fbbf24"
         emissive="#fbbf24"

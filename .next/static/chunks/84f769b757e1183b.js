@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,19191,t=>{"use strict";let e=async()=>Promise.resolve();t.s(["default",0,e,"initFluidSimulation",0,e])}]);

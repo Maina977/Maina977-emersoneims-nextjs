@@ -97,7 +97,6 @@ export default function MTBFChart() {
           color: "#fff",
           font: {
             size: 12,
-            weight: '500' as const,
           },
           padding: 15,
           usePointStyle: true,
@@ -132,7 +131,6 @@ export default function MTBFChart() {
           color: "#9ca3af",
           font: {
             size: 12,
-            weight: '500' as const,
           },
         },
       },
@@ -157,7 +155,6 @@ export default function MTBFChart() {
           color: "#fff",
           font: {
             size: 13,
-            weight: '600' as const,
           },
         },
       },

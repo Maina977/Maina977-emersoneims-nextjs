@@ -1,0 +1,432 @@
+{
+  "Pressure": {
+    "unit": "kPa",
+    "min": 0,
+    "max": 100,
+    "description": "System pressure reading",
+    "critical_low": 10,
+    "critical_high": 90,
+    "warning_low": 20,
+    "warning_high": 80
+  },
+  "FuelReservoir": {
+    "unit": "%",
+    "min": 0,
+    "max": 100,
+    "description": "Fuel tank level percentage",
+    "critical_low": 10,
+    "critical_high": 95,
+    "warning_low": 20,
+    "warning_high": 90
+  },
+  "PowerFactor": {
+    "unit": "pf",
+    "min": 0.5,
+    "max": 1.0,
+    "description": "Power factor ratio",
+    "critical_low": 0.7,
+    "critical_high": 1.0,
+    "warning_low": 0.8,
+    "warning_high": 0.95
+  },
+  "PanelVoltage": {
+    "unit": "V",
+    "min": 0,
+    "max": 600,
+    "description": "Solar panel array voltage",
+    "critical_low": 100,
+    "critical_high": 550,
+    "warning_low": 200,
+    "warning_high": 500
+  },
+  "BatteryVoltage": {
+    "unit": "V",
+    "min": 0,
+    "max": 60,
+    "description": "Battery bank voltage",
+    "critical_low": 40,
+    "critical_high": 58,
+    "warning_low": 44,
+    "warning_high": 56
+  },
+  "LineVoltage": {
+    "unit": "kV",
+    "min": 0,
+    "max": 33,
+    "description": "High voltage line voltage",
+    "critical_low": 9,
+    "critical_high": 12,
+    "warning_low": 10,
+    "warning_high": 11.5
+  },
+  "EarthingResistance": {
+    "unit": "Ω",
+    "min": 0,
+    "max": 10,
+    "description": "Earthing system resistance",
+    "critical_low": 0,
+    "critical_high": 5,
+    "warning_low": 0,
+    "warning_high": 3
+  },
+  "LoadCurrent": {
+    "unit": "A",
+    "min": 0,
+    "max": 200,
+    "description": "Electrical load current",
+    "critical_low": 0,
+    "critical_high": 180,
+    "warning_low": 10,
+    "warning_high": 160
+  },
+  "BatteryRuntime": {
+    "unit": "min",
+    "min": 0,
+    "max": 120,
+    "description": "UPS battery runtime remaining",
+    "critical_low": 5,
+    "critical_high": 120,
+    "warning_low": 15,
+    "warning_high": 90
+  },
+  "OutputVoltage": {
+    "unit": "V",
+    "min": 200,
+    "max": 240,
+    "description": "UPS output voltage",
+    "critical_low": 210,
+    "critical_high": 235,
+    "warning_low": 215,
+    "warning_high": 230
+  },
+  "RoomTemp": {
+    "unit": "°C",
+    "min": 15,
+    "max": 35,
+    "description": "Room temperature",
+    "critical_low": 18,
+    "critical_high": 30,
+    "warning_low": 20,
+    "warning_high": 28
+  },
+  "OilPressure": {
+    "unit": "kPa",
+    "min": 0,
+    "max": 100,
+    "description": "Engine oil pressure",
+    "critical_low": 20,
+    "critical_high": 90,
+    "warning_low": 30,
+    "warning_high": 80
+  },
+  "CoolantTemp": {
+    "unit": "°C",
+    "min": 60,
+    "max": 110,
+    "description": "Engine coolant temperature",
+    "critical_low": 70,
+    "critical_high": 105,
+    "warning_low": 75,
+    "warning_high": 100
+  },
+  "InverterOutput": {
+    "unit": "V",
+    "min": 0,
+    "max": 400,
+    "description": "Inverter AC output voltage",
+    "critical_low": 350,
+    "critical_high": 390,
+    "warning_low": 360,
+    "warning_high": 385
+  },
+  "Irradiance": {
+    "unit": "W/m²",
+    "min": 0,
+    "max": 1200,
+    "description": "Solar irradiance level",
+    "critical_low": 100,
+    "critical_high": 1100,
+    "warning_low": 200,
+    "warning_high": 1000
+  },
+  "BatterySOC": {
+    "unit": "%",
+    "min": 0,
+    "max": 100,
+    "description": "Battery state of charge",
+    "critical_low": 15,
+    "critical_high": 95,
+    "warning_low": 25,
+    "warning_high": 90
+  },
+  "GridVoltage": {
+    "unit": "V",
+    "min": 200,
+    "max": 250,
+    "description": "Grid connection voltage",
+    "critical_low": 210,
+    "critical_high": 240,
+    "warning_low": 215,
+    "warning_high": 235
+  },
+  "DailyGeneration": {
+    "unit": "kWh",
+    "min": 0,
+    "max": 100,
+    "description": "Daily solar energy generation",
+    "critical_low": 5,
+    "critical_high": 80,
+    "warning_low": 10,
+    "warning_high": 70
+  },
+  "TransformerTemp": {
+    "unit": "°C",
+    "min": 0,
+    "max": 120,
+    "description": "Transformer temperature",
+    "critical_low": 30,
+    "critical_high": 110,
+    "warning_low": 40,
+    "warning_high": 100
+  },
+  "BusbarVoltage": {
+    "unit": "kV",
+    "min": 0,
+    "max": 36,
+    "description": "Busbar voltage",
+    "critical_low": 30,
+    "critical_high": 35,
+    "warning_low": 31,
+    "warning_high": 34
+  },
+  "FaultCurrent": {
+    "unit": "kA",
+    "min": 0,
+    "max": 50,
+    "description": "Fault current level",
+    "critical_low": 0,
+    "critical_high": 40,
+    "warning_low": 0,
+    "warning_high": 30
+  },
+  "InputVoltage": {
+    "unit": "V",
+    "min": 200,
+    "max": 250,
+    "description": "UPS input voltage",
+    "critical_low": 210,
+    "critical_high": 240,
+    "warning_low": 215,
+    "warning_high": 235
+  },
+  "LoadPercentage": {
+    "unit": "%",
+    "min": 0,
+    "max": 150,
+    "description": "UPS load percentage",
+    "critical_low": 0,
+    "critical_high": 130,
+    "warning_low": 10,
+    "warning_high": 110
+  },
+  "Frequency": {
+    "unit": "Hz",
+    "min": 45,
+    "max": 55,
+    "description": "Electrical frequency",
+    "critical_low": 47,
+    "critical_high": 53,
+    "warning_low": 48,
+    "warning_high": 52
+  },
+  "Temperature": {
+    "unit": "°C",
+    "min": 0,
+    "max": 50,
+    "description": "Equipment temperature",
+    "critical_low": 10,
+    "critical_high": 45,
+    "warning_low": 15,
+    "warning_high": 40
+  },
+  "SetPoint": {
+    "unit": "°C",
+    "min": 18,
+    "max": 30,
+    "description": "Temperature setpoint",
+    "critical_low": 20,
+    "critical_high": 28,
+    "warning_low": 21,
+    "warning_high": 27
+  },
+  "Humidity": {
+    "unit": "%",
+    "min": 0,
+    "max": 100,
+    "description": "Relative humidity",
+    "critical_low": 20,
+    "critical_high": 80,
+    "warning_low": 30,
+    "warning_high": 70
+  },
+  "Airflow": {
+    "unit": "CFM",
+    "min": 0,
+    "max": 2000,
+    "description": "Air flow rate",
+    "critical_low": 200,
+    "critical_high": 1800,
+    "warning_low": 400,
+    "warning_high": 1600
+  },
+  "CompressorCurrent": {
+    "unit": "A",
+    "min": 0,
+    "max": 20,
+    "description": "Compressor current draw",
+    "critical_low": 2,
+    "critical_high": 18,
+    "warning_low": 4,
+    "warning_high": 16
+  },
+  "FilterPressure": {
+    "unit": "Pa",
+    "min": 0,
+    "max": 50,
+    "description": "Air filter pressure drop",
+    "critical_low": 0,
+    "critical_high": 40,
+    "warning_low": 5,
+    "warning_high": 30
+  },
+  "RuntimeHours": {
+    "unit": "hours",
+    "min": 0,
+    "max": 10000,
+    "description": "Equipment runtime hours",
+    "critical_low": 0,
+    "critical_high": 8000,
+    "warning_low": 100,
+    "warning_high": 7000
+  },
+  "Voltage": {
+    "unit": "V",
+    "min": 0,
+    "max": 500,
+    "description": "Electrical voltage",
+    "critical_low": 380,
+    "critical_high": 440,
+    "warning_low": 395,
+    "warning_high": 425
+  },
+  "Current": {
+    "unit": "A",
+    "min": 0,
+    "max": 100,
+    "description": "Electrical current",
+    "critical_low": 10,
+    "critical_high": 80,
+    "warning_low": 20,
+    "warning_high": 70
+  },
+  "Vibration": {
+    "unit": "mm/s",
+    "min": 0,
+    "max": 10,
+    "description": "Equipment vibration level",
+    "critical_low": 0,
+    "critical_high": 7,
+    "warning_low": 0.5,
+    "warning_high": 5
+  },
+  "Speed": {
+    "unit": "RPM",
+    "min": 0,
+    "max": 3600,
+    "description": "Motor speed",
+    "critical_low": 1400,
+    "critical_high": 1550,
+    "warning_low": 1420,
+    "warning_high": 1530
+  },
+  "Torque": {
+    "unit": "%",
+    "min": 0,
+    "max": 150,
+    "description": "Motor torque percentage",
+    "critical_low": 20,
+    "critical_high": 120,
+    "warning_low": 30,
+    "warning_high": 110
+  },
+  "PLC_Status": {
+    "unit": "boolean",
+    "min": 0,
+    "max": 1,
+    "description": "PLC operational status",
+    "critical_low": 1,
+    "critical_high": 1,
+    "warning_low": 1,
+    "warning_high": 1
+  },
+  "NetworkLatency": {
+    "unit": "ms",
+    "min": 0,
+    "max": 100,
+    "description": "Network response time",
+    "critical_low": 0,
+    "critical_high": 50,
+    "warning_low": 1,
+    "warning_high": 25
+  },
+  "CPU_Usage": {
+    "unit": "%",
+    "min": 0,
+    "max": 100,
+    "description": "CPU utilization",
+    "critical_low": 0,
+    "critical_high": 90,
+    "warning_low": 10,
+    "warning_high": 80
+  },
+  "Memory_Usage": {
+    "unit": "%",
+    "min": 0,
+    "max": 100,
+    "description": "Memory utilization",
+    "critical_low": 0,
+    "critical_high": 90,
+    "warning_low": 10,
+    "warning_high": 80
+  },
+  "IO_Status": {
+    "unit": "bitmask",
+    "min": 0,
+    "max": 65535,
+    "description": "I/O module status",
+    "critical_low": 0,
+    "critical_high": 65535,
+    "warning_low": 0,
+    "warning_high": 65535
+  },
+  "AlarmCount": {
+    "unit": "count",
+    "min": 0,
+    "max": 100,
+    "description": "Active alarm count",
+    "critical_low": 0,
+    "critical_high": 10,
+    "warning_low": 0,
+    "warning_high": 5
+  },
+  "CommunicationStatus": {
+    "unit": "boolean",
+    "min": 0,
+    "max": 1,
+    "description": "Communication link status",
+    "critical_low": 1,
+    "critical_high": 1,
+    "warning_low": 1,
+    "warning_high": 1
+  }
+}

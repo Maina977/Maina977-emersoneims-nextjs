@@ -189,15 +189,15 @@ export default function DiagnosticsPage() {
   }, []);
 
   const questionsData = [
-    { service: 'Solar Systems', count: 120 },
-    { service: 'Diesel Generators', count: 95 },
-    { service: 'Controls', count: 80 },
-    { service: 'AC & UPS', count: 60 },
-    { service: 'Automation', count: 70 },
-    { service: 'Pumps', count: 50 },
-    { service: 'Incinerators', count: 40 },
-    { service: 'Motors/Rewinding', count: 55 },
-    { service: 'Diagnostics Hub', count: 200 },
+    { service: 'Solar Systems', count: 120, trend: 'up' as const, avgResolutionTime: 2.1, satisfaction: 4.8, revenue: 24000 },
+    { service: 'Diesel Generators', count: 95, trend: 'stable' as const, avgResolutionTime: 3.2, satisfaction: 4.6, revenue: 19000 },
+    { service: 'Controls', count: 80, trend: 'up' as const, avgResolutionTime: 1.8, satisfaction: 4.7, revenue: 16000 },
+    { service: 'AC & UPS', count: 60, trend: 'down' as const, avgResolutionTime: 2.5, satisfaction: 4.4, revenue: 12000 },
+    { service: 'Automation', count: 70, trend: 'up' as const, avgResolutionTime: 2.9, satisfaction: 4.5, revenue: 14000 },
+    { service: 'Pumps', count: 50, trend: 'stable' as const, avgResolutionTime: 3.5, satisfaction: 4.3, revenue: 10000 },
+    { service: 'Incinerators', count: 40, trend: 'up' as const, avgResolutionTime: 4.1, satisfaction: 4.2, revenue: 8000 },
+    { service: 'Motors/Rewinding', count: 55, trend: 'stable' as const, avgResolutionTime: 2.7, satisfaction: 4.6, revenue: 11000 },
+    { service: 'Diagnostics Hub', count: 200, trend: 'up' as const, avgResolutionTime: 1.2, satisfaction: 4.9, revenue: 40000 },
   ];
 
   const handleSeverityUpdate = (service: string, severity: string) => {

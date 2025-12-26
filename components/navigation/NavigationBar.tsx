@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 interface NavItem {
@@ -70,11 +71,20 @@ export default function NavigationBar({
           {/* Logo */}
           <Link href="/">
             <motion.div
-              className="text-lg font-display font-semibold text-white tracking-tight cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              EMERSON
+              <Image
+                src="/logo.svg"
+                alt="EmersonEIMS Logo"
+                width={40}
+                height={40}
+                priority
+              />
+              <div className="text-lg font-display font-semibold text-white tracking-tight">
+                EMERSON
+              </div>
             </motion.div>
           </Link>
 

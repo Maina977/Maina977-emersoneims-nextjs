@@ -21,7 +21,7 @@ export default function AdvancedPreloader() {
     // Preload critical images
     const images = [
       '/images/hero-bg.jpg',
-      '/images/logo.png',
+      'https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png',
     ];
 
     // Preload critical routes

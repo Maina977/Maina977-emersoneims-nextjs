@@ -106,7 +106,7 @@ export default function AwwwardsHomepage() {
   
   // Memoized config for performance
   const performanceConfig = useMemo(() => ({
-    dpr: Math.min(window.devicePixelRatio || 1, windowWidth < 768 ? 1 : 1.5),
+    dpr: Math.min((typeof window !== 'undefined' ? window.devicePixelRatio : 1) || 1, windowWidth < 768 ? 1 : 1.5),
     shadows: windowWidth > 1024,
     particles: windowWidth > 768 ? 2000 : 800,
     quality: (windowWidth < 768 ? 'medium' : 'high') as 'low' | 'medium' | 'high'

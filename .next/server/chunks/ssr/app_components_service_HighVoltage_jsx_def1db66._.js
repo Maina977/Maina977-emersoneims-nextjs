@@ -1,3 +1,0 @@
-module.exports=[88026,a=>{"use strict";var b=a.i(87924);function c({performanceTier:a="high"}){return(0,b.jsx)("section",{id:"hv",className:"py-20 bg-gradient-to-b from-black to-gray-900",children:(0,b.jsxs)("div",{className:"max-w-7xl mx-auto px-4",children:[(0,b.jsx)("h2",{className:"text-4xl font-bold mb-8 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent",children:"High Voltage Systems"}),(0,b.jsx)("p",{className:"text-gray-300 text-lg",children:"High voltage infrastructure solutions."})]})})}a.s(["default",()=>c])}];
-
-//# sourceMappingURL=app_components_service_HighVoltage_jsx_def1db66._.js.map

@@ -23,7 +23,7 @@ function SimpleScene() {
       </mesh>
       
       <mesh position={[3, 2, -3]} rotation={[Math.PI / 4, Math.PI / 4, 0]}>
-        <sphereGeometry args={[1, 32, 32]} />
+        <primitive object={new THREE.SphereGeometry(1, 32, 32)} />
         <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={0.2} />
       </mesh>
 

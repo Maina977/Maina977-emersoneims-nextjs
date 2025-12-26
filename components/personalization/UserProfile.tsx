@@ -17,32 +17,49 @@ interface UserPreferences {
 }
 
 export default function UserProfile() {
-  const [preferences, setPreferences] = useState<UserPreferences>({
-    language: 'en',
-    theme: 'dark',
-    interests: [],
-    savedProducts: [],
-    recentViews: [],
-  });
+  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    // Load preferences from localStorage
+    // Load preferences from localStorage on client-side only
     const saved = localStorage.getItem('userPreferences');
     if (saved) {
       try {
         setPreferences(JSON.parse(saved));
       } catch (error) {
         console.warn('Failed to load preferences:', error);
+        setPreferences({
+          language: 'en',
+          theme: 'dark',
+          interests: [],
+          savedProducts: [],
+          recentViews: [],
+        });
       }
+    } else {
+      setPreferences({
+        language: 'en',
+        theme: 'dark',
+        interests: [],
+        savedProducts: [],
+        recentViews: [],
+      });
     }
+    setIsHydrated(true);
   }, []);
 
   const savePreferences = (newPrefs: Partial<UserPreferences>) => {
+    if (!preferences) return;
     const updated = { ...preferences, ...newPrefs };
     setPreferences(updated);
     localStorage.setItem('userPreferences', JSON.stringify(updated));
   };
+
+  // Don't render until hydrated to prevent hydration mismatch
+  if (!isHydrated || !preferences) {
+    return null;
+  }
 
   const addInterest = (interest: string) => {
     if (!preferences.interests.includes(interest)) {

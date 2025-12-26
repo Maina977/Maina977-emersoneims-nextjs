@@ -67,40 +67,37 @@ function ComprehensiveAnalyticsContent() {
   // This prevents build errors during static generation
   const searchParams = useSearchParams();
   const [visitorData, setVisitorData] = useState<VisitorData | null>(null);
-  const sessionStartTime = useRef<number>(Date.now());
+  const [isClientReady, setIsClientReady] = useState(false);
+  const sessionStartTime = useRef<number>(0);
   const scrollDepth = useRef<number>(0);
   const clickCount = useRef<number>(0);
   const formInteractions = useRef<number>(0);
   const exitIntentDetected = useRef<boolean>(false);
 
-  // Initialize visitor tracking
+  // Initialize visitor tracking - only on client side
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
+    setIsClientReady(true);
+    sessionStartTime.current = Date.now();
+
     const initializeVisitor = async () => {
-      // Generate or retrieve visitor ID
-      let visitorId: string | null = null;
-      if (typeof window !== 'undefined') {
-        visitorId = localStorage.getItem('visitor_id');
-        if (!visitorId) {
-          visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          localStorage.setItem('visitor_id', visitorId);
-        }
-      } else {
+      // Generate or retrieve visitor ID - client side only
+      let visitorId: string | null = localStorage.getItem('visitor_id');
+      if (!visitorId) {
         visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('visitor_id', visitorId);
       }
 
       const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('session_id', sessionId);
-      }
+      sessionStorage.setItem('session_id', sessionId);
 
       // Detect device type
-      const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown';
-      const deviceType = /Mobile|Android|iPhone|iPad/.test(userAgent) 
-        ? 'mobile' 
-        : /Tablet|iPad/.test(userAgent) 
-        ? 'tablet' 
+      const userAgent = navigator.userAgent;
+      const deviceType = /Mobile|Android|iPhone|iPad/.test(userAgent)
+        ? 'mobile'
+        : /Tablet|iPad/.test(userAgent)
+        ? 'tablet'
         : 'desktop';
 
       // Get location data (using IP geolocation API)
@@ -115,11 +112,9 @@ function ComprehensiveAnalyticsContent() {
         };
       } catch (error) {
         // Fallback: use browser timezone
-        if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
-          locationData = {
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          };
-        }
+        locationData = {
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
       }
 
       const visitor: VisitorData = {

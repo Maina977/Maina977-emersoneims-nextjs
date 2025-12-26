@@ -1,3 +1,0 @@
-module.exports=[3451,a=>{"use strict";var b=a.i(87924);function c({performanceTier:a="high"}){return(0,b.jsx)("section",{id:"ups",className:"py-20 bg-gradient-to-b from-gray-900 to-black",children:(0,b.jsxs)("div",{className:"max-w-7xl mx-auto px-4",children:[(0,b.jsx)("h2",{className:"text-4xl font-bold mb-8 bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent",children:"UPS Systems"}),(0,b.jsx)("p",{className:"text-gray-300 text-lg",children:"Uninterruptible power supply systems."})]})})}a.s(["default",()=>c])}];
-
-//# sourceMappingURL=app_components_service_UPSSystems_jsx_f7caeb0b._.js.map

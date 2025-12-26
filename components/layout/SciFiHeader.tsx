@@ -82,10 +82,12 @@ export default function SciFiHeader() {
           >
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center font-bold text-black text-xl group-hover:shadow-[0_0_20px_oklch(0.75_0.20_200)] transition-all">
-                  E
-                </div>
-                <div className="absolute inset-0 rounded-lg bg-cyan-400/20 blur-xl group-hover:blur-2xl transition-all" />
+                <img
+                  src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
+                  alt="EmersonEIMS Logo"
+                  className="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 rounded-lg bg-cyan-400/20 blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
               </div>
               <div className="hidden sm:block">
                 <div className="text-lg font-bold font-mono text-cyan-300 tracking-wider">

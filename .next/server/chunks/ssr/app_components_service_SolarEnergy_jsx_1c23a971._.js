@@ -1,3 +1,0 @@
-module.exports=[43522,a=>{"use strict";var b=a.i(87924);function c({performanceTier:a="high"}){return(0,b.jsx)("section",{id:"solar",className:"py-20 bg-gradient-to-b from-gray-900 to-black",children:(0,b.jsxs)("div",{className:"max-w-7xl mx-auto px-4",children:[(0,b.jsx)("h2",{className:"text-4xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent",children:"Solar Energy"}),(0,b.jsx)("p",{className:"text-gray-300 text-lg",children:"Premium solar energy solutions and installations."})]})})}a.s(["default",()=>c])}];
-
-//# sourceMappingURL=app_components_service_SolarEnergy_jsx_1c23a971._.js.map

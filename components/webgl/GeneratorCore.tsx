@@ -33,7 +33,7 @@ function RotatingCore() {
     <>
       {/* Main Core */}
       <mesh ref={coreRef} position={[0, 0, 0]}>
-        <icosahedronGeometry args={[1, 2]} />
+        <primitive object={new THREE.IcosahedronGeometry(1, 2)} />
         <MeshDistortMaterial
           color="#fbbf24"
           emissive="#fbbf24"
@@ -74,7 +74,7 @@ function RotatingCore() {
             (Math.random() - 0.5) * 6,
           ]}
         >
-          <sphereGeometry args={[0.02, 8, 8]} />
+          <primitive object={new THREE.SphereGeometry(0.02, 8, 8)} />
           <meshStandardMaterial
             color="#fbbf24"
             emissive="#fbbf24"

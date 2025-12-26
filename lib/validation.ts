@@ -8,7 +8,7 @@ import { z } from 'zod';
 // Conversion tracking schema
 export const conversionSchema = z.object({
   type: z.string(),
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
   visitorId: z.string(),
   sessionId: z.string(),
   timestamp: z.string().or(z.number()),
@@ -17,7 +17,7 @@ export const conversionSchema = z.object({
 // Event tracking schema
 export const eventSchema = z.object({
   event: z.string(),
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
   visitorId: z.string(),
   sessionId: z.string(),
   timestamp: z.string().or(z.number()),
@@ -45,7 +45,7 @@ export const notificationSchema = z.object({
   type: z.string().optional().default('new_lead'),
   visitorId: z.string().optional(),
   conversionType: z.string().optional(),
-  data: z.record(z.any()).optional(),
+  data: z.record(z.string(), z.any()).optional(),
   timestamp: z.union([z.number(), z.string()]).optional().default(Date.now()),
 });
 

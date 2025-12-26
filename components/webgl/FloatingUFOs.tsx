@@ -9,6 +9,7 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Mesh, Vector3, Color } from 'three';
+import * as THREE from 'three';
 import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
@@ -64,7 +65,7 @@ function UFO({ position, speed, color, size }: UFOProps) {
       
       {/* Top dome */}
       <mesh position={[0, size * 0.3, 0]}>
-        <sphereGeometry args={[size * 0.6, 16, 16]} />
+        <primitive object={new THREE.SphereGeometry(size * 0.6, 16, 16)} />
         <meshStandardMaterial
           color={color}
           emissive={color}
@@ -153,7 +154,7 @@ function DriftingBlob({ position, color, size }: DriftingBlobProps) {
 
   return (
     <mesh ref={meshRef} position={position}>
-      <icosahedronGeometry args={[size, 2]} />
+      <primitive object={new THREE.IcosahedronGeometry(size, 2)} />
       <meshStandardMaterial
         color={color}
         emissive={color}
@@ -204,11 +205,11 @@ function AbstractShape({ position, color, shape }: AbstractShapeProps) {
   const geometry = useMemo(() => {
     switch (shape) {
       case 'octahedron':
-        return <octahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.OctahedronGeometry(1, 0)} />;
       case 'tetrahedron':
-        return <tetrahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.TetrahedronGeometry(1, 0)} />;
       case 'dodecahedron':
-        return <dodecahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.DodecahedronGeometry(1, 0)} />;
     }
   }, [shape]);
 

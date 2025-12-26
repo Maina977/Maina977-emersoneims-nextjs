@@ -184,7 +184,7 @@ function EnhancedGenerator() {
 
       {/* Inner Core Glow */}
       <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[0.8, 32, 32]} />
+        <primitive object={new THREE.SphereGeometry(0.8, 32, 32)} />
         <meshStandardMaterial
           color="#fbbf24"
           emissive="#fbbf24"

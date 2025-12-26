@@ -3,10 +3,14 @@
   "short_name": "Emerson EIMS",
   "description": "Professional energy infrastructure management solutions including generators, solar systems, UPS, and comprehensive diagnostics",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#FFD166",
-  "orientation": "portrait-primary",
+  "orientation": "any",
+  "lang": "en-US",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icon-192.png",
@@ -19,35 +23,62 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
-  "categories": ["business", "utilities", "productivity"],
+  "categories": ["business", "utilities", "productivity", "energy"],
   "screenshots": [
     {
       "src": "/screenshot-wide.png",
       "sizes": "1280x720",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide"
     },
     {
       "src": "/screenshot-narrow.png",
       "sizes": "750x1334",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ],
   "shortcuts": [
     {
       "name": "Generators",
       "short_name": "Generators",
-      "description": "Browse generator models",
+      "description": "Browse generator models and solutions",
       "url": "/generators",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Diagnostics",
+      "name": "Solar Solutions",
+      "short_name": "Solar",
+      "description": "Explore solar energy solutions",
+      "url": "/solar",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Diagnostics Hub",
       "short_name": "Diagnostics",
-      "description": "Diagnostic suite",
-      "url": "/diagnostic-suite",
+      "description": "Access diagnostic tools and monitoring",
+      "url": "/diagnostics/hub",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Contact Us",
+      "short_name": "Contact",
+      "description": "Get in touch with our team",
+      "url": "/contact",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "related_applications": [],
+  "iarc_rating_id": "",
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }

@@ -7,7 +7,17 @@
  */
 
 import { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, extend } from '@react-three/fiber';
+import * as THREE from 'three';
+
+// Extend Three.js geometries for JSX usage
+extend({
+  sphereGeometry: THREE.SphereGeometry,
+  octahedronGeometry: THREE.OctahedronGeometry,
+  tetrahedronGeometry: THREE.TetrahedronGeometry,
+  dodecahedronGeometry: THREE.DodecahedronGeometry,
+  icosahedronGeometry: THREE.IcosahedronGeometry,
+});
 import { Mesh, Vector3, Color } from 'three';
 import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -64,15 +74,15 @@ function FloatingShape({ position, color, size, speed, shape }: FloatingShapePro
   const geometry = useMemo(() => {
     switch (shape) {
       case 'torus':
-        return <torusGeometry args={[1, 0.3, 16, 32]} />;
+        return <primitive object={new THREE.TorusGeometry(1, 0.3, 16, 32)} />;
       case 'octahedron':
-        return <octahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.OctahedronGeometry(1, 0)} />;
       case 'tetrahedron':
-        return <tetrahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.TetrahedronGeometry(1, 0)} />;
       case 'dodecahedron':
-        return <dodecahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.DodecahedronGeometry(1, 0)} />;
       case 'icosahedron':
-        return <icosahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.IcosahedronGeometry(1, 0)} />;
     }
   }, [shape]);
 
@@ -135,11 +145,11 @@ function WireframeShape({ position, color, shape, size }: WireframeShapeProps) {
   const geometry = useMemo(() => {
     switch (shape) {
       case 'octahedron':
-        return <octahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.OctahedronGeometry(1, 0)} />;
       case 'tetrahedron':
-        return <tetrahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.TetrahedronGeometry(1, 0)} />;
       case 'dodecahedron':
-        return <dodecahedronGeometry args={[1, 0]} />;
+        return <primitive object={new THREE.DodecahedronGeometry(1, 0)} />;
     }
   }, [shape]);
 
@@ -199,7 +209,7 @@ function ParticleField({ count }: ParticleFieldProps) {
           }}
           position={pos}
         >
-          <sphereGeometry args={[0.05, 8, 8]} />
+          <primitive object={new THREE.SphereGeometry(0.05, 8, 8)} />
           <meshStandardMaterial
             color="#ffffff"
             emissive="#4a90e2"

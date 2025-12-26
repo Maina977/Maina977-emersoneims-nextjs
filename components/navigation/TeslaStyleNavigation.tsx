@@ -58,11 +58,18 @@ export default function TeslaStyleNavigation({
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <motion.div
-              className="text-lg font-display font-semibold text-white tracking-tight"
+              className="flex items-center gap-3 cursor-pointer"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              EMERSON
+              <img
+                src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
+                alt="EmersonEIMS Logo"
+                className="w-8 h-8 object-contain"
+              />
+              <div className="text-lg font-display font-semibold text-white tracking-tight">
+                EMERSON
+              </div>
             </motion.div>
           </Link>
 

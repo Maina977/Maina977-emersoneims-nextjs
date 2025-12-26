@@ -18,11 +18,22 @@ const rateLimit = (options: {
   return {
     check: (limit: number, token: string) => {
       const tokenCount = (tokenCache.get(token) || 0) + 1;
-      tokenCache.set(token, tokenCount);
-
+      const resetTime = Date.now() + (options.interval * 1000);
+      
       if (tokenCount > limit) {
-        throw new Error('Rate limit exceeded');
+        return {
+          success: false,
+          remaining: Math.max(0, limit - tokenCount + 1),
+          reset: resetTime,
+        };
       }
+      
+      tokenCache.set(token, tokenCount);
+      return {
+        success: true,
+        remaining: limit - tokenCount,
+        reset: resetTime,
+      };
     },
   };
 };
