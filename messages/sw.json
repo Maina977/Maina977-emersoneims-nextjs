@@ -1,0 +1,95 @@
+{
+  "navigation": {
+    "home": "NYUMBANI",
+    "aboutUs": "KUHUSU SISI",
+    "services": "HUDUMA",
+    "solutions": "SULUHISHI",
+    "generator": "JENERETA",
+    "solar": "JUA",
+    "diagnostics": "UCHAMBUZI",
+    "diagnosticSuite": "KITANDA CHA UCHAMBUZI",
+    "contact": "WASILIANA"
+  },
+  "userProfile": {
+    "title": "Wasifu Wako",
+    "language": "Lugha",
+    "interests": "Masilahi",
+    "savedProducts": "Bidhaa Zilizohifadhiwa",
+    "saved": "imehifadhiwa",
+    "generators": "Jenereta",
+    "solar": "Jua",
+    "ups": "UPS",
+    "diagnostics": "Uchambuzi"
+  },
+  "common": {
+    "loading": "Inapakia...",
+    "error": "Kosa",
+    "success": "Mafanikio",
+    "cancel": "Ghairi",
+    "save": "Hifadhi",
+    "submit": "Wasilisha",
+    "close": "Funga",
+    "open": "Fungua",
+    "menu": "Menyu",
+    "search": "Tafuta",
+    "filter": "Chuja",
+    "sort": "Panga",
+    "view": "Tazama",
+    "edit": "Hariri",
+    "delete": "Futa",
+    "add": "Ongeza",
+    "remove": "Ondoa",
+    "back": "Nyuma",
+    "next": "Ijayo",
+    "previous": "Iliyopita",
+    "continue": "Endelea",
+    "finish": "Maliza",
+    "complete": "Kamili",
+    "pending": "Inasubiri",
+    "active": "Hai",
+    "inactive": "Haifanyi kazi",
+    "enabled": "Imewezeshwa",
+    "disabled": "Imezimwa"
+  },
+  "services": {
+    "title": "Huduma Zetu",
+    "generatorMaintenance": "Huduma kamili za matengenezo kwa aina zote za jenereta",
+    "electricalServices": "Huduma za Umeme",
+    "fuelSystemServices": "Huduma za uchambuzi na ukarabati wa mifumo ya mafuta",
+    "emergencyServices": "Huduma za ukarabati wa dharura 24/7"
+  },
+  "contact": {
+    "title": "Wasiliana Nasi",
+    "name": "Jina",
+    "email": "Barua pepe",
+    "phone": "Simu",
+    "message": "Ujumbe",
+    "send": "Tuma Ujumbe",
+    "address": "Anwani",
+    "businessHours": "Saa za Kazi"
+  },
+  "about": {
+    "title": "Kuhusu Sisi",
+    "mission": "Dhamira Yetu",
+    "vision": "Maono Yetu",
+    "values": "Maadili Yetu",
+    "team": "Timu Yetu"
+  },
+  "diagnostics": {
+    "title": "Uchambuzi",
+    "universalDiagnosticMachine": "Mashine ya Uchambuzi ya Ulimwengu",
+    "comprehensiveDiagnostics": "Uchambuzi kamili kwa huduma zote 9: Jua, Jenereta, Udhibiti, AC/UPS, Otomatiki, Pampu, Vichomzi, Motors, na Kitovu cha Uchambuzi",
+    "awwwardsWinningInterface": "Interface ya Kushinda Tuzo za Awwwards - Mashine ya Uchambuzi ya Ulimwengu (Huduma Zote 9)"
+  },
+  "footer": {
+    "copyright": "© 2025 Emerson EIMS. Haki zote zimehifadhiwa.",
+    "privacy": "Sera ya Faragha",
+    "terms": "Masharti ya Huduma",
+    "contact": "Wasiliana"
+  },
+  "seo": {
+    "title": "Emerson EIMS - Mfumo wa Usimamizi wa Miundombinu ya Nishati",
+    "description": "Suluhisho za kitaalamu za usimamizi wa miundombinu ya nishati ikijumuisha jenereta, mifumo ya jua, UPS, na uchambuzi kamili",
+    "keywords": "nishati, miundombinu, jenereta, jua, UPS, uchambuzi, usimamizi"
+  }
+}

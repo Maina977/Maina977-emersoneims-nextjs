@@ -1,0 +1,95 @@
+{
+  "navigation": {
+    "home": "GURIGA",
+    "aboutUs": "NAGA SOO SAAR",
+    "services": "ADEEGYADA",
+    "solutions": "XALALKA",
+    "generator": "GENERATOR",
+    "solar": "QORRAXDA",
+    "diagnostics": "BAADHISTA",
+    "diagnosticSuite": "SUITE BAADHISTA",
+    "contact": "LA XIDHIIDH"
+  },
+  "userProfile": {
+    "title": "Muqaalkaaga",
+    "language": "Luqadda",
+    "interests": "Danaha",
+    "savedProducts": "Alaabooyinka La Keydiyey",
+    "saved": "la keydiyey",
+    "generators": "Generator-yada",
+    "solar": "Qorraxd",
+    "ups": "UPS",
+    "diagnostics": "Baadhista"
+  },
+  "common": {
+    "loading": "Soo dejinaysa...",
+    "error": "Qalad",
+    "success": "Guul",
+    "cancel": "Jooji",
+    "save": "Keydi",
+    "submit": "Soo gudbi",
+    "close": "Xidh",
+    "open": "Fur",
+    "menu": "Menu",
+    "search": "Raadi",
+    "filter": "Shaandhee",
+    "sort": "Kala saar",
+    "view": "Eeg",
+    "edit": "Wax ka beddel",
+    "delete": "Tirtir",
+    "add": "Ku dar",
+    "remove": "Ka saar",
+    "back": "Dib u noqo",
+    "next": "Ku xiga",
+    "previous": "Hore",
+    "continue": "Sii wad",
+    "finish": "Dhammaystir",
+    "complete": "Dhammaystiran",
+    "pending": "Sugaya",
+    "active": "Firfircoon",
+    "inactive": "Aan firfircoonayn",
+    "enabled": "Kartay",
+    "disabled": "Naafaysan"
+  },
+  "services": {
+    "title": "Adeegyadeena",
+    "generatorMaintenance": "Adeegyo dayactir oo dhammaystiran oo loogu talagalay dhammaan noocyada generator-yada",
+    "electricalServices": "Adeegyada Korontada",
+    "fuelSystemServices": "Adeegyada baadhista iyo dayactirka nidaamka shidaalka",
+    "emergencyServices": "Adeegyada dayactirka degdegga ah 24/7"
+  },
+  "contact": {
+    "title": "Nala Soo Xidhiidh",
+    "name": "Magaca",
+    "email": "Email-ka",
+    "phone": "Telefoonka",
+    "message": "Fariinta",
+    "send": "Dir Fariinta",
+    "address": "Cinwaanka",
+    "businessHours": "Saacadaha Shaqada"
+  },
+  "about": {
+    "title": "Naga Soo Saar",
+    "mission": "Hadafkeena",
+    "vision": "Aragtideena",
+    "values": "Qiimayaasheena",
+    "team": "Kooxdeena"
+  },
+  "diagnostics": {
+    "title": "Baadhista",
+    "universalDiagnosticMachine": "Mashiinka Baadhista Caalamiga ah",
+    "comprehensiveDiagnostics": "Baadhista dhammaystiran ee dhammaan 9 adeegyo: Qorraxd, Generator-yada, Xakamaynta, AC/UPS, Automation-ka, Bambooyinka, Gubashada, Matoorada iyo Xarunta Baadhista",
+    "awwwardsWinningInterface": "Interface-ka Guusha Awwwards - Mashiinka Baadhista Caalamiga ah (Dhammaan 9 Adeegyo)"
+  },
+  "footer": {
+    "copyright": "© 2025 Emerson EIMS. Dhammaan xuquuqda way ilaalinayaan.",
+    "privacy": "Siyaasadda Qarsoodiga",
+    "terms": "Shuruudaha Adeegga",
+    "contact": "La Xidhiidh"
+  },
+  "seo": {
+    "title": "Emerson EIMS - Nidaamka Maareynta Kaabayaasha Tamarta",
+    "description": "Xalal xirfadeed oo loogu talagalay maareynta kaabayaasha tamarta oo ay ku jiraan generator-yada, nidaamyada qorraxd, UPS iyo baadhista dhammaystiran",
+    "keywords": "tamarta, kaabayaasha, generator-yada, qorraxd, UPS, baadhista, maareynta"
+  }
+}

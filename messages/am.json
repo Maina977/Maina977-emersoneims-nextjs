@@ -1,0 +1,95 @@
+{
+  "navigation": {
+    "home": "መነሻ ገጽ",
+    "aboutUs": "ስለ እኛ",
+    "services": "አገልግሎቶች",
+    "solutions": "መፍትሄዎች",
+    "generator": "ጀነሬተር",
+    "solar": "ሶላር",
+    "diagnostics": "የምርመራ ስራ",
+    "diagnosticSuite": "የምርመራ ስራ ሰት",
+    "contact": "ተገናኝ"
+  },
+  "userProfile": {
+    "title": "የእርሶ መገለጫ",
+    "language": "ቋንቋ",
+    "interests": "ፍላጎቶች",
+    "savedProducts": "የተቀመጡ ምርቶች",
+    "saved": "ተቀምጧል",
+    "generators": "ጀነሬተሮች",
+    "solar": "ሶላር",
+    "ups": "UPS",
+    "diagnostics": "የምርመራ ስራ"
+  },
+  "common": {
+    "loading": "በማውጣት ላይ...",
+    "error": "ስህተት",
+    "success": "ተሳካ",
+    "cancel": "ሰርዝ",
+    "save": "ቀመጥ",
+    "submit": "ላክ",
+    "close": "ዝጋ",
+    "open": "ክፈት",
+    "menu": "ሜኑ",
+    "search": "ፈልግ",
+    "filter": "አጣራ",
+    "sort": "አስተካክል",
+    "view": "ተመልክ",
+    "edit": "አርም",
+    "delete": "ሰርዝ",
+    "add": "አክል",
+    "remove": "አስወግድ",
+    "back": "ተመለስ",
+    "next": "ቀጣይ",
+    "previous": "ቀድሞ",
+    "continue": "ቀጥል",
+    "finish": "ጨርስ",
+    "complete": "ተጠናቀቀ",
+    "pending": "በመጠበቅ ላይ",
+    "active": "ንቁ",
+    "inactive": "እንቅስቃሴ የሌለበት",
+    "enabled": "ተስተካከለ",
+    "disabled": "ተሰናከለ"
+  },
+  "services": {
+    "title": "አገልግሎቶቻችን",
+    "generatorMaintenance": "ለሁሉም አይነት ጀነሬተሮች ሁሉን አቀፍ የጥገና አገልግሎቶች",
+    "electricalServices": "የኤሌክትሪክ አገልግሎቶች",
+    "fuelSystemServices": "ለየምውጋ ስርዓቶች የምርመራ እና የጥገና አገልግሎቶች",
+    "emergencyServices": "24/7 የአደገኛ ጊዜ ጥገና አገልግሎቶች"
+  },
+  "contact": {
+    "title": "አገናኝ",
+    "name": "ስም",
+    "email": "ኢሜይል",
+    "phone": "ስልክ",
+    "message": "መልክ",
+    "send": "መልክ ላክ",
+    "address": "አድራሻ",
+    "businessHours": "የሥራ ሰዓቶች"
+  },
+  "about": {
+    "title": "ስለ እኛ",
+    "mission": "ተልእኮአችን",
+    "vision": "ራእያችን",
+    "values": "እሴቶቻችን",
+    "team": "ቡድናችን"
+  },
+  "diagnostics": {
+    "title": "የምርመራ ስራ",
+    "universalDiagnosticMachine": "የአለም አቀፍ የምርመራ ስራ ሜሽን",
+    "comprehensiveDiagnostics": "ለሁሉም 9 አገልግሎቶች ሁሉን አቀፍ የምርመራ ስራ፡ ሶላር፣ ጀነሬተሮች፣ መቆጣጠሪያዎች፣ AC/UPS፣ አውቶሜሽን፣ ፓምፖች፣ የማቃጠል ሜሽኖች፣ ሞተሮች እና የምርመራ ስራ ማዕከል",
+    "awwwardsWinningInterface": "የAwwwards የሸናፊነት በተሰማ በያህል የምርመራ ስራ ሜሽን (ሁሉም 9 አገልግሎቶች)"
+  },
+  "footer": {
+    "copyright": "© 2025 Emerson EIMS። ሁሉም መብቶች የተያዙ ናቸው።",
+    "privacy": "የግል ምስጠራ ፖሊሲ",
+    "terms": "የአገልግሎት ውሎች",
+    "contact": "ተገናኝ"
+  },
+  "seo": {
+    "title": "Emerson EIMS - የኢነርጂ በተለያዩ መስኮች ማስተያየት ስርዓት",
+    "description": "ለኢነርጂ በተለያዩ መስኮች ማስተያየት ስርዓት ለሆኑ ምርቶች ተገቢ መፍትሄዎች ጨምሮ ጀነሬተሮች፣ የሶላር ስርዓቶች፣ UPS እና ሁሉን አቀፍ የምርመራ ስራ",
+    "keywords": "ኢነርጂ, በተለያዩ መስኮች ማስተያየት, ጀነሬተሮች, ሶላር, UPS, የምርመራ ስራ, ማስተያየት"
+  }
+}

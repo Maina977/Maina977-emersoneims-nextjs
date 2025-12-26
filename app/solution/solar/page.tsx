@@ -4,7 +4,7 @@ import { useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import SectionLead from "@/components/generators/SectionLead";
+import { SectionLead } from "@/components/generators";
 import AnimatedImage from "@/components/effects/AnimatedImage";
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import ErrorBoundary from '@/components/error/ErrorBoundary';

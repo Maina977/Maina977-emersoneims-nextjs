@@ -1,0 +1,95 @@
+{
+  "navigation": {
+    "home": "الرئيسية",
+    "aboutUs": "من نحن",
+    "services": "الخدمات",
+    "solutions": "الحلول",
+    "generator": "المولد",
+    "solar": "الطاقة الشمسية",
+    "diagnostics": "التشخيص",
+    "diagnosticSuite": "مجموعة التشخيص",
+    "contact": "اتصل بنا"
+  },
+  "userProfile": {
+    "title": "ملفك الشخصي",
+    "language": "اللغة",
+    "interests": "الاهتمامات",
+    "savedProducts": "المنتجات المحفوظة",
+    "saved": "محفوظ",
+    "generators": "المولدات",
+    "solar": "الطاقة الشمسية",
+    "ups": "UPS",
+    "diagnostics": "التشخيص"
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "submit": "إرسال",
+    "close": "إغلاق",
+    "open": "فتح",
+    "menu": "القائمة",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "view": "عرض",
+    "edit": "تحرير",
+    "delete": "حذف",
+    "add": "إضافة",
+    "remove": "إزالة",
+    "back": "العودة",
+    "next": "التالي",
+    "previous": "السابق",
+    "continue": "متابعة",
+    "finish": "إنهاء",
+    "complete": "مكتمل",
+    "pending": "معلق",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "enabled": "مفعل",
+    "disabled": "معطل"
+  },
+  "services": {
+    "title": "خدماتنا",
+    "generatorMaintenance": "خدمات صيانة شاملة لجميع أنواع المولدات",
+    "electricalServices": "الخدمات الكهربائية",
+    "fuelSystemServices": "خدمات تشخيص وإصلاح أنظمة الوقود",
+    "emergencyServices": "خدمات الإصلاح الطارئ 24/7"
+  },
+  "contact": {
+    "title": "اتصل بنا",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "message": "الرسالة",
+    "send": "إرسال الرسالة",
+    "address": "العنوان",
+    "businessHours": "ساعات العمل"
+  },
+  "about": {
+    "title": "من نحن",
+    "mission": "رسالتنا",
+    "vision": "رؤيتنا",
+    "values": "قيمنا",
+    "team": "فريقنا"
+  },
+  "diagnostics": {
+    "title": "التشخيص",
+    "universalDiagnosticMachine": "آلة التشخيص العالمية",
+    "comprehensiveDiagnostics": "تشخيص شامل لجميع الخدمات التسع: الطاقة الشمسية، المولدات، التحكم، AC/UPS، الأتمتة، المضخات، المحرقات، المحركات ومركز التشخيص",
+    "awwwardsWinningInterface": "واجهة الفوز بجائزة Awwwards - آلة التشخيص العالمية (جميع الخدمات التسع)"
+  },
+  "footer": {
+    "copyright": "© 2025 Emerson EIMS. جميع الحقوق محفوظة.",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الخدمة",
+    "contact": "اتصل بنا"
+  },
+  "seo": {
+    "title": "Emerson EIMS - نظام إدارة البنية التحتية للطاقة",
+    "description": "حلول احترافية لإدارة البنية التحتية للطاقة بما في ذلك المولدات وأنظمة الطاقة الشمسية وUPS والتشخيص الشامل",
+    "keywords": "الطاقة, البنية التحتية, المولدات, الطاقة الشمسية, UPS, التشخيص, الإدارة"
+  }
+}

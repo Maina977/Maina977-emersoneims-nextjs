@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import SectionLead from "@/components/generators/SectionLead";
+import { SectionLead } from "@/components/generators";
 import ServiceCard from "@/components/services/ServiceCard";
 import ServiceOverview from "@/components/services/ServiceOverview";
 import ServiceComparison from "@/components/services/ServiceComparison";

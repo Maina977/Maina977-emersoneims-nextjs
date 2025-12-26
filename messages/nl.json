@@ -1,0 +1,95 @@
+{
+  "navigation": {
+    "home": "HOME",
+    "aboutUs": "OVER ONS",
+    "services": "DIENSTEN",
+    "solutions": "OPLOSSINGEN",
+    "generator": "GENERATOR",
+    "solar": "ZONNE-ENERGIE",
+    "diagnostics": "DIAGNOSTIEK",
+    "diagnosticSuite": "DIAGNOSTISCHE SUITE",
+    "contact": "CONTACT"
+  },
+  "userProfile": {
+    "title": "Uw Profiel",
+    "language": "Taal",
+    "interests": "Interesses",
+    "savedProducts": "Opgeslagen Producten",
+    "saved": "opgeslagen",
+    "generators": "Generatoren",
+    "solar": "Zonne-energie",
+    "ups": "UPS",
+    "diagnostics": "Diagnostiek"
+  },
+  "common": {
+    "loading": "Laden...",
+    "error": "Fout",
+    "success": "Succes",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "submit": "Verzenden",
+    "close": "Sluiten",
+    "open": "Openen",
+    "menu": "Menu",
+    "search": "Zoeken",
+    "filter": "Filteren",
+    "sort": "Sorteren",
+    "view": "Bekijken",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "add": "Toevoegen",
+    "remove": "Verwijderen",
+    "back": "Terug",
+    "next": "Volgende",
+    "previous": "Vorige",
+    "continue": "Doorgaan",
+    "finish": "Voltooien",
+    "complete": "Voltooid",
+    "pending": "In afwachting",
+    "active": "Actief",
+    "inactive": "Inactief",
+    "enabled": "Ingeschakeld",
+    "disabled": "Uitgeschakeld"
+  },
+  "services": {
+    "title": "Onze Diensten",
+    "generatorMaintenance": "Uitgebreide onderhoudsdiensten voor alle typen generatoren",
+    "electricalServices": "Elektrische Diensten",
+    "fuelSystemServices": "Diagnose- en reparatiediensten voor brandstofsytemen",
+    "emergencyServices": "24/7 noodreparatiediensten"
+  },
+  "contact": {
+    "title": "Neem Contact Op",
+    "name": "Naam",
+    "email": "E-mail",
+    "phone": "Telefoon",
+    "message": "Bericht",
+    "send": "Bericht Verzenden",
+    "address": "Adres",
+    "businessHours": "Openingstijden"
+  },
+  "about": {
+    "title": "Over Ons",
+    "mission": "Onze Missie",
+    "vision": "Onze Visie",
+    "values": "Onze Waarden",
+    "team": "Ons Team"
+  },
+  "diagnostics": {
+    "title": "Diagnostiek",
+    "universalDiagnosticMachine": "Universele Diagnostische Machine",
+    "comprehensiveDiagnostics": "Uitgebreide diagnostiek voor alle 9 diensten: Zonne-energie, Generatoren, Besturingen, AC/UPS, Automatisering, Pompen, Verbrandingsovens, Motoren en Diagnostisch Centrum",
+    "awwwardsWinningInterface": "Awwwards Winnende Interface - Universele Diagnostische Machine (Alle 9 Diensten)"
+  },
+  "footer": {
+    "copyright": "© 2025 Emerson EIMS. Alle rechten voorbehouden.",
+    "privacy": "Privacybeleid",
+    "terms": "Servicevoorwaarden",
+    "contact": "Contact"
+  },
+  "seo": {
+    "title": "Emerson EIMS - Energie Infrastructuur Management Systeem",
+    "description": "Professionele oplossingen voor energie infrastructuur management inclusief generatoren, zonne-energiesystemen, UPS en uitgebreide diagnostiek",
+    "keywords": "energie, infrastructuur, generatoren, zonne-energie, UPS, diagnostiek, management"
+  }
+}

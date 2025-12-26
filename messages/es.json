@@ -1,0 +1,95 @@
+{
+  "navigation": {
+    "home": "INICIO",
+    "aboutUs": "SOBRE NOSOTROS",
+    "services": "SERVICIOS",
+    "solutions": "SOLUCIONES",
+    "generator": "GENERADOR",
+    "solar": "SOLAR",
+    "diagnostics": "DIAGNÓSTICOS",
+    "diagnosticSuite": "SUITE DIAGNÓSTICA",
+    "contact": "CONTACTO"
+  },
+  "userProfile": {
+    "title": "Tu Perfil",
+    "language": "Idioma",
+    "interests": "Intereses",
+    "savedProducts": "Productos Guardados",
+    "saved": "guardado",
+    "generators": "Generadores",
+    "solar": "Solar",
+    "ups": "UPS",
+    "diagnostics": "Diagnósticos"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "submit": "Enviar",
+    "close": "Cerrar",
+    "open": "Abrir",
+    "menu": "Menú",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "view": "Ver",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "add": "Agregar",
+    "remove": "Remover",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "continue": "Continuar",
+    "finish": "Finalizar",
+    "complete": "Completo",
+    "pending": "Pendiente",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "enabled": "Habilitado",
+    "disabled": "Deshabilitado"
+  },
+  "services": {
+    "title": "Nuestros Servicios",
+    "generatorMaintenance": "Servicios completos de mantenimiento para todos los tipos de generadores",
+    "electricalServices": "Servicios Eléctricos",
+    "fuelSystemServices": "Servicios de diagnóstico y reparación de sistemas de combustible",
+    "emergencyServices": "Servicios de reparación de emergencia 24/7"
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "message": "Mensaje",
+    "send": "Enviar Mensaje",
+    "address": "Dirección",
+    "businessHours": "Horario de Atención"
+  },
+  "about": {
+    "title": "Sobre Nosotros",
+    "mission": "Nuestra Misión",
+    "vision": "Nuestra Visión",
+    "values": "Nuestros Valores",
+    "team": "Nuestro Equipo"
+  },
+  "diagnostics": {
+    "title": "Diagnósticos",
+    "universalDiagnosticMachine": "Máquina de Diagnóstico Universal",
+    "comprehensiveDiagnostics": "Diagnósticos completos para todos los 9 servicios: Solar, Generadores, Controles, AC/UPS, Automatización, Bombas, Incineradores, Motores y Centro de Diagnósticos",
+    "awwwardsWinningInterface": "Interfaz Ganadora de Awwwards - Máquina de Diagnóstico Universal (Todos los 9 Servicios)"
+  },
+  "footer": {
+    "copyright": "© 2025 Emerson EIMS. Todos los derechos reservados.",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "contact": "Contacto"
+  },
+  "seo": {
+    "title": "Emerson EIMS - Sistema de Gestión de Infraestructura Energética",
+    "description": "Soluciones profesionales de gestión de infraestructura energética incluyendo generadores, sistemas solares, UPS y diagnósticos completos",
+    "keywords": "energía, infraestructura, generadores, solar, UPS, diagnósticos, gestión"
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useState, Suspense, lazy } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SectionLead from "@/components/generators/SectionLead";
+import { SectionLead } from "@/components/generators";
 import OptimizedImage from "@/components/media/OptimizedImage";
 
 // Lazy load WebGL scene

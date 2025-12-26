@@ -1,0 +1,95 @@
+{
+  "navigation": {
+    "home": "首页",
+    "aboutUs": "关于我们",
+    "services": "服务",
+    "solutions": "解决方案",
+    "generator": "发电机",
+    "solar": "太阳能",
+    "diagnostics": "诊断",
+    "diagnosticSuite": "诊断套件",
+    "contact": "联系我们"
+  },
+  "userProfile": {
+    "title": "您的个人资料",
+    "language": "语言",
+    "interests": "兴趣",
+    "savedProducts": "已保存产品",
+    "saved": "已保存",
+    "generators": "发电机",
+    "solar": "太阳能",
+    "ups": "UPS",
+    "diagnostics": "诊断"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "save": "保存",
+    "submit": "提交",
+    "close": "关闭",
+    "open": "打开",
+    "menu": "菜单",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "view": "查看",
+    "edit": "编辑",
+    "delete": "删除",
+    "add": "添加",
+    "remove": "移除",
+    "back": "返回",
+    "next": "下一个",
+    "previous": "上一个",
+    "continue": "继续",
+    "finish": "完成",
+    "complete": "完成",
+    "pending": "待处理",
+    "active": "活跃",
+    "inactive": "不活跃",
+    "enabled": "已启用",
+    "disabled": "已禁用"
+  },
+  "services": {
+    "title": "我们的服务",
+    "generatorMaintenance": "为所有类型发电机提供全面维护服务",
+    "electricalServices": "电气服务",
+    "fuelSystemServices": "燃油系统诊断和维修服务",
+    "emergencyServices": "24/7紧急维修服务"
+  },
+  "contact": {
+    "title": "联系我们",
+    "name": "姓名",
+    "email": "电子邮件",
+    "phone": "电话",
+    "message": "消息",
+    "send": "发送消息",
+    "address": "地址",
+    "businessHours": "营业时间"
+  },
+  "about": {
+    "title": "关于我们",
+    "mission": "我们的使命",
+    "vision": "我们的愿景",
+    "values": "我们的价值观",
+    "team": "我们的团队"
+  },
+  "diagnostics": {
+    "title": "诊断",
+    "universalDiagnosticMachine": "通用诊断机",
+    "comprehensiveDiagnostics": "为所有9项服务提供全面诊断：太阳能、发电机、控制、空调/UPS、自动化、泵、焚烧炉、电机和诊断中心",
+    "awwwardsWinningInterface": "Awwwards获奖界面 - 通用诊断机（所有9项服务）"
+  },
+  "footer": {
+    "copyright": "© 2025 Emerson EIMS。保留所有权利。",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "contact": "联系我们"
+  },
+  "seo": {
+    "title": "Emerson EIMS - 能源基础设施管理系统",
+    "description": "专业的能源基础设施管理解决方案，包括发电机、太阳能系统、UPS和全面诊断",
+    "keywords": "能源, 基础设施, 发电机, 太阳能, UPS, 诊断, 管理"
+  }
+}
