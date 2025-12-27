@@ -4,6 +4,14 @@
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
   "regions": ["iad1"],
+  "functions": {
+    "app/**/*.ts": {
+      "runtime": "nodejs20.x"
+    },
+    "app/**/*.tsx": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "github": {
     "enabled": true,
     "autoAlias": true,
