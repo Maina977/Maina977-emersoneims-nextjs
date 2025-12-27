@@ -13,16 +13,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   
-  // Skip type checking during build (types will be checked in development)
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  
-  // Skip ESLint during build
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  
   // === IMAGE OPTIMIZATION ===
   images: {
     // Enable optimization in production, disable in development for speed
@@ -77,8 +67,8 @@ const nextConfig = {
   
   // === EXPERIMENTAL FEATURES ===
   experimental: {
-    // Disable CSS optimization that's causing build errors
-    optimizeCss: false,
+    // Enable CSS optimization for production only
+    optimizeCss: process.env.NODE_ENV === 'production',
     
     // Server Actions configuration
     serverActions: {

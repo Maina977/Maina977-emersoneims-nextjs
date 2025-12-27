@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+// // import { useTranslations } from 'next-intl'; // Disabled until i18n configured // Disabled until i18n is configured
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,19 +12,19 @@ import { usePathname } from 'next/navigation';
  */
 
 const NAV_ITEMS = [
-  { href: '/', labelKey: 'navigation.home' },
-  { href: '/about-us', labelKey: 'navigation.aboutUs' },
-  { href: '/service', labelKey: 'navigation.services' },
-  { href: '/solution', labelKey: 'navigation.solutions' },
-  { href: '/generators', labelKey: 'navigation.generator' },
-  { href: '/solar', labelKey: 'navigation.solar' },
-  { href: '/diagnostics', labelKey: 'navigation.diagnostics' },
-  { href: '/diagnostic-suite', labelKey: 'navigation.diagnosticSuite' },
-  { href: '/contact', labelKey: 'navigation.contact' },
+  { href: '/', label: 'Home' },
+  { href: '/about-us', label: 'About Us' },
+  { href: '/service', label: 'Services' },
+  { href: '/solution', label: 'Solutions' },
+  { href: '/generators', label: 'Generators' },
+  { href: '/solar', label: 'Solar' },
+  { href: '/diagnostics', label: 'Diagnostics' },
+  { href: '/diagnostic-suite', label: 'Diagnostic Suite' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 export default function SciFiHeader() {
-  const t = useTranslations();
+  // const t = useTranslations(); // Disabled until i18n configured
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeHover, setActiveHover] = useState<string | null>(null);
@@ -119,7 +119,7 @@ export default function SciFiHeader() {
                         : 'text-gray-400 hover:text-cyan-300'
                     }`}
                   >
-                    {t(item.labelKey)}
+                    {item.label}
                     {active && (
                       <motion.div
                         className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 to-cyan-600"
@@ -197,7 +197,7 @@ export default function SciFiHeader() {
                           : 'text-gray-400 hover:bg-cyan-500/10 hover:text-cyan-300'
                       }`}
                     >
-                      {t(item.labelKey)}
+                      {item.label}
                     </Link>
                   </motion.div>
                 );
@@ -222,5 +222,6 @@ export default function SciFiHeader() {
     </motion.header>
   );
 }
+
 
 

@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+// import { useTranslations } from 'next-intl'; // Disabled until i18n configured
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,7 +19,7 @@ interface UserPreferences {
 }
 
 export default function UserProfile() {
-  const t = useTranslations();
+  // const t = useTranslations(); // Disabled until i18n configured
   const router = useRouter();
   const pathname = usePathname();
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
@@ -107,12 +107,12 @@ export default function UserProfile() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
           >
-            <h3 className="text-xl font-bold text-white mb-4">{t('userProfile.title')}</h3>
+            <h3 className="text-xl font-bold text-white mb-4">User Profile</h3>
             
             {/* Preferences */}
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">{t('userProfile.language')}</label>
+                <label className="text-sm text-gray-400 mb-2 block">Language</label>
                 <select
                   value={preferences.language}
                   onChange={(e) => savePreferences({ language: e.target.value })}
@@ -133,9 +133,9 @@ export default function UserProfile() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">{t('userProfile.interests')}</label>
+                <label className="text-sm text-gray-400 mb-2 block">Interests</label>
                 <div className="flex flex-wrap gap-2">
-                  {[t('userProfile.generators'), t('userProfile.solar'), t('userProfile.ups'), t('userProfile.diagnostics')].map((interest) => (
+                  {['Generators', 'Solar', 'UPS', 'Diagnostics'].map((interest) => (
                     <button
                       key={interest}
                       onClick={() => addInterest(interest)}
@@ -153,9 +153,9 @@ export default function UserProfile() {
 
               {preferences.savedProducts.length > 0 && (
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">{t('userProfile.savedProducts')}</label>
+                  <label className="text-sm text-gray-400 mb-2 block">Saved Products</label>
                   <div className="text-white text-sm">
-                    {preferences.savedProducts.length} {t('userProfile.saved')}
+                    {preferences.savedProducts.length} saved
                   </div>
                 </div>
               )}
