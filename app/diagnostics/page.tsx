@@ -35,7 +35,7 @@ const ExportPanel = ({ data }: { data: any }) => {
       if (printWindow) {
         printWindow.document.write(`
           <html>
-            <head><title>EmersonEIMS Diagnostic Report</title>
+            <head><title>Emerson EiMS Diagnostic Report</title>
             <style>
               body { font-family: Arial, sans-serif; margin: 40px; }
               h1 { color: #f59e0b; }
@@ -43,7 +43,7 @@ const ExportPanel = ({ data }: { data: any }) => {
             </style>
             </head>
             <body>
-              <h1>EmersonEIMS Diagnostic Report</h1>
+              <h1>Emerson EiMS Diagnostic Report</h1>
               <p>Generated: ${new Date().toLocaleString()}</p>
               <pre>${JSON.stringify(data, null, 2)}</pre>
             </body>

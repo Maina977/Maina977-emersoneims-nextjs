@@ -71,8 +71,8 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: {
-    default: "Emerson EIMS - Energy Infrastructure Management System",
-    template: "%s | Emerson EIMS",
+    default: "Emerson EiMS (\"Reliable Power. Without Limits.\")",
+    template: "%s | Emerson EiMS",
   },
   description: "Professional energy infrastructure management solutions including generators, solar systems, UPS, and comprehensive diagnostics.",
   keywords: [
@@ -82,11 +82,11 @@ export const metadata: Metadata = {
     "UPS",
     "power infrastructure",
     "diagnostics",
-    "Emerson EIMS",
+    "Emerson EiMS",
   ],
-  authors: [{ name: "Emerson EIMS" }],
-  creator: "Emerson EIMS",
-  publisher: "Emerson EIMS",
+  authors: [{ name: "Emerson EiMS" }],
+  creator: "Emerson EiMS",
+  publisher: "Emerson EiMS",
   formatDetection: {
     email: false,
     address: false,
@@ -97,21 +97,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.emersoneims.com",
-    siteName: "Emerson EIMS",
-    title: "Emerson EIMS - Energy Infrastructure Management System",
+    siteName: "Emerson EiMS",
+    title: "Emerson EiMS (\"Reliable Power. Without Limits.\")",
     description: "Professional energy infrastructure management solutions",
     images: [
       {
         url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.emersoneims.com"}/og-image.jpg`,
         width: 1200,
         height: 630,
-        alt: "Emerson EIMS - Energy Infrastructure Management System",
+        alt: "Emerson EiMS (\"Reliable Power. Without Limits.\")",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Emerson EIMS - Energy Infrastructure Management System",
+    title: "Emerson EiMS (\"Reliable Power. Without Limits.\")",
     description: "Professional energy infrastructure management solutions",
     images: [`${process.env.NEXT_PUBLIC_SITE_URL || "https://www.emersoneims.com"}/twitter-image.jpg`],
   },

@@ -20,7 +20,7 @@ const searchData: SearchResult[] = [
   { title: "Solar", url: "/solar", description: "Solar energy solutions and calculators", category: "Page" },
   { title: "Diagnostics", url: "/diagnostics", description: "Universal diagnostic machine and tools", category: "Page" },
   { title: "Contact", url: "/contact", description: "Get in touch with our team", category: "Page" },
-  { title: "About Us", url: "/about-us", description: "Learn about EmersonEIMS", category: "Page" },
+  { title: "About Us", url: "/about-us", description: "Learn about Emerson EiMS", category: "Page" },
   
   // Services
   { title: "Diesel Generators", url: "/service#diesel", description: "Generator installation, maintenance, and repair", category: "Service" },

@@ -77,7 +77,7 @@ export default function NavigationBar({
             >
               <Image
                 src="/logo.svg"
-                alt="EmersonEIMS Logo"
+                alt="Emerson EiMS Logo"
                 width={40}
                 height={40}
                 priority

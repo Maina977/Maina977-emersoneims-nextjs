@@ -51,7 +51,7 @@ export default function OpenGraph({
     updateMetaTag('og:image', fullImage);
     updateMetaTag('og:url', fullUrl);
     updateMetaTag('og:type', type);
-    updateMetaTag('og:site_name', 'Emerson EIMS');
+    updateMetaTag('og:site_name', 'Emerson EiMS');
     updateMetaTag('og:locale', 'en_US');
     updateMetaTag('og:image:width', '1200');
     updateMetaTag('og:image:height', '630');

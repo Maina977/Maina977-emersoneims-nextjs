@@ -86,16 +86,16 @@ export default function SciFiHeader() {
               <div className="relative">
                 <img
                   src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
-                  alt="EmersonEIMS Logo"
+                  alt="Emerson EiMS Logo"
                   className="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 rounded-lg bg-cyan-400/20 blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
               </div>
               <div className="hidden sm:block">
                 <div className="text-lg font-bold font-mono text-cyan-300 tracking-wider">
-                  EMERSON<span className="text-cyan-500">EIMS</span>
+                  EMERSON<span className="text-cyan-500">EiMS</span>
                 </div>
-                <div className="text-xs text-cyan-400/60 font-mono">ENERGY SYSTEMS</div>
+                <div className="text-xs text-cyan-400/60 font-mono">"Reliable Power. Without Limits."</div>
               </div>
             </Link>
           </motion.div>

@@ -247,7 +247,7 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
           <LazyStructuredData
             type="Organization"
             data={{
-              name: 'Emerson EIMS',
+              name: 'Emerson EiMS',
               url: process.env.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com',
               logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com'}/logo.svg`,
               description: 'Professional energy infrastructure management solutions',

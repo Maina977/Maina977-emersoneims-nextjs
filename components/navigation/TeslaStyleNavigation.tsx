@@ -18,7 +18,7 @@ const NAV_ITEMS = [
   { href: '/generators', label: 'GENERATOR' },
   { href: '/solar', label: 'SOLAR' },
   { href: '/diagnostics', label: 'DIAGNOSTICS' },
-  { href: '/diagnostic-suite', label: 'EMERSONEIMS DIAGNOSTIC SUITE' },
+  { href: '/diagnostic-suite', label: 'EMERSON EiMS DIAGNOSTIC SUITE' },
   { href: '/contact', label: 'CONTACT' },
 ];
 
@@ -64,7 +64,7 @@ export default function TeslaStyleNavigation({
             >
               <img
                 src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
-                alt="EmersonEIMS Logo"
+                alt="Emerson EiMS Logo"
                 className="w-8 h-8 object-contain"
               />
               <div className="text-lg font-display font-semibold text-white tracking-tight">
