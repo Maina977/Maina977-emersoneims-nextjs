@@ -71,7 +71,7 @@ export default function ErrorFrequencyChart() {
         padding: 12,
         titleFont: {
           size: 14,
-          weight: 'bold' as const,
+          weight: 700,
         },
         bodyFont: {
           size: 13,

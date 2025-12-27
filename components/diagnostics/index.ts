@@ -22,10 +22,8 @@ export { default as PressureGauges } from './PressureGauges';
 export { default as RealtimeGraphs } from './RealtimeGraphs';
 export { default as QuestionsChartToggle } from './QuestionsChartToggle';
 export { default as QuestionsChart } from './QuestionsChart';
-export { default as QuestionsDonutChart } from './QuestionsDonutChart';
-export { default as NeedleGauge } from './NeedleGauge';
-export { default as StatusLights } from './StatusLights';
-export { default as AltitudeTape } from './AltitudeTape';
+// export { default as QuestionsDonutChart } from './QuestionsDonutChart.jsx'; // Empty file
+// export { default as AltitudeTape } from './AltitudeTape'; // Empty file
 export { default as ErrorList } from './ErrorList';
 export { default as GlobalSearch } from './GlobalSearch';
 

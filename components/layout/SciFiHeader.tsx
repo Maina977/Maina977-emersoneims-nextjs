@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -11,18 +12,19 @@ import { usePathname } from 'next/navigation';
  */
 
 const NAV_ITEMS = [
-  { href: '/', label: 'HOME' },
-  { href: '/about-us', label: 'ABOUT US' },
-  { href: '/service', label: 'SERVICES' },
-  { href: '/solution', label: 'SOLUTIONS' },
-  { href: '/generators', label: 'GENERATOR' },
-  { href: '/solar', label: 'SOLAR' },
-  { href: '/diagnostics', label: 'DIAGNOSTICS' },
-  { href: '/diagnostic-suite', label: 'DIAGNOSTIC SUITE' },
-  { href: '/contact', label: 'CONTACT' },
+  { href: '/', labelKey: 'navigation.home' },
+  { href: '/about-us', labelKey: 'navigation.aboutUs' },
+  { href: '/service', labelKey: 'navigation.services' },
+  { href: '/solution', labelKey: 'navigation.solutions' },
+  { href: '/generators', labelKey: 'navigation.generator' },
+  { href: '/solar', labelKey: 'navigation.solar' },
+  { href: '/diagnostics', labelKey: 'navigation.diagnostics' },
+  { href: '/diagnostic-suite', labelKey: 'navigation.diagnosticSuite' },
+  { href: '/contact', labelKey: 'navigation.contact' },
 ];
 
 export default function SciFiHeader() {
+  const t = useTranslations();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeHover, setActiveHover] = useState<string | null>(null);
@@ -117,7 +119,7 @@ export default function SciFiHeader() {
                         : 'text-gray-400 hover:text-cyan-300'
                     }`}
                   >
-                    {item.label}
+                    {t(item.labelKey)}
                     {active && (
                       <motion.div
                         className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 to-cyan-600"
@@ -195,7 +197,7 @@ export default function SciFiHeader() {
                           : 'text-gray-400 hover:bg-cyan-500/10 hover:text-cyan-300'
                       }`}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   </motion.div>
                 );

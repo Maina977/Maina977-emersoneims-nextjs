@@ -156,7 +156,7 @@ export default function GeneratorCalculator() {
         borderWidth: 2,
         titleColor: "#fbbf24",
         bodyColor: "#fff",
-        titleFont: { family: 'monospace', size: 14, weight: 'bold' },
+        titleFont: { family: 'monospace', size: 14, weight: 700 },
         bodyFont: { family: 'monospace', size: 12 },
       },
     },

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 import { Geist, Geist_Mono, Inter, Manrope, Space_Grotesk, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import "./styles/analytics.css";
@@ -126,11 +128,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Providing all messages to the client
+  // side is the easiest way to get started
+  const messages = await getMessages();
+
   return (
     <html lang="en" className="scroll-smooth">
       <head>
@@ -433,9 +439,11 @@ export default function RootLayout({
         />
 
         {/* Universal Premium Sci-Fi Cursor - Awwwards SOTD Level */}
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <NextIntlClientProvider messages={messages}>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

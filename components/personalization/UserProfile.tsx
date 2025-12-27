@@ -6,6 +6,8 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface UserPreferences {
@@ -17,6 +19,9 @@ interface UserPreferences {
 }
 
 export default function UserProfile() {
+  const t = useTranslations();
+  const router = useRouter();
+  const pathname = usePathname();
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -54,6 +59,13 @@ export default function UserProfile() {
     const updated = { ...preferences, ...newPrefs };
     setPreferences(updated);
     localStorage.setItem('userPreferences', JSON.stringify(updated));
+
+    // Handle language change
+    if (newPrefs.language && newPrefs.language !== preferences.language) {
+      // Redirect to the new locale
+      const newPath = `/${newPrefs.language}${pathname.replace(/^\/[a-z]{2}/, '')}`;
+      router.push(newPath);
+    }
   };
 
   // Don't render until hydrated to prevent hydration mismatch
@@ -95,12 +107,12 @@ export default function UserProfile() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
           >
-            <h3 className="text-xl font-bold text-white mb-4">Your Profile</h3>
+            <h3 className="text-xl font-bold text-white mb-4">{t('userProfile.title')}</h3>
             
             {/* Preferences */}
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Language</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('userProfile.language')}</label>
                 <select
                   value={preferences.language}
                   onChange={(e) => savePreferences({ language: e.target.value })}
@@ -109,13 +121,21 @@ export default function UserProfile() {
                   <option value="en">English</option>
                   <option value="sw">Swahili</option>
                   <option value="fr">French</option>
+                  <option value="pt">Portuguese</option>
+                  <option value="de">German</option>
+                  <option value="zh">Chinese</option>
+                  <option value="es">Spanish</option>
+                  <option value="nl">Dutch</option>
+                  <option value="am">Amharic</option>
+                  <option value="so">Somali</option>
+                  <option value="ar">Arabic</option>
                 </select>
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Interests</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('userProfile.interests')}</label>
                 <div className="flex flex-wrap gap-2">
-                  {['Generators', 'Solar', 'UPS', 'Diagnostics'].map((interest) => (
+                  {[t('userProfile.generators'), t('userProfile.solar'), t('userProfile.ups'), t('userProfile.diagnostics')].map((interest) => (
                     <button
                       key={interest}
                       onClick={() => addInterest(interest)}
@@ -133,9 +153,9 @@ export default function UserProfile() {
 
               {preferences.savedProducts.length > 0 && (
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">Saved Products</label>
+                  <label className="text-sm text-gray-400 mb-2 block">{t('userProfile.savedProducts')}</label>
                   <div className="text-white text-sm">
-                    {preferences.savedProducts.length} saved
+                    {preferences.savedProducts.length} {t('userProfile.saved')}
                   </div>
                 </div>
               )}

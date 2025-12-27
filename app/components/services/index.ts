@@ -9,9 +9,9 @@ export { default as ServiceOverview } from './ServiceOverview';
 export { default as ServiceComparison } from './ServiceComparison';
 
 // Service Showcase Components (from components/services/)
-export { default as NikeStyleServiceCard } from '../../components/services/NikeStyleServiceCard';
-export { default as ServicesShowcase } from '../../components/services/ServicesShowcase';
-export { default as ServicesTeaser } from '../../components/services/ServicesTeaser';
+// export { default as NikeStyleServiceCard } from '../../components/services/NikeStyleServiceCard';
+// export { default as ServicesShowcase } from '../../components/services/ServicesShowcase';
+// export { default as ServicesTeaser } from '../../components/services/ServicesTeaser';
 
 // Individual Service Components (from app/components/service/)
 // All 10 Services

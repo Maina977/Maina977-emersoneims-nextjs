@@ -179,7 +179,7 @@ export default function NikeStyleServiceCard({
           <motion.div
             className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
             style={{
-              background: 'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(251, 191, 36, 0.1), transparent 70%)',
+              background: 'radial-gradient(circle at center, rgba(251, 191, 36, 0.1) 0%, transparent 70%)',
             }}
           />
         </motion.div>
@@ -187,10 +187,6 @@ export default function NikeStyleServiceCard({
     </motion.div>
   );
 }
-
-
-
-
 
 
 
