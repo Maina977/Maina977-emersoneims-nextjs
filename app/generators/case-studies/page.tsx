@@ -1,4 +1,4 @@
-'use client';
+﻿'use client'
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -245,7 +245,7 @@ export default function CaseStudiesPage() {
                           <ul className="space-y-1">
                             {study.results.map((result, idx) => (
                               <li key={idx} className="text-sm text-gray-300 flex items-start gap-2">
-                                <span className="text-amber-400 mt-1">✓</span>
+                                <span className="text-amber-400 mt-1">âœ“</span>
                                 {result}
                               </li>
                             ))}
@@ -253,7 +253,7 @@ export default function CaseStudiesPage() {
                         </div>
                         <div className="pt-4 border-t border-gray-800">
                           <p className="text-sm italic text-gray-400 mb-2">"{study.testimonial}"</p>
-                          <p className="text-xs text-gray-500">— {study.author}</p>
+                          <p className="text-xs text-gray-500">â€” {study.author}</p>
                         </div>
                       </motion.div>
                     )}
@@ -317,4 +317,5 @@ export default function CaseStudiesPage() {
     </ErrorBoundary>
   );
 }
+
 

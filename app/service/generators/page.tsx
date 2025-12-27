@@ -1,4 +1,4 @@
-'use client';
+﻿'use client'
 
 import { useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -143,4 +143,5 @@ export default function GeneratorsServicePage() {
     </ErrorBoundary>
   );
 }
+
 

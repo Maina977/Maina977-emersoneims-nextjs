@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -17,6 +17,9 @@ if (typeof window !== 'undefined') {
 
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 
+// Force dynamic rendering to avoid prerendering issues with i18n
+export const dynamic = 'force-dynamic';
+
 // Services Data
 const services = [
   {
@@ -25,7 +28,7 @@ const services = [
     image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png',
     href: '/service/generators',
     features: ['Installation', 'Maintenance', 'Repairs', 'Parts'],
-    icon: '⚡',
+    icon: 'âš¡',
     color: 'from-yellow-500 to-yellow-600',
   },
   {
@@ -34,7 +37,7 @@ const services = [
     image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png',
     href: '/service/solar',
     features: ['Installation', 'Maintenance', 'Repairs', 'Sizing'],
-    icon: '☀️',
+    icon: 'â˜€ï¸',
     color: 'from-orange-500 to-orange-600',
   },
   {
@@ -43,7 +46,7 @@ const services = [
     image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/controls.jpg',
     href: '/service/controls',
     features: ['DeepSea', 'PowerWizard', 'Remote Monitoring', 'Automation'],
-    icon: '🎛️',
+    icon: 'ðŸŽ›ï¸',
     color: 'from-blue-500 to-blue-600',
   },
   {
@@ -52,7 +55,7 @@ const services = [
     image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/ac-systems.jpg',
     href: '/service/ac',
     features: ['Installation', 'Maintenance', 'Repairs', 'Energy Efficiency'],
-    icon: '❄️',
+    icon: 'â„ï¸',
     color: 'from-cyan-500 to-cyan-600',
   },
   {
@@ -61,7 +64,7 @@ const services = [
     image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/ups-systems.jpg',
     href: '/service/ups',
     features: ['Installation', 'Battery Backup', 'Maintenance', 'Monitoring'],
-    icon: '🔋',
+    icon: 'ðŸ”‹',
     color: 'from-purple-500 to-purple-600',
   },
   {
@@ -70,7 +73,7 @@ const services = [
     image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/motors.jpg',
     href: '/service/motors',
     features: ['Rewinding', 'Repairs', 'Testing', 'Maintenance'],
-    icon: '⚙️',
+    icon: 'âš™ï¸',
     color: 'from-gray-500 to-gray-600',
   },
 ];
@@ -229,4 +232,5 @@ export default function ServicesPage() {
     </ErrorBoundary>
   );
 }
+
 

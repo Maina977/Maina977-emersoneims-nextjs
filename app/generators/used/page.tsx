@@ -1,4 +1,4 @@
-'use client';
+﻿'use client'
 
 import { useState, Suspense, lazy } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,9 +11,9 @@ const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'
 const usedGenerators = [
   {
     brand: "Cummins",
-    kvaRange: "50–2000 kVA",
+    kvaRange: "50â€“2000 kVA",
     warranty: "1 year comprehensive",
-    priceRange: "KSh 800,000 – 15M",
+    priceRange: "KSh 800,000 â€“ 15M",
     features: ["Fully serviced", "Load tested", "OEM parts", "6-month service history"],
     status: "In Stock",
     statusColor: "bg-green-500",
@@ -25,9 +25,9 @@ const usedGenerators = [
   },
   {
     brand: "Perkins",
-    kvaRange: "20–1000 kVA",
+    kvaRange: "20â€“1000 kVA",
     warranty: "1 year engine & alternator",
-    priceRange: "KSh 500,000 – 8M",
+    priceRange: "KSh 500,000 â€“ 8M",
     features: ["Fuel efficient", "Low hours", "New filters", "Painted"],
     status: "Limited Stock",
     statusColor: "bg-yellow-500",
@@ -38,9 +38,9 @@ const usedGenerators = [
   },
   {
     brand: "Caterpillar",
-    kvaRange: "100–2000 kVA",
+    kvaRange: "100â€“2000 kVA",
     warranty: "1 year comprehensive",
-    priceRange: "KSh 1.2M – 20M",
+    priceRange: "KSh 1.2M â€“ 20M",
     features: ["Heavy-duty", "Low hours", "Full service", "Canopy available"],
     status: "In Stock",
     statusColor: "bg-green-500",
@@ -51,9 +51,9 @@ const usedGenerators = [
   },
   {
     brand: "Volvo Penta",
-    kvaRange: "50–1500 kVA",
+    kvaRange: "50â€“1500 kVA",
     warranty: "1 year engine",
-    priceRange: "KSh 700,000 – 12M",
+    priceRange: "KSh 700,000 â€“ 12M",
     features: ["Low emissions", "Advanced controls", "Soundproofed", "Containerized"],
     status: "Available Soon",
     statusColor: "bg-blue-500",
@@ -64,9 +64,9 @@ const usedGenerators = [
   },
   {
     brand: "SDMO",
-    kvaRange: "30–1200 kVA",
+    kvaRange: "30â€“1200 kVA",
     warranty: "1 year",
-    priceRange: "KSh 400,000 – 10M",
+    priceRange: "KSh 400,000 â€“ 10M",
     features: ["French engineered", "Robust design", "Easy maintenance", "Export ready"],
     status: "In Stock",
     statusColor: "bg-green-500",
@@ -76,9 +76,9 @@ const usedGenerators = [
   },
   {
     brand: "Wei Chai",
-    kvaRange: "50–1000 kVA",
+    kvaRange: "50â€“1000 kVA",
     warranty: "6 months",
-    priceRange: "KSh 300,000 – 6M",
+    priceRange: "KSh 300,000 â€“ 6M",
     features: ["Cost effective", "Fully tested", "New batteries", "Serviced"],
     status: "In Stock",
     statusColor: "bg-green-500",
@@ -123,14 +123,14 @@ const ImageGallery = ({ images, brand }: { images: string[]; brand: string }) =>
                 className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/80 text-white p-2 rounded-full hover:bg-black transition-all"
                 aria-label="Previous image"
               >
-                ←
+                â†
               </button>
               <button
                 onClick={() => setSelectedImage((prev) => (prev + 1) % images.length)}
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/80 text-white p-2 rounded-full hover:bg-black transition-all"
                 aria-label="Next image"
               >
-                →
+                â†’
               </button>
             </>
           )}
@@ -187,7 +187,7 @@ const ImageGallery = ({ images, brand }: { images: string[]; brand: string }) =>
                 className="absolute top-4 right-4 bg-black/80 text-white p-3 rounded-full hover:bg-black transition-all"
                 aria-label="Close lightbox"
               >
-                ✕
+                âœ•
               </button>
             </motion.div>
           </motion.div>
@@ -206,7 +206,7 @@ const VirtualTour = ({ brand }: { brand: string }) => {
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-lg font-bold text-white">Virtual Inspection Tour</h4>
         <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full border border-blue-500/30">
-          🎥 Available
+          ðŸŽ¥ Available
         </span>
       </div>
       <div className="relative h-64 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden">
@@ -223,15 +223,15 @@ const VirtualTour = ({ brand }: { brand: string }) => {
                 className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center text-3xl hover:bg-amber-600 transition-all transform hover:scale-110"
                 aria-label="Start virtual tour"
               >
-                ▶
+                â–¶
               </button>
-              <p className="text-white mt-4">Click to start 360° inspection</p>
+              <p className="text-white mt-4">Click to start 360Â° inspection</p>
             </div>
           )}
         </div>
       </div>
       <p className="text-gray-400 text-sm mt-4">
-        Interactive 360° virtual tour showing all angles and components of the {brand} generator
+        Interactive 360Â° virtual tour showing all angles and components of the {brand} generator
       </p>
     </div>
   );
@@ -445,7 +445,7 @@ export default function UsedGeneratorsPage() {
 
         {filteredGenerators.length === 0 && (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">🔍</div>
+            <div className="text-6xl mb-4">ðŸ”</div>
             <h3 className="text-2xl font-bold text-white mb-2">No generators found</h3>
             <p className="text-gray-400">Try adjusting your filters</p>
           </div>
@@ -507,3 +507,4 @@ export default function UsedGeneratorsPage() {
     </main>
   );
 }
+

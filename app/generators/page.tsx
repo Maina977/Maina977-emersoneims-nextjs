@@ -1,4 +1,4 @@
-'use client';
+﻿'use client'
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -49,10 +49,10 @@ const Generator3DViewer = ({ generator }: { generator: typeof cumminsGenerators[
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-6xl">⚡</div>
+          <div className="text-6xl">âš¡</div>
         </div>
         <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm p-3 rounded-lg">
-          <p className="text-white text-sm text-center">Drag to rotate • Click for AR view</p>
+          <p className="text-white text-sm text-center">Drag to rotate â€¢ Click for AR view</p>
         </div>
       </motion.div>
       <button
@@ -65,7 +65,7 @@ const Generator3DViewer = ({ generator }: { generator: typeof cumminsGenerators[
         }}
         className="mt-4 w-full cta-button-primary"
       >
-        📱 View in AR
+        ðŸ“± View in AR
       </button>
     </div>
   );
@@ -249,9 +249,9 @@ export default function GeneratorPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
-            From 20kVA to 2000kVA, verified specs, Hollywood‑grade visuals, and engineering mastery.
+            From 20kVA to 2000kVA, verified specs, Hollywoodâ€‘grade visuals, and engineering mastery.
             <br />
-            <span className="text-[#fbbf24]">3D View • AR Preview • Real-time Monitoring</span>
+            <span className="text-[#fbbf24]">3D View â€¢ AR Preview â€¢ Real-time Monitoring</span>
           </motion.p>
           <motion.div
             className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
@@ -259,9 +259,9 @@ export default function GeneratorPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
           >
-            <a href="#models" className="cta-button-primary">Explore Models →</a>
-            <a href="#comparison" className="cta-button-secondary">Compare Generators →</a>
-            <a href="/contact" className="cta-button-secondary">Get Quote →</a>
+            <a href="#models" className="cta-button-primary">Explore Models â†’</a>
+            <a href="#comparison" className="cta-button-secondary">Compare Generators â†’</a>
+            <a href="/contact" className="cta-button-secondary">Get Quote â†’</a>
           </motion.div>
         </motion.div>
 
@@ -371,7 +371,7 @@ export default function GeneratorPage() {
               >
                 <div className="relative h-48 mb-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-50 group-hover:opacity-100 transition-opacity">
-                    ⚡
+                    âš¡
                   </div>
                   <div className="absolute bottom-2 right-2 px-2 py-1 bg-amber-500 text-black text-xs font-bold rounded">
                     {gen.kva} kVA
@@ -396,7 +396,7 @@ export default function GeneratorPage() {
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm"
                     title="AR Preview (Mobile)"
                   >
-                    📱
+                    ðŸ“±
                   </button>
                 </div>
               </motion.div>
@@ -469,7 +469,7 @@ export default function GeneratorPage() {
                 className="group bg-gradient-to-br from-black to-gray-900 rounded-xl p-6 border border-gray-800 hover:border-[#fbbf24] transition-all hover:shadow-xl hover:shadow-[#fbbf24]/20"
               >
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl">⚡</span>
+                  <span className="text-2xl">âš¡</span>
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{service}</h3>
                 <p className="text-gray-400 text-sm">Professional service with 24/7 support</p>
@@ -479,7 +479,7 @@ export default function GeneratorPage() {
           
           <div className="text-center mt-12">
             <a href="/service" className="cta-button-primary" aria-label="View all generator services">
-              <span>View All Services →</span>
+              <span>View All Services â†’</span>
             </a>
           </div>
         </div>
@@ -496,10 +496,10 @@ export default function GeneratorPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/contact" className="cta-button-primary">
-              <span>Get Free Consultation →</span>
+              <span>Get Free Consultation â†’</span>
             </a>
             <a href="/diagnostics" className="cta-button-secondary">
-              <span>Try Diagnostics Tool →</span>
+              <span>Try Diagnostics Tool â†’</span>
             </a>
           </div>
         </div>
@@ -507,3 +507,4 @@ export default function GeneratorPage() {
     </main>
   );
 }
+

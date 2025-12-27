@@ -7,6 +7,9 @@ import "./globals.css";
 import "./styles/analytics.css";
 import "./styles/high-contrast.css";
 
+// Force dynamic rendering to support next-intl per-request locale resolution
+export const dynamic = 'force-dynamic';
+
 // Three.js setup for React Three Fiber
 import '@/lib/three/setup';
 import ClientLayout from "@/components/layout/ClientLayout";
@@ -135,7 +138,14 @@ export default async function RootLayout({
 }>) {
   // Providing all messages to the client
   // side is the easiest way to get started
-  const messages = await getMessages();
+  let messages = {};
+  try {
+    messages = await getMessages();
+  } catch (error) {
+    console.error('Failed to load messages:', error);
+    // Fallback to empty messages if i18n fails
+    messages = {};
+  }
 
   return (
     <html lang="en" className="scroll-smooth">

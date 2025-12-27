@@ -1,4 +1,4 @@
-'use client';
+﻿'use client'
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -198,7 +198,7 @@ export default function MaintenancePage() {
                     <ul className="space-y-2">
                       {service.features.map((feature, idx) => (
                         <li key={idx} className="text-sm text-gray-300 flex items-center gap-2">
-                          <span className="text-amber-400">✓</span>
+                          <span className="text-amber-400">âœ“</span>
                           {feature}
                         </li>
                       ))}
@@ -250,4 +250,5 @@ export default function MaintenancePage() {
     </ErrorBoundary>
   );
 }
+
 

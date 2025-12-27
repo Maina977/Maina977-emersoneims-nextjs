@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { Suspense, useState, lazy, useRef, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -18,6 +18,9 @@ if (typeof window !== 'undefined') {
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
 const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
+
+// Force dynamic rendering to avoid prerendering issues with i18n
+export const dynamic = 'force-dynamic';
 
 const SEOHead = lazy(() => import("@/components/contact/SEOHead"));
 const AdaptivePerformanceMonitor = lazy(() => import("@/components/contact/AdaptivePerformanceMonitor"));
@@ -62,16 +65,16 @@ const ServiceHero = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <span className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30">
-              ⚡ Generators
+              âš¡ Generators
             </span>
             <span className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30">
-              ☀️ Solar
+              â˜€ï¸ Solar
             </span>
             <span className="px-4 py-2 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
-              🔋 UPS
+              ðŸ”‹ UPS
             </span>
             <span className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-full border border-purple-500/30">
-              ⚙️ Automation
+              âš™ï¸ Automation
             </span>
           </div>
         </motion.div>
@@ -93,16 +96,16 @@ const ServiceHero = () => {
 // Service Navigation Component
 const ServiceNavigation = ({ onServiceSelect }: { onServiceSelect: (service: string) => void }) => {
   const services = [
-    { id: 'diesel', name: 'Diesel Generators', icon: '⚡', color: 'from-yellow-500 to-yellow-600' },
-    { id: 'solar', name: 'Solar Energy', icon: '☀️', color: 'from-blue-500 to-blue-600' },
-    { id: 'hv', name: 'High Voltage', icon: '🔌', color: 'from-red-500 to-red-600' },
-    { id: 'ups', name: 'UPS Systems', icon: '🔋', color: 'from-green-500 to-green-600' },
-    { id: 'motor', name: 'Motor Rewinding', icon: '⚙️', color: 'from-purple-500 to-purple-600' },
-    { id: 'fab', name: 'Fabrication', icon: '🔧', color: 'from-cyan-500 to-cyan-600' },
-    { id: 'water', name: 'Water Systems', icon: '💧', color: 'from-blue-400 to-blue-500' },
-    { id: 'hvac', name: 'HVAC Systems', icon: '❄️', color: 'from-indigo-500 to-indigo-600' },
-    { id: 'incin', name: 'Incinerators', icon: '🔥', color: 'from-orange-500 to-orange-600' },
-    { id: 'opt', name: 'Optimizers', icon: '📊', color: 'from-pink-500 to-pink-600' },
+    { id: 'diesel', name: 'Diesel Generators', icon: 'âš¡', color: 'from-yellow-500 to-yellow-600' },
+    { id: 'solar', name: 'Solar Energy', icon: 'â˜€ï¸', color: 'from-blue-500 to-blue-600' },
+    { id: 'hv', name: 'High Voltage', icon: 'ðŸ”Œ', color: 'from-red-500 to-red-600' },
+    { id: 'ups', name: 'UPS Systems', icon: 'ðŸ”‹', color: 'from-green-500 to-green-600' },
+    { id: 'motor', name: 'Motor Rewinding', icon: 'âš™ï¸', color: 'from-purple-500 to-purple-600' },
+    { id: 'fab', name: 'Fabrication', icon: 'ðŸ”§', color: 'from-cyan-500 to-cyan-600' },
+    { id: 'water', name: 'Water Systems', icon: 'ðŸ’§', color: 'from-blue-400 to-blue-500' },
+    { id: 'hvac', name: 'HVAC Systems', icon: 'â„ï¸', color: 'from-indigo-500 to-indigo-600' },
+    { id: 'incin', name: 'Incinerators', icon: 'ðŸ”¥', color: 'from-orange-500 to-orange-600' },
+    { id: 'opt', name: 'Optimizers', icon: 'ðŸ“Š', color: 'from-pink-500 to-pink-600' },
   ];
 
   return (
@@ -131,10 +134,10 @@ const ServiceNavigation = ({ onServiceSelect }: { onServiceSelect: (service: str
 // Service Stats Component
 const ServiceStats = () => {
   const stats = [
-    { value: "10", label: "Service Categories", icon: "📋" },
-    { value: "500", label: "Projects Completed", icon: "🏗️" },
-    { value: "98.7%", label: "Success Rate", icon: "✅" },
-    { value: "24/7", label: "Support Available", icon: "🔄" },
+    { value: "10", label: "Service Categories", icon: "ðŸ“‹" },
+    { value: "500", label: "Projects Completed", icon: "ðŸ—ï¸" },
+    { value: "98.7%", label: "Success Rate", icon: "âœ…" },
+    { value: "24/7", label: "Support Available", icon: "ðŸ”„" },
   ];
 
   return (
@@ -244,7 +247,7 @@ export default function ServicePage() {
       }>
         <SEOHead
           title="EmersonEIMS Services | Generator Intelligence, Solar, UPS, HV Infrastructure & More"
-          description="Ten premium service chapters. Calculators, charts, adaptive performance, and cinematic design that sells — built for Kenya and beyond."
+          description="Ten premium service chapters. Calculators, charts, adaptive performance, and cinematic design that sells â€” built for Kenya and beyond."
           keywords="services, generators, solar, UPS, high voltage, infrastructure, Kenya, EmersonEIMS, engineering, maintenance"
         />
       </Suspense>
@@ -345,10 +348,10 @@ export default function ServicePage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/contact" className="cta-button-primary">
-                <span>Get Free Consultation →</span>
+                <span>Get Free Consultation â†’</span>
               </Link>
               <Link href="/diagnostics" className="cta-button-secondary">
-                <span>Try Diagnostics Tool →</span>
+                <span>Try Diagnostics Tool â†’</span>
               </Link>
             </div>
           </div>
@@ -357,3 +360,4 @@ export default function ServicePage() {
     </ErrorBoundary>
   );
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client'
 
 import { Suspense, lazy, useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -177,7 +177,7 @@ export default function DiagnosticSuitePage() {
                     <ul className="space-y-1">
                       {tool.features.map((feature) => (
                         <li key={feature} className="text-xs text-gray-500 flex items-center gap-2">
-                          <span className="text-[#fbbf24]">✓</span>
+                          <span className="text-[#fbbf24]">âœ“</span>
                           {feature}
                         </li>
                       ))}
@@ -254,7 +254,7 @@ export default function DiagnosticSuitePage() {
                     onClick={() => setActiveTab('overview')}
                     className="text-gray-400 hover:text-white transition-colors"
                   >
-                    ✕
+                    âœ•
                   </button>
                 </div>
                 <p className="text-gray-300 mb-8">
@@ -313,32 +313,32 @@ export default function DiagnosticSuitePage() {
                 {
                   title: 'Real-time Diagnostics',
                   description: 'Instant fault code lookup and diagnostic recommendations',
-                  icon: '⚡',
+                  icon: 'âš¡',
                 },
                 {
                   title: 'Intelligent Analysis',
                   description: 'AI-powered load analysis and performance optimization',
-                  icon: '🧠',
+                  icon: 'ðŸ§ ',
                 },
                 {
                   title: 'Seamless Integration',
                   description: 'Works with your existing WordPress installation',
-                  icon: '🔗',
+                  icon: 'ðŸ”—',
                 },
                 {
                   title: 'Mobile Ready',
                   description: 'Access diagnostic tools from any device',
-                  icon: '📱',
+                  icon: 'ðŸ“±',
                 },
                 {
                   title: 'WhatsApp Dispatch',
                   description: 'Automated technician dispatch via WhatsApp',
-                  icon: '💬',
+                  icon: 'ðŸ’¬',
                 },
                 {
                   title: 'Business Intelligence',
                   description: 'Conversion tracking and performance analytics',
-                  icon: '📊',
+                  icon: 'ðŸ“Š',
                 },
               ].map((feature, index) => (
                 <motion.div
@@ -392,3 +392,4 @@ export default function DiagnosticSuitePage() {
     </ErrorBoundary>
   );
 }
+

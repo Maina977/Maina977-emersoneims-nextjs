@@ -457,9 +457,6 @@ const MissionVisionValues = () => {
   );
 };
 
-// Force dynamic rendering to prevent useSearchParams issues during static generation
-export const dynamic = 'force-dynamic';
-
 export default function AboutUsPage() {
   const [activeSection, setActiveSection] = useState('hero');
   const prefersReducedMotion = useReducedMotion();

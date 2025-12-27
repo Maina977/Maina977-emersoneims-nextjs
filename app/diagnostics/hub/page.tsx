@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import { HeroHeading, SectionHeading } from '@/components/typography/CinematicHeadingVariants';
 import { DiagnosticHub } from '@/components/diagnostics';
@@ -14,6 +14,9 @@ if (typeof window !== 'undefined') {
 }
 
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
+
+// Force dynamic rendering to avoid prerendering issues with i18n
+export const dynamic = 'force-dynamic';
 
 export default function DiagnosticHubPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,7 +92,7 @@ export default function DiagnosticHubPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            Real-time Monitoring • Advanced Analytics • Predictive Maintenance
+            Real-time Monitoring â€¢ Advanced Analytics â€¢ Predictive Maintenance
           </motion.p>
         </div>
       </motion.section>
@@ -112,4 +115,5 @@ export default function DiagnosticHubPage() {
     </main>
   );
 }
+
 

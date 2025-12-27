@@ -1,13 +1,16 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import '@/app/styles/diagnostics.css';
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import { HeroHeading, SectionHeading } from '@/components/typography/CinematicHeadingVariants';
+
+// Force dynamic rendering to avoid prerendering issues with i18n
+export const dynamic = 'force-dynamic';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -15,15 +18,15 @@ if (typeof window !== 'undefined') {
 
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 
-const UniversalDiagnosticMachine = dynamic(
+const UniversalDiagnosticMachine = dynamicImport(
   () => import('@/components/diagnostics').then(mod => ({ default: mod.UniversalDiagnosticMachine })),
   { ssr: false }
 );
-const NineInOneCalculator = dynamic(
+const NineInOneCalculator = dynamicImport(
   () => import('@/components/diagnostics').then(mod => ({ default: mod.NineInOneCalculator })),
   { ssr: false }
 );
-const ServiceAnalytics = dynamic(
+const ServiceAnalytics = dynamicImport(
   () => import('@/components/diagnostics').then(mod => ({ default: mod.ServiceAnalytics })),
   { ssr: false }
 );
@@ -91,7 +94,7 @@ const ExportPanel = ({ data }: { data: any }) => {
           onClick={handleExport}
           className="px-6 py-2 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-semibold rounded-lg hover:from-amber-500 hover:to-amber-700 transition-all"
         >
-          📥 Export Report
+          ðŸ“¥ Export Report
         </button>
       </div>
     </motion.div>
@@ -127,10 +130,10 @@ const RealTimeMonitor = () => {
       animate={{ opacity: 1, y: 0 }}
     >
       {[
-        { label: 'Active Systems', value: metrics.activeSystems.toLocaleString(), icon: '⚡', color: 'from-blue-500 to-blue-600' },
-        { label: 'Avg Uptime', value: `${metrics.avgUptime.toFixed(1)}%`, icon: '📊', color: 'from-green-500 to-green-600' },
-        { label: 'Total Power', value: `${(metrics.totalPower / 1000).toFixed(0)}kW`, icon: '🔋', color: 'from-yellow-500 to-yellow-600' },
-        { label: 'Active Alerts', value: metrics.alerts, icon: '⚠️', color: 'from-red-500 to-red-600' },
+        { label: 'Active Systems', value: metrics.activeSystems.toLocaleString(), icon: 'âš¡', color: 'from-blue-500 to-blue-600' },
+        { label: 'Avg Uptime', value: `${metrics.avgUptime.toFixed(1)}%`, icon: 'ðŸ“Š', color: 'from-green-500 to-green-600' },
+        { label: 'Total Power', value: `${(metrics.totalPower / 1000).toFixed(0)}kW`, icon: 'ðŸ”‹', color: 'from-yellow-500 to-yellow-600' },
+        { label: 'Active Alerts', value: metrics.alerts, icon: 'âš ï¸', color: 'from-red-500 to-red-600' },
       ].map((metric, index) => (
         <motion.div
           key={metric.label}
@@ -253,7 +256,7 @@ export default function DiagnosticsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            Real-time Monitoring • Export Reports • Advanced Analytics
+            Real-time Monitoring â€¢ Export Reports â€¢ Advanced Analytics
           </motion.p>
         </div>
       </motion.section>
@@ -356,3 +359,4 @@ export default function DiagnosticsPage() {
     </main>
   );
 }
+

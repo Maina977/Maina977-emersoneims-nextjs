@@ -1,6 +1,6 @@
-// EmersonEIMS Solar Platform - PREMIUM EDITION
+﻿// EmersonEIMS Solar Platform - PREMIUM EDITION
 // Complete 10/10 implementation with all requested features
-'use client';
+'use client'
 
 import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -128,10 +128,10 @@ const AdvancedSystemCalculator = () => {
   }, [consumption, rooftopSize, county, systemSize, batterySize]);
 
   const steps = [
-    { number: 1, title: "Energy Usage", icon: "⚡" },
-    { number: 2, title: "Location", icon: "📍" },
-    { number: 3, title: "System Size", icon: "☀️" },
-    { number: 4, title: "Results", icon: "📊" },
+    { number: 1, title: "Energy Usage", icon: "âš¡" },
+    { number: 2, title: "Location", icon: "ðŸ“" },
+    { number: 3, title: "System Size", icon: "â˜€ï¸" },
+    { number: 4, title: "Results", icon: "ðŸ“Š" },
   ];
 
   return (
@@ -191,7 +191,7 @@ const AdvancedSystemCalculator = () => {
             </div>
 
             <div>
-              <label className="block text-white/80 mb-2">Available Rooftop Space (m²)</label>
+              <label className="block text-white/80 mb-2">Available Rooftop Space (mÂ²)</label>
               <div className="flex items-center space-x-4">
                 <input
                   type="range"
@@ -203,7 +203,7 @@ const AdvancedSystemCalculator = () => {
                   className="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-yellow-300 [&::-webkit-slider-thumb]:to-yellow-500"
                 />
                 <span className="text-2xl font-bold text-yellow-300 w-32 text-right">
-                  {rooftopSize} m²
+                  {rooftopSize} mÂ²
                 </span>
               </div>
             </div>
@@ -241,7 +241,7 @@ const AdvancedSystemCalculator = () => {
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full ${c.color} mb-2`} />
                     <span className="font-semibold text-white">{c.name}</span>
-                    <span className="text-sm text-white/70">{c.irradiance} kWh/m²/day</span>
+                    <span className="text-sm text-white/70">{c.irradiance} kWh/mÂ²/day</span>
                   </div>
                 </button>
               ))}
@@ -257,7 +257,7 @@ const AdvancedSystemCalculator = () => {
                   <div className="text-2xl font-bold text-yellow-300">
                     {counties.find(c => c.name === county)?.irradiance}
                   </div>
-                  <div className="text-white/70 text-sm">kWh/m²/day</div>
+                  <div className="text-white/70 text-sm">kWh/mÂ²/day</div>
                 </div>
               </div>
             </div>
@@ -373,7 +373,7 @@ const AdvancedSystemCalculator = () => {
         {step === 4 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="text-center mb-8">
-              <div className="text-5xl mb-2">🎉</div>
+              <div className="text-5xl mb-2">ðŸŽ‰</div>
               <h3 className="text-2xl font-bold text-white">Your Custom Solar System is Ready!</h3>
               <p className="text-white/70">Here's your personalized solar solution</p>
             </div>
@@ -394,7 +394,7 @@ const AdvancedSystemCalculator = () => {
               <div className="p-6 bg-gradient-to-br from-green-500/10 to-green-300/5 rounded-2xl border border-green-500/20">
                 <div className="text-3xl font-bold text-green-300 mb-2">KSh {savings.toLocaleString()}</div>
                 <div className="text-white/90 font-semibold">Annual Savings</div>
-                <div className="text-white/60 text-sm mt-1">Year 1 • 25-year warranty</div>
+                <div className="text-white/60 text-sm mt-1">Year 1 â€¢ 25-year warranty</div>
               </div>
             </div>
 
@@ -442,7 +442,7 @@ const AdvancedSystemCalculator = () => {
               : 'bg-white/10 text-white hover:bg-white/20'
           }`}
         >
-          ← Back
+          â† Back
         </button>
         
         <div className="flex items-center space-x-4">
@@ -455,7 +455,7 @@ const AdvancedSystemCalculator = () => {
               onClick={() => setStep(s => Math.min(4, s + 1))}
               className="px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-500 text-black hover:from-yellow-400 hover:to-yellow-600 transition-all transform hover:scale-105"
             >
-              Continue →
+              Continue â†’
             </button>
           ) : (
             <button className="px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-green-400 to-green-600 text-white hover:from-green-500 hover:to-green-700 transition-all transform hover:scale-105">
@@ -555,7 +555,7 @@ const InteractiveCountyMap = () => {
               <div className="text-white font-bold mb-2">Solar Potential</div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 rounded-full bg-green-500" />
-                <span className="text-white/70 text-sm">High (5.8+ kWh/m²/day)</span>
+                <span className="text-white/70 text-sm">High (5.8+ kWh/mÂ²/day)</span>
               </div>
               <div className="flex items-center space-x-2 mt-1">
                 <div className="w-4 h-4 rounded-full bg-yellow-500" />
@@ -581,7 +581,7 @@ const InteractiveCountyMap = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-white/70">Solar Irradiance</span>
                   <span className="text-2xl font-bold text-yellow-300">
-                    {countyData[selectedCounty].solar} kWh/m²/day
+                    {countyData[selectedCounty].solar} kWh/mÂ²/day
                   </span>
                 </div>
                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -662,10 +662,10 @@ const MicroInteractions = () => {
       {/* Animated Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { value: "98.7%", label: "System Uptime", icon: "⚡", color: "from-green-400 to-emerald-600" },
-          { value: "500", label: "Projects", icon: "🏗️", color: "from-blue-400 to-blue-600" },
-          { value: "KSh 4.2B", label: "Client Savings", icon: "💰", color: "from-yellow-400 to-yellow-600" },
-          { value: "47", label: "Counties Covered", icon: "📍", color: "from-purple-400 to-purple-600" },
+          { value: "98.7%", label: "System Uptime", icon: "âš¡", color: "from-green-400 to-emerald-600" },
+          { value: "500", label: "Projects", icon: "ðŸ—ï¸", color: "from-blue-400 to-blue-600" },
+          { value: "KSh 4.2B", label: "Client Savings", icon: "ðŸ’°", color: "from-yellow-400 to-yellow-600" },
+          { value: "47", label: "Counties Covered", icon: "ðŸ“", color: "from-purple-400 to-purple-600" },
         ].map((stat, i) => (
           <div
             key={i}
@@ -702,7 +702,7 @@ const MicroInteractions = () => {
             <Link href="/contact" className="group px-8 py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50">
               <span className="flex items-center justify-center space-x-2">
                 <span>Schedule Free Consultation</span>
-                <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+                <span className="transform group-hover:translate-x-1 transition-transform">â†’</span>
               </span>
             </Link>
             <Link href="/contact" className="px-8 py-4 border-2 border-yellow-300 text-yellow-300 font-bold rounded-xl text-lg hover:bg-yellow-300/10 transition-all duration-300 transform hover:scale-105">
@@ -802,7 +802,7 @@ export const caseStudies = [
   {
     title: "Hospital uptime on hybrid solar + LFP",
     impact: "Saved KSh 18M over 3 years; 99.9% uptime with 6-hour autonomy.",
-    details: "550W panels × 280, LFP storage 500kWh, hybrid inverter 150kW, smart switchover.",
+    details: "550W panels Ã— 280, LFP storage 500kWh, hybrid inverter 150kW, smart switchover.",
   },
   {
     title: "Factory peak-shaving with solar",
@@ -812,13 +812,13 @@ export const caseStudies = [
 ];
 
 export const warranties = {
-  panels: { performanceYears: 25, productYears: 12, conditions: "≥80% output at year 25; IEC certified." },
-  batteries: { productYears: 10, cyclesMin: 6000, conditions: "LFP chemistry, DoD ≤80%, proper ambient temp." },
+  panels: { performanceYears: 25, productYears: 12, conditions: "â‰¥80% output at year 25; IEC certified." },
+  batteries: { productYears: 10, cyclesMin: 6000, conditions: "LFP chemistry, DoD â‰¤80%, proper ambient temp." },
   inverters: { productYears: 5, conditions: "Manufacturer defects; firmware updates included." },
   guarantees: [
-    "Design accuracy guarantee: we re‑model if real loads deviate >10%.",
+    "Design accuracy guarantee: we reâ€‘model if real loads deviate >10%.",
     "Timeline guarantee: installation milestones or we discount service fees.",
-    "Support guarantee: 24/7 hotline for mission‑critical clients.",
+    "Support guarantee: 24/7 hotline for missionâ€‘critical clients.",
   ],
 };
 
@@ -889,7 +889,7 @@ export function TestimonialList() {
           <li key={t.name} className="p-6 rounded-lg border border-white/10 bg-black/60">
             <blockquote>
               <p className="text-white/90">"{t.quote}"</p>
-              <footer className="mt-3 text-sm text-white/60">— {t.name}, {t.sector}</footer>
+              <footer className="mt-3 text-sm text-white/60">â€” {t.name}, {t.sector}</footer>
             </blockquote>
           </li>
         ))}
@@ -957,7 +957,7 @@ export function TechnologyPartners() {
             <ul className="space-y-1">
               {partner.features.map((feature, idx) => (
                 <li key={idx} className="text-xs text-white/60 flex items-center gap-2">
-                  <span className="text-yellow-400">✓</span>
+                  <span className="text-yellow-400">âœ“</span>
                   {feature}
                 </li>
               ))}
@@ -1009,10 +1009,10 @@ const RealTimeSolarMonitor = () => {
       
       <div className="grid md:grid-cols-4 gap-6">
         {[
-          { label: 'Current Output', value: `${production.current}W`, icon: '⚡', color: 'from-yellow-400 to-yellow-600' },
-          { label: 'Today\'s Production', value: `${production.today.toLocaleString()}Wh`, icon: '☀️', color: 'from-orange-400 to-orange-600' },
-          { label: 'This Month', value: `${production.thisMonth.toLocaleString()}Wh`, icon: '📊', color: 'from-blue-400 to-blue-600' },
-          { label: 'System Efficiency', value: `${production.efficiency.toFixed(1)}%`, icon: '🎯', color: 'from-green-400 to-green-600' },
+          { label: 'Current Output', value: `${production.current}W`, icon: 'âš¡', color: 'from-yellow-400 to-yellow-600' },
+          { label: 'Today\'s Production', value: `${production.today.toLocaleString()}Wh`, icon: 'â˜€ï¸', color: 'from-orange-400 to-orange-600' },
+          { label: 'This Month', value: `${production.thisMonth.toLocaleString()}Wh`, icon: 'ðŸ“Š', color: 'from-blue-400 to-blue-600' },
+          { label: 'System Efficiency', value: `${production.efficiency.toFixed(1)}%`, icon: 'ðŸŽ¯', color: 'from-green-400 to-green-600' },
         ].map((metric, index) => (
           <motion.div
             key={metric.label}
@@ -1068,13 +1068,13 @@ const Solar3DVisualization = () => {
           }}
         >
           <div className="text-center">
-            <div className="text-8xl mb-4">☀️</div>
+            <div className="text-8xl mb-4">â˜€ï¸</div>
             <div className="grid grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="w-16 h-20 bg-gradient-to-b from-yellow-300 to-yellow-500 rounded shadow-lg" />
               ))}
             </div>
-            <p className="text-white mt-4">Drag to rotate • Click for AR view</p>
+            <p className="text-white mt-4">Drag to rotate â€¢ Click for AR view</p>
           </div>
         </motion.div>
       </div>
@@ -1090,7 +1090,7 @@ const Solar3DVisualization = () => {
           }}
           className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all"
         >
-          📱 View in AR
+          ðŸ“± View in AR
         </button>
         <button className="px-6 py-3 border-2 border-blue-500 text-blue-400 rounded-lg hover:bg-blue-500/10 transition-all">
           Export 3D Model
@@ -1130,7 +1130,7 @@ const WeatherForecast = () => {
             transition={{ delay: index * 0.1 }}
           >
             <h3 className="text-xl font-bold text-white mb-4">{day.label}</h3>
-            <div className="text-4xl mb-4">☀️</div>
+            <div className="text-4xl mb-4">â˜€ï¸</div>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-400">Condition:</span>
@@ -1138,11 +1138,11 @@ const WeatherForecast = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Irradiance:</span>
-                <span className="text-yellow-400 font-semibold">{day.data.irradiance} kWh/m²</span>
+                <span className="text-yellow-400 font-semibold">{day.data.irradiance} kWh/mÂ²</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Temperature:</span>
-                <span className="text-white font-semibold">{day.data.temp}°C</span>
+                <span className="text-white font-semibold">{day.data.temp}Â°C</span>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-gray-800">
@@ -1218,22 +1218,22 @@ export default function PremiumApp() {
   const renderPage = () => {
     switch (currentPage) {
       case "panels": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar panels</h1><p className="mt-3 text-white/80">Tier‑1 modules optimized for Kenya's irradiance and temperatures.</p></header>
-        <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{panels.map((p) => (<li key={p.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{p.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Power:</dt> <dd className="inline">{p.wattage}W</dd></div><div><dt className="inline">Efficiency:</dt> <dd className="inline">{p.efficiencyPct}%</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{p.warrantyYears}y</dd></div><div><dt className="inline">Temp Coef:</dt> <dd className="inline">{p.tempCoefPctPerC}%/°C</dd></div><div><dt className="inline">Tier:</dt> <dd className="inline">{p.tier}</dd></div></dl></li>))}</ul>
+        <header><h1 className="text-4xl font-bold text-yellow-300">Solar panels</h1><p className="mt-3 text-white/80">Tierâ€‘1 modules optimized for Kenya's irradiance and temperatures.</p></header>
+        <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{panels.map((p) => (<li key={p.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{p.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Power:</dt> <dd className="inline">{p.wattage}W</dd></div><div><dt className="inline">Efficiency:</dt> <dd className="inline">{p.efficiencyPct}%</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{p.warrantyYears}y</dd></div><div><dt className="inline">Temp Coef:</dt> <dd className="inline">{p.tempCoefPctPerC}%/Â°C</dd></div><div><dt className="inline">Tier:</dt> <dd className="inline">{p.tier}</dd></div></dl></li>))}</ul>
         <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your array</button></div>
       </div>;
       case "batteries": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar batteries</h1><p className="mt-3 text-white/80">Safe, long‑life storage with smart BMS.</p></header>
+        <header><h1 className="text-4xl font-bold text-yellow-300">Solar batteries</h1><p className="mt-3 text-white/80">Safe, longâ€‘life storage with smart BMS.</p></header>
         <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{batteries.map((b) => (<li key={b.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{b.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Capacity:</dt> <dd className="inline">{b.capacityKWh}kWh</dd></div><div><dt className="inline">Chemistry:</dt> <dd className="inline">{b.chemistry}</dd></div><div><dt className="inline">Cycles:</dt> <dd className="inline">{b.cycles}+</dd></div><div><dt className="inline">DoD:</dt> <dd className="inline">{b.dodPct}%</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{b.warrantyYears}y</dd></div></dl></li>))}</ul>
         <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your storage</button></div>
       </div>;
       case "inverters": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar inverters</h1><p className="mt-3 text-white/80">High‑efficiency hybrid, off‑grid, and grid‑tie power conversion.</p></header>
+        <header><h1 className="text-4xl font-bold text-yellow-300">Solar inverters</h1><p className="mt-3 text-white/80">Highâ€‘efficiency hybrid, offâ€‘grid, and gridâ€‘tie power conversion.</p></header>
         <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{inverters.map((inv) => (<li key={inv.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{inv.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Power:</dt> <dd className="inline">{inv.powerKW}kW</dd></div><div><dt className="inline">Efficiency:</dt> <dd className="inline">{inv.efficiencyPct}%</dd></div><div><dt className="inline">Surge:</dt> <dd className="inline">{inv.surgePct}%</dd></div><div><dt className="inline">MPPT:</dt> <dd className="inline">{inv.mpptCount}</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{inv.warrantyYears}y</dd></div></dl></li>))}</ul>
         <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your inverter</button></div>
       </div>;
       case "comparison": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="text-4xl font-bold text-yellow-300">Energy comparison</h1><p className="mt-3 text-white/80">Compare 5‑year cost trajectories for solar vs diesel generators vs national grid.</p>
+        <h1 className="text-4xl font-bold text-yellow-300">Energy comparison</h1><p className="mt-3 text-white/80">Compare 5â€‘year cost trajectories for solar vs diesel generators vs national grid.</p>
         <div className="mt-8"><ROIChart /></div>
         <section className="mt-8 grid md:grid-cols-3 gap-6"><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">Solar</h2><p className="text-sm text-white/80 mt-2">Higher upfront, lower operating; stable costs and environmental benefits.</p></article><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">Diesel generators</h2><p className="text-sm text-white/80 mt-2">Lower upfront, escalating fuel/maintenance costs, emissions exposure.</p></article><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">National grid</h2><p className="text-sm text-white/80 mt-2">Variable tariffs and reliability; solar hybrid improves resilience.</p></article></section>
         <section className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Get your ROI proposal</button></section>
@@ -1296,7 +1296,7 @@ export default function PremiumApp() {
             <h2 id="warranty-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">Warranties & guarantees</h2>
             <div className="mt-6 flex flex-wrap gap-3">
               <WarrantyBadge label="Panels" detail="25-year performance / 12-year product" />
-              <WarrantyBadge label="Batteries" detail="10-year / ≥6000 cycles" />
+              <WarrantyBadge label="Batteries" detail="10-year / â‰¥6000 cycles" />
               <WarrantyBadge label="Inverters" detail="5-year product" />
               <WarrantyBadge label="Design" detail="Accuracy guarantee" />
               <WarrantyBadge label="Support" detail="24/7 for mission-critical" />
@@ -1467,15 +1467,15 @@ export default function PremiumApp() {
                 {company.name}
               </h2>
               <p className="text-white/80 mb-3 flex items-center">
-                <span className="w-5 h-5 mr-2">📍</span>
+                <span className="w-5 h-5 mr-2">ðŸ“</span>
                 {company.address}
               </p>
               <p className="text-white/80 mb-3 flex items-center">
-                <span className="w-5 h-5 mr-2">📞</span>
+                <span className="w-5 h-5 mr-2">ðŸ“ž</span>
                 {company.phones.join(" / ")}
               </p>
               <p className="text-white/80 flex items-center">
-                <span className="w-5 h-5 mr-2">✉️</span>
+                <span className="w-5 h-5 mr-2">âœ‰ï¸</span>
                 {company.emails.join(" / ")}
               </p>
             </section>
@@ -1486,7 +1486,7 @@ export default function PremiumApp() {
                 {["Master Calculator", "ROI & Energy Comparison", "Industry Solutions", "County Insights"].map((item) => (
                   <li key={item}>
                     <button className="text-white/70 hover:text-yellow-300 transition-all duration-300 flex items-center group">
-                      <span className="mr-2 transform group-hover:translate-x-1 transition-transform">→</span>
+                      <span className="mr-2 transform group-hover:translate-x-1 transition-transform">â†’</span>
                       {item}
                     </button>
                   </li>
@@ -1502,11 +1502,11 @@ export default function PremiumApp() {
               >
                 <span className="flex items-center justify-center">
                   Get your tailored solar system
-                  <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="ml-2 transform group-hover:translate-x-1 transition-transform">â†’</span>
                 </span>
               </Link>
               <p className="text-white/60 text-sm">
-                Average 4.2 year ROI • 25-year warranty • 98.7% uptime
+                Average 4.2 year ROI â€¢ 25-year warranty â€¢ 98.7% uptime
               </p>
             </section>
             
@@ -1526,7 +1526,7 @@ export default function PremiumApp() {
           <div className="border-t border-white/10 py-6">
             <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row justify-between items-center">
               <p className="text-white/50 text-sm">
-                © 2025 EmersonEIMS. All rights reserved.
+                Â© 2025 EmersonEIMS. All rights reserved.
               </p>
               <div className="flex space-x-6 mt-4 md:mt-0">
                 <button className="text-white/50 hover:text-yellow-300 transition-colors">Privacy</button>

@@ -1,4 +1,4 @@
-// app/page.tsx - Awwwards SOTD Contender: "Intelligent Power Core"
+﻿// app/page.tsx - Awwwards SOTD Contender: "Intelligent Power Core"
 'use client';
 
 import { Suspense, lazy, useEffect, useState, useRef, useCallback, useMemo } from 'react';
@@ -18,6 +18,9 @@ const PowerJourney = lazy(() => import('@/components/narrative/PowerJourney'));
 const ServicesTeaser = lazy(() => import('@/components/services/ServicesTeaser'));
 const CaseStudies = lazy(() => import('@/components/cases/CaseStudies'));
 const TechnicalShowcase = lazy(() => import('@/components/technical/TechnicalShowcase'));
+
+// Force dynamic rendering to avoid prerendering issues with i18n
+export const dynamic = 'force-dynamic';
 
 // Performance-optimized static components
 const IntelligentCoreBadge = lazy(() => import('@/components/core/IntelligentCoreBadge'));
@@ -249,7 +252,7 @@ export default function AwwwardsHomepage() {
                 transition={{ delay: 1.5, duration: 0.8 }}
                 className="font-body text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mt-8 leading-relaxed"
               >
-                We don't just provide energy solutions—we power the dreams that fuel Kenya's future. 
+                We don't just provide energy solutionsâ€”we power the dreams that fuel Kenya's future. 
                 From life-saving hospital generators to transformative solar farms, every installation 
                 tells a story of progress, resilience, and hope.
               </motion.p>
@@ -301,7 +304,7 @@ export default function AwwwardsHomepage() {
                 aria-label="Launch interactive diagnostics demo"
                 data-magnetic="true"
               >
-                <span className="cta-icon" aria-hidden="true">▶</span>
+                <span className="cta-icon" aria-hidden="true">â–¶</span>
                 <span>Live Demo</span>
               </button>
             </motion.div>
@@ -426,3 +429,4 @@ function SectionSkeleton() {
     </div>
   );
 }
+

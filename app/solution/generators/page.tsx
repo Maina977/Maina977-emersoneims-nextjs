@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -9,6 +9,9 @@ import AnimatedImage from "@/components/effects/AnimatedImage";
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import OptimizedImage from "@/components/media/OptimizedImage";
 import ErrorBoundary from '@/components/error/ErrorBoundary';
+
+// Force dynamic rendering to avoid prerendering issues with i18n
+export const dynamic = 'force-dynamic';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -101,7 +104,7 @@ export default function GeneratorsSolutionPage() {
                     'Remote monitoring and diagnostics',
                   ].map((item, index) => (
                     <li key={index} className="flex items-start gap-3 text-gray-300">
-                      <span className="text-amber-400 mt-1">✓</span>
+                      <span className="text-amber-400 mt-1">âœ“</span>
                       {item}
                     </li>
                   ))}
@@ -134,17 +137,17 @@ export default function GeneratorsSolutionPage() {
                 {
                   title: 'Expert Installation',
                   description: 'Certified technicians with 15+ years experience',
-                  icon: '🔧',
+                  icon: 'ðŸ”§',
                 },
                 {
                   title: '24/7 Support',
                   description: 'Round-the-clock emergency support and monitoring',
-                  icon: '📞',
+                  icon: 'ðŸ“ž',
                 },
                 {
                   title: 'Genuine Parts',
                   description: 'OEM parts and components for optimal performance',
-                  icon: '⚙️',
+                  icon: 'âš™ï¸',
                 },
               ].map((feature, index) => (
                 <motion.div
@@ -198,4 +201,5 @@ export default function GeneratorsSolutionPage() {
     </ErrorBoundary>
   );
 }
+
 

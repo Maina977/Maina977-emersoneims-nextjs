@@ -1,21 +1,10 @@
-import createMiddleware from 'next-intl/middleware';
-import { locales } from './i18n';
+﻿import createMiddleware from "next-intl/middleware";
 
 export default createMiddleware({
-  // A list of all locales that are supported
-  locales: locales,
-
-  // Used when no locale matches
-  defaultLocale: 'en',
-
-  // Automatically detect the user's locale based on:
-  // 1. The `locale` URL parameter (e.g., `/en/about`)
-  // 2. A cookie named `NEXT_LOCALE`
-  // 3. The `Accept-Language` header
-  localeDetection: true
+  locales: ["en", "es", "fr", "de", "pt", "nl", "ar", "zh", "am", "so", "sw"],
+  defaultLocale: "en"
 });
 
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ['/', '/(ar|en|sw|fr|pt|de|zh|es|nl|am|so)/:path*']
+  matcher: ["/((?!api|_next|.*\\..*).*)"]
 };

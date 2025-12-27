@@ -1,4 +1,4 @@
-'use client';
+﻿'use client'
 
 import { useState, useMemo, useEffect, useRef, Suspense, lazy } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -39,7 +39,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/generators", 
     label: "Diesel Generators", 
     description: "Comprehensive generator solutions from 20kVA to 2000kVA",
-    icon: "⚡",
+    icon: "âš¡",
     color: "from-yellow-500 to-yellow-600",
     category: "Power Generation",
     features: ["Load testing", "Maintenance", "Installation", "24/7 support"],
@@ -49,7 +49,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/controls", 
     label: "Controls (DeepSea & PowerWizard)", 
     description: "Advanced control systems for generator automation",
-    icon: "🎛️",
+    icon: "ðŸŽ›ï¸",
     color: "from-blue-500 to-blue-600",
     category: "Automation",
     features: ["Remote monitoring", "Auto-start", "Load management", "Alarm systems"],
@@ -59,7 +59,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/solar", 
     label: "Solar Technical Issues", 
     description: "Expert diagnosis and resolution of solar system problems",
-    icon: "☀️",
+    icon: "â˜€ï¸",
     color: "from-orange-500 to-orange-600",
     category: "Solar",
     features: ["Fault diagnosis", "Performance optimization", "Repairs", "Upgrades"],
@@ -69,7 +69,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/solar-sizing", 
     label: "Solar Sizing", 
     description: "Precise solar system sizing for optimal performance",
-    icon: "📐",
+    icon: "ðŸ“",
     color: "from-green-500 to-green-600",
     category: "Solar",
     features: ["Load analysis", "System design", "ROI calculation", "Warranty"],
@@ -79,7 +79,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/power-interruptions", 
     label: "Power Interruptions", 
     description: "Solutions for reliable power during grid outages",
-    icon: "🔌",
+    icon: "ðŸ”Œ",
     color: "from-red-500 to-red-600",
     category: "Power Quality",
     features: ["Backup systems", "UPS integration", "Generator backup", "Monitoring"],
@@ -89,7 +89,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/ac", 
     label: "AC Systems", 
     description: "Complete air conditioning solutions and maintenance",
-    icon: "❄️",
+    icon: "â„ï¸",
     color: "from-cyan-500 to-cyan-600",
     category: "HVAC",
     features: ["Installation", "Maintenance", "Repairs", "Energy efficiency"],
@@ -99,7 +99,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/ups", 
     label: "UPS Systems", 
     description: "Uninterruptible power supply systems for critical loads",
-    icon: "🔋",
+    icon: "ðŸ”‹",
     color: "from-purple-500 to-purple-600",
     category: "Power Quality",
     features: ["Battery backup", "Voltage regulation", "Surge protection", "Monitoring"],
@@ -109,7 +109,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/diesel-automation", 
     label: "Diesel Automation", 
     description: "Automated generator control and monitoring systems",
-    icon: "🤖",
+    icon: "ðŸ¤–",
     color: "from-indigo-500 to-indigo-600",
     category: "Automation",
     features: ["Auto-start/stop", "Load sharing", "Remote control", "Data logging"],
@@ -119,7 +119,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/borehole-pumps", 
     label: "Borehole Pumps", 
     description: "Water pumping solutions for residential and commercial use",
-    icon: "💧",
+    icon: "ðŸ’§",
     color: "from-blue-400 to-blue-500",
     category: "Water Systems",
     features: ["Installation", "Maintenance", "Repairs", "Efficiency optimization"],
@@ -129,7 +129,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/incinerators", 
     label: "Incinerators", 
     description: "Waste management and incineration solutions",
-    icon: "🔥",
+    icon: "ðŸ”¥",
     color: "from-orange-600 to-orange-700",
     category: "Waste Management",
     features: ["Installation", "Maintenance", "Compliance", "Efficiency"],
@@ -139,7 +139,7 @@ const SOLUTIONS: Solution[] = [
     href: "/solutions/motors", 
     label: "Motors & Rewinding", 
     description: "Motor repair, rewinding, and maintenance services",
-    icon: "⚙️",
+    icon: "âš™ï¸",
     color: "from-gray-500 to-gray-600",
     category: "Maintenance",
     features: ["Rewinding", "Repairs", "Maintenance", "Testing"],
@@ -223,7 +223,7 @@ export default function SolutionsHome() {
     
     "Our diesel generator solutions encompass the complete power generation lifecycle, from initial load analysis and system design to installation, commissioning, and 24/7 maintenance support. We specialize in Cummins generators ranging from compact 20kVA units for residential applications to industrial 2000kVA systems for data centers and manufacturing facilities. Each generator solution includes advanced control systems featuring DeepSea and PowerWizard automation, enabling remote monitoring, automatic load sharing, and predictive maintenance capabilities. Our verified track record includes installations at major institutions like St. Austin Academy, Kivukoni International School, and critical infrastructure projects for NTSA and Sanergy Limited.",
     
-    "Solar energy solutions form a cornerstone of our renewable energy portfolio, with expertise spanning residential rooftop installations, commercial solar farms, and hybrid solar-diesel systems for maximum reliability. Our solar technical team addresses complex challenges including inverter optimization, battery storage integration, grid-tie configurations, and off-grid system design. We've completed over 1,200 solar projects across Kenya, leveraging Tier-1 panel technology from manufacturers like SunPower and SolarEdge, combined with Tesla Powerwall battery storage for seamless energy independence. Our solar sizing methodology incorporates Kenya's exceptional 5.5-5.9 kWh/m²/day solar irradiance, ensuring optimal system performance and rapid ROI typically achieved within 3-4 years.",
+    "Solar energy solutions form a cornerstone of our renewable energy portfolio, with expertise spanning residential rooftop installations, commercial solar farms, and hybrid solar-diesel systems for maximum reliability. Our solar technical team addresses complex challenges including inverter optimization, battery storage integration, grid-tie configurations, and off-grid system design. We've completed over 1,200 solar projects across Kenya, leveraging Tier-1 panel technology from manufacturers like SunPower and SolarEdge, combined with Tesla Powerwall battery storage for seamless energy independence. Our solar sizing methodology incorporates Kenya's exceptional 5.5-5.9 kWh/mÂ²/day solar irradiance, ensuring optimal system performance and rapid ROI typically achieved within 3-4 years.",
     
     "Power quality and reliability solutions address critical infrastructure needs through UPS systems, voltage regulation, surge protection, and automated backup systems. Our comprehensive approach integrates AC systems, borehole pumps, incinerators, and motor rewinding services, creating complete energy ecosystems for hospitals, schools, hotels, factories, and data centers. The EmersonEIMS Diagnostic Suite provides real-time monitoring, fault code analysis, and predictive maintenance capabilities, reducing downtime by up to 85% and extending equipment lifespan by an average of 40%. Our automation solutions enable intelligent load management, remote control, and data logging, transforming traditional power systems into smart infrastructure networks.",
     
@@ -448,7 +448,7 @@ export default function SolutionsHome() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                 />
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">ðŸ”</span>
               </div>
             </div>
 
@@ -546,7 +546,7 @@ export default function SolutionsHome() {
                     <div className="mt-auto pt-4 border-t border-gray-800">
                       <span className={`text-[#fbbf24] font-semibold group-hover:text-[#fcd34d] transition-colors flex items-center gap-2`}>
                         Learn More
-                        <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+                        <span className="transform group-hover:translate-x-1 transition-transform">â†’</span>
                       </span>
                     </div>
                   </div>
@@ -558,7 +558,7 @@ export default function SolutionsHome() {
 
         {filteredSolutions.length === 0 && (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">🔍</div>
+            <div className="text-6xl mb-4">ðŸ”</div>
             <h3 className="text-2xl font-bold text-white mb-2">No solutions found</h3>
             <p className="text-gray-400">Try adjusting your search or filter criteria</p>
           </div>
@@ -586,7 +586,7 @@ export default function SolutionsHome() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                   />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">ðŸ”</span>
                 </div>
               </div>
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
@@ -667,7 +667,7 @@ export default function SolutionsHome() {
                       <div className="mt-auto pt-4 border-t border-gray-800">
                         <span className={`text-[#fbbf24] font-semibold group-hover:text-[#fcd34d] transition-colors flex items-center gap-2`}>
                           Learn More
-                          <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+                          <span className="transform group-hover:translate-x-1 transition-transform">â†’</span>
                         </span>
                       </div>
                     </div>
@@ -679,7 +679,7 @@ export default function SolutionsHome() {
 
           {filteredSolutions.length === 0 && (
             <div className="text-center py-20">
-              <div className="text-6xl mb-4">🔍</div>
+              <div className="text-6xl mb-4">ðŸ”</div>
               <h3 className="text-2xl font-bold text-white mb-2">No solutions found</h3>
               <p className="text-gray-400">Try adjusting your search or filter criteria</p>
             </div>
@@ -715,3 +715,4 @@ export default function SolutionsHome() {
     </ErrorBoundary>
   );
 }
+

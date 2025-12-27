@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -14,6 +14,9 @@ if (typeof window !== 'undefined') {
 }
 
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
+
+// Force dynamic rendering to avoid prerendering issues with i18n
+export const dynamic = 'force-dynamic';
 
 export default function SolarSolutionPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -109,7 +112,7 @@ export default function SolarSolutionPage() {
                     'Performance monitoring',
                   ].map((item, index) => (
                     <li key={index} className="flex items-start gap-3 text-gray-300">
-                      <span className="text-amber-400 mt-1">✓</span>
+                      <span className="text-amber-400 mt-1">âœ“</span>
                       {item}
                     </li>
                   ))}
@@ -153,4 +156,5 @@ export default function SolarSolutionPage() {
     </ErrorBoundary>
   );
 }
+
 
