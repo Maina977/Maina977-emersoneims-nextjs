@@ -1,8 +1,8 @@
 ﻿// app/page.tsx - Awwwards SOTD Contender: "Intelligent Power Core"
 'use client';
 
-import { Suspense, lazy, useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { Suspense, lazy, useEffect, useState, useRef, useMemo } from 'react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import SkipAnimation from '@/components/accessibility/SkipAnimation';
@@ -28,7 +28,7 @@ const MicroInteractions = lazy(() => import('@/components/interactions/MicroInte
 
 export default function AwwwardsHomepage() {
   // State management
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
   const [activeSection, setActiveSection] = useState('hero');
   const [themeMode, setThemeMode] = useState<'engineering' | 'high-contrast'>('engineering');
   const prefersReducedMotion = useReducedMotion();
@@ -136,21 +136,7 @@ export default function AwwwardsHomepage() {
       </Suspense>
       
       {/* Loading sequence - Optimized for performance */}
-      <AnimatePresence mode="wait">
-        {!isLoaded && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-[#08080c]"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-white text-sm">Loading...</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Removed blocking loader to ensure content appears even if hydration fails */}
       
       {/* Main container with scroll-snap */}
       <motion.div 
