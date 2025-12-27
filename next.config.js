@@ -1,5 +1,3 @@
-const withNextIntl = require('next-intl/plugin')('./i18n.ts');
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -13,4 +11,4 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
 };
 
-module.exports = withNextIntl(nextConfig);
+module.exports = nextConfig;

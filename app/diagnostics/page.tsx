@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import dynamicImport from 'next/dynamic';  // ← FIXED: renamed import
+// import { gsap } from 'gsap';  // ← REMOVE: Causes SSR issues
+// import { ScrollTrigger } from 'gsap/ScrollTrigger';  // ← REMOVE: Causes SSR issues
+import dynamicImport from 'next/dynamic';
 import '@/app/styles/diagnostics.css';
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import { HeroHeading, SectionHeading } from '@/components/typography/CinematicHeadingVariants';
@@ -165,32 +165,42 @@ export default function DiagnosticsPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    gsap.registerPlugin(ScrollTrigger);
+    // Dynamic import GSAP to prevent SSR issues
+    import('gsap').then((gsapMod) => {
+      import('gsap/ScrollTrigger').then((ScrollTriggerMod) => {
+        gsapMod.gsap.registerPlugin(ScrollTriggerMod.ScrollTrigger);
 
-    if (!containerRef.current) return;
+        if (!containerRef.current) return;
 
-    const sections = containerRef.current.querySelectorAll('section');
-    
-    sections.forEach((section, i) => {
-      gsap.fromTo(
-        section,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse',
-          },
-        }
-      );
+        const sections = containerRef.current.querySelectorAll('section');
+        
+        sections.forEach((section, i) => {
+          gsapMod.gsap.fromTo(
+            section,
+            { opacity: 0, y: 40 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: section,
+                start: 'top 85%',
+                toggleActions: 'play none none reverse',
+              },
+            }
+          );
+        });
+      });
     });
 
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      // Cleanup ScrollTrigger instances
+      if (typeof window !== 'undefined') {
+        import('gsap/ScrollTrigger').then((ScrollTriggerMod) => {
+          ScrollTriggerMod.ScrollTrigger.getAll().forEach((trigger: any) => trigger.kill());
+        });
+      }
     };
   }, []);
 
