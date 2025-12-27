@@ -8,11 +8,6 @@ const nextConfig: NextConfig = {
   // Output configuration
   ...(isStaticExport ? { output: 'export' as const } : {}),
 
-  // Experimental features
-  experimental: {
-    appDir: true,
-  },
-
   // Image optimization - EXTREME PERFORMANCE
   images: {
     unoptimized: isStaticExport,
