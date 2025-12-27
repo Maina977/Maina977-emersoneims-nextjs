@@ -5,7 +5,6 @@ import { Suspense, lazy, useEffect, useState, useRef, useCallback, useMemo } fro
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useWindowSize } from '@/hooks/useWindowSize';
-import LoadingSequence from '@/components/awwwards/LoadingSequence';
 import SkipAnimation from '@/components/accessibility/SkipAnimation';
 import EnhancedAccessibility from '@/components/accessibility/EnhancedAccessibility';
 import EmotionalNarrative from '@/components/narrative/EmotionalNarrative';
@@ -82,8 +81,8 @@ export default function AwwwardsHomepage() {
         console.warn('Some assets failed to load:', error);
       }
       
-      // Start loading sequence
-      timer = setTimeout(() => setIsLoaded(true), 2200);
+      // Start loading sequence - Reduced from 2200ms to 300ms for better UX
+      timer = setTimeout(() => setIsLoaded(true), 300);
     };
     
     initExperience();
@@ -136,13 +135,20 @@ export default function AwwwardsHomepage() {
         />
       </Suspense>
       
-      {/* Loading sequence - First impression critical */}
+      {/* Loading sequence - Optimized for performance */}
       <AnimatePresence mode="wait">
         {!isLoaded && (
-          <LoadingSequence 
-            onComplete={() => setIsLoaded(true)}
-            prefersReducedMotion={prefersReducedMotion}
-          />
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#08080c]"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-white text-sm">Loading...</p>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
       
@@ -173,90 +179,21 @@ export default function AwwwardsHomepage() {
           role="region" 
           aria-label="Hero introduction"
         >
-          <div className="hero-content">
-            {/* Animated headline with stagger */}
-            <motion.div 
-              className="headline-container"
-              initial="hidden"
-              animate={isLoaded ? "visible" : "hidden"}
-              variants={{
-                hidden: { opacity: 0 },
-                visible: { 
-                  opacity: 1,
-                  transition: { staggerChildren: 0.03, delayChildren: 0.2 }
-                }
-              }}
-            >
-              <h1 className="visually-hidden">
-                EmersonEIMS - Premium Power Engineering & Intelligent Energy Solutions
-              </h1>
-              
-              <div className="headline-mask">
-                {['PREMIUM', 'POWER', 'ENGINEERING'].map((word, i) => (
-                  <motion.div 
-                    key={word}
-                    className="headline-word"
-                    variants={{
-                      hidden: { 
-                        y: 60, 
-                        opacity: 0,
-                        filter: 'blur(10px)'
-                      },
-                      visible: { 
-                        y: 0, 
-                        opacity: 1,
-                        filter: 'blur(0px)',
-                        transition: {
-                          type: 'spring',
-                          damping: 25,
-                          stiffness: 200
-                        }
-                      }
-                    }}
-                  >
-                    <span className="word-text">{word}</span>
-                    {i === 2 && (
-                      <motion.span 
-                        className="word-ampersand"
-                        initial={{ scale: 0, rotate: -45 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ 
-                          delay: 0.8, 
-                          type: 'spring',
-                          damping: 15
-                        }}
-                      >
-                        &
-                      </motion.span>
-                    )}
-                  </motion.div>
-                ))}
+          <Suspense fallback={
+            <div className="hero-placeholder min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+              <div className="text-center">
+                <div className="w-16 h-16 border-4 border-gold-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <h2 className="text-2xl font-bold text-white mb-2">Emerson EiMS</h2>
+                <p className="text-gray-300">"Reliable Power. Without Limits."</p>
               </div>
-              
-              <motion.div 
-                className="subheadline"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 }}
-              >
-                <span className="gradient-text font-body text-lg md:text-xl">
-                  Powering Kenya's Future Through Intelligent Energy Solutions
-                </span>
-                <span className="separator">|</span>
-                <span className="font-body">Nairobi Engineered, Globally Trusted</span>
-              </motion.div>
-              {/* Enhanced emotional copywriting */}
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.5, duration: 0.8 }}
-                className="font-body text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mt-8 leading-relaxed"
-              >
-                We don't just provide energy solutionsâ€”we power the dreams that fuel Kenya's future. 
-                From life-saving hospital generators to transformative solar farms, every installation 
-                tells a story of progress, resilience, and hope.
-              </motion.p>
-            </motion.div>
+            </div>
+          }>
+            <HeroCanvas 
+              config={performanceConfig}
+              prefersReducedMotion={prefersReducedMotion}
+              progress={scrollYProgress}
+            />
+          </Suspense>
             
             {/* WebGL Canvas - Performance optimized */}
             <Suspense 
@@ -326,7 +263,6 @@ export default function AwwwardsHomepage() {
               <div className="scroll-line" />
               <div className="scroll-dot" />
             </motion.div>
-          </div>
           
           {/* Section progress indicator */}
           <motion.div 
