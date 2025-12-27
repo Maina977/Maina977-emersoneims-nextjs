@@ -11,20 +11,36 @@ import EmotionalNarrative from '@/components/narrative/EmotionalNarrative';
 import PageTransitions from '@/components/animations/PageTransitions';
 import { Reveal, ParallaxReveal, StaggerReveal } from '@/components/animations/RevealAnimations';
 
-// Lazy load heavy sections
-const HeroCanvas = lazy(() => import('@/components/hero/HeroCanvas'));
-const PowerJourney = lazy(() => import('@/components/narrative/PowerJourney'));
-const ServicesTeaser = lazy(() => import('@/components/services/ServicesTeaser'));
-const CaseStudies = lazy(() => import('@/components/cases/CaseStudies'));
-const TechnicalShowcase = lazy(() => import('@/components/technical/TechnicalShowcase'));
+// Lazy load sections with preload for critical ones
+const HeroCanvas = lazy(() => import('@/components/hero/HeroCanvas').catch(() => ({
+  default: () => <div className="hero-placeholder" />
+})));
+const PowerJourney = lazy(() => import('@/components/narrative/PowerJourney').catch(() => ({
+  default: () => <div />
+})));
+const ServicesTeaser = lazy(() => import('@/components/services/ServicesTeaser').catch(() => ({
+  default: () => <div />
+})));
+const CaseStudies = lazy(() => import('@/components/cases/CaseStudies').catch(() => ({
+  default: () => <div />
+})));
+const TechnicalShowcase = lazy(() => import('@/components/technical/TechnicalShowcase').catch(() => ({
+  default: () => <div />
+})));
 
 // Force dynamic rendering to avoid prerendering issues with i18n
 export const dynamic = 'force-dynamic';
 
-// Performance-optimized static components
-const IntelligentCoreBadge = lazy(() => import('@/components/core/IntelligentCoreBadge'));
-const NavigationBar = lazy(() => import('@/components/navigation/NavigationBar'));
-const MicroInteractions = lazy(() => import('@/components/interactions/MicroInteractions'));
+// Performance-optimized lazy components
+const IntelligentCoreBadge = lazy(() => import('@/components/core/IntelligentCoreBadge').catch(() => ({
+  default: () => <div />
+})));
+const NavigationBar = lazy(() => import('@/components/navigation/NavigationBar').catch(() => ({
+  default: () => <div />
+})));
+const MicroInteractions = lazy(() => import('@/components/interactions/MicroInteractions').catch(() => ({
+  default: () => <div />
+})));
 
 export default function AwwwardsHomepage() {
   // State management
@@ -106,12 +122,12 @@ export default function AwwwardsHomepage() {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
   
-  // Memoized config for performance
+  // Memoized config for performance - Optimized for faster load
   const performanceConfig = useMemo(() => ({
-    dpr: Math.min((typeof window !== 'undefined' ? window.devicePixelRatio : 1) || 1, windowWidth < 768 ? 1 : 1.5),
-    shadows: windowWidth > 1024,
-    particles: windowWidth > 768 ? 2000 : 800,
-    quality: (windowWidth < 768 ? 'medium' : 'high') as 'low' | 'medium' | 'high'
+    dpr: Math.min((typeof window !== 'undefined' ? window.devicePixelRatio : 1) || 1, windowWidth < 768 ? 1 : 1.25),
+    shadows: false, // Disabled shadows for better performance
+    particles: windowWidth > 768 ? 500 : 200, // Reduced from 2000/800
+    quality: (windowWidth < 768 ? 'low' : 'medium') as 'low' | 'medium' | 'high' // Never use 'high'
   }), [windowWidth]);
   
   // ARIA live announcements
