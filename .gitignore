@@ -12,3 +12,6 @@ app/PC/
 app/componets/
 app/app/
 deployment-package/
+
+.vercel
+.env*.local
