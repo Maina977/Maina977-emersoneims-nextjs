@@ -147,7 +147,7 @@ export default function AwwwardsHomepage() {
               transition={{ delay: 0.2 }}
               className="text-2xl sm:text-3xl text-gray-300 text-center leading-relaxed font-light"
             >
-              Over 15 years powering East Africa's critical infrastructure. From 20kVA residential systems to 2000kVA industrial installations. ISO 9001:2015 certified. 98.7% uptime guaranteed.
+              Over 15 years powering East Africa's critical infrastructure. From 20kVA residential systems to 2000kVA industrial installations. 98.7% uptime guaranteed.
             </motion.p>
           </div>
         </section>

@@ -11,69 +11,58 @@ import { useRef } from 'react';
 const testimonials = [
   {
     id: 1,
-    name: "Dr. Sarah Kimani",
-    title: "Chief Operations Officer",
-    company: "Kenyatta National Hospital",
-    image: "/testimonials/hospital-director.jpg",
-    quote: "EmersonEIMS saved us from critical blackouts. Their emergency generator installation during our power crisis was executed flawlessly in 48 hours. 100% uptime for 3 years now.",
-    impact: "24/7 Hospital Operations",
+    name: "Eli Chovu",
+    title: "Maintenance Manager",
+    company: "Kivukoni School",
+    image: "/testimonials/kivukoni-manager.jpg",
+    quote: "The 60 KVA Cummins generator from EmersonEIMS has been exceptional. Reliable power supply for our entire facility with zero interruptions.",
+    impact: "60 KVA Cummins Generator",
     rating: 5,
-    logo: "/clients/knh-logo.svg"
+    logo: "/clients/kivukoni-logo.svg"
   },
   {
     id: 2,
-    name: "James Mwangi",
-    title: "Facility Manager",
-    company: "Nairobi International School",
-    image: "/testimonials/school-manager.jpg",
-    quote: "Their solar-hybrid solution cut our energy costs by 65%. The system paid for itself in 18 months. EmersonEIMS delivers on every promise.",
-    impact: "65% Cost Reduction",
+    name: "Jagtap KT",
+    title: "Managing Director",
+    company: "Bigot Flowers",
+    image: "/testimonials/bigot-md.jpg",
+    quote: "EmersonEIMS successfully completed the 399 Caterpillar generator engine overhaul. The expertise and precision they demonstrated was world-class. Our operations have never been smoother.",
+    impact: "399 Caterpillar Engine Overhaul",
     rating: 5,
-    logo: "/clients/nis-logo.svg"
+    logo: "/clients/bigot-logo.svg"
   },
   {
     id: 3,
-    name: "Grace Ochieng",
-    title: "Operations Director",
-    company: "Sian Flower Farm",
-    image: "/testimonials/farm-director.jpg",
-    quote: "Powering 15 hectares of greenhouses 24/7 is critical. EmersonEIMS's solution is so reliable, we've expanded to 3 more farms with them.",
-    impact: "15 Hectares Powered",
+    name: "Christine Awuor",
+    title: "Project Manager",
+    company: "Green Heart Kilifi",
+    image: "/testimonials/greenheart-pm.jpg",
+    quote: "The 44 KVA Cummins generator installation was seamless. EmersonEIMS handled everything professionally from site preparation to commissioning. Excellent service.",
+    impact: "44 KVA Cummins Generator",
     rating: 5,
-    logo: "/clients/sian-logo.svg"
+    logo: "/clients/greenheart-logo.svg"
   },
   {
     id: 4,
-    name: "Eng. David Mugo",
-    title: "Technical Director",
-    company: "National Transport Authority",
-    image: "/testimonials/ntsa-engineer.jpg",
-    quote: "Mission-critical infrastructure demands perfection. EmersonEIMS's diagnostic suite predicted a failure 3 weeks before it could happen. That's the level of service Kenya needs.",
-    impact: "Zero Downtime",
+    name: "Isaac Wafula",
+    title: "Maintenance Department",
+    company: "St Austins Academy",
+    image: "/testimonials/staustin-maintenance.jpg",
+    quote: "The 50 KVA Perkins generator has been running flawlessly since installation. EmersonEIMS provides top-tier equipment and outstanding technical support.",
+    impact: "50 KVA Perkins Generator",
     rating: 5,
-    logo: "/clients/ntsa-logo.svg"
+    logo: "/clients/staustin-logo.svg"
   },
   {
     id: 5,
-    name: "Peter Kamau",
-    title: "General Manager",
-    company: "Bamburi Cement",
-    image: "/testimonials/cement-gm.jpg",
-    quote: "Industrial-grade power for 24/7 production. EmersonEIMS's 2.5MW system handles our heavy loads without breaking a sweat. True engineering excellence.",
-    impact: "2.5MW Industrial Power",
+    name: "Joshua Nyamai",
+    title: "Maintenance Supervisor",
+    company: "Afriherbs Limited",
+    image: "/testimonials/afriherbs-supervisor.jpg",
+    quote: "The 300 KVA Cummins generator engine overhaul by EmersonEIMS extended our generator's life significantly. Their technical team is highly skilled and professional.",
+    impact: "300 KVA Engine Overhaul",
     rating: 5,
-    logo: "/clients/bamburi-logo.svg"
-  },
-  {
-    id: 6,
-    name: "Linda Wanjiru",
-    title: "Sustainability Officer",
-    company: "Sarova Hotels",
-    image: "/testimonials/hotel-officer.jpg",
-    quote: "Eco-friendly luxury demands smart energy. Their solar-battery-generator hybrid is elegant, silent, and 100% reliable. Our guests never know we run on backup.",
-    impact: "Eco-Luxury Power",
-    rating: 5,
-    logo: "/clients/sarova-logo.svg"
+    logo: "/clients/afriherbs-logo.svg"
   }
 ];
 
