@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo, useEffect, useRef, Suspense, lazy } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -203,17 +203,6 @@ export default function SolutionsHome() {
 	}, [filteredSolutions]);
 
   // 5 Paragraphs of Verified Content
-  const contentParagraphs = [
-    "EmersonEIMS Solutions represents the culmination of over 15 years of engineering excellence in East Africa's energy infrastructure sector. Our comprehensive solutions portfolio spans diesel generators, solar energy systems, power quality management, automation, and critical infrastructure maintenance. With verified expertise across all 47 Kenyan counties, we've successfully delivered 500 projects, achieving an industry-leading 98.7% system uptime and generating KSh 4.2 billion in client savings. Our solutions are backed by ISO 9001:2015 quality management certification, EPRA licensing, and NCA accreditation, ensuring every project meets international standards while addressing local energy challenges.",
-    
-    "Our diesel generator solutions encompass the complete power generation lifecycle, from initial load analysis and system design to installation, commissioning, and 24/7 maintenance support. We specialize in Cummins generators ranging from compact 20kVA units for residential applications to industrial 2000kVA systems for data centers and manufacturing facilities. Each generator solution includes advanced control systems featuring DeepSea and PowerWizard automation, enabling remote monitoring, automatic load sharing, and predictive maintenance capabilities. Our verified track record includes installations at major institutions like St. Austin Academy, Kivukoni International School, and critical infrastructure projects for NTSA and Sanergy Limited.",
-    
-    "Solar energy solutions form a cornerstone of our renewable energy portfolio, with expertise spanning residential rooftop installations, commercial solar farms, and hybrid solar-diesel systems for maximum reliability. Our solar technical team addresses complex challenges including inverter optimization, battery storage integration, grid-tie configurations, and off-grid system design. We've completed over 1,200 solar projects across Kenya, leveraging Tier-1 panel technology from manufacturers like SunPower and SolarEdge, combined with Tesla Powerwall battery storage for seamless energy independence. Our solar sizing methodology incorporates Kenya's exceptional 5.5-5.9 kWh/m\u00B2/day solar irradiance, ensuring optimal system performance and rapid ROI typically achieved within 3-4 years.",
-    
-    "Power quality and reliability solutions address critical infrastructure needs through UPS systems, voltage regulation, surge protection, and automated backup systems. Our comprehensive approach integrates AC systems, borehole pumps, incinerators, and motor rewinding services, creating complete energy ecosystems for hospitals, schools, hotels, factories, and data centers. The EmersonEIMS Diagnostic Suite provides real-time monitoring, fault code analysis, and predictive maintenance capabilities, reducing downtime by up to 85% and extending equipment lifespan by an average of 40%. Our automation solutions enable intelligent load management, remote control, and data logging, transforming traditional power systems into smart infrastructure networks.",
-    
-    "The future of energy infrastructure in East Africa demands integrated solutions that combine reliability, sustainability, and intelligent management. EmersonEIMS Solutions bridges this gap through our comprehensive service ecosystem, supported by a network of certified technicians, 24/7 support hotlines, and advanced diagnostic tools. Our commitment extends beyond installation to long-term partnerships, with maintenance contracts covering 98% of our installations and average response times under 2 hours in urban areas. As Kenya continues its energy transition, our solutions portfolio evolves to incorporate emerging technologies including energy storage, microgrids, and IoT-enabled monitoring, positioning EmersonEIMS as the definitive engineering partner for East Africa's energy future."
-  ];
 
   return (
     <main ref={containerRef} className="eims-section min-h-screen relative">
@@ -351,7 +340,7 @@ export default function SolutionsHome() {
               </h2>
               <div className="w-20 h-1 bg-gradient-to-r from-amber-500 to-amber-600" />
               <p className="text-xl sm:text-2xl text-gray-300 leading-relaxed font-light">
-                {contentParagraphs[0]}
+                {CONTENT_PARAGRAPHS[0]}
               </p>
             </motion.div>
             
@@ -383,7 +372,7 @@ export default function SolutionsHome() {
             transition={{ duration: 1.2 }}
           >
             <p className="text-3xl sm:text-4xl lg:text-5xl text-white leading-relaxed font-light text-center">
-              {contentParagraphs[1]}
+              {CONTENT_PARAGRAPHS[1]}
             </p>
           </motion.div>
 
@@ -417,7 +406,7 @@ export default function SolutionsHome() {
               </h2>
               <div className="w-20 h-1 bg-gradient-to-r from-amber-500 to-amber-600" />
               <p className="text-xl sm:text-2xl text-gray-300 leading-relaxed font-light">
-                {contentParagraphs[2]}
+                {CONTENT_PARAGRAPHS[2]}
               </p>
             </motion.div>
           </div>
@@ -437,7 +426,7 @@ export default function SolutionsHome() {
               Power Quality & Reliability
             </h3>
             <p className="text-2xl sm:text-3xl text-gray-300 leading-relaxed font-light text-center">
-              {contentParagraphs[3]}
+              {CONTENT_PARAGRAPHS[3]}
             </p>
           </motion.div>
 
@@ -463,7 +452,7 @@ export default function SolutionsHome() {
                   The Future of Energy
                 </h2>
                 <p className="text-2xl sm:text-3xl text-gray-200 max-w-4xl font-light leading-relaxed">
-                  {contentParagraphs[4]}
+                  {CONTENT_PARAGRAPHS[4]}
                 </p>
               </div>
             </div>
@@ -512,7 +501,7 @@ export default function SolutionsHome() {
             transition={{ duration: 0.8 }}
           >
             <p className="text-lg text-gray-300 leading-relaxed max-w-4xl mx-auto">
-              {contentParagraphs[3]}
+              {CONTENT_PARAGRAPHS[3]}
             </p>
           </motion.div>
 
@@ -538,7 +527,7 @@ export default function SolutionsHome() {
             transition={{ duration: 0.8 }}
           >
             <p className="text-lg text-gray-300 leading-relaxed max-w-4xl mx-auto">
-              {contentParagraphs[4]}
+              {CONTENT_PARAGRAPHS[4]}
             </p>
           </motion.div>
         </div>
@@ -824,4 +813,6 @@ export default function SolutionsHome() {
     </main>
   );
 }
+
+
 
