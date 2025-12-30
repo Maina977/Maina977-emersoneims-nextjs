@@ -1,0 +1,5 @@
+﻿Γû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local, .env.production, .env
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+

@@ -7,7 +7,7 @@
  */
 
 import { useRef, useMemo, useState, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Mesh, Vector3, Color, ShaderMaterial } from 'three';
 import * as THREE from 'three';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
@@ -23,11 +23,6 @@ interface BlobProps {
 function Blob({ position, color, size, mousePosition }: BlobProps) {
   const meshRef = useRef<Mesh>(null);
   const materialRef = useRef<ShaderMaterial>(null);
-  const velocity = useRef(new Vector3(
-    (Math.random() - 0.5) * 0.01,
-    (Math.random() - 0.5) * 0.01,
-    (Math.random() - 0.5) * 0.01
-  ));
   const targetPosition = useRef(new Vector3(...position));
   const timeOffset = useRef(Math.random() * Math.PI * 2);
   const [hovered, setHovered] = useState(false);

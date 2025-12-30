@@ -16,7 +16,7 @@ export async function createProxyResponse(
   let upstreamUrl: URL;
   try {
     upstreamUrl = new URL(rewritePath + request.nextUrl.pathname.replace(/^\/api\/proxy/, ''), target);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Invalid proxy target' }, { status: 400 });
   }
 

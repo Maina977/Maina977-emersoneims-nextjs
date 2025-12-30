@@ -1,15 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
 
 /**
  * Apple-Level Aggressive Preloading
  * Preloads critical resources for instant page loads
  */
 export default function AdvancedPreloader() {
-  const [preloaded, setPreloaded] = useState(false);
-
   useEffect(() => {
     // Preload critical fonts
     const fonts = [
@@ -20,8 +17,8 @@ export default function AdvancedPreloader() {
 
     // Preload critical images
     const images = [
-      '/images/hero-bg.jpg',
-      'https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png',
+      '/og-image.jpg',
+      '/images/logo-tagline.png',
     ];
 
     // Preload critical routes
@@ -60,7 +57,6 @@ export default function AdvancedPreloader() {
         document.head.appendChild(link);
       });
 
-      setPreloaded(true);
     };
 
     preloadResources();

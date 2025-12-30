@@ -10,7 +10,7 @@ interface NotificationData {
   visitorId?: string;
   conversionType?: string;
   sessionId?: string;
-  data?: any;
+  data?: unknown;
   timestamp?: number | string;
 }
 

@@ -1,12 +1,10 @@
-import React from 'react';
-
-interface FabricationProps {
+type FabricationProps = {
   performanceTier?: string;
-}
+};
 
 export default function Fabrication({ performanceTier }: FabricationProps) {
   return (
-    <div className="p-6">
+    <div className="p-6" data-performance-tier={performanceTier}>
       <h2 className="text-2xl font-bold mb-4">Fabrication Services</h2>
       <p className="text-gray-600 mb-6">
         Custom metal fabrication and manufacturing services.

@@ -13,6 +13,7 @@ interface LiveVisitorCountProps {
 }
 
 export default function LiveVisitorCount({ currentPage }: LiveVisitorCountProps) {
+  void currentPage;
   const [visitorCount, setVisitorCount] = useState(0);
   const [recentPurchases, setRecentPurchases] = useState<string[]>([]);
 

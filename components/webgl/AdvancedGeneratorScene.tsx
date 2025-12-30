@@ -1,20 +1,16 @@
 'use client';
 
-import { Suspense, useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { motion } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { 
   OrbitControls, 
   Environment, 
   PerspectiveCamera,
-  MeshDistortMaterial,
   Float,
   Sparkles,
+  Lightformer,
   ContactShadows,
-  Text3D,
   Center,
-  useGLTF,
-  useTexture,
   MeshTransmissionMaterial,
   AccumulativeShadows,
   RandomizedLight
@@ -151,7 +147,7 @@ function EnhancedGenerator() {
   const generatorRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   
-  useFrame((state) => {
+  useFrame(() => {
     if (generatorRef.current) {
       generatorRef.current.rotation.y += hovered ? 0.01 : 0.005;
     }
@@ -228,7 +224,7 @@ function EnhancedGenerator() {
           <mesh rotation={[0, 0, 0]}>
             {(function() {
               const fanRef = useRef<THREE.Mesh>(null);
-              useFrame((state) => {
+              useFrame(() => {
                 if (fanRef.current) {
                   fanRef.current.rotation.z += 0.1;
                 }
@@ -282,7 +278,15 @@ export default function AdvancedGeneratorScene({
   autoRotate = true,
 }: AdvancedGeneratorSceneProps) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (prefersReducedMotion) {
     return (
@@ -324,7 +328,10 @@ export default function AdvancedGeneratorScene({
         />
 
         {/* Environment */}
-        <Environment preset="night" />
+        <Environment resolution={64}>
+          <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
+          <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
+        </Environment>
 
         {/* Main Generator */}
         <Center>
@@ -332,13 +339,13 @@ export default function AdvancedGeneratorScene({
         </Center>
 
         {/* Advanced Effects - Optimized Particle Count */}
-        <AdvancedParticles count={600} />
+        <AdvancedParticles count={isMobile ? 150 : 600} />
         <HolographicStreams />
         <EnergyWaves />
 
         {/* Enhanced Sparkles - Optimized */}
         <Sparkles
-          count={100}
+          count={isMobile ? 30 : 100}
           scale={[8, 8, 8]}
           size={2.5}
           speed={0.4}
@@ -347,19 +354,21 @@ export default function AdvancedGeneratorScene({
         />
 
         {/* Shadows */}
-        <AccumulativeShadows
-          frames={60}
-          temporal
-          alphaTest={0.85}
-          scale={10}
-          position={[0, -1.5, 0]}
-        >
-          <RandomizedLight
-            amount={8}
-            radius={5}
-            position={[5, 5, -5]}
-          />
-        </AccumulativeShadows>
+        {!isMobile && (
+          <AccumulativeShadows
+            frames={40}
+            temporal
+            alphaTest={0.85}
+            scale={10}
+            position={[0, -1.5, 0]}
+          >
+            <RandomizedLight
+              amount={8}
+              radius={5}
+              position={[5, 5, -5]}
+            />
+          </AccumulativeShadows>
+        )}
 
         <ContactShadows
           position={[0, -1.5, 0]}

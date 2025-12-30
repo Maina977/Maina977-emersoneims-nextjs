@@ -14,7 +14,7 @@ const FOOTER_SECTIONS = [
     links: [
       { href: '/generators', label: 'Generators' },
       { href: '/solar', label: 'Solar Systems' },
-      { href: '/diagnostics', label: 'Diagnostics' },
+      { href: '/diagnostics', label: 'Universal Diagnostics' },
     ],
   },
   {
@@ -22,7 +22,7 @@ const FOOTER_SECTIONS = [
     links: [
       { href: '/solution', label: 'Engineering Solutions' },
       { href: '/service', label: 'Services' },
-      { href: '/diagnostic-suite', label: 'Diagnostic Suite' },
+      { href: '/diagnostic-suite', label: 'Generator Diagnostics' },
     ],
   },
   {
@@ -93,7 +93,7 @@ export default function SciFiFooter() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
+                  src="/images/logo-tagline.png"
                   alt="EmersonEIMS Logo"
                   className="w-12 h-12 object-contain"
                   style={{

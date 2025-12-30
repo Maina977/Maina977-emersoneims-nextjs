@@ -1,12 +1,10 @@
-import React from 'react';
-
-interface DieselGeneratorsProps {
+type DieselGeneratorsProps = {
   performanceTier?: string;
-}
+};
 
 export default function DieselGenerators({ performanceTier }: DieselGeneratorsProps) {
   return (
-    <div className="p-6">
+    <div className="p-6" data-performance-tier={performanceTier}>
       <h2 className="text-2xl font-bold mb-4">Diesel Generators</h2>
       <p className="text-gray-600 mb-6">
         Professional diesel generator installation, maintenance, and repair services.

@@ -7,18 +7,18 @@
 
 // Suppress module resolution errors for app/componets
 declare module '*/app/componets/**/*' {
-  const content: any;
+  const content: unknown;
   export default content;
 }
 
 declare module '@/app/componets/**/*' {
-  const content: any;
+  const content: unknown;
   export default content;
 }
 
 // Explicitly handle the FAQs.tsx file path to suppress errors
 declare module 'app/componets/FAQs' {
-  const FAQs: any;
+  const FAQs: unknown;
   export default FAQs;
 }
 

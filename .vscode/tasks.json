@@ -1,0 +1,130 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Next on 3020",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"next",
+				"dev",
+				"-p",
+				"3020"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "who-uses-3020",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"netstat -ano | Select-String \":3020\" | Select-Object -First 20 | ForEach-Object { $_.Line }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "process-3020",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/inspectPort.mjs"
+			],
+			"options": {
+				"env": {
+					"PORT": "3020"
+				}
+			},
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "stop-3020-node",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/stopPort.mjs"
+			],
+			"options": {
+				"env": {
+					"PORT": "3020"
+				}
+			},
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "probe-3020",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"(Invoke-WebRequest -Uri \"http://127.0.0.1:3020\" -UseBasicParsing -TimeoutSec 10).StatusCode"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "probe-routes-node",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/probeRoutes.mjs"
+			],
+			"options": {
+				"env": {
+					"BASE_URL": "http://127.0.0.1:3020"
+				}
+			},
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "probe-json-node",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/probeJson.mjs"
+			],
+			"options": {
+				"env": {
+					"BASE_URL": "http://127.0.0.1:3020"
+				}
+			},
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "probe-missing-routes",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/probeMissingRoutes.mjs"
+			],
+			"options": {
+				"env": {
+					"BASE_URL": "http://127.0.0.1:3020"
+				}
+			},
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

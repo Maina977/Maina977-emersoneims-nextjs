@@ -1,6 +1,6 @@
 'use client';
 
-export default function MotorRewinding({ performanceTier = "high" }) {
+export default function MotorRewinding() {
   return (
     <section id="motor" className="py-20 bg-gradient-to-b from-black to-gray-900">
       <div className="max-w-7xl mx-auto px-4">

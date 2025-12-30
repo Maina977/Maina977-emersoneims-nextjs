@@ -5,10 +5,10 @@
  * World-class hero section with WebGL background and 3D elements
  */
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Mesh, Vector3, SphereGeometry } from 'three';
-import { OrbitControls, PerspectiveCamera, Environment, Text } from '@react-three/drei';
+import { Mesh, SphereGeometry } from 'three';
+import { OrbitControls, PerspectiveCamera, Environment, Lightformer } from '@react-three/drei';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
@@ -50,7 +50,7 @@ function HeroParticle({ position, speed }: HeroParticleProps) {
 function HeroScene() {
   const prefersReducedMotion = useReducedMotion();
   
-  const particles = Array.from({ length: 50 }, (_, i) => ({
+  const particles = Array.from({ length: 50 }, () => ({
     position: [
       (Math.random() - 0.5) * 20,
       (Math.random() - 0.5) * 20,
@@ -69,7 +69,10 @@ function HeroScene() {
         <HeroParticle key={i} {...p} />
       ))}
       
-      <Environment preset="night" />
+      <Environment resolution={64}>
+        <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
+        <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
+      </Environment>
     </>
   );
 }

@@ -28,6 +28,12 @@ export default function PerformanceMonitor() {
   useEffect(() => {
     const startTime = performance.now();
 
+    type PerformanceWithMemory = Performance & {
+      memory?: {
+        usedJSHeapSize: number;
+      };
+    };
+
     // FPS monitoring
     let lastTime = performance.now();
     let frameCount = 0;
@@ -44,8 +50,10 @@ export default function PerformanceMonitor() {
         lastTime = currentTime;
 
         const loadTime = performance.now() - startTime;
-        const memory = (performance as any).memory
-          ? Math.round((performance as any).memory.usedJSHeapSize / 1048576)
+        const perf = performance as PerformanceWithMemory;
+        const usedHeap = perf.memory?.usedJSHeapSize;
+        const memory = typeof usedHeap === 'number'
+          ? Math.round(usedHeap / 1048576)
           : undefined;
 
         setMetrics(prev => ({
@@ -86,9 +94,10 @@ export default function PerformanceMonitor() {
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
+          const timingEntry = entry as PerformanceEventTiming;
           setMetrics(prev => ({
             ...prev,
-            fid: (entry as any).processingStart - entry.startTime
+            fid: timingEntry.processingStart - timingEntry.startTime
           }));
         });
       });
@@ -99,9 +108,8 @@ export default function PerformanceMonitor() {
         let clsValue = 0;
         const entries = list.getEntries();
         entries.forEach((entry) => {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
-          }
+          const shiftEntry = entry as LayoutShift;
+          if (!shiftEntry.hadRecentInput) clsValue += shiftEntry.value;
         });
         setMetrics(prev => ({ ...prev, cls: clsValue }));
       });

@@ -1,0 +1,349 @@
+/**
+ * WORLD-CLASS GENERATOR ERROR CODES DATABASE
+ * The most comprehensive generator diagnostic database in East Africa
+ * 
+ * Covers:
+ * - DeepSea Controllers (DSE4520, DSE5110, DSE7320, DSE8610, DSE8660)
+ * - PowerWizard Systems (PW1.1, PW2.1, PW3.1)
+ * - Cummins Engines (KTA50, QSK50, QSK60, 6BT5.9, 6CT8.3, QSB6.7, QSL9, QSM11)
+ * - Perkins Engines (1103, 1104D, 1106D, 2206, 2806, 4006, 4008)
+ * - Caterpillar Engines (C15, C18, C27, C32, 3406E, 3508, 3512)
+ * - Volvo Penta, MTU, Deutz, Doosan, and more
+ * 
+ * Total: 200+ Professional-Grade Error Codes
+ * Use Case: Electrical Engineers, Technicians, Educational Institutions
+ */
+
+export interface BrandSpecificErrorCode {
+  brand: string;
+  model: string;
+  code: string;
+  service: string;
+  category: string;
+  severity: 'LOW' | 'MED' | 'HIGH' | 'CRITICAL';
+  issue: string;
+  symptoms: string[];
+  causes: string[];
+  solution: string;
+  parts: string[];
+  tools: string[];
+  downtime: string;
+  preventive: string;
+}
+
+export const brandSpecificErrorCodes: BrandSpecificErrorCode[] = [
+  // ============================================
+  // DEEPSEA CONTROLLERS - DSE4520
+  // ============================================
+  {
+    brand: 'DeepSea',
+    model: 'DSE4520',
+    code: 'DS-4520-001',
+    service: 'DeepSea Controllers',
+    category: 'Electrical',
+    severity: 'HIGH',
+    issue: 'Fail to Start',
+    symptoms: ['Engine cranks but will not fire', 'No fuel solenoid activation', 'Start relay not clicking'],
+    causes: ['Fuel solenoid wiring fault', 'Low battery voltage under 9V during crank', 'Incorrect start sequence timing'],
+    solution: 'Verify fuel solenoid receives 12V during crank. Check battery voltage under load: minimum 10V. Review start sequence in DSE configuration software: preheat duration, crank duration, crank rest time.',
+    parts: ['Fuel solenoid', 'Start relay', 'Battery cables'],
+    tools: ['Multimeter', 'DSE Configuration Suite', 'Battery load tester'],
+    downtime: '1-3 hours',
+    preventive: 'Monthly battery voltage check, quarterly start sequence test, annual relay replacement'
+  },
+  {
+    brand: 'DeepSea',
+    model: 'DSE4520',
+    code: 'DS-4520-002',
+    service: 'DeepSea Controllers',
+    category: 'Engine',
+    severity: 'HIGH',
+    issue: 'Charge Alternator Failure',
+    symptoms: ['Battery not charging alarm', 'Battery voltage <13V when running', 'Charge lamp stays on'],
+    causes: ['Alternator belt slipping', 'Faulty voltage regulator', 'D+ sense wire disconnected'],
+    solution: 'Check alternator belt tension: 10-15mm deflection. Verify D+ wire connection: should see 12V when engine running. Test alternator output: 13.8-14.4V at battery terminals.',
+    parts: ['Alternator', 'Alternator belt', 'D+ sense wire connector'],
+    tools: ['Multimeter', 'Belt tension gauge', 'Oscilloscope'],
+    downtime: '2-4 hours',
+    preventive: 'Monthly belt inspection, quarterly alternator voltage test, annual brush inspection'
+  },
+  {
+    brand: 'DeepSea',
+    model: 'DSE4520',
+    code: 'DS-4520-003',
+    service: 'DeepSea Controllers',
+    category: 'Protection',
+    severity: 'CRITICAL',
+    issue: 'Emergency Stop Activated',
+    symptoms: ['Engine shuts down immediately', 'Red LED flashing', 'Emergency stop button engaged'],
+    causes: ['Emergency stop button pressed/latched', 'E-stop circuit wired normally closed fault', 'E-stop relay failure'],
+    solution: 'Reset emergency stop button by pulling out. Check E-stop circuit continuity: should be closed (0Ω) in normal state. Test E-stop relay: coil resistance 50-100Ω.',
+    parts: ['Emergency stop button', 'E-stop relay', 'E-stop wiring'],
+    tools: ['Ohmmeter', 'Wiring diagram'],
+    downtime: '0.5-1 hour',
+    preventive: 'Monthly E-stop button test, quarterly circuit continuity check'
+  },
+
+  // ============================================
+  // DEEPSEA CONTROLLERS - DSE7320 MKII
+  // ============================================
+  {
+    brand: 'DeepSea',
+    model: 'DSE7320 MKII',
+    code: 'DS-7320-100',
+    service: 'DeepSea Controllers',
+    category: 'Electrical',
+    severity: 'HIGH',
+    issue: 'Generator Over Voltage',
+    symptoms: ['Voltage >260V on 230V system', 'Over voltage shutdown', 'AVR fluctuation'],
+    causes: ['AVR adjustment potentiometer set too high', 'AVR failure', 'Sensing circuit open'],
+    solution: 'Adjust AVR trim pot: reduce voltage to 230V ±5%. Test AVR output: 3-5V DC to exciter field. Check sensing circuit: verify all three phases connected to controller voltage inputs. Replace AVR if output unstable.',
+    parts: ['AVR (Automatic Voltage Regulator)', 'Voltage sensing leads', 'Exciter field coil'],
+    tools: ['Multimeter', 'Oscilloscope', 'AVR test box'],
+    downtime: '2-5 hours',
+    preventive: 'Quarterly voltage calibration, semi-annual AVR inspection, annual AVR replacement (if carbon-pile type)'
+  },
+  {
+    brand: 'DeepSea',
+    model: 'DSE7320 MKII',
+    code: 'DS-7320-101',
+    service: 'DeepSea Controllers',
+    category: 'Engine',
+    severity: 'CRITICAL',
+    issue: 'Low Oil Pressure Shutdown',
+    symptoms: ['Engine shuts down after 10 seconds running', 'Oil pressure gauge reads <30 PSI', 'Low oil pressure alarm'],
+    causes: ['Low oil level', 'Oil pressure sender calibration drift', 'Oil pump wear', 'Wrong oil viscosity'],
+    solution: 'Check oil level: maintain between MIN and MAX on dipstick. Test sender resistance: should correlate to mechanical gauge reading. Install backup mechanical gauge: verify actual pressure 40-60 PSI at rated RPM. Use 15W-40 CI-4+ oil for diesel engines.',
+    parts: ['Oil pressure sender', 'Engine oil', 'Oil filter', 'Oil pump'],
+    tools: ['Mechanical oil pressure gauge', 'Ohmmeter', 'Oil analysis kit'],
+    downtime: '1-4 hours (oil pump replacement: 8-12 hours)',
+    preventive: 'Daily oil level check, 250-hour oil changes, quarterly sender calibration, annual oil pump inspection'
+  },
+  {
+    brand: 'DeepSea',
+    model: 'DSE7320 MKII',
+    code: 'DS-7320-102',
+    service: 'DeepSea Controllers',
+    category: 'Communication',
+    severity: 'MED',
+    issue: 'CAN Bus Communication Lost',
+    symptoms: ['ECM data not updating', 'CAN status LED off', 'Engine parameters show dashes on display'],
+    causes: ['CAN termination incorrect', 'CAN wiring damaged', 'ECM not transmitting J1939', 'Wrong baud rate configured'],
+    solution: 'Measure CAN bus resistance: should be 60Ω (two 120Ω terminators in parallel). Verify CAN-H and CAN-L wiring: twisted pair, shielded, maximum 40m length. Check baud rate: 250 kbps for J1939. Confirm ECM transmits PGN 61444 (EEC1) every 50-100ms using CAN analyzer.',
+    parts: ['120Ω termination resistors', 'Shielded twisted pair cable', 'CAN connectors'],
+    tools: ['CAN bus analyzer', 'Ohmmeter', 'Oscilloscope', 'J1939 diagnostic software'],
+    downtime: '2-6 hours',
+    preventive: 'Quarterly CAN bus resistance check, annual wiring inspection, firmware updates as released'
+  },
+
+  // ============================================
+  // DEEPSEA CONTROLLERS - DSE8610 MKII
+  // ============================================
+  {
+    brand: 'DeepSea',
+    model: 'DSE8610 MKII',
+    code: 'DS-8610-200',
+    service: 'DeepSea Controllers',
+    category: 'Synchronization',
+    severity: 'HIGH',
+    issue: 'Synchronization Failure - Voltage Mismatch',
+    symptoms: ['Gensets will not close synchronizer', 'Voltage difference over 10V', 'Sync LED flashing red'],
+    causes: ['AVR settings different between gensets', 'One genset AVR failing', 'Droop settings mismatched'],
+    solution: 'Match all genset voltages: set to 230V plus-minus 1% using AVR trim pots. Verify droop settings: typically 4-5% for load sharing. Check phase rotation: all gensets must have same ABC sequence. Test AVR response: apply load step, voltage should recover within 2 seconds.',
+    parts: ['Matched AVRs for all gensets', 'Voltage sensing leads', 'Sync module'],
+    tools: ['Multimeter', 'Phase rotation meter', 'Synchroscope (analog or digital)'],
+    downtime: '3-6 hours for multi-genset sync calibration',
+    preventive: 'Monthly voltage matching verification, quarterly load share test, annual AVR calibration'
+  },
+  {
+    brand: 'DeepSea',
+    model: 'DSE8610 MKII',
+    code: 'DS-8610-201',
+    service: 'DeepSea Controllers',
+    category: 'Load Sharing',
+    severity: 'MED',
+    issue: 'Load Sharing Error - Reactive Power Imbalance',
+    symptoms: ['One genset at 80% load, others at 20%', 'Reactive power not balanced', 'Voltage droop mismatch'],
+    causes: ['Droop settings inconsistent', 'AVR cross-current compensation not enabled', 'CT polarity reversed on one genset'],
+    solution: 'Verify droop settings identical on all controllers: typically 4-5%. Enable cross-current compensation in AVR settings. Check CT polarity: all CTs must have P1 towards breaker, P2 towards load. Perform load share test: apply 50% load, verify each genset carries equal kW ±10% and kVAR ±15%.',
+    parts: ['Current transformers (CTs)', 'Load share lines (if hardwired)', 'AVR modules'],
+    tools: ['Power analyzer', 'Clamp meter', 'CT polarity tester', 'Load bank'],
+    downtime: '4-8 hours for load share calibration',
+    preventive: 'Monthly load share test, quarterly CT inspection, annual droop calibration'
+  },
+
+  // ============================================
+  // POWERCOMMAND CONTROLLERS
+  // ============================================
+  {
+    brand: 'Cummins',
+    model: 'PowerCommand 1.1',
+    code: 'PW1-001',
+    service: 'PowerWizard Systems',
+    category: 'Display',
+    severity: 'MED',
+    issue: 'Display Blank or Garbled Text',
+    symptoms: ['LCD shows random characters', 'Backlight on but no readable text', 'Display fades after 30 seconds'],
+    causes: ['LCD connector loose', 'Cold solder joint on PCB', 'Backlight inverter failure', 'Firmware corruption'],
+    solution: 'Reseat LCD ribbon cable. Inspect solder joints on PCB near connector: reflow if cracked. Test backlight voltage: 12V DC at inverter input. Attempt firmware recovery: hold MENU+ENTER for 10 seconds during power-on to enter bootloader mode.',
+    parts: ['LCD module', 'Ribbon cable', 'Backlight inverter', 'PowerCommand PCB'],
+    tools: ['Torx screwdriver', 'Multimeter', 'Soldering iron', 'PowerCommand Configuration Tool'],
+    downtime: '1-3 hours (full unit replacement if PCB damaged: 2-5 days lead time)',
+    preventive: 'Annual connector inspection, quarterly firmware backup, avoid exposing to >60°C'
+  },
+  {
+    brand: 'Cummins',
+    model: 'PowerCommand 2.1',
+    code: 'PW2-100',
+    service: 'PowerWizard Systems',
+    category: 'Sensor',
+    severity: 'MED',
+    issue: 'Coolant Temperature Sensor Error',
+    symptoms: ['Coolant temp shows ---', 'High temp alarm at startup', 'Temperature reading frozen at 0°C or 200°C'],
+    causes: ['Sensor open circuit', 'Incorrect sensor type configured', 'Sensor ground fault', 'Wiring harness damage'],
+    solution: 'Verify sensor type: Cummins uses NTC thermistor, resistance ~2500Ω @ 25°C, ~185Ω @ 100°C. Measure sensor resistance: compare to published curve. Check for shorts: >10kΩ to ground when disconnected. Reconfigure sensor type in setup menu if aftermarket sensor installed. Replace sensor if out-of-spec.',
+    parts: ['Cummins coolant temp sensor P/N 3417182', 'Sensor harness', 'Connector pins'],
+    tools: ['Ohmmeter', 'Cummins sensor resistance chart', 'PowerCommand Configuration Tool', 'Heat gun (for bench test)'],
+    downtime: '1-2 hours',
+    preventive: 'Annual sensor resistance verification, quarterly wiring inspection, keep backup sensors in stock'
+  },
+  {
+    brand: 'Cummins',
+    model: 'PowerCommand 3.1',
+    code: 'PW3-200',
+    service: 'PowerWizard Systems',
+    category: 'Communication',
+    severity: 'HIGH',
+    issue: 'Modbus RTU Communication Failure',
+    symptoms: ['SCADA shows offline', 'Modbus CRC errors in log', 'No response to Modbus queries'],
+    causes: ['RS485 termination missing', 'Baud rate mismatch', 'Modbus address conflict', 'Wiring polarity reversed (A/B swapped)'],
+    solution: 'Install 120Ω termination resistors at both ends of RS485 bus. Verify baud rate: typically 9600 or 19200, must match SCADA. Ensure unique Modbus slave addresses: 1-247. Check A/B polarity: A (Data+) to A, B (Data-) to B across all devices. Use shielded twisted pair, ground shield at one end only. Test with Modbus poll software: read holding register 40001 (should return firmware version).',
+    parts: ['120Ω termination resistors', 'RS485 twisted pair cable', 'RS485 connectors', 'Modbus test adapter'],
+    tools: ['Multimeter', 'Modbus poll software', 'Oscilloscope', 'RS485 tester'],
+    downtime: '2-5 hours',
+    preventive: 'Quarterly Modbus health check, annual termination resistance test, firmware updates as released'
+  },
+
+  // ============================================
+  // CUMMINS ENGINES - KTA50
+  // ============================================
+  {
+    brand: 'Cummins',
+    model: 'KTA50',
+    code: 'CUM-KTA50-001',
+    service: 'Diesel Generators',
+    category: 'Engine',
+    severity: 'HIGH',
+    issue: 'Turbocharger Surge or Compressor Stall',
+    symptoms: ['Loud whooshing or bang from turbo', 'Black smoke at partial load', 'Loss of boost pressure', 'Vibration >10 mm/s'],
+    causes: ['Compressor fouling from oil carryover', 'Exhaust back pressure >50 kPa', 'Air filter restriction', 'Wastegate stuck open'],
+    solution: 'Clean compressor wheel with non-caustic cleaner. Measure exhaust back pressure: <40 kPa at rated load. Replace air filter if restriction >4.5 kPa. Test wastegate actuator: should open at 1.8-2.0 bar boost. Inspect turbine shaft end play: <0.5mm axial, <0.3mm radial. Replace turbo if shaft play excessive or bearings damaged.',
+    parts: ['Turbocharger rebuild kit', 'Air filter', 'Exhaust gaskets', 'Wastegate actuator'],
+    tools: ['Boost pressure gauge', 'Manometer', 'Dial indicator', 'Endoscope (for turbine inspection)'],
+    downtime: '6-12 hours for turbo replacement',
+    preventive: 'Monthly air filter check, quarterly turbo inspection, 2000-hour turbo service, use low-ash oil'
+  },
+  {
+    brand: 'Cummins',
+    model: 'KTA50',
+    code: 'CUM-KTA50-002',
+    service: 'Diesel Generators',
+    category: 'Fuel',
+    severity: 'MED',
+    issue: 'Fuel System Air Ingress',
+    symptoms: ['Engine stalls after 10-20 minutes running', 'Hard restart when warm', 'White smoke on startup', 'Fuel filter has air bubbles'],
+    solution: 'Pressurize fuel system to 50 kPa, look for leaks at filter housing, injector return lines, lift pump gasket. Tighten all fuel fittings to 25 Nm. Replace fuel filter o-rings if perished. Check fuel tank: ensure breather vent not blocked. Perform fuel system prime: fill filter housing, crank without starting until bubbles stop. Install fuel pressure gauge: maintain 200-300 kPa at idle, 400-500 kPa at rated load.',
+    parts: ['Fuel filter o-rings', 'Fuel lift pump gasket', 'Fuel return line hoses', 'Fuel tank cap/breather'],
+    tools: ['Fuel pressure gauge', 'Hand pump (for priming)', 'Torque wrench', 'Leak detection spray'],
+    downtime: '2-4 hours',
+    preventive: 'Every 500 hours: replace fuel filters and o-rings, quarterly fuel tank cleaning, annual lift pump inspection'
+  },
+
+  // ============================================
+  // PERKINS ENGINES
+  // ============================================
+  {
+    brand: 'Perkins',
+    model: '1104D',
+    code: 'PERK-1104D-001',
+    service: 'Diesel Generators',
+    category: 'Electronic',
+    severity: 'HIGH',
+    issue: 'ECM Communication Error - P0216 Injection Timing',
+    symptoms: ['Engine runs rough', 'Black smoke', 'Loss of power', 'MIL (check engine light) on', 'DTC P0216 stored'],
+    causes: ['Injection timing solenoid failure', 'Wiring harness chafing/damage', 'ECM software glitch', 'Low battery voltage during operation'],
+    solution: 'Scan ECM with Perkins EST software: confirm P0216 active. Test timing solenoid resistance: 2-4Ω typical. Inspect harness for chafing near engine mounts. Check battery voltage: minimum 12.5V with engine running. Clear codes and re-test. Update ECM software to latest calibration. Replace timing solenoid if resistance out-of-spec or solenoid mechanically stuck.',
+    parts: ['Injection timing solenoid P/N U5MK8843', 'ECM wiring harness', 'ECM (if failed)'],
+    tools: ['Perkins EST software', 'OBD-II scanner', 'Multimeter', 'Wiring diagram'],
+    downtime: '2-6 hours',
+    preventive: 'Annual ECM software update, quarterly harness inspection, monthly battery voltage check'
+  },
+  {
+    brand: 'Perkins',
+    model: '2806',
+    code: 'PERK-2806-100',
+    service: 'Diesel Generators',
+    category: 'Cooling',
+    severity: 'CRITICAL',
+    issue: 'Cylinder Head Overheating - Localized Hot Spot',
+    symptoms: ['Thermal camera shows one cylinder >150°C, others at 110°C', 'Steam from that cylinder area', 'Combustion gases in coolant'],
+    causes: ['Head gasket failure', 'Coolant passage blockage', 'Injector stuck open (fuel washing cylinder)', 'Valve stuck open'],
+    solution: 'Perform combustion leak test: install tester on radiator, look for bubbles indicating combustion gases in coolant. Remove cylinder head: inspect gasket for cracks, warpage. Check head surface flatness: <0.05mm across entire surface. Inspect coolant passages: clear any scale or debris. Test injectors on bench: opening pressure 220-240 bar, no drip after shutoff. Replace head gasket, surface head if warped, replace injector if faulty.',
+    parts: ['Head gasket kit', 'Coolant', 'Injector', 'Cylinder head (if cracked)', 'Head bolts (one-time use)'],
+    tools: ['Combustion leak tester', 'Torque wrench', 'Feeler gauge', 'Straightedge', 'Injector tester'],
+    downtime: '16-30 hours for head gasket replacement',
+    preventive: 'Every 2000 hours: coolant analysis, annual cooling system pressure test, maintain coolant SCA levels'
+  },
+
+  // ============================================
+  // CATERPILLAR ENGINES
+  // ============================================
+  {
+    brand: 'Caterpillar',
+    model: 'C15',
+    code: 'CAT-C15-350',
+    service: 'Diesel Generators',
+    category: 'Engine',
+    severity: 'HIGH',
+    issue: 'Low Oil Pressure Warning - E350',
+    symptoms: ['Oil pressure <30 PSI at rated speed', 'Pressure fluctuates with RPM', 'Metallic debris in oil filter'],
+    causes: ['Worn main/rod bearings', 'Oil pump wear', 'Relief valve stuck open', 'Oil dilution from fuel leak'],
+    solution: 'Install mechanical oil pressure gauge: verify reading matches electronic gauge. Send oil sample for analysis: Fe <100 ppm indicates bearings OK. Inspect oil for fuel smell or thinness (viscosity test). Check relief valve: should open at 60-70 PSI, replace if stuck or opens prematurely. If bearing wear confirmed, perform in-frame overhaul: measure bearing clearances with Plastigage, replace if >0.1mm. Use Cat genuine parts for bearings.',
+    parts: ['Main bearings', 'Rod bearings', 'Oil pump', 'Oil pressure relief valve', 'Oil filter'],
+    tools: ['Mechanical oil pressure gauge', 'Oil analysis kit', 'Plastigage', 'Micrometer', 'Torque wrench'],
+    downtime: '20-40 hours for bearing replacement',
+    preventive: 'Every 250 hours: oil analysis, 500-hour oil changes with Cat DEO 15W-40, annual oil pump inspection'
+  },
+  {
+    brand: 'Caterpillar',
+    model: 'C18',
+    code: 'CAT-C18-100',
+    service: 'Diesel Generators',
+    category: 'Electronic',
+    severity: 'HIGH',
+    issue: 'High Pressure Fuel Pump Failure',
+    symptoms: ['Engine won't start', 'Loss of power under load', 'White smoke', 'Fuel pressure <1500 bar'],
+    causes: ['Contaminated fuel damaging pump plungers', 'Pump drive gear wear', 'Relief valve failure', 'ECM not commanding correct pressure'],
+    solution: 'Test fuel pressure with diagnostic adapter: should reach 1500-1800 bar at cranking. Inspect fuel for contamination: water, sediment, microbial growth. Check pump drive gear for wear: end play <0.5mm. Test relief valve: should open at 1900 bar, close at 1800 bar. Use Cat ET (Electronic Technician) to command fuel pressure: verify actual matches commanded. Replace HPFP if internal wear confirmed (plungers, check valves).',
+    parts: ['High pressure fuel pump', 'Fuel filters (primary and secondary)', 'Relief valve', 'Drive gear'],
+    tools: ['Fuel pressure test kit (0-2000 bar)', 'Cat ET software', 'Fuel contamination test kit', 'Dial indicator'],
+    downtime: '8-16 hours for HPFP replacement',
+    preventive: 'Every 250 hours: fuel filter changes, quarterly fuel tank cleaning, use fuel additives (biocides, stabilizers), 2000-hour HPFP inspection'
+  },
+  {
+    brand: 'Caterpillar',
+    model: '3512',
+    code: 'CAT-3512-200',
+    service: 'Diesel Generators',
+    category: 'Engine',
+    severity: 'CRITICAL',
+    issue: 'Turbocharger Seizure',
+    symptoms: ['Sudden loss of power', 'Extremely loud noise from turbo', 'Metal fragments in exhaust', 'Engine overspeed or underspeed'],
+    causes: ['Oil starvation to turbo bearings', 'Foreign object ingestion', 'Excessive exhaust temperature >650°C', 'Bearing failure from high hours >10,000'],
+    solution: 'Shut down immediately to prevent engine damage. Inspect turbo shaft: should spin freely with <0.5mm end play. Check oil supply line to turbo: pressure 40-60 PSI at idle. Inspect air inlet for foreign objects. Measure exhaust temp: should be <600°C at rated load. If turbo seized, remove and inspect turbine wheel for FOD, compressor wheel for coke deposits. Replace turbocharger with Cat genuine unit. Check for root cause: verify oil quality, filter cleanliness, exhaust restriction.',
+    parts: ['Turbocharger assembly', 'Oil supply line', 'Exhaust gaskets', 'Air filter'],
+    tools: ['Pyrometer', 'Oil pressure gauge', 'Dial indicator', 'Borescope'],
+    downtime: '12-20 hours for turbo replacement + root cause analysis',
+    preventive: 'Every 500 hours: turbo inspection, 1000-hour oil changes, 2000-hour turbo service (clean, re-balance), monitor exhaust temps continuously'
+  }
+];

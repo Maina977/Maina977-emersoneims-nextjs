@@ -7,6 +7,11 @@
 !VERCEL_DEPLOYMENT_GUIDE.md
 !DEPLOYMENT_CHECKLIST.md
 
+# Environment / secrets
+.env
+.env.*
+.npmrc
+
 # Scripts (not needed in production)
 scripts/
 !scripts/processImagesCinematic.js
@@ -37,4 +42,15 @@ public/images/premium/processed/
 out/
 dist/
 build/
+
+# Problematic folders - DO NOT DEPLOY
+app/PC/
+app/componets/
+app_MISPLACED/
+pages_MISPLACED/
+deployment-package/
+
+# Batch files
+*.bat
+*.ps1
 

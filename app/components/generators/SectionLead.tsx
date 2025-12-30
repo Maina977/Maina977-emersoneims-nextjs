@@ -55,7 +55,7 @@ export default function SectionLead({
       const chars = titleRef.current?.textContent?.split('') || [];
       if (titleRef.current) {
         titleRef.current.innerHTML = '';
-        chars.forEach((char, i) => {
+        chars.forEach((char) => {
           const span = document.createElement('span');
           span.textContent = char === ' ' ? '\u00A0' : char;
           span.style.display = 'inline-block';
@@ -119,29 +119,31 @@ export default function SectionLead({
         }}
       />
 
-      {/* Animated Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-amber-400 rounded-full"
-            initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
-              opacity: 0,
-            }}
-            animate={{
-              y: [null, -100],
-              opacity: [0, 1, 0],
-            }}
-            transition={{
-              duration: Math.random() * 3 + 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-      </div>
+      {/* Animated Particles - Client side only */}
+      {typeof window !== 'undefined' && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-amber-400 rounded-full"
+              initial={{
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                opacity: 0,
+              }}
+              animate={{
+                y: [null, -100],
+                opacity: [0, 1, 0],
+              }}
+              transition={{
+                duration: Math.random() * 3 + 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="relative z-10 max-w-7xl mx-auto">
         <motion.h1

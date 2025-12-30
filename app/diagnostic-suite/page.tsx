@@ -9,9 +9,10 @@ import CTAButton from '@/components/shared/CTAButton';
 import OptimizedImage from '@/components/media/OptimizedImage';
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import { DIAGNOSTIC_TOOLS } from '@/lib/data/diagnosticTools';
-import { SectionHeading, SubsectionHeading } from '@/components/typography/CinematicHeadingVariants';
+import { SectionHeading } from '@/components/typography/CinematicHeadingVariants';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -22,7 +23,6 @@ const ErrorBoundary = lazy(() => import('@/components/error/ErrorBoundary'));
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 const GeneratorControlDiagnosticHub = lazy(() => import('@/components/diagnostics').then(mod => ({ default: mod.GeneratorControlDiagnosticHub })));
 const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
-const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
 
 /**
  * EmersonEIMS Diagnostic Suite Page
@@ -31,8 +31,8 @@ const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaSty
  */
 export default function DiagnosticSuitePage() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [activeSection, setActiveSection] = useState('hero');
   const prefersReducedMotion = useReducedMotion();
+  const { isLite } = usePerformanceTier();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
@@ -44,7 +44,7 @@ export default function DiagnosticSuitePage() {
 
     const sections = containerRef.current.querySelectorAll('section');
     
-    sections.forEach((section, index) => {
+    sections.forEach((section) => {
       gsap.fromTo(
         section,
         {
@@ -71,26 +71,6 @@ export default function DiagnosticSuitePage() {
     };
   }, []);
 
-  // Section tracking for navigation
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const sections = containerRef.current.querySelectorAll('section');
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id || 'hero');
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
-
   const diagnosticTools = DIAGNOSTIC_TOOLS;
 
   return (
@@ -99,37 +79,36 @@ export default function DiagnosticSuitePage() {
       <PerformanceMonitor />
 
       {/* Premium Custom Cursor */}
-      <Suspense fallback={null}>
-        <CustomCursor enabled={!prefersReducedMotion} />
-      </Suspense>
+      {!isLite && (
+        <Suspense fallback={null}>
+          <CustomCursor enabled={!prefersReducedMotion} />
+        </Suspense>
+      )}
 
-      {/* Navigation */}
-      <Suspense fallback={null}>
-        <TeslaStyleNavigation activeSection={activeSection} />
-      </Suspense>
-
-      <div ref={containerRef} className="relative min-h-screen">
+      <div ref={containerRef} className="eims-section relative min-h-screen">
         {/* Holographic Laser Overlay */}
-        <HolographicLaser intensity="high" color="#fbbf24" />
+        {!isLite && <HolographicLaser intensity="high" color="#fbbf24" />}
         
         {/* 3D Background Scene */}
-        <Suspense fallback={null}>
-          <div className="fixed inset-0 -z-10 opacity-20">
-            <SimpleThreeScene />
-          </div>
-        </Suspense>
+        {!isLite && (
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 -z-10 opacity-20">
+              <SimpleThreeScene />
+            </div>
+          </Suspense>
+        )}
 
         <PageLayout
           title="Generator Control Diagnostic Hub"
           subtitle="Specialized diagnostic suite for Diesel Generators, Generator Controls, DeepSea Controllers, and PowerWizard Systems. Technician-grade fault codes, diagnostics, and troubleshooting for generator systems across East Africa."
-          heroImage="https://emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png"
+          heroImage="/images/GEN%202-1920x1080.png"
         >
           {/* Overview Section */}
           <motion.section 
             className="py-20 bg-black relative"
             style={{ opacity: heroOpacity, scale: heroScale }}
           >
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <motion.div
               className="text-center mb-16"
               initial={{ opacity: 0, y: 30 }}
@@ -177,7 +156,7 @@ export default function DiagnosticSuitePage() {
                     <ul className="space-y-1">
                       {tool.features.map((feature) => (
                         <li key={feature} className="text-xs text-gray-500 flex items-center gap-2">
-                          <span className="text-[#fbbf24]">âœ“</span>
+                          <span className="text-[#fbbf24]">{'\u2713'}</span>
                           {feature}
                         </li>
                       ))}
@@ -196,7 +175,7 @@ export default function DiagnosticSuitePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <div className="max-w-7xl mx-auto px-4">
+            <div className="eims-shell py-0">
               <motion.div
                 className="text-center mb-12"
                 initial={{ opacity: 0, y: 20 }}
@@ -239,7 +218,7 @@ export default function DiagnosticSuitePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-            <div className="max-w-7xl mx-auto px-4">
+            <div className="eims-shell py-0">
               <motion.div
                 className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-[#fbbf24]/20 p-8"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -254,7 +233,7 @@ export default function DiagnosticSuitePage() {
                     onClick={() => setActiveTab('overview')}
                     className="text-gray-400 hover:text-white transition-colors"
                   >
-                    âœ•
+                    {'\u2715'}
                   </button>
                 </div>
                 <p className="text-gray-300 mb-8">
@@ -296,7 +275,7 @@ export default function DiagnosticSuitePage() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <motion.div
               className="text-center mb-16"
               initial={{ opacity: 0, y: 30 }}
@@ -313,32 +292,32 @@ export default function DiagnosticSuitePage() {
                 {
                   title: 'Real-time Diagnostics',
                   description: 'Instant fault code lookup and diagnostic recommendations',
-                  icon: 'âš¡',
+                  icon: '⚡',
                 },
                 {
                   title: 'Intelligent Analysis',
                   description: 'AI-powered load analysis and performance optimization',
-                  icon: 'ðŸ§ ',
+                  icon: '🧠',
                 },
                 {
                   title: 'Seamless Integration',
                   description: 'Works with your existing WordPress installation',
-                  icon: 'ðŸ”—',
+                  icon: '🔗',
                 },
                 {
                   title: 'Mobile Ready',
                   description: 'Access diagnostic tools from any device',
-                  icon: 'ðŸ“±',
+                  icon: '📱',
                 },
                 {
                   title: 'WhatsApp Dispatch',
                   description: 'Automated technician dispatch via WhatsApp',
-                  icon: 'ðŸ’¬',
+                  icon: '💬',
                 },
                 {
                   title: 'Business Intelligence',
                   description: 'Conversion tracking and performance analytics',
-                  icon: 'ðŸ“Š',
+                  icon: '📊',
                 },
               ].map((feature, index) => (
                 <motion.div

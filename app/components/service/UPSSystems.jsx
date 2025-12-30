@@ -1,6 +1,6 @@
 'use client';
 
-export default function UPSSystems({ performanceTier = "high" }) {
+export default function UPSSystems() {
   return (
     <section id="ups" className="py-20 bg-gradient-to-b from-gray-900 to-black">
       <div className="max-w-7xl mx-auto px-4">

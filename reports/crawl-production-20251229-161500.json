@@ -1,0 +1,198 @@
+﻿[
+    {
+        "Route":  "/",
+        "Url":  "https://www.emersoneims.com/",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/",
+        "ElapsedMs":  945
+    },
+    {
+        "Route":  "/about-us",
+        "Url":  "https://www.emersoneims.com/about-us",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/about-us",
+        "ElapsedMs":  569
+    },
+    {
+        "Route":  "/api/health",
+        "Url":  "https://www.emersoneims.com/api/health",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/api/health",
+        "ElapsedMs":  620
+    },
+    {
+        "Route":  "/brands",
+        "Url":  "https://www.emersoneims.com/brands",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/brands",
+        "ElapsedMs":  583
+    },
+    {
+        "Route":  "/careers",
+        "Url":  "https://www.emersoneims.com/careers",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/careers",
+        "ElapsedMs":  585
+    },
+    {
+        "Route":  "/contact",
+        "Url":  "https://www.emersoneims.com/contact",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/contact",
+        "ElapsedMs":  573
+    },
+    {
+        "Route":  "/diagnostics",
+        "Url":  "https://www.emersoneims.com/diagnostics",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/diagnostics",
+        "ElapsedMs":  592
+    },
+    {
+        "Route":  "/diagnostic-suite",
+        "Url":  "https://www.emersoneims.com/diagnostic-suite",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/diagnostic-suite",
+        "ElapsedMs":  552
+    },
+    {
+        "Route":  "/generators",
+        "Url":  "https://www.emersoneims.com/generators",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/generators",
+        "ElapsedMs":  598
+    },
+    {
+        "Route":  "/generators/case-studies",
+        "Url":  "https://www.emersoneims.com/generators/case-studies",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/generators/case-studies",
+        "ElapsedMs":  568
+    },
+    {
+        "Route":  "/generators/maintenance",
+        "Url":  "https://www.emersoneims.com/generators/maintenance",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/generators/maintenance",
+        "ElapsedMs":  594
+    },
+    {
+        "Route":  "/generators/used",
+        "Url":  "https://www.emersoneims.com/generators/used",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/generators/used",
+        "ElapsedMs":  556
+    },
+    {
+        "Route":  "/ke/nairobi",
+        "Url":  "https://www.emersoneims.com/ke/nairobi",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/ke/nairobi",
+        "ElapsedMs":  1099
+    },
+    {
+        "Route":  "/kenya/nairobi",
+        "Url":  "https://www.emersoneims.com/kenya/nairobi",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/kenya/nairobi",
+        "ElapsedMs":  901
+    },
+    {
+        "Route":  "/manifest.webmanifest",
+        "Url":  "https://www.emersoneims.com/manifest.webmanifest",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/manifest.webmanifest",
+        "ElapsedMs":  399
+    },
+    {
+        "Route":  "/privacy",
+        "Url":  "https://www.emersoneims.com/privacy",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/privacy",
+        "ElapsedMs":  566
+    },
+    {
+        "Route":  "/robots.txt",
+        "Url":  "https://www.emersoneims.com/robots.txt",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/robots.txt",
+        "ElapsedMs":  1083
+    },
+    {
+        "Route":  "/service",
+        "Url":  "https://www.emersoneims.com/service",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/service",
+        "ElapsedMs":  567
+    },
+    {
+        "Route":  "/service/generators",
+        "Url":  "https://www.emersoneims.com/service/generators",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/service/generators",
+        "ElapsedMs":  608
+    },
+    {
+        "Route":  "/services",
+        "Url":  "https://www.emersoneims.com/services",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/services",
+        "ElapsedMs":  541
+    },
+    {
+        "Route":  "/sitemap.xml",
+        "Url":  "https://www.emersoneims.com/sitemap.xml",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/sitemap.xml",
+        "ElapsedMs":  438
+    },
+    {
+        "Route":  "/solar",
+        "Url":  "https://www.emersoneims.com/solar",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/solar",
+        "ElapsedMs":  554
+    },
+    {
+        "Route":  "/solution",
+        "Url":  "https://www.emersoneims.com/solution",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/solution",
+        "ElapsedMs":  659
+    },
+    {
+        "Route":  "/solution/generators",
+        "Url":  "https://www.emersoneims.com/solution/generators",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/solution/generators",
+        "ElapsedMs":  534
+    },
+    {
+        "Route":  "/solution/solar",
+        "Url":  "https://www.emersoneims.com/solution/solar",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/solution/solar",
+        "ElapsedMs":  581
+    },
+    {
+        "Route":  "/terms",
+        "Url":  "https://www.emersoneims.com/terms",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/terms",
+        "ElapsedMs":  598
+    },
+    {
+        "Route":  "/test-minimal",
+        "Url":  "https://www.emersoneims.com/test-minimal",
+        "Status":  "404",
+        "EffectiveUrl":  "https://www.emersoneims.com/test-minimal",
+        "ElapsedMs":  622
+    },
+    {
+        "Route":  "/test-page",
+        "Url":  "https://www.emersoneims.com/test-page",
+        "Status":  "404",
+        "EffectiveUrl":  "https://www.emersoneims.com/test-page",
+        "ElapsedMs":  595
+    }
+]

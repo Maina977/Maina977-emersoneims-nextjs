@@ -7,7 +7,13 @@
  */
 
 // PostgreSQL support (for Vercel Postgres or external PostgreSQL)
-let pgPool: any = null;
+type PgQueryResult = { rows: Array<Record<string, unknown>> };
+type PgPoolLike = {
+  query: (text: string, params?: unknown[]) => Promise<PgQueryResult>;
+  end: () => Promise<void>;
+};
+
+let pgPool: PgPoolLike | null = null;
 
 /**
  * Initialize PostgreSQL connection pool
@@ -21,9 +27,18 @@ export async function initPostgresPool() {
 
   try {
     // Dynamic import to avoid errors if pg is not installed
-    const { Pool } = await import('pg');
+    const pgModule = await import('pg');
+    const PoolCtor = (pgModule as unknown as {
+      Pool: new (config: {
+        connectionString?: string;
+        ssl: false | { rejectUnauthorized: boolean };
+        max: number;
+        idleTimeoutMillis: number;
+        connectionTimeoutMillis: number;
+      }) => PgPoolLike;
+    }).Pool;
     
-    pgPool = new Pool({
+    pgPool = new PoolCtor({
       connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
       ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       max: 20, // Maximum number of clients in the pool
@@ -56,12 +71,23 @@ export async function getPostgresPool() {
 // Export pool directly for direct usage
 export { pgPool as pool };
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== 'object' || value === null) return null;
+  return value as Record<string, unknown>;
+}
+
+function toNullableString(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  return null;
+}
+
 /**
  * Store conversion in database
  */
 export async function storeConversion(data: {
   type: string;
-  data: any;
+  data: unknown;
   visitorId?: string;
   sessionId?: string;
   timestamp: number;
@@ -98,7 +124,8 @@ export async function storeConversion(data: {
       ]
     );
 
-    return result.rows[0].id.toString();
+    const id = result.rows[0]?.id;
+    return id == null ? null : String(id);
   } catch (error) {
     console.error('❌ Database error (conversion):', error);
     console.log('📝 Conversion (logged only):', data);
@@ -111,7 +138,7 @@ export async function storeConversion(data: {
  */
 export async function storeEvent(data: {
   event: string;
-  data: any;
+  data: unknown;
   visitorId?: string;
   sessionId?: string;
   timestamp: number;
@@ -147,7 +174,8 @@ export async function storeEvent(data: {
       ]
     );
 
-    return result.rows[0].id.toString();
+    const id = result.rows[0]?.id;
+    return id == null ? null : String(id);
   } catch (error) {
     console.error('❌ Database error (event):', error);
     console.log('📝 Event (logged only):', data);
@@ -160,7 +188,7 @@ export async function storeEvent(data: {
  */
 export async function storeVisitor(data: {
   event: string;
-  data: any;
+  data: unknown;
   timestamp: number;
 }): Promise<string | null> {
   try {
@@ -189,14 +217,15 @@ export async function storeVisitor(data: {
       [
         data.event,
         JSON.stringify(data.data),
-        data.data.id || null,
-        data.data.sessionId || null,
-        data.data.page || null,
+        toNullableString(asRecord(data.data)?.id),
+        toNullableString(asRecord(data.data)?.sessionId),
+        toNullableString(asRecord(data.data)?.page),
         new Date(data.timestamp),
       ]
     );
 
-    return result.rows[0].id.toString();
+    const id = result.rows[0]?.id;
+    return id == null ? null : String(id);
   } catch (error) {
     console.error('❌ Database error (visitor):', error);
     console.log('📝 Visitor (logged only):', data);

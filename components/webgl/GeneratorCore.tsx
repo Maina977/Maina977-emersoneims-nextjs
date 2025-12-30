@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment, MeshDistortMaterial, Sphere } from '@react-three/drei';
+import { OrbitControls, Environment, MeshDistortMaterial, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
 
 function RotatingCore() {
@@ -126,7 +126,10 @@ export default function GeneratorCore({
           minDistance={3}
           maxDistance={8}
         />
-        <Environment preset="night" />
+        <Environment resolution={64}>
+          <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
+          <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
+        </Environment>
       </Canvas>
     </div>
   );

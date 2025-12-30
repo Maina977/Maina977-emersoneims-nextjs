@@ -8,11 +8,13 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
 import HolographicLaser from '@/components/effects/HolographicLaser';
+import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
+import BigHeroImage from '@/components/shared/BigHeroImage';
+import LearnMoreSection from '@/components/shared/LearnMoreSection';
 
 // Lazy load WebGL scene
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
-const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
 
 // ==================== ENHANCEMENT 1: HIGH-CONTRAST COMPLIANCE LAYER ====================
 const ContrastComplianceLayer = () => {
@@ -102,10 +104,20 @@ const CompanyTimeline = () => {
 
   return (
     <section className="py-20 bg-gradient-to-b from-black via-gray-900 to-black">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="eims-shell py-0">
         <div className="mb-12">
           <SectionHeading>Our Journey</SectionHeading>
+          <p className="text-xl text-gray-400 text-center max-w-3xl mx-auto">
+            Over a decade of powering Kenya with innovative energy solutions
+          </p>
         </div>
+        
+        {/* Learn More for detailed timeline */}
+        <LearnMoreSection
+          buttonText="See Our Complete Timeline"
+          variant="gold"
+          title="EmersonEIMS Growth Story (2013-2024)"
+        >
         <div className="relative">
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 opacity-30" />
           <div className="space-y-12">
@@ -138,6 +150,7 @@ const CompanyTimeline = () => {
             ))}
           </div>
         </div>
+        </LearnMoreSection>
       </div>
     </section>
   );
@@ -150,56 +163,56 @@ const PartnershipsSection = () => {
       name: "Bigot Flowers",
       category: "Agriculture & Horticulture",
       description: "Reliable power solutions for flower farming operations, ensuring consistent energy supply for greenhouse climate control and processing facilities.",
-      logo: "/images/premium/case-flowers.jpg",
+      logo: "/brand/IMG_20190731_120023_3.jpg",
       services: ["Generator Systems", "Power Backup", "Maintenance"],
     },
     {
       name: "St. Austin Academy",
       category: "Education",
       description: "Comprehensive energy infrastructure for educational institutions, providing uninterrupted power for classrooms, laboratories, and administrative facilities.",
-      logo: "/images/premium/case-school.jpg",
+      logo: "/brand/IMG_20191103_141711_8.jpg",
       services: ["Solar Solutions", "UPS Systems", "Grid Integration"],
     },
     {
       name: "Kivukoni International School",
       category: "Education",
       description: "Sustainable energy solutions for international school campuses, combining solar power with reliable backup systems for 24/7 operations.",
-      logo: "/images/premium/case-school.jpg",
+      logo: "/brand/IMG_20191103_141716_7.jpg",
       services: ["Solar Installation", "Energy Storage", "Monitoring"],
     },
     {
       name: "Greenheart Kilifi",
       category: "Hospitality & Tourism",
       description: "Eco-friendly energy solutions for coastal hospitality operations, integrating renewable energy with backup power for guest comfort and operational excellence.",
-      logo: "/images/premium/case-hotel.jpg",
+      logo: "/brand/IMG_20200206_172709_1.jpg",
       services: ["Solar Power", "Generator Backup", "Energy Efficiency"],
     },
     {
       name: "NTSA",
       category: "Government Agency",
       description: "Mission-critical power infrastructure for National Transport and Safety Authority operations, ensuring continuous service delivery across all facilities.",
-      logo: "/images/premium/case-government.jpg",
+      logo: "/brand/IMG_20200904_141639_5.jpg",
       services: ["Power Systems", "Backup Solutions", "24/7 Support"],
     },
     {
       name: "AfRhearb Limited",
       category: "Manufacturing & Industry",
       description: "Industrial-grade power solutions for manufacturing operations, designed for high-demand production environments with maximum reliability.",
-      logo: "/images/premium/case-factory.jpg",
+      logo: "/brand/IMG_20200209_181503_5.jpg",
       services: ["Industrial Generators", "Power Distribution", "Maintenance"],
     },
     {
       name: "Kimfay Limited",
       category: "Business & Commerce",
       description: "Tailored energy solutions for commercial operations, optimizing power consumption while ensuring business continuity through reliable backup systems.",
-      logo: "/images/premium/case-commercial.jpg",
+      logo: "/brand/IMG_20200904_141935_8.jpg",
       services: ["Energy Audit", "Solar Solutions", "Power Management"],
     },
     {
       name: "Sanergy Limited",
       category: "Waste Management & Sanitation",
       description: "Sustainable energy infrastructure for waste management facilities, powering processing operations with renewable energy and efficient backup systems.",
-      logo: "/images/premium/case-waste.jpg",
+      logo: "/brand/IMG_20200209_091116_7.jpg",
       services: ["Solar Systems", "Generator Backup", "Energy Monitoring"],
     },
   ];
@@ -215,7 +228,7 @@ const PartnershipsSection = () => {
 
   return (
     <section className="py-20 bg-black">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="eims-shell py-0">
         <motion.h2 
           className="text-4xl md:text-5xl font-bold mb-4 text-center bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: 20 }}
@@ -228,12 +241,62 @@ const PartnershipsSection = () => {
           Proud to power leading organizations across Kenya with reliable, sustainable energy solutions
         </p>
 
-        {/* Clients Grid */}
+        {/* Clients Grid - Wrapped in Learn More */}
         <div className="mb-16">
-          <h3 className="text-2xl font-bold text-white mb-4 text-center">Companies We Work With</h3>
+          <h3 className="text-2xl font-bold text-white mb-6 text-center">Companies We Work With</h3>
           <p className="text-gray-400 text-center mb-8 max-w-3xl mx-auto">
             Trusted by leading organizations across Kenya for reliable, sustainable energy solutions
           </p>
+
+          {/* Summary Stats - Always Visible */}
+          <div className="grid md:grid-cols-4 gap-6 mb-8">
+            <motion.div
+              className="bg-gradient-to-br from-amber-500/20 to-amber-600/20 p-6 rounded-xl border border-amber-500/30 text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-4xl font-bold text-amber-400 mb-2">500+</div>
+              <div className="text-gray-300">Projects Completed</div>
+            </motion.div>
+            <motion.div
+              className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-xl border border-blue-500/30 text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="text-4xl font-bold text-blue-400 mb-2">47</div>
+              <div className="text-gray-300">Counties Covered</div>
+            </motion.div>
+            <motion.div
+              className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-6 rounded-xl border border-green-500/30 text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="text-4xl font-bold text-green-400 mb-2">15+</div>
+              <div className="text-gray-300">Years Experience</div>
+            </motion.div>
+            <motion.div
+              className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-6 rounded-xl border border-purple-500/30 text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="text-4xl font-bold text-purple-400 mb-2">98.7%</div>
+              <div className="text-gray-300">System Uptime</div>
+            </motion.div>
+          </div>
+
+          {/* Detailed Client List - Hidden behind Learn More */}
+          <LearnMoreSection
+            buttonText="See Our Client Portfolio"
+            variant="gold"
+            title="Featured Client Projects"
+          >
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {clients.map((client, index) => (
               <motion.div
@@ -281,6 +344,7 @@ const PartnershipsSection = () => {
               <span className="text-amber-400 font-semibold">And many more</span> organizations across Kenya trust EmersonEIMS for their energy needs
             </p>
           </motion.div>
+          </LearnMoreSection>
         </div>
 
         {/* Certifications */}
@@ -328,7 +392,7 @@ const AchievementsSection = () => {
 
   return (
     <section className="py-20 bg-gradient-to-b from-black via-gray-900 to-black">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="eims-shell py-0">
         <motion.h2 
           className="text-4xl md:text-5xl font-bold mb-12 text-center bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: 20 }}
@@ -367,10 +431,10 @@ const AchievementsSection = () => {
           viewport={{ once: true }}
         >
           <OptimizedImage
-            src="https://emersoneims.com/wp-content/uploads/2025/11/IMG_20221119_172228_822-scaled.jpg"
+            src="/images/solar%20power%20farms.png"
             alt="EmersonEIMS installation project showcase"
-            width={1920}
-            height={1080}
+            width={3840}
+            height={2160}
             className="w-full rounded-xl border border-amber-500/20"
           />
         </motion.div>
@@ -405,7 +469,7 @@ const AchievementsSection = () => {
 const MissionVisionValues = () => {
   return (
     <section className="py-20 bg-black">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="eims-shell py-0">
         <div className="grid md:grid-cols-3 gap-8">
           <motion.div
             className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-xl border border-blue-500/20"
@@ -460,6 +524,7 @@ const MissionVisionValues = () => {
 export default function AboutUsPage() {
   const [activeSection, setActiveSection] = useState('hero');
   const prefersReducedMotion = useReducedMotion();
+  const { isLite } = usePerformanceTier();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
@@ -491,46 +556,59 @@ export default function AboutUsPage() {
       <PerformanceMonitor />
 
       {/* Premium Custom Cursor */}
-      <Suspense fallback={null}>
-        <CustomCursor enabled={!prefersReducedMotion} />
-      </Suspense>
+      {!isLite && (
+        <Suspense fallback={null}>
+          <CustomCursor enabled={!prefersReducedMotion} />
+        </Suspense>
+      )}
 
-      {/* Navigation */}
-      <Suspense fallback={null}>
-        <TeslaStyleNavigation activeSection={activeSection} />
-      </Suspense>
-
-      <main ref={containerRef} className="min-h-screen bg-black text-white relative">
+      <main
+        ref={containerRef}
+        data-active-section={activeSection}
+        className="eims-section min-h-screen relative"
+      >
         <ContrastComplianceLayer />
         
         {/* Holographic Laser Overlay */}
-        <HolographicLaser intensity="medium" color="#fbbf24" />
+        {!isLite && <HolographicLaser intensity="medium" color="#fbbf24" />}
         
         {/* WebGL Background Scene */}
-        <Suspense fallback={null}>
-          <div className="fixed inset-0 -z-10 opacity-20">
-            <SimpleThreeScene />
-          </div>
-        </Suspense>
+        {!isLite && (
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 -z-10 opacity-20">
+              <SimpleThreeScene />
+            </div>
+          </Suspense>
+        )}
       
-      {/* Hero Section */}
+      {/* Big Hero Image with Impact */}
+      <BigHeroImage
+        src="/images/solar%20power%20farms.png"
+        alt="EmersonEIMS - Kenya's Leading Energy Solutions Provider"
+        title="About EmersonEIMS"
+        subtitle="Powering Kenya with intelligent energy infrastructure solutions since 2013"
+        height="full"
+        overlay="gradient"
+        parallax={true}
+      />
+
+      {/* Intro Section */}
       <motion.section 
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        style={{ opacity, scale }}
+        className="py-20 bg-black"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(251,191,36,0.1),transparent_50%)]" />
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 text-center">
+        <div className="eims-shell max-w-4xl">
           {/* Company Logo */}
           <motion.div
-            className="mb-8"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
+            className="mb-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
           >
             <OptimizedImage
-              src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
+              src="/images/logo-tagline.png"
               alt="EmersonEIMS Logo"
               width={400}
               height={200}
@@ -538,25 +616,25 @@ export default function AboutUsPage() {
             />
           </motion.div>
           
-          <div className="mb-6">
-            <HeroHeading>About EmersonEIMS</HeroHeading>
-          </div>
           <motion.p 
-            className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto"
+            className="text-xl md:text-2xl text-gray-300 mb-6 text-center leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-          >
-            Powering Kenya with intelligent energy infrastructure solutions since 2013.
-          </motion.p>
-          <motion.p 
-            className="text-lg text-gray-400 max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
           >
             From a small startup in Nairobi to Kenya's leading energy solutions provider, 
             we've transformed how businesses and communities access reliable, sustainable power.
+          </motion.p>
+
+          <motion.p 
+            className="text-lg text-amber-400 text-center font-semibold mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+          >
+            Serving all 47 counties across Kenya with excellence since 2013
           </motion.p>
         </div>
       </motion.section>

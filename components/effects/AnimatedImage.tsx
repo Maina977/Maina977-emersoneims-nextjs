@@ -46,6 +46,11 @@ export default function AnimatedImage({
   useEffect(() => {
     if (!imageRef.current) return;
 
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsInView(entry.isIntersecting);

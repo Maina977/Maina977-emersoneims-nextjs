@@ -122,7 +122,10 @@ export default function MaintenanceCharts() {
         grid: { color: 'rgba(255, 255, 255, 0.05)' },
         ticks: { 
           color: '#9ca3af',
-          callback: (value: any) => `KSh ${(value / 1000).toFixed(0)}K`,
+          callback: (value: string | number) => {
+            const numericValue = typeof value === 'number' ? value : Number(value);
+            return `KSh ${(numericValue / 1000).toFixed(0)}K`;
+          },
         },
       },
     },

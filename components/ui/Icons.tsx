@@ -99,6 +99,3 @@ export function UPSIcon({ reducedMotion = false, className = '' }: IconProps) {
   );
 }
 
-
-
-

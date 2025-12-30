@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import OptimizedImage from '@/components/media/OptimizedImage';
 import AnimatedImage from '@/components/effects/AnimatedImage';
 
 if (typeof window !== 'undefined') {

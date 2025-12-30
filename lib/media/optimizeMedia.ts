@@ -25,6 +25,11 @@ export function getOptimizedImageUrl(
     height,
   } = config;
 
+  void quality;
+  void format;
+  void width;
+  void height;
+
   // If external WordPress URL, return as-is (WordPress handles optimization)
   if (src.startsWith('https://www.emersoneims.com')) {
     return src;
@@ -108,7 +113,13 @@ export function getVideoPoster(src: string): string {
 export function canHandleHighQuality(): boolean {
   if (typeof window === 'undefined') return true;
 
-  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+  const nav = navigator as unknown as {
+    connection?: { effectiveType?: string };
+    mozConnection?: { effectiveType?: string };
+    webkitConnection?: { effectiveType?: string };
+  };
+
+  const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
   
   if (connection) {
     // Check connection speed

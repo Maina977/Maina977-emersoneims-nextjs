@@ -12,6 +12,9 @@ import {
   Title,
   Tooltip,
   Legend,
+  type ChartData,
+  type ChartOptions,
+  type TooltipItem,
 } from 'chart.js';
 
 ChartJS.register(
@@ -27,14 +30,14 @@ ChartJS.register(
 );
 
 interface ChartJSChartProps {
-  type: string;
-  data: any;
-  options?: any;
+  type: 'bar' | 'line' | 'pie' | 'doughnut';
+  data: ChartData<'bar' | 'line' | 'pie' | 'doughnut', (number | null)[], string>;
+  options?: ChartOptions<'bar' | 'line' | 'pie' | 'doughnut'>;
   className?: string;
 }
 
 export default function ChartJSChart({ type, data, options, className }: ChartJSChartProps) {
-  const defaultOptions = {
+  const defaultOptions: ChartOptions<'bar' | 'line' | 'pie' | 'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -52,9 +55,21 @@ export default function ChartJSChart({ type, data, options, className }: ChartJS
         titleFont: { family: 'var(--font-manrope), sans-serif', size: 12 },
         bodyFont: { family: 'var(--font-body), sans-serif', size: 11 },
         callbacks: {
-          label: function(context: any) {
-            return `${context.dataset.label || ''}: ${context.parsed.y?.toLocaleString() || context.parsed}`;
-          }
+          label: (context: TooltipItem<'bar' | 'line' | 'pie' | 'doughnut'>) => {
+            const datasetLabel = (context.dataset.label ?? '').toString();
+            const parsed = context.parsed as unknown;
+            const yValue =
+              typeof parsed === 'object' && parsed !== null && 'y' in parsed
+                ? (parsed as { y?: unknown }).y
+                : parsed;
+            const formatted =
+              typeof yValue === 'number'
+                ? yValue.toLocaleString()
+                : yValue == null
+                ? ''
+                : String(yValue);
+            return `${datasetLabel}: ${formatted}`;
+          },
         }
       },
     },
@@ -64,33 +79,35 @@ export default function ChartJSChart({ type, data, options, className }: ChartJS
           color: 'oklch(0.60 0.05 200)',
           font: { family: 'var(--font-body), sans-serif', size: 11 },
         }, 
+        border: {
+          display: false,
+        },
         grid: { 
           color: 'oklch(0.20 0.05 200 / 0.3)',
           lineWidth: 1,
-          drawBorder: false,
         } 
       },
       y: { 
         ticks: { 
           color: 'oklch(0.60 0.05 200)',
           font: { family: 'var(--font-body), sans-serif', size: 11 },
-          callback: function(value: any) {
-            return typeof value === 'number' ? value.toLocaleString() : value;
-          }
+          callback: (value) => (typeof value === 'number' ? value.toLocaleString() : String(value)),
         }, 
+        border: {
+          display: false,
+        },
         grid: { 
           color: 'oklch(0.20 0.05 200 / 0.3)',
           lineWidth: 1,
-          drawBorder: false,
         } 
       },
     } : undefined,
-    ...options,
+    ...(options ?? {}),
   };
 
   const chartData = {
     ...data,
-    datasets: data.datasets?.map((dataset: any) => ({
+    datasets: data.datasets?.map((dataset) => ({
       ...dataset,
       backgroundColor: dataset.backgroundColor || 'oklch(0.75 0.20 200 / 0.8)',
       borderColor: dataset.borderColor || 'oklch(0.75 0.20 200)',
@@ -99,15 +116,45 @@ export default function ChartJSChart({ type, data, options, className }: ChartJS
 
   switch (type) {
     case 'bar':
-      return <Bar data={chartData} options={defaultOptions} className={className} />;
+      return (
+        <Bar
+          data={chartData as unknown as ChartData<'bar', (number | null)[], string>}
+          options={defaultOptions as unknown as ChartOptions<'bar'>}
+          className={className}
+        />
+      );
     case 'line':
-      return <Line data={chartData} options={defaultOptions} className={className} />;
+      return (
+        <Line
+          data={chartData as unknown as ChartData<'line', (number | null)[], string>}
+          options={defaultOptions as unknown as ChartOptions<'line'>}
+          className={className}
+        />
+      );
     case 'pie':
-      return <Pie data={chartData} options={defaultOptions} className={className} />;
+      return (
+        <Pie
+          data={chartData as unknown as ChartData<'pie', (number | null)[], string>}
+          options={defaultOptions as unknown as ChartOptions<'pie'>}
+          className={className}
+        />
+      );
     case 'doughnut':
-      return <Doughnut data={chartData} options={defaultOptions} className={className} />;
+      return (
+        <Doughnut
+          data={chartData as unknown as ChartData<'doughnut', (number | null)[], string>}
+          options={defaultOptions as unknown as ChartOptions<'doughnut'>}
+          className={className}
+        />
+      );
     default:
-      return <Line data={chartData} options={defaultOptions} className={className} />;
+      return (
+        <Line
+          data={chartData as unknown as ChartData<'line', (number | null)[], string>}
+          options={defaultOptions as unknown as ChartOptions<'line'>}
+          className={className}
+        />
+      );
   }
 }
 

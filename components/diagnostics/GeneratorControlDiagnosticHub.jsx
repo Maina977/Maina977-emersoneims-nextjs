@@ -3,10 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import MetalBezel from './MetalBezel';
 import RadarScope from './RadarScope';
-import SystemLogs from './SystemLogs';
-import CockpitSwitches from './CockpitSwitches';
-import PopUps from './PopUps';
 import { GENERATOR_SERVICES } from '@/lib/data/diagnosticServices';
+import comprehensiveErrorCodes from '@/app/data/diagnostic/comprehensiveErrorCodes.json';
+import { allControllerErrorCodes } from '@/app/data/diagnostic/allControllerErrorCodes';
 
 /**
  * GeneratorControlDiagnosticHub - Specialized diagnostic tool for Generators, Controls, DeepSea, and PowerWizard
@@ -57,12 +56,6 @@ export default function GeneratorControlDiagnosticHub({ onSeverityUpdate = null 
 
     return () => clearInterval(interval);
   }, [activeService, onSeverityUpdate]);
-
-  const onSwitchToggle = (label, state) => {
-    // Use CockpitSwitches to choose service mode; map switches to services
-    // Example mapping: just set active service when a switch flips ON
-    if (state) setActiveService(label);
-  };
 
   const clearAlerts = () => setAlerts([]);
 
@@ -246,15 +239,6 @@ function CrewDragonPanel({ title, children }) {
   );
 }
 
-function Panel({ title, children }) {
-  return (
-    <div className="p-3 bg-gray-900 border-2 border-gray-600 rounded-lg">
-      <h3 className="text-xs font-bold text-gray-300 tracking-widest mb-2">{title}</h3>
-      {children}
-    </div>
-  );
-}
-
 function ServiceStatusLights({ activeService, health }) {
   // Clean Crew Dragon style status indicators
   return (
@@ -408,44 +392,48 @@ function initialLogs() {
 
 function generateDiagnosticLine(service) {
   const ts = new Date().toLocaleTimeString();
-  const msgs = {
-    'Diesel Generators': [
-      'Oil pressure transient observed; check filter',
-      'Load factor stable at 0.72',
-      'Fuel rate high; inspect injector calibration',
-      'Coolant temperature within normal range',
-      'Engine start sequence successful',
-    ],
-    'Generator Controls': [
-      'Controller alarm A12: Sensor scaling mismatch',
-      'Firmware OK; CRC verified',
-      'I/O mapping updated',
-      'Control logic executing normally',
-      'Load demand signal received',
-    ],
-    'DeepSea Controllers': [
-      'DeepSea 7320 firmware v1.23.4 active',
-      'Alarm code 15: Low fuel warning',
-      'Sensor calibration required for temp sensor 2',
-      'Communication link stable',
-      'Auto-start sequence enabled',
-    ],
-    'PowerWizard Systems': [
-      'PowerWizard load sharing active',
-      'Synchronization status: In sync',
-      'Configuration backup verified',
-      'System integration nominal',
-      'Multi-generator coordination enabled',
-    ],
+  
+  // Map service names to match error code service names
+  const serviceMap = {
+    'Diesel Generators': 'Diesel Generators',
+    'Generator Controls': 'Controls',
+    'DeepSea Controllers': 'DeepSea Controllers',
+    'PowerWizard Systems': 'PowerWizard Systems'
   };
-  const pool = msgs[service] || ['System check OK'];
-  const pick = pool[Math.floor(Math.random() * pool.length)];
-
-  // Severity heuristic
-  let severity = 'LOW';
-  if (pick.toLowerCase().includes('alarm') || pick.toLowerCase().includes('critical') || pick.toLowerCase().includes('warning')) severity = 'HIGH';
-  else if (pick.toLowerCase().includes('mismatch') || pick.toLowerCase().includes('required') || pick.toLowerCase().includes('transient')) severity = 'MED';
-
-  return { line: `[${ts}] ${service}: ${pick}`, severity };
+  
+  const mappedService = serviceMap[service] || service;
+  
+  // Filter comprehensive error codes for the active service
+  const serviceCodes = comprehensiveErrorCodes.filter(code => 
+    code.service === mappedService || 
+    (mappedService === 'Generator Controls' && code.code.startsWith('CTRL-')) ||
+    (mappedService === 'DeepSea Controllers' && code.code.startsWith('DS-')) ||
+    (mappedService === 'PowerWizard Systems' && code.code.startsWith('PW-'))
+  );
+  
+  if (serviceCodes.length === 0) {
+    return { line: `[${ts}] ${service}: All systems nominal`, severity: 'LOW', details: null };
+  }
+  
+  // Pick a random error code
+  const errorCode = serviceCodes[Math.floor(Math.random() * serviceCodes.length)];
+  
+  // Create detailed diagnostic line
+  const line = `[${ts}] ${errorCode.code} - ${errorCode.issue} | Downtime: ${errorCode.downtime} | ${errorCode.recommendation}`;
+  
+  return { 
+    line, 
+    severity: errorCode.severity,
+    details: {
+      code: errorCode.code,
+      issue: errorCode.issue,
+      symptoms: errorCode.symptoms,
+      causes: errorCode.causes,
+      solution: errorCode.solution,
+      parts: errorCode.parts,
+      tools: errorCode.tools,
+      downtime: errorCode.downtime
+    }
+  };
 }
 

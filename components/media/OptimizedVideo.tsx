@@ -59,6 +59,14 @@ const OptimizedVideo = forwardRef<HTMLVideoElement, OptimizedVideoProps>(
         return;
       }
 
+      // Older browsers / restrictive environments may not support IntersectionObserver.
+      // Load immediately instead of throwing and crashing the page.
+      if (typeof IntersectionObserver === 'undefined') {
+        setIsInView(true);
+        setShouldLoad(true);
+        return;
+      }
+
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -92,7 +100,13 @@ const OptimizedVideo = forwardRef<HTMLVideoElement, OptimizedVideoProps>(
     useEffect(() => {
       if (!shouldLoad || typeof window === 'undefined') return;
 
-      const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+      const nav = navigator as unknown as {
+        connection?: { effectiveType?: string };
+        mozConnection?: { effectiveType?: string };
+        webkitConnection?: { effectiveType?: string };
+      };
+
+      const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
       
       if (connection) {
         // Reduce quality on slow connections

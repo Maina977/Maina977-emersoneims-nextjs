@@ -18,8 +18,8 @@ export default function FontOptimizer() {
 
       fonts.forEach((font) => {
         try {
-          (document.fonts as any).load(`400 16px "${font.family}"`);
-        } catch (e) {
+          document.fonts.load(`400 16px "${font.family}"`);
+        } catch {
           // Fallback for browsers without Font Loading API
         }
       });

@@ -4,7 +4,7 @@
 
 export interface ConversionRequest {
   type: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   visitorId?: string;
   sessionId?: string;
   timestamp?: number;
@@ -12,7 +12,7 @@ export interface ConversionRequest {
 
 export interface EventRequest {
   event: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   visitorId?: string;
   sessionId?: string;
   timestamp?: number;
@@ -30,7 +30,7 @@ export interface VisitorRequest {
     conversion?: {
       probability?: number;
     };
-    [key: string]: any;
+    [key: string]: unknown;
   };
   timestamp?: number;
 }
@@ -39,12 +39,12 @@ export interface NotificationRequest {
   type?: string;
   visitorId?: string;
   conversionType?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export interface ApiResponse {
   success: boolean;
   error?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 

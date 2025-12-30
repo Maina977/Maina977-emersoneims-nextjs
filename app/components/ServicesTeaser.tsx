@@ -1,10 +1,9 @@
 // /components/sections/ServicesTeaser.tsx
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { EngineIcon, SolarIcon, UPSIcon } from '@/components/ui/Icons';
-import { useReducedMotion as useSystemReducedMotion } from '@/hooks/useReducedMotion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 // Schema.org JSON-LD for rich results (Service)
 const ServiceSchema = () => (
@@ -53,28 +52,28 @@ const ServiceSchema = () => (
 );
 
 export default function ServicesTeaser() {
-  const prefersReducedMotion = useSystemReducedMotion();
-  const shouldReduceMotion = Boolean(prefersReducedMotion || useReducedMotion());
+  const prefersReducedMotion = useReducedMotion();
+  const shouldReduceMotion = Boolean(prefersReducedMotion);
 
   const items = [
     {
       title: 'Cummins Generator Sales',
       desc: 'Prime, standby & hybrid-ready sets — with DeepSea/PowerWizard intelligence.',
-      href: '/services/cummins',
+      href: '/generators',
       icon: <EngineIcon reducedMotion={shouldReduceMotion} />,
       benefit: 'Reliability that outlasts the grid.',
     },
     {
       title: 'Solar Energy Solutions',
       desc: 'Grid-tied, hybrid & off-grid systems — solar that learns your rhythm.',
-      href: '/services/solar',
+      href: '/solar',
       icon: <SolarIcon reducedMotion={shouldReduceMotion} />,
       benefit: 'Energy independence, engineered.',
     },
     {
       title: 'UPS & Power Quality',
       desc: 'Clean, uninterrupted power — harmonics tamed, uptime guaranteed.',
-      href: '/services/ups',
+      href: '/service#ups',
       icon: <UPSIcon reducedMotion={shouldReduceMotion} />,
       benefit: 'Zero flicker. Zero compromise.',
     },

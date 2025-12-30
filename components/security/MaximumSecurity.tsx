@@ -8,8 +8,27 @@ import { useEffect } from 'react';
  */
 export default function MaximumSecurity() {
   useEffect(() => {
+    let securityInterval: ReturnType<typeof setInterval> | null = null;
+    let sessionTimeout: ReturnType<typeof setTimeout> | null = null;
+    let domObserver: MutationObserver | null = null;
+    let visibilityChangeHandler: (() => void) | null = null;
+
+    const win = window as unknown as {
+      fetch?: typeof window.fetch;
+      eval?: (code: string) => unknown;
+      location: Location;
+      self: Window;
+      top: Window | null;
+    };
+
+    const originalFetch = win.fetch;
+    const originalEval = win.eval;
+    const consoleRecord = console as unknown as Record<string, (...args: unknown[]) => unknown>;
+    const originalConsole: Partial<Record<string, (...args: unknown[]) => unknown>> = {};
+
     // Enhanced security measures
     const securityChecks = () => {
+      try {
       // Check for iframe embedding
       if (window.self !== window.top) {
         document.body.innerHTML = '<h1>🚫 Access Denied</h1><p>This content cannot be embedded.</p>';
@@ -26,26 +45,34 @@ export default function MaximumSecurity() {
       }
 
       // Monitor for suspicious network requests
-      const originalFetch = window.fetch;
-      window.fetch = function(...args) {
-        const url = args[0] as string;
+      if (typeof originalFetch === 'function') {
+        win.fetch = function (...args) {
+          const firstArg = args[0] as unknown;
+          const url =
+            typeof firstArg === 'string'
+              ? firstArg
+              : firstArg && typeof firstArg === 'object' && 'url' in (firstArg as Record<string, unknown>)
+                ? String((firstArg as Record<string, unknown>).url)
+                : '';
         const suspiciousUrls = [
           'localhost', '127.0.0.1', '0.0.0.0',
           'eval(', 'javascript:', 'data:', 'vbscript:',
           'file://', 'ftp://'
         ];
 
-        if (suspiciousUrls.some(suspicious => url.includes(suspicious))) {
+          const urlLower = url.toLowerCase();
+        if (urlLower && suspiciousUrls.some(suspicious => urlLower.includes(suspicious))) {
           console.warn('🚨 Suspicious network request blocked:', url);
           return Promise.reject(new Error('Security violation'));
         }
 
-        return originalFetch.apply(this, args);
-      };
+          return originalFetch.apply(window, args as Parameters<typeof window.fetch>);
+        };
+      }
 
       // Monitor for suspicious script executions
-      const originalEval = window.eval;
-      window.eval = function(code: string) {
+      if (typeof originalEval === 'function') {
+        win.eval = function (code: string) {
         const suspiciousPatterns = [
           'document.cookie', 'localStorage', 'sessionStorage',
           'XMLHttpRequest', 'fetch(', 'innerHTML', 'outerHTML'
@@ -56,8 +83,9 @@ export default function MaximumSecurity() {
           throw new Error('Security violation');
         }
 
-        return originalEval(code);
-      };
+          return originalEval(code);
+        };
+      }
 
       // Anti-screenshot protection (visual disruption)
       const antiScreenshot = () => {
@@ -94,94 +122,150 @@ export default function MaximumSecurity() {
       }
 
       // Monitor for clipboard access
-      navigator.clipboard.readText = function() {
-        console.warn('🚨 Clipboard read attempt blocked');
-        return Promise.reject(new Error('Security violation'));
-      };
+      try {
+        const clipboard = navigator.clipboard;
+        if (clipboard && typeof clipboard.readText === 'function') {
+          clipboard.readText = function () {
+            console.warn('🚨 Clipboard read attempt blocked');
+            return Promise.reject(new Error('Security violation'));
+          };
+        }
+      } catch {
+        // Ignore clipboard patch failures (not available / not writable)
+      }
 
       // Enhanced anti-debugging
       let debugCount = 0;
-      const originalConsole = { ...console };
+      Object.keys(consoleRecord).forEach((key) => {
+        if (typeof consoleRecord[key] === 'function') {
+          originalConsole[key] = consoleRecord[key];
+        }
+      });
 
-      Object.keys(console).forEach(key => {
-        (console as any)[key] = function(...args: any[]) {
+      Object.keys(originalConsole).forEach((key) => {
+        const original = originalConsole[key];
+        if (!original) return;
+
+        consoleRecord[key] = (...args: unknown[]) => {
           debugCount++;
           if (debugCount > 100) {
             console.clear();
             debugCount = 0;
-            alert('🚫 Excessive debugging detected. Access restricted.');
+            try {
+              alert('🚫 Excessive debugging detected. Access restricted.');
+            } catch {
+              // Ignore alert failures
+            }
             window.location.href = 'about:blank';
             return;
           }
-          return (originalConsole as any)[key].apply(console, args);
+          return original(...args);
         };
       });
 
       // Monitor for DOM manipulation attempts
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList') {
-            mutation.addedNodes.forEach((node) => {
-              if (node.nodeType === Node.ELEMENT_NODE) {
-                const element = node as Element;
-                if (element.tagName === 'SCRIPT' || element.tagName === 'IFRAME') {
-                  console.warn('🚨 Suspicious element injection detected');
-                  element.remove();
+      if (typeof MutationObserver !== 'undefined' && document.body) {
+        domObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+              mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                  const element = node as Element;
+                  if (element.tagName === 'SCRIPT' || element.tagName === 'IFRAME') {
+                    console.warn('🚨 Suspicious element injection detected');
+                    element.remove();
+                  }
                 }
-              }
-            });
-          }
+              });
+            }
+          });
         });
-      });
 
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['src', 'href', 'onclick']
-      });
+        domObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['src', 'href', 'onclick'],
+        });
+      }
 
       // Self-destruct mechanism for compromised sessions
-      let sessionTimeout = setTimeout(() => {
-        if (document.visibilityState === 'hidden') {
-          // Clear sensitive data
-          localStorage.clear();
-          sessionStorage.clear();
+      const scheduleSelfDestruct = () => {
+        if (sessionTimeout) clearTimeout(sessionTimeout);
+        sessionTimeout = setTimeout(() => {
+          if (document.visibilityState === 'hidden') {
+            try {
+              localStorage.clear();
+              sessionStorage.clear();
+            } catch {
+              // Ignore storage failures
+            }
 
-          // Clear cookies
-          document.cookie.split(";").forEach((c) => {
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-          });
-        }
-      }, 300000); // 5 minutes
+            try {
+              document.cookie.split(';').forEach((c) => {
+                document.cookie = c
+                  .replace(/^ +/, '')
+                  .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
+              });
+            } catch {
+              // Ignore cookie clearing failures
+            }
+          }
+        }, 300000);
+      };
 
-      document.addEventListener('visibilitychange', () => {
+      visibilityChangeHandler = () => {
         if (document.visibilityState === 'visible') {
-          clearTimeout(sessionTimeout);
-          sessionTimeout = setTimeout(() => {
-            // Security timeout
-          }, 300000);
+          scheduleSelfDestruct();
         }
-      });
+      };
+
+      scheduleSelfDestruct();
+      document.addEventListener('visibilitychange', visibilityChangeHandler);
 
       console.log('🛡️ Maximum Security Component Activated');
+      } catch (err) {
+        console.warn('🛡️ Maximum Security disabled due to runtime error:', err);
+      }
     };
 
     // Run security checks
     securityChecks();
 
     // Periodic security scans
-    const securityInterval = setInterval(() => {
+    securityInterval = setInterval(() => {
       // Check for new suspicious elements
-      const suspiciousElements = document.querySelectorAll('script[src*="localhost"], iframe, object, embed');
-      suspiciousElements.forEach(element => {
-        console.warn('🚨 Suspicious element found and removed');
-        element.remove();
-      });
+      try {
+        const suspiciousElements = document.querySelectorAll('script[src*="localhost"], iframe, object, embed');
+        suspiciousElements.forEach(element => {
+          console.warn('🚨 Suspicious element found and removed');
+          element.remove();
+        });
+      } catch {
+        // Ignore scan failures
+      }
     }, 5000);
 
     return () => {
-      clearInterval(securityInterval);
+      if (securityInterval) clearInterval(securityInterval);
+      if (sessionTimeout) clearTimeout(sessionTimeout);
+      if (domObserver) domObserver.disconnect();
+      if (visibilityChangeHandler) {
+        document.removeEventListener('visibilitychange', visibilityChangeHandler);
+      }
+
+      if (originalFetch) {
+        win.fetch = originalFetch;
+      }
+      if (originalEval) {
+        win.eval = originalEval;
+      }
+      Object.keys(originalConsole).forEach((key) => {
+        const original = originalConsole[key];
+        if (original) {
+          consoleRecord[key] = original;
+        }
+      });
     };
   }, []);
 

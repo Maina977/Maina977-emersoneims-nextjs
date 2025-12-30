@@ -1,7 +1,14 @@
 import React from 'react';
 
+interface ServiceComparisonService {
+  name: string;
+  price: string;
+  features: string[];
+  popular?: boolean;
+}
+
 interface ServiceComparisonProps {
-  services?: any[];
+  services?: ServiceComparisonService[];
   className?: string;
 }
 

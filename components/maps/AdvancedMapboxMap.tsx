@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import mapboxgl from 'mapbox-gl';
+import type { Map as MapboxMap } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 /**
@@ -29,63 +29,78 @@ const MARKERS: MapMarker[] = [
 
 export default function AdvancedMapboxMap() {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const map = useRef<MapboxMap | null>(null);
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    let cancelled = false;
 
-    // Initialize Mapbox
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+    const init = async () => {
+      if (!mapContainer.current || map.current) return;
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: KENYA_CENTER,
-      zoom: 6,
-      pitch: 45,
-      bearing: -17.6,
-      antialias: true,
-    });
+      const mapboxglModule = await import('mapbox-gl');
+      const mapboxgl = mapboxglModule.default;
+      if (cancelled || !mapContainer.current || map.current) return;
 
-    map.current.on('load', () => {
-      setIsLoaded(true);
+      // Initialize Mapbox
+      mapboxgl.accessToken =
+        process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+        'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
 
-      // Add 3D terrain
-      if (map.current) {
-        map.current.addSource('mapbox-dem', {
-          type: 'raster-dem',
-          url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-          tileSize: 256,
-          maxzoom: 14,
-        });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: KENYA_CENTER,
+        zoom: 6,
+        pitch: 45,
+        bearing: -17.6,
+        antialias: true,
+      });
 
-        map.current.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+      map.current.on('load', () => {
+        setIsLoaded(true);
 
-        // Add markers
-        MARKERS.forEach((marker) => {
-          const el = document.createElement('div');
-          el.className = 'marker';
-          el.style.width = '20px';
-          el.style.height = '20px';
-          el.style.borderRadius = '50%';
-          el.style.backgroundColor = marker.type === 'office' ? 'oklch(0.75 0.20 200)' : 'oklch(0.85 0.15 85)';
-          el.style.border = '2px solid white';
-          el.style.cursor = 'pointer';
-          el.style.boxShadow = `0 0 10px ${marker.type === 'office' ? 'oklch(0.75 0.20 200)' : 'oklch(0.85 0.15 85)'}`;
+        // Add 3D terrain
+        if (map.current) {
+          map.current.addSource('mapbox-dem', {
+            type: 'raster-dem',
+            url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            tileSize: 256,
+            maxzoom: 14,
+          });
 
-          el.addEventListener('click', () => setSelectedMarker(marker));
+          map.current.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
 
-          new mapboxgl.Marker(el)
-            .setLngLat(marker.coordinates)
-            .addTo(map.current!);
-        });
-      }
-    });
+          // Add markers
+          MARKERS.forEach((marker) => {
+            const el = document.createElement('div');
+            el.className = 'marker';
+            el.style.width = '20px';
+            el.style.height = '20px';
+            el.style.borderRadius = '50%';
+            el.style.backgroundColor =
+              marker.type === 'office' ? 'oklch(0.75 0.20 200)' : 'oklch(0.85 0.15 85)';
+            el.style.border = '2px solid white';
+            el.style.cursor = 'pointer';
+            el.style.boxShadow = `0 0 10px ${
+              marker.type === 'office' ? 'oklch(0.75 0.20 200)' : 'oklch(0.85 0.15 85)'
+            }`;
+
+            el.addEventListener('click', () => setSelectedMarker(marker));
+
+            new mapboxgl.Marker(el).setLngLat(marker.coordinates).addTo(map.current!);
+          });
+        }
+      });
+    };
+
+    init();
 
     return () => {
+      cancelled = true;
       map.current?.remove();
+      map.current = null;
     };
   }, []);
 

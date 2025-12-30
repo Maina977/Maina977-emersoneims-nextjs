@@ -7,7 +7,7 @@
 
 import { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Mesh, Vector3, Color } from 'three';
+import { Mesh, Vector3 } from 'three';
 import * as THREE from 'three';
 import { PerspectiveCamera } from '@react-three/drei';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -41,8 +41,9 @@ function Particle({ position, velocity, color, size, life }: ParticleProps) {
     lifeRef.current -= delta;
     const opacity = Math.max(0, lifeRef.current / life);
     
-    if (meshRef.current.material) {
-      (meshRef.current.material as any).opacity = opacity;
+    const material = meshRef.current.material;
+    if (material && !Array.isArray(material) && 'opacity' in material) {
+      (material as THREE.Material & { opacity: number }).opacity = opacity;
     }
     
     // Rotate

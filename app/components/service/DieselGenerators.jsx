@@ -1,6 +1,6 @@
 'use client';
 
-export default function DieselGenerators({ performanceTier = "high" }) {
+export default function DieselGenerators() {
   return (
     <section id="diesel" className="py-20 bg-gradient-to-b from-black to-gray-900">
       <div className="max-w-7xl mx-auto px-4">

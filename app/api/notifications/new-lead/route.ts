@@ -5,13 +5,43 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+type LeadNotificationData = {
+  engagementScore?: number;
+  [key: string]: unknown;
+};
+
+type NewLeadRequestBody = {
+  visitorId?: string;
+  conversionType?: string;
+  data?: unknown;
+  type?: string;
+};
+
+type LeadNotification = {
+  type: string;
+  visitorId?: string;
+  conversionType: string;
+  timestamp: string;
+  data?: LeadNotificationData;
+  priority: 'low' | 'medium' | 'high';
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { visitorId, conversionType, data, type } = body;
+    const body = (await request.json()) as NewLeadRequestBody;
+    const visitorId = typeof body.visitorId === 'string' ? body.visitorId : undefined;
+    const conversionType = typeof body.conversionType === 'string' ? body.conversionType : '';
+    const type = typeof body.type === 'string' ? body.type : undefined;
+    const data: LeadNotificationData | undefined = isRecord(body.data)
+      ? (body.data as LeadNotificationData)
+      : undefined;
 
     // Prepare notification data
-    const notification = {
+    const notification: LeadNotification = {
       type: type || 'new_lead',
       visitorId,
       conversionType,
@@ -54,11 +84,14 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function determinePriority(conversionType: string, data: any): 'low' | 'medium' | 'high' {
+function determinePriority(
+  conversionType: string,
+  data?: LeadNotificationData
+): 'low' | 'medium' | 'high' {
   if (conversionType === 'form_submit' || conversionType === 'cta_click') {
     return 'high';
   }
-  if (data?.engagementScore > 70) {
+  if (typeof data?.engagementScore === 'number' && data.engagementScore > 70) {
     return 'high';
   }
   if (conversionType === 'offer_chat' || conversionType === 'offer_consultation') {
@@ -67,7 +100,7 @@ function determinePriority(conversionType: string, data: any): 'low' | 'medium' 
   return 'low';
 }
 
-async function sendEmailNotification(notification: any) {
+async function sendEmailNotification(notification: LeadNotification) {
   // TODO: Implement email notification (SendGrid, Mailgun, etc.)
   const emailService = process.env.EMAIL_SERVICE_URL;
   
@@ -92,7 +125,7 @@ async function sendEmailNotification(notification: any) {
   }
 }
 
-async function sendSlackNotification(notification: any) {
+async function sendSlackNotification(notification: LeadNotification) {
   const slackWebhook = process.env.SLACK_WEBHOOK_URL;
   
   if (!slackWebhook) {
@@ -144,7 +177,7 @@ async function sendSlackNotification(notification: any) {
   }
 }
 
-async function sendSMSNotification(notification: any) {
+async function sendSMSNotification(notification: LeadNotification) {
   // Only send SMS for high-priority leads
   if (notification.priority !== 'high') {
     return;
@@ -172,13 +205,13 @@ async function sendSMSNotification(notification: any) {
   }
 }
 
-async function updateDashboard(notification: any) {
+async function updateDashboard(notification: LeadNotification) {
   // TODO: Update real-time dashboard via WebSocket or Server-Sent Events
   // For now, we'll just log it
   console.log('Dashboard update:', notification);
 }
 
-function generateEmailHTML(notification: any): string {
+function generateEmailHTML(notification: LeadNotification): string {
   return `
     <!DOCTYPE html>
     <html>

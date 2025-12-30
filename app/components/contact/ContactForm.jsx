@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { gsap } from "gsap";
 
-export default function ContactForm({ performanceTier }) {
+export default function ContactForm() {
   const root = useRef(null);
   const [step, setStep] = useState(1);
 

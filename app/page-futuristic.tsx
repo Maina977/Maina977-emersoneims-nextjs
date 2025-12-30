@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, lazy, useEffect, useState, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor')
 
 export default function FuturisticHomepage() {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [activeSection, setActiveSection] = useState('hero');
+  const [activeSection] = useState('hero');
   const prefersReducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);

@@ -49,7 +49,7 @@ export default function HeroSection({ performanceTier }) {
         playsInline
         aria-label="Nairobi skyline transforming into a neon digital grid"
       >
-        <source src="https://www.emersoneims.com/wp-content/uploads/2025/10/Solution1.mp4" type="video/mp4" />
+        <source src="/videos/Solution(1).mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       <div className="hero-content">

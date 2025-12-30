@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMockTelemetry, GeneratorTelemetry, PredictiveFailure } from '@/lib/diagnostics/mock-data';
 
@@ -9,6 +9,7 @@ interface UniversalDiagnosticMachineProps {
 }
 
 export default function UniversalDiagnosticMachine({ onSeverityUpdate }: UniversalDiagnosticMachineProps) {
+  void onSeverityUpdate;
   const [selectedGenerator, setSelectedGenerator] = useState<string>('');
   const [telemetry, setTelemetry] = useState<GeneratorTelemetry | null>(null);
   const [isLoading, setIsLoading] = useState(false);

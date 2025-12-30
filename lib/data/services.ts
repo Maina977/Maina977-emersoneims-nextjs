@@ -11,8 +11,8 @@ export const ALL_SERVICES = [
     description: 'Complete solar energy solutions from residential to commercial installations',
     icon: '☀️',
     category: 'Renewable Energy',
-    href: '/service/solar',
-    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png',
+    href: '/service#solar',
+    image: '/images/solar%20power%20farms.png',
   },
   {
     id: 'diesel-generators',
@@ -22,7 +22,7 @@ export const ALL_SERVICES = [
     icon: '⚡',
     category: 'Power Generation',
     href: '/service/generators',
-    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png',
+    image: '/images/GEN%202-1920x1080.png',
   },
   {
     id: 'controls',
@@ -31,8 +31,8 @@ export const ALL_SERVICES = [
     description: 'Advanced control systems for generator automation and monitoring',
     icon: '🎛️',
     category: 'Automation',
-    href: '/service/controls',
-    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/controls.jpg',
+    href: '/service#opt',
+    image: '/images/solar%20changeover%20control.png',
   },
   {
     id: 'ac-ups',
@@ -41,8 +41,8 @@ export const ALL_SERVICES = [
     description: 'Air conditioning and uninterruptible power supply systems',
     icon: '❄️',
     category: 'Climate Control',
-    href: '/service/ac-ups',
-    image: '/images/premium/ac-installation.jpg',
+    href: '/service#ups',
+    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/ac-systems.jpg',
   },
   {
     id: 'automation',
@@ -51,8 +51,8 @@ export const ALL_SERVICES = [
     description: 'Smart automation solutions for energy infrastructure',
     icon: '🤖',
     category: 'Automation',
-    href: '/service/automation',
-    image: '/images/premium/premium-infrastructure.jpg',
+    href: '/service#opt',
+    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/automation.jpg',
   },
   {
     id: 'pumps',
@@ -61,8 +61,8 @@ export const ALL_SERVICES = [
     description: 'Water pumping systems and borehole solutions',
     icon: '💧',
     category: 'Water Systems',
-    href: '/service/pumps',
-    image: '/images/premium/borehole-drill.jpg',
+    href: '/service#water',
+    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/pumps.jpg',
   },
   {
     id: 'incinerators',
@@ -71,8 +71,8 @@ export const ALL_SERVICES = [
     description: 'Waste management and incineration systems',
     icon: '🔥',
     category: 'Waste Management',
-    href: '/service/incinerators',
-    image: '/images/premium/incinerator-system.jpg',
+    href: '/service#incin',
+    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/incinerators.jpg',
   },
   {
     id: 'motors-rewinding',
@@ -81,8 +81,8 @@ export const ALL_SERVICES = [
     description: 'Motor repair, rewinding, and maintenance services',
     icon: '⚙️',
     category: 'Maintenance',
-    href: '/service/motors',
-    image: '/images/premium/motor-winding.jpg',
+    href: '/service#motor',
+    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/motors.jpg',
   },
   {
     id: 'fabrication',
@@ -91,8 +91,8 @@ export const ALL_SERVICES = [
     description: 'Metal fabrication and custom engineering solutions',
     icon: '🔧',
     category: 'Manufacturing',
-    href: '/service/fabrication',
-    image: '/images/premium/metal-fabrication.jpg',
+    href: '/service#fab',
+    image: '/images/ENGINE%20PARTS.png',
   },
   {
     id: 'diagnostics-hub',
@@ -102,7 +102,7 @@ export const ALL_SERVICES = [
     icon: '🔍',
     category: 'Technology',
     href: '/diagnostics',
-    image: '/images/premium/control-panel-main.jpg',
+    image: '/images/Multimeter.png',
   },
 ] as const;
 

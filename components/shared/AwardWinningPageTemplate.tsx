@@ -4,7 +4,6 @@ import { useEffect, useRef, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import OptimizedImage from '@/components/media/OptimizedImage';
 import OptimizedVideo from '@/components/media/OptimizedVideo';
 import AnimatedImage from '@/components/effects/AnimatedImage';
 import HolographicLaser from '@/components/effects/HolographicLaser';
@@ -54,6 +53,8 @@ export default function AwardWinningPageTemplate({
   const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
   const parallaxY = useTransform(scrollYProgress, [0, 1], [0, -200]);
 
+  const fallbackGalleryAnimations = ['pop', 'shake', 'rotate'] as const;
+
   // GSAP ScrollTrigger animations
   useEffect(() => {
     if (!containerRef.current) return;
@@ -62,7 +63,7 @@ export default function AwardWinningPageTemplate({
     const textElements = containerRef.current.querySelectorAll('p, h2, h3');
 
     // Animate sections on scroll
-    sections.forEach((section, index) => {
+    sections.forEach((section) => {
       gsap.fromTo(
         section,
         { opacity: 0, y: 100 },
@@ -252,7 +253,7 @@ export default function AwardWinningPageTemplate({
                   alt={img.alt}
                   width={600}
                   height={400}
-                  animationType={img.animationType || ['pop', 'shake', 'rotate'][index] as any}
+                  animationType={img.animationType ?? fallbackGalleryAnimations[index] ?? 'pop'}
                   intensity="medium"
                   className="rounded-xl overflow-hidden"
                 />

@@ -1,0 +1,153 @@
+[
+  {
+    "brand": "Cummins",
+    "model": "KTA50",
+    "code": "1234",
+    "category": "Cooling System",
+    "symptom": "Overheating under load",
+    "severity": "HIGH",
+    "causes": [
+      "Coolant flow restriction in water passages",
+      "Clogged radiator fins reducing heat dissipation",
+      "Faulty thermostat stuck closed",
+      "Water pump impeller damage or cavitation",
+      "Insufficient coolant flow rate (<40 LPM)",
+      "Radiator core blocked by debris/insects"
+    ],
+    "detailedFix": "1. IMMEDIATE: Shut down engine if temp >105°C to prevent head gasket damage.\n2. INSPECTION: Check coolant level when cold - fill to +20mm above MIN mark.\n3. PRESSURE TEST: System must hold 15 PSI for 10 minutes without drop.\n4. WATER PUMP: Verify flow rate ≥40 LPM at rated RPM using flow meter.\n5. THERMOSTAT: Remove and test in water bath - must open at 82-88°C.\n6. RADIATOR: Pressure wash from engine side at 80 PSI to clear fins.\n7. VERIFICATION: Run at full load for 30 minutes - temp must stabilize at 85-95°C.",
+    "parts": [
+      "Coolant (Ethylene glycol 50/50 mix) - 40L",
+      "Thermostat (opens 82-88°C) - PN: 3076489",
+      "Water pump assembly - PN: 4955705",
+      "Radiator cap (15 PSI) - PN: 148796",
+      "Fan belt (tension 10-15mm deflection) - PN: 3349237"
+    ],
+    "tools": [
+      "Cooling system pressure tester (0-30 PSI)",
+      "Infrared thermometer (±1°C accuracy)",
+      "Flow meter (0-100 LPM range)",
+      "Belt tension gauge",
+      "Pressure washer (80-100 PSI)"
+    ],
+    "safetyWarnings": [
+      "NEVER remove radiator cap when hot - risk of severe burns",
+      "Wear safety glasses when pressure testing",
+      "Allow engine to cool for 1 hour before work",
+      "Dispose of old coolant per EPA regulations"
+    ],
+    "estimatedTime": "4-6 hours",
+    "estimatedCost": {
+      "parts": "KES 45,000 - 75,000",
+      "labor": "KES 15,000 - 25,000",
+      "total": "KES 60,000 - 100,000"
+    },
+    "preventiveMaintenance": "Weekly coolant level check, monthly radiator cleaning, quarterly thermostat test, annual system flush",
+    "relatedCodes": ["1235 - Low coolant level", "1236 - Fan belt failure", "1237 - Water pump failure"],
+    "expertTips": "In Nairobi's highland climate (1800m altitude), coolant boiling point drops to 98°C at 15 PSI. Use 60/40 glycol mix for better altitude performance. Coastal areas (Mombasa) require corrosion inhibitors due to salt air.",
+    "videoGuide": "https://emersoneims.com/guides/cummins-kta50-cooling-system",
+    "pdfManual": "https://emersoneims.com/manuals/cummins-kta50-service-manual.pdf"
+  },
+  {
+    "brand": "Perkins",
+    "model": "1104D",
+    "code": "P0216",
+    "category": "Fuel System",
+    "symptom": "Injection timing control circuit range/performance",
+    "severity": "MED",
+    "causes": [
+      "Faulty injection timing solenoid valve",
+      "Wiring harness corrosion or short circuit",
+      "ECM software calibration error",
+      "Fuel pressure sensor malfunction",
+      "Contaminated fuel affecting solenoid operation",
+      "Low battery voltage affecting solenoid actuation"
+    ],
+    "detailedFix": "1. DIAGNOSTIC: Connect Perkins EST (Electronic Service Tool) to retrieve freeze frame data.\n2. SOLENOID TEST: Measure resistance at solenoid terminals - spec: 8-12 Ohms at 20°C.\n3. WIRING CHECK: Inspect harness for chafing against engine block. Test continuity: <0.5 Ohm end-to-end.\n4. VOLTAGE TEST: With ignition ON, verify 12V at solenoid connector. With engine running, verify 13.8-14.4V.\n5. FUEL PRESSURE: At idle, common rail pressure must be 300-400 bar. At full load: 1600-1800 bar.\n6. CALIBRATION: Update ECM software to latest version (2024.Q4) using EST.\n7. CLEAR CODES: After repair, clear DTCs and perform stationary regeneration test.",
+    "parts": [
+      "Injection timing solenoid - PN: 2644H013",
+      "Engine wiring harness - PN: 2644H201",
+      "Fuel pressure sensor - PN: 2645K604",
+      "ECM (if faulty) - PN: 2644P501"
+    ],
+    "tools": [
+      "Perkins EST (Electronic Service Tool) with laptop",
+      "Digital multimeter (0.1 Ohm resolution)",
+      "Fuel pressure gauge (0-2500 bar)",
+      "Oscilloscope for waveform analysis",
+      "Wiring repair kit (heat shrink, terminals)"
+    ],
+    "safetyWarnings": [
+      "High pressure fuel system - 1800 bar can penetrate skin",
+      "Disconnect batteries before electrical work",
+      "Never open fuel system under pressure",
+      "Wear fuel-resistant gloves"
+    ],
+    "estimatedTime": "2-4 hours",
+    "estimatedCost": {
+      "parts": "KES 25,000 - 45,000",
+      "labor": "KES 10,000 - 15,000",
+      "total": "KES 35,000 - 60,000"
+    },
+    "preventiveMaintenance": "Every 500 hours: fuel filter change, injector cleaning. Every 2000 hours: solenoid valve inspection, wiring harness inspection.",
+    "relatedCodes": ["P0191 - Fuel rail pressure sensor", "P0093 - Large fuel leak detected", "P0087 - Fuel rail pressure too low"],
+    "expertTips": "Kenya's dusty conditions accelerate harness wear. Apply dielectric grease to all connectors during assembly. In Nairobi altitude (1800m), fuel pressure targets are 5% lower - adjust ECM parameters accordingly.",
+    "videoGuide": "https://emersoneims.com/guides/perkins-1104d-injection-timing",
+    "pdfManual": "https://emersoneims.com/manuals/perkins-1104d-workshop-manual.pdf"
+  },
+  {
+    "brand": "Caterpillar",
+    "model": "C15",
+    "code": "E350",
+    "category": "Lubrication System",
+    "symptom": "Low oil pressure warning",
+    "severity": "CRITICAL",
+    "causes": [
+      "Low oil level due to consumption or leak",
+      "Worn oil pump reducing output pressure",
+      "Pressure relief valve stuck open (bypass mode)",
+      "Worn main or rod bearings increasing clearance",
+      "Oil filter bypass valve open due to clogged filter",
+      "Wrong oil viscosity (too thin for operating temp)",
+      "Oil dilution from fuel leak into crankcase",
+      "Faulty oil pressure sensor giving false reading"
+    ],
+    "detailedFix": "1. IMMEDIATE SHUTDOWN: If pressure <20 PSI at idle or <40 PSI at rated speed, STOP engine immediately to prevent catastrophic bearing failure.\n2. OIL LEVEL: Check dipstick when cold - must be between MIN and MAX marks. Top up if low.\n3. MECHANICAL GAUGE: Install calibrated mechanical gauge at oil gallery port. Run engine and verify:\n   - Idle (600 RPM): 10-15 PSI minimum\n   - Rated speed (1800 RPM): 40-60 PSI\n   - Full load: 50-70 PSI\n4. OIL ANALYSIS: Drain 100ml sample and send for spectrographic analysis:\n   - Iron (Fe): <100 ppm (bearing wear indicator)\n   - Copper (Cu): <50 ppm (bushing wear)\n   - Lead (Pb): <50 ppm (bearing overlay)\n   - Fuel dilution: <2%\n5. OIL PUMP TEST: Remove pump, measure gear clearance with feeler gauge - spec: 0.05-0.15mm. Replace if >0.20mm.\n6. BEARING INSPECTION: Use Plastigage on main bearing caps - clearance spec: 0.08-0.15mm. Replace if >0.20mm.\n7. PRESSURE RELIEF VALVE: Remove and test opening pressure - spec: 60-70 PSI. Clean or replace if out of spec.\n8. OIL CHANGE: Use SAE 15W-40 CI-4+ oil. Capacity: 38 liters. Install new filter - PN: 1R-0750.\n9. VERIFICATION: Run at no-load for 10 min, then full load for 30 min. Monitor pressure continuously.",
+    "parts": [
+      "Engine oil SAE 15W-40 CI-4+ - 40L (Cat DEO or equivalent)",
+      "Oil filter - PN: 1R-0750",
+      "Oil pump assembly - PN: 268-6311",
+      "Main bearing set (7 bearings) - PN: 197-9322",
+      "Rod bearing set (6 bearings) - PN: 197-9323",
+      "Pressure relief valve - PN: 7C-6809",
+      "Oil pressure sensor - PN: 224-4536"
+    ],
+    "tools": [
+      "Mechanical oil pressure gauge (0-150 PSI, calibrated)",
+      "Oil analysis kit with sample bottles",
+      "Feeler gauge set (0.05-1.0mm)",
+      "Plastigage (green: 0.025-0.076mm)",
+      "Torque wrench (0-300 Nm)",
+      "Micrometer (0.01mm resolution)",
+      "Endoscope (for visual bearing inspection)"
+    ],
+    "safetyWarnings": [
+      "CRITICAL: Running engine with low oil pressure will destroy bearings within minutes - repair cost >KES 2M",
+      "Hot oil can cause severe burns - wear protective equipment",
+      "Dispose of used oil at licensed collection centers only",
+      "Never mix different oil brands or viscosities",
+      "Main bearing replacement requires engine removal - allow 3-5 days"
+    ],
+    "estimatedTime": "Sensor replacement: 1 hour. Oil pump: 6-8 hours. Main bearings: 40-60 hours (engine out).",
+    "estimatedCost": {
+      "parts": "Sensor: KES 15K | Oil pump: KES 85K | Bearings: KES 450K",
+      "labor": "Sensor: KES 5K | Oil pump: KES 35K | Bearings: KES 350K",
+      "total": "Sensor: KES 20K | Oil pump: KES 120K | Bearings: KES 800K"
+    },
+    "preventiveMaintenance": "Daily: Check oil level before start. Every 250 hours: Oil and filter change. Every 500 hours: Oil analysis. Every 2000 hours: Oil pump inspection. Every 10,000 hours: Bearing inspection.",
+    "relatedCodes": ["E351 - High oil temperature", "E352 - Oil level low", "E353 - Oil pressure sensor circuit", "E354 - Oil filter restriction"],
+    "expertTips": "Cat C15 engines in Kenya often face accelerated bearing wear due to dusty conditions and high ambient temps (25-35°C). Use premium CI-4+ or CJ-4 oil for better wear protection. In Nairobi altitude (1800m), oil pressure runs 5-10% lower than sea level - this is normal. Coastal generators (Mombasa) require more frequent oil changes (200 hrs vs 250 hrs) due to salt contamination.",
+    "videoGuide": "https://emersoneims.com/guides/caterpillar-c15-oil-pressure-diagnosis",
+    "pdfManual": "https://emersoneims.com/manuals/cat-c15-service-manual.pdf",
+    "emergencyContact": "EmersonEIMS 24/7 Hotline: +254 768 860 655"
+  }
+]

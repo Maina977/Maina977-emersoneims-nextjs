@@ -22,8 +22,11 @@ export default function ARPreview({ productName, modelUrl, qrCodeUrl }: ARPrevie
   useEffect(() => {
     // Check WebXR support
     if (typeof navigator !== 'undefined' && 'xr' in navigator) {
-      (navigator as any).xr?.isSessionSupported('immersive-ar').then((supported: boolean) => {
-        setIsSupported(supported);
+      const nav = navigator as Navigator & {
+        xr?: { isSessionSupported?: (mode: string) => Promise<boolean> };
+      };
+      nav.xr?.isSessionSupported?.('immersive-ar').then((supported) => {
+        setIsSupported(Boolean(supported));
       });
     }
   }, []);
@@ -64,6 +67,7 @@ export default function ARPreview({ productName, modelUrl, qrCodeUrl }: ARPrevie
             onClick={() => setIsActive(false)}
           >
             <motion.div
+              ref={arContainerRef}
               className="bg-gray-900 rounded-2xl p-8 max-w-md text-center border border-gray-800"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
@@ -95,7 +99,11 @@ export default function ARPreview({ productName, modelUrl, qrCodeUrl }: ARPrevie
                   <button
                     onClick={() => {
                       // In production, this would start WebXR session
-                      window.open(`/ar/${productName.toLowerCase().replace(/\s+/g, '-')}`, '_blank');
+                      const slug = productName.toLowerCase().replace(/\s+/g, '-');
+                      const url = modelUrl
+                        ? `/ar/${slug}?model=${encodeURIComponent(modelUrl)}`
+                        : `/ar/${slug}`;
+                      window.open(url, '_blank');
                     }}
                     className="w-full cta-button-primary mb-4"
                   >

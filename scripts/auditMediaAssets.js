@@ -51,6 +51,8 @@ const codeFiles = [
   'lib/**/*.js',
 ];
 
+void codeFiles;
+
 /**
  * Recursively find all files with given extensions
  */
@@ -85,6 +87,7 @@ function findFiles(dir, extensions, results) {
       }
     }
   } catch (error) {
+    void error;
     // Skip directories we can't read
   }
 }
@@ -115,6 +118,7 @@ function findCodeFiles(dir, results) {
       }
     }
   } catch (error) {
+    void error;
     // Skip
   }
 }
@@ -222,6 +226,7 @@ codeFileList.forEach(filePath => {
       }
     });
   } catch (error) {
+    void error;
     // Skip files we can't read
   }
 });
@@ -247,6 +252,7 @@ if (fs.existsSync(imageAssetsPath)) {
       });
     }
   } catch (error) {
+    void error;
     // Skip
   }
 }
@@ -341,7 +347,7 @@ if (totalExternalImages > 0) {
     try {
       const domain = new URL(url).hostname;
       domains[domain] = (domains[domain] || 0) + 1;
-    } catch (e) {
+    } catch {
       // Invalid URL
     }
   });
@@ -367,7 +373,7 @@ if (totalExternalVideos > 0) {
     try {
       const domain = new URL(url).hostname;
       domains[domain] = (domains[domain] || 0) + 1;
-    } catch (e) {
+    } catch {
       // Invalid URL
     }
   });

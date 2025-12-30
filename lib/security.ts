@@ -71,14 +71,14 @@ export function sanitizeHtml(html: string): string {
  * In production, use a proper CSRF library
  */
 export function generateCsrfToken(): string {
-  if (typeof window === 'undefined') {
-    // Server-side: use crypto
-    const crypto = require('crypto');
-    return crypto.randomBytes(32).toString('hex');
+  const cryptoObj = globalThis.crypto;
+  if (!cryptoObj || typeof cryptoObj.getRandomValues !== 'function') {
+    // Extremely defensive fallback. Node 18+/Edge/browsers should always support Web Crypto.
+    return `${Date.now()}-${Math.random()}`;
   }
-  // Client-side: use Web Crypto API
+
   const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
+  cryptoObj.getRandomValues(array);
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 

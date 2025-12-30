@@ -1,0 +1,57 @@
+{
+  "name": "emerson-eims",
+  "version": "3.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:3020": "next dev -p 3020",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "test": "npm run lint && npm run type-check",
+    "optimize:images": "ts-node scripts/optimizeImages.ts",
+    "optimize:videos": "ts-node scripts/optimizeVideos.ts",
+    "optimize:all": "npm run optimize:images && npm run optimize:videos",
+    "audit": "ts-node scripts/auditWebsite.ts",
+    "audit:prod": "ts-node scripts/auditWebsite.ts https://emersoneims.com",
+    "preflight": "npm run test && npm run optimize:all",
+    "deploy:test": "npm run preflight && npm run build && npm run audit",
+    "deploy:vercel": "vercel --prod",
+    "deploy": "npm run deploy:test && npm run deploy:vercel"
+  },
+  "dependencies": {
+    "next": "16.1.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "framer-motion": "^11.0.0",
+    "gsap": "^3.12.5",
+    "three": "^0.160.0",
+    "@react-three/fiber": "^8.15.0",
+    "@react-three/drei": "^9.92.0",
+    "chart.js": "^4.4.1",
+    "react-chartjs-2": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.160.0",
+    "@next/bundle-analyzer": "^14.1.0",
+    "typescript": "^5",
+    "eslint": "^8",
+    "eslint-config-next": "16.1.1",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8",
+    "autoprefixer": "^10.0.1",
+    "sharp": "^0.33.0",
+    "glob": "^10.3.10",
+    "ts-node": "^10.9.2",
+    "lighthouse": "^11.4.0",
+    "chrome-launcher": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  }
+}

@@ -6,11 +6,11 @@
  * Premium Awwwards-level interactive experience
  */
 
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Mesh, Vector3, Color } from 'three';
+import { Mesh, Vector3 } from 'three';
 import * as THREE from 'three';
-import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Environment, Lightformer } from '@react-three/drei';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface UFOProps {
@@ -114,11 +114,6 @@ interface DriftingBlobProps {
 
 function DriftingBlob({ position, color, size }: DriftingBlobProps) {
   const meshRef = useRef<Mesh>(null);
-  const velocity = useRef(new Vector3(
-    (Math.random() - 0.5) * 0.02,
-    (Math.random() - 0.5) * 0.02,
-    (Math.random() - 0.5) * 0.02
-  ));
   const morphTarget = useRef(new Vector3(...position));
   const timeOffset = useRef(Math.random() * Math.PI * 2);
 
@@ -317,7 +312,10 @@ export default function FloatingUFOs({ className = '', interactive = true }: Flo
         <PerspectiveCamera makeDefault position={[0, 5, 10]} fov={60} />
         <SceneContent />
         {interactive && <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />}
-        <Environment preset="night" />
+          <Environment resolution={64}>
+            <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
+            <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
+          </Environment>
       </Canvas>
     </div>
   );

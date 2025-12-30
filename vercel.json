@@ -1,31 +1,56 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "outputDirectory": ".next",
+  "installCommand": "npm install --legacy-peer-deps",
   "regions": ["iad1"],
-  "github": {
-    "enabled": true,
-    "autoAlias": true,
-    "autoJobCancelation": true
-  },
   "env": {
-    "WORDPRESS_SITE_URL": "https://www.emersoneims.com",
-    "WORDPRESS_API_URL": "https://www.emersoneims.com/wp-json/wp/v2",
-    "NEXT_PUBLIC_SITE_URL": "https://emersoneims.com"
+    "NEXT_PUBLIC_SITE_URL": "https://www.emersoneims.com"
   },
-  "rewrites": [
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_SITE_URL": "https://www.emersoneims.com"
+    }
+  },
+  "headers": [
     {
-      "source": "/wp-admin/:path*",
-      "destination": "https://www.emersoneims.com/wp-admin/:path*"
-    },
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ],
+  "redirects": [
     {
-      "source": "/wp-content/:path*",
-      "destination": "https://www.emersoneims.com/wp-content/:path*"
-    },
-    {
-      "source": "/wp-json/:path*",
-      "destination": "https://www.emersoneims.com/wp-json/:path*"
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "emersoneims.com"
+        }
+      ],
+      "destination": "https://www.emersoneims.com/:path*",
+      "permanent": true
     }
   ]
 }

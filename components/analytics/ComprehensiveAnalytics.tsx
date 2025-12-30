@@ -46,28 +46,12 @@ interface VisitorData {
   };
 }
 
-interface PageAnalytics {
-  path: string;
-  views: number;
-  uniqueVisitors: number;
-  avgTimeOnPage: number;
-  bounceRate: number;
-  conversionRate: number;
-  performance: {
-    lcp: number;
-    fid: number;
-    cls: number;
-    inp: number;
-  };
-}
-
 function ComprehensiveAnalyticsContent() {
   const pathname = usePathname();
   // Note: useSearchParams is not critical for analytics, so we'll make it optional
   // This prevents build errors during static generation
   const searchParams = useSearchParams();
   const [visitorData, setVisitorData] = useState<VisitorData | null>(null);
-  const [isClientReady, setIsClientReady] = useState(false);
   const sessionStartTime = useRef<number>(0);
   const scrollDepth = useRef<number>(0);
   const clickCount = useRef<number>(0);
@@ -77,20 +61,32 @@ function ComprehensiveAnalyticsContent() {
   // Initialize visitor tracking - only on client side
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    setIsClientReady(true);
     sessionStartTime.current = Date.now();
 
     const initializeVisitor = async () => {
       // Generate or retrieve visitor ID - client side only
-      let visitorId: string | null = localStorage.getItem('visitor_id');
+      let visitorId: string | null = null;
+      try {
+        visitorId = localStorage.getItem('visitor_id');
+      } catch {
+        // Storage may be blocked (privacy mode / third-party contexts)
+      }
+
       if (!visitorId) {
         visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('visitor_id', visitorId);
+        try {
+          localStorage.setItem('visitor_id', visitorId);
+        } catch {
+          // Ignore storage write failures
+        }
       }
 
       const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      sessionStorage.setItem('session_id', sessionId);
+      try {
+        sessionStorage.setItem('session_id', sessionId);
+      } catch {
+        // Ignore storage write failures
+      }
 
       // Detect device type
       const userAgent = navigator.userAgent;
@@ -104,13 +100,20 @@ function ComprehensiveAnalyticsContent() {
       let locationData: { country?: string; city?: string; timezone?: string } = {};
       try {
         const ipResponse = await fetch('https://ipapi.co/json/');
-        const ipData = await ipResponse.json();
-        locationData = {
-          country: ipData.country_name,
-          city: ipData.city,
-          timezone: ipData.timezone,
-        };
-      } catch (error) {
+        if (ipResponse.ok && ipResponse.headers.get('content-type')?.includes('application/json')) {
+          const ipData = await ipResponse.json();
+          locationData = {
+            country: ipData.country_name,
+            city: ipData.city,
+            timezone: ipData.timezone,
+          };
+        } else {
+          // API rate limit or error, use fallback
+          locationData = {
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          };
+        }
+      } catch {
         // Fallback: use browser timezone
         locationData = {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -335,7 +338,7 @@ function ComprehensiveAnalyticsContent() {
             engagement: {
               score: engagementScore,
               isHotLead,
-              interests: extractInterests(pathname, clickCount.current),
+              interests: extractInterests(pathname),
             },
             conversion: {
               stage: determineConversionStage(engagementScore, formInteractions.current),
@@ -388,7 +391,7 @@ function ComprehensiveAnalyticsContent() {
   };
 
   // Track events
-  const trackEvent = async (eventName: string, data: Record<string, any>) => {
+  const trackEvent = async (eventName: string, data: Record<string, unknown>) => {
     try {
       await fetch('/api/analytics/event', {
         method: 'POST',
@@ -407,7 +410,7 @@ function ComprehensiveAnalyticsContent() {
   };
 
   // Track conversions
-  const trackConversion = async (conversionType: string, data: Record<string, any>) => {
+  const trackConversion = async (conversionType: string, data: Record<string, unknown>) => {
     try {
       await fetch('/api/analytics/conversion', {
         method: 'POST',
@@ -502,7 +505,7 @@ function ComprehensiveAnalyticsContent() {
     return 'visitor';
   }
 
-  function extractInterests(page: string, clicks: number): string[] {
+  function extractInterests(page: string): string[] {
     const interests: string[] = [];
     
     if (page.includes('solar')) interests.push('solar');

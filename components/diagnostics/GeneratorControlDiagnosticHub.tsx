@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 export default function GeneratorControlDiagnosticHub() {
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [diagnosticData, setDiagnosticData] = useState<any>(null);
+  const [diagnosticData, setDiagnosticData] = useState<Record<string, string> | null>(null);
 
   const connectToGenerator = () => {
     setIsConnected(true);
@@ -54,7 +54,7 @@ export default function GeneratorControlDiagnosticHub() {
                 {key.replace(/([A-Z])/g, ' $1').trim()}
               </div>
               <div className="text-lg font-semibold text-gray-900">
-                {value as string}
+                {value}
               </div>
             </div>
           ))}

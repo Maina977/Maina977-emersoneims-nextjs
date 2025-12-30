@@ -1,6 +1,6 @@
 'use client';
 
-export default function WaterSystems({ performanceTier = "high" }) {
+export default function WaterSystems() {
   return (
     <section id="water" className="py-20 bg-gradient-to-b from-black to-gray-900">
       <div className="max-w-7xl mx-auto px-4">

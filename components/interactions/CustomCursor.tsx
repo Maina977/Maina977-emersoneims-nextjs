@@ -22,9 +22,9 @@ interface Particle {
 }
 
 export default function CustomCursor({ enabled = true }: CustomCursorProps) {
+  const [isClient, setIsClient] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const [cursorType, setCursorType] = useState<'default' | 'hover' | 'action' | 'text'>('default');
   const [particles, setParticles] = useState<Particle[]>([]);
   const particleIdRef = useRef(0);
@@ -43,7 +43,11 @@ export default function CustomCursor({ enabled = true }: CustomCursorProps) {
   const followerYSpring = useSpring(followerY, { damping: 15, stiffness: 200, mass: 0.8 });
 
   useEffect(() => {
-    if (!enabled || typeof window === 'undefined') return;
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!enabled || !isClient) return;
 
     const updateCursor = (e: MouseEvent) => {
       const x = e.clientX;
@@ -82,19 +86,13 @@ export default function CustomCursor({ enabled = true }: CustomCursorProps) {
 
     const handleMouseDown = () => {
       setIsClicking(true);
-      setIsDragging(false);
     };
 
     const handleMouseUp = () => {
       setIsClicking(false);
-      setIsDragging(false);
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isClicking) {
-        setIsDragging(true);
-      }
-    };
+    const handleMouseMove = () => {};
 
     // Detect interactive elements and cursor types
     const handleMouseOver = (e: MouseEvent) => {
@@ -144,9 +142,9 @@ export default function CustomCursor({ enabled = true }: CustomCursorProps) {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [enabled, cursorX, cursorY, followerX, followerY, isClicking]);
+  }, [enabled, isClient, cursorX, cursorY, followerX, followerY]);
 
-  if (!enabled || typeof window === 'undefined') return null;
+  if (!enabled || !isClient) return null;
 
   // Cursor size and style based on state
   const getCursorSize = () => {
@@ -166,29 +164,31 @@ export default function CustomCursor({ enabled = true }: CustomCursorProps) {
 
   return (
     <>
-      {/* Particle Trail */}
-      <AnimatePresence>
-        {particles.map((particle) => (
-          <motion.div
-            key={particle.id}
-            className="fixed pointer-events-none z-[9997]"
-            style={{
-              left: particle.x,
-              top: particle.y,
-              width: particle.size,
-              height: particle.size,
-              translateX: '-50%',
-              translateY: '-50%',
-            }}
-            initial={{ opacity: 1, scale: 1 }}
-            animate={{ opacity: 0, scale: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-          >
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-cyan-400 to-amber-400 blur-[2px]" />
-          </motion.div>
-        ))}
-      </AnimatePresence>
+      {/* Particle Trail - only rendered after client mount to prevent hydration mismatch */}
+      {isClient && (
+        <AnimatePresence>
+          {particles.map((particle) => (
+            <motion.div
+              key={`particle-${particle.id}`}
+              className="fixed pointer-events-none z-[9997]"
+              style={{
+                left: particle.x,
+                top: particle.y,
+                width: particle.size,
+                height: particle.size,
+                translateX: '-50%',
+                translateY: '-50%',
+              }}
+              initial={{ opacity: 1, scale: 1 }}
+              animate={{ opacity: 0, scale: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-cyan-400 to-amber-400 blur-[2px]" />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      )}
 
       {/* Outer Follower Ring - Energy Wave */}
       <motion.div

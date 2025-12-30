@@ -1,6 +1,6 @@
 // Lightweight, lazy-first diagnostics page optimized for bundle size and SSR safety
 'use client';
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy } from 'react';
 import '@/app/styles/diagnostics.css';
 
 // Lazy-load heavy parts and prefer client-only for interactive widgets
@@ -22,21 +22,12 @@ function LoadingSpinner() {
 }
 
 export default function DiagnosticsPage() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (isLoading) return <LoadingSpinner />;
-
   return (
-    <main className="bg-black text-white min-h-screen">
+    <main className="eims-section min-h-screen">
       <Suspense fallback={<LoadingSpinner />}>
         <HeroSection />
 
-        <div className="px-4 max-w-7xl mx-auto">
+        <div className="eims-shell py-10">
           <Suspense fallback={<div className="h-40 bg-gray-900/50 rounded-xl animate-pulse my-6" />}>
             <RealTimeMonitor />
           </Suspense>

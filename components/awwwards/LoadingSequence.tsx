@@ -21,10 +21,10 @@ export default function LoadingSequence({
       return;
     }
 
-    // Simulate loading sequence - Reduced from 2200ms to 800ms for better UX
+    // Simulate loading sequence
     const timer = setTimeout(() => {
       onComplete();
-    }, 800);
+    }, 2200);
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -5,15 +5,39 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+type ChatContext = {
+  page?: string;
+  interests?: string[];
+};
+
+type ChatRequestBody = {
+  conversationId?: string;
+  message?: string;
+  context?: ChatContext;
+  history?: unknown[];
+};
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { conversationId, message, context, history } = body;
+    const body = (await request.json()) as ChatRequestBody;
+    const conversationId = body.conversationId;
+    const message = body.message;
+    const context = body.context;
+
+    if (!message || typeof message !== 'string') {
+      return NextResponse.json(
+        { error: 'Missing or invalid message' },
+        { status: 400 }
+      );
+    }
 
     // TODO: Integrate with OpenAI API for intelligent responses
     // For now, we'll use rule-based responses with AI-like behavior
 
-    const response = await generateAIResponse(message, context, history);
+    const response = await generateAIResponse(
+      message,
+      context ?? {}
+    );
 
     return NextResponse.json({
       conversationId,
@@ -31,12 +55,10 @@ export async function POST(request: NextRequest) {
 
 async function generateAIResponse(
   message: string,
-  context: any,
-  history: any[]
+  context: ChatContext
 ): Promise<string> {
   const lowerMessage = message.toLowerCase();
   const page = context.page || '';
-  const interests = context.interests || [];
 
   // Rule-based responses (replace with OpenAI API in production)
   if (lowerMessage.includes('solar') || page.includes('solar')) {

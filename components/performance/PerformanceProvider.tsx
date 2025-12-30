@@ -245,8 +245,8 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
           <LazyUserProfile />
           <LazyMaximumSecurity />
           <LazyStructuredData
-            type="Organization"
             data={{
+              '@type': 'Organization',
               name: 'Emerson EiMS',
               url: process.env.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com',
               logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com'}/logo.svg`,

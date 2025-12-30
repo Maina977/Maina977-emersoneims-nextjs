@@ -1,82 +1,38 @@
 'use client';
 
 import React from 'react';
-import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+export default function ErrorFrequencyChart() {
+  // Placeholder error frequency chart data
+  const errorData = [
+    { error: 'Low Fuel', frequency: 35 },
+    { error: 'Battery Failure', frequency: 28 },
+    { error: 'Overload', frequency: 22 },
+    { error: 'Coolant Temp', frequency: 15 },
+  ];
 
-interface ErrorFrequencyChartProps {
-  data?: any;
-  options?: any;
-}
-
-export default function ErrorFrequencyChart({ data, options }: ErrorFrequencyChartProps) {
-  const defaultData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Error Frequency',
-        data: [12, 19, 3, 5, 2, 3],
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      },
-    ],
-  };
-
-  const defaultOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-      },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        padding: 12,
-      },
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: '#666',
-        },
-      },
-      y: {
-        beginAtZero: true,
-        max: 25,
-        grid: {
-          color: '#f0f0f0',
-          drawBorder: false,
-        },
-        ticks: {
-          color: '#666',
-          callback: (value: any) => `${value}`,
-        },
-      },
-    },
-  };
+  const maxFrequency = Math.max(...errorData.map(d => d.frequency));
 
   return (
-    <div className="w-full h-64">
-      <Bar data={data || defaultData} options={options || defaultOptions} />
+    <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
+      <h3 className="text-xl font-bold text-white mb-4">Error Frequency</h3>
+      <div className="space-y-4">
+        {errorData.map((item, index) => (
+          <div key={index}>
+            <div className="flex justify-between text-sm text-white/80 mb-1">
+              <span>{item.error}</span>
+              <span>{item.frequency}%</span>
+            </div>
+            <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full"
+                style={{ width: `${(item.frequency / maxFrequency) * 100}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
+

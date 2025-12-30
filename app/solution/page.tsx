@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useMemo, useEffect, useRef, Suspense, lazy } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -12,8 +12,8 @@ import HolographicLaser from "@/components/effects/HolographicLaser";
 import { SectionLead } from "@/components/generators";
 import CTAButton from "@/components/shared/CTAButton";
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import ErrorBoundary from '@/components/error/ErrorBoundary';
 import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -21,7 +21,6 @@ if (typeof window !== 'undefined') {
 
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
-const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
 
 interface Solution {
   href: string;
@@ -36,110 +35,110 @@ interface Solution {
 
 const SOLUTIONS: Solution[] = [
   { 
-    href: "/solutions/generators", 
+    href: "/solution/generators", 
     label: "Diesel Generators", 
     description: "Comprehensive generator solutions from 20kVA to 2000kVA",
-    icon: "âš¡",
+    icon: "?",
     color: "from-yellow-500 to-yellow-600",
     category: "Power Generation",
     features: ["Load testing", "Maintenance", "Installation", "24/7 support"],
-    image: "https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png"
+    image: "/images/GEN%202-1920x1080.png"
   },
   { 
-    href: "/solutions/controls", 
+    href: "/service#opt", 
     label: "Controls (DeepSea & PowerWizard)", 
     description: "Advanced control systems for generator automation",
-    icon: "ðŸŽ›ï¸",
+    icon: "???",
     color: "from-blue-500 to-blue-600",
     category: "Automation",
     features: ["Remote monitoring", "Auto-start", "Load management", "Alarm systems"],
-    image: "https://www.emersoneims.com/wp-content/uploads/2025/11/controls.jpg"
+    image: "/images/solar%20changeover%20control.png"
   },
   { 
-    href: "/solutions/solar", 
+    href: "/solution/solar", 
     label: "Solar Technical Issues", 
     description: "Expert diagnosis and resolution of solar system problems",
-    icon: "â˜€ï¸",
+    icon: "??",
     color: "from-orange-500 to-orange-600",
     category: "Solar",
     features: ["Fault diagnosis", "Performance optimization", "Repairs", "Upgrades"],
-    image: "https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png"
+    image: "/images/solar%20power%20farms.png"
   },
   { 
-    href: "/solutions/solar-sizing", 
+    href: "/solar", 
     label: "Solar Sizing", 
     description: "Precise solar system sizing for optimal performance",
-    icon: "ðŸ“",
+    icon: "??",
     color: "from-green-500 to-green-600",
     category: "Solar",
     features: ["Load analysis", "System design", "ROI calculation", "Warranty"],
     image: "https://www.emersoneims.com/wp-content/uploads/2025/11/solar-sizing.jpg"
   },
   { 
-    href: "/solutions/power-interruptions", 
+    href: "/diagnostic-suite", 
     label: "Power Interruptions", 
     description: "Solutions for reliable power during grid outages",
-    icon: "ðŸ”Œ",
+    icon: "??",
     color: "from-red-500 to-red-600",
     category: "Power Quality",
     features: ["Backup systems", "UPS integration", "Generator backup", "Monitoring"],
     image: "https://www.emersoneims.com/wp-content/uploads/2025/11/power-quality.jpg"
   },
   { 
-    href: "/solutions/ac", 
+    href: "/service#hvac", 
     label: "AC Systems", 
     description: "Complete air conditioning solutions and maintenance",
-    icon: "â„ï¸",
+    icon: "??",
     color: "from-cyan-500 to-cyan-600",
     category: "HVAC",
     features: ["Installation", "Maintenance", "Repairs", "Energy efficiency"],
     image: "https://www.emersoneims.com/wp-content/uploads/2025/11/ac-systems.jpg"
   },
   { 
-    href: "/solutions/ups", 
+    href: "/service#ups", 
     label: "UPS Systems", 
     description: "Uninterruptible power supply systems for critical loads",
-    icon: "ðŸ”‹",
+    icon: "??",
     color: "from-purple-500 to-purple-600",
     category: "Power Quality",
     features: ["Battery backup", "Voltage regulation", "Surge protection", "Monitoring"],
     image: "https://www.emersoneims.com/wp-content/uploads/2025/11/ups-systems.jpg"
   },
   { 
-    href: "/solutions/diesel-automation", 
+    href: "/service#opt", 
     label: "Diesel Automation", 
     description: "Automated generator control and monitoring systems",
-    icon: "ðŸ¤–",
+    icon: "??",
     color: "from-indigo-500 to-indigo-600",
     category: "Automation",
     features: ["Auto-start/stop", "Load sharing", "Remote control", "Data logging"],
     image: "https://www.emersoneims.com/wp-content/uploads/2025/11/automation.jpg"
   },
   { 
-    href: "/solutions/borehole-pumps", 
+    href: "/service#water", 
     label: "Borehole Pumps", 
     description: "Water pumping solutions for residential and commercial use",
-    icon: "ðŸ’§",
+    icon: "??",
     color: "from-blue-400 to-blue-500",
     category: "Water Systems",
     features: ["Installation", "Maintenance", "Repairs", "Efficiency optimization"],
     image: "https://www.emersoneims.com/wp-content/uploads/2025/11/pumps.jpg"
   },
   { 
-    href: "/solutions/incinerators", 
+    href: "/service#incin", 
     label: "Incinerators", 
     description: "Waste management and incineration solutions",
-    icon: "ðŸ”¥",
+    icon: "??",
     color: "from-orange-600 to-orange-700",
     category: "Waste Management",
     features: ["Installation", "Maintenance", "Compliance", "Efficiency"],
     image: "https://www.emersoneims.com/wp-content/uploads/2025/11/incinerators.jpg"
   },
   { 
-    href: "/solutions/motors", 
+    href: "/service#motor", 
     label: "Motors & Rewinding", 
     description: "Motor repair, rewinding, and maintenance services",
-    icon: "âš™ï¸",
+    icon: "??",
     color: "from-gray-500 to-gray-600",
     category: "Maintenance",
     features: ["Rewinding", "Repairs", "Maintenance", "Testing"],
@@ -152,8 +151,8 @@ const CATEGORIES = ["All", "Power Generation", "Solar", "Automation", "Power Qua
 export default function SolutionsHome() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeSection, setActiveSection] = useState('hero');
   const prefersReducedMotion = useReducedMotion();
+  const { isLite } = usePerformanceTier();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
@@ -188,26 +187,6 @@ export default function SolutionsHome() {
     };
   }, []);
 
-  // Section tracking for navigation
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const sections = containerRef.current.querySelectorAll('section');
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id || 'hero');
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
-
   const filteredSolutions = useMemo(() => {
     return SOLUTIONS.filter(solution => {
       const matchesCategory = selectedCategory === "All" || solution.category === selectedCategory;
@@ -217,13 +196,19 @@ export default function SolutionsHome() {
     });
   }, [selectedCategory, searchQuery]);
 
+	const uniqueSolutions = useMemo(() => {
+		return filteredSolutions.filter(
+			(solution, index, self) => index === self.findIndex((s) => s.href === solution.href)
+		);
+	}, [filteredSolutions]);
+
   // 5 Paragraphs of Verified Content
   const contentParagraphs = [
     "EmersonEIMS Solutions represents the culmination of over 15 years of engineering excellence in East Africa's energy infrastructure sector. Our comprehensive solutions portfolio spans diesel generators, solar energy systems, power quality management, automation, and critical infrastructure maintenance. With verified expertise across all 47 Kenyan counties, we've successfully delivered 500 projects, achieving an industry-leading 98.7% system uptime and generating KSh 4.2 billion in client savings. Our solutions are backed by ISO 9001:2015 quality management certification, EPRA licensing, and NCA accreditation, ensuring every project meets international standards while addressing local energy challenges.",
     
     "Our diesel generator solutions encompass the complete power generation lifecycle, from initial load analysis and system design to installation, commissioning, and 24/7 maintenance support. We specialize in Cummins generators ranging from compact 20kVA units for residential applications to industrial 2000kVA systems for data centers and manufacturing facilities. Each generator solution includes advanced control systems featuring DeepSea and PowerWizard automation, enabling remote monitoring, automatic load sharing, and predictive maintenance capabilities. Our verified track record includes installations at major institutions like St. Austin Academy, Kivukoni International School, and critical infrastructure projects for NTSA and Sanergy Limited.",
     
-    "Solar energy solutions form a cornerstone of our renewable energy portfolio, with expertise spanning residential rooftop installations, commercial solar farms, and hybrid solar-diesel systems for maximum reliability. Our solar technical team addresses complex challenges including inverter optimization, battery storage integration, grid-tie configurations, and off-grid system design. We've completed over 1,200 solar projects across Kenya, leveraging Tier-1 panel technology from manufacturers like SunPower and SolarEdge, combined with Tesla Powerwall battery storage for seamless energy independence. Our solar sizing methodology incorporates Kenya's exceptional 5.5-5.9 kWh/mÂ²/day solar irradiance, ensuring optimal system performance and rapid ROI typically achieved within 3-4 years.",
+    "Solar energy solutions form a cornerstone of our renewable energy portfolio, with expertise spanning residential rooftop installations, commercial solar farms, and hybrid solar-diesel systems for maximum reliability. Our solar technical team addresses complex challenges including inverter optimization, battery storage integration, grid-tie configurations, and off-grid system design. We've completed over 1,200 solar projects across Kenya, leveraging Tier-1 panel technology from manufacturers like SunPower and SolarEdge, combined with Tesla Powerwall battery storage for seamless energy independence. Our solar sizing methodology incorporates Kenya's exceptional 5.5-5.9 kWh/m\u00B2/day solar irradiance, ensuring optimal system performance and rapid ROI typically achieved within 3-4 years.",
     
     "Power quality and reliability solutions address critical infrastructure needs through UPS systems, voltage regulation, surge protection, and automated backup systems. Our comprehensive approach integrates AC systems, borehole pumps, incinerators, and motor rewinding services, creating complete energy ecosystems for hospitals, schools, hotels, factories, and data centers. The EmersonEIMS Diagnostic Suite provides real-time monitoring, fault code analysis, and predictive maintenance capabilities, reducing downtime by up to 85% and extending equipment lifespan by an average of 40%. Our automation solutions enable intelligent load management, remote control, and data logging, transforming traditional power systems into smart infrastructure networks.",
     
@@ -231,150 +216,275 @@ export default function SolutionsHome() {
   ];
 
   return (
-    <ErrorBoundary>
+    <main ref={containerRef} className="eims-section min-h-screen relative">
       {/* Performance Monitor */}
       <PerformanceMonitor />
 
       {/* Premium Custom Cursor */}
-      <Suspense fallback={null}>
-        <CustomCursor enabled={!prefersReducedMotion} />
-      </Suspense>
+      {!isLite && (
+        <Suspense fallback={null}>
+          <CustomCursor enabled={!prefersReducedMotion} />
+        </Suspense>
+      )}
 
-      {/* Navigation */}
-      <Suspense fallback={null}>
-        <TeslaStyleNavigation activeSection={activeSection} />
-      </Suspense>
-
-      <main ref={containerRef} className="min-h-screen bg-black text-white relative">
+      <main ref={containerRef} className="eims-section min-h-screen relative">
         {/* Holographic Laser Overlay */}
-        <HolographicLaser intensity="high" color="#fbbf24" />
+        {!isLite && <HolographicLaser intensity="high" color="#fbbf24" />}
         
         {/* 3D Background Scene */}
-        <Suspense fallback={null}>
-          <div className="fixed inset-0 -z-10 opacity-20">
-            <SimpleThreeScene />
-          </div>
-        </Suspense>
+        {!isLite && (
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 -z-10 opacity-20">
+              <SimpleThreeScene />
+            </div>
+          </Suspense>
+        )}
 
-      {/* Hero Section with Video/Image */}
+      {/* AWWWARDS HERO: Full-screen Video with Apple Spacing */}
       <motion.section 
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        className="relative h-screen flex items-center justify-center overflow-hidden"
         style={{ opacity: heroOpacity }}
       >
         <OptimizedVideo
-          src="https://www.emersoneims.com/wp-content/uploads/2025/10/FOR-TRIALS-IN-KADENCE-2.mp4"
-          poster="https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png"
-          autoPlay={true}
+          src="/videos/Solution(1).mp4"
+          poster="/images/GEN%202-1920x1080.png"
+          autoPlay={!prefersReducedMotion && !isLite}
           loop={true}
           muted={true}
           playsInline={true}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover scale-105"
           priority={true}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(251,191,36,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(251,191,36,0.15),transparent_70%)]" />
         
         <motion.div
-          className="relative z-20 max-w-7xl mx-auto px-4 py-20 text-center"
+          className="relative z-20 px-6 sm:px-12 lg:px-24 text-center max-w-[1400px] mx-auto"
           style={{ y: parallaxY }}
         >
           <motion.h1
-            className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-[#fbbf24] via-[#fcd34d] to-[#fbbf24] bg-clip-text text-transparent font-display"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+            className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-bold mb-12 bg-gradient-to-r from-[#fbbf24] via-white to-[#fbbf24] bg-clip-text text-transparent font-display tracking-tighter leading-none"
+            initial={{ opacity: 0, y: 100, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
             SOLUTIONS
           </motion.h1>
           <motion.p
-            className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
+            className="text-2xl sm:text-3xl md:text-4xl text-gray-200 mb-12 max-w-5xl mx-auto font-light leading-relaxed"
+            initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 1 }}
+            transition={{ delay: 0.4, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           >
             Your Engineering Bible: Comprehensive Energy Infrastructure Solutions
           </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 1 }}
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+          >
+            <Link 
+              href="#solutions" 
+              className="px-12 py-5 bg-gradient-to-r from-amber-500 to-amber-600 text-black text-lg font-bold rounded-full hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/50 transition-all duration-300"
+            >
+              Explore Solutions
+            </Link>
+            <Link 
+              href="/contact" 
+              className="px-12 py-5 bg-transparent border-2 border-white text-white text-lg font-bold rounded-full hover:bg-white hover:text-black transition-all duration-300"
+            >
+              Get Started
+            </Link>
+          </motion.div>
+        </motion.div>
+        
+        {/* Scroll indicator - Apple style */}
+        <motion.div
+          className="absolute bottom-12 left-1/2 -translate-x-1/2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, y: [0, 10, 0] }}
+          transition={{ opacity: { delay: 1.5 }, y: { repeat: Infinity, duration: 2 } }}
+        >
+          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center pt-2">
+            <div className="w-1 h-2 bg-white/50 rounded-full" />
+          </div>
         </motion.div>
       </motion.section>
 
-      {/* 5 Paragraphs Section with Images */}
-      <section className="py-20 bg-black relative">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* First Paragraph with Popping Image */}
-          <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
+      {/* CONTENT SECTION: Apple Spacing + Tesla Images */}
+      <section id="solutions" className="py-32 bg-black relative overflow-hidden">
+        {/* Spacer - Apple style */}
+        <div className="h-24" />
+        
+        <div className="max-w-[1800px] mx-auto px-6 sm:px-12 lg:px-24">
+          {/* First: Full-width Tesla-sized Hero Image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-40"
+          >
+            <OptimizedImage
+              src="/images/GEN%202-1920x1080.png"
+              alt="Generator Solutions - Engineering Excellence"
+              width={1920}
+              height={1080}
+              className="w-full h-[70vh] sm:h-[80vh] lg:h-[90vh] object-cover rounded-3xl shadow-2xl"
+              priority
+            />
+          </motion.div>
+
+          {/* Engineering Excellence - Split Layout */}
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-center mb-48">
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, x: -100 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-8"
             >
-              <h2 className="text-4xl font-bold mb-6 text-[#fbbf24] font-display">
-                Engineering Excellence
+              <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white font-display leading-none tracking-tight">
+                Engineering<br/>Excellence
               </h2>
-              <p className="text-lg text-gray-300 leading-relaxed">
+              <div className="w-20 h-1 bg-gradient-to-r from-amber-500 to-amber-600" />
+              <p className="text-xl sm:text-2xl text-gray-300 leading-relaxed font-light">
                 {contentParagraphs[0]}
               </p>
             </motion.div>
-            <AnimatedImage
-              src="https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png"
-              alt="Generator Solutions"
-              width={800}
-              height={600}
-              animationType="pop"
-              intensity="high"
-              className="rounded-2xl overflow-hidden"
-            />
+            
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <OptimizedImage
+                src="/images/solar%20power%20farms.png"
+                alt="Solar Power Farms - Renewable Energy"
+                width={1920}
+                height={1280}
+                className="w-full h-[600px] object-cover rounded-3xl shadow-2xl hover:scale-[1.02] transition-transform duration-700"
+              />
+            </motion.div>
           </div>
 
-          {/* Second Paragraph */}
+          {/* Apple Spacer */}
+          <div className="h-32" />
+
+          {/* Full-width Text Block - Apple Typography */}
           <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 50 }}
+            className="mb-48 max-w-6xl mx-auto"
+            initial={{ opacity: 0, y: 80 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 1.2 }}
           >
-            <p className="text-lg text-gray-300 leading-relaxed max-w-4xl mx-auto text-center">
+            <p className="text-3xl sm:text-4xl lg:text-5xl text-white leading-relaxed font-light text-center">
               {contentParagraphs[1]}
             </p>
           </motion.div>
 
-          {/* Third Paragraph with Video */}
-          <div className="mb-16">
-            <OptimizedImage
-              src="https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png"
-              alt="Solar energy solutions"
-              width={1920}
-              height={1080}
-              className="w-full rounded-2xl overflow-hidden"
-            />
+          {/* Solar Solutions - Reverse Layout */}
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-center mb-48">
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:order-2"
+            >
+              <OptimizedImage
+                src="/images/solar%20changeover%20control.png"
+                alt="Solar Control Systems"
+                width={1920}
+                height={1280}
+                className="w-full h-[600px] object-cover rounded-3xl shadow-2xl hover:scale-[1.02] transition-transform duration-700"
+              />
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-8 lg:order-1"
+            >
+              <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white font-display leading-none tracking-tight">
+                Solar<br/>Innovation
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-amber-500 to-amber-600" />
+              <p className="text-xl sm:text-2xl text-gray-300 leading-relaxed font-light">
+                {contentParagraphs[2]}
+              </p>
+            </motion.div>
           </div>
 
+          {/* Apple Spacer */}
+          <div className="h-32" />
+
+          {/* Power Quality Text */}
           <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 50 }}
+            className="mb-48 max-w-6xl mx-auto"
+            initial={{ opacity: 0, y: 80 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 1.2 }}
           >
-            <p className="text-lg text-gray-300 leading-relaxed max-w-4xl mx-auto">
-              {contentParagraphs[2]}
+            <h3 className="text-5xl sm:text-6xl font-bold text-center text-amber-400 mb-12 font-display">
+              Power Quality & Reliability
+            </h3>
+            <p className="text-2xl sm:text-3xl text-gray-300 leading-relaxed font-light text-center">
+              {contentParagraphs[3]}
             </p>
           </motion.div>
 
-          {/* Image Gallery with Different Animations */}
+          {/* Future Vision - Full Width Image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-32"
+          >
+            <div className="relative rounded-3xl overflow-hidden h-[80vh]">
+              <OptimizedImage
+                src="https://www.emersoneims.com/wp-content/uploads/2025/11/power-quality.jpg"
+                alt="Future of Energy Infrastructure"
+                width={3840}
+                height={2160}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-12 lg:p-20">
+                <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-8 font-display">
+                  The Future of Energy
+                </h2>
+                <p className="text-2xl sm:text-3xl text-gray-200 max-w-4xl font-light leading-relaxed">
+                  {contentParagraphs[4]}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+        
+        {/* Final Spacer */}
+        <div className="h-32" />
+      </section>
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             <AnimatedImage
-              src="https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png"
+              src="/images/solar%20power%20farms.png"
               alt="Solar Solutions"
-              width={600}
-              height={400}
+              width={3840}
+              height={2160}
               animationType="shake"
               intensity="medium"
               className="rounded-xl overflow-hidden"
             />
             <AnimatedImage
-              src="https://www.emersoneims.com/wp-content/uploads/2025/11/controls.jpg"
+              src="/images/solar%20changeover%20control.png"
               alt="Control Systems"
               width={600}
               height={400}
@@ -436,7 +546,7 @@ export default function SolutionsHome() {
 
       {/* Search and Filter Section */}
       <section className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10 py-6">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="eims-shell py-0">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             {/* Search Bar */}
             <div className="flex-1 w-full md:w-auto">
@@ -448,7 +558,7 @@ export default function SolutionsHome() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                 />
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">ðŸ”</span>
+                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">??</span>
               </div>
             </div>
 
@@ -473,11 +583,11 @@ export default function SolutionsHome() {
       </section>
 
       {/* Solutions Grid */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
+      <section className="eims-shell py-12">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredSolutions.map((solution, index) => (
+          {uniqueSolutions.map((solution, index) => (
             <motion.div
-              key={solution.href}
+              key={`${solution.href}-${index}-${solution.label}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -520,7 +630,7 @@ export default function SolutionsHome() {
                     <p className="text-gray-400 mb-4 flex-1">{solution.description}</p>
                     
                     <div className="mb-4">
-                      <span className="text-xs text-[#fbbf24] font-semibold">{solution.category}</span>
+                      <span className="text-xs text-amber-400 font-semibold">{solution.category}</span>
                     </div>
 
                     {/* Features */}
@@ -546,7 +656,7 @@ export default function SolutionsHome() {
                     <div className="mt-auto pt-4 border-t border-gray-800">
                       <span className={`text-[#fbbf24] font-semibold group-hover:text-[#fcd34d] transition-colors flex items-center gap-2`}>
                         Learn More
-                        <span className="transform group-hover:translate-x-1 transition-transform">â†’</span>
+                        <span className="transform group-hover:translate-x-1 transition-transform">{'\u2192'}</span>
                       </span>
                     </div>
                   </div>
@@ -558,7 +668,7 @@ export default function SolutionsHome() {
 
         {filteredSolutions.length === 0 && (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">ðŸ”</div>
+            <div className="text-6xl mb-4">{'\uD83D\uDD0D'}</div>
             <h3 className="text-2xl font-bold text-white mb-2">No solutions found</h3>
             <p className="text-gray-400">Try adjusting your search or filter criteria</p>
           </div>
@@ -567,7 +677,7 @@ export default function SolutionsHome() {
 
       {/* Solutions Grid Section */}
       <section className="py-20 bg-gradient-to-b from-black to-gray-900 relative">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="eims-shell py-0">
           <SectionLead
             title="Comprehensive Solutions Portfolio"
             subtitle="Explore our complete range of energy infrastructure solutions"
@@ -586,7 +696,7 @@ export default function SolutionsHome() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                   />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">ðŸ”</span>
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">{'\uD83D\uDD0D'}</span>
                 </div>
               </div>
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
@@ -609,9 +719,9 @@ export default function SolutionsHome() {
 
           {/* Solutions Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredSolutions.map((solution, index) => (
+            {uniqueSolutions.map((solution, index) => (
               <motion.div
-                key={solution.href}
+                key={`${solution.href}-${index}-${solution.label}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -667,7 +777,7 @@ export default function SolutionsHome() {
                       <div className="mt-auto pt-4 border-t border-gray-800">
                         <span className={`text-[#fbbf24] font-semibold group-hover:text-[#fcd34d] transition-colors flex items-center gap-2`}>
                           Learn More
-                          <span className="transform group-hover:translate-x-1 transition-transform">â†’</span>
+                            <span className="transform group-hover:translate-x-1 transition-transform">{'\u2192'}</span>
                         </span>
                       </div>
                     </div>
@@ -679,7 +789,7 @@ export default function SolutionsHome() {
 
           {filteredSolutions.length === 0 && (
             <div className="text-center py-20">
-              <div className="text-6xl mb-4">ðŸ”</div>
+              <div className="text-6xl mb-4">{'\uD83D\uDD0D'}</div>
               <h3 className="text-2xl font-bold text-white mb-2">No solutions found</h3>
               <p className="text-gray-400">Try adjusting your search or filter criteria</p>
             </div>
@@ -712,7 +822,6 @@ export default function SolutionsHome() {
         </div>
       </section>
     </main>
-    </ErrorBoundary>
   );
 }
 

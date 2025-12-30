@@ -3,13 +3,13 @@
 import { motion, MotionValue, useTransform } from 'framer-motion';
 
 interface IntelligentCoreBadgeProps {
-  progress: MotionValue<number>;
+  progress?: MotionValue<number>;
   isVisible?: boolean;
 }
 
 export default function IntelligentCoreBadge({ progress, isVisible = true }: IntelligentCoreBadgeProps) {
-  const opacity = useTransform(progress, [0, 0.5], [1, 0]);
-  const scale = useTransform(progress, [0, 0.5], [1, 0.8]);
+  const opacity = progress ? useTransform(progress, [0, 0.5], [1, 0]) : 1;
+  const scale = progress ? useTransform(progress, [0, 0.5], [1, 0.8]) : 1;
 
   if (!isVisible) return null;
 
@@ -48,7 +48,4 @@ export default function IntelligentCoreBadge({ progress, isVisible = true }: Int
     </motion.div>
   );
 }
-
-
-
 

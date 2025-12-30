@@ -44,7 +44,12 @@ export default function ContactForm({ performanceTier }) {
   };
 
   return (
-    <section className="contact-form section-pad" aria-labelledby="contact-form-heading" ref={root}>
+    <section
+      className="contact-form section-pad"
+      aria-labelledby="contact-form-heading"
+      ref={root}
+      data-performance-tier={performanceTier}
+    >
       <h2 id="contact-form-heading">Feedback Universe</h2>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>

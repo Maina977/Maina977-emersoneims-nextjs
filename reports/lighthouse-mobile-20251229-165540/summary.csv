@@ -1,0 +1,3 @@
+﻿"Route","Url","Performance","Accessibility","BestPractices","SEO","PWA","JsonReport","HtmlReport"
+"/solution","http://localhost:3010/solution","0","0","0","0",,"C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-165540\solution.mobile.report.json","C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-165540\solution.mobile.report.html"
+"/diagnostic-suite","http://localhost:3010/diagnostic-suite","0","0","0","0",,"C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-165540\diagnostic-suite.mobile.report.json","C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-165540\diagnostic-suite.mobile.report.html"

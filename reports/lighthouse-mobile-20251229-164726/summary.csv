@@ -1,0 +1,6 @@
+﻿"Route","Url","Performance","Accessibility","BestPractices","SEO","PWA","JsonReport","HtmlReport"
+"/","http://localhost:3010/","86","96","96","100",,"C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\home.mobile.report.json","C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\home.mobile.report.html"
+"/solution","http://localhost:3010/solution","0","94","0","100",,"C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\solution.mobile.report.json","C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\solution.mobile.report.html"
+"/generators","http://localhost:3010/generators","56","87","96","100",,"C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\generators.mobile.report.json","C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\generators.mobile.report.html"
+"/contact","http://localhost:3010/contact","64","96","96","100",,"C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\contact.mobile.report.json","C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\contact.mobile.report.html"
+"/diagnostic-suite","http://localhost:3010/diagnostic-suite","0","94","0","100",,"C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\diagnostic-suite.mobile.report.json","C:\Users\PC\my-app\reports\\lighthouse-mobile-20251229-164726\diagnostic-suite.mobile.report.html"

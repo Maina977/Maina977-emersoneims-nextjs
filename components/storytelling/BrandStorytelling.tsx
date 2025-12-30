@@ -38,7 +38,6 @@ export default function BrandStorytelling() {
     offset: ['start end', 'end start'],
   });
 
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '-20%']);
 
   return (

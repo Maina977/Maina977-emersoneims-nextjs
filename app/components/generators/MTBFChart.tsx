@@ -12,6 +12,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
+import type { ChartOptions, TooltipItem } from 'chart.js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion } from 'framer-motion';
@@ -82,7 +83,7 @@ export default function MTBFChart() {
     ],
   };
 
-  const options = {
+  const options: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -118,7 +119,7 @@ export default function MTBFChart() {
         cornerRadius: 8,
         displayColors: true,
         callbacks: {
-          label: (context: any) => `${context.dataset.label}: ${context.parsed.y} hours`,
+          label: (context: TooltipItem<'line'>) => `${context.dataset.label}: ${context.parsed.y} hours`,
         },
       },
     },
@@ -138,16 +139,18 @@ export default function MTBFChart() {
         beginAtZero: false,
         min: 800,
         max: 2000,
+        border: {
+          display: false,
+        },
         grid: {
           color: 'rgba(255, 255, 255, 0.05)',
-          drawBorder: false,
         },
         ticks: {
           color: "#9ca3af",
           font: {
             size: 11,
           },
-          callback: (value: any) => `${value}h`,
+          callback: (value: string | number) => `${value}h`,
         },
         title: {
           display: true,

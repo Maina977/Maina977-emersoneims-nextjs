@@ -19,7 +19,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Search and diagnose generator fault codes instantly',
     icon: '🔍',
     features: ['Real-time fault code database', 'Diagnostic recommendations', 'Solution suggestions'],
-    image: '/images/premium/control-panel-main.jpg',
+    image: '/images/solar%20changeover%20control.png',
   },
   {
     id: 'load-analysis',
@@ -27,7 +27,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Analyze generator load patterns and optimize performance',
     icon: '📊',
     features: ['Load profiling', 'Performance metrics', 'Optimization recommendations'],
-    image: '/images/premium/generator-detail.jpg',
+    image: '/images/GEN%202-1920x1080.png',
   },
   {
     id: 'sensor-calibration',
@@ -35,7 +35,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Calibrate and monitor sensor readings for accurate diagnostics',
     icon: '⚙️',
     features: ['Sensor calibration tools', 'Real-time monitoring', 'Accuracy validation'],
-    image: '/images/premium/technicians-at-work.jpg',
+    image: '/images/IMG_20221222_153914_840.jpg',
   },
   {
     id: 'technician-toolkit',
@@ -43,7 +43,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Comprehensive tools for field technicians',
     icon: '🛠️',
     features: ['Field diagnostics', 'Maintenance schedules', 'Repair guides'],
-    image: '/images/premium/control-panel-main.jpg',
+    image: '/images/solar%20changeover%20control.png',
   },
   {
     id: 'spare-parts',
@@ -51,7 +51,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Intelligent spare parts recommendations and inventory',
     icon: '🔧',
     features: ['Parts recommendations', 'Inventory tracking', 'Order management'],
-    image: '/images/premium/control-panel-main.jpg',
+    image: '/images/ENGINE%20PARTS.png',
   },
   {
     id: 'reputation-monitor',
@@ -59,7 +59,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Track and monitor system reputation and performance metrics',
     icon: '⭐',
     features: ['Performance tracking', 'Reputation scoring', 'Trend analysis'],
-    image: '/images/premium/generator-detail.jpg',
+    image: '/images/GEN%202-1920x1080.png',
   },
   {
     id: 'whatsapp-dispatch',
@@ -67,7 +67,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Dispatch technicians via WhatsApp integration',
     icon: '📱',
     features: ['WhatsApp integration', 'Automated dispatch', 'Status tracking'],
-    image: '/images/premium/workshop-maintenance.jpg',
+    image: '/images/PERKINS-ENGINE-PARTS.jpg',
   },
   {
     id: 'conversion-dashboard',
@@ -75,7 +75,7 @@ export const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
     description: 'Business conversion metrics and analytics',
     icon: '📈',
     features: ['Conversion tracking', 'Analytics dashboard', 'Performance insights'],
-    image: '/images/premium/generator-detail.jpg',
+    image: '/images/GEN%202-1920x1080.png',
   },
 ] as const;
 

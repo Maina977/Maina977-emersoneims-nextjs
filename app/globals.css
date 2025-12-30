@@ -25,6 +25,36 @@
   }
 }
 
+@layer components {
+  .eims-section {
+    @apply bg-black text-white;
+  }
+
+  .eims-shell {
+    @apply mx-auto max-w-7xl px-6 lg:px-12 py-20 lg:py-28;
+  }
+
+  .eims-kicker {
+    @apply text-xs tracking-[0.24em] text-white/60 uppercase;
+  }
+
+  .eims-title {
+    @apply mt-4 text-balance text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight;
+  }
+
+  .eims-card {
+    @apply rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm;
+  }
+
+  .eims-card-hover {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .eims-hairline {
+    @apply border-t border-white/10;
+  }
+}
+
 /* Performance optimizations */
 * {
   -webkit-font-smoothing: antialiased;

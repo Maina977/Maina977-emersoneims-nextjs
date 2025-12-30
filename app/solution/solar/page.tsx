@@ -8,6 +8,7 @@ import { SectionLead } from "@/components/generators";
 import AnimatedImage from "@/components/effects/AnimatedImage";
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
+import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -22,6 +23,7 @@ export default function SolarSolutionPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+  const { isLite } = usePerformanceTier();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -53,40 +55,44 @@ export default function SolarSolutionPage() {
 
   return (
     <ErrorBoundary>
-      <main ref={containerRef} className="min-h-screen bg-black text-white relative">
+      <main ref={containerRef} className="eims-section min-h-screen relative">
         {/* Holographic Laser Overlay */}
-        <HolographicLaser intensity="high" color="#fbbf24" />
+        {!isLite && <HolographicLaser intensity="high" color="#fbbf24" />}
         
         {/* 3D Background Scene */}
-        <Suspense fallback={null}>
-          <div className="fixed inset-0 -z-10 opacity-20">
-            <SimpleThreeScene />
-          </div>
-        </Suspense>
+        {!isLite && (
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 -z-10 opacity-20">
+              <SimpleThreeScene />
+            </div>
+          </Suspense>
+        )}
 
         {/* Hero Section */}
         <motion.section
-          className="relative py-32 px-4 overflow-hidden"
+          className="relative overflow-hidden"
           style={{ opacity: heroOpacity }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
-          <SectionLead
-            title="Solar Energy Solutions"
-            subtitle="Harness the power of the sun with our comprehensive solar energy solutions"
-            centered
-            showWebGL={false}
-          />
+          <div className="eims-shell py-32">
+            <SectionLead
+              title="Solar Energy Solutions"
+              subtitle="Harness the power of the sun with our comprehensive solar energy solutions"
+              centered
+              showWebGL={false}
+            />
+          </div>
         </motion.section>
 
         {/* Solution Overview */}
         <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <AnimatedImage
-                src="https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png"
+                src="/images/solar%20power%20farms.png"
                 alt="Solar Solutions"
-                width={800}
-                height={600}
+                width={3840}
+                height={2160}
                 animationType="parallax"
                 intensity="high"
                 className="rounded-2xl overflow-hidden"
@@ -112,7 +118,7 @@ export default function SolarSolutionPage() {
                     'Performance monitoring',
                   ].map((item, index) => (
                     <li key={index} className="flex items-start gap-3 text-gray-300">
-                      <span className="text-amber-400 mt-1">âœ“</span>
+                      <span className="text-amber-400 mt-1">✓</span>
                       {item}
                     </li>
                   ))}
@@ -124,7 +130,7 @@ export default function SolarSolutionPage() {
 
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-br from-amber-500/10 via-black to-amber-500/10">
-          <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="eims-shell py-0 text-center">
             <motion.h2
               className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 20 }}

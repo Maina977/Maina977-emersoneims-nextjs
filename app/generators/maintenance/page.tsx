@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useRef, useEffect, Suspense, lazy } from 'react';
+import { useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,6 +9,7 @@ import { ServiceAnalytics } from "@/components/diagnostics";
 import OptimizedImage from "@/components/media/OptimizedImage";
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
+import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -24,7 +25,7 @@ const maintenanceServices = [
     frequency: 'Monthly/Quarterly',
     price: 'From KSh 15,000',
     features: ['Oil & filter change', 'Battery check', 'Coolant inspection', 'Load testing'],
-    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png',
+    image: '/images/GEN%202-1920x1080.png',
   },
   {
     title: 'Emergency Repairs',
@@ -32,7 +33,7 @@ const maintenanceServices = [
     frequency: 'On-demand',
     price: 'Call for quote',
     features: ['24/7 availability', 'Rapid response', 'Expert technicians', 'Genuine parts'],
-    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png',
+    image: '/images/GEN%202-1920x1080.png',
   },
   {
     title: 'Major Overhaul',
@@ -40,7 +41,7 @@ const maintenanceServices = [
     frequency: 'Every 10,000 hours',
     price: 'From KSh 500,000',
     features: ['Engine rebuild', 'Alternator service', 'Full system check', 'Warranty included'],
-    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png',
+    image: '/images/GEN%202-1920x1080.png',
   },
   {
     title: 'Remote Monitoring',
@@ -48,7 +49,7 @@ const maintenanceServices = [
     frequency: '24/7',
     price: 'From KSh 25,000/month',
     features: ['Real-time alerts', 'Performance tracking', 'Predictive maintenance', 'Mobile app'],
-    image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/controls.jpg',
+    image: '/images/solar%20changeover%20control.png',
   },
 ];
 
@@ -63,6 +64,7 @@ export default function MaintenancePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+  const { isLite } = usePerformanceTier();
 
   // GSAP ScrollTrigger animations
   useEffect(() => {
@@ -95,34 +97,38 @@ export default function MaintenancePage() {
 
   return (
     <ErrorBoundary>
-      <main ref={containerRef} className="min-h-screen bg-black text-white relative">
+      <main ref={containerRef} className="eims-section min-h-screen relative">
         {/* Holographic Laser Overlay */}
-        <HolographicLaser intensity="high" color="#fbbf24" />
+        {!isLite && <HolographicLaser intensity="high" color="#fbbf24" />}
         
         {/* 3D Background Scene */}
-        <Suspense fallback={null}>
-          <div className="fixed inset-0 -z-10 opacity-20">
-            <SimpleThreeScene />
-          </div>
-        </Suspense>
+        {!isLite && (
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 -z-10 opacity-20">
+              <SimpleThreeScene />
+            </div>
+          </Suspense>
+        )}
 
         {/* Hero Section */}
         <motion.section
-          className="relative py-32 px-4 overflow-hidden"
+          className="relative py-32 overflow-hidden"
           style={{ opacity: heroOpacity }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
-          <SectionLead
-            title="Generator Maintenance"
-            subtitle="Comprehensive maintenance services to keep your generators running at peak performance"
-            centered
-            showWebGL={false}
-          />
+          <div className="eims-shell py-0">
+            <SectionLead
+              title="Generator Maintenance"
+              subtitle="Comprehensive maintenance services to keep your generators running at peak performance"
+              centered
+              showWebGL={false}
+            />
+          </div>
         </motion.section>
 
         {/* Service Analytics */}
         <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -144,7 +150,7 @@ export default function MaintenancePage() {
 
         {/* Maintenance Charts & Health Index */}
         <section className="py-20 bg-gradient-to-b from-gray-900 to-black">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <SectionLead
               title="Maintenance Analytics & Health Monitoring"
               subtitle="Track maintenance schedules, costs, and generator health in real-time"
@@ -160,7 +166,7 @@ export default function MaintenancePage() {
 
         {/* Maintenance Services */}
         <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <SectionLead
               title="Our Maintenance Services"
               subtitle="Comprehensive maintenance solutions for all generator types"
@@ -198,7 +204,7 @@ export default function MaintenancePage() {
                     <ul className="space-y-2">
                       {service.features.map((feature, idx) => (
                         <li key={idx} className="text-sm text-gray-300 flex items-center gap-2">
-                          <span className="text-amber-400">âœ“</span>
+                          <span className="text-amber-400">{'\u2713'}</span>
                           {feature}
                         </li>
                       ))}
@@ -218,7 +224,7 @@ export default function MaintenancePage() {
 
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-br from-amber-500/10 via-black to-amber-500/10">
-          <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="eims-shell py-0 max-w-4xl text-center">
             <motion.h2
               className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 20 }}

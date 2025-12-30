@@ -46,7 +46,7 @@ export default function SEOHead({ title, description, keywords, canonical, openG
     "@type": "Organization",
     "name": "EmersonEIMS",
     "url": "https://www.emersoneims.com",
-    "logo": "https://www.emersoneims.com/wp-content/uploads/2025/10/Untitled-design-2.svg",
+    "logo": "https://www.emersoneims.com/images/logo-tagline.png",
     "contactPoint": [
       {
         "@type": "ContactPoint",

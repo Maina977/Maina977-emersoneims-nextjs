@@ -17,7 +17,7 @@
  */
 
 import { Suspense, lazy, useEffect, useState, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
@@ -31,7 +31,6 @@ if (typeof window !== 'undefined') {
 const AdvancedGeneratorScene = lazy(() => import('@/components/webgl/AdvancedGeneratorScene'));
 const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
 const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
-const CinematicVideoHero = lazy(() => import('@/components/hero/CinematicVideoHero'));
 const BrandStorytelling = lazy(() => import('@/components/storytelling/BrandStorytelling'));
 const ServicesShowcase = lazy(() => import('@/components/services/ServicesShowcase'));
 
@@ -56,7 +55,6 @@ export default function SOTDWinningHomepage() {
   const heroY = useTransform(smoothProgress, [0, 1], ['0%', '50%']);
   const generatorScale = useTransform(smoothProgress, [0, 0.5], [1, 1.3]);
   const textOpacity = useTransform(smoothProgress, [0, 0.3], [1, 0]);
-  const parallaxY = useTransform(smoothProgress, [0, 1], [0, -100]);
 
   useEffect(() => {
     // GSAP Timeline for hero entrance

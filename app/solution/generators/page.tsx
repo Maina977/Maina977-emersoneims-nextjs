@@ -7,8 +7,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SectionLead } from "@/components/generators";
 import AnimatedImage from "@/components/effects/AnimatedImage";
 import HolographicLaser from '@/components/effects/HolographicLaser';
-import OptimizedImage from "@/components/media/OptimizedImage";
 import ErrorBoundary from '@/components/error/ErrorBoundary';
+import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 
 // Force dynamic rendering to avoid prerendering issues with i18n
 export const dynamic = 'force-dynamic';
@@ -23,6 +23,7 @@ export default function GeneratorsSolutionPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+  const { isLite } = usePerformanceTier();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -54,34 +55,38 @@ export default function GeneratorsSolutionPage() {
 
   return (
     <ErrorBoundary>
-      <main ref={containerRef} className="min-h-screen bg-black text-white relative">
+      <main ref={containerRef} className="eims-section min-h-screen relative">
         {/* Holographic Laser Overlay */}
-        <HolographicLaser intensity="high" color="#fbbf24" />
+        {!isLite && <HolographicLaser intensity="high" color="#fbbf24" />}
         
         {/* 3D Background Scene */}
-        <Suspense fallback={null}>
-          <div className="fixed inset-0 -z-10 opacity-20">
-            <SimpleThreeScene />
-          </div>
-        </Suspense>
+        {!isLite && (
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 -z-10 opacity-20">
+              <SimpleThreeScene />
+            </div>
+          </Suspense>
+        )}
 
         {/* Hero Section */}
         <motion.section
-          className="relative py-32 px-4 overflow-hidden"
+          className="relative overflow-hidden"
           style={{ opacity: heroOpacity }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
-          <SectionLead
-            title="Diesel Generator Solutions"
-            subtitle="Complete generator solutions from 20kVA to 2000kVA with comprehensive support"
-            centered
-            showWebGL={false}
-          />
+          <div className="eims-shell py-32">
+            <SectionLead
+              title="Diesel Generator Solutions"
+              subtitle="Complete generator solutions from 20kVA to 2000kVA with comprehensive support"
+              centered
+              showWebGL={false}
+            />
+          </div>
         </motion.section>
 
         {/* Solution Overview */}
         <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -104,14 +109,14 @@ export default function GeneratorsSolutionPage() {
                     'Remote monitoring and diagnostics',
                   ].map((item, index) => (
                     <li key={index} className="flex items-start gap-3 text-gray-300">
-                      <span className="text-amber-400 mt-1">âœ“</span>
+                      <span className="text-amber-400 mt-1">✓</span>
                       {item}
                     </li>
                   ))}
                 </ul>
               </motion.div>
               <AnimatedImage
-                src="https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png"
+                src="/images/GEN%202-1920x1080.png"
                 alt="Generator Solutions"
                 width={800}
                 height={600}
@@ -125,7 +130,7 @@ export default function GeneratorsSolutionPage() {
 
         {/* Features Grid */}
         <section className="py-20 bg-gradient-to-b from-gray-900 to-black">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <SectionLead
               title="Why Choose Our Generator Solutions"
               subtitle="Industry-leading expertise and comprehensive support"
@@ -137,17 +142,17 @@ export default function GeneratorsSolutionPage() {
                 {
                   title: 'Expert Installation',
                   description: 'Certified technicians with 15+ years experience',
-                  icon: 'ðŸ”§',
+                  icon: '🔧',
                 },
                 {
                   title: '24/7 Support',
                   description: 'Round-the-clock emergency support and monitoring',
-                  icon: 'ðŸ“ž',
+                  icon: '📞',
                 },
                 {
                   title: 'Genuine Parts',
                   description: 'OEM parts and components for optimal performance',
-                  icon: 'âš™ï¸',
+                  icon: '⚙️',
                 },
               ].map((feature, index) => (
                 <motion.div
@@ -169,7 +174,7 @@ export default function GeneratorsSolutionPage() {
 
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-br from-amber-500/10 via-black to-amber-500/10">
-          <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="eims-shell py-0 text-center">
             <motion.h2
               className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 20 }}

@@ -10,6 +10,8 @@ export default defineConfig([
       ".next/**",
       "out/**",
       "build/**",
+      "chunk-*.js",
+      "**/*.min.js",
       "next-env.d.ts",
       "app/componets/**",
       "app/PC/**",
@@ -34,5 +36,11 @@ export default defineConfig([
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-require-imports": "warn"
     }
+  },
+  {
+    files: ["scripts/**/*.js", "debug.js", "start-trapped.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
   }
 ]);

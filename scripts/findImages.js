@@ -99,6 +99,7 @@ if (fs.existsSync(publicRoot)) {
       console.log('');
     }
   } catch (error) {
+    void error;
     // Ignore
   }
 }

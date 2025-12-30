@@ -1,27 +1,12 @@
-﻿// EmersonEIMS Solar Platform - PREMIUM EDITION
+'use client';
+
+// EmersonEIMS Solar Platform - PREMIUM EDITION
 // Complete 10/10 implementation with all requested features
-'use client'
-
-import { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-// import Head from 'next/head'; // Not needed in Next.js App Router
-import OptimizedImage from '@/components/media/OptimizedImage';
-import OptimizedVideo from '@/components/media/OptimizedVideo';
-import HolographicLaser from '@/components/effects/HolographicLaser';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import ErrorBoundary from '@/components/error/ErrorBoundary';
-import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
-const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
-const CustomCursor = lazy(() => import('@/components/interactions/CustomCursor'));
-const TeslaStyleNavigation = lazy(() => import('@/components/navigation/TeslaStyleNavigation'));
+import Head from 'next/head';
+import SolarSystemCalculator from '@/components/calculators/SolarSystemCalculator';
 
 // ==================== PREMIUM ENHANCEMENTS ====================
 // These components ADD to your existing code without modifying it
@@ -45,12 +30,13 @@ const CinematicNarrative = () => {
   return (
     <div className="relative h-[70vh] w-full overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-900/20 to-black z-0" />
-      <OptimizedImage
-        src="https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png"
-        alt="Solar energy solutions - EmersonEIMS"
-        width={1920}
-        height={1080}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
         className="absolute inset-0 w-full h-full object-cover opacity-50"
+        src="https://assets.mixkit.co/videos/preview/mixkit-solar-panels-on-the-roof-of-a-house-41506-large.mp4"
       />
       
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
@@ -128,10 +114,10 @@ const AdvancedSystemCalculator = () => {
   }, [consumption, rooftopSize, county, systemSize, batterySize]);
 
   const steps = [
-    { number: 1, title: "Energy Usage", icon: "âš¡" },
-    { number: 2, title: "Location", icon: "ðŸ“" },
-    { number: 3, title: "System Size", icon: "â˜€ï¸" },
-    { number: 4, title: "Results", icon: "ðŸ“Š" },
+    { number: 1, title: "Energy Usage", icon: "⚡" },
+    { number: 2, title: "Location", icon: "📍" },
+    { number: 3, title: "System Size", icon: "☀️" },
+    { number: 4, title: "Results", icon: "📊" },
   ];
 
   return (
@@ -191,7 +177,7 @@ const AdvancedSystemCalculator = () => {
             </div>
 
             <div>
-              <label className="block text-white/80 mb-2">Available Rooftop Space (mÂ²)</label>
+              <label className="block text-white/80 mb-2">Available Rooftop Space (m²)</label>
               <div className="flex items-center space-x-4">
                 <input
                   type="range"
@@ -203,7 +189,7 @@ const AdvancedSystemCalculator = () => {
                   className="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-yellow-300 [&::-webkit-slider-thumb]:to-yellow-500"
                 />
                 <span className="text-2xl font-bold text-yellow-300 w-32 text-right">
-                  {rooftopSize} mÂ²
+                  {rooftopSize} m²
                 </span>
               </div>
             </div>
@@ -241,7 +227,7 @@ const AdvancedSystemCalculator = () => {
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full ${c.color} mb-2`} />
                     <span className="font-semibold text-white">{c.name}</span>
-                    <span className="text-sm text-white/70">{c.irradiance} kWh/mÂ²/day</span>
+                    <span className="text-sm text-white/70">{c.irradiance} kWh/m²/day</span>
                   </div>
                 </button>
               ))}
@@ -257,7 +243,7 @@ const AdvancedSystemCalculator = () => {
                   <div className="text-2xl font-bold text-yellow-300">
                     {counties.find(c => c.name === county)?.irradiance}
                   </div>
-                  <div className="text-white/70 text-sm">kWh/mÂ²/day</div>
+                  <div className="text-white/70 text-sm">kWh/m²/day</div>
                 </div>
               </div>
             </div>
@@ -373,7 +359,7 @@ const AdvancedSystemCalculator = () => {
         {step === 4 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="text-center mb-8">
-              <div className="text-5xl mb-2">ðŸŽ‰</div>
+              <div className="text-5xl mb-2">🎉</div>
               <h3 className="text-2xl font-bold text-white">Your Custom Solar System is Ready!</h3>
               <p className="text-white/70">Here's your personalized solar solution</p>
             </div>
@@ -394,7 +380,7 @@ const AdvancedSystemCalculator = () => {
               <div className="p-6 bg-gradient-to-br from-green-500/10 to-green-300/5 rounded-2xl border border-green-500/20">
                 <div className="text-3xl font-bold text-green-300 mb-2">KSh {savings.toLocaleString()}</div>
                 <div className="text-white/90 font-semibold">Annual Savings</div>
-                <div className="text-white/60 text-sm mt-1">Year 1 â€¢ 25-year warranty</div>
+                <div className="text-white/60 text-sm mt-1">Year 1 • 25-year warranty</div>
               </div>
             </div>
 
@@ -442,7 +428,7 @@ const AdvancedSystemCalculator = () => {
               : 'bg-white/10 text-white hover:bg-white/20'
           }`}
         >
-          â† Back
+          ← Back
         </button>
         
         <div className="flex items-center space-x-4">
@@ -455,7 +441,7 @@ const AdvancedSystemCalculator = () => {
               onClick={() => setStep(s => Math.min(4, s + 1))}
               className="px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-500 text-black hover:from-yellow-400 hover:to-yellow-600 transition-all transform hover:scale-105"
             >
-              Continue â†’
+              Continue →
             </button>
           ) : (
             <button className="px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-green-400 to-green-600 text-white hover:from-green-500 hover:to-green-700 transition-all transform hover:scale-105">
@@ -555,7 +541,7 @@ const InteractiveCountyMap = () => {
               <div className="text-white font-bold mb-2">Solar Potential</div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 rounded-full bg-green-500" />
-                <span className="text-white/70 text-sm">High (5.8+ kWh/mÂ²/day)</span>
+                <span className="text-white/70 text-sm">High (5.8+ kWh/m²/day)</span>
               </div>
               <div className="flex items-center space-x-2 mt-1">
                 <div className="w-4 h-4 rounded-full bg-yellow-500" />
@@ -581,7 +567,7 @@ const InteractiveCountyMap = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-white/70">Solar Irradiance</span>
                   <span className="text-2xl font-bold text-yellow-300">
-                    {countyData[selectedCounty].solar} kWh/mÂ²/day
+                    {countyData[selectedCounty].solar} kWh/m²/day
                   </span>
                 </div>
                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -662,10 +648,10 @@ const MicroInteractions = () => {
       {/* Animated Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { value: "98.7%", label: "System Uptime", icon: "âš¡", color: "from-green-400 to-emerald-600" },
-          { value: "500", label: "Projects", icon: "ðŸ—ï¸", color: "from-blue-400 to-blue-600" },
-          { value: "KSh 4.2B", label: "Client Savings", icon: "ðŸ’°", color: "from-yellow-400 to-yellow-600" },
-          { value: "47", label: "Counties Covered", icon: "ðŸ“", color: "from-purple-400 to-purple-600" },
+          { value: "98.7%", label: "System Uptime", icon: "⚡", color: "from-green-400 to-emerald-600" },
+          { value: "2,450+", label: "Projects", icon: "🏗️", color: "from-blue-400 to-blue-600" },
+          { value: "KSh 4.2B", label: "Client Savings", icon: "💰", color: "from-yellow-400 to-yellow-600" },
+          { value: "47", label: "Counties Covered", icon: "📍", color: "from-purple-400 to-purple-600" },
         ].map((stat, i) => (
           <div
             key={i}
@@ -696,18 +682,18 @@ const MicroInteractions = () => {
             Ready for Your Energy Transformation?
           </h3>
           <p className="text-white/70 mb-6 max-w-2xl mx-auto">
-            Join 500 satisfied clients who have switched to sustainable solar power
+            Join 2,450+ satisfied clients who have switched to sustainable solar power
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" className="group px-8 py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50">
+            <button className="group px-8 py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50">
               <span className="flex items-center justify-center space-x-2">
                 <span>Schedule Free Consultation</span>
-                <span className="transform group-hover:translate-x-1 transition-transform">â†’</span>
+                <span className="transform group-hover:translate-x-1 transition-transform">→</span>
               </span>
-            </Link>
-            <Link href="/contact" className="px-8 py-4 border-2 border-yellow-300 text-yellow-300 font-bold rounded-xl text-lg hover:bg-yellow-300/10 transition-all duration-300 transform hover:scale-105">
+            </button>
+            <button className="px-8 py-4 border-2 border-yellow-300 text-yellow-300 font-bold rounded-xl text-lg hover:bg-yellow-300/10 transition-all duration-300 transform hover:scale-105">
               Download Brochure
-            </Link>
+            </button>
           </div>
         </div>
         
@@ -743,11 +729,6 @@ export const galleryImages = [
   { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/1-1.png", alt: "Solar showcase 1", width: 3840, height: 2160 },
   { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/5.png", alt: "Solar showcase 5", width: 3840, height: 2160 },
   { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/2.png", alt: "Solar showcase 2", width: 3840, height: 2160 },
-  { src: "https://emersoneims.com/wp-content/uploads/2025/11/solar-changeover-control-scaled.png", alt: "Solar changeover control system", width: 1920, height: 1080 },
-  { src: "https://emersoneims.com/wp-content/uploads/2025/11/BAT-5.png", alt: "Battery system installation", width: 1920, height: 1080 },
-  { src: "https://emersoneims.com/wp-content/uploads/2025/11/solar-hotel-heaters-scaled.png", alt: "Solar hotel heating system", width: 1920, height: 1080 },
-  { src: "https://emersoneims.com/wp-content/uploads/2025/11/11.png", alt: "Solar installation showcase", width: 1920, height: 1080 },
-  { src: "https://emersoneims.com/wp-content/uploads/2025/11/4-4.png", alt: "Solar system component", width: 1920, height: 1080 },
 ];
 
 export type Panel = {
@@ -802,7 +783,7 @@ export const caseStudies = [
   {
     title: "Hospital uptime on hybrid solar + LFP",
     impact: "Saved KSh 18M over 3 years; 99.9% uptime with 6-hour autonomy.",
-    details: "550W panels Ã— 280, LFP storage 500kWh, hybrid inverter 150kW, smart switchover.",
+    details: "550W panels × 280, LFP storage 500kWh, hybrid inverter 150kW, smart switchover.",
   },
   {
     title: "Factory peak-shaving with solar",
@@ -812,13 +793,13 @@ export const caseStudies = [
 ];
 
 export const warranties = {
-  panels: { performanceYears: 25, productYears: 12, conditions: "â‰¥80% output at year 25; IEC certified." },
-  batteries: { productYears: 10, cyclesMin: 6000, conditions: "LFP chemistry, DoD â‰¤80%, proper ambient temp." },
+  panels: { performanceYears: 25, productYears: 12, conditions: "≥80% output at year 25; IEC certified." },
+  batteries: { productYears: 10, cyclesMin: 6000, conditions: "LFP chemistry, DoD ≤80%, proper ambient temp." },
   inverters: { productYears: 5, conditions: "Manufacturer defects; firmware updates included." },
   guarantees: [
-    "Design accuracy guarantee: we reâ€‘model if real loads deviate >10%.",
+    "Design accuracy guarantee: we re‑model if real loads deviate >10%.",
     "Timeline guarantee: installation milestones or we discount service fees.",
-    "Support guarantee: 24/7 hotline for missionâ€‘critical clients.",
+    "Support guarantee: 24/7 hotline for mission‑critical clients.",
   ],
 };
 
@@ -833,7 +814,7 @@ export function AccessibleImage({
 }) {
   return (
     <figure>
-      <OptimizedImage
+      <Image
         src={src}
         alt={alt}
         width={width}
@@ -841,7 +822,7 @@ export function AccessibleImage({
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 1200px"
         quality={100}
         priority={priority}
-        className={className || "object-cover w-full h-auto"}
+        className={className || "object-cover w-full h-auto cinematic"}
       />
       <figcaption className="sr-only">{alt}</figcaption>
     </figure>
@@ -855,14 +836,15 @@ export function AccessibleVideo({
 }) {
   return (
     <section aria-label={title} className="relative w-full overflow-hidden bg-black">
-      <OptimizedVideo
+      <video
+        className="w-full h-auto opacity-90"
         src={src}
         poster={poster}
+        loop
+        muted
+        playsInline
         autoPlay={autoPlay}
-        loop={true}
-        muted={true}
-        playsInline={true}
-        className="w-full h-auto opacity-90"
+        aria-describedby="video-desc"
       />
       <p id="video-desc" className="sr-only">{title}</p>
     </section>
@@ -889,7 +871,7 @@ export function TestimonialList() {
           <li key={t.name} className="p-6 rounded-lg border border-white/10 bg-black/60">
             <blockquote>
               <p className="text-white/90">"{t.quote}"</p>
-              <footer className="mt-3 text-sm text-white/60">â€” {t.name}, {t.sector}</footer>
+              <footer className="mt-3 text-sm text-white/60">— {t.name}, {t.sector}</footer>
             </blockquote>
           </li>
         ))}
@@ -915,53 +897,152 @@ export function CaseStudyList() {
   );
 }
 
-export function TechnologyPartners() {
-  const partners = [
-    { 
-      name: "SolarEdge", 
-      category: "Inverter Technology",
-      description: "Advanced power optimizers and monitoring systems for maximum solar efficiency.",
-      features: ["Power Optimizers", "Monitoring Platform", "25-Year Warranty"]
+export function SolarInstallationGallery() {
+  const installations = [
+    {
+      title: "Complete Solar Installation Process",
+      videoSrc: "/videos/SOLAR%20INSTALLATION%206%20(1).mp4",
+      poster: "/images/solar%20power%20farms.png",
+      description: "Watch our expert team install a complete solar system from start to finish"
     },
-    { 
-      name: "Tesla Powerwall", 
-      category: "Energy Storage",
-      description: "Premium battery storage solutions for 24/7 renewable energy availability.",
-      features: ["13.5kWh Capacity", "Grid Integration", "10-Year Warranty"]
-    },
-    { 
-      name: "SunPower", 
-      category: "Solar Panels",
-      description: "High-efficiency solar panels with industry-leading performance and durability.",
-      features: ["22%+ Efficiency", "25-Year Warranty", "Weather Resistant"]
-    },
+    {
+      title: "Solar System Commissioning",
+      videoSrc: "/videos/SOLAR%20INSTALLATION%207.mp4",
+      poster: "/images/solar%20for%20flower%20farms.png",
+      description: "Final testing and commissioning of solar installation"
+    }
+  ];
+
+  return (
+    <section aria-labelledby="installation-gallery" className="mx-auto max-w-7xl px-6 py-16">
+      <h2 id="installation-gallery" className="text-3xl md:text-4xl font-bold text-yellow-300 mb-4">
+        Solar Installation Gallery
+      </h2>
+      <p className="text-white/80 text-lg mb-10">
+        See our professional solar installations in action across Kenya
+      </p>
+      
+      <div className="grid md:grid-cols-2 gap-8">
+        {installations.map((install, index) => (
+          <div key={index} className="group">
+            <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl shadow-yellow-500/10 transition-all duration-500 hover:shadow-yellow-500/20 hover:scale-[1.02]">
+              <video
+                controls
+                loop
+                muted
+                playsInline
+                poster={install.poster}
+                className="w-full h-auto"
+              >
+                <source src={install.videoSrc} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-2">{install.title}</h3>
+                  <p className="text-white/80">{install.description}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Additional Images Gallery */}
+      <div className="mt-16">
+        <h3 className="text-2xl font-bold text-yellow-300 mb-6">Our Solar Projects</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
+            <AccessibleImage
+              src="/images/solar%20power%20farms.png"
+              alt="Solar power farm installation in Kenya"
+              width={600}
+              height={400}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+              <p className="text-white font-semibold">Solar Farms</p>
+            </div>
+          </div>
+          
+          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
+            <AccessibleImage
+              src="/images/solar%20for%20flower%20farms.png"
+              alt="Solar installation for flower farms"
+              width={600}
+              height={400}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+              <p className="text-white font-semibold">Agricultural Solar</p>
+            </div>
+          </div>
+          
+          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
+            <AccessibleImage
+              src="/images/solar%20power%20for%20farms.png"
+              alt="Solar power systems for farms in Kenya"
+              width={600}
+              height={400}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+              <p className="text-white font-semibold">Farm Power</p>
+            </div>
+          </div>
+          
+          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
+            <AccessibleImage
+              src="/images/solar%20hotel%20heaters.png"
+              alt="Solar hotel water heating systems"
+              width={600}
+              height={400}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+              <p className="text-white font-semibold">Hotel Solar</p>
+            </div>
+          </div>
+          
+          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
+            <AccessibleImage
+              src="/images/solar%20changeover%20control.png"
+              alt="Solar changeover control systems"
+              width={600}
+              height={400}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+              <p className="text-white font-semibold">Control Systems</p>
+            </div>
+          </div>
+          
+          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer bg-gradient-to-br from-yellow-900/20 to-black border border-yellow-500/20 flex items-center justify-center">
+            <div className="text-center p-6">
+              <p className="text-yellow-300 text-4xl font-bold mb-2">500+</p>
+              <p className="text-white/80">Projects Completed</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Team() {
+  const team = [
+    { name: "Lead Engineer", bio: "10+ years in hybrid solar systems and power electronics." },
+    { name: "Energy Analyst", bio: "ROI modeling, tariff analysis, and load profiling." },
+    { name: "Project Manager", bio: "Mission-critical deployments across hospitals and factories." },
   ];
   return (
-    <section aria-labelledby="partners-heading" className="mx-auto max-w-7xl px-6 py-12">
-      <h2 id="partners-heading" className="text-2xl md:text-3xl font-bold text-yellow-300 mb-4">
-        Premium Technology Partners
-      </h2>
-      <p className="text-white/70 mb-8 max-w-3xl">
-        We partner with world-leading manufacturers to deliver cutting-edge solar technology and unmatched reliability.
-      </p>
+    <section aria-labelledby="team-heading" className="mx-auto max-w-7xl px-6 py-12">
+      <h2 id="team-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">The experts behind EmersonEIMS</h2>
       <div className="mt-6 grid md:grid-cols-3 gap-6">
-        {partners.map((partner) => (
-          <div key={partner.name} className="p-6 rounded-lg border border-white/10 bg-black/60 hover:border-yellow-400/50 transition-all">
-            <div className="mb-3">
-              <span className="text-xs text-yellow-400 font-semibold uppercase tracking-wider">
-                {partner.category}
-              </span>
-            </div>
-            <p className="font-bold text-lg text-white mb-2">{partner.name}</p>
-            <p className="text-sm text-white/80 mb-4">{partner.description}</p>
-            <ul className="space-y-1">
-              {partner.features.map((feature, idx) => (
-                <li key={idx} className="text-xs text-white/60 flex items-center gap-2">
-                  <span className="text-yellow-400">âœ“</span>
-                  {feature}
-                </li>
-              ))}
-            </ul>
+        {team.map((m) => (
+          <div key={m.name} className="p-6 rounded-lg border border-white/10 bg-black/60">
+            <p className="font-semibold">{m.name}</p>
+            <p className="text-sm text-white/80 mt-2">{m.bio}</p>
           </div>
         ))}
       </div>
@@ -978,262 +1059,29 @@ export function ROIChart() {
   );
 }
 
-// Real-time Solar Monitoring Component
-const RealTimeSolarMonitor = () => {
-  const [production, setProduction] = useState({
-    current: 1250,
-    today: 8500,
-    thisMonth: 245000,
-    efficiency: 94.5,
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProduction(prev => ({
-        current: Math.max(0, prev.current + Math.floor(Math.random() * 200 - 100)),
-        today: prev.today + Math.floor(Math.random() * 50),
-        thisMonth: prev.thisMonth + Math.floor(Math.random() * 100),
-        efficiency: Math.max(85, Math.min(100, prev.efficiency + (Math.random() * 0.5 - 0.25))),
-      }));
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <section className="mx-auto max-w-7xl px-6 py-12">
-      <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-yellow-300 to-yellow-100 bg-clip-text text-transparent">
-        Real-time Solar Production Monitor
-      </h2>
-      <p className="text-white/70 mb-8">Live monitoring of solar system performance</p>
-      
-      <div className="grid md:grid-cols-4 gap-6">
-        {[
-          { label: 'Current Output', value: `${production.current}W`, icon: 'âš¡', color: 'from-yellow-400 to-yellow-600' },
-          { label: 'Today\'s Production', value: `${production.today.toLocaleString()}Wh`, icon: 'â˜€ï¸', color: 'from-orange-400 to-orange-600' },
-          { label: 'This Month', value: `${production.thisMonth.toLocaleString()}Wh`, icon: 'ðŸ“Š', color: 'from-blue-400 to-blue-600' },
-          { label: 'System Efficiency', value: `${production.efficiency.toFixed(1)}%`, icon: 'ðŸŽ¯', color: 'from-green-400 to-green-600' },
-        ].map((metric, index) => (
-          <motion.div
-            key={metric.label}
-            className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-gray-800 p-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-3xl">{metric.icon}</span>
-              <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${metric.color} animate-pulse`} />
-            </div>
-            <div className={`text-3xl font-bold bg-gradient-to-r ${metric.color} bg-clip-text text-transparent mb-2`}>
-              {metric.value}
-            </div>
-            <div className="text-gray-400 text-sm">{metric.label}</div>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-};
-
-// 3D Solar System Visualization
-const Solar3DVisualization = () => {
-  const [isViewing, setIsViewing] = useState(false);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
-
-  return (
-    <section className="mx-auto max-w-7xl px-6 py-12">
-      <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-300 to-blue-100 bg-clip-text text-transparent">
-        3D Solar System Visualization
-      </h2>
-      <p className="text-white/70 mb-8">Interactive 3D model of your solar installation</p>
-      
-      <div className="relative h-96 bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-gray-800 overflow-hidden">
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center cursor-grab active:cursor-grabbing"
-          onMouseMove={(e: React.MouseEvent<HTMLDivElement>) => {
-            if (isViewing) {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const x = ((e.clientX - rect.left) / rect.width - 0.5) * 360;
-              const y = ((e.clientY - rect.top) / rect.height - 0.5) * 360;
-              setRotation({ x: y, y: x });
-            }
-          }}
-          onMouseDown={() => setIsViewing(true)}
-          onMouseUp={() => setIsViewing(false)}
-          onMouseLeave={() => setIsViewing(false)}
-          style={{
-            transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-          }}
-        >
-          <div className="text-center">
-            <div className="text-8xl mb-4">â˜€ï¸</div>
-            <div className="grid grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="w-16 h-20 bg-gradient-to-b from-yellow-300 to-yellow-500 rounded shadow-lg" />
-              ))}
-            </div>
-            <p className="text-white mt-4">Drag to rotate â€¢ Click for AR view</p>
-          </div>
-        </motion.div>
-      </div>
-      
-      <div className="mt-6 flex gap-4 justify-center">
-        <button
-          onClick={() => {
-            if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-              window.open('/ar/solar-system', '_blank');
-            } else {
-              alert('AR preview available on mobile devices');
-            }
-          }}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all"
-        >
-          ðŸ“± View in AR
-        </button>
-        <button className="px-6 py-3 border-2 border-blue-500 text-blue-400 rounded-lg hover:bg-blue-500/10 transition-all">
-          Export 3D Model
-        </button>
-      </div>
-    </section>
-  );
-};
-
-// Weather API Integration Component
-const WeatherForecast = () => {
-  const [weather, setWeather] = useState({
-    today: { condition: 'Sunny', irradiance: 5.8, temp: 28 },
-    tomorrow: { condition: 'Partly Cloudy', irradiance: 5.2, temp: 27 },
-    day3: { condition: 'Sunny', irradiance: 5.9, temp: 29 },
-  });
-
-  return (
-    <section className="mx-auto max-w-7xl px-6 py-12">
-      <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-cyan-300 to-cyan-100 bg-clip-text text-transparent">
-        Solar Weather Forecast
-      </h2>
-      <p className="text-white/70 mb-8">3-day forecast for optimal solar production planning</p>
-      
-      <div className="grid md:grid-cols-3 gap-6">
-        {[
-          { label: 'Today', data: weather.today },
-          { label: 'Tomorrow', data: weather.tomorrow },
-          { label: 'Day 3', data: weather.day3 },
-        ].map((day, index) => (
-          <motion.div
-            key={day.label}
-            className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-gray-800 p-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <h3 className="text-xl font-bold text-white mb-4">{day.label}</h3>
-            <div className="text-4xl mb-4">â˜€ï¸</div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Condition:</span>
-                <span className="text-white font-semibold">{day.data.condition}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Irradiance:</span>
-                <span className="text-yellow-400 font-semibold">{day.data.irradiance} kWh/mÂ²</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Temperature:</span>
-                <span className="text-white font-semibold">{day.data.temp}Â°C</span>
-              </div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-800">
-              <div className="text-sm text-gray-400">Expected Production</div>
-              <div className="text-2xl font-bold text-green-400">
-                {Math.round(day.data.irradiance * 10)}kW
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-};
-
 // ==================== MAIN APPLICATION ====================
 export default function PremiumApp() {
   const [currentPage, setCurrentPage] = useState("home");
-  const [activeSection, setActiveSection] = useState('hero');
-  const prefersReducedMotion = useReducedMotion();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
-
-  // GSAP ScrollTrigger animations
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const sections = containerRef.current.querySelectorAll('section');
-    
-    sections.forEach((section) => {
-      gsap.fromTo(
-        section,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
-          },
-        }
-      );
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    };
-  }, []);
-
-  // Section tracking for navigation
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const sections = containerRef.current.querySelectorAll('section');
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id || 'hero');
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
       case "panels": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar panels</h1><p className="mt-3 text-white/80">Tierâ€‘1 modules optimized for Kenya's irradiance and temperatures.</p></header>
-        <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{panels.map((p) => (<li key={p.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{p.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Power:</dt> <dd className="inline">{p.wattage}W</dd></div><div><dt className="inline">Efficiency:</dt> <dd className="inline">{p.efficiencyPct}%</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{p.warrantyYears}y</dd></div><div><dt className="inline">Temp Coef:</dt> <dd className="inline">{p.tempCoefPctPerC}%/Â°C</dd></div><div><dt className="inline">Tier:</dt> <dd className="inline">{p.tier}</dd></div></dl></li>))}</ul>
+        <header><h1 className="text-4xl font-bold text-yellow-300">Solar panels</h1><p className="mt-3 text-white/80">Tier‑1 modules optimized for Kenya's irradiance and temperatures.</p></header>
+        <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{panels.map((p) => (<li key={p.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{p.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Power:</dt> <dd className="inline">{p.wattage}W</dd></div><div><dt className="inline">Efficiency:</dt> <dd className="inline">{p.efficiencyPct}%</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{p.warrantyYears}y</dd></div><div><dt className="inline">Temp Coef:</dt> <dd className="inline">{p.tempCoefPctPerC}%/°C</dd></div><div><dt className="inline">Tier:</dt> <dd className="inline">{p.tier}</dd></div></dl></li>))}</ul>
         <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your array</button></div>
       </div>;
       case "batteries": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar batteries</h1><p className="mt-3 text-white/80">Safe, longâ€‘life storage with smart BMS.</p></header>
+        <header><h1 className="text-4xl font-bold text-yellow-300">Solar batteries</h1><p className="mt-3 text-white/80">Safe, long‑life storage with smart BMS.</p></header>
         <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{batteries.map((b) => (<li key={b.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{b.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Capacity:</dt> <dd className="inline">{b.capacityKWh}kWh</dd></div><div><dt className="inline">Chemistry:</dt> <dd className="inline">{b.chemistry}</dd></div><div><dt className="inline">Cycles:</dt> <dd className="inline">{b.cycles}+</dd></div><div><dt className="inline">DoD:</dt> <dd className="inline">{b.dodPct}%</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{b.warrantyYears}y</dd></div></dl></li>))}</ul>
         <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your storage</button></div>
       </div>;
       case "inverters": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar inverters</h1><p className="mt-3 text-white/80">Highâ€‘efficiency hybrid, offâ€‘grid, and gridâ€‘tie power conversion.</p></header>
+        <header><h1 className="text-4xl font-bold text-yellow-300">Solar inverters</h1><p className="mt-3 text-white/80">High‑efficiency hybrid, off‑grid, and grid‑tie power conversion.</p></header>
         <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{inverters.map((inv) => (<li key={inv.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{inv.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Power:</dt> <dd className="inline">{inv.powerKW}kW</dd></div><div><dt className="inline">Efficiency:</dt> <dd className="inline">{inv.efficiencyPct}%</dd></div><div><dt className="inline">Surge:</dt> <dd className="inline">{inv.surgePct}%</dd></div><div><dt className="inline">MPPT:</dt> <dd className="inline">{inv.mpptCount}</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{inv.warrantyYears}y</dd></div></dl></li>))}</ul>
         <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your inverter</button></div>
       </div>;
       case "comparison": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="text-4xl font-bold text-yellow-300">Energy comparison</h1><p className="mt-3 text-white/80">Compare 5â€‘year cost trajectories for solar vs diesel generators vs national grid.</p>
+        <h1 className="text-4xl font-bold text-yellow-300">Energy comparison</h1><p className="mt-3 text-white/80">Compare 5‑year cost trajectories for solar vs diesel generators vs national grid.</p>
         <div className="mt-8"><ROIChart /></div>
         <section className="mt-8 grid md:grid-cols-3 gap-6"><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">Solar</h2><p className="text-sm text-white/80 mt-2">Higher upfront, lower operating; stable costs and environmental benefits.</p></article><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">Diesel generators</h2><p className="text-sm text-white/80 mt-2">Lower upfront, escalating fuel/maintenance costs, emissions exposure.</p></article><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">National grid</h2><p className="text-sm text-white/80 mt-2">Variable tariffs and reliability; solar hybrid improves resilience.</p></article></section>
         <section className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Get your ROI proposal</button></section>
@@ -1249,7 +1097,7 @@ export default function PremiumApp() {
       </div>;
       case "about": return <div className="mx-auto max-w-7xl px-6 py-12">
         <h1 className="text-4xl font-bold text-yellow-300">About EmersonEIMS</h1><p className="mt-3 text-white/80">Verified insights, technical depth, and design that inspires.</p>
-        <TechnologyPartners />
+        <Team />
         <section className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Talk to our engineers</button></section>
       </div>;
       default: return (
@@ -1272,15 +1120,6 @@ export default function PremiumApp() {
             <MicroInteractions />
           </section>
 
-          {/* REAL-TIME MONITORING */}
-          <RealTimeSolarMonitor />
-
-          {/* 3D VISUALIZATION */}
-          <Solar3DVisualization />
-
-          {/* WEATHER FORECAST */}
-          <WeatherForecast />
-
           {/* ORIGINAL SECTIONS - Preserved exactly */}
           <section className="mx-auto max-w-7xl px-6 py-12" aria-labelledby="gallery-heading">
             <h2 id="gallery-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">Crafted details</h2>
@@ -1296,13 +1135,14 @@ export default function PremiumApp() {
             <h2 id="warranty-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">Warranties & guarantees</h2>
             <div className="mt-6 flex flex-wrap gap-3">
               <WarrantyBadge label="Panels" detail="25-year performance / 12-year product" />
-              <WarrantyBadge label="Batteries" detail="10-year / â‰¥6000 cycles" />
+              <WarrantyBadge label="Batteries" detail="10-year / ≥6000 cycles" />
               <WarrantyBadge label="Inverters" detail="5-year product" />
               <WarrantyBadge label="Design" detail="Accuracy guarantee" />
               <WarrantyBadge label="Support" detail="24/7 for mission-critical" />
             </div>
           </section>
 
+          <SolarInstallationGallery />
           <TestimonialList />
           <CaseStudyList />
         </main>
@@ -1326,6 +1166,9 @@ export default function PremiumApp() {
 
   return (
     <>
+      <Head>
+        <title>EMERSONEIMS Premium | Elite Solar Solutions for Kenya</title>
+        <meta name="description" content="World-class solar solutions with cinematic experience, advanced calculators, and interactive county data. Premium solar for Kenya." />
         <style>{`
           @keyframes gradient-x {
             0%, 100% { background-position: 0% 50%; }
@@ -1388,32 +1231,9 @@ export default function PremiumApp() {
                         transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
         `}</style>
+      </Head>
       
-      <ErrorBoundary>
-        {/* Performance Monitor */}
-        <PerformanceMonitor />
-
-        {/* Premium Custom Cursor */}
-        <Suspense fallback={null}>
-          <CustomCursor enabled={!prefersReducedMotion} />
-        </Suspense>
-
-        {/* Navigation */}
-        <Suspense fallback={null}>
-          <TeslaStyleNavigation activeSection={activeSection} />
-        </Suspense>
-
-        <div ref={containerRef} className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black relative">
-          {/* Holographic Laser Overlay */}
-          <HolographicLaser intensity="high" color="#fbbf24" />
-          
-          {/* 3D Background Scene */}
-          <Suspense fallback={null}>
-            <div className="fixed inset-0 -z-10 opacity-15">
-              <SimpleThreeScene />
-            </div>
-          </Suspense>
-
+      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
         {/* Enhanced Premium Header */}
         <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/50" role="banner">
           <nav aria-label="Primary" className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
@@ -1455,6 +1275,21 @@ export default function PremiumApp() {
           <div className="relative z-10">
             {renderPage()}
           </div>
+
+          {/* Solar System Calculator - Scientific Tool */}
+          <div className="relative z-10 py-20 bg-gradient-to-br from-black via-purple-900/10 to-black">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-300 bg-clip-text text-transparent">
+                  Solar System Designer
+                </h2>
+                <p className="text-xl text-white/70">
+                  Calculate your perfect solar solution with our scientific calculator
+                </p>
+              </div>
+              <SolarSystemCalculator />
+            </div>
+          </div>
         </main>
 
         {/* Enhanced Premium Footer */}
@@ -1467,15 +1302,15 @@ export default function PremiumApp() {
                 {company.name}
               </h2>
               <p className="text-white/80 mb-3 flex items-center">
-                <span className="w-5 h-5 mr-2">ðŸ“</span>
+                <span className="w-5 h-5 mr-2">📍</span>
                 {company.address}
               </p>
               <p className="text-white/80 mb-3 flex items-center">
-                <span className="w-5 h-5 mr-2">ðŸ“ž</span>
+                <span className="w-5 h-5 mr-2">📞</span>
                 {company.phones.join(" / ")}
               </p>
               <p className="text-white/80 flex items-center">
-                <span className="w-5 h-5 mr-2">âœ‰ï¸</span>
+                <span className="w-5 h-5 mr-2">✉️</span>
                 {company.emails.join(" / ")}
               </p>
             </section>
@@ -1486,7 +1321,7 @@ export default function PremiumApp() {
                 {["Master Calculator", "ROI & Energy Comparison", "Industry Solutions", "County Insights"].map((item) => (
                   <li key={item}>
                     <button className="text-white/70 hover:text-yellow-300 transition-all duration-300 flex items-center group">
-                      <span className="mr-2 transform group-hover:translate-x-1 transition-transform">â†’</span>
+                      <span className="mr-2 transform group-hover:translate-x-1 transition-transform">→</span>
                       {item}
                     </button>
                   </li>
@@ -1496,17 +1331,17 @@ export default function PremiumApp() {
             
             <section aria-labelledby="footer-cta">
               <h2 id="footer-cta" className="text-xl font-bold text-white mb-6">Get started</h2>
-              <Link
-                href="/contact"
+              <button
+                onClick={() => setCurrentPage("comparison")}
                 className="group w-full px-6 py-4 rounded-xl bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-yellow-500/30 mb-4"
               >
                 <span className="flex items-center justify-center">
                   Get your tailored solar system
-                  <span className="ml-2 transform group-hover:translate-x-1 transition-transform">â†’</span>
+                  <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
                 </span>
-              </Link>
+              </button>
               <p className="text-white/60 text-sm">
-                Average 4.2 year ROI â€¢ 25-year warranty â€¢ 98.7% uptime
+                Average 4.2 year ROI • 25-year warranty • 98.7% uptime
               </p>
             </section>
             
@@ -1526,7 +1361,7 @@ export default function PremiumApp() {
           <div className="border-t border-white/10 py-6">
             <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row justify-between items-center">
               <p className="text-white/50 text-sm">
-                Â© 2025 EmersonEIMS. All rights reserved.
+                © {new Date().getFullYear()} EmersonEIMS. Premium Solar Solutions for Kenya.
               </p>
               <div className="flex space-x-6 mt-4 md:mt-0">
                 <button className="text-white/50 hover:text-yellow-300 transition-colors">Privacy</button>
@@ -1536,8 +1371,7 @@ export default function PremiumApp() {
             </div>
           </div>
         </footer>
-        </div>
-      </ErrorBoundary>
+      </div>
     </>
   );
 }

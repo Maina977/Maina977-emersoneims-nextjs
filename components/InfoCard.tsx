@@ -26,6 +26,3 @@ export default function InfoCard({ title, items }: InfoCardProps) {
   );
 }
 
-
-
-

@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, Sparkles } from '@react-three/drei';
+import { OrbitControls, Sparkles, Environment, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
 
 /**
@@ -35,7 +35,24 @@ function SimpleScene() {
         enableZoom={false}
         enablePan={false}
       />
-      <Environment preset="city" />
+      {/*
+        Pure procedural environment - no external HDR files, no network requests, no crashes.
+        Generates lighting on-the-fly using Lightformers.
+      */}
+      <Environment resolution={64}>
+        <Lightformer
+          intensity={1.5}
+          position={[0, 5, -10]}
+          scale={[20, 20, 1]}
+          color="#fbbf24"
+        />
+        <Lightformer
+          intensity={1.2}
+          position={[0, -5, -10]}
+          scale={[20, 20, 1]}
+          color="#00ffff"
+        />
+      </Environment>
     </>
   );
 }

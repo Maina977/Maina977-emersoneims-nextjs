@@ -18,8 +18,8 @@ const NAV_ITEMS = [
   { href: '/solution', label: 'Solutions' },
   { href: '/generators', label: 'Generators' },
   { href: '/solar', label: 'Solar' },
-  { href: '/diagnostics', label: 'Diagnostics' },
-  { href: '/diagnostic-suite', label: 'Diagnostic Suite' },
+  { href: '/diagnostics', label: 'Universal Diagnostics' },
+  { href: '/diagnostic-suite', label: 'Generator Diagnostics' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -31,7 +31,7 @@ export default function SciFiHeader() {
   const pathname = usePathname();
   const { scrollY } = useScroll();
   const headerOpacity = useTransform(scrollY, [0, 100], [1, 0.95]);
-  const headerBlur = useTransform(scrollY, [0, 100], [0, 20]);
+  const mobileMenuId = 'primary-mobile-menu';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,6 +42,31 @@ export default function SciFiHeader() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
+  // Close menu on Escape + prevent background scroll while open
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!isMenuOpen) return;
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    const previousOverflow = document.body.style.overflow;
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMenuOpen]);
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -82,10 +107,14 @@ export default function SciFiHeader() {
             whileHover={{ scale: 1.05 }}
             transition={{ type: 'spring', stiffness: 400 }}
           >
-            <Link href="/" className="flex items-center gap-3 group">
+            <Link
+              href="/"
+              aria-label="Emerson EiMS home"
+              className="flex items-center gap-3 group rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            >
               <div className="relative">
                 <img
-                  src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
+                  src="/images/logo-tagline.png"
                   alt="Emerson EiMS Logo"
                   className="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300"
                 />
@@ -101,7 +130,7 @@ export default function SciFiHeader() {
           </motion.div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1" aria-label="Primary">
             {NAV_ITEMS.map((item) => {
               const active = isActive(item.href);
               return (
@@ -113,11 +142,12 @@ export default function SciFiHeader() {
                 >
                   <Link
                     href={item.href}
+                    aria-current={active ? 'page' : undefined}
                     className={`relative px-4 py-2 text-sm font-mono font-semibold transition-all ${
                       active
                         ? 'text-cyan-300'
                         : 'text-gray-400 hover:text-cyan-300'
-                    }`}
+                    } rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black`}
                   >
                     {item.label}
                     {active && (
@@ -133,7 +163,7 @@ export default function SciFiHeader() {
                   <AnimatePresence>
                     {activeHover === item.href && !active && (
                       <motion.div
-                        className="absolute inset-0 bg-cyan-500/10 rounded blur-sm"
+                        className="absolute inset-0 bg-cyan-500/10 rounded blur-sm pointer-events-none"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -148,8 +178,10 @@ export default function SciFiHeader() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 text-cyan-300 hover:text-cyan-400 transition-colors"
+            className="lg:hidden p-2 text-cyan-300 hover:text-cyan-400 transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             aria-label="Toggle menu"
+            aria-expanded={isMenuOpen}
+            aria-controls={mobileMenuId}
           >
             <div className="w-6 h-6 flex flex-col justify-center gap-1.5">
               <motion.span
@@ -173,12 +205,13 @@ export default function SciFiHeader() {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
+            id={mobileMenuId}
             className="lg:hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-cyan-500/20"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
           >
-            <nav className="px-4 py-6 space-y-2">
+            <nav className="px-4 py-6 space-y-2" aria-label="Mobile">
               {NAV_ITEMS.map((item, index) => {
                 const active = isActive(item.href);
                 return (
@@ -191,11 +224,12 @@ export default function SciFiHeader() {
                     <Link
                       href={item.href}
                       onClick={() => setIsMenuOpen(false)}
+                      aria-current={active ? 'page' : undefined}
                       className={`block px-4 py-3 rounded-lg font-mono text-sm transition-all ${
                         active
                           ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50'
                           : 'text-gray-400 hover:bg-cyan-500/10 hover:text-cyan-300'
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black`}
                     >
                       {item.label}
                     </Link>

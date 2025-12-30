@@ -1,12 +1,10 @@
-import React from 'react';
-
-interface IncineratorsProps {
+type IncineratorsProps = {
   performanceTier?: string;
-}
+};
 
 export default function Incinerators({ performanceTier }: IncineratorsProps) {
   return (
-    <div className="p-6">
+    <div className="p-6" data-performance-tier={performanceTier}>
       <h2 className="text-2xl font-bold mb-4">Incinerator Systems</h2>
       <p className="text-gray-600 mb-6">
         Waste incineration system installation and maintenance.

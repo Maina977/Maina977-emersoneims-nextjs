@@ -7,8 +7,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Mesh, Vector3 } from 'three';
-import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
+import { Mesh } from 'three';
+import { OrbitControls, PerspectiveCamera, Environment, Lightformer } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ConfigOption {
@@ -99,7 +99,10 @@ export default function ProductConfigurator({
             <pointLight position={[-10, -10, -10]} intensity={0.5} />
             <ProductModel config={config} />
             <OrbitControls enableZoom={true} enablePan={false} />
-            <Environment preset="city" />
+            <Environment resolution={64}>
+              <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
+              <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
+            </Environment>
           </Canvas>
           
           {/* AR Preview Button */}

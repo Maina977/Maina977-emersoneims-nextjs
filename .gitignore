@@ -7,6 +7,12 @@ dist
 *.log
 .DS_Store
 
+# Environment / secrets (never commit)
+.env
+.env.*
+!.env.example
+.npmrc
+
 # Duplicate/problematic folders
 app/PC/
 app/componets/
@@ -18,3 +24,6 @@ deployment-package/
 
 # Local Netlify folder
 .netlify
+
+.vercel
+.env*.local

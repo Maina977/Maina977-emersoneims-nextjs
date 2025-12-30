@@ -24,16 +24,17 @@ export default function LiveChat({
   apiKey,
   supportEmail = 'support@emersoneims.com' 
 }: LiveChatProps) {
+  void apiKey;
+  void supportEmail;
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [isHumanAvailable, setIsHumanAvailable] = useState(true);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [isHumanAvailable] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsHydrated(true);
     // Initialize with welcome message only after hydration
     setMessages([
       {

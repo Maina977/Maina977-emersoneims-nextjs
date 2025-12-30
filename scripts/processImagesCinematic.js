@@ -97,6 +97,7 @@ async function processImage(inputPath, outputPath, preset = 'hollywood') {
     // Read image metadata
     const metadata = await sharp(inputPath).metadata();
     const { width, height, format } = metadata;
+    void format;
     
     // Calculate target dimensions maintaining aspect ratio
     const aspectRatio = width / height;

@@ -9,6 +9,18 @@
 import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
+type EngagementContextData = Record<string, unknown> & {
+  interests?: string[];
+  engagementScore?: number;
+};
+
+type ExitIntentDetail = { visitorData?: unknown };
+type HighEngagementDetail = { engagementScore?: number } & Record<string, unknown>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 interface AIConversation {
   id: string;
   messages: Array<{
@@ -45,50 +57,65 @@ export default function AIEngagement() {
     if (typeof window === 'undefined') return;
     
     // Get visitor ID
-    visitorIdRef.current = localStorage.getItem('visitor_id');
+    try {
+      visitorIdRef.current = localStorage.getItem('visitor_id');
+    } catch {
+      visitorIdRef.current = null;
+    }
 
     // Listen for exit intent
-    const handleExitIntent = (e: CustomEvent) => {
-      if (e.detail?.visitorData) {
-        triggerEngagement('exit_intent', e.detail.visitorData);
+    const handleExitIntent = (event: Event) => {
+      const customEvent = event as CustomEvent<ExitIntentDetail>;
+      const visitorData = customEvent.detail?.visitorData;
+      if (isRecord(visitorData)) {
+        triggerEngagement('exit_intent', visitorData);
       }
     };
 
     // Listen for high engagement
-    const handleHighEngagement = (e: CustomEvent) => {
-      if (e.detail?.engagementScore > 70) {
-        triggerEngagement('high_engagement', e.detail);
+    const handleHighEngagement = (event: Event) => {
+      const customEvent = event as CustomEvent<HighEngagementDetail>;
+      if ((customEvent.detail?.engagementScore ?? 0) > 70) {
+        triggerEngagement('high_engagement', customEvent.detail);
       }
     };
 
     // Listen for form abandonment
-    const handleFormAbandonment = (e: CustomEvent) => {
-      triggerEngagement('form_abandonment', e.detail);
+    const handleFormAbandonment = (event: Event) => {
+      const customEvent = event as CustomEvent<Record<string, unknown>>;
+      triggerEngagement('form_abandonment', customEvent.detail ?? {});
     };
 
-    window.addEventListener('exit-intent-detected' as any, handleExitIntent);
-    window.addEventListener('high-engagement' as any, handleHighEngagement);
-    window.addEventListener('form-abandonment' as any, handleFormAbandonment);
+    window.addEventListener('exit-intent-detected', handleExitIntent);
+    window.addEventListener('high-engagement', handleHighEngagement);
+    window.addEventListener('form-abandonment', handleFormAbandonment);
 
     // Auto-trigger after 30 seconds on page
     const autoTriggerTimer = setTimeout(() => {
-      const engagementScore = parseInt(sessionStorage.getItem('engagement_score') || '0');
+      let engagementScoreRaw = '0';
+      try {
+        engagementScoreRaw = sessionStorage.getItem('engagement_score') || '0';
+      } catch {
+        // Ignore storage read failures
+      }
+
+      const engagementScore = parseInt(engagementScoreRaw, 10);
       if (engagementScore > 30 && !isVisible) {
         triggerEngagement('auto_trigger', { engagementScore });
       }
     }, 30000);
 
     return () => {
-      window.removeEventListener('exit-intent-detected' as any, handleExitIntent);
-      window.removeEventListener('high-engagement' as any, handleHighEngagement);
-      window.removeEventListener('form-abandonment' as any, handleFormAbandonment);
+      window.removeEventListener('exit-intent-detected', handleExitIntent);
+      window.removeEventListener('high-engagement', handleHighEngagement);
+      window.removeEventListener('form-abandonment', handleFormAbandonment);
       clearTimeout(autoTriggerTimer);
     };
   }, [isVisible]);
 
   const triggerEngagement = async (
     trigger: string,
-    data: any
+    data: Record<string, unknown>
   ) => {
     // Generate AI-powered offer based on context
     const offer = await generateEngagementOffer(trigger, data);
@@ -106,7 +133,7 @@ export default function AIEngagement() {
 
   const generateEngagementOffer = async (
     trigger: string,
-    data: any
+    data: Record<string, unknown>
   ): Promise<EngagementOffer | null> => {
     try {
       const response = await fetch('/api/ai/engagement-offer', {
@@ -122,7 +149,7 @@ export default function AIEngagement() {
         }),
       });
 
-      if (response.ok) {
+      if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
         return await response.json();
       }
     } catch (error) {
@@ -130,13 +157,10 @@ export default function AIEngagement() {
     }
 
     // Fallback offers based on trigger
-    return getFallbackOffer(trigger, data);
+    return getFallbackOffer(trigger);
   };
 
-  const getFallbackOffer = (
-    trigger: string,
-    data: any
-  ): EngagementOffer => {
+  const getFallbackOffer = (trigger: string): EngagementOffer => {
     const offers: Record<string, EngagementOffer> = {
       exit_intent: {
         type: 'discount',
@@ -171,7 +195,7 @@ export default function AIEngagement() {
     return offers[trigger] || offers.auto_trigger;
   };
 
-  const startAIConversation = async (context: any) => {
+  const startAIConversation = async (context: EngagementContextData) => {
     const conversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     const newConversation: AIConversation = {
@@ -191,8 +215,8 @@ export default function AIEngagement() {
       context: {
         visitorId: visitorIdRef.current || 'unknown',
         page: pathname,
-        interests: context.interests || [],
-        engagementScore: context.engagementScore || 0,
+        interests: context.interests ?? [],
+        engagementScore: context.engagementScore ?? 0,
       },
     };
 
@@ -228,7 +252,7 @@ export default function AIEngagement() {
         }),
       });
 
-      if (response.ok) {
+      if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
         const data = await response.json();
         const aiMessage = {
           role: 'assistant' as const,
@@ -249,7 +273,7 @@ export default function AIEngagement() {
             event: 'ai_chat_message',
             data: { conversationId: conversation.id, message },
           }),
-        });
+        }).catch(() => {}); // Ignore tracking errors
       }
     } catch (error) {
       console.warn('AI chat failed:', error);

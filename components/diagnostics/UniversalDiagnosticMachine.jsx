@@ -7,6 +7,8 @@ import SystemLogs from './SystemLogs';
 import CockpitSwitches from './CockpitSwitches';
 import PopUps from './PopUps';
 import { UNIVERSAL_SERVICES } from '@/lib/data/diagnosticServices';
+import comprehensiveErrorCodes from '@/app/data/diagnostic/comprehensiveErrorCodes.json';
+import { allControllerErrorCodes } from '@/app/data/diagnostic/allControllerErrorCodes';
 
 const SERVICES = UNIVERSAL_SERVICES;
 
@@ -213,15 +215,6 @@ function SciFiPanel({ title, children, glowColor = 'cyan' }) {
   );
 }
 
-function Panel({ title, children }) {
-  return (
-    <div className="p-3 bg-gray-900 border-2 border-gray-600 rounded-lg">
-      <h3 className="text-xs font-bold text-gray-300 tracking-widest mb-2">{title}</h3>
-      {children}
-    </div>
-  );
-}
-
 // Metric Bar Component
 function MetricBar({ label, value, color = 'cyan' }) {
   const colorClass = color === 'cyan' ? 'bg-cyan-500' : 'bg-purple-500';
@@ -379,60 +372,32 @@ function initialLogs() {
 
 function generateDiagnosticLine(service) {
   const ts = new Date().toLocaleTimeString();
-  const msgs = {
-    'Solar Systems': [
-      'String voltage imbalance detected; recommend IV sweep',
-      'Irradiance below threshold, PSH recalibration recommended',
-      'MPPT tracking nominal',
-    ],
-    'Diesel Generators': [
-      'Oil pressure transient observed; check filter',
-      'Load factor stable at 0.72',
-      'Fuel rate high; inspect injector calibration',
-    ],
-    Controls: [
-      'Controller alarm A12: Sensor scaling mismatch',
-      'Firmware OK; CRC verified',
-      'I/O mapping updated',
-    ],
-    'AC & UPS': [
-      'Runtime estimate 42 min at current load',
-      'PF low; corrective tuning advised',
-      'Bus voltage ripple within tolerance',
-    ],
-    Automation: [
-      'Cycle time trending up; bottleneck at Step 2',
-      'Interlock confirmed; safety loop closed',
-      'Throughput stable at 180 u/h',
-    ],
-    Pumps: [
-      'NPSH margin tight; cavitation risk',
-      'Motor current nominal',
-      'Head/flow within curve',
-    ],
-    Incinerators: [
-      'AFR drift; burner tuning required',
-      'Chamber temperature stable',
-      'LHV variability detected',
-    ],
-    'Motors/Rewinding': [
-      'Insulation resistance borderline; schedule IR test',
-      'Vibration spike at 48 Hz; check bearing',
-      'Slip within expected limits',
-    ],
-    'Diagnostics Hub': [
-      'Resolution rate improved to 0.86',
-      'Avg time to resolve: 1.9 h',
-      'New error codes ingested',
-    ],
+  
+  // Filter comprehensive error codes for the active service
+  const serviceCodes = comprehensiveErrorCodes.filter(code => code.service === service);
+  
+  if (serviceCodes.length === 0) {
+    return { line: `[${ts}] ${service}: All systems nominal`, severity: 'LOW', details: null };
+  }
+  
+  // Pick a random error code
+  const errorCode = serviceCodes[Math.floor(Math.random() * serviceCodes.length)];
+  
+  // Create detailed diagnostic line with technical information
+  const line = `[${ts}] ${errorCode.code} - ${errorCode.issue} | ${errorCode.recommendation}`;
+  
+  return { 
+    line, 
+    severity: errorCode.severity,
+    details: {
+      code: errorCode.code,
+      issue: errorCode.issue,
+      symptoms: errorCode.symptoms,
+      causes: errorCode.causes,
+      solution: errorCode.solution,
+      parts: errorCode.parts,
+      tools: errorCode.tools,
+      downtime: errorCode.downtime
+    }
   };
-  const pool = msgs[service] || ['System check OK'];
-  const pick = pool[Math.floor(Math.random() * pool.length)];
-
-  // Severity heuristic
-  let severity = 'LOW';
-  if (pick.toLowerCase().includes('risk') || pick.toLowerCase().includes('critical')) severity = 'HIGH';
-  else if (pick.toLowerCase().includes('borderline') || pick.toLowerCase().includes('drift')) severity = 'MED';
-
-  return { line: `[${ts}] ${service}: ${pick}`, severity };
 }

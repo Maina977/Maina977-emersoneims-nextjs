@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 interface TeslaStyleNavigationProps {
   activeSection?: string;
@@ -15,11 +14,12 @@ const NAV_ITEMS = [
   { href: '/about-us', label: 'ABOUT US' },
   { href: '/service', label: 'SERVICES' },
   { href: '/solution', label: 'SOLUTIONS' },
-  { href: '/generators', label: 'GENERATOR' },
+  { href: '/generators', label: 'GENERATORS' },
   { href: '/solar', label: 'SOLAR' },
-  { href: '/diagnostics', label: 'DIAGNOSTICS' },
-  { href: '/diagnostic-suite', label: 'EMERSON EiMS DIAGNOSTIC SUITE' },
-  { href: '/contact', label: 'CONTACT' },
+  { href: '/brands', label: 'BRANDS' },
+  { href: '/diagnostics', label: 'UNIVERSAL DIAGNOSTICS' },
+  { href: '/diagnostic-suite', label: 'GENERATOR DIAGNOSTICS' },
+  { href: '/contact', label: 'CONTACT US' },
 ];
 
 export default function TeslaStyleNavigation({
@@ -27,7 +27,7 @@ export default function TeslaStyleNavigation({
 }: TeslaStyleNavigationProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
+  const mobileMenuId = 'tesla-primary-mobile-menu';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,40 +37,57 @@ export default function TeslaStyleNavigation({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isActive = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname?.startsWith(href);
-  };
+  // Close menu on Escape + prevent background scroll while open
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!isMenuOpen) return;
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    const previousOverflow = document.body.style.overflow;
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMenuOpen]);
 
   return (
-    <motion.nav
+    <nav
+      data-active-section={activeSection}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
           ? 'bg-black/80 backdrop-blur-xl border-b border-white/5'
           : 'bg-transparent'
       }`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <motion.div
-              className="flex items-center gap-3 cursor-pointer"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <img
-                src="https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png"
-                alt="Emerson EiMS Logo"
-                className="w-8 h-8 object-contain"
+          <Link
+            href="/"
+            aria-label="Emerson EiMS home"
+            className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          >
+            <div className="flex items-center gap-3 cursor-pointer transition-transform active:scale-[0.98] hover:scale-[1.02]">
+              <Image
+                src="/images/logo-tagline.png"
+                alt="Emerson EIMS Logo"
+                width={180}
+                height={45}
+                priority
+                sizes="(max-width: 768px) 140px, 180px"
+                className="h-9 w-auto object-contain"
               />
-              <div className="text-lg font-display font-semibold text-white tracking-tight">
-                EMERSON
-              </div>
-            </motion.div>
+              <span className="text-[10px] sm:text-xs font-semibold text-white/80 leading-tight max-w-[150px] sm:max-w-none">
+                Reliable Power. Without Limits.
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation - All 9 Pages */}
@@ -79,20 +96,9 @@ export default function TeslaStyleNavigation({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative px-3 py-2 text-xs font-medium transition-all duration-300 whitespace-nowrap ${
-                  isActive(item.href)
-                    ? 'text-white'
-                    : 'text-text-secondary hover:text-white'
-                }`}
+                className="relative px-3 py-2 text-xs font-medium transition-all duration-300 whitespace-nowrap text-white/70 hover:text-white rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <span className="relative z-10">{item.label}</span>
-                {isActive(item.href) && (
-                  <motion.div
-                    className="absolute inset-0 bg-white/5 rounded-lg"
-                    layoutId="activeTab"
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                )}
               </Link>
             ))}
           </div>
@@ -103,6 +109,8 @@ export default function TeslaStyleNavigation({
             className="lg:hidden text-text-secondary hover:text-white transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMenuOpen}
+            aria-controls={mobileMenuId}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isMenuOpen ? (
@@ -115,34 +123,25 @@ export default function TeslaStyleNavigation({
         </div>
 
         {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="lg:hidden mt-6 space-y-1 max-h-[80vh] overflow-y-auto"
-            >
-              {NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`block px-4 py-3 rounded-lg transition-colors ${
-                    isActive(item.href)
-                      ? 'bg-white/10 text-white'
-                      : 'text-text-secondary hover:bg-white/5 hover:text-white'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isMenuOpen && (
+          <div
+            id={mobileMenuId}
+            className="lg:hidden mt-6 space-y-1 max-h-[80vh] overflow-y-auto"
+          >
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-4 py-3 rounded-lg transition-colors text-text-secondary hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
-    </motion.nav>
+    </nav>
   );
 }
 

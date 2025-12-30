@@ -27,6 +27,7 @@ interface CustomerReviewsProps {
 }
 
 export default function CustomerReviews({ reviews, productId }: CustomerReviewsProps) {
+  void productId;
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [filter, setFilter] = useState<'all' | '5' | '4' | '3'>('all');
 

@@ -34,10 +34,10 @@ export interface WordPressPost {
   sticky: boolean;
   template: string;
   format: string;
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
   categories: number[];
   tags: number[];
-  _links: Record<string, any>;
+  _links: Record<string, unknown>;
 }
 
 export interface WordPressPage extends WordPressPost {
@@ -58,7 +58,7 @@ export interface WordPressMedia {
   comment_status: string;
   ping_status: string;
   template: string;
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
   description: {
     rendered: string;
   };
@@ -72,10 +72,18 @@ export interface WordPressMedia {
     width: number;
     height: number;
     file: string;
-    sizes: Record<string, any>;
+    sizes: Record<string, WordPressMediaSize>;
   };
   source_url: string;
-  _links: Record<string, any>;
+  _links: Record<string, unknown>;
+}
+
+export interface WordPressMediaSize {
+  source_url?: string;
+  width?: number;
+  height?: number;
+  file?: string;
+  mime_type?: string;
 }
 
 class WordPressClient {
@@ -122,6 +130,11 @@ class WordPressClient {
       throw new Error(`Failed to fetch posts: ${response.statusText}`);
     }
 
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      throw new Error(`Expected JSON but got ${contentType}`);
+    }
+
     return response.json();
   }
 
@@ -140,6 +153,11 @@ class WordPressClient {
 
     if (!response.ok) {
       throw new Error(`Failed to fetch post: ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      throw new Error(`Expected JSON but got ${contentType}`);
     }
 
     const data = await response.json();
@@ -175,6 +193,11 @@ class WordPressClient {
       throw new Error(`Failed to fetch pages: ${response.statusText}`);
     }
 
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      throw new Error(`Expected JSON but got ${contentType}`);
+    }
+
     return response.json();
   }
 
@@ -191,6 +214,11 @@ class WordPressClient {
 
     if (!response.ok) {
       throw new Error(`Failed to fetch media: ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      throw new Error(`Expected JSON but got ${contentType}`);
     }
 
     return response.json();

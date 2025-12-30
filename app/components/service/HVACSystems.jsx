@@ -1,6 +1,6 @@
 'use client';
 
-export default function HVACSystems({ performanceTier = "high" }) {
+export default function HVACSystems() {
   return (
     <section id="hvac" className="py-20 bg-gradient-to-b from-gray-900 to-black">
       <div className="max-w-7xl mx-auto px-4">

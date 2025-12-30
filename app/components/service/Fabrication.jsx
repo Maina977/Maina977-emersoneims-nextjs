@@ -1,6 +1,6 @@
 'use client';
 
-export default function Fabrication({ performanceTier = "high" }) {
+export default function Fabrication() {
   return (
     <section id="fab" className="py-20 bg-gradient-to-b from-gray-900 to-black">
       <div className="max-w-7xl mx-auto px-4">

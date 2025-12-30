@@ -1,17 +1,16 @@
 'use client';
 
-import { Suspense, useRef, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useRef, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { 
   OrbitControls, 
   Environment, 
   PerspectiveCamera,
-  MeshDistortMaterial,
-  Text3D,
   Center,
   Float,
   Sparkles,
-  ContactShadows
+  ContactShadows,
+  Lightformer
 } from '@react-three/drei';
 import * as THREE from 'three';
 import { gsap } from 'gsap';
@@ -25,7 +24,7 @@ if (typeof window !== 'undefined') {
 function GeneratorBase() {
   const meshRef = useRef<THREE.Mesh>(null);
   
-  useFrame((state) => {
+  useFrame(() => {
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.002;
     }
@@ -285,7 +284,10 @@ export default function CumminsGenerator3D({
         />
 
         {/* Environment */}
-        <Environment preset="night" />
+        <Environment resolution={64}>
+          <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
+          <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
+        </Environment>
 
         {/* Main Generator */}
         <Center>

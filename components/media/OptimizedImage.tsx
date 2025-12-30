@@ -49,6 +49,13 @@ export default function OptimizedImage({
   useEffect(() => {
     if (priority || isInView) return;
 
+    // Older browsers / restrictive environments may not support IntersectionObserver.
+    // In that case, load immediately instead of throwing and crashing the page.
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

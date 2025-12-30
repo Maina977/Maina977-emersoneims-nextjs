@@ -59,6 +59,7 @@ locations.forEach(loc => {
         });
       }
     } catch (error) {
+      void error;
       // Directory exists but can't read
     }
   }

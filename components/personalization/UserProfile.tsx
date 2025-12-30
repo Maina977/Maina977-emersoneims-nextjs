@@ -89,6 +89,8 @@ export default function UserProfile() {
     }
   };
 
+  void saveProduct;
+
   return (
     <>
       <button

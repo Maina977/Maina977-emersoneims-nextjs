@@ -1,8 +1,7 @@
 'use client';
-
 import { useState } from 'react';
-import QuestionsChart from './QuestionsChart';
-import QuestionsDonutChart from './QuestionsDonutChart';
+import QuestionsChart from '@/components/diagnostics/QuestionsChart';
+import QuestionsDonutChart from '@/components/diagnostics/QuestionsDonutChart';
 
 export default function QuestionsChartToggle({ data, severityData }) {
   const [mode, setMode] = useState('bar'); // 'bar' or 'donut'

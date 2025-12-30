@@ -2,13 +2,28 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { kv } from '@vercel/kv';
+import createIntlMiddleware from 'next-intl/middleware';
+import { locales, defaultLocale } from './i18n';
 
-// Rate limiter configuration
-const ratelimit = new Ratelimit({
-  redis: kv,
-  limiter: Ratelimit.slidingWindow(100, '1 m'), // 100 requests per minute
-  analytics: true,
+// Create i18n middleware handler
+const handleI18nRouting = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'as-needed'
 });
+
+let ratelimit: Ratelimit | null = null;
+
+function getRateLimiter(): Ratelimit {
+  if (!ratelimit) {
+    ratelimit = new Ratelimit({
+      redis: kv,
+      limiter: Ratelimit.slidingWindow(100, '1 m'),
+      analytics: true,
+    });
+  }
+  return ratelimit;
+}
 
 /**
  * SECURE PROXY MIDDLEWARE
@@ -17,6 +32,18 @@ const ratelimit = new Ratelimit({
 export async function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
+
+  // Handle internationalization routing first
+  const i18nResponse = handleI18nRouting(request);
+  
+  // If i18n middleware returns a redirect, apply it
+  if (i18nResponse.status === 307 || i18nResponse.status === 308) {
+    return i18nResponse;
+  }
+
+  const isProd =
+    process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production';
+  const blockedPrefixes = ['/test-page', '/test-minimal'] as const;
 
   // Domain redirect configuration
   const REDIRECT_WWW_TO_NON_WWW = process.env.REDIRECT_WWW === 'true';
@@ -28,14 +55,28 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
+  // Keep production deployment SOTD-focused: hide demo/test routes without deleting code.
+  if (isProd) {
+    const pathname = request.nextUrl.pathname;
+    const isBlocked = blockedPrefixes.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    );
+
+    if (isBlocked) {
+      const notFoundUrl = new URL('/_not-found', request.url);
+      const response = NextResponse.rewrite(notFoundUrl, { status: 404 });
+      return response;
+    }
+  }
+
   const response = NextResponse.next();
 
   // ESSENTIAL SECURITY HEADERS - BALANCED APPROACH
-  const securityHeaders = {
+  const securityHeaders: Record<string, string> = {
     // Content Security Policy - SECURE BUT PRACTICAL
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://fonts.googleapis.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://fonts.googleapis.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https: https://www.emersoneims.com https://emersoneims.com https://www.google-analytics.com https://www.googletagmanager.com https://fonts.gstatic.com",
@@ -66,9 +107,6 @@ export async function proxy(request: NextRequest) {
     // REFERRER POLICY
     'Referrer-Policy': 'strict-origin-when-cross-origin',
 
-    // SERVER INFO REMOVAL
-    'Server': '',
-
     // HSTS
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 
@@ -80,9 +118,6 @@ export async function proxy(request: NextRequest) {
 
     // CLICKJACKING PROTECTION
     'X-Frame-Options': 'DENY',
-
-    // SERVER INFO REMOVAL
-    'X-Powered-By': '',
 
     // ROBOTS TAG
     'X-Robots-Tag': 'index, follow',
@@ -145,7 +180,7 @@ export async function proxy(request: NextRequest) {
                       'unknown';
 
       if (process.env.NODE_ENV === 'production') {
-        const { success } = await ratelimit.limit(clientIP);
+        const { success } = await getRateLimiter().limit(clientIP);
 
         if (!success) {
           console.warn(`🚨 RATE LIMIT EXCEEDED for IP: ${clientIP}`);
@@ -174,13 +209,11 @@ export const config = {
     /*
      * Match all request paths except:
      * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - robots.txt (robots file)
-     * - sitemap.xml (sitemap file)
-     * - public files with extensions
+     * - _next/image (image optimization files)  
+     * - favicon.ico and other static assets
      */
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)',
+    '/(en|sw|fr|de|es|pt|zh|nl|am|so|ar)/:path*',
   ],
 };
 

@@ -10,7 +10,6 @@ export default function FocusVisible() {
   useEffect(() => {
     // Add focus-visible class when keyboard is used
     let hadKeyboardEvent = false;
-    let keyboardThrottleTimeout: NodeJS.Timeout;
 
     const matcher = (e: KeyboardEvent) => {
       if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) {

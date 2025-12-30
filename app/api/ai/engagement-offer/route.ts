@@ -5,15 +5,46 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+type EngagementTrigger = 'exit_intent' | 'high_engagement' | 'form_abandonment' | string;
+
+type EngagementData = {
+  page?: string;
+  engagementScore?: number;
+  interests?: string[];
+  timeOnPage?: number;
+  [key: string]: unknown;
+};
+
+type EngagementOffer = {
+  type: 'discount' | 'consultation' | 'chat' | 'newsletter';
+  title: string;
+  message: string;
+  cta: string;
+  priority: 'high' | 'medium' | 'low';
+};
+
+type EngagementOfferRequestBody = {
+  trigger?: EngagementTrigger;
+  data?: EngagementData;
+};
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { trigger, data } = body;
+    const body = (await request.json()) as EngagementOfferRequestBody;
+    const trigger = body.trigger;
+    const data = body.data;
+
+    if (!trigger || typeof trigger !== 'string') {
+      return NextResponse.json(
+        { error: 'Missing or invalid trigger' },
+        { status: 400 }
+      );
+    }
 
     // TODO: Integrate with OpenAI API for intelligent offer generation
     // For now, we'll use rule-based logic with AI-like personalization
 
-    const offer = await generateIntelligentOffer(trigger, data);
+    const offer = await generateIntelligentOffer(trigger, data ?? {});
 
     return NextResponse.json(offer);
   } catch (error) {
@@ -26,14 +57,13 @@ export async function POST(request: NextRequest) {
 }
 
 async function generateIntelligentOffer(
-  trigger: string,
-  data: any
-): Promise<any> {
+  trigger: EngagementTrigger,
+  data: EngagementData
+): Promise<EngagementOffer> {
   // Analyze visitor data
   const page = data.page || '';
   const engagementScore = data.engagementScore || 0;
   const interests = data.interests || [];
-  const timeOnPage = data.timeOnPage || 0;
 
   // Determine best offer based on context
   if (trigger === 'exit_intent' && engagementScore > 50) {

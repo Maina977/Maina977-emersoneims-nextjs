@@ -81,7 +81,7 @@ export default function ServiceAnalytics({ questionsData }: ServiceAnalyticsProp
         <div className="flex gap-2">
           <select
             value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value as any)}
+            onChange={(e) => setSelectedPeriod(e.target.value as 'week' | 'month' | 'quarter')}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="week">This Week</option>

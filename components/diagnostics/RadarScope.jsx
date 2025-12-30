@@ -1,6 +1,7 @@
 'use client';
 
 export default function RadarScope({ size = 400, sweepSpeed = 0.024, blipCount = 10 }) {
+  void sweepSpeed;
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="radar-scope">

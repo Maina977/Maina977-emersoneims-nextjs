@@ -38,7 +38,7 @@ export const cumminsGenerators: GeneratorSpec[] = [
     alternator: "Stamford UC224",
     fuelType: "Diesel",
     warrantyYears: 2,
-    image: "https://www.emersoneims.com/wp-content/uploads/2025/11/IMG-20250804-WA0006.jpg",
+    image: "/images/IMG-20250804-WA0006.jpg",
   },
   {
     model: "Cummins C100D5",

@@ -11,6 +11,14 @@ import Script from 'next/script';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
 
+type GtagFunction = (...args: unknown[]) => void;
+
+function getGtag(): GtagFunction | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const w = window as unknown as { gtag?: GtagFunction };
+  return w.gtag;
+}
+
 export default function GoogleAnalytics() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -19,8 +27,9 @@ export default function GoogleAnalytics() {
     if (!GA_ID || typeof window === 'undefined') return;
 
     // Track page view
-    if ((window as any).gtag) {
-      (window as any).gtag('config', GA_ID, {
+    const gtag = getGtag();
+    if (gtag) {
+      gtag('config', GA_ID, {
         page_path: pathname + (searchParams.toString() ? `?${searchParams.toString()}` : ''),
       });
     }

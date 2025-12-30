@@ -1,0 +1,254 @@
+﻿[
+    {
+        "Route":  "/",
+        "Url":  "https://www.emersoneims.com/",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/",
+        "ElapsedMs":  876,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/about-us",
+        "Url":  "https://www.emersoneims.com/about-us",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/about-us",
+        "ElapsedMs":  1665,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/api/health",
+        "Url":  "https://www.emersoneims.com/api/health",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/api/health",
+        "ElapsedMs":  1730,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/brands",
+        "Url":  "https://www.emersoneims.com/brands",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/brands",
+        "ElapsedMs":  1477,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/careers",
+        "Url":  "https://www.emersoneims.com/careers",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/careers",
+        "ElapsedMs":  2147,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/contact",
+        "Url":  "https://www.emersoneims.com/contact",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/contact",
+        "ElapsedMs":  1396,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/diagnostics",
+        "Url":  "https://www.emersoneims.com/diagnostics",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/diagnostics",
+        "ElapsedMs":  1445,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/diagnostic-suite",
+        "Url":  "https://www.emersoneims.com/diagnostic-suite",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/diagnostic-suite",
+        "ElapsedMs":  1265,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/generators",
+        "Url":  "https://www.emersoneims.com/generators",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/generators",
+        "ElapsedMs":  1368,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/generators/case-studies",
+        "Url":  "https://www.emersoneims.com/generators/case-studies",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/generators/case-studies",
+        "ElapsedMs":  1361,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/generators/maintenance",
+        "Url":  "https://www.emersoneims.com/generators/maintenance",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/generators/maintenance",
+        "ElapsedMs":  1295,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/generators/used",
+        "Url":  "https://www.emersoneims.com/generators/used",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/generators/used",
+        "ElapsedMs":  1327,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/ke/nairobi",
+        "Url":  "https://www.emersoneims.com/ke/nairobi",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/ke/nairobi",
+        "ElapsedMs":  1655,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/kenya/nairobi",
+        "Url":  "https://www.emersoneims.com/kenya/nairobi",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/kenya/nairobi",
+        "ElapsedMs":  1284,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/manifest.webmanifest",
+        "Url":  "https://www.emersoneims.com/manifest.webmanifest",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/manifest.webmanifest",
+        "ElapsedMs":  1050,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/privacy",
+        "Url":  "https://www.emersoneims.com/privacy",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/privacy",
+        "ElapsedMs":  1291,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/robots.txt",
+        "Url":  "https://www.emersoneims.com/robots.txt",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/robots.txt",
+        "ElapsedMs":  2177,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/service",
+        "Url":  "https://www.emersoneims.com/service",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/service",
+        "ElapsedMs":  1611,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/service/generators",
+        "Url":  "https://www.emersoneims.com/service/generators",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/service/generators",
+        "ElapsedMs":  1557,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/services",
+        "Url":  "https://www.emersoneims.com/services",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/services",
+        "ElapsedMs":  1338,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/sitemap.xml",
+        "Url":  "https://www.emersoneims.com/sitemap.xml",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/sitemap.xml",
+        "ElapsedMs":  1094,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/solar",
+        "Url":  "https://www.emersoneims.com/solar",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/solar",
+        "ElapsedMs":  1328,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/solution",
+        "Url":  "https://www.emersoneims.com/solution",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/solution",
+        "ElapsedMs":  1378,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/solution/generators",
+        "Url":  "https://www.emersoneims.com/solution/generators",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/solution/generators",
+        "ElapsedMs":  1319,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/solution/solar",
+        "Url":  "https://www.emersoneims.com/solution/solar",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/solution/solar",
+        "ElapsedMs":  1264,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/terms",
+        "Url":  "https://www.emersoneims.com/terms",
+        "Status":  "200",
+        "EffectiveUrl":  "https://www.emersoneims.com/terms",
+        "ElapsedMs":  1314,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/test-minimal",
+        "Url":  "https://www.emersoneims.com/test-minimal",
+        "Status":  "404",
+        "EffectiveUrl":  "https://www.emersoneims.com/test-minimal",
+        "ElapsedMs":  1295,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    },
+    {
+        "Route":  "/test-page",
+        "Url":  "https://www.emersoneims.com/test-page",
+        "Status":  "404",
+        "EffectiveUrl":  "https://www.emersoneims.com/test-page",
+        "ElapsedMs":  581,
+        "BadGlyphCount":  0,
+        "BadGlyphSample":  ""
+    }
+]

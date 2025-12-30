@@ -50,7 +50,7 @@ export default function AnalyticsDashboard() {
   const fetchDashboardData = async () => {
     try {
       const response = await fetch('/api/analytics/dashboard');
-      if (response.ok) {
+      if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
         const dashboardData = await response.json();
         setData(dashboardData);
       }

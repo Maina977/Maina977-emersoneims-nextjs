@@ -16,7 +16,7 @@ export interface MediaAsset {
 export const MEDIA_ASSETS: Record<string, MediaAsset> = {
   // Solar Images
   'solar-changeover-control': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/11/solar-changeover-control-scaled.png',
+    url: '/images/solar%20changeover%20control.png',
     type: 'image',
     alt: 'Solar changeover control system',
     usedIn: [],
@@ -30,21 +30,21 @@ export const MEDIA_ASSETS: Record<string, MediaAsset> = {
     category: 'solar',
   },
   'solar-hotel-heaters': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/11/solar-hotel-heaters-scaled.png',
+    url: '/images/solar%20hotel%20heaters.png',
     type: 'image',
     alt: 'Solar hotel heating system',
     usedIn: [],
     category: 'solar',
   },
   'solar-image-11': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/11/11.png',
+    url: '/images/11.png',
     type: 'image',
     alt: 'Solar installation showcase',
     usedIn: [],
     category: 'solar',
   },
   'solar-image-4': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/11/4-4.png',
+    url: '/images/4.png',
     type: 'image',
     alt: 'Solar system component',
     usedIn: [],
@@ -69,7 +69,7 @@ export const MEDIA_ASSETS: Record<string, MediaAsset> = {
   
   // Logo
   'logo-main': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/10/cropped-Emerson-EIMS-Logo-and-Tagline-PNG-Picsart-BackgroundRemover.png',
+    url: '/images/logo-tagline.png',
     type: 'image',
     alt: 'EmersonEIMS Logo',
     usedIn: [],

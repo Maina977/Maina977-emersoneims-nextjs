@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Line, Bar, Doughnut } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   LineElement,
@@ -170,8 +170,9 @@ export default function GeneratorCalculator() {
         ticks: {
           color: "#fff",
           font: { family: 'monospace' },
-          callback: function(value: any) {
-            return 'KSh ' + (value / 1000000).toFixed(1) + 'M';
+          callback: function(value: string | number) {
+            const numericValue = typeof value === 'number' ? value : Number(value);
+            return 'KSh ' + (numericValue / 1000000).toFixed(1) + 'M';
           },
         },
       },
@@ -186,8 +187,9 @@ export default function GeneratorCalculator() {
         ...chartOptions.scales.y,
         ticks: {
           ...chartOptions.scales.y.ticks,
-          callback: function(value: any) {
-            return 'KSh ' + (value / 1000).toFixed(0) + 'K';
+          callback: function(value: string | number) {
+            const numericValue = typeof value === 'number' ? value : Number(value);
+            return 'KSh ' + (numericValue / 1000).toFixed(0) + 'K';
           },
         },
       },

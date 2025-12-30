@@ -18,8 +18,8 @@ extend({
   dodecahedronGeometry: THREE.DodecahedronGeometry,
   icosahedronGeometry: THREE.IcosahedronGeometry,
 });
-import { Mesh, Vector3, Color } from 'three';
-import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
+import { Mesh } from 'three';
+import { OrbitControls, PerspectiveCamera, Environment, Lightformer } from '@react-three/drei';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface FloatingShapeProps {
@@ -317,7 +317,10 @@ export default function AbstractFloatingShapes({
             autoRotateSpeed={0.4} 
           />
         )}
-        <Environment preset="sunset" />
+        <Environment resolution={64}>
+          <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
+          <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
+        </Environment>
       </Canvas>
     </div>
   );

@@ -7,12 +7,21 @@ interface WebVitalsProps {
   analyticsId?: string;
 }
 
+type GtagFunction = (...args: unknown[]) => void;
+
+function getGtag(): GtagFunction | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const w = window as unknown as { gtag?: GtagFunction };
+  return w.gtag;
+}
+
 export default function WebVitals({ analyticsId }: WebVitalsProps) {
   useEffect(() => {
     function sendToAnalytics(metric: Metric) {
       // Send to your analytics service
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', metric.name, {
+      const gtag = getGtag();
+      if (gtag) {
+        gtag('event', metric.name, {
           event_category: 'Web Vitals',
           value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
           event_label: metric.id,
@@ -49,7 +58,6 @@ export default function WebVitals({ analyticsId }: WebVitalsProps) {
     onFCP(sendToAnalytics);
     onLCP(sendToAnalytics);
     onTTFB(sendToAnalytics);
-    onINP(sendToAnalytics);
   }, [analyticsId]);
 
   return null;

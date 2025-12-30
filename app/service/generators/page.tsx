@@ -6,9 +6,9 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SectionLead } from "@/components/generators";
 import ServiceOverview from "@/components/services/ServiceOverview";
-import AnimatedImage from "@/components/effects/AnimatedImage";
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
+import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -20,6 +20,7 @@ export default function GeneratorsServicePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+  const { isLite } = usePerformanceTier();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -51,38 +52,42 @@ export default function GeneratorsServicePage() {
 
   return (
     <ErrorBoundary>
-      <main ref={containerRef} className="min-h-screen bg-black text-white relative">
+      <main ref={containerRef} className="eims-section min-h-screen relative">
         {/* Holographic Laser Overlay */}
-        <HolographicLaser intensity="high" color="#fbbf24" />
+        {!isLite && <HolographicLaser intensity="high" color="#fbbf24" />}
         
         {/* 3D Background Scene */}
-        <Suspense fallback={null}>
-          <div className="fixed inset-0 -z-10 opacity-20">
-            <SimpleThreeScene />
-          </div>
-        </Suspense>
+        {!isLite && (
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 -z-10 opacity-20">
+              <SimpleThreeScene />
+            </div>
+          </Suspense>
+        )}
 
         {/* Hero Section */}
         <motion.section
-          className="relative py-32 px-4 overflow-hidden"
+          className="relative overflow-hidden"
           style={{ opacity: heroOpacity }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
-          <SectionLead
-            title="Diesel Generator Services"
-            subtitle="Complete generator services from installation to maintenance and repairs"
-            centered
-            showWebGL={false}
-          />
+          <div className="eims-shell py-32">
+            <SectionLead
+              title="Diesel Generator Services"
+              subtitle="Complete generator services from installation to maintenance and repairs"
+              centered
+              showWebGL={false}
+            />
+          </div>
         </motion.section>
 
         {/* Service Overview */}
         <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="eims-shell py-0">
             <ServiceOverview
               title="Diesel Generator Services"
               description="Comprehensive generator services including installation, maintenance, repairs, and parts supply for all major brands including Cummins, Perkins, Caterpillar, and more."
-              image="https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-1-1-scaled.png"
+              image="/images/GEN%202-1920x1080.png"
               features={[
                 'Generator installation and commissioning',
                 'Preventive and corrective maintenance',
@@ -111,7 +116,7 @@ export default function GeneratorsServicePage() {
 
         {/* CTA Section */}
         <section className="py-20 bg-gradient-to-br from-amber-500/10 via-black to-amber-500/10">
-          <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="eims-shell py-0 text-center">
             <motion.h2
               className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 20 }}

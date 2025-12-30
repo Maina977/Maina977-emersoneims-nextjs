@@ -1,0 +1,27 @@
+[
+  {
+    "brand": "Cummins",
+    "model": "KTA50",
+    "code": "1234",
+    "symptom": "Overheating under load",
+    "cause": "Coolant flow restriction; clogged radiator fins",
+    "fix": "Inspect water pump, flush coolant, pressure wash radiator"
+  },
+  {
+    "brand": "Perkins",
+    "model": "1104D",
+    "code": "P0216",
+    "symptom": "Injection timing control circuit range/performance",
+    "cause": "Faulty timing solenoid or wiring harness issue",
+    "fix": "Test solenoid resistance, inspect harness, replace solenoid if out of spec"
+  },
+  {
+    "brand": "Caterpillar",
+    "model": "C15",
+    "code": "E350",
+    "symptom": "Low oil pressure warning",
+    "cause": "Worn bearings or faulty oil pressure sensor",
+    "fix": "Verify with mechanical gauge, replace sensor, inspect bearings"
+  }
+]
+
