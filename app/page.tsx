@@ -91,15 +91,20 @@ export default function AwwwardsHomepage() {
               >
                 <Link 
                   href="/solution"
-                  className="group px-12 py-6 bg-gradient-to-r from-amber-500 to-amber-600 text-black text-xl font-bold rounded-full hover:scale-105 transition-all duration-500"
+                  className="group relative px-12 py-6 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 text-black text-xl font-bold rounded-full hover:scale-105 transition-all duration-500 overflow-hidden"
                 >
-                  Explore Solutions
+                  <span className="relative z-10 flex items-center justify-center gap-3">
+                    ⚡ Get Emergency Power in 48 Hours
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
                 <Link 
                   href="/contact"
-                  className="px-12 py-6 border-2 border-white text-white text-xl font-bold rounded-full hover:bg-white hover:text-black transition-all duration-500"
+                  className="group relative px-12 py-6 border-2 border-amber-400 text-amber-400 text-xl font-bold rounded-full hover:bg-amber-400 hover:text-black transition-all duration-500"
                 >
-                  Get Started
+                  <span className="flex items-center justify-center gap-3">
+                    💬 Talk to Expert (2-Hour Response)
+                  </span>
                 </Link>
               </motion.div>
             </motion.div>
