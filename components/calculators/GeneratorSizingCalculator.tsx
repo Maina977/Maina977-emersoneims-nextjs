@@ -541,7 +541,7 @@ export default function GeneratorSizingCalculator() {
               className="space-y-8"
             >
               {/* System Overview */}
-              <GlassmorphicCard intensity="high" className="p-8">
+              <GlassmorphicCard intensity="heavy" className="p-8">
                 <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 bg-clip-text text-transparent">
                   Your Custom Generator Solution
                 </h2>
@@ -720,7 +720,7 @@ export default function GeneratorSizingCalculator() {
               </GlassmorphicCard>
 
               {/* CTA Buttons */}
-              <GlassmorphicCard intensity="high" className="p-8">
+              <GlassmorphicCard intensity="heavy" className="p-8">
                 <h3 className="text-2xl font-bold mb-6 text-center text-white">Get Your Generator Installed</h3>
                 <div className="grid md:grid-cols-3 gap-4">
                   <button className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-green-500/50">

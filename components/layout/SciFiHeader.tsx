@@ -18,8 +18,8 @@ const NAV_ITEMS = [
   { href: '/solution', label: 'Solutions' },
   { href: '/generators', label: 'Generators' },
   { href: '/solar', label: 'Solar' },
-  { href: '/diagnostics', label: 'Universal Diagnostics' },
-  { href: '/diagnostic-suite', label: 'Generator Diagnostics' },
+  { href: '/diagnostics', label: 'Diagnostics' },
+  { href: '/diagnostic-suite', label: 'Diagnostic Suite' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -116,15 +116,15 @@ export default function SciFiHeader() {
                 <img
                   src="/images/logo-tagline.png"
                   alt="Emerson EiMS Logo"
-                  className="w-20 h-20 object-contain group-hover:scale-110 transition-transform duration-300"
+                  className="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 rounded-lg bg-cyan-400/20 blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
               </div>
               <div className="hidden sm:block">
-                <div className="text-2xl font-bold font-mono text-cyan-300 tracking-wider">
-                  EMERSON<span className="text-cyan-500">EIMS</span>
+                <div className="text-lg font-bold font-mono text-cyan-300 tracking-wider">
+                  EMERSON<span className="text-cyan-500">EiMS</span>
                 </div>
-                <div className="text-xs text-cyan-400/80 font-mono font-semibold">Industrial Maintenance Services</div>
+                <div className="text-xs text-cyan-400/60 font-mono">"Reliable Power. Without Limits."</div>
               </div>
             </Link>
           </motion.div>

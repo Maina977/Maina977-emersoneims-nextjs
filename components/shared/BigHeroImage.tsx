@@ -64,9 +64,10 @@ export default function BigHeroImage({
         <OptimizedImage
           src={src}
           alt={alt}
-          fill
+          width={1920}
+          height={1080}
           priority
-          className="object-cover"
+          className="object-cover w-full h-full"
           sizes="100vw"
         />
       </motion.div>

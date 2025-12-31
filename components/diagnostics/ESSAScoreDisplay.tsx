@@ -27,15 +27,15 @@ export default function ESSAScoreDisplay({
   equipmentAgeYears = 2,
   altitudeMeters = 1800
 }: ESSAScoreDisplayProps) {
-  const essaResult = calculateESSA(
-    baseSeverity,
-    temperature,
+  const essaResult = calculateESSA({
+    faultCode: errorCode,
+    ambientTemp: temperature,
     loadPercentage,
-    maintenanceMonthsAgo,
-    occurrencesPerMonth,
+    daysSinceLastMaintenance: maintenanceMonthsAgo * 30,
+    faultFrequencyPerMonth: occurrencesPerMonth,
     equipmentAgeYears,
     altitudeMeters
-  );
+  });
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -76,89 +76,35 @@ export default function ESSAScoreDisplay({
       </div>
 
       {/* Score Display */}
-      <div className={`bg-gradient-to-r ${getSeverityColor(essaResult.severity)} rounded-xl p-6 mb-4`}>
+      <div className={`bg-gradient-to-r ${getSeverityColor(essaResult.category)} rounded-xl p-6 mb-4`}>
         <div className="text-center">
           <div className="text-5xl font-bold text-white mb-2">
-            {essaResult.adjustedSeverity.toFixed(1)}
+            {essaResult.adjusted.toFixed(1)}
           </div>
           <div className="text-lg font-semibold text-white/90">
-            {essaResult.severity}
+            {essaResult.category}
           </div>
           <div className="text-sm text-white/70">
-            Base: {baseSeverity.toFixed(1)} → Adjusted: {essaResult.adjustedSeverity.toFixed(1)}
+            Base: {essaResult.raw.toFixed(1)} → Adjusted: {essaResult.adjusted.toFixed(1)}
           </div>
         </div>
       </div>
 
-      {/* Factor Breakdown */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        {essaResult.factors.temperature !== 1.0 && (
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-            <div className="text-xs text-gray-400">Temperature Impact</div>
-            <div className="text-lg font-bold text-amber-400">
-              ×{essaResult.factors.temperature.toFixed(2)}
-            </div>
-            <div className="text-xs text-gray-500">{temperature}°C</div>
-          </div>
-        )}
-        {essaResult.factors.load !== 1.0 && (
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-            <div className="text-xs text-gray-400">Load Impact</div>
-            <div className="text-lg font-bold text-orange-400">
-              ×{essaResult.factors.load.toFixed(2)}
-            </div>
-            <div className="text-xs text-gray-500">{loadPercentage}% load</div>
-          </div>
-        )}
-        {essaResult.factors.maintenance !== 1.0 && (
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-            <div className="text-xs text-gray-400">Maintenance Factor</div>
-            <div className="text-lg font-bold text-red-400">
-              ×{essaResult.factors.maintenance.toFixed(2)}
-            </div>
-            <div className="text-xs text-gray-500">{maintenanceMonthsAgo} months ago</div>
-          </div>
-        )}
-        {essaResult.factors.frequency !== 1.0 && (
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-            <div className="text-xs text-gray-400">Frequency Factor</div>
-            <div className="text-lg font-bold text-cyan-400">
-              ×{essaResult.factors.frequency.toFixed(2)}
-            </div>
-            <div className="text-xs text-gray-500">{occurrencesPerMonth}/month</div>
-          </div>
-        )}
-        {essaResult.factors.age !== 1.0 && (
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-            <div className="text-xs text-gray-400">Age Factor</div>
-            <div className="text-lg font-bold text-yellow-400">
-              ×{essaResult.factors.age.toFixed(2)}
-            </div>
-            <div className="text-xs text-gray-500">{equipmentAgeYears} years</div>
-          </div>
-        )}
-        {essaResult.factors.altitude !== 1.0 && (
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10">
-            <div className="text-xs text-gray-400">Altitude Factor</div>
-            <div className="text-lg font-bold text-purple-400">
-              ×{essaResult.factors.altitude.toFixed(2)}
-            </div>
-            <div className="text-xs text-gray-500">{altitudeMeters}m ASL</div>
-          </div>
-        )}
+      {/* Predictions */}
+      <div className="bg-white/5 rounded-lg p-4 mb-4 border border-white/10">
+        <h4 className="text-sm font-bold text-white mb-3">Predicted Timeline</h4>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-400">Estimated Failure:</span>
+          <span className="text-sm font-semibold text-amber-400">{essaResult.predictedFailureTime}</span>
+        </div>
       </div>
 
       {/* Recommendations */}
-      <div className={`border-l-4 ${getSeverityBorder(essaResult.severity)} bg-white/5 rounded-r-lg p-4`}>
-        <h4 className="text-sm font-bold text-white mb-2">Recommendations</h4>
-        <ul className="space-y-1">
-          {essaResult.recommendations.map((rec, i) => (
-            <li key={i} className="text-xs text-gray-300 flex items-start">
-              <span className="text-amber-500 mr-2">▸</span>
-              <span>{rec}</span>
-            </li>
-          ))}
-        </ul>
+      <div className={`border-l-4 ${getSeverityBorder(essaResult.category)} bg-white/5 rounded-r-lg p-4`}>
+        <h4 className="text-sm font-bold text-white mb-2">Recommended Action</h4>
+        <p className="text-xs text-gray-300">
+          {essaResult.recommendedAction}
+        </p>
       </div>
 
       {/* Patent Notice */}

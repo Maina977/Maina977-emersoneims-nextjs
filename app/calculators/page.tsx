@@ -361,16 +361,13 @@ function PMICalculator() {
   const [pmi, setPMI] = useState<any>(null);
 
   const calculatePrediction = () => {
-    const result = calculatePMI(
-      inputs.service,
-      inputs.equipmentAge,
-      inputs.lastMaintenance,
-      inputs.operatingHours,
-      inputs.avgLoad,
-      inputs.climate,
-      inputs.temperature,
-      inputs.altitude
-    );
+    const result = calculatePMI({
+      equipmentType: inputs.service,
+      runningHours: inputs.operatingHours,
+      lastMaintenanceHours: inputs.lastMaintenance,
+      faultHistory: [],
+      ambientConditions: inputs.climate as 'coastal' | 'highland' | 'arid' | 'urban'
+    });
     setPMI(result);
   };
 

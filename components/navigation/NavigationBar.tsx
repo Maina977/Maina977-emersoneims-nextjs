@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 interface NavigationBarProps {
   activeSection?: string;
@@ -70,19 +71,33 @@ export default function NavigationBar({
           </motion.div>
 
           {/* Desktop Navigation */}
-          <div className="hiddenavigateToSection(itemgap-8">
+          <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`text-sm font-medium transition-colors ${
-                  activeSection === item.id
-                    ? 'text-amber-400'
-                    : 'text-gray-400 hover:text-amber-300'
-                }`}
-              >
-                {item.label}
-              </button>
+              item.href ? (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`text-sm font-medium transition-colors ${
+                    activeSection === item.id
+                      ? 'text-amber-400'
+                      : 'text-gray-400 hover:text-amber-300'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => navigateToSection(item)}
+                  className={`text-sm font-medium transition-colors ${
+                    activeSection === item.id
+                      ? 'text-amber-400'
+                      : 'text-gray-400 hover:text-amber-300'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              )
             ))}
 
             {/* Theme Toggle */}

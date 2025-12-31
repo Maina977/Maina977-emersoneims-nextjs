@@ -4,7 +4,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { getCorrelatedCodes } from '@/app/data/diagnostic/emersonMethodology';
+import { findBrandCorrelations } from '@/app/data/diagnostic/emersonMethodology';
 
 interface MultiBrandCorrelationProps {
   currentCode: string;
@@ -15,9 +15,9 @@ export default function MultiBrandCorrelation({
   currentCode,
   currentBrand
 }: MultiBrandCorrelationProps) {
-  const correlations = getCorrelatedCodes(currentCode);
+  const correlation = findBrandCorrelations(currentCode);
 
-  if (correlations.length === 0) {
+  if (correlation.correlatedCodes.length === 0) {
     return null;
   }
 
@@ -34,7 +34,7 @@ export default function MultiBrandCorrelation({
             Multi-Brand Correlation Engine™
           </h3>
           <p className="text-sm text-gray-400">
-            Cross-reference with {correlations.length} similar faults across brands
+            Cross-reference with {correlation.correlatedCodes.length} similar faults across brands
           </p>
         </div>
         <div className="bg-cyan-500/20 px-4 py-2 rounded-full">
@@ -55,7 +55,7 @@ export default function MultiBrandCorrelation({
         <h4 className="text-sm font-semibold text-gray-300 mb-3">
           Related Faults in Other Control Systems:
         </h4>
-        {correlations.map((corr, index) => (
+        {correlation.correlatedCodes.map((corr, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, x: -20 }}
@@ -78,14 +78,13 @@ export default function MultiBrandCorrelation({
                     {corr.similarity}% match
                   </span>
                 </div>
-                <p className="text-sm text-gray-300 mb-2">{corr.description}</p>
                 
                 {/* Common Symptoms */}
-                {corr.commonSymptoms && corr.commonSymptoms.length > 0 && (
+                {corr.sharedSymptoms && corr.sharedSymptoms.length > 0 && (
                   <div className="mt-3">
-                    <div className="text-xs text-gray-400 mb-1">Common Symptoms:</div>
+                    <div className="text-xs text-gray-400 mb-1">Shared Symptoms:</div>
                     <div className="flex flex-wrap gap-2">
-                      {corr.commonSymptoms.map((symptom, i) => (
+                      {corr.sharedSymptoms.map((symptom, i) => (
                         <span 
                           key={i}
                           className="text-xs bg-white/10 px-2 py-1 rounded text-gray-300"
@@ -94,21 +93,6 @@ export default function MultiBrandCorrelation({
                         </span>
                       ))}
                     </div>
-                  </div>
-                )}
-
-                {/* Shared Solutions */}
-                {corr.sharedSolutions && corr.sharedSolutions.length > 0 && (
-                  <div className="mt-3">
-                    <div className="text-xs text-gray-400 mb-1">Shared Solutions:</div>
-                    <ul className="space-y-1">
-                      {corr.sharedSolutions.map((solution, i) => (
-                        <li key={i} className="text-xs text-gray-300 flex items-start">
-                          <span className="text-cyan-500 mr-2">▸</span>
-                          <span>{solution}</span>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 )}
               </div>
