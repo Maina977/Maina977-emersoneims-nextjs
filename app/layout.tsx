@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ContentProtection from '@/components/security/ContentProtection';
+import DMCAProtection from '@/components/security/DMCAProtection';
 import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import { OrganizationSchema } from '@/components/seo/StructuredData';
@@ -230,10 +230,20 @@ export default function RootLayout({
         {/* WCAG 2.1 AA: Skip to Content Link */}
         <SkipToContent />
         
+        {/* Enterprise-Grade DMCA & Copyright Protection */}
+        <DMCAProtection
+          enableWatermark={true}
+          enableRightClickProtection={true}
+          enableCopyProtection={true}
+          enableDevToolsProtection={true}
+          enablePrintProtection={true}
+          enableScreenshotDetection={true}
+          showWarnings={true}
+        />
+        
         {/* Global Structured Data for SEO */}
         <OrganizationSchema />
         
-        <ContentProtection />
         <TeslaStyleNavigation />
         <main id="main-content">
           {children}

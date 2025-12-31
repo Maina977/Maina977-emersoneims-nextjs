@@ -10,9 +10,12 @@ const nextConfig: NextConfig = {
   
   // Performance optimizations
   compress: true,
-  poweredByHeader: false,
+  poweredByHeader: false, // Hide Next.js version (security)
   
-  // Image optimization
+  // Security: Disable X-Powered-By header
+  generateEtags: true,
+  
+  // Image optimization with security
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -32,11 +35,9 @@ const nextConfig: NextConfig = {
         hostname: 'emersoneims.com',
         pathname: '/wp-content/**',
       },
-			{
-				protocol: 'https',
-				hostname: '**',
-			},
     ],
+    // Security: Disable loading from arbitrary domains
+    unoptimized: false,
   },
   
   // Experimental features for performance
