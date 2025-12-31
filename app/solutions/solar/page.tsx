@@ -2,6 +2,7 @@ import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
 import OptimizedImage from "@/components/media/OptimizedImage";
+import { ServiceSchema } from "@/components/seo/StructuredData";
 
 export const metadata = {
   title: "Solar energy technical issues — EmersonEIMS solutions",
@@ -12,6 +13,10 @@ export const metadata = {
 export default function SolarIssuesPage() {
   return (
     <main>
+      <ServiceSchema 
+        service="Solar Power System Diagnostics & Optimization"
+      />
+      
       <SectionLead
         title="Solar energy technical issues"
         subtitle="Irradiance variance, shading, thermal derating, wiring losses, inverter clipping, and monitoring."

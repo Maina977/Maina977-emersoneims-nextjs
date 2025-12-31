@@ -2,6 +2,7 @@ import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
 import OptimizedImage from "@/components/media/OptimizedImage";
+import { ServiceSchema } from "@/components/seo/StructuredData";
 
 export const metadata = {
   title: "UPS systems troubleshooting & maintenance — EmersonEIMS solutions",
@@ -12,6 +13,10 @@ export const metadata = {
 export default function UPSPage() {
   return (
     <main>
+      <ServiceSchema 
+        service="UPS System Maintenance & Battery Services"
+      />
+      
       <SectionLead
         title="UPS systems troubleshooting & maintenance"
         subtitle="Battery failures, bypass issues, alarms, load capacity, and preventive maintenance."

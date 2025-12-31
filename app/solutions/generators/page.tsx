@@ -2,6 +2,7 @@ import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
 import OptimizedImage from "@/components/media/OptimizedImage";
+import { ServiceSchema } from "@/components/seo/StructuredData";
 
 export const metadata = {
   title: "Diesel generator troubleshooting & maintenance — EmersonEIMS solutions",
@@ -12,6 +13,10 @@ export const metadata = {
 export default function GeneratorsPage() {
   return (
     <main>
+      <ServiceSchema 
+        service="Diesel Generator Troubleshooting & Maintenance"
+      />
+      
       <SectionLead
         title="Diesel generator troubleshooting & maintenance"
         subtitle="Starting failures, control panel alarms, load capacity, governor hunting, fuel system issues, and preventive maintenance."

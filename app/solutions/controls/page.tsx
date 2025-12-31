@@ -2,6 +2,7 @@ import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
 import OptimizedImage from "@/components/media/OptimizedImage";
+import { ServiceSchema } from "@/components/seo/StructuredData";
 
 export const metadata = {
   title: "DeepSea & PowerWizard controls — EmersonEIMS solutions",
@@ -12,6 +13,10 @@ export const metadata = {
 export default function ControlsPage() {
   return (
     <main>
+      <ServiceSchema 
+        service="Generator Controller Programming & Configuration"
+      />
+      
       <SectionLead
         title="DeepSea & PowerWizard controls"
         subtitle="Configuration, alarm troubleshooting, load sharing, remote monitoring, and firmware updates."

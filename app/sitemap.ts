@@ -66,6 +66,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/diagnostic-cockpit`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
       url: `${baseUrl}/diagnostics`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
@@ -91,6 +97,76 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
   
+  // Solutions pages
+  const solutionPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/solutions/generators`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/solutions/controls`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/solutions/solar-sizing`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/solutions/power-interruptions`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/solutions/ac`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/solutions/ups`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/solutions/borehole-pumps`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/solutions/incinerators`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/solutions/motors`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/solutions/solar`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/solutions/contact`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+  ];
+  
   // County pages
   const countyPages: MetadataRoute.Sitemap = [
     {
@@ -107,5 +183,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   ];
   
-  return [...mainPages, ...countyPages];
+  return [...mainPages, ...solutionPages, ...countyPages];
 }
