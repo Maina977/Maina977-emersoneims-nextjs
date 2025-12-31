@@ -75,25 +75,41 @@ export default function TeslaStyleNavigation({
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo - Enhanced for Maximum Visibility & Branding */}
           <Link
             href="/"
             aria-label="Emerson EiMS home"
-            className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black group"
           >
-            <div className="flex items-center gap-3 cursor-pointer transition-transform active:scale-[0.98] hover:scale-[1.02]">
-              <Image
-                src="/images/logo-tagline.png"
-                alt="Emerson EIMS Logo"
-                width={180}
-                height={45}
-                priority
-                sizes="(max-width: 768px) 140px, 180px"
-                className="h-9 w-auto object-contain"
-              />
-              <span className="text-[10px] sm:text-xs font-semibold text-white/80 leading-tight max-w-[150px] sm:max-w-none">
-                Reliable Power. Without Limits.
-              </span>
+            <div className="flex items-center gap-4 cursor-pointer transition-all duration-300 group-hover:scale-[1.03] group-active:scale-[0.97]">
+              {/* Logo with Enhanced Contrast & Glow */}
+              <div className="relative">
+                {/* Glow effect behind logo */}
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-amber-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                {/* Logo with subtle shadow for depth */}
+                <div className="relative bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10 group-hover:border-cyan-500/50 transition-all duration-300 shadow-lg shadow-black/20">
+                  <Image
+                    src="/images/logo-tagline.png"
+                    alt="EmersonEIMS - Premium Power Engineering"
+                    width={220}
+                    height={55}
+                    priority
+                    sizes="(max-width: 768px) 160px, 220px"
+                    className="h-12 sm:h-14 w-auto object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] brightness-110 contrast-110"
+                  />
+                </div>
+              </div>
+              
+              {/* Tagline with Premium Gradient */}
+              <div className="hidden sm:flex flex-col">
+                <span className="text-xs font-bold bg-gradient-to-r from-amber-400 via-amber-300 to-cyan-400 bg-clip-text text-transparent leading-tight tracking-wide">
+                  Reliable Power.
+                </span>
+                <span className="text-xs font-bold bg-gradient-to-r from-cyan-400 via-cyan-300 to-amber-400 bg-clip-text text-transparent leading-tight tracking-wide">
+                  Without Limits.
+                </span>
+              </div>
             </div>
           </Link>
 
