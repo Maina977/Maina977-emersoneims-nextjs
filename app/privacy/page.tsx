@@ -1,6 +1,7 @@
 export const metadata = {
-  title: 'Privacy Policy | Emerson EiMS',
-  description: 'Privacy policy for Emerson EiMS digital services.',
+  title: 'Privacy Policy | EmersonEIMS - GDPR Compliant Data Protection',
+  description: 'Learn how EmersonEIMS collects, uses, and protects your personal information. GDPR, CCPA, and Kenya Data Protection Act compliant privacy policy.',
+  robots: 'index, follow',
 };
 
 export default function PrivacyPage() {

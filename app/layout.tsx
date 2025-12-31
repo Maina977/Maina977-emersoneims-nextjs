@@ -7,6 +7,7 @@ import PremiumFooter from '@/components/layout/PremiumFooter';
 import { OrganizationSchema } from '@/components/seo/StructuredData';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
+import CookieConsent from '@/components/compliance/CookieConsent';
 import Script from 'next/script';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
@@ -270,6 +271,9 @@ export default function RootLayout({
         
         {/* PWA Install Prompt */}
         <PWAInstallPrompt />
+        
+        {/* GDPR Cookie Consent */}
+        <CookieConsent />
 
         {/* PWA Support - Service Worker */}
         <Script
