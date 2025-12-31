@@ -1,6 +1,7 @@
 import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
+import OptimizedImage from "@/components/media/OptimizedImage";
 
 export const metadata = {
   title: "UPS systems troubleshooting & maintenance — EmersonEIMS solutions",
@@ -15,6 +16,39 @@ export default function UPSPage() {
         title="UPS systems troubleshooting & maintenance"
         subtitle="Battery failures, bypass issues, alarms, load capacity, and preventive maintenance."
       />
+      
+      {/* UPS Systems Images */}
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/912.png"
+              alt="UPS Power System 1"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/913.png"
+              alt="UPS Power System 2"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/914.png"
+              alt="UPS Power System 3"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-7xl px-6 pb-12 grid md:grid-cols-3 gap-6">
         <InfoCard title="UPS topologies" items={[
           { label: "Standby/offline", detail: "Basic protection, switching time ~10ms, low cost" },

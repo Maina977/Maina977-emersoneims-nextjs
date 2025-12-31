@@ -1,6 +1,7 @@
 import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
+import OptimizedImage from "@/components/media/OptimizedImage";
 
 export const metadata = {
   title: "Air conditioning troubleshooting & efficiency — EmersonEIMS solutions",
@@ -15,6 +16,39 @@ export default function ACPage() {
         title="Air conditioning troubleshooting & efficiency"
         subtitle="Refrigerant leaks, compressor failures, airflow issues, controls, and energy optimization."
       />
+      
+      {/* HVAC Equipment Images */}
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/909.png"
+              alt="HVAC System 1"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/910.png"
+              alt="HVAC System 2"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/911.png"
+              alt="HVAC System 3"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-7xl px-6 pb-12 grid md:grid-cols-3 gap-6">
         <InfoCard title="Common failures" items={[
           { label: "Refrigerant leaks", detail: "Leak detection, recovery, vacuum, recharge, pressure test" },

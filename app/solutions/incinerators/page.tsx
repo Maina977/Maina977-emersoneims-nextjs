@@ -1,6 +1,7 @@
 import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
+import OptimizedImage from "@/components/media/OptimizedImage";
 
 export const metadata = {
   title: "Incinerator controls & troubleshooting — EmersonEIMS solutions",
@@ -15,6 +16,39 @@ export default function IncineratorsPage() {
         title="Incinerator controls & troubleshooting"
         subtitle="Burner controls, flue gas monitoring, temperature regulation, and compliance."
       />
+      
+      {/* Industrial Systems Images */}
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/918.png"
+              alt="Industrial Incinerator System 1"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/919.png"
+              alt="Industrial Incinerator System 2"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/920.png"
+              alt="Industrial Incinerator System 3"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-7xl px-6 pb-12 grid md:grid-cols-3 gap-6">
         <InfoCard title="Burner systems" items={[
           { label: "Ignition", detail: "Pilot/main flame detection, UV/IR sensors, safety lockout" },

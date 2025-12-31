@@ -1,6 +1,7 @@
 import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
+import OptimizedImage from "@/components/media/OptimizedImage";
 
 export const metadata = {
   title: "Power interruptions & quality issues — EmersonEIMS solutions",
@@ -15,6 +16,39 @@ export default function PowerInterruptionsPage() {
         title="Power interruptions & quality issues"
         subtitle="Voltage sags, surges, harmonics, power factor, flicker, and mitigation strategies."
       />
+      
+      {/* Power Quality Equipment Images */}
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/921.png"
+              alt="Power Quality Equipment 1"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/922.png"
+              alt="Power Quality Equipment 2"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/Multimeter.png"
+              alt="Power Quality Testing Equipment"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-7xl px-6 pb-12 grid md:grid-cols-3 gap-6">
         <InfoCard title="Disturbance types" items={[
           { label: "Sags/dips", detail: "Short-duration under-voltage, motor starting, faults" },

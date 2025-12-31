@@ -1,6 +1,7 @@
 import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
+import OptimizedImage from "@/components/media/OptimizedImage";
 
 export const metadata = {
   title: "DeepSea & PowerWizard controls — EmersonEIMS solutions",
@@ -15,6 +16,21 @@ export default function ControlsPage() {
         title="DeepSea & PowerWizard controls"
         subtitle="Configuration, alarm troubleshooting, load sharing, remote monitoring, and firmware updates."
       />
+      
+      {/* Hero Control Panel Image */}
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="relative h-96 rounded-xl overflow-hidden">
+          <OptimizedImage
+            src="/images/7320-1920x1080.png"
+            alt="DeepSea Control Panel"
+            width={1920}
+            height={1080}
+            className="w-full h-full object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+      </section>
       <section className="mx-auto max-w-7xl px-6 pb-12 grid md:grid-cols-3 gap-6">
         <InfoCard title="DeepSea modules" items={[
           { label: "DSE73xx series", detail: "Auto mains failure, load management, sync paralleling" },

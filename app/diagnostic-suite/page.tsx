@@ -185,9 +185,52 @@ export default function DiagnosticSuitePage() {
                 <div className="mb-4">
                   <SectionHeading>Generator Control Diagnostic Hub</SectionHeading>
                 </div>
-                <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-6">
                   Specialized diagnostic interface for Generators, Controls, DeepSea Controllers, and PowerWizard Systems
                 </p>
+                
+                {/* Full Cockpit View Link */}
+                <motion.div
+                  className="max-w-2xl mx-auto mb-8"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <a
+                    href="/diagnostic-cockpit"
+                    className="block bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-orange-500/20 border-2 border-cyan-500/50 hover:border-cyan-400 rounded-xl p-6 transition-all duration-300 group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-left">
+                        <h3 className="text-2xl font-bold text-cyan-400 mb-2 flex items-center gap-3">
+                          <span className="text-3xl">🚀</span>
+                          FULL MISSION CONTROL COCKPIT
+                        </h3>
+                        <p className="text-gray-300 mb-2">
+                          Aerospace-style diagnostic interface with live telemetry, pressure gauges, real-time charts, and 4,000+ fault codes
+                        </p>
+                        <div className="flex gap-4 text-xs text-gray-400">
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            Live Data Stream
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                            Pressure Gauges
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+                            Real-time Charts
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-4xl group-hover:scale-110 transition-transform">
+                        →
+                      </div>
+                    </div>
+                  </a>
+                </motion.div>
               </motion.div>
               
               <motion.div

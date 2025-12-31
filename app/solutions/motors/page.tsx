@@ -1,6 +1,7 @@
 import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
+import OptimizedImage from "@/components/media/OptimizedImage";
 
 export const metadata = {
   title: "Motors & rewinding services — EmersonEIMS solutions",
@@ -15,6 +16,39 @@ export default function MotorsPage() {
         title="Motors & rewinding services"
         subtitle="AC/DC motors, rewinding, VFD compatibility, bearing failures, and insulation testing."
       />
+      
+      {/* Motor & Engine Parts Images */}
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/Perkins-4000-Parts.webp"
+              alt="Perkins Engine Parts"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/PERKINS-ENGINE-PARTS.jpg"
+              alt="Perkins Engine Components"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <OptimizedImage
+              src="/images/prima__91388__28242__47940.1692695563.1280.1280_512x444.webp"
+              alt="Motor Parts and Components"
+              width={800}
+              height={600}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-7xl px-6 pb-12 grid md:grid-cols-3 gap-6">
         <InfoCard title="Motor types" items={[
           { label: "Induction", detail: "Squirrel cage, wound rotor, single/three-phase" },

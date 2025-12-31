@@ -2,6 +2,7 @@ import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
 import Link from "next/link";
+import OptimizedImage from "@/components/media/OptimizedImage";
 
 export const metadata = {
   title: "Solar sizing calculator & design — EmersonEIMS solutions",
@@ -16,6 +17,31 @@ export default function SolarSizingPage() {
         title="Solar sizing calculator & design"
         subtitle="Load analysis, panel selection, inverter sizing, battery storage, and system optimization."
       />
+      
+      {/* Solar Installation Images */}
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="relative h-80 rounded-xl overflow-hidden">
+            <OptimizedImage
+              src="/solar for flower farms.png"
+              alt="Solar for Flower Farms"
+              width={1920}
+              height={1080}
+              className="w-full h-full object-cover"
+              priority
+            />
+          </div>
+          <div className="relative h-80 rounded-xl overflow-hidden">
+            <OptimizedImage
+              src="/images/solar hotel heaters.png"
+              alt="Solar Hotel Heating Systems"
+              width={1920}
+              height={1080}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      </section>
       <section className="mx-auto max-w-7xl px-6 pb-12 grid md:grid-cols-3 gap-6">
         <InfoCard title="Load analysis" items={[
           { label: "Energy audit", detail: "Daily kWh, peak kW, power factor, diversity" },
