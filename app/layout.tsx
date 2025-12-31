@@ -6,6 +6,8 @@ import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import { OrganizationSchema } from '@/components/seo/StructuredData';
 import SkipToContent from '@/components/accessibility/SkipToContent';
+import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
+import Script from 'next/script';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
@@ -265,6 +267,27 @@ export default function RootLayout({
           {children}
         </main>
         <PremiumFooter />
+        
+        {/* PWA Install Prompt */}
+        <PWAInstallPrompt />
+
+        {/* PWA Support - Service Worker */}
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    (registration) => console.log('✅ SW registered:', registration.scope),
+                    (error) => console.error('❌ SW failed:', error)
+                  );
+                });
+              }
+            `,
+          }}
+        />
 
         {/* Performance Monitoring - Web Vitals */}
         <script
