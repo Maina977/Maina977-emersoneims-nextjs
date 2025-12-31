@@ -81,18 +81,45 @@ export default function KisiiCountyPage() {
             Serving {COUNTY_DATA.population.toLocaleString()}+ residents with 24/7 emergency service.
           </p>
 
+          {/* Emergency Alert Banner */}
+          <section className="py-4 px-6 bg-gradient-to-r from-red-900/30 to-orange-900/30 border border-red-500/30 rounded-xl mb-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="text-3xl animate-pulse">🚨</div>
+                <div>
+                  <div className="text-xl font-bold text-red-400">Emergency Generator Repair {COUNTY_DATA.name}</div>
+                  <div className="text-sm text-gray-400">2-Hour Response Time • 24/7/365</div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <a href="tel:+254727631316" className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all">
+                  🔥 Emergency: +254 727 631 316
+                </a>
+                <a href="tel:+254768860655" className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold rounded-lg transition-all">
+                  📞 General: +254 768 860 655
+                </a>
+              </div>
+            </div>
+          </section>
+
           <div className="flex flex-wrap gap-4 mb-12">
-            <a 
-              href="tel:+254768860655"
+            <Link
+              href="/contact?type=emergency"
+              className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all"
+            >
+              🔥 Request Emergency Service
+            </Link>
+            <Link
+              href="/contact?type=quote"
               className="px-8 py-4 bg-brand-gold text-black font-bold rounded-lg hover:bg-brand-gold/90 transition-all"
             >
-              📞 Call +254 768 860 655
-            </a>
-            <Link 
-              href="/contact"
-              className="px-8 py-4 border border-brand-gold/30 text-brand-gold rounded-lg hover:bg-brand-gold/10 transition-all"
+              💰 Get Installation Quote
+            </Link>
+            <Link
+              href="/diagnostic-suite"
+              className="px-8 py-4 bg-white/5 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-all"
             >
-              Request Quote
+              🔧 Diagnose Generator Error
             </Link>
           </div>
         </div>
