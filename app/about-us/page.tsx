@@ -156,6 +156,65 @@ const CompanyTimeline = () => {
   );
 };
 
+// Video Showcase Component
+const VideoShowcase = () => {
+  return (
+    <section className="py-20 bg-gradient-to-b from-black via-gray-900 to-black">
+      <div className="eims-shell py-0">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold mb-4 text-center bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            See Our Work in Action
+          </motion.h2>
+          <p className="text-xl text-gray-400 text-center mb-12 max-w-3xl mx-auto">
+            Real projects, real results. Watch how we deliver power solutions across Kenya.
+          </p>
+
+          <div className="relative max-w-5xl mx-auto">
+            {/* Video Container with Premium Border */}
+            <div className="relative rounded-2xl overflow-hidden border-2 border-amber-500/20 hover:border-amber-500/40 transition-all duration-500 shadow-2xl group">
+              {/* Gradient Glow Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-cyan-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <video
+                controls
+                preload="metadata"
+                className="w-full aspect-video object-cover"
+                poster="/images/solar%20power%20farms.png"
+              >
+                <source src="/videos/FOR TRIALS IN KADENCE.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            {/* Video Caption */}
+            <motion.div
+              className="mt-6 text-center"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              <p className="text-gray-400">
+                <span className="text-amber-400 font-semibold">EmersonEIMS</span> - Delivering reliable power solutions that keep Kenya moving forward
+              </p>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
 // Mission, Vision, Values Component
 const MissionVisionValues = () => {
   return (
@@ -335,6 +394,9 @@ export default function AboutUsPage() {
 
       {/* Company Timeline */}
       <CompanyTimeline />
+
+      {/* Video Showcase */}
+      <VideoShowcase />
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-amber-900/20 via-black to-amber-900/20">
