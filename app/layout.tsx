@@ -225,8 +225,13 @@ export default function RootLayout({
         {/* Microsoft Tiles */}
         <meta name="msapplication-TileColor" content="#0EA5E9" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
+        
+        {/* Multilingual Support - hreflang tags */}
+        <link rel="alternate" hrefLang="en" href={`${siteUrl}`} />
+        <link rel="alternate" hrefLang="sw" href={`${siteUrl}/sw`} />
+        <link rel="alternate" hrefLang="x-default" href={`${siteUrl}`} />
       </head>
-      <body className={`${inter.className} antialiased`} suppressHydrationWarning>
+      <body className={`${inter.className} antialiased`} suppressHydrationWarning lang="en">
         {/* WCAG 2.1 AA: Skip to Content Link */}
         <SkipToContent />
         

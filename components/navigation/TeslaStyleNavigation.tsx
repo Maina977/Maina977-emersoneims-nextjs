@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+// Dynamically import language switcher (client-only)
+const LanguageSwitcher = dynamic(
+  () => import('@/components/shared/LanguageSwitcher'),
+  { ssr: false }
+);
 
 interface TeslaStyleNavigationProps {
   activeSection?: string;
@@ -101,6 +108,11 @@ export default function TeslaStyleNavigation({
                 <span className="relative z-10">{item.label}</span>
               </Link>
             ))}
+            
+            {/* Language Switcher */}
+            <div className="ml-2 pl-2 border-l border-white/10">
+              <LanguageSwitcher />
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -138,6 +150,11 @@ export default function TeslaStyleNavigation({
                 {item.label}
               </Link>
             ))}
+            
+            {/* Mobile Language Switcher */}
+            <div className="px-4 py-3 border-t border-white/10 mt-4">
+              <LanguageSwitcher />
+            </div>
           </div>
         )}
       </div>
