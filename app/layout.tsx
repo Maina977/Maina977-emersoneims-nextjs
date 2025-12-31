@@ -5,6 +5,7 @@ import ContentProtection from '@/components/security/ContentProtection';
 import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import { OrganizationSchema } from '@/components/seo/StructuredData';
+import SkipToContent from '@/components/accessibility/SkipToContent';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
@@ -226,12 +227,17 @@ export default function RootLayout({
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning>
+        {/* WCAG 2.1 AA: Skip to Content Link */}
+        <SkipToContent />
+        
         {/* Global Structured Data for SEO */}
         <OrganizationSchema />
         
         <ContentProtection />
         <TeslaStyleNavigation />
-        {children}
+        <main id="main-content">
+          {children}
+        </main>
         <PremiumFooter />
 
         {isDev ? (

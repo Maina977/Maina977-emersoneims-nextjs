@@ -131,21 +131,23 @@ export default function AerospaceCockpit() {
               <div className="bg-cyan-500/10 border-b border-cyan-500/30 px-4 py-2">
                 <h2 className="text-sm font-bold tracking-wider text-cyan-400">SYSTEM STATUS</h2>
               </div>
-              <div className="p-4 space-y-3">
+              <div className="p-4 space-y-3" role="list" aria-label="Generator system status indicators">
                 {Object.entries(systemStatus).map(([system, status]) => (
                   <motion.div
                     key={system}
                     className={`border p-3 ${getStatusBg(status)}`}
                     animate={{ opacity: [0.8, 1, 0.8] }}
                     transition={{ duration: 2, repeat: Infinity }}
+                    role="listitem"
+                    aria-label={`${system} status: ${status}`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs uppercase text-gray-400">{system}</span>
-                      <span className={`text-xs font-bold ${getStatusColor(status)}`}>
+                      <span className={`text-xs font-bold ${getStatusColor(status)}`} aria-live="polite">
                         {status}
                       </span>
                     </div>
-                    <div className="mt-2 h-1 bg-black/50 rounded-full overflow-hidden">
+                    <div className="mt-2 h-1 bg-black/50 rounded-full overflow-hidden" role="progressbar" aria-valuenow={status === 'NOMINAL' ? 100 : status === 'WARNING' ? 60 : 30} aria-valuemin={0} aria-valuemax={100}>
                       <motion.div
                         className={`h-full ${status === 'NOMINAL' ? 'bg-green-400' : status === 'WARNING' ? 'bg-yellow-400' : 'bg-red-400'}`}
                         initial={{ width: 0 }}
@@ -178,14 +180,14 @@ export default function AerospaceCockpit() {
               <div className="bg-purple-500/10 border-b border-purple-500/30 px-4 py-2">
                 <h2 className="text-sm font-bold tracking-wider text-purple-400">QUICK ACTIONS</h2>
               </div>
-              <div className="p-4 space-y-2">
-                <button className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 py-2 px-3 text-xs text-cyan-400 font-bold transition-all">
+              <div className="p-4 space-y-2" role="group" aria-label="Quick diagnostic actions">
+                <button className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 py-2 px-3 text-xs text-cyan-400 font-bold transition-all focus-visible-enhanced" aria-label="Run full system diagnostics">
                   RUN DIAGNOSTICS
                 </button>
-                <button className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 py-2 px-3 text-xs text-green-400 font-bold transition-all">
+                <button className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 py-2 px-3 text-xs text-green-400 font-bold transition-all focus-visible-enhanced" aria-label="Generate diagnostic report">
                   GENERATE REPORT
                 </button>
-                <button className="w-full bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/50 py-2 px-3 text-xs text-orange-400 font-bold transition-all">
+                <button className="w-full bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/50 py-2 px-3 text-xs text-orange-400 font-bold transition-all focus-visible-enhanced" aria-label="Dispatch maintenance technician">
                   DISPATCH TECHNICIAN
                 </button>
               </div>
@@ -202,9 +204,9 @@ export default function AerospaceCockpit() {
               <div className="p-6">
                 <div className="grid grid-cols-3 gap-4">
                   {/* Voltage Gauge */}
-                  <div className="text-center">
+                  <div className="text-center" role="img" aria-label={`Voltage gauge showing ${telemetry.voltage.toFixed(1)} volts`}>
                     <div className="relative w-32 h-32 mx-auto">
-                      <svg className="w-full h-full transform -rotate-90">
+                      <svg className="w-full h-full transform -rotate-90" role="presentation" aria-hidden="true">
                         <circle
                           cx="64"
                           cy="64"
@@ -238,9 +240,9 @@ export default function AerospaceCockpit() {
                   </div>
 
                   {/* Frequency Gauge */}
-                  <div className="text-center">
+                  <div className="text-center" role="img" aria-label={`Frequency gauge showing ${telemetry.frequency.toFixed(1)} hertz, target 50 Hz`}>
                     <div className="relative w-32 h-32 mx-auto">
-                      <svg className="w-full h-full transform -rotate-90">
+                      <svg className="w-full h-full transform -rotate-90" role="presentation" aria-hidden="true">
                         <circle
                           cx="64"
                           cy="64"
@@ -274,9 +276,9 @@ export default function AerospaceCockpit() {
                   </div>
 
                   {/* Temperature Gauge */}
-                  <div className="text-center">
+                  <div className="text-center" role="img" aria-label={`Temperature gauge showing ${telemetry.temperature.toFixed(0)} degrees Celsius`}>
                     <div className="relative w-32 h-32 mx-auto">
-                      <svg className="w-full h-full transform -rotate-90">
+                      <svg className="w-full h-full transform -rotate-90" role="presentation" aria-hidden="true">
                         <circle
                           cx="64"
                           cy="64"
@@ -313,34 +315,34 @@ export default function AerospaceCockpit() {
             </div>
 
             {/* Secondary Metrics */}
-            <div className="grid grid-cols-4 gap-4">
-              <div className="border border-cyan-500/30 bg-black/50 backdrop-blur-sm p-4">
+            <div className="grid grid-cols-4 gap-4" role="group" aria-label="Secondary engine metrics">
+              <div className="border border-cyan-500/30 bg-black/50 backdrop-blur-sm p-4" role="status" aria-label={`Oil pressure: ${telemetry.oilPressure.toFixed(1)} PSI`}>
                 <div className="text-xs text-gray-400 mb-2">OIL PRESSURE</div>
-                <div className="text-2xl font-bold text-cyan-400 tabular-nums">
+                <div className="text-2xl font-bold text-cyan-400 tabular-nums" aria-live="polite">
                   {telemetry.oilPressure.toFixed(1)}
                 </div>
                 <div className="text-xs text-gray-500">PSI</div>
               </div>
 
-              <div className="border border-green-500/30 bg-black/50 backdrop-blur-sm p-4">
+              <div className="border border-green-500/30 bg-black/50 backdrop-blur-sm p-4" role="status" aria-label={`Fuel level: ${telemetry.fuelLevel.toFixed(0)} percent`}>
                 <div className="text-xs text-gray-400 mb-2">FUEL LEVEL</div>
-                <div className="text-2xl font-bold text-green-400 tabular-nums">
+                <div className="text-2xl font-bold text-green-400 tabular-nums" aria-live="polite">
                   {telemetry.fuelLevel.toFixed(0)}
                 </div>
                 <div className="text-xs text-gray-500">%</div>
               </div>
 
-              <div className="border border-purple-500/30 bg-black/50 backdrop-blur-sm p-4">
+              <div className="border border-purple-500/30 bg-black/50 backdrop-blur-sm p-4" role="status" aria-label={`Engine RPM: ${telemetry.rpm.toFixed(0)} rotations per minute`}>
                 <div className="text-xs text-gray-400 mb-2">ENGINE RPM</div>
-                <div className="text-2xl font-bold text-purple-400 tabular-nums">
+                <div className="text-2xl font-bold text-purple-400 tabular-nums" aria-live="polite">
                   {telemetry.rpm.toFixed(0)}
                 </div>
                 <div className="text-xs text-gray-500">RPM</div>
               </div>
 
-              <div className="border border-orange-500/30 bg-black/50 backdrop-blur-sm p-4">
+              <div className="border border-orange-500/30 bg-black/50 backdrop-blur-sm p-4" role="status" aria-label={`Load: ${telemetry.loadPercentage.toFixed(0)} percent capacity`}>
                 <div className="text-xs text-gray-400 mb-2">LOAD</div>
-                <div className="text-2xl font-bold text-orange-400 tabular-nums">
+                <div className="text-2xl font-bold text-orange-400 tabular-nums" aria-live="polite">
                   {telemetry.loadPercentage.toFixed(0)}
                 </div>
                 <div className="text-xs text-gray-500">%</div>

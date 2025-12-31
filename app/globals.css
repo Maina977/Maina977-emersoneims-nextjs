@@ -17,11 +17,39 @@
   body {
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  
+  /* Enhanced Focus Indicators for Accessibility (WCAG 2.1 Level AA) */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:not([tabindex="-1"]):focus-visible {
+    @apply outline-none ring-4 ring-cyan-500/60 ring-offset-4 ring-offset-black;
+    outline-offset: 4px;
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid currentColor;
+      outline-offset: 4px;
+    }
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  /* World-Class Focus Indicators (WCAG AA Compliant) */
+  .focus-visible-enhanced {
+    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-500/50 focus-visible:ring-offset-4 focus-visible:ring-offset-black;
   }
 }
 
