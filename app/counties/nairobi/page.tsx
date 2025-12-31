@@ -81,18 +81,49 @@ export default function NairobiCountyPage() {
             Serving {COUNTY_DATA.population.toLocaleString()}+ residents with 24/7 emergency service.
           </p>
 
+          {/* Emergency CTAs - Search Intent Optimized */}
+          <div className="bg-gradient-to-r from-red-600/20 via-orange-600/20 to-amber-600/20 border-2 border-amber-400/50 rounded-2xl p-6 mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="text-4xl animate-pulse">⚡</div>
+              <div>
+                <h3 className="text-2xl font-bold text-white">Emergency Generator Repair {COUNTY_DATA.name}</h3>
+                <p className="text-amber-300 font-semibold">2-Hour Response Time • 24/7/365 Availability</p>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <a 
+                href="tel:+254727631316"
+                className="flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-lg hover:scale-105 transition-all shadow-lg"
+              >
+                🚨 Emergency: +254 727 631 316
+              </a>
+              <a 
+                href="tel:+254768860655"
+                className="flex items-center justify-center gap-3 px-6 py-4 bg-white/10 border border-white/20 text-white font-bold rounded-lg hover:bg-white/20 transition-all"
+              >
+                📞 General: +254 768 860 655
+              </a>
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-4 mb-12">
-            <a 
-              href="tel:+254768860655"
-              className="px-8 py-4 bg-brand-gold text-black font-bold rounded-lg hover:bg-brand-gold/90 transition-all"
-            >
-              📞 Call +254 768 860 655
-            </a>
             <Link 
-              href="/contact"
+              href="/contact?service=emergency&location=nairobi"
+              className="px-8 py-4 bg-red-600 text-white font-bold rounded-lg hover:bg-red-500 transition-all shadow-xl"
+            >
+              🔥 Request Emergency Service
+            </Link>
+            <Link 
+              href="/contact?service=quote&location=nairobi"
               className="px-8 py-4 border border-brand-gold/30 text-brand-gold rounded-lg hover:bg-brand-gold/10 transition-all"
             >
-              Request Quote
+              💰 Get Installation Quote
+            </Link>
+            <Link 
+              href="/diagnostic-suite"
+              className="px-8 py-4 bg-white/5 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-all"
+            >
+              🔧 Diagnose Generator Error
             </Link>
           </div>
         </div>
@@ -119,6 +150,112 @@ export default function NairobiCountyPage() {
                 <p className="text-sm text-gray-400">{service.description}</p>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Emergency Search Intent Section */}
+      <section className="py-20 px-6 bg-gradient-to-b from-black via-gray-900/50 to-black">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-display font-bold mb-12 text-center">
+            Common Emergency Searches in <span className="text-brand-gold">{COUNTY_DATA.name}</span>
+          </h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Link
+              href="/contact?service=emergency&location=nairobi&issue=breakdown"
+              className="group bg-red-900/20 border border-red-500/30 rounded-xl p-6 hover:border-red-400 hover:bg-red-900/30 transition-all"
+            >
+              <div className="text-3xl mb-3">🚨</div>
+              <h3 className="text-lg font-bold mb-2 text-red-400">Generator Breakdown {COUNTY_DATA.name}</h3>
+              <p className="text-sm text-gray-400 mb-3">Generator stopped working? Emergency repair in 2 hours</p>
+              <div className="text-amber-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+                Get Emergency Help →
+              </div>
+            </Link>
+
+            <Link
+              href="/diagnostic-suite"
+              className="group bg-orange-900/20 border border-orange-500/30 rounded-xl p-6 hover:border-orange-400 hover:bg-orange-900/30 transition-all"
+            >
+              <div className="text-3xl mb-3">⚠️</div>
+              <h3 className="text-lg font-bold mb-2 text-orange-400">Generator Error Codes</h3>
+              <p className="text-sm text-gray-400 mb-3">DSE 7320, PowerWizard, Cummins fault codes</p>
+              <div className="text-amber-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+                Diagnose Error →
+              </div>
+            </Link>
+
+            <Link
+              href="/contact?service=repair&location=nairobi"
+              className="group bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-6 hover:border-yellow-400 hover:bg-yellow-900/30 transition-all"
+            >
+              <div className="text-3xl mb-3">🔧</div>
+              <h3 className="text-lg font-bold mb-2 text-yellow-400">Generator Not Starting</h3>
+              <p className="text-sm text-gray-400 mb-3">Battery, starter, fuel system diagnosis & repair</p>
+              <div className="text-amber-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+                Request Repair →
+              </div>
+            </Link>
+
+            <Link
+              href="/solar?location=nairobi"
+              className="group bg-green-900/20 border border-green-500/30 rounded-xl p-6 hover:border-green-400 hover:bg-green-900/30 transition-all"
+            >
+              <div className="text-3xl mb-3">☀️</div>
+              <h3 className="text-lg font-bold mb-2 text-green-400">Solar Installation {COUNTY_DATA.name}</h3>
+              <p className="text-sm text-gray-400 mb-3">Rooftop solar, solar farms, hybrid systems</p>
+              <div className="text-amber-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+                Calculate ROI →
+              </div>
+            </Link>
+
+            <Link
+              href="/contact?service=maintenance&location=nairobi"
+              className="group bg-blue-900/20 border border-blue-500/30 rounded-xl p-6 hover:border-blue-400 hover:bg-blue-900/30 transition-all"
+            >
+              <div className="text-3xl mb-3">⚙️</div>
+              <h3 className="text-lg font-bold mb-2 text-blue-400">Generator Maintenance Contract</h3>
+              <p className="text-sm text-gray-400 mb-3">Scheduled service, oil changes, load testing</p>
+              <div className="text-amber-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+                Get AMC Quote →
+              </div>
+            </Link>
+
+            <Link
+              href="/contact?service=spare-parts&location=nairobi"
+              className="group bg-purple-900/20 border border-purple-500/30 rounded-xl p-6 hover:border-purple-400 hover:bg-purple-900/30 transition-all"
+            >
+              <div className="text-3xl mb-3">🔩</div>
+              <h3 className="text-lg font-bold mb-2 text-purple-400">Generator Spare Parts</h3>
+              <p className="text-sm text-gray-400 mb-3">Cummins, Perkins, CAT parts in {COUNTY_DATA.name}</p>
+              <div className="text-amber-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+                Order Parts →
+              </div>
+            </Link>
+          </div>
+
+          {/* Why Choose Us */}
+          <div className="mt-16 bg-gradient-to-br from-amber-900/20 to-orange-900/20 border border-amber-500/30 rounded-2xl p-8">
+            <h3 className="text-2xl font-bold mb-6 text-center">Why {COUNTY_DATA.name} Businesses Choose EmersonEIMS</h3>
+            <div className="grid md:grid-cols-4 gap-6 text-center">
+              <div>
+                <div className="text-4xl font-bold text-brand-gold mb-2">2 Hours</div>
+                <div className="text-sm text-gray-400">Emergency Response</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-brand-gold mb-2">15+</div>
+                <div className="text-sm text-gray-400">Cummins/CAT Certified Technicians</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-brand-gold mb-2">98.7%</div>
+                <div className="text-sm text-gray-400">First-Time Fix Rate</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-brand-gold mb-2">24/7/365</div>
+                <div className="text-sm text-gray-400">Availability</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
