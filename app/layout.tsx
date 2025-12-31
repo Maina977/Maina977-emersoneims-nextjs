@@ -9,7 +9,14 @@ import SkipToContent from '@/components/accessibility/SkipToContent';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
-const inter = Inter({ subsets: ["latin"] });
+// Performance Optimization: Font loading with display: swap
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap', // Show fallback font immediately (eliminates FOIT - Flash of Invisible Text)
+  preload: true,
+  weight: ['400', '500', '600', '700'], // Only load weights we use
+  variable: '--font-inter',
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
@@ -230,6 +237,10 @@ export default function RootLayout({
         <link rel="alternate" hrefLang="en" href={`${siteUrl}`} />
         <link rel="alternate" hrefLang="sw" href={`${siteUrl}/sw`} />
         <link rel="alternate" hrefLang="x-default" href={`${siteUrl}`} />
+        
+        {/* Performance: Preconnect to external resources */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang="en">
         {/* WCAG 2.1 AA: Skip to Content Link */}
@@ -255,19 +266,38 @@ export default function RootLayout({
         </main>
         <PremiumFooter />
 
-        {isDev ? (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                if (typeof window !== 'undefined') {
-                  window.addEventListener('load', () => {
-                    console.log('%c🚀 EmersonEIMS - Performance monitor active', 'background: #0EA5E9; color: white; padding: 8px 16px; font-size: 14px; font-weight: bold;');
+        {/* Performance Monitoring - Web Vitals */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined') {
+                // Track page load performance
+                window.addEventListener('load', () => {
+                  ${isDev ? `console.log('%c⚡ EmersonEIMS - Performance Monitor Active', 'background: #10B981; color: white; padding: 8px 16px; font-size: 14px; font-weight: bold;');` : ''}
+                  
+                  // Log Core Web Vitals
+                  const perfData = performance.timing;
+                  const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+                  const connectTime = perfData.responseEnd - perfData.requestStart;
+                  
+                  ${isDev ? `
+                  console.log('📊 Performance:', {
+                    pageLoad: pageLoadTime + 'ms',
+                    server: connectTime + 'ms',
+                    target: '<2000ms (Tesla: ~2100ms)'
                   });
-                }
-              `,
-            }}
-          />
-        ) : null}
+                  ` : ''}
+                  
+                  // Alert if slower than Tesla (2100ms)
+                  if (pageLoadTime > 2100) {
+                    console.warn('⚠️ Load time exceeds Tesla benchmark:', pageLoadTime + 'ms');
+                  }
+                });
+              }
+            `,
+          }}
+        />
+        
       </body>
     </html>
   );
