@@ -156,67 +156,8 @@ const CompanyTimeline = () => {
   );
 };
 
-// Partnerships & Certifications Component
+// Certifications Component
 const PartnershipsSection = () => {
-  const clients = [
-    {
-      name: "Bigot Flowers",
-      category: "Agriculture & Horticulture",
-      description: "Reliable power solutions for flower farming operations, ensuring consistent energy supply for greenhouse climate control and processing facilities.",
-      logo: "/brand/IMG_20190731_120023_3.jpg",
-      services: ["Generator Systems", "Power Backup", "Maintenance"],
-    },
-    {
-      name: "St. Austin Academy",
-      category: "Education",
-      description: "Comprehensive energy infrastructure for educational institutions, providing uninterrupted power for classrooms, laboratories, and administrative facilities.",
-      logo: "/brand/IMG_20191103_141711_8.jpg",
-      services: ["Solar Solutions", "UPS Systems", "Grid Integration"],
-    },
-    {
-      name: "Kivukoni International School",
-      category: "Education",
-      description: "Sustainable energy solutions for international school campuses, combining solar power with reliable backup systems for 24/7 operations.",
-      logo: "/brand/IMG_20191103_141716_7.jpg",
-      services: ["Solar Installation", "Energy Storage", "Monitoring"],
-    },
-    {
-      name: "Greenheart Kilifi",
-      category: "Hospitality & Tourism",
-      description: "Eco-friendly energy solutions for coastal hospitality operations, integrating renewable energy with backup power for guest comfort and operational excellence.",
-      logo: "/brand/IMG_20200206_172709_1.jpg",
-      services: ["Solar Power", "Generator Backup", "Energy Efficiency"],
-    },
-    {
-      name: "NTSA",
-      category: "Government Agency",
-      description: "Mission-critical power infrastructure for National Transport and Safety Authority operations, ensuring continuous service delivery across all facilities.",
-      logo: "/brand/IMG_20200904_141639_5.jpg",
-      services: ["Power Systems", "Backup Solutions", "24/7 Support"],
-    },
-    {
-      name: "AfRhearb Limited",
-      category: "Manufacturing & Industry",
-      description: "Industrial-grade power solutions for manufacturing operations, designed for high-demand production environments with maximum reliability.",
-      logo: "/brand/IMG_20200209_181503_5.jpg",
-      services: ["Industrial Generators", "Power Distribution", "Maintenance"],
-    },
-    {
-      name: "Kimfay Limited",
-      category: "Business & Commerce",
-      description: "Tailored energy solutions for commercial operations, optimizing power consumption while ensuring business continuity through reliable backup systems.",
-      logo: "/brand/IMG_20200904_141935_8.jpg",
-      services: ["Energy Audit", "Solar Solutions", "Power Management"],
-    },
-    {
-      name: "Sanergy Limited",
-      category: "Waste Management & Sanitation",
-      description: "Sustainable energy infrastructure for waste management facilities, powering processing operations with renewable energy and efficient backup systems.",
-      logo: "/brand/IMG_20200209_091116_7.jpg",
-      services: ["Solar Systems", "Generator Backup", "Energy Monitoring"],
-    },
-  ];
-
   const certifications = [
     { name: "ISO 9001:2015", description: "Quality Management Systems", icon: "🏆" },
     { name: "ISO 14001:2015", description: "Environmental Management", icon: "🌱" },
@@ -235,117 +176,11 @@ const PartnershipsSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          Trusted Clients & Certifications
+          Our Certifications
         </motion.h2>
         <p className="text-xl text-gray-400 text-center mb-12 max-w-3xl mx-auto">
-          Proud to power leading organizations across Kenya with reliable, sustainable energy solutions
+          Certified excellence in power engineering and energy solutions
         </p>
-
-        {/* Clients Grid - Wrapped in Learn More */}
-        <div className="mb-16">
-          <h3 className="text-2xl font-bold text-white mb-6 text-center">Companies We Work With</h3>
-          <p className="text-gray-400 text-center mb-8 max-w-3xl mx-auto">
-            Trusted by leading organizations across Kenya for reliable, sustainable energy solutions
-          </p>
-
-          {/* Summary Stats - Always Visible */}
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
-            <motion.div
-              className="bg-gradient-to-br from-amber-500/20 to-amber-600/20 p-6 rounded-xl border border-amber-500/30 text-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-            >
-              <div className="text-4xl font-bold text-amber-400 mb-2">500+</div>
-              <div className="text-gray-300">Projects Completed</div>
-            </motion.div>
-            <motion.div
-              className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-6 rounded-xl border border-blue-500/30 text-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="text-4xl font-bold text-blue-400 mb-2">47</div>
-              <div className="text-gray-300">Counties Covered</div>
-            </motion.div>
-            <motion.div
-              className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-6 rounded-xl border border-green-500/30 text-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="text-4xl font-bold text-green-400 mb-2">15+</div>
-              <div className="text-gray-300">Years Experience</div>
-            </motion.div>
-            <motion.div
-              className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-6 rounded-xl border border-purple-500/30 text-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="text-4xl font-bold text-purple-400 mb-2">98.7%</div>
-              <div className="text-gray-300">System Uptime</div>
-            </motion.div>
-          </div>
-
-          {/* Detailed Client List - Hidden behind Learn More */}
-          <LearnMoreSection
-            buttonText="See Our Client Portfolio"
-            variant="gold"
-            title="Featured Client Projects"
-          >
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {clients.map((client, index) => (
-              <motion.div
-                key={client.name}
-                className="group bg-gradient-to-br from-gray-900 to-black p-6 rounded-xl border border-gray-800 hover:border-amber-500/50 transition-all"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="relative mb-4 overflow-hidden rounded-lg h-40">
-                  <OptimizedImage
-                    src={client.logo}
-                    alt={`${client.name} client`}
-                    width={400}
-                    height={300}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <span className="text-xs text-amber-400 font-semibold uppercase tracking-wider">
-                      {client.category}
-                    </span>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">{client.name}</h3>
-                <p className="text-gray-300 mb-4 text-xs leading-relaxed">{client.description}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {client.services.map((service) => (
-                    <span key={service} className="px-2 py-1 bg-amber-500/10 text-amber-400 text-xs rounded-full border border-amber-500/20">
-                      {service}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          <motion.div
-            className="mt-8 text-center"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <p className="text-gray-400 text-lg">
-              <span className="text-amber-400 font-semibold">And many more</span> organizations across Kenya trust EmersonEIMS for their energy needs
-            </p>
-          </motion.div>
-          </LearnMoreSection>
-        </div>
 
         {/* Certifications */}
         <div>
