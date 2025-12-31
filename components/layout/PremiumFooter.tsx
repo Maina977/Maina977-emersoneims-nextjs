@@ -26,7 +26,6 @@ const FOOTER_LINKS = {
   legal: [
     { label: 'Privacy Policy', href: '/privacy' },
     { label: 'Terms of Service', href: '/terms' },
-    { label: 'Sitemap', href: '/sitemap.xml' },
   ],
 } as const;
 
@@ -184,7 +183,7 @@ export default function PremiumFooter() {
             ))}
           </div>
           <div className="text-xs text-gray-600 font-mono">
-            ENGINEERED IN NAIROBI <span className="text-gray-700">{'\u2022'}</span> BUILD {buildShort}
+            ENGINEERED IN NAIROBI, KENYA
           </div>
         </div>
       </div>
