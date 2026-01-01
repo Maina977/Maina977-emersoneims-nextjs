@@ -55,10 +55,34 @@ const nextConfig: NextConfig = {
   
   // Headers for security and performance
   async headers() {
+    // Content Security Policy - Comprehensive protection
+    const ContentSecurityPolicy = `
+      default-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.app;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' blob: data: https: http:;
+      font-src 'self' https://fonts.gstatic.com data:;
+      connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app;
+      media-src 'self' blob: https:;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'self';
+      frame-src 'self' https://www.google.com https://www.youtube.com https://player.vimeo.com;
+      upgrade-insecure-requests;
+    `.replace(/\s{2,}/g, ' ').trim();
+
     return [
       {
         source: '/(.*)',
         headers: [
+          // ═══════════════════════════════════════════════════════════
+          // SECURITY HEADERS - Enterprise Grade Protection
+          // ═══════════════════════════════════════════════════════════
+          {
+            key: 'Content-Security-Policy',
+            value: ContentSecurityPolicy
+          },
           {
             key: 'X-DNS-Prefetch-Control',
             value: 'on'
@@ -81,13 +105,26 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()'
           },
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block'
           },
-          // Vercel Edge Caching & ISR
+          // Cross-Origin policies
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin'
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'same-origin'
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'credentialless'
+          },
+          // Cache Control
           {
             key: 'Cache-Control',
             value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=59'

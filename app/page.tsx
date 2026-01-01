@@ -15,6 +15,13 @@ const TestimonialsSection = lazy(() => import('@/components/sections/Testimonial
 const CaseStudiesSection = lazy(() => import('@/components/sections/CaseStudiesSection'));
 const TrustBadgesSection = lazy(() => import('@/components/sections/TrustBadgesSection'));
 
+// World-Class Components - Exceeding Tesla/Apple/Siemens/ABB
+const WorldClassHero = lazy(() => import('@/components/sections/WorldClassHero'));
+const IndustryLeadingTrust = lazy(() => import('@/components/sections/IndustryLeadingTrust'));
+const LiveOperationsDashboard = lazy(() => import('@/components/sections/LiveOperationsDashboard'));
+const CompetitiveAdvantage = lazy(() => import('@/components/sections/CompetitiveAdvantage'));
+const PremiumServicesShowcase = lazy(() => import('@/components/sections/PremiumServicesShowcase'));
+
 const MicroInteractions = lazy(() => import('@/components/interactions/MicroInteractions'));
 const ParticleField = lazy(() => import('@/components/effects/ParticleField'));
 const MagneticCursor = lazy(() => import('@/components/effects/MagneticCursor'));
@@ -556,9 +563,29 @@ export default function AwwwardsHomepage() {
           <CaseStudiesSection />
         </Suspense>
 
+        {/* SECTION 7.5: Premium Services Showcase - All 9 Services */}
+        <Suspense fallback={<div className="py-32 bg-black" />}>
+          <PremiumServicesShowcase />
+        </Suspense>
+
         {/* SECTION 8: Trust Badges & Certifications */}
         <Suspense fallback={<div className="py-32 bg-black" />}>
           <TrustBadgesSection />
+        </Suspense>
+
+        {/* SECTION 9: Industry-Leading Trust & Partnerships */}
+        <Suspense fallback={<div className="py-32 bg-black" />}>
+          <IndustryLeadingTrust />
+        </Suspense>
+
+        {/* SECTION 10: Live Operations Dashboard - SpaceX Style */}
+        <Suspense fallback={<div className="py-32 bg-black" />}>
+          <LiveOperationsDashboard />
+        </Suspense>
+
+        {/* SECTION 11: Competitive Advantage - Why Choose EmersonEIMS */}
+        <Suspense fallback={<div className="py-32 bg-black" />}>
+          <CompetitiveAdvantage />
         </Suspense>
 
         {/* FINAL CTA with Premium Design - Apple Clean Spacing */}

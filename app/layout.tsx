@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import DMCAProtection from '@/components/security/DMCAProtection';
+import { SecurityShield, AntiScrapingMeta } from '@/components/security/SecurityShield';
+import { InvisibleWatermark } from '@/components/security/CopyrightNotice';
 import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import { OrganizationSchema } from '@/components/seo/StructuredData';
@@ -220,6 +222,12 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         
+        {/* ═══════════════════════════════════════════════════════════════════
+            ENTERPRISE SECURITY META TAGS
+            © EmersonEIMS - All Rights Reserved
+        ════════════════════════════════════════════════════════════════════ */}
+        <AntiScrapingMeta />
+        
         {/* Canonical & Theme */}
         <link rel="canonical" href={siteUrl} />
         <meta name="theme-color" content="#0EA5E9" />
@@ -264,8 +272,15 @@ export default function RootLayout({
         {/* WCAG 2.1 AA: Skip to Content Link */}
         <SkipToContent />
         
-        {/* Enterprise-Grade DMCA & Copyright Protection - Disabled for stability */}
-        {/* <DMCAProtection
+        {/* ═══════════════════════════════════════════════════════════════════
+            ENTERPRISE-GRADE SECURITY LAYER
+            Multi-layered protection against copying, scraping, bots & attacks
+            © EmersonEIMS - All Rights Reserved
+        ════════════════════════════════════════════════════════════════════ */}
+        <SecurityShield showIndicator={false}>
+        
+        {/* DMCA & Copyright Protection */}
+        <DMCAProtection
           enableWatermark={true}
           enableRightClickProtection={true}
           enableCopyProtection={true}
@@ -273,7 +288,10 @@ export default function RootLayout({
           enablePrintProtection={true}
           enableScreenshotDetection={true}
           showWarnings={true}
-        /> */}
+        />
+        
+        {/* Invisible Copyright Watermark */}
+        <InvisibleWatermark />
         
         {/* Global Structured Data for SEO */}
         <OrganizationSchema />
@@ -292,6 +310,9 @@ export default function RootLayout({
         
         {/* Live Chat - WhatsApp Business Integration */}
         <ClientWhatsApp />
+        
+        </SecurityShield>
+        {/* END SECURITY LAYER */}
 
         {/* PWA Support - Service Worker */}
         <Script

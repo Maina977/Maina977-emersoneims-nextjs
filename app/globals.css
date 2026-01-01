@@ -130,6 +130,65 @@
 }
 
 @layer components {
+  /* =====================================================
+     APPLE-LEVEL SPACING SYSTEM
+     Inspired by Apple.com's generous whitespace
+     ===================================================== */
+  
+  /* Section spacing - Apple uses 120-200px between sections */
+  .section-apple {
+    @apply py-24 sm:py-32 lg:py-40 xl:py-48;
+  }
+  
+  .section-apple-lg {
+    @apply py-32 sm:py-40 lg:py-52 xl:py-64;
+  }
+  
+  /* Container with Apple-style max-width */
+  .container-apple {
+    @apply max-w-[980px] mx-auto px-6 sm:px-8 lg:px-12;
+  }
+  
+  .container-apple-wide {
+    @apply max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 xl:px-24;
+  }
+  
+  /* Typography - Apple's clean hierarchy */
+  .heading-hero {
+    @apply text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6rem] font-bold leading-[0.95] tracking-tighter;
+  }
+  
+  .heading-section {
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight;
+  }
+  
+  .heading-subsection {
+    @apply text-2xl sm:text-3xl md:text-4xl font-semibold leading-[1.2] tracking-tight;
+  }
+  
+  .body-large {
+    @apply text-lg sm:text-xl md:text-2xl text-gray-300 leading-relaxed;
+  }
+  
+  .body-medium {
+    @apply text-base sm:text-lg text-gray-400 leading-relaxed;
+  }
+  
+  /* Apple's signature minimal cards */
+  .card-minimal {
+    @apply rounded-3xl bg-gradient-to-br from-gray-900/90 to-black border border-white/5 p-8 sm:p-10 lg:p-12;
+  }
+  
+  .card-elevated {
+    @apply rounded-3xl bg-gradient-to-br from-gray-900 to-black border border-white/10 p-6 sm:p-8 lg:p-10 
+           shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] hover:shadow-[0_40px_80px_-20px_rgba(251,191,36,0.15)]
+           transition-all duration-500;
+  }
+  
+  /* =====================================================
+     WORLD-CLASS COMPONENT STYLES
+     ===================================================== */
+  
   .eims-section {
     @apply bg-black text-white;
   }

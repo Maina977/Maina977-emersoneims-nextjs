@@ -1,0 +1,319 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EMERSONEIMS ROBOTS.TXT
+# Enterprise-Grade Bot Management & SEO Optimization
+# © 2026 EmersonEIMS. All Rights Reserved.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WELCOME: LEGITIMATE SEARCH ENGINE CRAWLERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Google (Main Search)
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
+Crawl-delay: 1
+
+# Google Images
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /og-image.jpg
+Disallow: /api/
+
+# Google Video
+User-agent: Googlebot-Video
+Allow: /videos/
+Disallow: /api/
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 2
+
+# Yahoo
+User-agent: Slurp
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Crawl-delay: 2
+
+# DuckDuckGo
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Crawl-delay: 1
+
+# Apple
+User-agent: Applebot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SOCIAL MEDIA CRAWLERS (ALLOWED)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Facebook
+User-agent: facebookexternalhit
+Allow: /
+Disallow: /api/
+
+# Twitter
+User-agent: Twitterbot
+Allow: /
+Disallow: /api/
+
+# LinkedIn
+User-agent: LinkedInBot
+Allow: /
+Disallow: /api/
+
+# WhatsApp
+User-agent: WhatsApp
+Allow: /
+Disallow: /api/
+
+# Telegram
+User-agent: TelegramBot
+Allow: /
+Disallow: /api/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MONITORING & UPTIME BOTS (ALLOWED)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+User-agent: UptimeRobot
+Allow: /
+Disallow: /api/
+
+User-agent: Pingdom
+Allow: /
+Disallow: /api/
+
+User-agent: Site24x7
+Allow: /
+Disallow: /api/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BLOCKED: SEO SCRAPERS & COMPETITOR ANALYSIS BOTS
+# These bots scrape content for competitive intelligence
+# ═══════════════════════════════════════════════════════════════════════════════
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: RogerBot
+Disallow: /
+
+User-agent: Screaming Frog SEO Spider
+Disallow: /
+
+User-agent: SEOkicks-Robot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: BacklinkCrawler
+Disallow: /
+
+User-agent: SEMrushBot
+Disallow: /
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BLOCKED: KNOWN MALICIOUS BOTS & SCRAPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+User-agent: MauiBot
+Disallow: /
+
+User-agent: Nutch
+Disallow: /
+
+User-agent: Scrapy
+Disallow: /
+
+User-agent: HTTrack
+Disallow: /
+
+User-agent: SiteSnagger
+Disallow: /
+
+User-agent: WebCopier
+Disallow: /
+
+User-agent: TeleportPro
+Disallow: /
+
+User-agent: WebZIP
+Disallow: /
+
+User-agent: WebReaper
+Disallow: /
+
+User-agent: Wget
+Disallow: /
+
+User-agent: Curl
+Disallow: /
+
+User-agent: python-requests
+Disallow: /
+
+User-agent: Java
+Disallow: /
+
+User-agent: libwww
+Disallow: /
+
+User-agent: libwww-perl
+Disallow: /
+
+User-agent: Go-http-client
+Disallow: /
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BLOCKED: DATA MINING & AI TRAINING BOTS
+# Protect content from being used for AI training without permission
+# ═══════════════════════════════════════════════════════════════════════════════
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BLOCKED: SECURITY SCANNERS & VULNERABILITY BOTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+User-agent: Nikto
+Disallow: /
+
+User-agent: Nmap
+Disallow: /
+
+User-agent: sqlmap
+Disallow: /
+
+User-agent: ZmEu
+Disallow: /
+
+User-agent: Morfeus
+Disallow: /
+
+User-agent: masscan
+Disallow: /
+
+User-agent: zgrab
+Disallow: /
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BLOCKED: ARCHIVE & CACHE BOTS
+# We don't want old versions of our site cached
+# ═══════════════════════════════════════════════════════════════════════════════
+
+User-agent: archive.org_bot
+Disallow: /
+
+User-agent: ia_archiver
+Disallow: /
+
+User-agent: Wayback Machine
+Disallow: /
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BLOCKED: OTHER REGIONAL & MISCELLANEOUS BOTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+User-agent: YandexBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: Sogou
+Disallow: /
+
+User-agent: Exabot
+Disallow: /
+
+User-agent: Gigabot
+Disallow: /
+
+User-agent: SeznamBot
+Disallow: /
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEFAULT RULE: ALLOW ALL OTHER BOTS WITH RESTRICTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
+Disallow: /scripts/
+Disallow: /*.json$
+Disallow: /*?*
+Crawl-delay: 5
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SITEMAP LOCATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+Sitemap: https://emersoneims.com/sitemap.xml
+Sitemap: https://www.emersoneims.com/sitemap.xml
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COPYRIGHT NOTICE
+# ═══════════════════════════════════════════════════════════════════════════════
+# 
+# © 2012-2026 EmersonEIMS - Emerson Electrical & Instrumentation Management Services
+# All Rights Reserved.
+# 
+# Unauthorized crawling, scraping, copying, or reproduction of this website
+# or its contents is strictly prohibited and may result in legal action.
+# 
+# Contact: info@emersoneims.com
+# Website: https://emersoneims.com
+# 
+# ═══════════════════════════════════════════════════════════════════════════════
