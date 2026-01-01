@@ -15,9 +15,6 @@ const performanceConfig: NextConfig = {
   // Enable compression
   compress: true,
   
-  // Performance optimizations
-  swcMinify: true,
-  
   // Image optimization - Maximum quality with minimum size
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -47,13 +44,14 @@ const performanceConfig: NextConfig = {
       'three',
       'chart.js',
     ],
-    // Enable turbo for faster builds
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  
+  // Turbopack config (moved to top level in Next.js 16)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
