@@ -8,6 +8,7 @@ import { OrganizationSchema } from '@/components/seo/StructuredData';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import CookieConsent from '@/components/compliance/CookieConsent';
+import WhatsAppButton from '@/components/chat/WhatsAppButton';
 import Script from 'next/script';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
@@ -274,6 +275,9 @@ export default function RootLayout({
         
         {/* GDPR Cookie Consent */}
         <CookieConsent />
+        
+        {/* Live Chat - WhatsApp Business Integration */}
+        <WhatsAppButton />
 
         {/* PWA Support - Service Worker */}
         <Script

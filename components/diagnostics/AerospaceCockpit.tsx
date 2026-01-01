@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 interface TelemetryData {
   voltage: number;
@@ -12,6 +13,8 @@ interface TelemetryData {
   rpm: number;
   loadPercentage: number;
   runtime: number;
+  powerOutput: number;
+  efficiency: number;
 }
 
 interface SystemStatus {
@@ -19,6 +22,14 @@ interface SystemStatus {
   electrical: 'NOMINAL' | 'WARNING' | 'CRITICAL';
   cooling: 'NOMINAL' | 'WARNING' | 'CRITICAL';
   fuel: 'NOMINAL' | 'WARNING' | 'CRITICAL';
+}
+
+interface AlertData {
+  id: string;
+  type: 'info' | 'warning' | 'critical';
+  message: string;
+  timestamp: Date;
+  code?: string;
 }
 
 export default function AerospaceCockpit() {
@@ -30,7 +41,9 @@ export default function AerospaceCockpit() {
     fuelLevel: 78,
     rpm: 1500,
     loadPercentage: 65,
-    runtime: 12450
+    runtime: 12450,
+    powerOutput: 380,
+    efficiency: 94.2
   });
 
   const [systemStatus, setSystemStatus] = useState<SystemStatus>({
@@ -41,10 +54,15 @@ export default function AerospaceCockpit() {
   });
 
   const [missionTime, setMissionTime] = useState(0);
-  const [activeAlert, setActiveAlert] = useState<string | null>(null);
+  const [alerts, setAlerts] = useState<AlertData[]>([]);
+  const [demoMode, setDemoMode] = useState(true);
+  const [showExpertPanel, setShowExpertPanel] = useState(false);
+  const [selectedGenerator, setSelectedGenerator] = useState('GEN-001');
 
   // Simulate real-time telemetry updates
   useEffect(() => {
+    if (!demoMode) return;
+    
     const interval = setInterval(() => {
       setTelemetry(prev => ({
         voltage: prev.voltage + (Math.random() - 0.5) * 2,
@@ -54,13 +72,34 @@ export default function AerospaceCockpit() {
         fuelLevel: Math.max(0, prev.fuelLevel - 0.01),
         rpm: 1500 + (Math.random() - 0.5) * 20,
         loadPercentage: Math.min(100, Math.max(0, prev.loadPercentage + (Math.random() - 0.5) * 5)),
-        runtime: prev.runtime + 1
+        runtime: prev.runtime + 1,
+        powerOutput: 380 + (Math.random() - 0.5) * 10,
+        efficiency: 94 + (Math.random() - 0.5) * 2
       }));
       setMissionTime(prev => prev + 1);
+      
+      // Random alerts for demo
+      if (Math.random() > 0.98) {
+        const alertTypes: Array<'info' | 'warning'> = ['info', 'warning'];
+        const messages = [
+          'Scheduled maintenance reminder',
+          'Fuel level below 80%',
+          'Peak load detected',
+          'Auto-sync completed',
+          'Remote monitoring active'
+        ];
+        const newAlert: AlertData = {
+          id: Date.now().toString(),
+          type: alertTypes[Math.floor(Math.random() * alertTypes.length)],
+          message: messages[Math.floor(Math.random() * messages.length)],
+          timestamp: new Date()
+        };
+        setAlerts(prev => [newAlert, ...prev].slice(0, 10));
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [demoMode]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -89,31 +128,59 @@ export default function AerospaceCockpit() {
 
   return (
     <div className="min-h-screen bg-black text-white font-mono">
-      {/* Mission Control Header */}
-      <div className="border-b border-cyan-500/30 bg-gradient-to-r from-black via-gray-900 to-black">
-        <div className="max-w-[1920px] mx-auto px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
+      {/* Mission Control Header - Enhanced */}
+      <div className="border-b border-cyan-500/30 bg-gradient-to-r from-black via-gray-900 to-black sticky top-0 z-50">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-8 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4 sm:gap-8 flex-wrap">
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-xl font-bold tracking-widest text-cyan-400">
+                <motion.div 
+                  className="w-3 h-3 bg-green-400 rounded-full"
+                  animate={{ opacity: [1, 0.5, 1], scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <span className="text-lg sm:text-xl font-bold tracking-widest text-cyan-400">
                   EMERSON EIMS MISSION CONTROL
                 </span>
               </div>
-              <div className="text-sm text-gray-400">
-                GENERATOR DIAGNOSTIC SUITE v4.0
+              <div className="text-xs sm:text-sm text-gray-400 hidden md:block">
+                GENERATOR DIAGNOSTIC SUITE v4.2
               </div>
+              
+              {/* Demo Mode Toggle */}
+              <button 
+                onClick={() => setDemoMode(!demoMode)}
+                className={`px-3 py-1 text-xs rounded-full border transition-all ${
+                  demoMode 
+                    ? 'border-green-500 text-green-400 bg-green-500/20' 
+                    : 'border-gray-500 text-gray-400 bg-gray-500/20'
+                }`}
+              >
+                {demoMode ? '● LIVE DEMO' : '○ PAUSED'}
+              </button>
             </div>
-            <div className="flex items-center gap-6">
-              <div className="text-right">
-                <div className="text-xs text-gray-500">MISSION ELAPSED TIME</div>
-                <div className="text-2xl font-bold text-cyan-400 tabular-nums">
+            
+            <div className="flex items-center gap-4 sm:gap-6">
+              {/* Generator Selector */}
+              <select 
+                value={selectedGenerator}
+                onChange={(e) => setSelectedGenerator(e.target.value)}
+                className="bg-black/60 border border-cyan-500/30 text-cyan-400 text-xs px-3 py-1.5 rounded"
+              >
+                <option value="GEN-001">GEN-001 (Primary)</option>
+                <option value="GEN-002">GEN-002 (Backup)</option>
+                <option value="GEN-003">GEN-003 (Solar Hybrid)</option>
+              </select>
+              
+              <div className="text-right hidden sm:block">
+                <div className="text-[10px] text-gray-500">MISSION ELAPSED TIME</div>
+                <div className="text-xl sm:text-2xl font-bold text-cyan-400 tabular-nums">
                   {formatTime(missionTime)}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-xs text-gray-500">SYSTEM TIME</div>
-                <div className="text-lg text-white tabular-nums">
+              <div className="text-right hidden md:block">
+                <div className="text-[10px] text-gray-500">SYSTEM TIME</div>
+                <div className="text-base sm:text-lg text-white tabular-nums">
                   {new Date().toLocaleTimeString('en-US', { hour12: false })}
                 </div>
               </div>
@@ -314,38 +381,54 @@ export default function AerospaceCockpit() {
               </div>
             </div>
 
-            {/* Secondary Metrics */}
-            <div className="grid grid-cols-4 gap-4" role="group" aria-label="Secondary engine metrics">
-              <div className="border border-cyan-500/30 bg-black/50 backdrop-blur-sm p-4" role="status" aria-label={`Oil pressure: ${telemetry.oilPressure.toFixed(1)} PSI`}>
-                <div className="text-xs text-gray-400 mb-2">OIL PRESSURE</div>
-                <div className="text-2xl font-bold text-cyan-400 tabular-nums" aria-live="polite">
+            {/* Secondary Metrics - Enhanced */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4" role="group" aria-label="Secondary engine metrics">
+              <div className="border border-cyan-500/30 bg-black/50 backdrop-blur-sm p-3 sm:p-4" role="status" aria-label={`Oil pressure: ${telemetry.oilPressure.toFixed(1)} PSI`}>
+                <div className="text-[10px] sm:text-xs text-gray-400 mb-1 sm:mb-2">OIL PRESSURE</div>
+                <div className="text-xl sm:text-2xl font-bold text-cyan-400 tabular-nums" aria-live="polite">
                   {telemetry.oilPressure.toFixed(1)}
                 </div>
-                <div className="text-xs text-gray-500">PSI</div>
+                <div className="text-[10px] sm:text-xs text-gray-500">PSI</div>
               </div>
 
-              <div className="border border-green-500/30 bg-black/50 backdrop-blur-sm p-4" role="status" aria-label={`Fuel level: ${telemetry.fuelLevel.toFixed(0)} percent`}>
-                <div className="text-xs text-gray-400 mb-2">FUEL LEVEL</div>
-                <div className="text-2xl font-bold text-green-400 tabular-nums" aria-live="polite">
+              <div className="border border-green-500/30 bg-black/50 backdrop-blur-sm p-3 sm:p-4" role="status" aria-label={`Fuel level: ${telemetry.fuelLevel.toFixed(0)} percent`}>
+                <div className="text-[10px] sm:text-xs text-gray-400 mb-1 sm:mb-2">FUEL LEVEL</div>
+                <div className="text-xl sm:text-2xl font-bold text-green-400 tabular-nums" aria-live="polite">
                   {telemetry.fuelLevel.toFixed(0)}
                 </div>
-                <div className="text-xs text-gray-500">%</div>
+                <div className="text-[10px] sm:text-xs text-gray-500">%</div>
               </div>
 
-              <div className="border border-purple-500/30 bg-black/50 backdrop-blur-sm p-4" role="status" aria-label={`Engine RPM: ${telemetry.rpm.toFixed(0)} rotations per minute`}>
-                <div className="text-xs text-gray-400 mb-2">ENGINE RPM</div>
-                <div className="text-2xl font-bold text-purple-400 tabular-nums" aria-live="polite">
+              <div className="border border-purple-500/30 bg-black/50 backdrop-blur-sm p-3 sm:p-4" role="status" aria-label={`Engine RPM: ${telemetry.rpm.toFixed(0)} rotations per minute`}>
+                <div className="text-[10px] sm:text-xs text-gray-400 mb-1 sm:mb-2">ENGINE RPM</div>
+                <div className="text-xl sm:text-2xl font-bold text-purple-400 tabular-nums" aria-live="polite">
                   {telemetry.rpm.toFixed(0)}
                 </div>
-                <div className="text-xs text-gray-500">RPM</div>
+                <div className="text-[10px] sm:text-xs text-gray-500">RPM</div>
               </div>
 
-              <div className="border border-orange-500/30 bg-black/50 backdrop-blur-sm p-4" role="status" aria-label={`Load: ${telemetry.loadPercentage.toFixed(0)} percent capacity`}>
-                <div className="text-xs text-gray-400 mb-2">LOAD</div>
-                <div className="text-2xl font-bold text-orange-400 tabular-nums" aria-live="polite">
+              <div className="border border-orange-500/30 bg-black/50 backdrop-blur-sm p-3 sm:p-4" role="status" aria-label={`Load: ${telemetry.loadPercentage.toFixed(0)} percent capacity`}>
+                <div className="text-[10px] sm:text-xs text-gray-400 mb-1 sm:mb-2">LOAD</div>
+                <div className="text-xl sm:text-2xl font-bold text-orange-400 tabular-nums" aria-live="polite">
                   {telemetry.loadPercentage.toFixed(0)}
                 </div>
-                <div className="text-xs text-gray-500">%</div>
+                <div className="text-[10px] sm:text-xs text-gray-500">%</div>
+              </div>
+              
+              <div className="border border-amber-500/30 bg-black/50 backdrop-blur-sm p-3 sm:p-4" role="status">
+                <div className="text-[10px] sm:text-xs text-gray-400 mb-1 sm:mb-2">POWER OUTPUT</div>
+                <div className="text-xl sm:text-2xl font-bold text-amber-400 tabular-nums">
+                  {telemetry.powerOutput.toFixed(0)}
+                </div>
+                <div className="text-[10px] sm:text-xs text-gray-500">kW</div>
+              </div>
+              
+              <div className="border border-emerald-500/30 bg-black/50 backdrop-blur-sm p-3 sm:p-4" role="status">
+                <div className="text-[10px] sm:text-xs text-gray-400 mb-1 sm:mb-2">EFFICIENCY</div>
+                <div className="text-xl sm:text-2xl font-bold text-emerald-400 tabular-nums">
+                  {telemetry.efficiency.toFixed(1)}
+                </div>
+                <div className="text-[10px] sm:text-xs text-gray-500">%</div>
               </div>
             </div>
 
@@ -456,6 +539,125 @@ export default function AerospaceCockpit() {
       <div className="fixed top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-cyan-500/50 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-cyan-500/50 pointer-events-none" />
       <div className="fixed bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-cyan-500/50 pointer-events-none" />
+      
+      {/* Live Alerts Ticker */}
+      <AnimatePresence>
+        {alerts.length > 0 && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-0 left-0 right-0 bg-black/90 border-t border-cyan-500/30 backdrop-blur-sm z-40"
+          >
+            <div className="max-w-[1920px] mx-auto px-8 py-3">
+              <div className="flex items-center gap-4 overflow-x-auto">
+                <span className="text-xs text-gray-500 flex-shrink-0">ALERTS:</span>
+                {alerts.slice(0, 5).map((alert) => (
+                  <motion.div
+                    key={alert.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className={`flex items-center gap-2 px-3 py-1 rounded text-xs flex-shrink-0 ${
+                      alert.type === 'critical' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                      alert.type === 'warning' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                      'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                    }`}
+                  >
+                    <span>{alert.type === 'critical' ? '🚨' : alert.type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                    <span>{alert.message}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Expert Connect Panel */}
+      <AnimatePresence>
+        {showExpertPanel && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            className="fixed right-0 top-0 bottom-0 w-96 bg-black/95 border-l border-cyan-500/30 backdrop-blur-xl z-50 overflow-y-auto"
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-cyan-400">EXPERT CONNECT</h3>
+                <button onClick={() => setShowExpertPanel(false)} className="text-gray-400 hover:text-white">
+                  ✕
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="bg-green-500/10 border border-green-500/30 p-4 rounded">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center text-xl">
+                      👨‍🔧
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">James Kariuki</div>
+                      <div className="text-green-400 text-xs">● Online Now</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-3">Senior Diesel Engineer • 12 yrs exp • DeepSea Certified</p>
+                  <button className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 py-2 text-xs text-green-400 font-bold rounded transition-all">
+                    📞 CALL NOW
+                  </button>
+                </div>
+                
+                <div className="bg-cyan-500/10 border border-cyan-500/30 p-4 rounded">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center text-xl">
+                      👩‍💻
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">Sarah Ochieng</div>
+                      <div className="text-cyan-400 text-xs">● Available</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-3">Controls Specialist • PowerWizard Expert • Remote Support</p>
+                  <button className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 py-2 text-xs text-cyan-400 font-bold rounded transition-all">
+                    💬 START CHAT
+                  </button>
+                </div>
+                
+                <div className="border-t border-gray-800 pt-4">
+                  <h4 className="text-sm font-bold text-gray-400 mb-3">QUICK ACTIONS</h4>
+                  <div className="space-y-2">
+                    <Link href="/contact?type=emergency" className="block w-full bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 py-2 text-xs text-red-400 font-bold rounded text-center transition-all">
+                      🚨 EMERGENCY DISPATCH
+                    </Link>
+                    <Link href="/contact?type=site-survey" className="block w-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 py-2 text-xs text-purple-400 font-bold rounded text-center transition-all">
+                      📋 REQUEST SITE VISIT
+                    </Link>
+                    <Link href="/contact?type=quote" className="block w-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 py-2 text-xs text-amber-400 font-bold rounded text-center transition-all">
+                      💰 GET SERVICE QUOTE
+                    </Link>
+                  </div>
+                </div>
+                
+                <div className="text-center text-xs text-gray-500 mt-6">
+                  24/7 Emergency: +254 768 860 655
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Floating Expert Button */}
+      <motion.button
+        onClick={() => setShowExpertPanel(!showExpertPanel)}
+        className="fixed bottom-24 right-8 w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full shadow-lg shadow-amber-500/30 flex items-center justify-center text-2xl z-40 hover:scale-110 transition-transform"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        animate={{ boxShadow: ['0 0 20px rgba(251,191,36,0.3)', '0 0 40px rgba(251,191,36,0.5)', '0 0 20px rgba(251,191,36,0.3)'] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        👨‍🔧
+      </motion.button>
     </div>
   );
 }
