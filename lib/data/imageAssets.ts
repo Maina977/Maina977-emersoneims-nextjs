@@ -16,8 +16,8 @@ export const imageAssets = {
 
   // ==================== HERO & BANNER IMAGES ====================
   hero: {
-    homepage: "/images/GEN%202-1920x1080.png",
-    generators: "/images/GEN%202-1920x1080.png",
+    homepage: "/images/tnpl-diesal-generator-1000x1000-1920x1080.webp",
+    generators: "/images/tnpl-diesal-generator-1000x1000-1920x1080.webp",
     solar: "/images/solar%20power%20farms.png",
     diagnostics: "/images/GEN%202-1920x1080.png",
     services: "/images/GEN%202-1920x1080.png",

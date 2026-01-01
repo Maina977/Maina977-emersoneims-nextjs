@@ -61,9 +61,9 @@ export default function GeneratorControlDiagnosticHub({ onSeverityUpdate = null 
 
   return (
     <MetalBezel title="Generator Control Diagnostic Hub (Generators, Controls, DeepSea, PowerWizard)">
-      {/* SpaceX Crew Dragon Style Interface */}
+      {/* Aerospace Mission Control Style Interface */}
       <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
-        {/* SpaceX Blue Header Bar */}
+        {/* Mission Control Header Bar */}}
         <div className="bg-gradient-to-r from-[#005288] to-[#0066AA] px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -227,7 +227,7 @@ export default function GeneratorControlDiagnosticHub({ onSeverityUpdate = null 
 
 /* ---------- Helpers & small subcomponents ---------- */
 
-// SpaceX Crew Dragon Style Panel
+// Mission Control Style Panel
 function CrewDragonPanel({ title, children }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">

@@ -10,6 +10,19 @@ import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import CookieConsent from '@/components/compliance/CookieConsent';
 import ClientWhatsApp from '@/components/chat/ClientWhatsApp';
 import Script from 'next/script';
+import { NextIntlClientProvider } from 'next-intl';
+
+// Default messages for the root layout (English)
+const defaultMessages = {
+  "Home": "Home",
+  "About": "About",
+  "Diagnostics": "Diagnostics",
+  "Services": "Services",
+  "Contact": "Contact",
+  "Solar": "Solar",
+  "Generators": "Generators",
+  "Solutions": "Solutions"
+};
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
@@ -247,6 +260,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang="en">
+        <NextIntlClientProvider locale="en" messages={defaultMessages}>
         {/* WCAG 2.1 AA: Skip to Content Link */}
         <SkipToContent />
         
@@ -328,7 +342,7 @@ export default function RootLayout({
             `,
           }}
         />
-        
+        </NextIntlClientProvider>
       </body>
     </html>
   );

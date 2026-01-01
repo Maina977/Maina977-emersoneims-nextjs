@@ -215,6 +215,106 @@ const VideoShowcase = () => {
   );
 };
 
+// Generator Brands Component - All brands we sell and service (new and used)
+const GeneratorBrands = () => {
+  const brands = [
+    { name: 'Cummins', description: 'Premium American engines, 20-2000 kVA', category: 'New & Used', color: 'red' },
+    { name: 'Perkins', description: 'British reliability, industrial workhorses', category: 'New & Used', color: 'blue' },
+    { name: 'Caterpillar', description: 'Heavy-duty construction & mining', category: 'New & Used', color: 'yellow' },
+    { name: 'FG Wilson', description: 'Global leader in power generation', category: 'New & Used', color: 'green' },
+    { name: 'Volvo Penta', description: 'Swedish engineering excellence', category: 'New & Used', color: 'cyan' },
+    { name: 'John Deere', description: 'Agricultural & industrial power', category: 'New & Used', color: 'green' },
+    { name: 'Kohler', description: 'Residential & commercial solutions', category: 'New & Used', color: 'purple' },
+    { name: 'MTU', description: 'German precision engineering', category: 'New & Used', color: 'blue' },
+    { name: 'Yanmar', description: 'Japanese compact diesel specialists', category: 'New & Used', color: 'red' },
+    { name: 'VOLTKA/Aksa', description: 'Cost-effective Turkish quality', category: 'New', color: 'amber' },
+    { name: 'Doosan', description: 'Korean industrial power solutions', category: 'New & Used', color: 'orange' },
+    { name: 'Generac', description: 'Standby & portable generators', category: 'New & Used', color: 'green' },
+  ];
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-black via-gray-900 to-black">
+      <div className="eims-shell py-0">
+        <div className="text-center mb-12">
+          <motion.h2
+            className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            Generator Brands We Sell & Service
+          </motion.h2>
+          <motion.p
+            className="text-xl text-gray-400 max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            We supply and service all major generator brands - both NEW and quality USED units. 
+            12+ years of expertise across every manufacturer.
+          </motion.p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {brands.map((brand, index) => (
+            <motion.div
+              key={brand.name}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="bg-gradient-to-br from-gray-900/80 to-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-amber-500/50 transition-all cursor-pointer group"
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-full flex items-center justify-center group-hover:from-amber-400/40 group-hover:to-amber-600/40 transition-all">
+                  <span className="text-2xl">⚡</span>
+                </div>
+                <h3 className="font-bold text-white text-sm mb-1">{brand.name}</h3>
+                <p className="text-[10px] text-gray-500 mb-2 line-clamp-2">{brand.description}</p>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                  brand.category === 'New' 
+                    ? 'bg-green-500/20 text-green-400' 
+                    : 'bg-amber-500/20 text-amber-400'
+                }`}>
+                  {brand.category}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          className="mt-12 text-center"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="flex flex-wrap justify-center gap-4">
+            <a 
+              href="/generators" 
+              className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-bold rounded-xl hover:from-amber-500 hover:to-amber-700 transition-all"
+            >
+              View New Generators
+            </a>
+            <a 
+              href="/generators/used" 
+              className="px-6 py-3 border-2 border-amber-400 text-amber-400 font-bold rounded-xl hover:bg-amber-400/10 transition-all"
+            >
+              Browse Used Inventory
+            </a>
+          </div>
+          <p className="text-gray-500 text-sm mt-4">
+            Can&apos;t find your brand? We service ALL generator makes and models. Call +254 727 631 316
+          </p>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
 // Mission, Vision, Values Component
 const MissionVisionValues = () => {
   return (
@@ -391,6 +491,9 @@ export default function AboutUsPage() {
 
       {/* Mission, Vision, Values */}
       <MissionVisionValues />
+
+      {/* Generator Brands We Sell & Service */}
+      <GeneratorBrands />
 
       {/* Company Timeline */}
       <CompanyTimeline />

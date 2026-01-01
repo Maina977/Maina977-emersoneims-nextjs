@@ -16,7 +16,7 @@ interface FaultCode {
   severity: string;
 }
 
-export default function SpaceXFaultCodeLookup() {
+export default function AerospaceFaultCodeLookup() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState<'all' | 'PowerWizard' | 'DeepSea'>('all');
   const [results, setResults] = useState<FaultCode[]>([]);

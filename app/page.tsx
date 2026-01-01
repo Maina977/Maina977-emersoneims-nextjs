@@ -78,7 +78,7 @@ export default function AwwwardsHomepage() {
               autoPlay loop muted playsInline preload="metadata"
               onLoadedData={() => setVideoLoaded(true)}
               className="absolute inset-0 w-full h-full object-cover scale-110"
-              poster="/images/GEN%202-1920x1080.png"
+              poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
               style={{ willChange: 'transform' }}
             >
               <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" />
@@ -151,7 +151,7 @@ export default function AwwwardsHomepage() {
                 className="text-xl sm:text-2xl md:text-3xl text-gray-200 font-light mb-16 max-w-4xl mx-auto leading-relaxed"
               >
                 Premium Energy Solutions. Engineering-Grade Reliability. 
-                <span className="text-amber-400"> 15+ Years</span> Powering East Africa.
+                <span className="text-amber-400"> 12+ Years</span> Powering East Africa.
               </motion.p>
               
               <motion.div
@@ -301,7 +301,7 @@ export default function AwwwardsHomepage() {
               transition={{ delay: 0.2, duration: 1 }}
               className="text-xl sm:text-2xl lg:text-3xl text-gray-300 text-center sm:text-left leading-relaxed font-light max-w-4xl"
             >
-              Over <span className="text-white font-semibold">15 years</span> powering East Africa&apos;s critical infrastructure. 
+              Over <span className="text-white font-semibold">12 years</span> powering East Africa&apos;s critical infrastructure. 
               From <span className="text-amber-400">20kVA</span> residential systems to <span className="text-amber-400">2000kVA</span> industrial installations. 
               <span className="text-white font-semibold"> 98.7%</span> uptime guaranteed.
             </motion.p>
@@ -470,7 +470,7 @@ export default function AwwwardsHomepage() {
                 { num: '500+', label: 'Projects Delivered', icon: '🔧' },
                 { num: '98.7%', label: 'System Uptime', icon: '📊' },
                 { num: '47', label: 'Counties Served', icon: '🌍' },
-                { num: '15+', label: 'Years Experience', icon: '🏆' },
+                { num: '12+', label: 'Years Experience', icon: '🏆' },
               ].map((stat, i) => (
                 <motion.div
                   key={i}

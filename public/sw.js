@@ -3,121 +3,158 @@
  * Tesla-level caching and offline support
  */
 
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox-sw.js');
+const CACHE_VERSION = 'v1';
+const STATIC_CACHE = `static-cache-${CACHE_VERSION}`;
+const IMAGES_CACHE = `images-cache-${CACHE_VERSION}`;
+const PAGES_CACHE = `pages-cache-${CACHE_VERSION}`;
+const API_CACHE = `api-cache-${CACHE_VERSION}`;
 
-const { precacheAndRoute, createHandlerBoundToURL } = workbox.precaching;
-const { registerRoute, NavigationRoute } = workbox.routing;
-const { CacheFirst, NetworkFirst } = workbox.strategies;
-const { ExpirationPlugin } = workbox.expiration;
-const { CacheableResponsePlugin } = workbox.cacheableResponse;
+// Static assets to precache
+const PRECACHE_ASSETS = [
+  '/',
+  '/generators',
+  '/service',
+  '/solar',
+  '/contact',
+  '/manifest.webmanifest',
+  '/favicon.ico',
+];
 
-// Precache critical assets
-precacheAndRoute([
-  { url: '/', revision: null },
-  { url: '/generators', revision: null },
-  { url: '/service', revision: null },
-  { url: '/solar', revision: null },
-  { url: '/contact', revision: null },
-  { url: '/manifest.json', revision: null },
-  { url: '/favicon.ico', revision: null },
-]);
-
-// Handle navigation requests
-const handler = createHandlerBoundToURL('/index.html');
-const navigationRoute = new NavigationRoute(handler, {
-  denylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
+// Install event - precache critical assets
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        console.log('✅ SW: Precaching critical assets');
+        return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+          console.warn('⚠️ SW: Some assets failed to precache:', err);
+          // Don't fail installation if some assets can't be cached
+          return Promise.resolve();
+        });
+      })
+      .then(() => self.skipWaiting())
+  );
 });
-registerRoute(navigationRoute);
 
-// Cache images with aggressive strategy
-registerRoute(
-  ({ request }) => request.destination === 'image',
-  new CacheFirst({
-    cacheName: 'images-cache-v1',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-        purgeOnQuotaError: true,
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  })
-);
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((cacheName) => !cacheName.includes(CACHE_VERSION))
+            .map((cacheName) => {
+              console.log('🗑️ SW: Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            })
+        );
+      })
+      .then(() => self.clients.claim())
+  );
+});
 
-// Cache fonts aggressively
-registerRoute(
-  ({ request }) => request.destination === 'font',
-  new CacheFirst({
-    cacheName: 'fonts-cache-v1',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 20,
-        maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
-        purgeOnQuotaError: true,
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  })
-);
+// Fetch event - handle caching strategies
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
 
-// Cache static assets
-registerRoute(
-  ({ request }) =>
+  // Skip non-GET requests
+  if (request.method !== 'GET') return;
+
+  // Skip chrome-extension and other non-http(s) requests
+  if (!url.protocol.startsWith('http')) return;
+
+  // Skip Next.js internal requests
+  if (url.pathname.startsWith('/_next/')) {
+    // Cache static assets from _next/static
+    if (url.pathname.includes('/_next/static/')) {
+      event.respondWith(cacheFirst(request, STATIC_CACHE, 7 * 24 * 60 * 60));
+    }
+    return;
+  }
+
+  // Handle API requests with network-first
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(networkFirst(request, API_CACHE, 5 * 60));
+    return;
+  }
+
+  // Handle images with cache-first
+  if (
+    request.destination === 'image' ||
+    /\.(png|jpg|jpeg|gif|webp|avif|svg|ico)$/i.test(url.pathname)
+  ) {
+    event.respondWith(cacheFirst(request, IMAGES_CACHE, 30 * 24 * 60 * 60));
+    return;
+  }
+
+  // Handle fonts with cache-first
+  if (
+    request.destination === 'font' ||
+    /\.(woff2?|ttf|eot|otf)$/i.test(url.pathname)
+  ) {
+    event.respondWith(cacheFirst(request, STATIC_CACHE, 365 * 24 * 60 * 60));
+    return;
+  }
+
+  // Handle navigation requests with network-first
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request, PAGES_CACHE, 60 * 60));
+    return;
+  }
+
+  // Handle static assets (CSS, JS) with cache-first
+  if (
     request.destination === 'style' ||
     request.destination === 'script' ||
-    /\.(css|js|woff2?|ttf|eot)$/.test(request.url),
-  new CacheFirst({
-    cacheName: 'static-cache-v1',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 200,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-        purgeOnQuotaError: true,
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  })
-);
+    /\.(css|js)$/i.test(url.pathname)
+  ) {
+    event.respondWith(cacheFirst(request, STATIC_CACHE, 7 * 24 * 60 * 60));
+    return;
+  }
+});
 
-// Cache API responses with network-first strategy
-registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
-  new NetworkFirst({
-    cacheName: 'api-cache-v1',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 5 * 60, // 5 minutes
-        purgeOnQuotaError: true,
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  })
-);
+// Cache-first strategy helper
+async function cacheFirst(request, cacheName, maxAge) {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    console.warn('⚠️ SW: Network request failed:', request.url);
+    return new Response('Offline', { status: 503 });
+  }
+}
 
-// Cache pages with network-first for fresh content
-registerRoute(
-  ({ request }) => request.mode === 'navigate',
-  new NetworkFirst({
-    cacheName: 'pages-cache-v1',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 60 * 60, // 1 hour
-        purgeOnQuotaError: true,
-      }),
-    ],
-  })
-);
+// Network-first strategy helper
+async function networkFirst(request, cacheName, maxAge) {
+  const cache = await caches.open(cacheName);
+  
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    console.warn('⚠️ SW: Network and cache failed:', request.url);
+    return new Response('Offline', { status: 503 });
+  }
+}
 
 // Background sync for offline actions
 self.addEventListener('sync', (event) => {
@@ -163,24 +200,11 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Performance monitoring
+// Handle messages from the app
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-// Clean up old caches on activation
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (!cacheName.includes('-v1')) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});
+console.log('✅ SW: Service Worker loaded successfully');

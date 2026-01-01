@@ -8,7 +8,7 @@ const NikeStyleServiceCard = lazy(() => import('./NikeStyleServiceCard'));
 const services = [
   {
     title: 'Generator Systems',
-    description: 'Premium diesel and gas generators engineered for reliability, efficiency, and performance. From 10 kVA to 2000 kVA, we power your future with Cummins, Perkins, and Caterpillar certified systems.',
+    description: 'Premium diesel generators engineered for reliability, efficiency, and performance. From 10 kVA to 2000 kVA, we power your future as authorized Cummins Voltka partners with Cummins and Perkins systems.',
     image: '/images/GEN%202-1920x1080.png',
     href: '/generators',
     stats: [

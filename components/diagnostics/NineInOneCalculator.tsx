@@ -35,6 +35,11 @@ export default function NineInOneCalculator() {
     hoursPerDay: '',
   });
 
+  // Check for reduced motion preference
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+
   const calculations = useMemo(() => {
     const p = parseFloat(inputs.power) || 0;
     const v = parseFloat(inputs.voltage) || 0;
@@ -183,70 +188,95 @@ export default function NineInOneCalculator() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white p-6 rounded-xl shadow-2xl border border-gray-200"
+      className="bg-white p-4 sm:p-6 rounded-xl shadow-2xl border border-gray-200"
+      role="region"
+      aria-labelledby="calculator-title"
     >
       <div className="mb-6">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">9-in-1 Electrical Calculator</h3>
-        <p className="text-gray-600">Professional electrical engineering calculations</p>
+        <h3 id="calculator-title" className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">9-in-1 Electrical Calculator</h3>
+        <p className="text-sm sm:text-base text-gray-600">Professional electrical engineering calculations</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        {inputFields.map((field, index) => (
-          <motion.div
-            key={field.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="space-y-2"
-          >
-            <label className="block text-sm font-medium text-gray-700">
-              {field.label} {field.unit && `(${field.unit})`}
-            </label>
-            <input
-              type="number"
-              value={field.value}
-              onChange={(e) => handleInputChange(
-                field.label.toLowerCase().replace(/\s+/g, '').replace(/[^a-zA-Z]/g, ''),
-                e.target.value
+      <fieldset className="mb-6">
+        <legend className="sr-only">Enter electrical values for calculations</legend>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {inputFields.map((field, index) => (
+            <motion.div
+              key={field.label}
+              initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={prefersReducedMotion ? {} : { delay: index * 0.05 }}
+              className="space-y-2"
+            >
+              <label 
+                htmlFor={`calc-${field.label.toLowerCase().replace(/\s+/g, '-')}`}
+                className="block text-sm font-medium text-gray-700"
+              >
+                {field.label} {field.unit && <span className="text-gray-500">({field.unit})</span>}
+              </label>
+              <input
+                id={`calc-${field.label.toLowerCase().replace(/\s+/g, '-')}`}
+                type="number"
+                inputMode="decimal"
+                value={field.value}
+                onChange={(e) => handleInputChange(
+                  field.label.toLowerCase().replace(/\s+/g, '').replace(/[^a-zA-Z]/g, ''),
+                  e.target.value
+                )}
+                placeholder={field.placeholder}
+                aria-describedby={field.unit ? `${field.label.toLowerCase().replace(/\s+/g, '-')}-unit` : undefined}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 text-base"
+              />
+              {field.unit && (
+                <span id={`${field.label.toLowerCase().replace(/\s+/g, '-')}-unit`} className="sr-only">
+                  in {field.unit}
+                </span>
               )}
-              placeholder={field.placeholder}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
+      </fieldset>
 
       {calculations.length > 0 && (
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={prefersReducedMotion ? {} : { opacity: 0 }}
           animate={{ opacity: 1 }}
           className="border-t pt-6"
+          role="region"
+          aria-live="polite"
+          aria-label="Calculation results - updates automatically"
         >
-          <h4 className="text-lg font-semibold text-gray-900 mb-4">Calculation Results</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+            Calculation Results 
+            <span className="sr-only"> - {calculations.length} results calculated</span>
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" role="list">
             {calculations.map((calc, index) => (
               <motion.div
                 key={calc.name}
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200"
+                transition={prefersReducedMotion ? {} : { delay: index * 0.1 }}
+                className="p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200"
+                role="listitem"
+                aria-label={`${calc.name}: ${calc.value} ${calc.unit}`}
               >
                 <h5 className="font-semibold text-gray-900 text-sm mb-1">{calc.name}</h5>
-                <p className="text-2xl font-bold text-blue-600 mb-1">
+                <p className="text-xl sm:text-2xl font-bold text-blue-600 mb-1" aria-hidden="true">
                   {calc.value} {calc.unit}
                 </p>
-                <p className="text-xs text-gray-600 font-mono">{calc.formula}</p>
+                <p className="text-xs text-gray-600 font-mono" aria-label={`Formula: ${calc.formula}`}>{calc.formula}</p>
               </motion.div>
             ))}
           </div>
         </motion.div>
       )}
 
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <p className="text-sm text-gray-700">
+      <div className="mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg" role="note">
+        <p className="text-xs sm:text-sm text-gray-700">
+          <span aria-hidden="true">💡 </span>
           Enter values in the fields above to perform real-time electrical calculations.
           All results are calculated using standard electrical engineering formulas.
         </p>

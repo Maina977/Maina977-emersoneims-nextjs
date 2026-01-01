@@ -22,6 +22,12 @@ const FloatingUFOs = lazy(() => import('@/components/webgl/FloatingUFOs'));
 const InteractiveBlobs = lazy(() => import('@/components/webgl/InteractiveBlobs'));
 const AbstractFloatingShapes = lazy(() => import('@/components/webgl/AbstractFloatingShapes'));
 
+// Diagnostics Components (moved from diagnostics page)
+const HeroSection = lazy(() => import('@/components/diagnostics/HeroSection'));
+const RealTimeMonitor = lazy(() => import('@/components/diagnostics/RealTimeMonitor'));
+const DiagnosticMachine = lazy(() => import('@/components/diagnostics/DiagnosticMachine'));
+const MissionControlDiagnostics = lazy(() => import('@/components/diagnostics/MissionControlDiagnostics'));
+
 // Video Hero Component
 const VideoHero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
@@ -536,6 +542,48 @@ export default function GeneratorPage() {
             </p>
           </div>
           <GeneratorSizingCalculator />
+        </div>
+      </section>
+
+      {/* Quick Diagnostics Preview Section */}
+      <section id="diagnostics-preview" className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">
+        <div className="eims-shell">
+          <SectionLead
+            title="Generator Diagnostics"
+            subtitle="Quick diagnostics tools - For full diagnostic module, visit our dedicated diagnostics page"
+            centered
+          />
+          
+          {/* Link to Full Diagnostics */}
+          <div className="text-center mb-10">
+            <a 
+              href="/diagnostics" 
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50"
+            >
+              <span className="text-2xl">🔧</span>
+              <span>Open Full Diagnostic Tool (5,930+ Error Codes)</span>
+              <span className="text-xl">→</span>
+            </a>
+          </div>
+          
+          {/* Real-Time Monitor Preview */}
+          <Suspense fallback={<div className="h-40 bg-gray-900/50 rounded-xl animate-pulse my-6" />}>
+            <RealTimeMonitor />
+          </Suspense>
+
+          {/* Mission Control Preview */}
+          <div className="mt-10">
+            <Suspense fallback={<div className="h-[500px] bg-slate-900/30 rounded-2xl border border-slate-800 animate-pulse" />}>
+              <MissionControlDiagnostics />
+            </Suspense>
+          </div>
+          
+          {/* Diagnostic Machine */}
+          <div className="mt-10">
+            <Suspense fallback={<div className="h-96 bg-gray-900/30 rounded-2xl border border-gray-800 animate-pulse" />}>
+              <DiagnosticMachine />
+            </Suspense>
+          </div>
         </div>
       </section>
     </main>

@@ -85,10 +85,10 @@ export default function TeslaStyleNavigation({
               {/* Logo with Enhanced Contrast & Glow */}
               <div className="relative">
                 {/* Glow effect behind logo */}
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-amber-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/30 via-cyan-500/30 to-amber-500/30 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
-                {/* Logo with subtle shadow for depth */}
-                <div className="relative bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10 group-hover:border-cyan-500/50 transition-all duration-300 shadow-lg shadow-black/20">
+                {/* Logo with stronger background for dark mode visibility */}
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20 group-hover:border-cyan-500/50 transition-all duration-300 shadow-lg shadow-black/30">
                   <Image
                     src="/images/logo-tagline.png"
                     alt="EmersonEIMS - Premium Power Engineering"
@@ -96,7 +96,7 @@ export default function TeslaStyleNavigation({
                     height={55}
                     priority
                     sizes="(max-width: 768px) 160px, 220px"
-                    className="h-12 sm:h-14 w-auto object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] brightness-110 contrast-110"
+                    className="h-12 sm:h-14 w-auto object-contain"
                   />
                 </div>
               </div>

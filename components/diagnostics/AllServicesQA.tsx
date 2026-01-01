@@ -828,6 +828,11 @@ export default function AllServicesQA() {
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Check for reduced motion preference
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+
   const currentService = DIAGNOSTIC_SERVICES.find(s => s.id === selectedService) || DIAGNOSTIC_SERVICES[0];
 
   const filteredQAs = searchQuery
@@ -847,20 +852,38 @@ export default function AllServicesQA() {
     }
   };
 
+  const getSeverityLabel = (severity?: string) => {
+    switch (severity) {
+      case 'critical': return 'Critical - requires immediate attention';
+      case 'high': return 'High priority issue';
+      case 'medium': return 'Medium priority issue';
+      case 'low': return 'Low priority issue';
+      default: return '';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white font-mono">
+    <div className="min-h-screen bg-black text-white font-mono" role="application" aria-label="Diagnostic Q&A System">
+      {/* Skip Link for keyboard users */}
+      <a 
+        href="#qa-main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-cyan-500 focus:text-black focus:font-bold"
+      >
+        Skip to Q&A content
+      </a>
+
       {/* Header */}
-      <div className="border-b border-cyan-500/30 bg-gradient-to-r from-black via-gray-900 to-black">
-        <div className="max-w-7xl mx-auto px-8 py-6">
+      <header className="border-b border-cyan-500/30 bg-gradient-to-r from-black via-gray-900 to-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 border-2 border-cyan-500 bg-cyan-500/10 flex items-center justify-center">
-              <span className="text-2xl">🔍</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-cyan-500 bg-cyan-500/10 flex items-center justify-center" aria-hidden="true">
+              <span className="text-xl sm:text-2xl">🔍</span>
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-widest text-cyan-400">
+              <h1 id="qa-title" className="text-xl sm:text-3xl font-bold tracking-widest text-cyan-400">
                 COMPREHENSIVE DIAGNOSTIC Q&A
               </h1>
-              <p className="text-sm text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-400">
                 Troubleshooting Guide for All Services
               </p>
             </div>
@@ -868,41 +891,56 @@ export default function AllServicesQA() {
 
           {/* Search */}
           <div className="relative">
+            <label htmlFor="qa-search" className="sr-only">Search diagnostic questions</label>
             <input
-              type="text"
+              id="qa-search"
+              type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search questions..."
-              className="w-full bg-gray-900/50 border border-cyan-500/30 px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500"
+              aria-describedby="search-results-count"
+              className="w-full bg-gray-900/50 border border-cyan-500/30 px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
             />
+            <span id="search-results-count" className="sr-only" aria-live="polite">
+              {searchQuery ? `${filteredQAs.length} results found` : ''}
+            </span>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto p-8">
-        <div className="grid grid-cols-12 gap-6">
+      <main id="qa-main-content" className="max-w-7xl mx-auto p-4 sm:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
           
           {/* Service Categories */}
-          <div className="col-span-3">
-            <div className="border border-cyan-500/30 bg-black/50 sticky top-8">
+          <nav className="lg:col-span-3" aria-label="Service categories">
+            <div className="border border-cyan-500/30 bg-black/50 lg:sticky lg:top-8">
               <div className="bg-cyan-500/10 border-b border-cyan-500/30 px-4 py-3">
-                <h2 className="text-sm font-bold tracking-wider text-cyan-400">
+                <h2 id="services-heading" className="text-sm font-bold tracking-wider text-cyan-400">
                   SERVICES
                 </h2>
               </div>
-              <div className="p-4 space-y-2 max-h-[600px] overflow-y-auto">
+              <div 
+                className="p-4 space-y-2 max-h-[400px] lg:max-h-[600px] overflow-y-auto" 
+                role="listbox" 
+                aria-labelledby="services-heading"
+                aria-activedescendant={`service-${selectedService}`}
+              >
                 {DIAGNOSTIC_SERVICES.map((service) => (
                   <button
                     key={service.id}
+                    id={`service-${service.id}`}
                     onClick={() => setSelectedService(service.id)}
-                    className={`w-full text-left px-4 py-3 border transition-all ${
+                    role="option"
+                    aria-selected={selectedService === service.id}
+                    aria-label={`${service.name}: ${service.qaPairs.length} diagnostic questions available`}
+                    className={`w-full text-left px-4 py-3 border transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
                       selectedService === service.id
                         ? `border-${service.color}-500 bg-${service.color}-500/20 text-${service.color}-400`
                         : 'border-gray-800 bg-gray-900/50 text-gray-400 hover:border-cyan-500/50'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{service.icon}</span>
+                      <span className="text-xl sm:text-2xl" aria-hidden="true">{service.icon}</span>
                       <div>
                         <div className="text-sm font-bold">{service.name}</div>
                         <div className="text-xs text-gray-500">{service.qaPairs.length} Q&As</div>
@@ -912,60 +950,69 @@ export default function AllServicesQA() {
                 ))}
               </div>
             </div>
-          </div>
+          </nav>
 
           {/* Q&A Content */}
-          <div className="col-span-9">
+          <section className="lg:col-span-9" aria-labelledby="current-service-heading">
             <div className="border border-cyan-500/30 bg-black/50">
-              <div className={`bg-${currentService.color}-500/10 border-b border-${currentService.color}-500/30 px-6 py-4`}>
+              <div className={`bg-${currentService.color}-500/10 border-b border-${currentService.color}-500/30 px-4 sm:px-6 py-4`}>
                 <div className="flex items-center gap-4">
-                  <span className="text-4xl">{currentService.icon}</span>
+                  <span className="text-3xl sm:text-4xl" aria-hidden="true">{currentService.icon}</span>
                   <div>
-                    <h2 className={`text-2xl font-bold text-${currentService.color}-400`}>
+                    <h2 id="current-service-heading" className={`text-xl sm:text-2xl font-bold text-${currentService.color}-400`}>
                       {currentService.name}
                     </h2>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-400" aria-live="polite">
                       {filteredQAs.length} diagnostic questions
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-4" role="list" aria-label="Diagnostic questions and answers">
                 {filteredQAs.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="text-6xl mb-4">🔍</div>
+                  <div className="text-center py-12" role="status">
+                    <div className="text-6xl mb-4" aria-hidden="true">🔍</div>
                     <p className="text-gray-400">No results found for &quot;{searchQuery}&quot;</p>
                   </div>
                 ) : (
                   filteredQAs.map((qa, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={prefersReducedMotion ? {} : { delay: index * 0.05 }}
                       className={`border ${getSeverityColor(qa.severity)} overflow-hidden`}
+                      role="listitem"
                     >
                       <button
                         onClick={() => setExpandedQuestion(expandedQuestion === `${selectedService}-${index}` ? null : `${selectedService}-${index}`)}
-                        className="w-full text-left p-4 flex items-start justify-between hover:bg-white/5 transition-all"
+                        aria-expanded={expandedQuestion === `${selectedService}-${index}`}
+                        aria-controls={`qa-answer-${selectedService}-${index}`}
+                        className="w-full text-left p-4 flex items-start justify-between hover:bg-white/5 transition-all focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500"
                       >
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
                             {qa.severity && (
-                              <span className={`px-2 py-1 text-xs font-bold border ${
-                                qa.severity === 'critical' ? 'border-red-500 text-red-400' :
-                                qa.severity === 'high' ? 'border-orange-500 text-orange-400' :
-                                qa.severity === 'medium' ? 'border-yellow-500 text-yellow-400' :
-                                'border-green-500 text-green-400'
-                              }`}>
+                              <span 
+                                className={`px-2 py-1 text-xs font-bold border ${
+                                  qa.severity === 'critical' ? 'border-red-500 text-red-400' :
+                                  qa.severity === 'high' ? 'border-orange-500 text-orange-400' :
+                                  qa.severity === 'medium' ? 'border-yellow-500 text-yellow-400' :
+                                  'border-green-500 text-green-400'
+                                }`}
+                                aria-label={getSeverityLabel(qa.severity)}
+                              >
                                 {qa.severity.toUpperCase()}
                               </span>
                             )}
                             <span className="text-sm font-bold text-white">{qa.question}</span>
                           </div>
                         </div>
-                        <div className={`ml-4 transition-transform ${expandedQuestion === `${selectedService}-${index}` ? 'rotate-180' : ''}`}>
+                        <div 
+                          className={`ml-4 transition-transform ${expandedQuestion === `${selectedService}-${index}` ? 'rotate-180' : ''}`}
+                          aria-hidden="true"
+                        >
                           <span className="text-cyan-400">▼</span>
                         </div>
                       </button>
@@ -973,24 +1020,27 @@ export default function AllServicesQA() {
                       <AnimatePresence>
                         {expandedQuestion === `${selectedService}-${index}` && (
                           <motion.div
-                            initial={{ height: 0, opacity: 0 }}
+                            id={`qa-answer-${selectedService}-${index}`}
+                            initial={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
+                            exit={prefersReducedMotion ? {} : { height: 0, opacity: 0 }}
                             className="border-t border-gray-800"
+                            role="region"
+                            aria-label={`Answer to: ${qa.question}`}
                           >
                             <div className="p-4 bg-black/30">
                               <div className="mb-4">
-                                <div className="text-xs text-cyan-400 font-bold mb-2">DIAGNOSIS:</div>
-                                <div className="text-sm text-gray-300">{qa.answer}</div>
+                                <h3 className="text-xs text-cyan-400 font-bold mb-2">DIAGNOSIS:</h3>
+                                <p className="text-sm text-gray-300">{qa.answer}</p>
                               </div>
 
                               {qa.solutions && (
                                 <div>
-                                  <div className="text-xs text-green-400 font-bold mb-2">SOLUTIONS:</div>
-                                  <ul className="space-y-2">
+                                  <h3 className="text-xs text-green-400 font-bold mb-2">SOLUTIONS:</h3>
+                                  <ul className="space-y-2" role="list" aria-label="Recommended solutions">
                                     {qa.solutions.map((solution, i) => (
                                       <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                                        <span className="text-green-400 mt-1">✓</span>
+                                        <span className="text-green-400 mt-1" aria-hidden="true">✓</span>
                                         <span>{solution}</span>
                                       </li>
                                     ))}
@@ -1006,15 +1056,15 @@ export default function AllServicesQA() {
                 )}
               </div>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
 
-      {/* HUD Corners */}
-      <div className="fixed top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-cyan-500/30 pointer-events-none" />
-      <div className="fixed top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-cyan-500/30 pointer-events-none" />
-      <div className="fixed bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-cyan-500/30 pointer-events-none" />
-      <div className="fixed bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-cyan-500/30 pointer-events-none" />
+      {/* HUD Corners - decorative only */}
+      <div className="hidden sm:block fixed top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-cyan-500/30 pointer-events-none" aria-hidden="true" />
+      <div className="hidden sm:block fixed top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-cyan-500/30 pointer-events-none" aria-hidden="true" />
+      <div className="hidden sm:block fixed bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-cyan-500/30 pointer-events-none" aria-hidden="true" />
+      <div className="hidden sm:block fixed bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-cyan-500/30 pointer-events-none" aria-hidden="true" />
     </div>
   );
 }
