@@ -216,43 +216,90 @@ export default function AwwwardsHomepage() {
           </motion.div>
         </motion.section>
 
-        {/* SECTION 1: TESLA-SIZED IMAGE - Generators with Premium Effects */}
-        <section className="relative py-32 sm:py-40 bg-black">
+        {/* SECTION 1: CINEMATIC HERO IMAGE - Cummins Generator with Hollywood Color Grading */}
+        <section className="relative py-32 sm:py-40 bg-black overflow-hidden">
+          {/* Cinematic ambient lighting */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(251,191,36,0.08)_0%,transparent_70%)]" />
+          
           <div className="max-w-[1800px] mx-auto px-6 sm:px-12 lg:px-24">
             <motion.div
               initial={{ opacity: 0, y: 100, scale: 0.95 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
               className="relative group"
             >
-              {/* Premium frame */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/20 via-transparent to-cyan-500/20 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              {/* Premium cinematic frame glow */}
+              <div className="absolute -inset-6 bg-gradient-to-r from-amber-500/30 via-orange-500/20 to-cyan-500/30 rounded-[2.5rem] blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-1000" />
+              <div className="absolute -inset-3 bg-gradient-to-b from-white/5 to-transparent rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               
-              <div className="relative overflow-hidden rounded-3xl shadow-[0_25px_80px_-15px_rgba(0,0,0,0.5)] group-hover:shadow-[0_35px_100px_-15px_rgba(251,191,36,0.2)] transition-all duration-700">
-                <Image
-                  src="/images/GEN%202-1920x1080.png"
-                  alt="Industrial Power Generation Systems"
-                  width={1920}
-                  height={1080}
-                  className="w-full h-[70vh] sm:h-[85vh] object-cover transform group-hover:scale-[1.02] transition-transform duration-700"
-                  priority
-                />
+              <div className="relative overflow-hidden rounded-3xl shadow-[0_30px_100px_-20px_rgba(0,0,0,0.8)] group-hover:shadow-[0_40px_120px_-20px_rgba(251,191,36,0.3)] transition-all duration-1000">
+                {/* Main Cummins Generator Image with Cinematic Treatment */}
+                <div className="relative">
+                  <Image
+                    src="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
+                    alt="Cummins Industrial Diesel Generator - Premium Power Solutions Kenya"
+                    width={1920}
+                    height={1080}
+                    className="w-full h-[70vh] sm:h-[85vh] object-cover transform group-hover:scale-[1.03] transition-transform duration-1000"
+                    style={{
+                      filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
+                    }}
+                    priority
+                  />
+                  
+                  {/* Hollywood Color Grading Overlays */}
+                  {/* Teal & Orange cinematic look */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-cyan-600/15 mix-blend-overlay" />
+                  
+                  {/* Vignette effect for depth */}
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.5)_100%)]" />
+                  
+                  {/* Top light leak */}
+                  <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-amber-400/10 to-transparent" />
+                  
+                  {/* Bottom cinematic gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  
+                  {/* Side light streaks */}
+                  <div className="absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-amber-500/5 to-transparent" />
+                  <div className="absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-cyan-500/5 to-transparent" />
+                  
+                  {/* Film grain texture overlay */}
+                  <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" 
+                    style={{
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")',
+                    }} 
+                  />
+                </div>
                 
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-                
-                {/* Floating label */}
+                {/* Floating Cummins badge */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.6, duration: 0.8 }}
                   className="absolute bottom-8 left-8 sm:bottom-12 sm:left-12"
                 >
-                  <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
-                    <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                    <span className="text-white text-sm font-medium">20kVA - 2000kVA Available</span>
+                  <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-black/70 backdrop-blur-xl border border-amber-500/30 shadow-2xl">
+                    <div className="flex flex-col">
+                      <span className="text-amber-400 text-xs font-bold uppercase tracking-widest">Cummins Powered</span>
+                      <span className="text-white text-lg font-semibold">20kVA - 2000kVA Available</span>
+                    </div>
+                    <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.6)]" />
+                  </div>
+                </motion.div>
+                
+                {/* Top right premium badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.8, duration: 0.6 }}
+                  className="absolute top-8 right-8 sm:top-12 sm:right-12"
+                >
+                  <div className="px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-black text-sm font-bold uppercase tracking-wider shadow-lg">
+                    Premium Quality
                   </div>
                 </motion.div>
               </div>
