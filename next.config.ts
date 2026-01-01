@@ -53,11 +53,6 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   
-  // ESLint - allow warnings during build
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  
   // Headers for security and performance
   async headers() {
     return [
