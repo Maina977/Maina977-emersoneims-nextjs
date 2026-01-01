@@ -250,8 +250,8 @@ export default function RootLayout({
         {/* WCAG 2.1 AA: Skip to Content Link */}
         <SkipToContent />
         
-        {/* Enterprise-Grade DMCA & Copyright Protection */}
-        <DMCAProtection
+        {/* Enterprise-Grade DMCA & Copyright Protection - Disabled for stability */}
+        {/* <DMCAProtection
           enableWatermark={true}
           enableRightClickProtection={true}
           enableCopyProtection={true}
@@ -259,7 +259,7 @@ export default function RootLayout({
           enablePrintProtection={true}
           enableScreenshotDetection={true}
           showWarnings={true}
-        />
+        /> */}
         
         {/* Global Structured Data for SEO */}
         <OrganizationSchema />
