@@ -1,49 +1,45 @@
 'use client';
 
-// ServicePage.jsx
-import React, { Suspense, useState, lazy } from "react";
+// ServicePage.tsx - Premium Services Page
+import React, { useState } from "react";
 import { HelmetProvider } from "react-helmet-async";
 
-const SEOHead = lazy(() => import("../components/common/SEOHead"));
-const ErrorBoundary = lazy(() => import("../components/common/ErrorBoundary"));
-const AdaptivePerformanceMonitor = lazy(() => import("../components/common/AdaptivePerformanceMonitor"));
-const DieselGenerators = lazy(() => import("../components/service/DieselGenerators"));
-const SolarEnergy = lazy(() => import("../components/service/SolarEnergy"));
-const HighVoltage = lazy(() => import("../components/service/HighVoltage"));
-const UPSSystems = lazy(() => import("../components/service/UPSSystems"));
-const MotorRewinding = lazy(() => import("../components/service/MotorRewinding"));
-const Fabrication = lazy(() => import("../components/service/Fabrication"));
-const WaterSystems = lazy(() => import("../components/service/WaterSystems"));
-const HVACSystems = lazy(() => import("../components/service/HVACSystems"));
-const Incinerators = lazy(() => import("../components/service/Incinerators"));
-const CrossServiceOptimizers = lazy(() => import("../components/service/CrossServiceOptimizers"));
+import SEOHead from "../components/common/SEOHead";
+import ErrorBoundary from "../components/common/ErrorBoundary";
+import AdaptivePerformanceMonitor from "../components/common/AdaptivePerformanceMonitor";
+import DieselGenerators from "../components/service/DieselGenerators";
+import SolarEnergy from "../components/service/SolarEnergy";
+import HighVoltage from "../components/service/HighVoltage";
+import UPSSystems from "../components/service/UPSSystems";
+import MotorRewinding from "../components/service/MotorRewinding";
+import Fabrication from "../components/service/Fabrication";
+import WaterSystems from "../components/service/WaterSystems";
+import HVACSystems from "../components/service/HVACSystems";
+import Incinerators from "../components/service/Incinerators";
+import CrossServiceOptimizers from "../components/service/CrossServiceOptimizers";
 
 export default function ServicePage() {
   const [performanceTier, setPerformanceTier] = useState("high");
 
   return (
     <HelmetProvider>
-      <Suspense fallback={<div className="loading-spinner" aria-label="Loading"><div className="spinner"></div><span>Loading services...</span></div>}>
-        <SEOHead
-          title="EmersonEIMS Services | Generator Intelligence, Solar, UPS, HV Infrastructure & More"
-          description="Ten premium service chapters. Calculators, charts, adaptive performance, and cinematic design that sells — built for Kenya and beyond."
-        />
-      </Suspense>
-      <main role="main">
+      <SEOHead
+        title="EmersonEIMS Services | Generator Intelligence, Solar, UPS, HV Infrastructure & More"
+        description="Ten premium service chapters. Calculators, charts, adaptive performance, and cinematic design that sells — built for Kenya and beyond."
+      />
+      <main role="main" className="bg-slate-900">
         <ErrorBoundary>
-          <Suspense fallback={<div className="loading-spinner" aria-label="Loading"><div className="spinner"></div><span>Loading content...</span></div>}>
-            <DieselGenerators key="diesel" />
-            <SolarEnergy key="solar" />
-            <HighVoltage key="hv" />
-            <UPSSystems key="ups" />
-            <MotorRewinding key="motor" />
-            <Fabrication key="fab" />
-            <WaterSystems key="water" />
-            <HVACSystems key="hvac" />
-            <Incinerators key="incin" />
-            <CrossServiceOptimizers key="opt" />
-            <AdaptivePerformanceMonitor onPerformanceChange={setPerformanceTier} />
-          </Suspense>
+          <DieselGenerators key="diesel" />
+          <SolarEnergy key="solar" />
+          <HighVoltage key="hv" />
+          <UPSSystems key="ups" />
+          <MotorRewinding key="motor" />
+          <Fabrication key="fab" />
+          <WaterSystems key="water" />
+          <HVACSystems key="hvac" />
+          <Incinerators key="incin" />
+          <CrossServiceOptimizers key="opt" />
+          <AdaptivePerformanceMonitor onPerformanceChange={setPerformanceTier} />
         </ErrorBoundary>
       </main>
     </HelmetProvider>
