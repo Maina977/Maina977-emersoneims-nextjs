@@ -21,6 +21,7 @@ const IndustryLeadingTrust = lazy(() => import('@/components/sections/IndustryLe
 const LiveOperationsDashboard = lazy(() => import('@/components/sections/LiveOperationsDashboard'));
 const CompetitiveAdvantage = lazy(() => import('@/components/sections/CompetitiveAdvantage'));
 const PremiumServicesShowcase = lazy(() => import('@/components/sections/PremiumServicesShowcase'));
+const DiagnosticModuleShowcase = lazy(() => import('@/components/sections/DiagnosticModuleShowcase'));
 
 const MicroInteractions = lazy(() => import('@/components/interactions/MicroInteractions'));
 const ParticleField = lazy(() => import('@/components/effects/ParticleField'));
@@ -563,7 +564,12 @@ export default function AwwwardsHomepage() {
           <CaseStudiesSection />
         </Suspense>
 
-        {/* SECTION 7.5: Premium Services Showcase - All 9 Services */}
+        {/* SECTION 7.5: WORLD'S MOST ADVANCED DIAGNOSTIC MODULE - Our Unique Advantage */}
+        <Suspense fallback={<div className="py-32 bg-black" />}>
+          <DiagnosticModuleShowcase />
+        </Suspense>
+
+        {/* SECTION 7.6: Premium Services Showcase - All 9 Services */}
         <Suspense fallback={<div className="py-32 bg-black" />}>
           <PremiumServicesShowcase />
         </Suspense>
