@@ -92,6 +92,116 @@ export default function SolutionsHome() {
         primaryAction="site-survey"
         secondaryAction="get-quote"
       />
+
+      {/* Cinematic Video Showcase Section */}
+      <section className="relative py-20 overflow-hidden">
+        {/* Hollywood-style gradient overlay background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-slate-900 to-black" />
+        
+        <div className="relative max-w-7xl mx-auto px-6">
+          {/* Section Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <span className="inline-block px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-400 text-sm font-medium mb-4 tracking-wider">
+              SEE IT IN ACTION
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Our Solutions <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-red-500">In Motion</span>
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Watch how we deliver world-class power solutions across Kenya and East Africa
+            </p>
+          </motion.div>
+
+          {/* Cinematic Video Container */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="relative"
+          >
+            {/* Outer glow effect */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-red-500/20 rounded-3xl blur-2xl opacity-50" />
+            
+            {/* Video wrapper with Hollywood color grading */}
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-amber-500/10">
+              {/* Top cinematic bar */}
+              <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none" />
+              
+              {/* Bottom cinematic bar */}
+              <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none" />
+              
+              {/* Corner accents */}
+              <div className="absolute top-4 left-4 w-12 h-12 border-l-2 border-t-2 border-amber-500/50 rounded-tl-lg z-20 pointer-events-none" />
+              <div className="absolute top-4 right-4 w-12 h-12 border-r-2 border-t-2 border-amber-500/50 rounded-tr-lg z-20 pointer-events-none" />
+              <div className="absolute bottom-4 left-4 w-12 h-12 border-l-2 border-b-2 border-orange-500/50 rounded-bl-lg z-20 pointer-events-none" />
+              <div className="absolute bottom-4 right-4 w-12 h-12 border-r-2 border-b-2 border-orange-500/50 rounded-br-lg z-20 pointer-events-none" />
+              
+              {/* Hollywood color grading overlay */}
+              <div className="absolute inset-0 z-10 pointer-events-none mix-blend-color" 
+                   style={{ background: 'linear-gradient(135deg, rgba(255,165,0,0.05) 0%, transparent 50%, rgba(0,150,255,0.05) 100%)' }} />
+              
+              {/* Contrast enhancement overlay */}
+              <div className="absolute inset-0 z-10 pointer-events-none mix-blend-overlay opacity-10"
+                   style={{ background: 'linear-gradient(to bottom, rgba(255,200,100,0.1), transparent, rgba(50,100,150,0.1))' }} />
+              
+              {/* The Video */}
+              <video
+                className="w-full aspect-video object-cover"
+                controls
+                preload="metadata"
+                poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
+                playsInline
+                style={{ filter: 'contrast(1.05) saturate(1.1)' }}
+              >
+                <source src="/videos/Solution(1).mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            {/* Video caption */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-6 text-center"
+            >
+              <p className="text-slate-400 text-sm">
+                <span className="text-amber-400 font-medium">Featured:</span> Complete power solutions installation and commissioning
+              </p>
+            </motion.div>
+          </motion.div>
+
+          {/* Additional video highlights */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
+            {[
+              { icon: '🎬', label: 'HD Quality', value: '1080p' },
+              { icon: '⚡', label: 'Fast Loading', value: 'Optimized' },
+              { icon: '🌍', label: 'Projects', value: 'Kenya & EA' },
+              { icon: '✅', label: 'Verified', value: 'Real Work' },
+            ].map((item, index) => (
+              <div key={index} className="bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 text-center">
+                <span className="text-2xl mb-2 block">{item.icon}</span>
+                <div className="text-white font-semibold text-sm">{item.value}</div>
+                <div className="text-slate-500 text-xs">{item.label}</div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
     </main>
   );
 }
