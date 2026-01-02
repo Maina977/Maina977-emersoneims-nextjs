@@ -92,8 +92,8 @@ export default function TransNzoiaCountyPage() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <a href="tel:+254727631316" className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all">
-                  🔥 Emergency: +254 727 631 316
+                <a href="tel:+254782914717" className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all">
+                  🔥 Emergency: +254 782 914 717
                 </a>
                 <a href="tel:+254768860655" className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold rounded-lg transition-all">
                   📞 General: +254 768 860 655

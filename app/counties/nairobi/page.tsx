@@ -92,10 +92,10 @@ export default function NairobiCountyPage() {
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <a 
-                href="tel:+254727631316"
+                href="tel:+254782914717"
                 className="flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-lg hover:scale-105 transition-all shadow-lg"
               >
-                🚨 Emergency: +254 727 631 316
+                🚨 Emergency: +254 782 914 717
               </a>
               <a 
                 href="tel:+254768860655"
