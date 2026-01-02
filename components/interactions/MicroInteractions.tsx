@@ -1,140 +1,102 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
-interface MicroInteractionsProps {
+interface OptimizedMicroInteractionsProps {
   intensity?: 'low' | 'high';
   theme?: 'engineering' | 'high-contrast';
 }
 
-export default function MicroInteractions({ 
-  intensity = 'high',
+/**
+ * OPTIMIZED MICRO INTERACTIONS - Performance Enhanced
+ * Reduced DOM manipulation, uses CSS animations, throttled events
+ */
+export default function OptimizedMicroInteractions({ 
+  intensity = 'low', // Default to low for performance
   theme = 'engineering'
-}: MicroInteractionsProps) {
+}: OptimizedMicroInteractionsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isEnabled, setIsEnabled] = useState(false);
+  const lastTrailTime = useRef(0);
+  const trailThrottle = 50; // ms between trail elements
+
+  // Delay enabling for faster initial load
+  useEffect(() => {
+    const timer = setTimeout(() => setIsEnabled(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Throttled trail creator
+  const createTrail = useCallback((x: number, y: number) => {
+    if (!containerRef.current || intensity === 'low') return;
+    
+    const now = Date.now();
+    if (now - lastTrailTime.current < trailThrottle) return;
+    lastTrailTime.current = now;
+    
+    const trail = document.createElement('div');
+    trail.className = 'cursor-trail-opt';
+    trail.style.cssText = `left:${x}px;top:${y}px`;
+    containerRef.current.appendChild(trail);
+    
+    // Remove after animation
+    setTimeout(() => trail.remove(), 400);
+  }, [intensity]);
 
   useEffect(() => {
-    if (intensity === 'low' || !containerRef.current) return;
+    if (!isEnabled || intensity === 'low' || !containerRef.current) return;
 
-    const container = containerRef.current;
-    
-    // Add cursor trail effect
+    // Use passive event listeners
     const handleMouseMove = (e: MouseEvent) => {
-      const trail = document.createElement('div');
-      trail.className = 'cursor-trail';
-      trail.style.left = `${e.clientX}px`;
-      trail.style.top = `${e.clientY}px`;
-      container.appendChild(trail);
-
-      setTimeout(() => {
-        trail.remove();
-      }, 500);
+      createTrail(e.clientX, e.clientY);
     };
 
-    // Add ripple effect on click
-    const handleClick = (e: MouseEvent) => {
-      const ripple = document.createElement('div');
-      ripple.className = 'ripple-effect';
-      ripple.style.left = `${e.clientX}px`;
-      ripple.style.top = `${e.clientY}px`;
-      container.appendChild(ripple);
-
-      setTimeout(() => {
-        ripple.remove();
-      }, 600);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('click', handleClick);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('click', handleClick);
     };
-  }, [intensity]);
+  }, [isEnabled, intensity, createTrail]);
+
+  if (!isEnabled) return null;
+
+  const trailColor = theme === 'high-contrast' 
+    ? 'rgba(255, 255, 255, 0.4)' 
+    : 'rgba(255, 183, 3, 0.3)';
 
   return (
     <>
-      <div ref={containerRef} className="micro-interactions-container" />
+      <div 
+        ref={containerRef} 
+        className="micro-interactions-container-opt"
+        aria-hidden="true"
+      />
       <style jsx global>{`
-        .micro-interactions-container {
+        .micro-interactions-container-opt {
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+          inset: 0;
           pointer-events: none;
-          z-index: 9999;
+          z-index: 9998;
+          overflow: hidden;
         }
-
-        .cursor-trail {
+        
+        .cursor-trail-opt {
           position: fixed;
-          width: 8px;
-          height: 8px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
-          background: ${theme === 'high-contrast' 
-            ? 'rgba(255, 255, 255, 0.5)' 
-            : 'rgba(255, 183, 3, 0.4)'};
+          background: ${trailColor};
           pointer-events: none;
           transform: translate(-50%, -50%);
-          animation: fadeOut 0.5s ease-out forwards;
+          animation: trailFadeOpt 0.4s ease-out forwards;
+          will-change: opacity, transform;
         }
-
-        .ripple-effect {
-          position: fixed;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          border: 2px solid ${theme === 'high-contrast' 
-            ? 'rgba(255, 255, 255, 0.6)' 
-            : 'rgba(255, 183, 3, 0.6)'};
-          pointer-events: none;
-          transform: translate(-50%, -50%);
-          animation: ripple 0.6s ease-out forwards;
-        }
-
-        @keyframes fadeOut {
-          to {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0);
-          }
-        }
-
-        @keyframes ripple {
-          0% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(3);
-          }
-        }
-
-        /* Magnetic effect for buttons */
-        [data-magnetic="true"] {
-          transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        [data-magnetic="true"]:hover {
-          transform: scale(1.05);
-        }
-
-        /* Cursor effect for action elements */
-        [data-cursor="action"] {
-          cursor: pointer;
-        }
-
-        [data-cursor="action"]:hover {
-          cursor: grab;
-        }
-
-        [data-cursor="action"]:active {
-          cursor: grabbing;
+        
+        @keyframes trailFadeOpt {
+          0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
         }
       `}</style>
     </>
   );
 }
-

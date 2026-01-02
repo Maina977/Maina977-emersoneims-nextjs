@@ -29,18 +29,6 @@ const PARTNERSHIPS = [
     description: 'Factory-authorized sales and service partner',
     verified: true,
   },
-  { 
-    name: 'Perkins', 
-    type: 'Service Partner', 
-    description: 'Certified service and parts provider',
-    verified: true,
-  },
-  { 
-    name: 'DeepSea Electronics', 
-    type: 'Integration Partner', 
-    description: 'Generator control systems specialist',
-    verified: true,
-  },
 ];
 
 // Real client portfolio - verified projects
@@ -112,7 +100,7 @@ const CAPABILITIES = [
   {
     title: 'Generator Solutions',
     range: '20 kVA - 2000 kVA',
-    brands: ['Cummins', 'Perkins', 'Caterpillar', 'FG Wilson'],
+    brands: ['Cummins', 'Caterpillar', 'FG Wilson'],
     services: ['Sales', 'Installation', 'Maintenance', 'Repairs', 'Parts'],
   },
   {
@@ -130,7 +118,7 @@ const CAPABILITIES = [
   {
     title: 'Control Systems',
     range: 'Industrial Automation',
-    brands: ['DeepSea', 'ComAp', 'PowerWizard', 'ABB'],
+    brands: ['ComAp', 'PowerWizard', 'ABB'],
     services: ['ATS', 'Synchronization', 'SCADA', 'Remote Monitoring'],
   },
 ];

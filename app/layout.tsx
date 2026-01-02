@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import DMCAProtection from '@/components/security/DMCAProtection';
-import { SecurityShield, AntiScrapingMeta } from '@/components/security/SecurityShield';
-import { InvisibleWatermark } from '@/components/security/CopyrightNotice';
-import { AccessibilityProvider, AccessibilityPanel } from '@/components/accessibility/AccessibilityToolkit';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PERFORMANCE OPTIMIZED IMPORTS
+// Critical components loaded directly, non-critical loaded in client wrapper
+// ═══════════════════════════════════════════════════════════════════════════════
 import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import { OrganizationSchema } from '@/components/seo/StructuredData';
 import SkipToContent from '@/components/accessibility/SkipToContent';
-import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
-import CookieConsent from '@/components/compliance/CookieConsent';
-import ClientWhatsApp from '@/components/chat/ClientWhatsApp';
+import { AntiScrapingMeta } from '@/components/security/SecurityShield';
 import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
+
+// Client-side only components wrapper (loaded after page is interactive)
+import ClientSideComponents from '@/components/layout/ClientSideComponents';
 
 // Default messages for the root layout (English)
 const defaultMessages = {
@@ -29,12 +31,12 @@ const defaultMessages = {
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
-// Performance Optimization: Font loading with display: swap
+// Performance Optimization: Font loading - only load essential weights
 const inter = Inter({ 
   subsets: ["latin"],
-  display: 'swap', // Show fallback font immediately (eliminates FOIT - Flash of Invisible Text)
+  display: 'swap',
   preload: true,
-  weight: ['400', '500', '600', '700'], // Only load weights we use
+  weight: ['400', '600', '700'], // Reduced from 4 to 3 weights
   variable: '--font-inter',
 });
 
@@ -244,10 +246,10 @@ export default function RootLayout({
         
         {/* Preload Critical Resources for Fast Loading */}
         <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" />
-        <link rel="preload" href="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp" as="image" type="image/webp" />
+        <link rel="preload" href="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp" as="image" type="image/webp" fetchPriority="high" />
         
-        {/* Video Preload Hints - Faster Hero Video Loading */}
-        <link rel="preload" href="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" as="video" type="video/mp4" fetchPriority="high" />
+        {/* Video Prefetch - Lower priority to not block initial render */}
+        <link rel="prefetch" href="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" as="video" type="video/mp4" />
         
         {/* Performance Optimization Meta */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
@@ -276,38 +278,11 @@ export default function RootLayout({
         <NextIntlClientProvider locale="en" messages={defaultMessages}>
         
         {/* ═══════════════════════════════════════════════════════════════════
-            WORLD-CLASS ACCESSIBILITY LAYER
-            "Power for Everyone" - Supporting ALL our brothers and sisters
-            Including visually impaired users - WCAG 2.1 AAA Compliant
+            CRITICAL PATH: Navigation + Content loaded immediately
         ════════════════════════════════════════════════════════════════════ */}
-        <AccessibilityProvider>
         
         {/* WCAG 2.1 AA: Skip to Content Link */}
         <SkipToContent />
-        
-        {/* Accessibility Control Panel - Always Available */}
-        <AccessibilityPanel />
-        
-        {/* ═══════════════════════════════════════════════════════════════════
-            ENTERPRISE-GRADE SECURITY LAYER
-            Multi-layered protection against copying, scraping, bots & attacks
-            © EmersonEIMS - All Rights Reserved
-        ════════════════════════════════════════════════════════════════════ */}
-        <SecurityShield showIndicator={false}>
-        
-        {/* DMCA & Copyright Protection - Reduced to prevent hydration issues */}
-        <DMCAProtection
-          enableWatermark={false}
-          enableRightClickProtection={true}
-          enableCopyProtection={true}
-          enableDevToolsProtection={false}
-          enablePrintProtection={false}
-          enableScreenshotDetection={false}
-          showWarnings={false}
-        />
-        
-        {/* Invisible Copyright Watermark - Disabled temporarily to fix hydration */}
-        {/* <InvisibleWatermark /> */}
         
         {/* Global Structured Data for SEO */}
         <OrganizationSchema />
@@ -318,57 +293,36 @@ export default function RootLayout({
         </main>
         <PremiumFooter />
         
-        {/* PWA Install Prompt */}
-        <PWAInstallPrompt />
-        
-        {/* GDPR Cookie Consent */}
-        <CookieConsent />
-        
-        {/* Live Chat - WhatsApp Business Integration */}
-        <ClientWhatsApp />
-        
-        </SecurityShield>
-        {/* END SECURITY LAYER */}
-        
-        </AccessibilityProvider>
-        {/* END ACCESSIBILITY LAYER */}
+        {/* ═══════════════════════════════════════════════════════════════════
+            NON-CRITICAL: Client-side components loaded after page is interactive
+        ════════════════════════════════════════════════════════════════════ */}
+        <ClientSideComponents />
 
-        {/* PWA Support - Service Worker with AGGRESSIVE Cache Clearing */}
+        {/* ═══════════════════════════════════════════════════════════════════
+            DEFERRED SCRIPTS - Load after page is interactive
+        ════════════════════════════════════════════════════════════════════ */}
+        
+        {/* Service Worker Cache Management - Deferred */}
         <Script
           id="sw-register"
-          strategy="beforeInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
-              // NUCLEAR OPTION: Completely clear everything
+              // Clear old caches on load
               (async function() {
-                // 1. Unregister ALL service workers
-                if ('serviceWorker' in navigator) {
-                  const registrations = await navigator.serviceWorker.getRegistrations();
-                  for (const registration of registrations) {
-                    await registration.unregister();
-                    console.log('🗑️ Unregistered service worker');
-                  }
-                }
-                
-                // 2. Delete ALL caches
                 if ('caches' in window) {
                   const cacheNames = await caches.keys();
-                  await Promise.all(cacheNames.map(name => {
-                    console.log('🗑️ Deleting cache:', name);
-                    return caches.delete(name);
-                  }));
+                  await Promise.all(cacheNames.map(name => caches.delete(name)));
                 }
-                
-                console.log('✅ All caches and service workers cleared!');
               })();
             `,
           }}
         />
         
-        {/* Accessibility Keyboard Shortcut - Alt+A opens panel */}
+        {/* Accessibility Keyboard Shortcut - Deferred */}
         <Script
           id="accessibility-shortcut"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
               document.addEventListener('keydown', (e) => {

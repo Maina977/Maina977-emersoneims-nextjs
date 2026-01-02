@@ -2,74 +2,70 @@
 // PREMIUM DESIGN: Way Above Apple.com with unique EmersonEIMS innovations
 // WORLD-CLASS: Human-crafted excellence with sci-fi aesthetics
 // Rating Target: 9.6/10 - Best Generator Diagnostic in Market
+// ═══════════════════════════════════════════════════════════════════════════════
+// STABLE BUILD: Using regular imports (Turbopack HMR has issues with React.lazy)
+// ═══════════════════════════════════════════════════════════════════════════════
 'use client';
 
-import { Suspense, lazy, useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import UnifiedCTA, { CTASection, GetQuoteCTA, SiteSurveyCTA, DiagnosticCTA, LearnMoreCTA } from '@/components/cta/UnifiedCTA';
+import UnifiedCTA, { CTASection } from '@/components/cta/UnifiedCTA';
 
-// Premium section components for 9.6 rating
-const TestimonialsSection = lazy(() => import('@/components/sections/TestimonialsSection'));
-const CaseStudiesSection = lazy(() => import('@/components/sections/CaseStudiesSection'));
-const TrustBadgesSection = lazy(() => import('@/components/sections/TrustBadgesSection'));
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTIONS: Regular imports for stability (no lazy loading issues)
+// ═══════════════════════════════════════════════════════════════════════════════
+import TestimonialsSection from '@/components/sections/TestimonialsSection';
+import CaseStudiesSection from '@/components/sections/CaseStudiesSection';
+import TrustBadgesSection from '@/components/sections/TrustBadgesSection';
+import DiagnosticModuleShowcase from '@/components/sections/DiagnosticModuleShowcase';
+import PremiumServicesShowcase from '@/components/sections/PremiumServicesShowcase';
+import IndustryLeadingTrust from '@/components/sections/IndustryLeadingTrust';
+import LiveOperationsDashboard from '@/components/sections/LiveOperationsDashboard';
+import CompetitiveAdvantage from '@/components/sections/CompetitiveAdvantage';
 
-// World-Class Components - Exceeding Tesla/Apple/Siemens/ABB
-const WorldClassHero = lazy(() => import('@/components/sections/WorldClassHero'));
-const IndustryLeadingTrust = lazy(() => import('@/components/sections/IndustryLeadingTrust'));
-const LiveOperationsDashboard = lazy(() => import('@/components/sections/LiveOperationsDashboard'));
-const CompetitiveAdvantage = lazy(() => import('@/components/sections/CompetitiveAdvantage'));
-const PremiumServicesShowcase = lazy(() => import('@/components/sections/PremiumServicesShowcase'));
-const DiagnosticModuleShowcase = lazy(() => import('@/components/sections/DiagnosticModuleShowcase'));
-
-const MicroInteractions = lazy(() => import('@/components/interactions/MicroInteractions'));
-const ParticleField = lazy(() => import('@/components/effects/ParticleField'));
-const MagneticCursor = lazy(() => import('@/components/effects/MagneticCursor'));
-
-// Premium animation configs
-const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
+// Premium animation configs - simplified for performance
+const springConfig = { stiffness: 80, damping: 25, restDelta: 0.01 };
 
 export default function AwwwardsHomepage() {
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
   
-  // Smooth spring-based animations
+  // Track client-side mount to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  // Only use scroll hooks after mounting to prevent hydration issues
+  const { scrollYProgress } = useScroll({ 
+    target: containerRef,
+    layoutEffect: false // Prevent hydration mismatch
+  });
+  
+  // Smooth spring-based animations - only active after mount
   const smoothProgress = useSpring(scrollYProgress, springConfig);
-  const heroScale = useTransform(smoothProgress, [0, 0.5], [1, 1.15]);
+  const heroScale = useTransform(smoothProgress, [0, 0.5], [1, 1.1]);
   const heroOpacity = useTransform(smoothProgress, [0, 0.3], [1, 0]);
-  const textY = useTransform(smoothProgress, [0, 0.5], [0, -120]);
-  const parallaxY = useTransform(smoothProgress, [0, 1], [0, -200]);
+  const textY = useTransform(smoothProgress, [0, 0.5], [0, -80]);
+  const parallaxY = useTransform(smoothProgress, [0, 1], [0, -100]);
   
-  // Mouse parallax for hero section
+  // Mouse parallax - only on desktop
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (!mounted) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
     const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
-    mouseX.set(x * 20);
-    mouseY.set(y * 20);
+    mouseX.set(x * 15);
+    mouseY.set(y * 15);
   };
   
   return (
-    <>
-      {/* Premium Effects - Beyond Apple.com */}
-      <Suspense fallback={null}>
-        <MicroInteractions intensity="high" theme="engineering" />
-        <ParticleField />
-        <MagneticCursor />
-      </Suspense>
-      
-      <motion.div 
-        ref={containerRef}
-        className="relative bg-black overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-      >
+    <div ref={containerRef} className="relative bg-black overflow-hidden">
         
         {/* HERO: FULL-SCREEN VIDEO with 3D Parallax */}
         <motion.section 
@@ -82,24 +78,29 @@ export default function AwwwardsHomepage() {
             className="absolute inset-0"
             style={{ y: parallaxY }}
           >
+            {/* Show poster image immediately */}
+            <Image
+              src="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
+              alt="EmersonEIMS Power Solutions"
+              fill
+              priority
+              className={`object-cover scale-110 transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+              sizes="100vw"
+            />
+            {/* Video loads after image is visible */}
             <video
               autoPlay 
               loop 
               muted 
               playsInline 
-              preload="auto"
+              preload="metadata"
               onLoadedData={() => setVideoLoaded(true)}
-              onCanPlayThrough={() => setVideoLoaded(true)}
-              className="absolute inset-0 w-full h-full object-cover scale-110"
-              poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
+              className={`absolute inset-0 w-full h-full object-cover scale-110 transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
               style={{ 
-                willChange: 'transform',
-                contentVisibility: 'auto',
+                willChange: 'auto',
               }}
             >
-              {/* Multiple sources for better compatibility and faster loading */}
               <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
             </video>
           </motion.div>
           
@@ -119,23 +120,19 @@ export default function AwwwardsHomepage() {
             className="relative z-20 h-full flex flex-col items-center justify-center px-6 sm:px-12 text-center"
             style={{ 
               y: textY,
-              x: useSpring(mouseX, springConfig),
-              rotateY: useSpring(useTransform(mouseX, [-20, 20], [-2, 2]), springConfig),
-              rotateX: useSpring(useTransform(mouseY, [-20, 20], [2, -2]), springConfig),
             }}
           >
             <motion.div
-              initial={{ opacity: 0, y: 80, scale: 0.9 }}
-              animate={{ opacity: videoLoaded ? 1 : 0, y: 0, scale: 1 }}
-              transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               className="max-w-7xl"
-              style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
             >
               {/* Premium badge */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.3 }}
                 className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm"
               >
                 <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
@@ -564,44 +561,28 @@ export default function AwwwardsHomepage() {
         </section>
 
         {/* SECTION 6: Social Proof - Testimonials with Real Clients */}
-        <Suspense fallback={<div className="py-32 bg-black" />}>
-          <TestimonialsSection />
-        </Suspense>
+        <TestimonialsSection />
 
         {/* SECTION 7: Case Studies - Real Projects, Real Results */}
-        <Suspense fallback={<div className="py-32 bg-black" />}>
-          <CaseStudiesSection />
-        </Suspense>
+        <CaseStudiesSection />
 
         {/* SECTION 7.5: WORLD'S MOST ADVANCED DIAGNOSTIC MODULE - Our Unique Advantage */}
-        <Suspense fallback={<div className="py-32 bg-black" />}>
-          <DiagnosticModuleShowcase />
-        </Suspense>
+        <DiagnosticModuleShowcase />
 
         {/* SECTION 7.6: Premium Services Showcase - All 9 Services */}
-        <Suspense fallback={<div className="py-32 bg-black" />}>
-          <PremiumServicesShowcase />
-        </Suspense>
+        <PremiumServicesShowcase />
 
         {/* SECTION 8: Trust Badges & Certifications */}
-        <Suspense fallback={<div className="py-32 bg-black" />}>
-          <TrustBadgesSection />
-        </Suspense>
+        <TrustBadgesSection />
 
         {/* SECTION 9: Industry-Leading Trust & Partnerships */}
-        <Suspense fallback={<div className="py-32 bg-black" />}>
-          <IndustryLeadingTrust />
-        </Suspense>
+        <IndustryLeadingTrust />
 
         {/* SECTION 10: Live Operations Dashboard - SpaceX Style */}
-        <Suspense fallback={<div className="py-32 bg-black" />}>
-          <LiveOperationsDashboard />
-        </Suspense>
+        <LiveOperationsDashboard />
 
         {/* SECTION 11: Competitive Advantage - Why Choose EmersonEIMS */}
-        <Suspense fallback={<div className="py-32 bg-black" />}>
-          <CompetitiveAdvantage />
-        </Suspense>
+        <CompetitiveAdvantage />
 
         {/* FINAL CTA with Premium Design - Apple Clean Spacing */}
         <CTASection 
@@ -612,7 +593,6 @@ export default function AwwwardsHomepage() {
           showEmergency={true}
         />
 
-      </motion.div>
-    </>
+    </div>
   );
 }

@@ -1,15 +1,15 @@
 'use client';
 
 /**
- * LIVE OPERATIONS DASHBOARD
+ * LIVE OPERATIONS DASHBOARD - PERFORMANCE OPTIMIZED
  * Real-time system status display - Tesla/SpaceX Mission Control style
- * Shows live company metrics and system status
+ * Reduced update frequency for better performance
  */
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
-// Simulated real-time metrics (in production, would connect to actual systems)
+// Optimized real-time metrics with reduced update frequency
 const useRealTimeMetrics = () => {
   const [metrics, setMetrics] = useState({
     activeGenerators: 312,
@@ -23,6 +23,7 @@ const useRealTimeMetrics = () => {
   });
 
   useEffect(() => {
+    // Update every 10 seconds instead of 3 seconds
     const interval = setInterval(() => {
       setMetrics(prev => ({
         ...prev,
@@ -31,7 +32,7 @@ const useRealTimeMetrics = () => {
         systemsOnline: 98.5 + Math.random() * 1,
         techniciansClockedIn: 10 + Math.floor(Math.random() * 5),
       }));
-    }, 3000);
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -40,23 +41,32 @@ const useRealTimeMetrics = () => {
 
 export default function LiveOperationsDashboard() {
   const metrics = useRealTimeMetrics();
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    // Set initial time after mount
+    setCurrentTime(new Date());
+    // Update time every 5 seconds instead of every second
+    const timer = setInterval(() => setCurrentTime(new Date()), 5000);
     return () => clearInterval(timer);
   }, []);
 
+  // Memoize time display to prevent unnecessary re-renders
+  const timeDisplay = useMemo(() => {
+    if (!currentTime) return '--:--:--';
+    return currentTime.toLocaleTimeString('en-US', { hour12: false });
+  }, [currentTime]);
+
   return (
     <section className="py-20 bg-black relative overflow-hidden">
-      {/* Grid background */}
-      <div className="absolute inset-0 opacity-10"
+      {/* Grid background - simplified for performance */}
+      <div className="absolute inset-0 opacity-5"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px)
+            linear-gradient(rgba(0,255,255,0.15) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,255,255,0.15) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px',
+          backgroundSize: '60px 60px',
         }}
       />
 
@@ -70,11 +80,7 @@ export default function LiveOperationsDashboard() {
         >
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <motion.div 
-                className="w-3 h-3 bg-green-500 rounded-full"
-                animate={{ opacity: [1, 0.5, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
               <span className="text-green-400 text-sm font-mono uppercase tracking-wider">
                 Operations Center - Live
               </span>
@@ -86,7 +92,7 @@ export default function LiveOperationsDashboard() {
           <div className="text-right">
             <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">System Time (EAT)</div>
             <div className="text-2xl font-mono text-cyan-400">
-              {currentTime.toLocaleTimeString('en-US', { hour12: false })}
+              {timeDisplay}
             </div>
           </div>
         </motion.div>
@@ -200,7 +206,7 @@ export default function LiveOperationsDashboard() {
             )}
           </div>
           <div className="text-xs text-gray-500">
-            Last updated: {currentTime.toLocaleTimeString()}
+            Last updated: {currentTime?.toLocaleTimeString() ?? 'Loading...'}
           </div>
         </motion.div>
       </div>
