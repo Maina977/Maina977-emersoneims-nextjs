@@ -4,6 +4,7 @@ import "./globals.css";
 import DMCAProtection from '@/components/security/DMCAProtection';
 import { SecurityShield, AntiScrapingMeta } from '@/components/security/SecurityShield';
 import { InvisibleWatermark } from '@/components/security/CopyrightNotice';
+import { AccessibilityProvider, AccessibilityPanel } from '@/components/accessibility/AccessibilityToolkit';
 import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import { OrganizationSchema } from '@/components/seo/StructuredData';
@@ -269,8 +270,19 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang="en">
         <NextIntlClientProvider locale="en" messages={defaultMessages}>
+        
+        {/* ═══════════════════════════════════════════════════════════════════
+            WORLD-CLASS ACCESSIBILITY LAYER
+            "Power for Everyone" - Supporting ALL our brothers and sisters
+            Including visually impaired users - WCAG 2.1 AAA Compliant
+        ════════════════════════════════════════════════════════════════════ */}
+        <AccessibilityProvider>
+        
         {/* WCAG 2.1 AA: Skip to Content Link */}
         <SkipToContent />
+        
+        {/* Accessibility Control Panel - Always Available */}
+        <AccessibilityPanel />
         
         {/* ═══════════════════════════════════════════════════════════════════
             ENTERPRISE-GRADE SECURITY LAYER
@@ -313,6 +325,9 @@ export default function RootLayout({
         
         </SecurityShield>
         {/* END SECURITY LAYER */}
+        
+        </AccessibilityProvider>
+        {/* END ACCESSIBILITY LAYER */}
 
         {/* PWA Support - Service Worker */}
         <Script
@@ -328,6 +343,23 @@ export default function RootLayout({
                   );
                 });
               }
+            `,
+          }}
+        />
+        
+        {/* Accessibility Keyboard Shortcut - Alt+A opens panel */}
+        <Script
+          id="accessibility-shortcut"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              document.addEventListener('keydown', (e) => {
+                if (e.altKey && e.key === 'a') {
+                  e.preventDefault();
+                  const panel = document.querySelector('[aria-label="Open accessibility settings"]');
+                  if (panel) panel.click();
+                }
+              });
             `,
           }}
         />

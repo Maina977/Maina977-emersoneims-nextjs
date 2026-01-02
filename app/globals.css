@@ -15,6 +15,168 @@
   --font-manrope: var(--font-manrope);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════════
+   WORLD-CLASS ACCESSIBILITY STYLES
+   "Power for Everyone" - EmersonEIMS
+   Supporting ALL our brothers and sisters including visually impaired users
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Screen Reader Only - Hidden visually but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --brand-gold: #FFFF00;
+  --brand-amber: #FFFF00;
+  --brand-cyan: #00FFFF;
+}
+
+.high-contrast body {
+  background-color: #000000 !important;
+  color: #FFFF00 !important;
+}
+
+.high-contrast a,
+.high-contrast button {
+  color: #00FFFF !important;
+  text-decoration: underline !important;
+}
+
+.high-contrast a:hover,
+.high-contrast button:hover {
+  background-color: #FFFF00 !important;
+  color: #000000 !important;
+}
+
+.high-contrast img {
+  filter: contrast(1.2) brightness(1.1);
+}
+
+.high-contrast .bg-black,
+.high-contrast .bg-gray-900,
+.high-contrast .bg-gray-800 {
+  background-color: #000000 !important;
+}
+
+.high-contrast .text-white,
+.high-contrast .text-gray-100,
+.high-contrast .text-gray-200,
+.high-contrast .text-gray-300 {
+  color: #FFFFFF !important;
+}
+
+.high-contrast .text-gray-400,
+.high-contrast .text-gray-500,
+.high-contrast .text-gray-600 {
+  color: #FFFF00 !important;
+}
+
+.high-contrast .border-white\/10,
+.high-contrast .border-gray-700,
+.high-contrast .border-gray-800 {
+  border-color: #FFFF00 !important;
+}
+
+/* Large Text Mode */
+.large-text {
+  font-size: 125% !important;
+}
+
+.large-text h1 { font-size: 3rem !important; }
+.large-text h2 { font-size: 2.5rem !important; }
+.large-text h3 { font-size: 2rem !important; }
+.large-text p, .large-text li { font-size: 1.25rem !important; line-height: 1.8 !important; }
+
+/* Reduced Motion Mode */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Enhanced Focus Mode */
+.enhanced-focus *:focus-visible {
+  outline: 4px solid #00FFFF !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 8px rgba(0, 255, 255, 0.3) !important;
+}
+
+.enhanced-focus a:focus-visible,
+.enhanced-focus button:focus-visible {
+  outline: 4px solid #FFFF00 !important;
+  box-shadow: 0 0 20px rgba(255, 255, 0, 0.5) !important;
+}
+
+/* Screen Reader Mode - Simplified Layout */
+.screen-reader-mode {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.screen-reader-mode * {
+  background-image: none !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.screen-reader-mode .decorative,
+.screen-reader-mode [aria-hidden="true"] {
+  display: none !important;
+}
+
+/* Custom Cursor Sizes */
+[data-cursor-size="large"] {
+  cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path fill="%23000" stroke="%23fff" stroke-width="2" d="M4 4l20 8-8 4-4 8z"/></svg>'), auto;
+}
+
+[data-cursor-size="extra-large"] {
+  cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path fill="%23000" stroke="%23fff" stroke-width="3" d="M6 6l30 12-12 6-6 12z"/></svg>'), auto;
+}
+
+/* Focus Skip Link Visibility */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 1rem 2rem;
+  background: #000;
+  color: #FFFF00;
+  font-weight: bold;
+  text-decoration: none;
+  border: 3px solid #FFFF00;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Accessible Color Contrast Helpers */
+.a11y-text-high-contrast {
+  color: #FFFFFF;
+  text-shadow: 0 0 1px #000, 0 0 2px #000;
+}
+
+/* Keyboard Navigation Indicators */
+[data-keyboard-nav="true"] *:focus {
+  outline: 3px dashed #FFFF00 !important;
+  outline-offset: 3px !important;
+}
+
 @layer base {
   body {
     font-feature-settings: "rlig" 1, "calt" 1;
