@@ -44,13 +44,13 @@ interface CaseStudy {
 
 const caseStudies: CaseStudy[] = [
   {
-    id: 'aga-khan-hospital',
-    title: 'Aga Khan Hospital - Mission-Critical Power Redundancy',
-    client: 'Aga Khan University Hospital',
-    location: 'Parklands, Nairobi',
-    county: 'Nairobi',
+    id: 'mother-of-mercy-hospital',
+    title: 'Mother of Mercy Hospital - Mission-Critical Power Redundancy',
+    client: 'Mother of Mercy Hospital',
+    location: 'Gidel, Nuba Mountains',
+    county: 'South Sudan',
     category: 'Generator',
-    challenge: 'Hospital required 99.99% uptime for operating theaters, ICU, and life support systems. Existing 750kVA generator had 12-second transfer time causing critical equipment shutdowns during grid failures (15-20 times/month in Nairobi).',
+    challenge: 'Hospital in remote South Sudan required 99.99% uptime for operating theaters, ICU, and life support systems. Existing generator had 12-second transfer time causing critical equipment shutdowns during grid failures. Remote location demanded exceptional reliability.',
     solution: 'Installed redundant 1000kVA + 750kVA Cummins generators with N+1 configuration. DeepSea DSE8610 MKII synchronization control with load-sharing. 10-second parallel operation before mains disconnect. Added 200kVA UPS for seamless transfer (<4ms switchover).',
     results: [
       { metric: 'Uptime', before: '99.2%', after: '99.995%', improvement: '+0.795%' },
@@ -73,8 +73,8 @@ const caseStudies: CaseStudy[] = [
     },
     testimonial: {
       quote: 'EmersonEIMS delivered a solution that exceeded our expectations. The seamless integration of generators, UPS, and controls ensured our patients never experience power disruptions. Their 24/7 support and predictive maintenance have been invaluable.',
-      author: 'Dr. Ahmed Hassan',
-      position: 'Director of Facilities, Aga Khan University Hospital'
+      author: 'Hospital Administrator',
+      position: 'Director of Facilities, Mother of Mercy Hospital'
     },
     savings: {
       annual: 4800000, // KES 4.8M saved per year
@@ -82,20 +82,20 @@ const caseStudies: CaseStudy[] = [
       roi: '220% over 5 years'
     },
     images: [
-      '/images/case-studies/aga-khan-1.jpg',
-      '/images/case-studies/aga-khan-2.jpg',
+      '/images/case-studies/mother-of-mercy-1.jpg',
+      '/images/case-studies/mother-of-mercy-2.jpg',
     ],
     duration: '42 days',
     complexity: 5
   },
   {
-    id: 'sarova-stanley-hotel',
-    title: 'Sarova Stanley Hotel - Hybrid Solar-Diesel System',
-    client: 'Sarova Stanley Hotel',
-    location: 'CBD, Nairobi',
+    id: 'lenchada-group-hotels',
+    title: 'Lenchada Group of Hotels - Hybrid Solar-Diesel System',
+    client: 'Lenchada Group of Hotels',
+    location: 'Multiple Locations, Kenya',
     county: 'Nairobi',
     category: 'Hybrid',
-    challenge: 'Hotel faced KES 2.8M/month electricity bills (avg 180,000 kWh/month). Frequent grid outages (10-15/month) disrupted guest services. Management wanted 50% renewable energy by 2025 per sustainability goals.',
+    challenge: 'Hotel group faced high electricity bills (avg 180,000 kWh/month). Frequent grid outages (10-15/month) disrupted guest services. Management wanted 50% renewable energy by 2025 per sustainability goals.',
     solution: 'Installed 250kWp rooftop solar + 500kVA generator + 400kWh Li-ion battery storage. Smart energy management system (EMS) with load prioritization. Solar covers 60% daytime load, batteries handle evening peak, generator as backup.',
     results: [
       { metric: 'Grid Dependency', before: '100%', after: '35%', improvement: '-65%' },
@@ -117,9 +117,9 @@ const caseStudies: CaseStudy[] = [
       commissioning: '5 days including grid-tie approval from KPLC, load testing, staff training'
     },
     testimonial: {
-      quote: 'The hybrid system from EmersonEIMS transformed our energy profile. We are saving over KES 20M over 5 years while meeting our sustainability commitments. The smart EMS ensures guests never notice when we switch between solar, battery, and generator.',
-      author: 'James Kariuki',
-      position: 'General Manager, Sarova Stanley Hotel'
+      quote: 'The hybrid system from EmersonEIMS transformed our energy profile. We are saving significantly while meeting our sustainability commitments. The smart EMS ensures guests never notice when we switch between solar, battery, and generator.',
+      author: 'Hotel Management',
+      position: 'General Manager, Lenchada Group of Hotels'
     },
     savings: {
       annual: 21840000, // KES 21.84M saved over 5 years = KES 4.368M/year
@@ -127,8 +127,8 @@ const caseStudies: CaseStudy[] = [
       roi: '312% over 10 years'
     },
     images: [
-      '/images/case-studies/sarova-1.jpg',
-      '/images/case-studies/sarova-2.jpg',
+      '/images/case-studies/lenchada-1.jpg',
+      '/images/case-studies/lenchada-2.jpg',
     ],
     duration: '28 days',
     complexity: 4

@@ -1,8 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for advanced calculators
+const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+const AdvancedSolarCalculator = dynamic(() => import('@/components/calculators/AdvancedSolarCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+const AdvancedHighVoltageCalculator = dynamic(() => import('@/components/calculators/AdvancedHighVoltageCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+const AdvancedMotorRewindingCalculator = dynamic(() => import('@/components/calculators/AdvancedMotorRewindingCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+const AdvancedACCalculator = dynamic(() => import('@/components/calculators/AdvancedACCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+const AdvancedUPSCalculator = dynamic(() => import('@/components/calculators/AdvancedUPSCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+const AdvancedBoreholePumpCalculator = dynamic(() => import('@/components/calculators/AdvancedBoreholePumpCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+const AdvancedFabricationCalculator = dynamic(() => import('@/components/calculators/AdvancedFabricationCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+const AdvancedIncineratorCalculator = dynamic(() => import('@/components/calculators/AdvancedIncineratorCalculator'), { 
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false 
+});
+
+// Calculator component mapping
+const CALCULATOR_COMPONENTS: Record<string, React.ComponentType> = {
+  'generators': AdvancedGeneratorCalculator,
+  'solar': AdvancedSolarCalculator,
+  'high-voltage': AdvancedHighVoltageCalculator,
+  'motor-rewinding': AdvancedMotorRewindingCalculator,
+  'ac': AdvancedACCalculator,
+  'ups': AdvancedUPSCalculator,
+  'borehole': AdvancedBoreholePumpCalculator,
+  'fabrication': AdvancedFabricationCalculator,
+  'incinerators': AdvancedIncineratorCalculator,
+};
 
 // =====================================================
 // 9 SERVICES DATA WITH Q&A, SUB-SERVICES, AND CTAs
@@ -286,72 +338,20 @@ function NeedleGauge({ label, value, max, unit, color }: { label: string; value:
 }
 
 // =====================================================
-// SERVICE CALCULATOR COMPONENT
+// SERVICE CALCULATOR COMPONENT - NOW USES ADVANCED CALCULATORS
 // =====================================================
-function ServiceCalculator({ calculator }: { calculator: { name: string; fields: string[]; formula: string } }) {
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<string | null>(null);
-
-  const calculate = () => {
-    const nums = calculator.fields.map(f => parseFloat(values[f]) || 0);
-    let res = 0;
-    
-    // Simple calculation based on formula type
-    if (calculator.name.includes('Generator')) {
-      res = (nums[0] * nums[2]) / nums[1]; // (Load × SF) / PF
-    } else if (calculator.name.includes('Solar')) {
-      res = (nums[0] * 1000) / (nums[2] * nums[1]); // Panels needed
-    } else if (calculator.name.includes('Voltage Drop')) {
-      res = (2 * nums[1] * nums[0] * 0.0175) / nums[2];
-    } else if (calculator.name.includes('UPS')) {
-      res = (nums[0] * nums[1] * 0.8) / nums[2];
-    } else if (calculator.name.includes('Pump')) {
-      res = (nums[0] * nums[1] * 9.81) / (3600 * (nums[2] / 100));
-    } else if (calculator.name.includes('Tank')) {
-      res = nums[0] * nums[1] * nums[2] * 1000;
-    } else if (calculator.name.includes('AC')) {
-      res = nums[0] * nums[1] * 337 * nums[2];
-    } else if (calculator.name.includes('Motor')) {
-      res = (nums[0] * 746) / (nums[1] * (nums[2] / 100) * 0.85);
-    } else if (calculator.name.includes('Incinerator')) {
-      res = nums[0] * nums[1] * (nums[2] / 100);
-    }
-    
-    setResult(res.toFixed(2));
-  };
-
-  return (
-    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600">
-      <h4 className="text-lg font-bold text-cyan-400 mb-3">{calculator.name}</h4>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-        {calculator.fields.map(field => (
-          <div key={field}>
-            <label className="text-xs text-gray-400 block mb-1">{field}</label>
-            <input
-              type="number"
-              className="w-full bg-black/50 border border-gray-600 rounded px-3 py-2 text-white text-sm"
-              placeholder="0"
-              value={values[field] || ''}
-              onChange={(e) => setValues({ ...values, [field]: e.target.value })}
-            />
-          </div>
-        ))}
+function ServiceCalculator({ serviceId }: { serviceId: string }) {
+  const CalculatorComponent = CALCULATOR_COMPONENTS[serviceId];
+  
+  if (!CalculatorComponent) {
+    return (
+      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600">
+        <p className="text-gray-400 text-center">Calculator coming soon...</p>
       </div>
-      <div className="text-xs text-gray-500 mb-3 font-mono">{calculator.formula}</div>
-      <button
-        onClick={calculate}
-        className="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-2 rounded font-bold transition-colors"
-      >
-        CALCULATE
-      </button>
-      {result && (
-        <div className="mt-3 p-3 bg-green-900/30 border border-green-500/50 rounded">
-          <span className="text-green-400 font-bold text-xl">{result}</span>
-          <span className="text-gray-400 text-sm ml-2">Result</span>
-        </div>
-      )}
-    </div>
-  );
+    );
+  }
+  
+  return <CalculatorComponent />;
 }
 
 // =====================================================
@@ -436,7 +436,15 @@ export default function UniversalDiagnosticPage() {
               </div>
             </div>
 
-            {/* Three Column Layout */}
+            {/* Advanced Calculator - Full Width */}
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-cyan-400 border-b border-gray-700 pb-2 mb-4">
+                🧮 ADVANCED PROFESSIONAL CALCULATOR
+              </h3>
+              <ServiceCalculator serviceId={selectedService.id} />
+            </div>
+
+            {/* Two Column Layout for Q&A and Gauges */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Column 1: Q&A Section */}
@@ -519,15 +527,8 @@ export default function UniversalDiagnosticPage() {
                 ))}
               </div>
 
-              {/* Column 2: Calculator & Gauges */}
+              {/* Column 2: Gauges & Contact */}
               <div className="space-y-6">
-                {/* Calculator */}
-                <div>
-                  <h3 className="text-lg font-bold text-cyan-400 border-b border-gray-700 pb-2 mb-4">
-                    CALCULATOR
-                  </h3>
-                  <ServiceCalculator calculator={selectedService.calculator} />
-                </div>
 
                 {/* Pressure Gauges */}
                 <div>

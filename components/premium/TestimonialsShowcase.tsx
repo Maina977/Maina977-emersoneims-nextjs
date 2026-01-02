@@ -66,14 +66,14 @@ const testimonials = [
   },
   {
     id: 6,
-    name: "Linda Wanjiru",
-    title: "Sustainability Officer",
-    company: "Sarova Hotels",
+    name: "Hotel Management",
+    title: "Operations Director",
+    company: "Lenchada Group of Hotels",
     image: "/testimonials/hotel-officer.jpg",
     quote: "Eco-friendly luxury demands smart energy. Their solar-battery-generator hybrid is elegant, silent, and 100% reliable. Our guests never know we run on backup.",
     impact: "Eco-Luxury Power",
     rating: 5,
-    logo: "/clients/sarova-logo.svg"
+    logo: "/clients/lenchada-logo.svg"
   }
 ];
 
