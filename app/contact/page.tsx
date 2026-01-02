@@ -561,8 +561,8 @@ function LocationSection() {
           <p className="text-amber-400 font-mono text-sm mb-4">// HEADQUARTERS_LOCATION</p>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Visit Our Command Center</h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Located in the heart of Nairobi&apos;s industrial district, our headquarters houses 
-            state-of-the-art facilities for power solutions.
+            Located in Embakasi, Nairobi along Old North Airport Road — your trusted partner 
+            for comprehensive power and energy solutions across Kenya.
           </p>
         </motion.div>
 
@@ -600,9 +600,9 @@ function LocationSection() {
                   </div>
                   <div>
                     <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-1">// PHYSICAL_ADDRESS</p>
-                    <p className="text-white font-semibold text-lg">Industrial Area, Nairobi</p>
-                    <p className="text-gray-400 mt-1">Enterprise Road, Off Mombasa Road</p>
-                    <p className="text-gray-400">P.O. Box 12345-00100, Nairobi</p>
+                    <p className="text-white font-semibold text-lg">Embakasi Area, Nairobi</p>
+                    <p className="text-gray-400 mt-1">Old North Airport Road</p>
+                    <p className="text-gray-400">P.O. Box 387-00521, Nairobi</p>
                   </div>
                 </div>
               </div>
