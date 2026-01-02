@@ -40,8 +40,7 @@ export default function AwwwardsHomepage() {
   
   // Only use scroll hooks after mounting to prevent hydration issues
   const { scrollYProgress } = useScroll({ 
-    target: containerRef,
-    layoutEffect: false // Prevent hydration mismatch
+    target: containerRef
   });
   
   // Smooth spring-based animations - only active after mount
