@@ -1,75 +1,252 @@
-import SectionLead from "../../components/generators/SectionLead";
-import InfoCard from "@/components/InfoCard";
-import CTAForm from "@/components/CTAForm";
-import OptimizedImage from "@/components/media/OptimizedImage";
+'use client';
 
-export const metadata = {
-  title: "Borehole pump systems & troubleshooting — EmersonEIMS solutions",
-  description: "Submersible pumps, VFD controls, water level sensing, well yield, and motor failures.",
-  keywords: ["borehole pump", "submersible", "VFD", "water well", "EmersonEIMS"],
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import SectionLead from "../../components/generators/SectionLead";
+import UnifiedCTA from "@/components/cta/UnifiedCTA";
+
+const TABS = [
+  { id: 'installation', label: '🔧 Installation', color: 'blue' },
+  { id: 'vfd', label: '⚡ VFD Systems', color: 'purple' },
+  { id: 'maintenance', label: '🛠️ Maintenance', color: 'green' },
+  { id: 'faults', label: '⚠️ Troubleshooting', color: 'red' },
+  { id: 'sizing', label: '📊 Pump Sizing', color: 'amber' },
+];
+
+const PUMP_TYPES = [
+  { type: 'Submersible Pump', depth: 'Up to 500m', flow: '1-200 m³/hr', power: '0.5-200kW', application: 'Deep boreholes, standard choice' },
+  { type: 'Jet Pump', depth: 'Up to 25m', flow: '1-10 m³/hr', power: '0.5-3kW', application: 'Shallow wells, surface mounted' },
+  { type: 'Helical Rotor', depth: 'Up to 150m', flow: '0.5-20 m³/hr', power: '0.5-15kW', application: 'Low yield wells, sandy water' },
+  { type: 'Solar Pump', depth: 'Up to 200m', flow: '1-50 m³/hr', power: '1-15kW DC', application: 'Off-grid locations, livestock' },
+];
+
+const INSTALLATION_STEPS = [
+  { phase: 'Pre-Installation', tasks: ['Review borehole test pumping data', 'Calculate Total Dynamic Head (TDH)', 'Select pump capacity (80% of tested yield)', 'Size cable for <5% voltage drop', 'Verify borehole casing diameter'] },
+  { phase: 'Physical Installation', tasks: ['Assemble pump, motor, and cable', 'Install safety rope (stainless steel)', 'Lower pump slowly (max 1m/s)', 'Position pump 2m above screen/bottom', 'Secure wellhead with seal plate'] },
+  { phase: 'Electrical', tasks: ['Install control panel with overload', 'Connect VFD if specified', 'Install lightning arrester', 'Ground system properly', 'Install phase monitor (3-phase)'] },
+  { phase: 'Commissioning', tasks: ['Measure insulation resistance (>2MΩ)', 'Start pump, verify rotation', 'Measure current vs nameplate', 'Check flow rate and pressure', 'Test protection trip settings'] },
+];
+
+const VFD_BENEFITS = [
+  { benefit: 'Energy Savings', description: 'Reduce energy consumption 20-50% by running pump at optimal speed', icon: '💰' },
+  { benefit: 'Soft Start', description: 'Eliminate water hammer and mechanical stress from hard starts', icon: '🔄' },
+  { benefit: 'Constant Pressure', description: 'Maintain constant water pressure regardless of demand', icon: '📊' },
+  { benefit: 'Extended Pump Life', description: 'Reduce wear by avoiding frequent starts and full-speed operation', icon: '⏰' },
+  { benefit: 'Dry Run Protection', description: 'Detect low current indicating dry running and stop pump', icon: '🛡️' },
+  { benefit: 'Multiple Pump Control', description: 'Stage pumps based on demand for maximum efficiency', icon: '⚙️' },
+];
+
+const MAINTENANCE_SCHEDULE = [
+  { interval: 'Monthly', tasks: ['Check current draw vs baseline', 'Verify flow rate and pressure', 'Inspect wellhead seal', 'Check VFD display for alarms'] },
+  { interval: 'Quarterly', tasks: ['Measure insulation resistance', 'Clean control panel', 'Check surge arrester', 'Verify pressure tank pre-charge'] },
+  { interval: 'Annually', tasks: ['Full pump performance test', 'Water level measurement', 'Cable insulation test', 'VFD parameter verification'] },
+  { interval: 'Every 3-5 Years', tasks: ['Pull pump for inspection', 'Check impeller wear', 'Replace worn seals/bearings', 'Rehabilitate borehole if needed'] },
+];
+
+const FAULT_DATABASE = [
+  { fault: 'Pump runs but no water', causes: ['Air lock', 'Low water level', 'Impeller worn', 'Check valve stuck'], solution: 'Check water level, prime pump if needed, verify foot valve, inspect impeller.' },
+  { fault: 'Reduced flow rate', causes: ['Impeller wear', 'Screen clogging', 'Pipe leak', 'Aquifer decline'], solution: 'Compare to original performance, check for leaks, test water level, may need rehabilitation.' },
+  { fault: 'Pump trips on overload', causes: ['Voltage low', 'Mechanical seizure', 'Phase loss', 'Overloaded'], solution: 'Check voltage at pump, verify all 3 phases, measure current, check for sand binding.' },
+  { fault: 'VFD fault - Overcurrent', causes: ['Pump seized', 'Cable short', 'Wrong parameters', 'Motor fault'], solution: 'Disconnect motor, test insulation, verify VFD settings match motor.' },
+  { fault: 'VFD fault - Ground fault', causes: ['Cable damage', 'Motor winding fault', 'Water ingress'], solution: 'Megger test cable and motor, check cable terminations, may need to pull pump.' },
+  { fault: 'Water hammer / surging', causes: ['No VFD', 'Check valve worn', 'Air in system', 'Wrong pump sizing'], solution: 'Install VFD for soft start/stop, replace check valve, install air release valve.' },
+];
+
+const SIZING_GUIDE = {
+  formula: 'TDH = Static Level + Drawdown + Friction Loss + Delivery Head + 10%',
+  factors: [
+    { factor: 'Static Water Level', description: 'Depth from surface to resting water level' },
+    { factor: 'Drawdown', description: 'Water level drop during pumping (from test data)' },
+    { factor: 'Friction Loss', description: 'Pipe friction based on flow, diameter, length' },
+    { factor: 'Delivery Head', description: 'Height above ground to tank + tank pressure' },
+  ],
+  powerFormula: 'Power (kW) = (Flow m³/hr × TDH m × 9.81) ÷ (3600 × Efficiency)',
 };
 
-export default function BoreholePumpsPage() {
+export default function BoreholePumpsHub() {
+  const [activeTab, setActiveTab] = useState('installation');
+  const [expandedFault, setExpandedFault] = useState<string | null>(null);
+
   return (
-    <main>
+    <main className="bg-black min-h-screen">
       <SectionLead
-        title="Borehole pump systems & troubleshooting"
-        subtitle="Submersible pumps, VFD controls, water level sensing, well yield, and motor failures."
+        title="Borehole Pump Solutions"
+        subtitle="Complete guide to borehole pump installation, VFD systems, maintenance, and troubleshooting."
       />
-      
-      {/* Pump Systems Images */}
-      <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="rounded-lg overflow-hidden border border-white/10">
-            <OptimizedImage
-              src="/images/915.png"
-              alt="Borehole Pump System 1"
-              width={800}
-              height={600}
-              className="w-full h-48 object-cover"
-            />
-          </div>
-          <div className="rounded-lg overflow-hidden border border-white/10">
-            <OptimizedImage
-              src="/images/916.png"
-              alt="Borehole Pump System 2"
-              width={800}
-              height={600}
-              className="w-full h-48 object-cover"
-            />
-          </div>
-          <div className="rounded-lg overflow-hidden border border-white/10">
-            <OptimizedImage
-              src="/images/917.png"
-              alt="Borehole Pump System 3"
-              width={800}
-              height={600}
-              className="w-full h-48 object-cover"
-            />
+
+      <section className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10">
+        <div className="mx-auto max-w-7xl px-6 py-4">
+          <div className="flex flex-wrap gap-2 justify-center">
+            {TABS.map((tab) => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-blue-500 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </section>
-      <section className="mx-auto max-w-7xl px-6 pb-12 grid md:grid-cols-3 gap-6">
-        <InfoCard title="Pump selection" items={[
-          { label: "Flow rate", detail: "Demand calculation, peak usage, diversity factors" },
-          { label: "Head", detail: "Static + dynamic lift, friction losses, system curve" },
-          { label: "Motor", detail: "Rewindable vs Franklin/Grundfos sealed, cable sizing" },
-          { label: "Stages", detail: "Multi-stage impeller design for high head applications" },
-        ]}/>
-        <InfoCard title="Common failures" items={[
-          { label: "Motor burnout", detail: "Dry running, sand ingress, lightning, phase imbalance" },
-          { label: "Cable damage", detail: "Insulation failure, splices, submergence rating" },
-          { label: "Low yield", detail: "Drawdown exceeds recharge, well siltation, screen blockage" },
-          { label: "Controls", detail: "Pressure switch, level sensor, VFD faults, contactor wear" },
-        ]}/>
-        <InfoCard title="VFD & automation" items={[
-          { label: "Soft start", detail: "Reduce inrush, extend motor life, ramp profiles" },
-          { label: "Pressure control", detail: "Closed-loop PID for constant pressure, energy savings" },
-          { label: "Dry-run protection", detail: "Current monitoring, timer delays, auto restart logic" },
-          { label: "Telemetry", detail: "GSM/SCADA for remote monitoring, alerts, data logging" },
-        ]}/>
+
+      <div className="mx-auto max-w-7xl px-6 py-12">
+        <AnimatePresence mode="wait">
+          {activeTab === 'installation' && (
+            <motion.div key="installation" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-white mb-4">Pump Installation Guide</h2>
+                <p className="text-gray-400 max-w-3xl mx-auto">Professional borehole pump installation for reliable water supply.</p>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {PUMP_TYPES.map((pump) => (
+                  <div key={pump.type} className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-blue-500/30 p-4">
+                    <h3 className="text-lg font-bold text-blue-400 mb-3">{pump.type}</h3>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="text-gray-400">Depth:</span> <span className="text-white">{pump.depth}</span></div>
+                      <div><span className="text-gray-400">Flow:</span> <span className="text-white">{pump.flow}</span></div>
+                      <div><span className="text-gray-400">Power:</span> <span className="text-white">{pump.power}</span></div>
+                      <p className="text-gray-400 text-xs pt-2 border-t border-white/10">{pump.application}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                {INSTALLATION_STEPS.map((phase) => (
+                  <div key={phase.phase} className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-blue-500/30 p-6">
+                    <h3 className="text-lg font-bold text-white mb-4">{phase.phase}</h3>
+                    <ul className="space-y-2">
+                      {phase.tasks.map((task, i) => (
+                        <li key={i} className="flex items-start gap-2 text-gray-300 text-sm"><span className="text-blue-400">✓</span>{task}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'vfd' && (
+            <motion.div key="vfd" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-white mb-4">VFD Systems for Pumps</h2>
+                <p className="text-gray-400 max-w-3xl mx-auto">Variable Frequency Drives optimize pump performance and save energy.</p>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {VFD_BENEFITS.map((item) => (
+                  <div key={item.benefit} className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-purple-500/30 p-6">
+                    <div className="text-3xl mb-4">{item.icon}</div>
+                    <h3 className="text-lg font-bold text-purple-400 mb-2">{item.benefit}</h3>
+                    <p className="text-gray-400 text-sm">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-2xl p-8 border border-purple-500/30">
+                <h3 className="text-2xl font-bold text-purple-400 mb-4">VFD Sizing Rule</h3>
+                <p className="text-white text-lg">VFD kW rating = Motor kW × 1.2 (20% safety margin)</p>
+                <p className="text-gray-400 mt-4">Match VFD voltage and phases to motor. Use submersible-rated VFD or output filter for long cable runs.</p>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'maintenance' && (
+            <motion.div key="maintenance" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-white mb-4">Maintenance Schedules</h2>
+                <p className="text-gray-400 max-w-3xl mx-auto">Regular maintenance ensures long pump life and reliable operation.</p>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {MAINTENANCE_SCHEDULE.map((schedule) => (
+                  <div key={schedule.interval} className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-green-500/30 p-6">
+                    <h3 className="text-lg font-bold text-green-400 mb-4">{schedule.interval}</h3>
+                    <ul className="space-y-2">
+                      {schedule.tasks.map((task, i) => (
+                        <li key={i} className="flex items-start gap-2 text-gray-300 text-sm"><span className="text-green-400">✓</span>{task}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'faults' && (
+            <motion.div key="faults" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-white mb-4">Troubleshooting Guide</h2>
+                <p className="text-gray-400 max-w-3xl mx-auto">Diagnose and solve common borehole pump problems.</p>
+              </div>
+              <div className="space-y-4">
+                {FAULT_DATABASE.map((fault) => (
+                  <div key={fault.fault} className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-white/10 overflow-hidden">
+                    <button onClick={() => setExpandedFault(expandedFault === fault.fault ? null : fault.fault)} className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5">
+                      <span className="text-white font-medium">{fault.fault}</span>
+                      <span className="text-gray-400">▼</span>
+                    </button>
+                    <AnimatePresence>
+                      {expandedFault === fault.fault && (
+                        <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="border-t border-white/10 overflow-hidden">
+                          <div className="p-6 space-y-4">
+                            <div>
+                              <h4 className="text-amber-400 font-bold mb-2">Possible Causes:</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {fault.causes.map((c, i) => (
+                                  <span key={i} className="px-2 py-1 bg-white/10 rounded text-xs text-gray-300">{c}</span>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                              <h4 className="text-green-400 font-bold mb-2">✅ Solution</h4>
+                              <p className="text-gray-300 text-sm">{fault.solution}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'sizing' && (
+            <motion.div key="sizing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-white mb-4">Pump Sizing Guide</h2>
+                <p className="text-gray-400 max-w-3xl mx-auto">Calculate the right pump for your borehole.</p>
+              </div>
+              <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-2xl p-8 border border-amber-500/30">
+                <h3 className="text-2xl font-bold text-amber-400 mb-4">Total Dynamic Head (TDH) Formula</h3>
+                <div className="bg-black/30 rounded-lg p-6 mb-6">
+                  <p className="text-white font-mono text-lg">{SIZING_GUIDE.formula}</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {SIZING_GUIDE.factors.map((f) => (
+                    <div key={f.factor} className="bg-white/5 rounded-lg p-4">
+                      <h4 className="text-amber-400 font-bold">{f.factor}</h4>
+                      <p className="text-gray-300 text-sm">{f.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-2xl p-8 border border-blue-500/30">
+                <h3 className="text-2xl font-bold text-blue-400 mb-4">Power Calculation</h3>
+                <div className="bg-black/30 rounded-lg p-6">
+                  <p className="text-white font-mono text-lg">{SIZING_GUIDE.powerFormula}</p>
+                  <p className="text-gray-400 mt-4 text-sm">Typical pump efficiency: 50-70%. Use manufacturer curves for accurate selection.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <section className="mx-auto max-w-7xl px-6 py-16">
+        <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-3xl p-8 md:p-12 border border-blue-500/30 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">Need Borehole Pump Services?</h2>
+          <p className="text-gray-400 max-w-2xl mx-auto mb-8">Installation, VFD setup, maintenance, and repair services for all borehole pump systems.</p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <UnifiedCTA action="contact" size="lg" label="Get Expert Help" />
+            <UnifiedCTA action="site-survey" variant="secondary" size="lg" label="Request Site Survey" />
+          </div>
+        </div>
       </section>
-      <section className="mx-auto max-w-7xl px-6 pb-12"><CTAForm /></section>
     </main>
   );
 }
