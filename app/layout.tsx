@@ -242,8 +242,12 @@ export default function RootLayout({
         <link rel="dns-prefetch" href={siteUrl} />
         <link rel="preconnect" href={siteUrl} crossOrigin="" />
         
-        {/* Preload Critical Resources */}
+        {/* Preload Critical Resources for Fast Loading */}
         <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" />
+        <link rel="preload" href="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp" as="image" type="image/webp" />
+        
+        {/* Video Preload Hints - Faster Hero Video Loading */}
+        <link rel="preload" href="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" as="video" type="video/mp4" fetchPriority="high" />
         
         {/* Performance Optimization Meta */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
@@ -291,19 +295,19 @@ export default function RootLayout({
         ════════════════════════════════════════════════════════════════════ */}
         <SecurityShield showIndicator={false}>
         
-        {/* DMCA & Copyright Protection */}
+        {/* DMCA & Copyright Protection - Reduced to prevent hydration issues */}
         <DMCAProtection
-          enableWatermark={true}
+          enableWatermark={false}
           enableRightClickProtection={true}
           enableCopyProtection={true}
-          enableDevToolsProtection={true}
-          enablePrintProtection={true}
-          enableScreenshotDetection={true}
-          showWarnings={true}
+          enableDevToolsProtection={false}
+          enablePrintProtection={false}
+          enableScreenshotDetection={false}
+          showWarnings={false}
         />
         
-        {/* Invisible Copyright Watermark */}
-        <InvisibleWatermark />
+        {/* Invisible Copyright Watermark - Disabled temporarily to fix hydration */}
+        {/* <InvisibleWatermark /> */}
         
         {/* Global Structured Data for SEO */}
         <OrganizationSchema />
@@ -329,20 +333,34 @@ export default function RootLayout({
         </AccessibilityProvider>
         {/* END ACCESSIBILITY LAYER */}
 
-        {/* PWA Support - Service Worker */}
+        {/* PWA Support - Service Worker with AGGRESSIVE Cache Clearing */}
         <Script
           id="sw-register"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').then(
-                    (registration) => console.log('✅ SW registered:', registration.scope),
-                    (error) => console.error('❌ SW failed:', error)
-                  );
-                });
-              }
+              // NUCLEAR OPTION: Completely clear everything
+              (async function() {
+                // 1. Unregister ALL service workers
+                if ('serviceWorker' in navigator) {
+                  const registrations = await navigator.serviceWorker.getRegistrations();
+                  for (const registration of registrations) {
+                    await registration.unregister();
+                    console.log('🗑️ Unregistered service worker');
+                  }
+                }
+                
+                // 2. Delete ALL caches
+                if ('caches' in window) {
+                  const cacheNames = await caches.keys();
+                  await Promise.all(cacheNames.map(name => {
+                    console.log('🗑️ Deleting cache:', name);
+                    return caches.delete(name);
+                  }));
+                }
+                
+                console.log('✅ All caches and service workers cleared!');
+              })();
             `,
           }}
         />

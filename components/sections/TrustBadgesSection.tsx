@@ -15,8 +15,6 @@ const capabilities = [
 
 const partners = [
   { name: 'CUMMINS VOLTKA', tier: 'Authorized Dealer', description: 'Factory-authorized sales and service' },
-  { name: 'PERKINS', tier: 'Service Partner', description: 'Certified parts and service' },
-  { name: 'DEEPSEA ELECTRONICS', tier: 'Integration Partner', description: 'Control systems specialist' },
 ];
 
 const stats = [

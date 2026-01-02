@@ -28,66 +28,66 @@ interface CaseStudy {
 
 const caseStudies: CaseStudy[] = [
   {
-    id: 'nairobi-hospital',
-    title: 'Critical Care Power Infrastructure',
-    client: 'Nairobi Hospital',
-    industry: 'Healthcare',
+    id: 'st-austins-academy',
+    title: 'Educational Institution Power Upgrade',
+    client: 'St. Austins Academy',
+    industry: 'Education',
     location: 'Nairobi, Kenya',
-    challenge: 'The hospital required 100% uptime for critical care units, ICU, and surgical theaters. Previous power failures had resulted in emergency evacuations.',
-    solution: 'Deployed redundant 500kVA generator system with automatic transfer switching, UPS backup for sensitive equipment, and 24/7 remote monitoring via our Diagnostic Cockpit.',
+    challenge: 'Frequent power outages disrupting classes, computer labs, and examination periods. Unreliable grid supply affecting student learning.',
+    solution: 'Installed 50kVA automatic generator system with instant transfer switching, surge protection for computer equipment, and remote monitoring capabilities.',
     results: [
-      { metric: 'Uptime', value: '99.99%', improvement: '+4.2%' },
-      { metric: 'Response Time', value: '<10ms', improvement: 'Critical' },
-      { metric: 'Cost Savings', value: 'KES 12M', improvement: '/year' },
-      { metric: 'Zero', value: 'Downtime', improvement: 'Since 2023' },
+      { metric: 'Uptime', value: '99.9%', improvement: '+12%' },
+      { metric: 'Transfer Time', value: '<5s', improvement: 'instant' },
+      { metric: 'Annual Savings', value: 'KES 2.5M', improvement: 'verified' },
+      { metric: 'Disruptions', value: 'Zero', improvement: 'Since 2023' },
+    ],
+    image: '/images/case-studies/education.jpg',
+    testimonial: {
+      quote: 'Our students no longer lose work during power cuts. EmersonEIMS has been transformative for our learning environment.',
+      author: 'Principal',
+      role: 'School Administration'
+    }
+  },
+  {
+    id: 'bigot-flowers',
+    title: 'Agricultural Cold Chain Power',
+    client: 'Bigot Flowers Naivasha',
+    industry: 'Agriculture',
+    location: 'Naivasha, Kenya',
+    challenge: 'Cold storage facilities requiring 24/7 power for flower preservation. Power failures causing significant crop losses and export delays.',
+    solution: 'Deployed 300+100kVA redundant generator system with automatic load management, temperature monitoring integration, and predictive maintenance alerts.',
+    results: [
+      { metric: 'Cold Chain', value: '100%', improvement: 'maintained' },
+      { metric: 'Crop Losses', value: '-95%', improvement: 'reduced' },
+      { metric: 'Export Quality', value: 'Grade A', improvement: 'consistent' },
+      { metric: 'ROI Period', value: '18 mo', improvement: 'achieved' },
+    ],
+    image: '/images/case-studies/agriculture.jpg',
+    testimonial: {
+      quote: 'Our flower exports now meet European standards consistently. The power system pays for itself.',
+      author: 'Farm Manager',
+      role: 'Operations'
+    }
+  },
+  {
+    id: 'maua-hospital',
+    title: 'Healthcare Facility Power Solution',
+    client: 'Maua Methodist Hospital',
+    industry: 'Healthcare',
+    location: 'Meru, Kenya',
+    challenge: 'Rural healthcare facility needing reliable power for surgical theaters, laboratory equipment, and patient care systems.',
+    solution: 'Installed 200kVA medical-grade generator with UPS backup for critical equipment, automatic transfer switching, and 24/7 remote monitoring.',
+    results: [
+      { metric: 'Uptime', value: '99.95%', improvement: '+8%' },
+      { metric: 'Surgeries', value: 'Zero', improvement: 'interrupted' },
+      { metric: 'Equipment Life', value: '+35%', improvement: 'extended' },
+      { metric: 'Response Time', value: '<2hr', improvement: 'guaranteed' },
     ],
     image: '/images/case-studies/hospital.jpg',
     testimonial: {
-      quote: 'EmersonEIMS transformed our power infrastructure. Zero downtime in critical care units since installation.',
-      author: 'Dr. James Mwangi',
-      role: 'Facilities Director'
-    }
-  },
-  {
-    id: 'bidco-industrial',
-    title: 'Industrial Production Power System',
-    client: 'Bidco Africa',
-    industry: 'Manufacturing',
-    location: 'Thika, Kenya',
-    challenge: 'Production line stoppages due to power fluctuations were costing millions in lost output and damaged equipment.',
-    solution: 'Installed 2000kVA industrial generator with power conditioning, harmonic filtering, and predictive maintenance system integrated with plant SCADA.',
-    results: [
-      { metric: 'Production Uptime', value: '99.7%', improvement: '+5.7%' },
-      { metric: 'Annual Savings', value: 'KES 45M', improvement: 'verified' },
-      { metric: 'Equipment Life', value: '+40%', improvement: 'extended' },
-      { metric: 'Power Quality', value: 'THD <5%', improvement: 'optimal' },
-    ],
-    image: '/images/case-studies/factory.jpg',
-    testimonial: {
-      quote: 'The 24/7 monitoring and instant fault detection has been a game-changer. Best investment we\'ve made.',
-      author: 'Sarah Odhiambo',
-      role: 'Operations Manager'
-    }
-  },
-  {
-    id: 'safari-hotels',
-    title: 'Multi-Property Hybrid Energy',
-    client: 'Safari Hotels Group',
-    industry: 'Hospitality',
-    location: '8 Properties Nationwide',
-    challenge: 'High energy costs across multiple properties and guest complaints about power interruptions affecting their experience.',
-    solution: 'Implemented solar-generator hybrid systems across all 8 properties with centralized monitoring, battery storage, and smart load management.',
-    results: [
-      { metric: 'Energy Costs', value: '-40%', improvement: 'reduction' },
-      { metric: 'Guest Complaints', value: 'Zero', improvement: 'power-related' },
-      { metric: 'Carbon Footprint', value: '-60%', improvement: 'reduced' },
-      { metric: 'ROI Period', value: '2.5 yrs', improvement: 'achieved' },
-    ],
-    image: '/images/case-studies/hotel.jpg',
-    testimonial: {
-      quote: 'From Mombasa to Nairobi, EmersonEIMS powers all our properties. Guests never experience power issues.',
-      author: 'Peter Kimani',
-      role: 'CEO'
+      quote: 'EmersonEIMS ensures our patients receive uninterrupted care. Critical for rural healthcare.',
+      author: 'Hospital Administrator',
+      role: 'Healthcare'
     }
   },
 ];

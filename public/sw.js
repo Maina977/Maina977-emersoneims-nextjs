@@ -1,60 +1,66 @@
 /**
  * ADVANCED SERVICE WORKER FOR MAXIMUM PERFORMANCE
  * Tesla-level caching and offline support
+ * 
+ * ⚠️ IMPORTANT: Version updated to force cache clear
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v3-20260102-force';
 const STATIC_CACHE = `static-cache-${CACHE_VERSION}`;
 const IMAGES_CACHE = `images-cache-${CACHE_VERSION}`;
 const PAGES_CACHE = `pages-cache-${CACHE_VERSION}`;
 const API_CACHE = `api-cache-${CACHE_VERSION}`;
 
-// Static assets to precache
+// Static assets to precache - MINIMAL for fast startup
 const PRECACHE_ASSETS = [
-  '/',
-  '/generators',
-  '/service',
-  '/solar',
-  '/contact',
   '/manifest.webmanifest',
   '/favicon.ico',
 ];
 
-// Install event - precache critical assets
+// Install event - SKIP WAITING IMMEDIATELY
 self.addEventListener('install', (event) => {
+  console.log('🔄 SW: Installing new version:', CACHE_VERSION);
+  // Skip waiting immediately to take control
+  self.skipWaiting();
+  
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
-        console.log('✅ SW: Precaching critical assets');
+        console.log('✅ SW: Precaching minimal assets');
         return cache.addAll(PRECACHE_ASSETS).catch((err) => {
           console.warn('⚠️ SW: Some assets failed to precache:', err);
-          // Don't fail installation if some assets can't be cached
           return Promise.resolve();
         });
       })
-      .then(() => self.skipWaiting())
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - AGGRESSIVELY clean up old caches
 self.addEventListener('activate', (event) => {
+  console.log('✅ SW: Activating new version:', CACHE_VERSION);
+  
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
+        console.log('🗑️ SW: Clearing ALL old caches');
         return Promise.all(
           cacheNames
             .filter((cacheName) => !cacheName.includes(CACHE_VERSION))
             .map((cacheName) => {
-              console.log('🗑️ SW: Deleting old cache:', cacheName);
+              console.log('🗑️ SW: Deleting cache:', cacheName);
               return caches.delete(cacheName);
             })
         );
       })
-      .then(() => self.clients.claim())
+      .then(() => {
+        console.log('✅ SW: Taking control of all clients');
+        return self.clients.claim();
+      })
   );
 });
 
 // Fetch event - handle caching strategies
+// CRITICAL FIX: Using network-first for JS/CSS to prevent hydration mismatches
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -65,11 +71,11 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension and other non-http(s) requests
   if (!url.protocol.startsWith('http')) return;
 
-  // Skip Next.js internal requests
+  // Skip Next.js internal requests - USE NETWORK FIRST for bundles
   if (url.pathname.startsWith('/_next/')) {
-    // Cache static assets from _next/static
+    // CHANGED: Network-first for _next/static to prevent stale JS
     if (url.pathname.includes('/_next/static/')) {
-      event.respondWith(cacheFirst(request, STATIC_CACHE, 7 * 24 * 60 * 60));
+      event.respondWith(networkFirst(request, STATIC_CACHE, 60 * 60));
     }
     return;
   }
@@ -80,7 +86,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle images with cache-first
+  // Handle images with cache-first (these don't cause hydration issues)
   if (
     request.destination === 'image' ||
     /\.(png|jpg|jpeg|gif|webp|avif|svg|ico)$/i.test(url.pathname)
@@ -89,7 +95,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle fonts with cache-first
+  // Handle fonts with cache-first (these don't cause hydration issues)
   if (
     request.destination === 'font' ||
     /\.(woff2?|ttf|eot|otf)$/i.test(url.pathname)
@@ -104,13 +110,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle static assets (CSS, JS) with cache-first
+  // CHANGED: Network-first for JS/CSS to prevent hydration issues
   if (
     request.destination === 'style' ||
     request.destination === 'script' ||
     /\.(css|js)$/i.test(url.pathname)
   ) {
-    event.respondWith(cacheFirst(request, STATIC_CACHE, 7 * 24 * 60 * 60));
+    event.respondWith(networkFirst(request, STATIC_CACHE, 60 * 60));
     return;
   }
 });

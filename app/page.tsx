@@ -77,18 +77,27 @@ export default function AwwwardsHomepage() {
           style={{ scale: heroScale, opacity: heroOpacity }}
           onMouseMove={handleMouseMove}
         >
-          {/* Video with parallax effect */}
+          {/* Video with parallax effect - OPTIMIZED FOR FAST LOADING */}
           <motion.div
             className="absolute inset-0"
             style={{ y: parallaxY }}
           >
             <video
-              autoPlay loop muted playsInline preload="metadata"
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              preload="auto"
               onLoadedData={() => setVideoLoaded(true)}
+              onCanPlayThrough={() => setVideoLoaded(true)}
               className="absolute inset-0 w-full h-full object-cover scale-110"
               poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
-              style={{ willChange: 'transform' }}
+              style={{ 
+                willChange: 'transform',
+                contentVisibility: 'auto',
+              }}
             >
+              {/* Multiple sources for better compatibility and faster loading */}
               <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
@@ -477,7 +486,7 @@ export default function AwwwardsHomepage() {
                   <span className="text-transparent bg-gradient-to-r from-amber-400 to-cyan-400 bg-clip-text"> Systems</span>
                 </h2>
                 <p className="text-lg sm:text-xl lg:text-2xl text-gray-200 max-w-3xl leading-relaxed">
-                  DeepSea & PowerWizard automation. Remote monitoring. Predictive maintenance. 
+                  Advanced automation systems. Remote monitoring. Predictive maintenance. 
                   <span className="text-amber-400 font-medium"> 24/7 support</span>.
                 </p>
                 

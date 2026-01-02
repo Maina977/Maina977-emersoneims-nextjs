@@ -119,9 +119,11 @@ export const CopyrightNotice: React.FC<CopyrightNoticeProps> = ({
 
 /**
  * Invisible copyright watermark that gets embedded in the page
+ * Using static year to prevent hydration mismatch
  */
 export const InvisibleWatermark: React.FC = () => {
-  const currentYear = new Date().getFullYear();
+  // Static year to prevent hydration issues
+  const currentYear = 2026;
   
   return (
     <>
