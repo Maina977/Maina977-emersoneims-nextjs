@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 import Link from 'next/link';
 
@@ -10,11 +11,19 @@ interface ErrorProps {
 
 export default function GlobalError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log error to console (in production, send to error monitoring service)
-    console.error('Application error:', error);
+    // Send error to Sentry for production monitoring
+    Sentry.captureException(error, {
+      tags: {
+        errorType: 'global-error',
+        digest: error.digest || 'unknown',
+      },
+      extra: {
+        componentStack: error.stack,
+      },
+    });
     
-    // You can integrate with Sentry, LogRocket, etc. here
-    // Example: Sentry.captureException(error);
+    // Also log to console for development
+    console.error('Application error:', error);
   }, [error]);
 
   return (

@@ -1,0 +1,159 @@
+﻿Γû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local, .env.production, .env
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+node.exe : ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. 
+Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+At C:\Program Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá The "middle...leware-to-proxy:String) [], Re 
+   moteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 2.3min
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/125) ...
+  Generating static pages using 3 workers (31/125) 
+  Generating static pages using 3 workers (62/125) 
+  Generating static pages using 3 workers (93/125) 
+Γ£ô Generating static pages using 3 workers (125/125) in 16.0s
+  Finalizing page optimization ...
+
+Route (app)                                      Revalidate  Expire
+Γöî Γùï /                                                    1h      1y
+Γö£ Γùï /_not-found                                          1h      1y
+Γö£ ╞Æ /[country]/[city]
+Γö£ Γùï /about                                               1h      1y
+Γö£ Γùï /about-us                                            1h      1y
+Γö£ Γùï /admin/analytics                                     1h      1y
+Γö£ Γùï /analytics                                           1h      1y
+Γö£ ╞Æ /api/ai/chat
+Γö£ ╞Æ /api/ai/engagement-offer
+Γö£ ╞Æ /api/analytics
+Γö£ ╞Æ /api/analytics/conversion
+Γö£ ╞Æ /api/analytics/dashboard
+Γö£ ╞Æ /api/analytics/event
+Γö£ ╞Æ /api/analytics/visitor
+Γö£ ╞Æ /api/error-log
+Γö£ ╞Æ /api/health
+Γö£ ╞Æ /api/notifications/new-lead
+Γö£ ╞Æ /api/src/app/api/proxy/[...path]
+Γö£ ╞Æ /api/wordpress
+Γö£ Γùï /blog                                                1h      1y
+Γö£ ΓùÅ /blog/[slug]                                         1h      1y
+Γöé Γö£ /blog/complete-guide-generator-sizing-kenya          1h      1y
+Γöé Γö£ /blog/solar-power-investment-roi-kenya               1h      1y
+Γöé Γö£ /blog/generator-maintenance-checklist                1h      1y
+Γöé Γöö [+3 more paths]
+Γö£ Γùï /brands                                              1h      1y
+Γö£ Γùï /calculators                                         1h      1y
+Γö£ Γùï /careers                                             1h      1y
+Γö£ Γùï /case-studies                                        1h      1y
+Γö£ Γùï /contact                                             1h      1y
+Γö£ Γùï /counties                                            1h      1y
+Γö£ Γùï /counties/baringo                                    1h      1y
+Γö£ Γùï /counties/bomet                                      1h      1y
+Γö£ Γùï /counties/bungoma                                    1h      1y
+Γö£ Γùï /counties/busia                                      1h      1y
+Γö£ Γùï /counties/elgeyo-marakwet                            1h      1y
+Γö£ Γùï /counties/embu                                       1h      1y
+Γö£ Γùï /counties/garissa                                    1h      1y
+Γö£ Γùï /counties/homa-bay                                   1h      1y
+Γö£ Γùï /counties/isiolo                                     1h      1y
+Γö£ Γùï /counties/kajiado                                    1h      1y
+Γö£ Γùï /counties/kakamega                                   1h      1y
+Γö£ Γùï /counties/kericho                                    1h      1y
+Γö£ Γùï /counties/kiambu                                     1h      1y
+Γö£ Γùï /counties/kilifi                                     1h      1y
+Γö£ Γùï /counties/kirinyaga                                  1h      1y
+Γö£ Γùï /counties/kisii                                      1h      1y
+Γö£ Γùï /counties/kisumu                                     1h      1y
+Γö£ Γùï /counties/kitui                                      1h      1y
+Γö£ Γùï /counties/kwale                                      1h      1y
+Γö£ Γùï /counties/laikipia                                   1h      1y
+Γö£ Γùï /counties/lamu                                       1h      1y
+Γö£ Γùï /counties/machakos                                   1h      1y
+Γö£ Γùï /counties/makueni                                    1h      1y
+Γö£ Γùï /counties/mandera                                    1h      1y
+Γö£ Γùï /counties/marsabit                                   1h      1y
+Γö£ Γùï /counties/meru                                       1h      1y
+Γö£ Γùï /counties/migori                                     1h      1y
+Γö£ Γùï /counties/mombasa                                    1h      1y
+Γö£ Γùï /counties/muranga                                    1h      1y
+Γö£ Γùï /counties/nairobi                                    1h      1y
+Γö£ Γùï /counties/nakuru                                     1h      1y
+Γö£ Γùï /counties/nandi                                      1h      1y
+Γö£ Γùï /counties/narok                                      1h      1y
+Γö£ Γùï /counties/nyamira                                    1h      1y
+Γö£ Γùï /counties/nyandarua                                  1h      1y
+Γö£ Γùï /counties/nyeri                                      1h      1y
+Γö£ Γùï /counties/samburu                                    1h      1y
+Γö£ Γùï /counties/siaya                                      1h      1y
+Γö£ Γùï /counties/taita-taveta                               1h      1y
+Γö£ Γùï /counties/tana-river                                 1h      1y
+Γö£ Γùï /counties/tharaka-nithi                              1h      1y
+Γö£ Γùï /counties/trans-nzoia                                1h      1y
+Γö£ Γùï /counties/turkana                                    1h      1y
+Γö£ Γùï /counties/uasin-gishu                                1h      1y
+Γö£ Γùï /counties/vihiga                                     1h      1y
+Γö£ Γùï /counties/wajir                                      1h      1y
+Γö£ Γùï /counties/west-pokot                                 1h      1y
+Γö£ Γùï /diagnostic-cockpit                                  1h      1y
+Γö£ Γùï /diagnostic-qa                                       1h      1y
+Γö£ Γùï /diagnostic-suite                                    1h      1y
+Γö£ Γùï /diagnostics                                         1h      1y
+Γö£ Γùï /fabrication                                         1h      1y
+Γö£ Γùï /fault-code-lookup                                   1h      1y
+Γö£ Γùï /generator                                           1h      1y
+Γö£ Γùï /generator-parts                                     1h      1y
+Γö£ Γùï /generator-services                                  1h      1y
+Γö£ Γùï /generators                                          1h      1y
+Γö£ Γùï /generators/case-studies                             1h      1y
+Γö£ Γùï /generators/installation                             1h      1y
+Γö£ Γùï /generators/maintenance                              1h      1y
+Γö£ Γùï /generators/rental                                   1h      1y
+Γö£ Γùï /generators/spare-parts                              1h      1y
+Γö£ Γùï /generators/used                                     1h      1y
+Γö£ Γùï /innovations                                         1h      1y
+Γö£ ╞Æ /kenya/[county]
+Γö£ Γùï /manifest.webmanifest
+Γö£ Γùï /privacy                                             1h      1y
+Γö£ Γùï /robots.txt
+Γö£ Γùï /service                                             1h      1y
+Γö£ Γùï /service/generators                                  1h      1y
+Γö£ Γùï /services                                            1h      1y
+Γö£ Γùï /sitemap.xml
+Γö£ Γùï /solar                                               1h      1y
+Γö£ Γùï /solution                                            1h      1y
+Γö£ Γùï /solution/generators                                 1h      1y
+Γö£ Γùï /solution/solar                                      1h      1y
+Γö£ Γùï /solutions                                           1h      1y
+Γö£ Γùï /solutions/ac                                        1h      1y
+Γö£ Γùï /solutions/borehole-pumps                            1h      1y
+Γö£ Γùï /solutions/contact                                   1h      1y
+Γö£ Γùï /solutions/controls                                  1h      1y
+Γö£ Γùï /solutions/diesel-automation                         1h      1y
+Γö£ Γùï /solutions/generators                                1h      1y
+Γö£ Γùï /solutions/incinerators                              1h      1y
+Γö£ Γùï /solutions/motor-rewinding                           1h      1y
+Γö£ Γùï /solutions/motors                                    1h      1y
+Γö£ Γùï /solutions/power-interruptions                       1h      1y
+Γö£ Γùï /solutions/solar                                     1h      1y
+Γö£ Γùï /solutions/solar-sizing                              1h      1y
+Γö£ Γùï /solutions/ups                                       1h      1y
+Γö£ Γùï /terms                                               1h      1y
+Γö£ Γùï /test-minimal                                        1h      1y
+Γö£ Γùï /test-page                                           1h      1y
+Γöö Γùï /test-simple                                         1h      1y
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+ΓùÅ  (SSG)      prerendered as static HTML (uses generateStaticParams)
+╞Æ  (Dynamic)  server-rendered on demand
+
