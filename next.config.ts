@@ -38,6 +38,11 @@ const nextConfig: NextConfig = {
         hostname: 'emersoneims.com',
         pathname: '/wp-content/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
     ],
     unoptimized: false,
   },

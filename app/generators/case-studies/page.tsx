@@ -23,16 +23,18 @@ const caseStudies = [
     title: 'St. Austin Academy',
     category: 'Education',
     location: 'Nairobi, Kenya',
-    generator: 'Cummins 200kVA',
+    generator: '50kVA Massey Ferguson (Perkins Engine)',
+    brand: 'Massey Ferguson / Perkins',
     challenge: 'Frequent power outages disrupting classes and administrative operations',
-    solution: 'Installation of Cummins 200kVA generator with DeepSea controller and automatic transfer switch',
+    solution: 'Installation of 50kVA Massey Ferguson generator with Perkins engine, DeepSea controller and automatic transfer switch',
     results: [
       '99.8% uptime achieved',
       'Zero class disruptions',
-      'KSh 2.3M saved in operational costs',
+      'KSh 1.2M saved in operational costs',
       '5-year maintenance contract',
     ],
-    image: '/images/GEN%202-1920x1080.png',
+    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80',
+    fallbackImage: '/images/GEN%202-1920x1080.png',
     testimonial: 'EmersonEIMS transformed our power reliability. No more interruptions during critical exams.',
     author: 'Principal, St. Austin Academy',
   },
@@ -41,16 +43,18 @@ const caseStudies = [
     title: 'Kivukoni International School',
     category: 'Education',
     location: 'Nairobi, Kenya',
-    generator: 'Cummins 150kVA',
+    generator: '60kVA Cummins',
+    brand: 'Cummins',
     challenge: 'Unreliable grid power affecting boarding school operations',
-    solution: 'Hybrid solar-diesel system with 150kVA Cummins backup generator',
+    solution: 'Installation of 60kVA Cummins generator with hybrid solar-diesel capability',
     results: [
       '100% power reliability',
       '40% reduction in energy costs',
       'Solar integration completed',
       '24/7 monitoring enabled',
     ],
-    image: '/images/solar%20power%20farms.png',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+    fallbackImage: '/images/GEN%202-1920x1080.png',
     testimonial: 'The hybrid system exceeded expectations. Our students now have uninterrupted power.',
     author: 'Facilities Manager, Kivukoni School',
   },
@@ -59,16 +63,18 @@ const caseStudies = [
     title: 'Bigot Flowers',
     category: 'Agriculture',
     location: 'Naivasha, Kenya',
-    generator: 'Cummins 300kVA',
+    generator: '300kVA Caterpillar',
+    brand: 'Caterpillar (CAT)',
     challenge: 'Critical cooling systems requiring constant power for flower preservation',
-    solution: 'Primary Cummins 300kVA generator with redundant backup system',
+    solution: 'Primary 300kVA Caterpillar generator with redundant backup system and automated failover',
     results: [
       'Zero product loss',
       '99.9% uptime',
       'Automated failover system',
       'Remote monitoring implemented',
     ],
-    image: '/images/GEN%202-1920x1080.png',
+    image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80',
+    fallbackImage: '/images/GEN%202-1920x1080.png',
     testimonial: 'Our flower export business depends on reliable power. EmersonEIMS delivered perfectly.',
     author: 'Operations Director, Bigot Flowers',
   },
@@ -77,16 +83,18 @@ const caseStudies = [
     title: 'Greenheart Hotel',
     category: 'Hospitality',
     location: 'Mombasa, Kenya',
-    generator: 'Cummins 500kVA',
+    generator: '44kVA Cummins Voltka',
+    brand: 'Cummins Voltka',
     challenge: 'Hotel operations requiring 24/7 power for guest comfort and safety',
-    solution: 'Dual Cummins 500kVA generators with load sharing and hotel management integration',
+    solution: '44kVA Cummins Voltka generator with load management and hotel systems integration',
     results: [
       '100% guest satisfaction',
       'Zero service interruptions',
       'Energy efficiency improved',
       'Maintenance cost reduced by 30%',
     ],
-    image: '/images/GEN%202-1920x1080.png',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
+    fallbackImage: '/images/GEN%202-1920x1080.png',
     testimonial: 'Our guests never experience power issues. The system is flawless.',
     author: 'General Manager, Greenheart Hotel',
   },
@@ -95,16 +103,18 @@ const caseStudies = [
     title: 'NTSA Headquarters',
     category: 'Government',
     location: 'Nairobi, Kenya',
-    generator: 'Cummins 400kVA',
+    generator: '300kVA Atlas Copco',
+    brand: 'Atlas Copco',
     challenge: 'Critical government operations requiring uninterrupted power',
-    solution: 'Redundant generator system with automatic failover and remote monitoring',
+    solution: '300kVA Atlas Copco generator with redundant system, automatic failover and real-time monitoring',
     results: [
       '100% operational continuity',
       'Compliance with government standards',
       'Real-time monitoring dashboard',
       'Predictive maintenance enabled',
     ],
-    image: '/images/GEN%202-1920x1080.png',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80',
+    fallbackImage: '/images/GEN%202-1920x1080.png',
     testimonial: 'EmersonEIMS ensured our critical operations never fail. Exceptional service.',
     author: 'IT Director, NTSA',
   },
@@ -113,16 +123,18 @@ const caseStudies = [
     title: 'Sanergy Limited',
     category: 'Waste Management',
     location: 'Nairobi, Kenya',
-    generator: 'Cummins 250kVA',
+    generator: '250kVA FG Wilson (Perkins)',
+    brand: 'FG Wilson / Perkins',
     challenge: 'Waste processing facility requiring reliable power for continuous operations',
-    solution: 'Cummins 250kVA generator with advanced control systems and monitoring',
+    solution: '250kVA FG Wilson generator with Perkins engine, advanced control systems and 24/7 monitoring',
     results: [
       'Continuous operations achieved',
       '95% reduction in downtime',
       'Automated load management',
       'Cost savings of KSh 1.8M annually',
     ],
-    image: '/images/GEN%202-1920x1080.png',
+    image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80',
+    fallbackImage: '/images/GEN%202-1920x1080.png',
     testimonial: 'The reliability of our power system transformed our operations.',
     author: 'Plant Manager, Sanergy Limited',
   },
@@ -212,7 +224,7 @@ export default function CaseStudiesPage() {
                   <div className="relative h-48 overflow-hidden">
                     <OptimizedImage
                       src={study.image}
-                      alt={study.title}
+                      alt={`${study.generator} at ${study.title}`}
                       width={800}
                       height={600}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -221,6 +233,11 @@ export default function CaseStudiesPage() {
                     <div className="absolute top-4 left-4">
                       <span className="px-3 py-1 bg-amber-500/80 backdrop-blur-sm text-black text-xs font-bold rounded">
                         {study.category}
+                      </span>
+                    </div>
+                    <div className="absolute top-4 right-4">
+                      <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-sm text-white text-xs font-bold rounded">
+                        {study.brand}
                       </span>
                     </div>
                     <div className="absolute bottom-4 left-4 right-4">
