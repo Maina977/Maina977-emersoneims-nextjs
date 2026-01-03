@@ -12,6 +12,7 @@ import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'fram
 import Link from 'next/link';
 import Image from 'next/image';
 import UnifiedCTA, { CTASection } from '@/components/cta/UnifiedCTA';
+import AccessibilityWidget from '@/components/AccessibilityWidget';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECTIONS: Regular imports for stability (no lazy loading issues)
@@ -65,6 +66,9 @@ export default function AwwwardsHomepage() {
   
   return (
     <div ref={containerRef} className="relative bg-black overflow-hidden">
+        
+        {/* Accessibility Widget - Universal Access for All Users */}
+        <AccessibilityWidget />
         
         {/* HERO: FULL-SCREEN VIDEO with 3D Parallax */}
         <motion.section 
