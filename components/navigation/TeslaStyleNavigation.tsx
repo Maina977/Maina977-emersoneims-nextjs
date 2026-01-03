@@ -42,7 +42,7 @@ const MEGA_MENUS = {
         items: [
           { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'Genuine & OEM parts' },
           { href: '/fault-code-lookup', label: 'Fault Codes', icon: '🔍', desc: 'Troubleshooting guide' },
-          { href: '/diagnostic-suite', label: 'Diagnostics', icon: '📊', desc: 'Real-time monitoring' },
+          { href: '/generators/case-studies', label: 'Case Studies', icon: '📋', desc: 'Success stories' },
         ],
       },
     ],
@@ -70,17 +70,71 @@ const MEGA_MENUS = {
     ],
     cta: { href: '/contact', label: 'Free Consultation', phone: '0782 914 717' },
   },
+  diagnostics: {
+    title: 'Diagnostic Tools',
+    description: 'Advanced diagnostic systems for power equipment',
+    sections: [
+      {
+        title: 'Diagnostic Tools',
+        items: [
+          { href: '/diagnostics', label: '9-Service Diagnostic', icon: '🔬', desc: 'Comprehensive service check' },
+          { href: '/diagnostic-suite', label: 'Generator Diagnostic', icon: '⚡', desc: 'Real-time monitoring' },
+          { href: '/diagnostic-cockpit', label: 'Diagnostic Cockpit', icon: '🎛️', desc: 'Advanced control panel' },
+          { href: '/diagnostic-qa', label: 'Diagnostic Q&A', icon: '❓', desc: 'Expert answers' },
+        ],
+      },
+      {
+        title: 'Support Tools',
+        items: [
+          { href: '/fault-code-lookup', label: 'Fault Code Lookup', icon: '🔍', desc: 'Error code database' },
+          { href: '/innovations', label: 'Innovations', icon: '💡', desc: 'Latest technology' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Get Support', phone: '0768 860 655' },
+  },
+  services: {
+    title: 'Our Services',
+    description: 'Complete power and electrical solutions',
+    sections: [
+      {
+        title: 'Power Solutions',
+        items: [
+          { href: '/solutions/generators', label: 'Generator Services', icon: '⚡', desc: 'Sales & maintenance' },
+          { href: '/solutions/ups', label: 'UPS Systems', icon: '🔋', desc: 'Backup power' },
+          { href: '/solutions/controls', label: 'Control Systems', icon: '🎛️', desc: 'Automation & controls' },
+        ],
+      },
+      {
+        title: 'Electrical Services',
+        items: [
+          { href: '/solutions/motor-rewinding', label: 'Motor Rewinding', icon: '🔄', desc: 'Motor repair' },
+          { href: '/solutions/borehole-pumps', label: 'Borehole Pumps', icon: '💧', desc: 'Water solutions' },
+          { href: '/fabrication', label: 'Fabrication', icon: '🏭', desc: 'Custom builds' },
+        ],
+      },
+      {
+        title: 'Specialized',
+        items: [
+          { href: '/solutions/incinerators', label: 'Incinerators', icon: '🔥', desc: 'Waste management' },
+          { href: '/solutions/ac', label: 'AC Systems', icon: '❄️', desc: 'Climate control' },
+          { href: '/solutions/diesel-automation', label: 'Diesel Automation', icon: '⛽', desc: 'Fuel systems' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Request Service', phone: '0782 914 717' },
+  },
 };
 
-// Complete Navigation - Enhanced with Mega Menus
+// Complete Navigation - Enhanced with Mega Menus - ALL PAGES VISIBLE
 const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
-  { href: '/solutions', label: 'SOLUTIONS', type: 'link' },
+  { key: 'services', label: 'SERVICES', type: 'mega' },
   { href: '/brands', label: 'BRANDS', type: 'link' },
-  { href: '/diagnostics', label: '🔬 DIAGNOSTICS', type: 'link', highlight: true },
+  { key: 'diagnostics', label: '🔬 DIAGNOSTICS', type: 'mega', highlight: true },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
@@ -194,9 +248,13 @@ export default function TeslaStyleNavigation({
                   >
                     <button
                       className={`px-3 py-2 text-[11px] font-semibold transition-all duration-300 rounded-lg flex items-center gap-1 ${
-                        activeMega === item.key
-                          ? 'text-amber-400 bg-amber-500/10'
-                          : 'text-white/70 hover:text-white hover:bg-white/5'
+                        item.highlight 
+                          ? activeMega === item.key
+                            ? 'text-amber-300 bg-amber-500/20 border border-amber-400/50'
+                            : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border border-amber-500/30'
+                          : activeMega === item.key
+                            ? 'text-amber-400 bg-amber-500/10'
+                            : 'text-white/70 hover:text-white hover:bg-white/5'
                       }`}
                     >
                       {item.label}
