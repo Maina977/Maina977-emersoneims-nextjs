@@ -1092,8 +1092,78 @@ export default function PremiumApp() {
         <section className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Start with your sector</button></section>
       </div>;
       case "counties": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="text-4xl font-bold text-yellow-300">Kenya county insights</h1><p className="mt-3 text-white/80">Verified data per county: irradiance, demand, target customers, and benefits.</p>
-        <ul className="grid md:grid-cols-3 gap-6 mt-8">{[ "Baringo","Bomet","Bungoma","Busia","Elgeyo-Marakwet","Embu","Garissa","Homa Bay","Isiolo","Kajiado","Kakamega","Kericho","Kiambu","Kilifi","Kirinyaga","Kisii","Kisumu","Kitui","Kwale","Laikipia","Lamu","Machakos","Makueni","Mandera","Marsabit","Meru","Migori","Mombasa","Murang'a","Nairobi","Nakuru","Narok","Nyamira","Nyandarua","Nyeri","Samburu","Siaya","Taita-Taveta","Tana River","Tharaka-Nithi","Trans Nzoia","Turkana","Uasin Gishu","Vihiga","Wajir","West Pokot"].map((c) => (<li key={c} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{c}</h2><p className="text-sm text-white/80 mt-2">Add irradiance, tariffs, sector opportunities, case examples.</p></li>))}</ul>
+        <h1 className="text-4xl font-bold text-yellow-300">Kenya County Insights</h1><p className="mt-3 text-white/80">Verified data per county: irradiance, demand, target customers, and benefits.</p>
+        <ul className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">{[
+          { name: "Baringo", irradiance: "5.8 kWh/m²/day", demand: "Growing agricultural & tourism", customers: "Farms, lodges, schools", benefits: "Reduce diesel dependency, power irrigation" },
+          { name: "Bomet", irradiance: "5.5 kWh/m²/day", demand: "Tea processing & dairy", customers: "Tea factories, dairy farms, clinics", benefits: "Cut processing costs, reliable cold storage" },
+          { name: "Bungoma", irradiance: "5.4 kWh/m²/day", demand: "Sugar mills & agriculture", customers: "Sugar factories, maize mills, hospitals", benefits: "Industrial backup, reduce grid dependence" },
+          { name: "Busia", irradiance: "5.6 kWh/m²/day", demand: "Cross-border trade & fishing", customers: "Markets, fish processors, border facilities", benefits: "24/7 trading power, cold chain for fish" },
+          { name: "Elgeyo-Marakwet", irradiance: "5.7 kWh/m²/day", demand: "Athletics camps & agriculture", customers: "Training centers, schools, farms", benefits: "Altitude training facilities, irrigation" },
+          { name: "Embu", irradiance: "5.5 kWh/m²/day", demand: "Coffee & tea processing", customers: "Coffee mills, tea factories, hospitals", benefits: "Processing reliability, reduce outage losses" },
+          { name: "Garissa", irradiance: "6.5 kWh/m²/day", demand: "Highest solar potential in Kenya", customers: "Government offices, hospitals, markets", benefits: "Eliminate diesel costs, grid independence" },
+          { name: "Homa Bay", irradiance: "5.8 kWh/m²/day", demand: "Fishing & agriculture", customers: "Fish processors, ice plants, clinics", benefits: "Cold storage for fish, water pumping" },
+          { name: "Isiolo", irradiance: "6.3 kWh/m²/day", demand: "LAPSSET corridor growth", customers: "Hotels, logistics, government", benefits: "Infrastructure development, tourism power" },
+          { name: "Kajiado", irradiance: "6.0 kWh/m²/day", demand: "Rapid urbanization & industry", customers: "Factories, malls, greenhouses", benefits: "Industrial expansion, export processing" },
+          { name: "Kakamega", irradiance: "5.3 kWh/m²/day", demand: "Sugar & forest products", customers: "Sugar mills, timber, schools", benefits: "Factory backup, sustainable processing" },
+          { name: "Kericho", irradiance: "5.2 kWh/m²/day", demand: "Tea capital of Kenya", customers: "Tea multinationals, hotels, hospitals", benefits: "Processing continuity, ESG compliance" },
+          { name: "Kiambu", irradiance: "5.4 kWh/m²/day", demand: "Industrial hub near Nairobi", customers: "Factories, malls, data centers, homes", benefits: "Industrial backup, real estate value" },
+          { name: "Kilifi", irradiance: "5.9 kWh/m²/day", demand: "Tourism & coastal trade", customers: "Resorts, hotels, fish processors", benefits: "Tourism reliability, eco-resort branding" },
+          { name: "Kirinyaga", irradiance: "5.5 kWh/m²/day", demand: "Rice & horticulture", customers: "Rice mills, greenhouses, clinics", benefits: "Irrigation pumping, post-harvest processing" },
+          { name: "Kisii", irradiance: "5.3 kWh/m²/day", demand: "Banana & soapstone industry", customers: "Markets, processing plants, schools", benefits: "Market lighting, artisan workshops" },
+          { name: "Kisumu", irradiance: "5.7 kWh/m²/day", demand: "Lake region commercial hub", customers: "Port facilities, factories, hospitals", benefits: "Industrial growth, fish processing" },
+          { name: "Kitui", irradiance: "6.1 kWh/m²/day", demand: "Mining & basket weaving", customers: "Mines, markets, water projects", benefits: "Mining operations, community water" },
+          { name: "Kwale", irradiance: "5.8 kWh/m²/day", demand: "Mining & beach tourism", customers: "Base Titanium, resorts, farms", benefits: "Mining backup, eco-tourism appeal" },
+          { name: "Laikipia", irradiance: "6.0 kWh/m²/day", demand: "Ranching & conservation", customers: "Conservancies, lodges, ranches", benefits: "Eco-lodge power, electric fencing" },
+          { name: "Lamu", irradiance: "6.2 kWh/m²/day", demand: "Port development & tourism", customers: "LAPSSET, heritage hotels, dhow builders", benefits: "Port infrastructure, heritage preservation" },
+          { name: "Machakos", irradiance: "5.8 kWh/m²/day", demand: "Machakos City growth", customers: "Industries, malls, tech parks", benefits: "Smart city infrastructure, industrial parks" },
+          { name: "Makueni", irradiance: "6.0 kWh/m²/day", demand: "Fruit processing hub", customers: "Mango processors, markets, clinics", benefits: "Cold storage, value addition facilities" },
+          { name: "Mandera", irradiance: "6.6 kWh/m²/day", demand: "Highest irradiance in Kenya", customers: "Government, hospitals, markets", benefits: "Complete diesel replacement, water pumping" },
+          { name: "Marsabit", irradiance: "6.4 kWh/m²/day", demand: "Wind-solar hybrid potential", customers: "Institutions, markets, water projects", benefits: "Hybrid systems, community power" },
+          { name: "Meru", irradiance: "5.6 kWh/m²/day", demand: "Miraa & agriculture", customers: "Cold storage, hospitals, schools", benefits: "Miraa preservation, agricultural processing" },
+          { name: "Migori", irradiance: "5.7 kWh/m²/day", demand: "Gold mining & tobacco", customers: "Mining operations, factories, markets", benefits: "Mining power, tobacco curing" },
+          { name: "Mombasa", irradiance: "5.8 kWh/m²/day", demand: "Port city & tourism", customers: "Port, hotels, industries, malls", benefits: "Port operations, tourism reliability" },
+          { name: "Murang'a", irradiance: "5.4 kWh/m²/day", demand: "Coffee & tea belt", customers: "Coffee mills, tea factories, hospitals", benefits: "Processing efficiency, reliable healthcare" },
+          { name: "Nairobi", irradiance: "5.5 kWh/m²/day", demand: "Capital city - highest demand", customers: "Corporates, malls, hospitals, homes", benefits: "Peak shaving, UPS backup, ESG goals" },
+          { name: "Nakuru", irradiance: "5.6 kWh/m²/day", demand: "Industrial & agricultural hub", customers: "Factories, flower farms, hotels", benefits: "Industrial backup, horticulture export" },
+          { name: "Narok", irradiance: "5.9 kWh/m²/day", demand: "Maasai Mara tourism", customers: "Safari lodges, camps, conservancies", benefits: "Eco-tourism power, conservation support" },
+          { name: "Nyamira", irradiance: "5.2 kWh/m²/day", demand: "Tea & banana farming", customers: "Tea factories, markets, clinics", benefits: "Processing reliability, rural electrification" },
+          { name: "Nyandarua", irradiance: "5.3 kWh/m²/day", demand: "Potato & dairy belt", customers: "Cold storage, dairy coops, schools", benefits: "Potato storage, milk cooling" },
+          { name: "Nyeri", irradiance: "5.4 kWh/m²/day", demand: "Coffee & Mt. Kenya tourism", customers: "Coffee mills, lodges, hospitals", benefits: "Tourism power, coffee processing" },
+          { name: "Samburu", irradiance: "6.2 kWh/m²/day", demand: "Conservation & tourism", customers: "Conservancies, lodges, clinics", benefits: "Remote lodge power, community health" },
+          { name: "Siaya", irradiance: "5.6 kWh/m²/day", demand: "Fishing & agriculture", customers: "Fish markets, schools, clinics", benefits: "Fish preservation, education facilities" },
+          { name: "Taita-Taveta", irradiance: "5.9 kWh/m²/day", demand: "Mining & wildlife tourism", customers: "Gemstone mines, safari lodges, sisal", benefits: "Mining operations, Tsavo tourism" },
+          { name: "Tana River", irradiance: "6.3 kWh/m²/day", demand: "Irrigation & livestock", customers: "Irrigation schemes, markets, clinics", benefits: "Water pumping, community facilities" },
+          { name: "Tharaka-Nithi", irradiance: "5.7 kWh/m²/day", demand: "Tea & miraa", customers: "Tea factories, markets, hospitals", benefits: "Processing continuity, cold storage" },
+          { name: "Trans Nzoia", irradiance: "5.5 kWh/m²/day", demand: "Bread basket - maize & wheat", customers: "Grain mills, silos, farms", benefits: "Grain drying, storage facilities" },
+          { name: "Turkana", irradiance: "6.5 kWh/m²/day", demand: "Oil & wind-solar potential", customers: "Oil operations, fish, markets", benefits: "Oil sector backup, Lake Turkana fish" },
+          { name: "Uasin Gishu", irradiance: "5.6 kWh/m²/day", demand: "Eldoret industrial growth", customers: "Factories, universities, hospitals", benefits: "Industrial backup, institutional power" },
+          { name: "Vihiga", irradiance: "5.3 kWh/m²/day", demand: "Dense population, tea farming", customers: "Tea factories, schools, clinics", benefits: "Community power, education facilities" },
+          { name: "Wajir", irradiance: "6.5 kWh/m²/day", demand: "Livestock & trade hub", customers: "Livestock markets, hospitals, water", benefits: "Market facilities, water pumping" },
+          { name: "West Pokot", irradiance: "5.9 kWh/m²/day", demand: "Livestock & irrigation", customers: "Irrigation projects, markets, clinics", benefits: "Agricultural development, health facilities" }
+        ].map((county) => (
+          <li key={county.name} className="p-6 rounded-xl border border-yellow-500/20 bg-gradient-to-br from-black/80 to-yellow-900/10 hover:border-yellow-500/40 transition-all duration-300">
+            <h2 className="font-bold text-xl text-yellow-300">{county.name}</h2>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-500 text-lg">☀️</span>
+                <div><span className="text-white/60 text-xs uppercase tracking-wider">Irradiance</span><p className="text-white font-semibold">{county.irradiance}</p></div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-blue-400 text-lg">📊</span>
+                <div><span className="text-white/60 text-xs uppercase tracking-wider">Demand Profile</span><p className="text-white/90 text-sm">{county.demand}</p></div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-400 text-lg">🎯</span>
+                <div><span className="text-white/60 text-xs uppercase tracking-wider">Target Customers</span><p className="text-white/90 text-sm">{county.customers}</p></div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400 text-lg">✨</span>
+                <div><span className="text-white/60 text-xs uppercase tracking-wider">Key Benefits</span><p className="text-white/90 text-sm">{county.benefits}</p></div>
+              </div>
+            </div>
+          </li>
+        ))}</ul>
+        <section className="mt-10 text-center"><button onClick={() => setCurrentPage("home")} className="rounded-lg bg-yellow-300 text-black px-8 py-4 font-bold hover:bg-yellow-400 transition-all duration-300 shadow-lg shadow-yellow-500/20">Get County-Specific Quote</button></section>
       </div>;
       case "about": return <div className="mx-auto max-w-7xl px-6 py-12">
         <h1 className="text-4xl font-bold text-yellow-300">About EmersonEIMS</h1><p className="mt-3 text-white/80">Verified insights, technical depth, and design that inspires.</p>
