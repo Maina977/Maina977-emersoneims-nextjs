@@ -94,10 +94,98 @@ export const metadata: Metadata = {
   },
 };
 
+// JSON-LD Structured Data for Rental Services
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Service',
+      '@id': 'https://emersoneims.com/generators/rental/#service',
+      name: 'Generator Rental Services',
+      serviceType: 'Equipment Rental',
+      provider: {
+        '@type': 'Organization',
+        name: 'EmersonEIMS',
+        '@id': 'https://emersoneims.com/#organization',
+      },
+      areaServed: { '@type': 'Country', name: 'Kenya' },
+      description: 'Generator rental from 7.5kVA to 2MVA for events, construction, and emergencies across all 47 Kenya counties.',
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'KES',
+        availability: 'https://schema.org/InStock',
+        eligibleDuration: ['P1D', 'P7D', 'P30D'],
+        priceSpecification: [
+          { '@type': 'PriceSpecification', name: 'Daily Rental', minPrice: 5000, maxPrice: 400000, priceCurrency: 'KES' },
+          { '@type': 'PriceSpecification', name: 'Weekly Rental', minPrice: 25000, maxPrice: 2000000, priceCurrency: 'KES' },
+          { '@type': 'PriceSpecification', name: 'Monthly Rental', minPrice: 80000, maxPrice: 6000000, priceCurrency: 'KES' },
+        ],
+      },
+    },
+    {
+      '@type': 'RentalCarReservation', // Using generic rental schema
+      '@id': 'https://emersoneims.com/generators/rental/#rental',
+      provider: { '@id': 'https://emersoneims.com/#organization' },
+      itemOffered: {
+        '@type': 'Product',
+        name: 'Generator Rental Fleet',
+        description: 'Silent diesel generators from 7.5kVA to 2MVA',
+        brand: ['Cummins', 'Caterpillar', 'Perkins', 'FG Wilson'],
+      },
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': 'https://emersoneims.com/generators/rental/#faq',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What size generator do I need?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Generator sizing depends on your total load. Average home: 5-10 kVA, Small office: 15-20 kVA, Wedding venue: 50-100 kVA, Factory: 100-500 kVA. Our team can do a free load assessment.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How quickly can you deliver?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Within Nairobi: Same day delivery for orders placed before 12pm. Outside Nairobi: 24-48 hours depending on location. For urgent requirements, call our emergency line.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'What is included in the rental price?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Our rental includes: generator with silenced canopy, fuel tank, distribution board, delivery and setup within Nairobi, commissioning, 24/7 technical support, and collection.',
+          },
+        },
+      ],
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://emersoneims.com' },
+        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://emersoneims.com/generators' },
+        { '@type': 'ListItem', position: 3, name: 'Rental', item: 'https://emersoneims.com/generators/rental' },
+      ],
+    },
+  ],
+};
+
 export default function RentalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      {children}
+    </>
+  );
 }

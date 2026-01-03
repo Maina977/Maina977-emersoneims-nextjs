@@ -115,6 +115,117 @@ export const metadata: Metadata = {
   },
 };
 
+// JSON-LD Structured Data for Solar
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Service',
+      '@id': 'https://emersoneims.com/solar/#service',
+      name: 'Solar Installation Services',
+      serviceType: 'Solar Panel Installation',
+      provider: {
+        '@type': 'Organization',
+        name: 'EmersonEIMS',
+        '@id': 'https://emersoneims.com/#organization',
+      },
+      areaServed: {
+        '@type': 'Country',
+        name: 'Kenya',
+      },
+      description: 'Complete solar solutions for homes, businesses, and industries across all 47 Kenya counties. 25-year warranty on panels.',
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Solar Products & Services',
+        itemListElement: [
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Product',
+              name: 'Residential Solar Systems',
+              description: 'Complete home solar systems from 3kW to 20kW',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Product',
+              name: 'Commercial Solar Systems',
+              description: 'Business and industrial solar from 20kW to 1MW+',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Product',
+              name: 'Solar Batteries',
+              description: 'LFP lithium batteries for energy storage',
+            },
+          },
+        ],
+      },
+    },
+    {
+      '@type': 'Product',
+      '@id': 'https://emersoneims.com/solar/#product',
+      name: 'Solar Panel Systems Kenya',
+      brand: {
+        '@type': 'Brand',
+        name: 'EmersonEIMS Solar',
+      },
+      description: 'Premium tier-1 solar panels with 25-year performance warranty',
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'KES',
+        availability: 'https://schema.org/InStock',
+        seller: { '@id': 'https://emersoneims.com/#organization' },
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.9',
+        reviewCount: '2450',
+      },
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': 'https://emersoneims.com/solar/#faq',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'How much does solar cost in Kenya?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Solar system costs in Kenya range from KSh 150,000 for a basic home system (3kW) to KSh 15,000,000+ for large commercial installations. The cost depends on system size, battery storage, and installation complexity. Our calculator provides instant estimates.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How long does solar take to pay back?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Typical solar payback period in Kenya is 3-5 years depending on your electricity costs and system size. After payback, you enjoy virtually free electricity for the remaining 20+ years of panel life.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does solar work in all Kenya counties?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes! Kenya has excellent solar potential with 5.0-6.5 kWh/m²/day solar irradiance across all 47 counties. Northern counties like Turkana, Garissa, and Marsabit have the highest solar potential.',
+          },
+        },
+      ],
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://emersoneims.com' },
+        { '@type': 'ListItem', position: 2, name: 'Solar', item: 'https://emersoneims.com/solar' },
+      ],
+    },
+  ],
+};
+
 export default function SolarLayout({
   children,
 }: {
@@ -122,6 +233,10 @@ export default function SolarLayout({
 }) {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {children}
     </>
   );

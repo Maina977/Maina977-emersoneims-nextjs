@@ -88,10 +88,74 @@ export const metadata: Metadata = {
   },
 };
 
+// JSON-LD Structured Data for Installation Services
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Service',
+      '@id': 'https://emersoneims.com/generators/installation/#service',
+      name: 'Generator Installation Services',
+      serviceType: 'Generator Installation',
+      provider: {
+        '@type': 'Organization',
+        name: 'EmersonEIMS',
+        '@id': 'https://emersoneims.com/#organization',
+      },
+      areaServed: { '@type': 'Country', name: 'Kenya' },
+      description: 'Professional generator installation services including site assessment, foundation construction, electrical wiring, ATS installation, and commissioning.',
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Installation Services',
+        itemListElement: [
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Site Assessment', description: 'Complete site survey and load analysis' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Engineering Design', description: 'Professional engineering drawings and specifications' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Civil Works', description: 'Foundation construction and site preparation' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Electrical Installation', description: 'Cabling, ATS, and control systems' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Commissioning', description: 'Testing and handover' } },
+        ],
+      },
+    },
+    {
+      '@type': 'HowTo',
+      '@id': 'https://emersoneims.com/generators/installation/#howto',
+      name: 'Generator Installation Process',
+      description: 'Our 8-phase professional generator installation process',
+      totalTime: 'P14D',
+      step: [
+        { '@type': 'HowToStep', position: 1, name: 'Site Assessment', text: 'Complete evaluation of your site for optimal generator placement' },
+        { '@type': 'HowToStep', position: 2, name: 'Engineering Design', text: 'Professional drawings and specifications' },
+        { '@type': 'HowToStep', position: 3, name: 'Equipment Procurement', text: 'Sourcing generator and all installation materials' },
+        { '@type': 'HowToStep', position: 4, name: 'Civil Works', text: 'Foundation construction and site preparation' },
+        { '@type': 'HowToStep', position: 5, name: 'Mechanical Installation', text: 'Generator positioning and fuel system setup' },
+        { '@type': 'HowToStep', position: 6, name: 'Electrical Installation', text: 'Cabling, ATS, and control connections' },
+        { '@type': 'HowToStep', position: 7, name: 'Testing & Commissioning', text: 'Load bank testing and acceptance' },
+        { '@type': 'HowToStep', position: 8, name: 'Handover & Training', text: 'Documentation and operator training' },
+      ],
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://emersoneims.com' },
+        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://emersoneims.com/generators' },
+        { '@type': 'ListItem', position: 3, name: 'Installation', item: 'https://emersoneims.com/generators/installation' },
+      ],
+    },
+  ],
+};
+
 export default function InstallationLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      {children}
+    </>
+  );
 }
