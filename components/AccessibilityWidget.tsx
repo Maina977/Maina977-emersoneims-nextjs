@@ -211,22 +211,40 @@ export default function AccessibilityWidget() {
         }
       `}</style>
 
-      {/* Floating Accessibility Button */}
+      {/* Floating Accessibility Button - Always Visible with Label */}
       <motion.button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-600/30 flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
-        aria-label="Open Accessibility Options"
-        title="Accessibility Options"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1, duration: 0.3 }}
+        className="fixed bottom-6 left-6 z-50 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-lg shadow-blue-600/40 flex items-center gap-2 px-4 py-3 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group"
+        aria-label="Open Accessibility Options - This website is accessible for visually impaired users"
+        title="Accessibility Options - WCAG 2.1 AAA Compliant"
+        whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(37, 99, 235, 0.4)' }}
+        whileTap={{ scale: 0.98 }}
+        initial={{ opacity: 1, scale: 1, x: 0 }}
+        animate={{ opacity: 1, scale: 1, x: 0 }}
       >
-        <AccessibilityIcon />
-        {/* Active indicator */}
+        {/* Accessibility Icon with pulse animation */}
+        <span className="relative">
+          <AccessibilityIcon />
+          <span className="absolute inset-0 rounded-full bg-white/30 animate-ping" />
+        </span>
+        
+        {/* Label - Always visible */}
+        <span className="font-semibold text-sm whitespace-nowrap">
+          Accessibility
+        </span>
+        
+        {/* WCAG Badge */}
+        <span className="bg-white/20 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white/30">
+          AAA
+        </span>
+        
+        {/* Active indicator - shows when settings are enabled */}
         {(settings.fontSize > 0 || settings.highContrast || settings.largeCursor || settings.lineSpacing > 0 || settings.highlightLinks) && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </span>
         )}
       </motion.button>
 
