@@ -1,36 +1,9 @@
 // Generator Spare Parts - World's Most Comprehensive Inventory
 // SEO-OPTIMIZED: ERP-Style Parts Catalog for Total Market Dominance
-import { Metadata } from 'next';
+'use client';
+import { useState } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Generator Spare Parts Kenya | Filters, Engine Parts, Electrical | All Brands | EmersonEIMS',
-  description: 'Complete generator spare parts inventory: oil filters, fuel filters, air filters, engine parts, electrical components for Cummins, Caterpillar, Perkins, FG Wilson, Kohler, MTU generators. Genuine & OEM parts. Fast delivery across Kenya. Call 0768860655.',
-  keywords: [
-    // Filter Keywords
-    'generator oil filter Kenya', 'generator fuel filter', 'generator air filter', 'oil filter Cummins',
-    'fuel filter Perkins', 'air filter Caterpillar', 'coolant filter generator', 'hydraulic filter',
-    'Fleetguard filters Kenya', 'Donaldson filters', 'Mann filters generator', 'Baldwin filters',
-    // Engine Parts
-    'generator piston Kenya', 'cylinder liner generator', 'piston rings Cummins', 'engine bearings',
-    'crankshaft generator', 'camshaft Perkins', 'connecting rod', 'cylinder head gasket',
-    'valve set generator', 'turbocharger Caterpillar', 'injector Cummins', 'fuel pump Perkins',
-    // Electrical Parts
-    'generator AVR Kenya', 'alternator diodes', 'generator controller', 'DSE controller',
-    'ComAp controller', 'generator battery charger', 'starter motor generator', 'glow plug',
-    'alternator bearings', 'voltage regulator', 'generator capacitor', 'rectifier',
-    // Brand-specific
-    'Cummins spare parts Kenya', 'Caterpillar parts', 'Perkins parts Kenya', 'FG Wilson parts',
-    'Kohler generator parts', 'MTU parts', 'Deutz parts Kenya', 'Sdmo parts',
-  ],
-  openGraph: {
-    title: 'Generator Spare Parts Kenya | Complete Inventory | EmersonEIMS',
-    description: 'Kenya\'s largest generator spare parts inventory. Genuine filters, engine parts, electrical components for all brands. Same-day delivery in Nairobi.',
-    type: 'website',
-  },
-  alternates: {
-    canonical: 'https://www.emersoneims.com/generators/spare-parts',
-  },
-};
+// Metadata moved to layout.tsx for client components
 
 // Comprehensive Parts Categories
 const partsCategories = [
@@ -314,6 +287,259 @@ const partsCategories = [
 // Generator Brands for filtering
 const brands = ['All Brands', 'Cummins', 'Caterpillar', 'Perkins', 'FG Wilson', 'Kohler', 'MTU', 'Deutz', 'Volvo Penta', 'John Deere', 'Mitsubishi', 'Sdmo', 'Aksa', 'Kipor', 'Himoinsa'];
 
+// Detailed Parts Knowledge for SEO and Customer Education
+const partsKnowledge = [
+  {
+    name: 'Oil Filters',
+    icon: '🛢️',
+    function: 'Oil filters remove contaminants, metal particles, carbon deposits, and sludge from engine oil, ensuring clean lubrication reaches all engine components.',
+    failureSymptoms: ['Low oil pressure warning', 'Engine overheating', 'Knocking or ticking sounds', 'Dirty exhaust smoke', 'Reduced engine performance', 'Metal shavings in oil'],
+    changeInterval: 'Every 250-500 running hours or as specified by manufacturer',
+    consequences: 'Blocked oil filter causes oil bypass, allowing contaminated oil to circulate. This leads to accelerated bearing wear, scoring of cylinder walls, camshaft damage, and eventual engine seizure.',
+    relatedParts: ['Engine oil', 'Oil pump', 'Oil cooler', 'Oil pressure sensor'],
+    topBrands: ['Fleetguard', 'Donaldson', 'Baldwin', 'Mann', 'CAT', 'Perkins OEM'],
+  },
+  {
+    name: 'Fuel Filters',
+    icon: '⛽',
+    function: 'Fuel filters remove water, dirt, rust particles, and microbial contamination from diesel fuel before it reaches the injection system.',
+    failureSymptoms: ['Hard starting', 'Power loss under load', 'Engine surging', 'Stalling', 'Black smoke', 'Fuel system warning lights', 'Rough idle'],
+    changeInterval: 'Every 250-500 running hours, more frequently with poor fuel quality',
+    consequences: 'Contaminated fuel destroys precision injector nozzles (tolerances of 2 microns), damages injection pump internals, causes poor combustion, and can lead to complete injection system failure costing hundreds of thousands.',
+    relatedParts: ['Water separator', 'Fuel injection pump', 'Injectors', 'Fuel lines', 'Fuel tank'],
+    topBrands: ['Fleetguard', 'Donaldson', 'Racor', 'CAT', 'Bosch', 'Delphi'],
+  },
+  {
+    name: 'Air Filters',
+    icon: '💨',
+    function: 'Air filters prevent dust, sand, pollen, and debris from entering the engine, protecting precision internal components from abrasive wear.',
+    failureSymptoms: ['Reduced power output', 'Black smoke emission', 'Increased fuel consumption', 'Turbocharger whine', 'Engine running rich', 'Restricted airflow warning'],
+    changeInterval: 'Every 500-1000 hours or when restriction indicator shows. More often in dusty environments.',
+    consequences: 'Dirty air filter reduces airflow causing rich running, increased fuel consumption, and carbon buildup. Bypassed or torn filter allows abrasive particles to destroy piston rings, cylinder walls, valves, and turbocharger - turning a KES 3,000 filter into a KES 500,000 engine overhaul.',
+    relatedParts: ['Pre-cleaner', 'Turbocharger', 'Intake manifold', 'Air restriction indicator'],
+    topBrands: ['Fleetguard', 'Donaldson', 'Mann', 'Baldwin', 'CAT', 'Perkins OEM'],
+  },
+  {
+    name: 'Coolant Filters',
+    icon: '🧊',
+    function: 'Coolant filters remove scale, rust, and debris from cooling system while adding supplemental coolant additives (SCA/DCA) to protect against liner pitting and corrosion.',
+    failureSymptoms: ['Coolant discoloration', 'Overheating', 'Scale buildup in radiator', 'Liner pitting', 'Water pump seal leaks', 'Blocked heater core'],
+    changeInterval: 'Every 250-500 hours, always when changing coolant',
+    consequences: 'Without proper coolant filtration and additives, cylinder liner pitting occurs within 2000 hours, water pump fails prematurely, radiator passages block, and cavitation erosion destroys wet liners.',
+    relatedParts: ['Coolant', 'Water pump', 'Thermostat', 'Radiator', 'Heater core'],
+    topBrands: ['Fleetguard', 'Penray', 'CAT', 'Baldwin'],
+  },
+  {
+    name: 'Pistons & Rings',
+    icon: '🔩',
+    function: 'Pistons convert combustion energy to mechanical motion. Rings seal combustion gases, control oil consumption, and transfer heat to cylinder walls.',
+    failureSymptoms: ['Blue smoke (oil burning)', 'Loss of compression', 'Excessive oil consumption', 'Power loss', 'Blow-by gases', 'Knocking sound'],
+    changeInterval: 'At major overhaul (8,000-15,000 hours depending on application)',
+    consequences: 'Worn pistons and rings cause compression loss reducing power output, allow oil into combustion chamber causing blue smoke and oil consumption, and permit combustion gases into crankcase contaminating oil and accelerating all engine wear.',
+    relatedParts: ['Cylinder liners', 'Piston pins', 'Connecting rods', 'Gaskets'],
+    topBrands: ['Mahle', 'Federal Mogul', 'NPR', 'Cummins OEM', 'CAT OEM', 'Perkins OEM'],
+  },
+  {
+    name: 'Cylinder Liners',
+    icon: '🔧',
+    function: 'Cylinder liners provide the wear surface for piston rings, transfer combustion heat to coolant, and are designed for replacement during overhaul.',
+    failureSymptoms: ['Coolant in oil (milky oil)', 'Oil in coolant', 'Compression loss', 'Excessive oil consumption', 'Scoring marks on liner', 'Cavitation pitting'],
+    changeInterval: 'At major overhaul when wear exceeds manufacturer limits (typically 0.1-0.2mm)',
+    consequences: 'Worn liners cause ring blow-by, oil consumption, and power loss. Cracked or pitted liners allow coolant into oil destroying bearings within hours of operation. Severe liner wear requires block replacement.',
+    relatedParts: ['Pistons', 'Piston rings', 'O-rings', 'Coolant filters', 'Head gasket'],
+    topBrands: ['Mahle', 'Goetze', 'Cummins OEM', 'CAT OEM', 'Perkins OEM'],
+  },
+  {
+    name: 'Turbochargers',
+    icon: '🌀',
+    function: 'Turbochargers compress intake air using exhaust energy, increasing power output by 30-50% while improving fuel efficiency at altitude.',
+    failureSymptoms: ['Black smoke', 'Loss of power', 'Whining or grinding noise', 'Oil in intake system', 'Excessive oil consumption', 'Check engine light', 'Slow boost buildup'],
+    changeInterval: 'Rebuild at 8,000-12,000 hours or when shaft play exceeds limits',
+    consequences: 'Failed turbo seals cause massive oil consumption and smoke. Bearing failure sends metal fragments into engine destroying cylinders. Complete turbo failure leaves generator severely underpowered, unable to handle rated load.',
+    relatedParts: ['Oil supply lines', 'Oil return lines', 'Intake manifold', 'Exhaust manifold', 'Intercooler'],
+    topBrands: ['Holset', 'Garrett', 'BorgWarner', 'Schwitzer', 'Mitsubishi', 'IHI'],
+  },
+  {
+    name: 'Fuel Injectors',
+    icon: '💉',
+    function: 'Injectors atomize fuel at extreme pressure (up to 2,000+ bar in common rail) into microscopic droplets for complete combustion.',
+    failureSymptoms: ['Rough idle', 'Misfiring', 'Black smoke', 'Power loss', 'Increased fuel consumption', 'Knocking', 'Hard starting', 'Diesel knock'],
+    changeInterval: 'Clean/test every 4,000 hours, replace when flow deviation exceeds 5%',
+    consequences: 'Leaking injectors wash oil from cylinder walls causing rapid wear and potential seizure. Stuck injectors cause misfiring, unburned fuel in exhaust (fire risk), and turbo damage. Poor atomization wastes fuel and creates carbon deposits.',
+    relatedParts: ['Injector pump', 'Fuel filters', 'Injector sleeves', 'Return lines', 'Nozzles'],
+    topBrands: ['Bosch', 'Delphi', 'Denso', 'Cummins', 'CAT', 'Stanadyne'],
+  },
+  {
+    name: 'AVR (Voltage Regulator)',
+    icon: '⚡',
+    function: 'The Automatic Voltage Regulator controls alternator excitation to maintain stable output voltage regardless of load changes.',
+    failureSymptoms: ['Voltage fluctuations', 'Over-voltage damaging equipment', 'Under-voltage causing motor burnout', 'No voltage output', 'Hunting voltage', 'Flickering lights'],
+    changeInterval: 'Replace when faulty, typically 10,000+ hours lifespan with proper protection',
+    consequences: 'Failed AVR causes immediate voltage problems - over-voltage destroys connected equipment (computers, motors, electronics), under-voltage causes motor overheating and burnout. Complete AVR failure means zero output despite engine running.',
+    relatedParts: ['Exciter windings', 'Sensing circuits', 'Surge protector', 'Voltage meter'],
+    topBrands: ['Stamford', 'Leroy Somer', 'Marelli', 'Marathon', 'Mecc Alte'],
+  },
+  {
+    name: 'Generator Controllers',
+    icon: '🎛️',
+    function: 'Controllers monitor all generator parameters, provide automatic start/stop, load management, protection functions, and fault diagnostics.',
+    failureSymptoms: ['Display errors', 'False alarms', 'Failure to start', 'No protection functions', 'Communication errors', 'Erratic behavior', 'No remote monitoring'],
+    changeInterval: 'Replace when faulty or for feature upgrades. Typical lifespan 15+ years.',
+    consequences: 'Failed controller leaves generator without protection - no over-temperature, over-speed, low oil, or overcurrent protection. Generator can destroy itself without operator awareness. No automatic operation possible.',
+    relatedParts: ['Sensors', 'Wiring harness', 'Display', 'Remote monitoring', 'ATS interface'],
+    topBrands: ['Deep Sea Electronics', 'ComAp', 'Smartgen', 'Datakom', 'Woodward'],
+  },
+  {
+    name: 'Starter Motors',
+    icon: '🔑',
+    function: 'Starter motors crank the engine at 150-300 RPM to initiate combustion, typically drawing 500-2000 amps during cranking.',
+    failureSymptoms: ['Slow cranking', 'Clicking sound only', 'Grinding noise', 'Intermittent starting', 'Smoke from starter', 'No response when starting'],
+    changeInterval: 'Replace when faulty, rebuild at major overhaul. Typical 10,000+ starts lifespan.',
+    consequences: 'Failed starter means complete inability to start generator electrically. Grinding starter damages flywheel ring gear (expensive repair). Seized starter can drain battery completely and damage wiring.',
+    relatedParts: ['Battery', 'Battery cables', 'Solenoid', 'Ring gear', 'Ignition switch'],
+    topBrands: ['Delco Remy', 'Bosch', 'Denso', 'Prestolite', 'Nikko'],
+  },
+  {
+    name: 'Bearings',
+    icon: '⭕',
+    function: 'Main and connecting rod bearings support the crankshaft and connecting rods, providing low-friction surfaces with oil film separation.',
+    failureSymptoms: ['Knocking noise', 'Low oil pressure', 'Metal in oil filter', 'Vibration', 'Overheating', 'Seizure warning'],
+    changeInterval: 'At major overhaul when clearances exceed limits or surface damage visible',
+    consequences: 'Bearing failure is catastrophic - bearing material breaks up contaminating entire engine, crankshaft journals score requiring grinding or replacement, connecting rod can break through block destroying engine completely.',
+    relatedParts: ['Crankshaft', 'Connecting rods', 'Oil pump', 'Oil filter', 'Thrust washers'],
+    topBrands: ['Glyco', 'King', 'ACL', 'Federal Mogul', 'Cummins OEM', 'CAT OEM'],
+  },
+];
+
+// Parts Knowledge Component
+function PartsKnowledgeSection() {
+  const [expandedPart, setExpandedPart] = useState<string | null>(null);
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-gray-900 to-black">
+      <div className="max-w-7xl mx-auto px-6">
+        <h2 className="text-4xl font-bold text-center mb-4">Understanding Generator Parts</h2>
+        <p className="text-gray-400 text-center mb-12 max-w-3xl mx-auto">
+          Click &quot;Learn More&quot; on any part to understand its function, failure symptoms, and why quality matters. Knowledge helps you make informed purchasing decisions.
+        </p>
+        <div className="space-y-4">
+          {partsKnowledge.map((part, i) => (
+            <div key={i} className="bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden">
+              <div 
+                className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-800/30 transition-colors"
+                onClick={() => setExpandedPart(expandedPart === part.name ? null : part.name)}
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-3xl">{part.icon}</span>
+                  <div>
+                    <h3 className="font-bold text-white text-lg">{part.name}</h3>
+                    <p className="text-gray-400 text-sm">{part.function.substring(0, 80)}...</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-blue-400 text-sm font-medium hidden sm:block">Learn More</span>
+                  <svg 
+                    className={`w-5 h-5 text-blue-400 transition-transform ${expandedPart === part.name ? 'rotate-180' : ''}`} 
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+
+              {expandedPart === part.name && (
+                <div className="border-t border-gray-800 p-6 bg-black/30">
+                  {/* Function */}
+                  <div className="mb-6">
+                    <h4 className="text-blue-400 font-bold mb-2 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      What It Does
+                    </h4>
+                    <p className="text-gray-300">{part.function}</p>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Failure Symptoms */}
+                    <div className="bg-red-900/20 rounded-xl p-5 border border-red-500/30">
+                      <h4 className="text-red-400 font-bold mb-3 flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Failure Symptoms
+                      </h4>
+                      <ul className="space-y-1">
+                        {part.failureSymptoms.map((symptom, j) => (
+                          <li key={j} className="text-sm text-gray-300 flex items-start gap-2">
+                            <span className="text-red-400">•</span> {symptom}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Change Interval & Top Brands */}
+                    <div className="space-y-4">
+                      <div className="bg-green-900/20 rounded-xl p-5 border border-green-500/30">
+                        <h4 className="text-green-400 font-bold mb-2 flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Service Interval
+                        </h4>
+                        <p className="text-gray-300 text-sm">{part.changeInterval}</p>
+                      </div>
+                      <div className="bg-blue-900/20 rounded-xl p-5 border border-blue-500/30">
+                        <h4 className="text-blue-400 font-bold mb-2">Top Brands We Stock</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {part.topBrands.map((brand, j) => (
+                            <span key={j} className="px-2 py-1 bg-blue-500/20 rounded text-xs text-blue-300">{brand}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Consequences */}
+                    <div className="bg-orange-900/20 rounded-xl p-5 border border-orange-500/30 md:col-span-2">
+                      <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        What Happens If Not Replaced
+                      </h4>
+                      <p className="text-gray-300 text-sm">{part.consequences}</p>
+                    </div>
+
+                    {/* Related Parts */}
+                    <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700 md:col-span-2">
+                      <h4 className="text-gray-300 font-bold mb-2">Related Parts to Check</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {part.relatedParts.map((related, j) => (
+                          <span key={j} className="px-3 py-1 bg-gray-700 rounded-full text-xs text-gray-300">{related}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CTA */}
+                  <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="tel:+254768860655" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      Order {part.name}: 0768 860 655
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function SparePartsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white">
@@ -443,6 +669,9 @@ export default function SparePartsPage() {
           ))}
         </div>
       </section>
+
+      {/* Parts Knowledge Section */}
+      <PartsKnowledgeSection />
 
       {/* Why Buy From Us */}
       <section className="py-16 bg-black/50">
