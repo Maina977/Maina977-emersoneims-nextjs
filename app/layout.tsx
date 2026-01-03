@@ -14,6 +14,7 @@ import { AntiScrapingMeta } from '@/components/security/SecurityShield';
 import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import WebsiteStatsCounter from '@/components/social/WebsiteStatsCounter';
 
 // Client-side only components wrapper (loaded after page is interactive)
 import ClientSideComponents from '@/components/layout/ClientSideComponents';
@@ -296,6 +297,12 @@ export default function RootLayout({
           {children}
         </main>
         <PremiumFooter />
+        
+        {/* ═══════════════════════════════════════════════════════════════════
+            LIVE WEBSITE STATS COUNTER - Bottom Left Corner
+            Shows real-time visitors, clicks, and activity notifications
+        ════════════════════════════════════════════════════════════════════ */}
+        <WebsiteStatsCounter />
         
         {/* ═══════════════════════════════════════════════════════════════════
             NON-CRITICAL: Client-side components loaded after page is interactive
