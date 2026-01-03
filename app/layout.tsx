@@ -13,6 +13,7 @@ import SkipToContent from '@/components/accessibility/SkipToContent';
 import { AntiScrapingMeta } from '@/components/security/SecurityShield';
 import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 
 // Client-side only components wrapper (loaded after page is interactive)
 import ClientSideComponents from '@/components/layout/ClientSideComponents';
@@ -276,6 +277,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang="en">
         <NextIntlClientProvider locale="en" messages={defaultMessages}>
+        
+        {/* Real-time Analytics Tracker */}
+        <AnalyticsTracker />
         
         {/* ═══════════════════════════════════════════════════════════════════
             CRITICAL PATH: Navigation + Content loaded immediately
