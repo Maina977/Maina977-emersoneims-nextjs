@@ -52,7 +52,7 @@ const caseStudies = [
       'Solar integration completed',
       '24/7 monitoring enabled',
     ],
-    image: '/images/GEN%202-1920x1080.png',
+    image: '/images/KIVUKONI%20SCHOOL%20CUMMINS%20GENERATOR%20.webp',
     testimonial: 'The hybrid system exceeded expectations. Our students now have uninterrupted power.',
     author: 'Facilities Manager, Kivukoni School',
   },
