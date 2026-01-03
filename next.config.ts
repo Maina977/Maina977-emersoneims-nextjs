@@ -159,6 +159,52 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // REDIRECTS - Fix duplicate routes for SEO
+  // ═══════════════════════════════════════════════════════════════════
+  async redirects() {
+    return [
+      // Fix solution/solutions duplicate
+      {
+        source: '/solution',
+        destination: '/solutions',
+        permanent: true,
+      },
+      {
+        source: '/solution/:path*',
+        destination: '/solutions/:path*',
+        permanent: true,
+      },
+      // Legacy URL redirects
+      {
+        source: '/generators-kenya',
+        destination: '/generators',
+        permanent: true,
+      },
+      {
+        source: '/solar-kenya',
+        destination: '/solar',
+        permanent: true,
+      },
+      {
+        source: '/products',
+        destination: '/generators',
+        permanent: true,
+      },
+      // SEO-friendly redirects
+      {
+        source: '/generator',
+        destination: '/generators',
+        permanent: true,
+      },
+      {
+        source: '/services-page',
+        destination: '/services',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withNextIntl(bundleAnalyzer(nextConfig));
