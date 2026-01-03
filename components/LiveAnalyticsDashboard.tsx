@@ -345,7 +345,6 @@ export default function LiveAnalyticsDashboard() {
         {/* Footer Note */}
         <div className="mt-8 text-center text-gray-500 text-sm">
           <p>📊 Real-time tracking active • Data updates every 5 seconds</p>
-          <p className="mt-1">For persistent analytics, consider adding Vercel KV or a database</p>
         </div>
       </div>
     </div>
