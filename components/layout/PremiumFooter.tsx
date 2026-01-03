@@ -10,18 +10,18 @@ const FOOTER_LINKS = {
   company: [
     { label: 'About Us', href: '/about-us' },
     { label: 'Services', href: '/service' },
-    { label: 'Solutions', href: '/solution' },
-    { label: 'Brands', href: '/brands' },
+    { label: 'Book a Service', href: '/booking' },
+    { label: 'Project Gallery', href: '/gallery' },
     { label: 'Careers', href: '/careers' },
     { label: 'Contact Us', href: '/contact' },
   ],
   solutions: [
     { label: 'Generators', href: '/generators' },
     { label: 'Solar Energy', href: '/solar' },
-    { label: 'Universal Diagnostics', href: '/diagnostics' },
     { label: 'Diagnostic Suite', href: '/diagnostic-suite' },
-    { label: 'Diagnostic Q&A', href: '/diagnostic-qa' },
-    { label: 'All 47 Counties', href: '/counties' },
+    { label: 'Troubleshooting', href: '/troubleshooting' },
+    { label: 'Knowledge Base', href: '/knowledge-base' },
+    { label: 'FAQ', href: '/faq' },
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy' },

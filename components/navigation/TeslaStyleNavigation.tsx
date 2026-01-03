@@ -79,15 +79,16 @@ const MEGA_MENUS = {
         items: [
           { href: '/diagnostics', label: '9-Service Diagnostic', icon: '🔬', desc: 'Comprehensive service check' },
           { href: '/diagnostic-suite', label: 'Generator Diagnostic', icon: '⚡', desc: 'Real-time monitoring' },
+          { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive problem solver' },
           { href: '/diagnostic-cockpit', label: 'Diagnostic Cockpit', icon: '🎛️', desc: 'Advanced control panel' },
-          { href: '/diagnostic-qa', label: 'Diagnostic Q&A', icon: '❓', desc: 'Expert answers' },
         ],
       },
       {
         title: 'Support Tools',
         items: [
           { href: '/fault-code-lookup', label: 'Fault Code Lookup', icon: '🔍', desc: 'Error code database' },
-          { href: '/innovations', label: 'Innovations', icon: '💡', desc: 'Latest technology' },
+          { href: '/knowledge-base', label: 'Knowledge Base', icon: '📚', desc: 'Guides & tutorials' },
+          { href: '/faq', label: 'FAQ', icon: '❓', desc: 'Common questions answered' },
         ],
       },
     ],
@@ -114,15 +115,15 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Specialized',
+        title: 'Customer Support',
         items: [
-          { href: '/solutions/incinerators', label: 'Incinerators', icon: '🔥', desc: 'Waste management' },
-          { href: '/solutions/ac', label: 'AC Systems', icon: '❄️', desc: 'Climate control' },
-          { href: '/solutions/diesel-automation', label: 'Diesel Automation', icon: '⛽', desc: 'Fuel systems' },
+          { href: '/booking', label: 'Book a Service', icon: '📅', desc: 'Schedule appointment' },
+          { href: '/gallery', label: 'Project Gallery', icon: '🖼️', desc: 'Our completed work' },
+          { href: '/case-studies', label: 'Case Studies', icon: '📋', desc: 'Success stories' },
         ],
       },
     ],
-    cta: { href: '/contact', label: 'Request Service', phone: '0782 914 717' },
+    cta: { href: '/booking', label: 'Book Now', phone: '0782 914 717' },
   },
 };
 
