@@ -103,25 +103,21 @@ const generatorBrands = [
 const servicePackages = [
   {
     name: 'Basic Service',
-    price: 'From KES 15,000',
     interval: 'Every 250 Hours',
     includes: ['Engine oil change', 'Oil filter replacement', 'Fuel filter inspection', 'Air filter inspection', 'Battery check', 'Coolant level check', 'Belt tension inspection', 'Visual inspection report'],
   },
   {
     name: 'Standard Service',
-    price: 'From KES 35,000',
     interval: 'Every 500 Hours',
     includes: ['All Basic Service items', 'Fuel filter replacement', 'Air filter replacement', 'Coolant testing & top-up', 'Battery load testing', 'Fuel system bleeding', 'Injector inspection', 'Governor adjustment', 'Load bank testing (2 hours)', 'Detailed service report'],
   },
   {
     name: 'Major Service',
-    price: 'From KES 75,000',
     interval: 'Every 1,000 Hours',
     includes: ['All Standard Service items', 'Coolant system flush', 'Valve clearance adjustment', 'Injector testing & calibration', 'Turbocharger inspection', 'Alternator testing', 'AVR inspection', 'Control panel diagnostics', 'Exhaust system inspection', 'Full load bank testing (4 hours)', 'Comprehensive report with photos'],
   },
   {
     name: 'Complete Overhaul',
-    price: 'From KES 350,000',
     interval: 'Every 10,000+ Hours',
     includes: ['Complete engine disassembly', 'Crankshaft inspection/grinding', 'Cylinder liner replacement', 'Piston & ring replacement', 'Bearing replacement', 'Valve & seat reconditioning', 'Cylinder head overhaul', 'Turbocharger rebuild', 'Injector pump overhaul', 'Alternator rewinding', 'Control panel upgrade', 'Full load testing certification', '12-month warranty'],
   },
@@ -202,7 +198,7 @@ export default function GeneratorMaintenancePage() {
             {servicePackages.map((pkg, i) => (
               <div key={i} className={`rounded-2xl p-6 border ${i === 3 ? 'bg-gradient-to-br from-orange-900/30 to-orange-800/10 border-orange-500/30' : 'bg-gray-900/50 border-gray-800'}`}>
                 <h3 className="text-xl font-bold text-white mb-2">{pkg.name}</h3>
-                <div className="text-2xl font-bold text-orange-500 mb-1">{pkg.price}</div>
+                <div className="text-sm text-orange-400 font-medium mb-1">Call for Quote</div>
                 <div className="text-sm text-gray-400 mb-4">{pkg.interval}</div>
                 <ul className="space-y-2">
                   {pkg.includes.map((item, j) => (
