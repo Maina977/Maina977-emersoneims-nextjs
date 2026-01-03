@@ -211,10 +211,10 @@ export default function AccessibilityWidget() {
         }
       `}</style>
 
-      {/* Floating Accessibility Button - Always Visible with Label */}
+      {/* Floating Accessibility Button - Always Visible with Label - Positioned ABOVE stats counter */}
       <motion.button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-6 z-50 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-lg shadow-blue-600/40 flex items-center gap-2 px-4 py-3 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group"
+        className="fixed bottom-24 left-4 z-50 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-lg shadow-blue-600/40 flex items-center gap-2 px-4 py-3 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group"
         aria-label="Open Accessibility Options - This website is accessible for visually impaired users"
         title="Accessibility Options - WCAG 2.1 AAA Compliant"
         whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(37, 99, 235, 0.4)' }}

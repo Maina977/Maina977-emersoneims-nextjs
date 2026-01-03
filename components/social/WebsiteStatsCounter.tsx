@@ -207,14 +207,14 @@ export default function WebsiteStatsCounter() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Activity Notification - Bottom Left (above counter) */}
+      {/* Activity Notification - Bottom Left (above counter, below accessibility) */}
       <AnimatePresence>
         {showNotification && (
           <motion.div
             initial={{ opacity: 0, x: -100, y: 0 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             exit={{ opacity: 0, x: -100 }}
-            className="fixed bottom-24 left-4 z-50 bg-gray-900/95 backdrop-blur-xl border border-green-500/30 rounded-xl p-3 shadow-2xl max-w-xs"
+            className="fixed bottom-40 left-4 z-40 bg-gray-900/95 backdrop-blur-xl border border-green-500/30 rounded-xl p-3 shadow-2xl max-w-xs"
           >
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
