@@ -628,7 +628,7 @@ export default function TroubleshootingWizardPage() {
   const currentTree = equipmentType ? TROUBLESHOOT_TREES[equipmentType] : null;
   const currentNode = currentTree?.find(n => n.id === currentNodeId);
 
-  const handleOptionClick = (option: typeof currentNode extends { options: infer O } ? O extends (infer T)[] ? T : never : never) => {
+  const handleOptionClick = (option: { label: string; nextId?: string; result?: TroubleshootResult }) => {
     if (option.result) {
       setResult(option.result);
     } else if (option.nextId) {
