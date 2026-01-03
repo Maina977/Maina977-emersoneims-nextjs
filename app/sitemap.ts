@@ -5,17 +5,19 @@ const counties = [
   'nairobi', 'mombasa', 'kisumu', 'nakuru', 'eldoret', 'thika', 'malindi', 'kitale',
   'garissa', 'kakamega', 'meru', 'nyeri', 'machakos', 'kiambu', 'kericho', 'uasin-gishu',
   'narok', 'migori', 'siaya', 'kisii', 'bomet', 'bungoma', 'homa-bay', 'kajiado',
-  'kericho', 'kilifi', 'kirinyaga', 'kwale', 'laikipia', 'lamu', 'makueni', 'mandera',
+  'kilifi', 'kirinyaga', 'kwale', 'laikipia', 'lamu', 'makueni', 'mandera',
   'marsabit', 'muranga', 'nandi', 'nyandarua', 'nyamira', 'samburu', 'taita-taveta',
   'tana-river', 'tharaka-nithi', 'trans-nzoia', 'turkana', 'vihiga', 'wajir', 'west-pokot',
-  'baringo'
+  'baringo', 'embu', 'isiolo', 'elgeyo-marakwet'
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
   const currentDate = new Date();
   
-  // Main pages
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // MAIN PAGES - Highest Priority (Homepage & Core Pages)
+  // ═══════════════════════════════════════════════════════════════════════════════
   const mainPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -30,88 +32,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/service`,
+      url: `${baseUrl}/contact`,
       lastModified: currentDate,
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly',
       priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/solution`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/generators`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generators/used`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generator-parts`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generator-services`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/fabrication`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.90,
-    },
-    {
-      url: `${baseUrl}/solar`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/diagnostic-qa`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/diagnostic-suite`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/diagnostic-cockpit`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/diagnostics`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/brands`,
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/careers`,
@@ -123,12 +53,164 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/privacy`,
       lastModified: currentDate,
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.4,
     },
   ];
-  
-  // Solutions pages
-  const solutionPages: MetadataRoute.Sitemap = [
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // GENERATOR PAGES - Premium Revenue Pages
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const generatorPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/generators`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/generators/used`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/generators/installation`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/generators/maintenance`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/generators/rental`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/generators/spare-parts`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/generators/case-studies`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/generator-parts`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/generator-services`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // SOLAR PAGES - Growing Market
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const solarPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/solar`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/solutions/solar`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/solutions/solar-sizing`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // DIAGNOSTIC PAGES - Technical Authority
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const diagnosticPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/diagnostics`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/diagnostic-suite`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/diagnostic-cockpit`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/diagnostic-qa`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/fault-code-lookup`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/innovations`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // SERVICE & SOLUTION PAGES
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const servicePages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/service`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/services`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/solutions`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
     {
       url: `${baseUrl}/solutions/generators`,
       lastModified: currentDate,
@@ -139,28 +221,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/solutions/controls`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
-      priority: 0.85,
+      priority: 0.8,
     },
     {
-      url: `${baseUrl}/solutions/solar-sizing`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/solutions/power-interruptions`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/solutions/ac`,
+      url: `${baseUrl}/solutions/ups`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/solutions/ups`,
+      url: `${baseUrl}/solutions/motor-rewinding`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.8,
@@ -175,29 +245,49 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/solutions/incinerators`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
-      priority: 0.8,
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/solutions/ac`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/solutions/diesel-automation`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.75,
     },
     {
       url: `${baseUrl}/solutions/motors`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/solutions/power-interruptions`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/solutions/solar`,
+      url: `${baseUrl}/fabrication`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
-      priority: 0.85,
+      priority: 0.8,
     },
     {
-      url: `${baseUrl}/solutions/contact`,
+      url: `${baseUrl}/case-studies`,
       lastModified: currentDate,
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.7,
     },
   ];
-  
-  // County pages
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // COUNTY PAGES - Local SEO Dominance (47 Counties)
+  // ═══════════════════════════════════════════════════════════════════════════════
   const countyPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/counties`,
@@ -213,5 +303,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   ];
   
-  return [...mainPages, ...solutionPages, ...countyPages];
+  // Combine all pages for comprehensive sitemap
+  return [
+    ...mainPages,
+    ...generatorPages,
+    ...solarPages,
+    ...diagnosticPages,
+    ...servicePages,
+    ...countyPages,
+  ];
 }
