@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import "@/styles/accessibility.css"; // WCAG 2.1 AAA Accessibility Styles
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PERFORMANCE OPTIMIZED IMPORTS
@@ -10,6 +11,8 @@ import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import { OrganizationSchema } from '@/components/seo/StructuredData';
 import SkipToContent from '@/components/accessibility/SkipToContent';
+import { ScreenReaderAnnouncerProvider } from '@/components/accessibility/ScreenReaderAnnouncer';
+import { KeyboardShortcutsHelper } from '@/components/accessibility/FocusManagement';
 import { AntiScrapingMeta } from '@/components/security/SecurityShield';
 import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
@@ -277,26 +280,34 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang="en">
+        <ScreenReaderAnnouncerProvider>
         <NextIntlClientProvider locale="en" messages={defaultMessages}>
         
         {/* Real-time Analytics Tracker */}
         <AnalyticsTracker />
         
         {/* ═══════════════════════════════════════════════════════════════════
-            CRITICAL PATH: Navigation + Content loaded immediately
+            WCAG 2.1 AAA ACCESSIBILITY - Screen Reader Support
         ════════════════════════════════════════════════════════════════════ */}
         
-        {/* WCAG 2.1 AA: Skip to Content Link */}
+        {/* WCAG 2.1 AAA: Multiple Skip Links */}
         <SkipToContent />
+        
+        {/* Keyboard Shortcuts Reference for Screen Readers */}
+        <KeyboardShortcutsHelper />
         
         {/* Global Structured Data for SEO */}
         <OrganizationSchema />
         
-        <TeslaStyleNavigation />
-        <main id="main-content">
+        <nav id="main-navigation" aria-label="Main navigation">
+          <TeslaStyleNavigation />
+        </nav>
+        <main id="main-content" role="main" aria-label="Main content">
           {children}
         </main>
-        <PremiumFooter />
+        <footer id="contact-section" role="contentinfo">
+          <PremiumFooter />
+        </footer>
         
         {/* ═══════════════════════════════════════════════════════════════════
             LIVE WEBSITE STATS COUNTER - Bottom Left Corner
@@ -379,6 +390,7 @@ export default function RootLayout({
           }}
         />
         </NextIntlClientProvider>
+        </ScreenReaderAnnouncerProvider>
       </body>
     </html>
   );
