@@ -129,7 +129,17 @@ function isMaliciousBot(userAgent: string): boolean {
   return false;
 }
 
+// Legitimate admin paths that should be allowed
+const ALLOWED_ADMIN_PATHS = [
+  '/admin/analytics', // Our real-time analytics dashboard
+];
+
 function containsMaliciousPattern(url: string): boolean {
+  // First, check if it's a legitimate admin path
+  for (const allowed of ALLOWED_ADMIN_PATHS) {
+    if (url.startsWith(allowed)) return false;
+  }
+  
   for (const pattern of MALICIOUS_PATTERNS) {
     if (pattern.test(url)) return true;
   }
