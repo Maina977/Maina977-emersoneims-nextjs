@@ -109,7 +109,7 @@ const caseStudies = [
       'Real-time monitoring dashboard',
       'Predictive maintenance enabled',
     ],
-    image: '/images/wp/NTSA%20-200KVA%20ATLAS%20COPCO.jpg',
+    image: '/images/NTSA-%20ATLAS%20COPCO%20GENERATOR.jpg',
     testimonial: 'EmersonEIMS ensured our critical operations never fail. Exceptional service.',
     author: 'IT Director, NTSA',
   },
