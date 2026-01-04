@@ -204,39 +204,47 @@ export default function CaseStudiesPage() {
         {/* Case Studies Grid */}
         <section className="py-20 bg-gradient-to-b from-black to-gray-900">
           <div className="eims-shell py-0">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
               {caseStudies.map((study, index) => (
                 <motion.div
                   key={study.id}
-                  className="group bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 hover:border-amber-500/50 transition-all overflow-hidden cursor-pointer"
+                  className="group bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-gray-800 overflow-hidden cursor-pointer
+                    shadow-[0_10px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(251,191,36,0.1)]
+                    hover:shadow-[0_20px_60px_rgba(251,191,36,0.3),0_0_0_2px_rgba(251,191,36,0.4)]
+                    hover:border-amber-500/70 hover:-translate-y-3 hover:scale-[1.02]
+                    transition-all duration-500 ease-out"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => setSelectedCase(selectedCase === study.id ? null : study.id)}
                 >
-                  <div className="relative h-48 overflow-hidden">
+                  {/* UNIFORM IMAGE CONTAINER - Fixed 16:10 aspect ratio */}
+                  <div className="relative aspect-[16/10] overflow-hidden">
                     <OptimizedImage
                       src={study.image}
                       alt={`${study.generator} at ${study.title}`}
                       width={800}
-                      height={600}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      height={500}
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                    {/* Cinematic gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500" />
+                    {/* Top glow on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-amber-500/0 to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
                     <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-amber-500/80 backdrop-blur-sm text-black text-xs font-bold rounded">
+                      <span className="px-3 py-1.5 bg-amber-500/90 backdrop-blur-md text-black text-xs font-bold rounded-lg shadow-lg shadow-amber-500/30">
                         {study.category}
                       </span>
                     </div>
                     <div className="absolute top-4 right-4">
-                      <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-sm text-white text-xs font-bold rounded">
+                      <span className="px-3 py-1.5 bg-blue-600/90 backdrop-blur-md text-white text-xs font-bold rounded-lg shadow-lg shadow-blue-600/30">
                         {study.brand}
                       </span>
                     </div>
                     <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-xl font-bold text-white mb-1">{study.title}</h3>
-                      <p className="text-sm text-gray-300">{study.location}</p>
+                      <h3 className="text-xl font-bold text-white mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{study.title}</h3>
+                      <p className="text-sm text-gray-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{study.location}</p>
                     </div>
                   </div>
                   
