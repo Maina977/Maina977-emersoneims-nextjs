@@ -133,9 +133,11 @@ const NAV_ITEMS = [
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
+  { href: '/solutions', label: 'SOLUTIONS', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
   { href: '/brands', label: 'BRANDS', type: 'link' },
   { key: 'diagnostics', label: '🔬 DIAGNOSTICS', type: 'mega', highlight: true },
+  { href: '/gallery', label: 'GALLERY', type: 'link' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
