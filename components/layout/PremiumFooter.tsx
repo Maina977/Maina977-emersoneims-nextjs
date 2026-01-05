@@ -76,15 +76,6 @@ export default function PremiumFooter() {
                 <li key={social.href}>
                   <a
                     href={social.href}
-                  </div>
-                  <div>
-                    <a
-                      href="https://wa.me/0768860665"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      WhatsApp: 0768860665
-                    </a>
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
