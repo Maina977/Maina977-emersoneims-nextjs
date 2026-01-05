@@ -114,9 +114,9 @@ export default function SciFiHeader() {
             >
               <div className="relative">
                 <img
-                  src="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png"
-                  alt="EmersonEIMS Logo and Tagline"
-                  className="w-32 h-32 object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-2xl"
+                  src="/images/logo-tagline.png"
+                  alt="Emerson EiMS Logo"
+                  className="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 rounded-lg bg-cyan-400/20 blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
               </div>

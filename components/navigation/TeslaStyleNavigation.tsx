@@ -217,13 +217,13 @@ export default function TeslaStyleNavigation({
                   
                   <div className="relative bg-white rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-2xl shadow-amber-500/30 group-hover:shadow-amber-400/50 transition-all duration-500">
                     <Image
-                      src="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png"
-                      alt="EmersonEIMS Logo and Tagline"
-                      width={480}
-                      height={160}
+                      src="/images/logo-tagline.png"
+                      alt="EmersonEIMS - Kenya's #1 Power Solutions"
+                      width={320}
+                      height={80}
                       priority
-                      sizes="(max-width: 768px) 320px, 480px"
-                      className="h-20 sm:h-28 lg:h-32 w-auto object-contain drop-shadow-xl"
+                      sizes="(max-width: 768px) 200px, 320px"
+                      className="h-12 sm:h-16 lg:h-20 w-full object-cover"
                     />
                   </div>
                 </div>
