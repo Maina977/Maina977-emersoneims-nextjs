@@ -1,11 +1,4 @@
 'use client';
-                              <a 
-                                href="https://wa.me/0768860665" 
-                                target="_blank"
-                                className="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded text-center text-sm font-bold"
-                              >
-                                 WhatsApp Expert
-                              </a>
 const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), { 
   loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
   ssr: false 
@@ -45,9 +38,13 @@ const AdvancedIncineratorCalculator = dynamic(() => import('@/components/calcula
                     <a 
                       href="https://wa.me/0768860665"
                       className="block w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded font-bold text-center"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                       WhatsApp: 0768860665
+                      WhatsApp: 0768860665
                     </a>
+
+const calculators = {
   'motor-rewinding': AdvancedMotorRewindingCalculator,
   'ac': AdvancedACCalculator,
   'ups': AdvancedUPSCalculator,
