@@ -3,6 +3,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 
 const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), {
