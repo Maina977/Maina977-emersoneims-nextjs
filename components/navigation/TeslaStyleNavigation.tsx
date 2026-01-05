@@ -219,11 +219,11 @@ export default function TeslaStyleNavigation({
                     <Image
                       src="/images/logo-tagline.png"
                       alt="EmersonEIMS - Kenya's #1 Power Solutions"
-                      width={180}
-                      height={50}
+                      width={320}
+                      height={80}
                       priority
-                      sizes="(max-width: 768px) 120px, 180px"
-                      className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
+                      sizes="(max-width: 768px) 200px, 320px"
+                      className="h-12 sm:h-16 lg:h-20 w-full object-cover"
                     />
                   </div>
                 </div>
