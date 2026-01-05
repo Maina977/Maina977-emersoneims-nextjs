@@ -223,7 +223,7 @@ export default function TeslaStyleNavigation({
                       height={50}
                       priority
                       sizes="(max-width: 768px) 120px, 180px"
-                      className="h-8 sm:h-10 lg:h-12 w-auto object-contain"
+                      className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
                     />
                   </div>
                 </div>
