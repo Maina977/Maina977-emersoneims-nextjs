@@ -1,53 +1,50 @@
-// Alias for compatibility with ServiceCalculator usage
-const CALCULATOR_COMPONENTS = calculators;
-'use client';
-import dynamic from 'next/dynamic';
-const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-const AdvancedSolarCalculator = dynamic(() => import('@/components/calculators/AdvancedSolarCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-const AdvancedHighVoltageCalculator = dynamic(() => import('@/components/calculators/AdvancedHighVoltageCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-const AdvancedMotorRewindingCalculator = dynamic(() => import('@/components/calculators/AdvancedMotorRewindingCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-const AdvancedACCalculator = dynamic(() => import('@/components/calculators/AdvancedACCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-const AdvancedUPSCalculator = dynamic(() => import('@/components/calculators/AdvancedUPSCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-const AdvancedBoreholePumpCalculator = dynamic(() => import('@/components/calculators/AdvancedBoreholePumpCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-const AdvancedFabricationCalculator = dynamic(() => import('@/components/calculators/AdvancedFabricationCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-const AdvancedIncineratorCalculator = dynamic(() => import('@/components/calculators/AdvancedIncineratorCalculator'), { 
-  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
-  ssr: false 
-});
-                    <a 
-                      href="https://wa.me/0768860665"
-                      className="block w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded font-bold text-center"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      WhatsApp: 0768860665
-                    </a>
 
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+const AdvancedSolarCalculator = dynamic(() => import('@/components/calculators/AdvancedSolarCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+const AdvancedHighVoltageCalculator = dynamic(() => import('@/components/calculators/AdvancedHighVoltageCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+const AdvancedMotorRewindingCalculator = dynamic(() => import('@/components/calculators/AdvancedMotorRewindingCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+const AdvancedACCalculator = dynamic(() => import('@/components/calculators/AdvancedACCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+const AdvancedUPSCalculator = dynamic(() => import('@/components/calculators/AdvancedUPSCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+const AdvancedBoreholePumpCalculator = dynamic(() => import('@/components/calculators/AdvancedBoreholePumpCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+const AdvancedFabricationCalculator = dynamic(() => import('@/components/calculators/AdvancedFabricationCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+const AdvancedIncineratorCalculator = dynamic(() => import('@/components/calculators/AdvancedIncineratorCalculator'), {
+  loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
+  ssr: false
+});
+
+// Define calculators object after all dynamic imports
 const calculators = {
+  'generator': AdvancedGeneratorCalculator,
+  'solar': AdvancedSolarCalculator,
+  'high-voltage': AdvancedHighVoltageCalculator,
   'motor-rewinding': AdvancedMotorRewindingCalculator,
   'ac': AdvancedACCalculator,
   'ups': AdvancedUPSCalculator,
@@ -55,6 +52,9 @@ const calculators = {
   'fabrication': AdvancedFabricationCalculator,
   'incinerators': AdvancedIncineratorCalculator,
 };
+
+// Alias for compatibility with ServiceCalculator usage
+const CALCULATOR_COMPONENTS = calculators;
 
 // =====================================================
 // 9 SERVICES DATA WITH Q&A, SUB-SERVICES, AND CTAs
