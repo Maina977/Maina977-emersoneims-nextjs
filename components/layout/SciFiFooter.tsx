@@ -171,10 +171,15 @@ export default function SciFiFooter() {
                     <a href="tel:0782914717" className="hover:text-cyan-300 transition-colors">
                       0782914717
                     </a>
-                </div>
-                <div>
+                  </div>
+                  <div>
                     <a href="tel:0768860665" className="hover:text-cyan-300 transition-colors">
                       0768860665
+                    </a>
+                  </div>
+                  <div>
+                    <a href="https://wa.me/0768860665" className="hover:text-green-400 transition-colors" target="_blank" rel="noopener noreferrer">
+                      WhatsApp: 0768860665
                     </a>
                 </div>
               </li>
