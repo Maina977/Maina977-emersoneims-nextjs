@@ -1,3 +1,5 @@
+// Alias for compatibility with ServiceCalculator usage
+const CALCULATOR_COMPONENTS = calculators;
 'use client';
 import dynamic from 'next/dynamic';
 const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), { 
