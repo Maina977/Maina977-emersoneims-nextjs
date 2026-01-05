@@ -138,7 +138,7 @@ export default function RootLayout({
     "name": "EmersonEIMS",
     "alternateName": "Emerson Energy Infrastructure Management Solutions",
     "url": siteUrl,
-    "logo": `${siteUrl}/images/logo-tagline.png`,
+    "logo": `${siteUrl}/images/Emerson%20EIMS%20Logo%20and%20Tagline%20PNG-Picsart-BackgroundRemover.png`,
     "description": "Premium Power Engineering & Intelligent Energy Solutions. Powering Kenya's Future Through Intelligent Energy Solutions.",
     "address": {
       "@type": "PostalAddress",

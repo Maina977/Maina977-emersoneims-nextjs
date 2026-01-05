@@ -93,11 +93,11 @@ export default function SciFiFooter() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src="/images/logo-tagline.png"
-                  alt="EmersonEIMS Logo"
-                  className="w-12 h-12 object-contain"
+                  src="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png"
+                  alt="EmersonEIMS Logo and Tagline"
+                  className="w-32 h-32 object-contain drop-shadow-2xl"
                   style={{
-                    filter: 'drop-shadow(0 0 10px oklch(0.75 0.20 200 / 0.5))',
+                    filter: 'drop-shadow(0 0 20px oklch(0.75 0.20 200 / 0.7))',
                   }}
                 />
                 <div>
