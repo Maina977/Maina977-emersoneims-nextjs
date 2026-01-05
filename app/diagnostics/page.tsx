@@ -41,7 +41,7 @@ const AdvancedIncineratorCalculator = dynamic(() => import('@/components/calcula
 });
 
 // Define calculators object after all dynamic imports
-const calculators = {
+const calculators: Record<string, any> = {
   'generator': AdvancedGeneratorCalculator,
   'solar': AdvancedSolarCalculator,
   'high-voltage': AdvancedHighVoltageCalculator,
@@ -54,7 +54,7 @@ const calculators = {
 };
 
 // Alias for compatibility with ServiceCalculator usage
-const CALCULATOR_COMPONENTS = calculators;
+const CALCULATOR_COMPONENTS: Record<string, any> = calculators;
 
 // =====================================================
 // 9 SERVICES DATA WITH Q&A, SUB-SERVICES, AND CTAs
