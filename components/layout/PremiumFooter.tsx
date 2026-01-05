@@ -3,7 +3,7 @@ import Link from 'next/link';
 const SOCIAL_LINKS = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/emersoneims' },
   { label: 'Twitter', href: 'https://twitter.com/emersoneims' },
-  { label: 'Facebook', href: 'https://www.facebook.com/emersoneims' },
+  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=100089864898337' },
 ] as const;
 
 const FOOTER_LINKS = {

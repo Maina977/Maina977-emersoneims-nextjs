@@ -34,10 +34,9 @@ export default function CookieConsent() {
   };
 
   const declineCookies = () => {
-    localStorage.setItem('cookie-consent', 'declined');
+    localStorage.setItem('cookie-consent', 'essential');
     localStorage.setItem('cookie-consent-date', new Date().toISOString());
     setShowBanner(false);
-    
     // Disable analytics
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('consent', 'update', {
@@ -45,6 +44,20 @@ export default function CookieConsent() {
         ad_storage: 'denied',
       });
     }
+  };
+
+  const rejectAllCookies = () => {
+    localStorage.setItem('cookie-consent', 'rejected');
+    localStorage.setItem('cookie-consent-date', new Date().toISOString());
+    setShowBanner(false);
+    // Optionally clear all non-essential cookies here if needed
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('consent', 'update', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+      });
+    }
+    // Optionally, clear other cookies/localStorage here
   };
 
   if (!showBanner) return null;
@@ -82,9 +95,16 @@ export default function CookieConsent() {
             <button
               onClick={declineCookies}
               className="px-6 py-2.5 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors text-sm whitespace-nowrap"
-              aria-label="Decline optional cookies"
+              aria-label="Allow only essential cookies"
             >
               Essential Only
+            </button>
+            <button
+              onClick={rejectAllCookies}
+              className="px-6 py-2.5 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition-colors text-sm whitespace-nowrap"
+              aria-label="Reject all cookies"
+            >
+              Reject All
             </button>
             <button
               onClick={declineCookies}

@@ -2,6 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CONTENT PROTECTION - Prevent Easy Copying
+   © 2026 EmersonEIMS. All Rights Reserved.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Disable text selection on protected content */
+.no-select,
+.protected-content {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Disable image dragging */
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  pointer-events: auto;
+}
+
+/* Prevent selection highlighting on the entire body (optional - use .no-select for specific elements) */
+body.protected {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow selection on form inputs */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
 /* Custom CSS Variables */
 :root {
   --brand-gold: #FFD166;

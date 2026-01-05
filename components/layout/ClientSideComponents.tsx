@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 // These are small components that don't affect initial load significantly
 // ═══════════════════════════════════════════════════════════════════════════════
 import DMCAProtection from '@/components/security/DMCAProtection';
+import ContentProtection from '@/components/security/ContentProtection';
 import CookieConsent from '@/components/compliance/CookieConsent';
 import ClientWhatsApp from '@/components/chat/ClientWhatsApp';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
@@ -25,7 +26,15 @@ export default function ClientSideComponents() {
 
   return (
     <>
-      {/* DMCA Protection */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          MULTI-LAYER CONTENT PROTECTION
+          © 2026 EmersonEIMS. All Rights Reserved.
+      ════════════════════════════════════════════════════════════════════ */}
+      
+      {/* Layer 1: Basic Content Protection (keyboard, right-click, drag) */}
+      <ContentProtection />
+      
+      {/* Layer 2: DMCA Protection (watermark, clipboard, advanced) */}
       <DMCAProtection
         enableWatermark={false}
         enableRightClickProtection={true}

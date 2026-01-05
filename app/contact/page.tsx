@@ -814,6 +814,62 @@ export default function SciFiContactPage() {
               gradient="from-green-600 to-green-700"
             />
           </div>
+          
+          {/* QR Code Quick Connect */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="mt-12 text-center"
+          >
+            <p className="text-amber-400 font-mono text-sm mb-4">// SCAN_TO_CONNECT</p>
+            <div className="inline-flex flex-wrap justify-center items-center gap-6 p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
+              {/* WhatsApp QR */}
+              <div className="text-center">
+                <div className="bg-white p-2 rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwa.me%2F254768860655%3Ftext%3DHello%2520EmersonEIMS&color=22c55e&format=png"
+                    alt="Scan to WhatsApp"
+                    width={120}
+                    height={120}
+                    className="block"
+                  />
+                </div>
+                <p className="text-green-400 text-sm mt-2 font-mono">💬 WhatsApp</p>
+              </div>
+              {/* Website QR */}
+              <div className="text-center">
+                <div className="bg-white p-2 rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwww.emersoneims.com&color=f59e0b&format=png"
+                    alt="Scan to visit website"
+                    width={120}
+                    height={120}
+                    className="block"
+                  />
+                </div>
+                <p className="text-amber-400 text-sm mt-2 font-mono">🌐 Website</p>
+              </div>
+              {/* Facebook QR */}
+              <div className="text-center">
+                <div className="bg-white p-2 rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D100089864898337&color=1877f2&format=png"
+                    alt="Scan to visit Facebook"
+                    width={120}
+                    height={120}
+                    className="block"
+                  />
+                </div>
+                <p className="text-blue-500 text-sm mt-2 font-mono">📘 Facebook</p>
+              </div>
+            </div>
+            <p className="text-gray-500 text-xs mt-3">Scan with your phone camera to connect instantly</p>
+          </motion.div>
         </div>
       </section>
 
