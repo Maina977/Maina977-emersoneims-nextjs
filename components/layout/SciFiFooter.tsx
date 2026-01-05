@@ -168,14 +168,14 @@ export default function SciFiFooter() {
               <li className="text-gray-400">
                 <span className="text-cyan-400">PHONE:</span>
                 <div className="mt-1">
-                  <a href="tel:+254768860655" className="hover:text-cyan-300 transition-colors">
-                    +254 768 860 655
-                  </a>
+                    <a href="tel:0782914717" className="hover:text-cyan-300 transition-colors">
+                      0782914717
+                    </a>
                 </div>
                 <div>
-                  <a href="tel:+254782914717" className="hover:text-cyan-300 transition-colors">
-                    +254 782 914 717
-                  </a>
+                    <a href="tel:0768860665" className="hover:text-cyan-300 transition-colors">
+                      0768860665
+                    </a>
                 </div>
               </li>
               <li className="text-gray-400">

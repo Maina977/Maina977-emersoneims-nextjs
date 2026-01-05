@@ -858,7 +858,7 @@ export default function AdvancedSolarCalculator() {
             <span className="text-gray-400">Cost: <span className="text-green-400 font-bold">KES {results.systemCost.total.toLocaleString()}</span></span>
           </div>
           <a 
-            href={`https://wa.me/254768860655?text=I%20need%20a%20quote%20for%20a%20${(results.totalPanelCapacity / 1000).toFixed(1)}kWp%20solar%20system`}
+            href={`https://wa.me/0768860665?text=I%20need%20a%20quote%20for%20a%20${(results.totalPanelCapacity / 1000).toFixed(1)}kWp%20solar%20system`}
             target="_blank"
             className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold"
           >

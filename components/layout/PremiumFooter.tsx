@@ -146,17 +146,17 @@ export default function PremiumFooter() {
                   <span className="block text-white mb-1">Phone</span>
                   <div className="space-y-1">
                     <a
-                      href="tel:+254768860655"
+                      href="tel:0782914717"
                       className="hover:text-brand-gold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
                     >
-                      +254 768 860 655
+                      0782914717
                     </a>
                     <div>
                       <a
-                        href="tel:+254782914717"
+                        href="tel:0768860665"
                         className="hover:text-brand-gold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
                       >
-                        +254 782 914 717
+                        0768860665
                       </a>
                     </div>
                   </div>

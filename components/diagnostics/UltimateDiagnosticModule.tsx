@@ -67,11 +67,11 @@ import {
 
 // Contact information - EmersonEIMS/TNPL
 const CONTACT_INFO = {
-  whatsapp: '+254768860655',
-  phone: '+254768860655',
+  whatsapp: '0768860665',
+  phone: '0782914717',
   email: 'support@emersoneims.com',
   website: 'https://emersoneims.com',
-  emergencyHotline: '+254768860655'
+  emergencyHotline: '0768860665'
 };
 
 // World's Most Comprehensive Language Support (47 Languages)

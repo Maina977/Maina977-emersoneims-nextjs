@@ -1,11 +1,11 @@
 'use client';
-
-import { useState, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import dynamic from 'next/dynamic';
-
-// Dynamic imports for advanced calculators
+                              <a 
+                                href="https://wa.me/0768860665" 
+                                target="_blank"
+                                className="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded text-center text-sm font-bold"
+                              >
+                                 WhatsApp Expert
+                              </a>
 const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), { 
   loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
   ssr: false 
@@ -42,12 +42,12 @@ const AdvancedIncineratorCalculator = dynamic(() => import('@/components/calcula
   loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
   ssr: false 
 });
-
-// Calculator component mapping
-const CALCULATOR_COMPONENTS: Record<string, React.ComponentType> = {
-  'generators': AdvancedGeneratorCalculator,
-  'solar': AdvancedSolarCalculator,
-  'high-voltage': AdvancedHighVoltageCalculator,
+                    <a 
+                      href="https://wa.me/0768860665"
+                      className="block w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded font-bold text-center"
+                    >
+                       WhatsApp: 0768860665
+                    </a>
   'motor-rewinding': AdvancedMotorRewindingCalculator,
   'ac': AdvancedACCalculator,
   'ups': AdvancedUPSCalculator,
