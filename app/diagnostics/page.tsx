@@ -1,4 +1,5 @@
 'use client';
+import dynamic from 'next/dynamic';
 const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), { 
   loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
   ssr: false 
