@@ -23,6 +23,11 @@ import WebsiteStatsCounter from '@/components/social/WebsiteStatsCounter';
 import ClientSideComponents from '@/components/layout/ClientSideComponents';
 import LiquidCursor from '@/components/awwwards/LiquidCursor';
 
+// CONVERSION BOOSTERS - Turn Every Click Into Business
+import FloatingActionBubbles from '@/components/conversion/FloatingActionBubbles';
+import LiveSalesNotifications from '@/components/conversion/LiveSalesNotifications';
+import UrgencyBar from '@/components/conversion/UrgencyBar';
+
 // Default messages for the root layout (English)
 const defaultMessages = {
   "Home": "Home",
@@ -325,6 +330,13 @@ export default function RootLayout({
             AWWWARDS SOTD: Revolutionary Liquid Magnetic Cursor
         ════════════════════════════════════════════════════════════════════ */}
         <LiquidCursor />
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            💰 CONVERSION MAXIMIZERS - Every Click = Business
+        ════════════════════════════════════════════════════════════════════ */}
+        <UrgencyBar />
+        <FloatingActionBubbles />
+        <LiveSalesNotifications />
 
         {/* ═══════════════════════════════════════════════════════════════════
             DEFERRED SCRIPTS - Load after page is interactive

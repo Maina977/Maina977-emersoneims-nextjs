@@ -16,6 +16,7 @@ import AccessibilityWidget from '@/components/AccessibilityWidget';
 import WebGLGradientMesh from '@/components/awwwards/WebGLGradientMesh';
 import ScrollCinematic from '@/components/awwwards/ScrollCinematic';
 import MorphingText, { GlitchText } from '@/components/awwwards/MorphingText';
+import InteractiveProductCard, { sampleProducts } from '@/components/conversion/InteractiveProductCard';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECTIONS: Regular imports for stability (no lazy loading issues)
@@ -523,6 +524,82 @@ export default function AwwwardsHomepage() {
               {/* Corner brackets */}
               <div className="absolute top-6 left-6 w-16 h-16 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-xl opacity-50 group-hover:opacity-100 transition-opacity" />
               <div className="absolute top-6 right-6 w-16 h-16 border-r-2 border-t-2 border-cyan-400/50 rounded-tr-xl opacity-50 group-hover:opacity-100 transition-opacity" />
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            💰 INTERACTIVE PRODUCT SHOWCASE - Gamified Selling
+            3D product cards that beg to be touched and explored
+        ════════════════════════════════════════════════════════════════════ */}
+        <section className="py-32 sm:py-40 bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden">
+          {/* Ambient glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(251,191,36,0.08),transparent_60%)]" />
+
+          <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
+            {/* Section Header */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <motion.p
+                className="text-amber-500 text-sm uppercase tracking-[0.3em] mb-4 font-medium"
+              >
+                Explore Our Fleet
+              </motion.p>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+                Power Solutions That
+                <span className="block text-transparent bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text">
+                  Drive Business Forward
+                </span>
+              </h2>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Interact with our generators. Tilt, explore, and add to your quote in seconds.
+              </p>
+            </motion.div>
+
+            {/* Interactive Product Grid */}
+            <div className="grid md:grid-cols-2 gap-12 mb-12">
+              {sampleProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 100, rotateX: -20 }}
+                  whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ delay: index * 0.2, duration: 0.8 }}
+                >
+                  <InteractiveProductCard
+                    product={product}
+                    onAddToQuote={(product) => {
+                      // Navigate to contact with pre-filled quote
+                      window.location.href = `/contact?quote=${product.id}`;
+                    }}
+                  />
+                </motion.div>
+              ))}
+            </div>
+
+            {/* CTA to See All */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <Link
+                href="/generators"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-lg rounded-full hover:scale-105 transition-transform shadow-2xl"
+              >
+                <span>View All Generators</span>
+                <motion.span
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  →
+                </motion.span>
+              </Link>
             </motion.div>
           </div>
         </section>
