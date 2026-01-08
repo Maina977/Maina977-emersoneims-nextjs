@@ -1,9 +1,0 @@
-{
-    "PressureGauge": { "source": "severityCounts.Generators.HIGH", "max": 50 },
-    "VoltageGauge": { "source": "severityCounts.PowerWizard.MED", "max": 50 },
-    "TemperatureGauge": { "source": "severityCounts.DeepSea.LOW", "max": 50 },
-    "FuelReservoirGauge": { "source": "telemetry.fuelLevel", "max": 100 },
-    "PowerFactorGauge": { "source": "telemetry.powerFactor", "max": 1 },
-    "ATSStatusGauge": { "source": "telemetry.atsTransferTime", "max": 10 }
-  }
-  

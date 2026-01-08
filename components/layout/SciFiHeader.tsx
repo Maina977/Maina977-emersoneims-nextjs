@@ -14,8 +14,8 @@ import { usePathname } from 'next/navigation';
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/about-us', label: 'About Us' },
-  { href: '/service', label: 'Services' },
-  { href: '/solution', label: 'Solutions' },
+  { href: '/services', label: 'Services' },
+  { href: '/solutions', label: 'Solutions' },
   { href: '/generators', label: 'Generators' },
   { href: '/solar', label: 'Solar' },
   { href: '/diagnostics', label: 'Diagnostics' },
