@@ -16,7 +16,8 @@
       "Bash(cat:*)",
       "Bash(test:*)",
       "Bash(where:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(Get-Content \"C:\\\\Users\\\\PC\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-PC-my-app\\\\tasks\\\\b97d1d5.output\" -Tail 30)"
     ]
   }
 }

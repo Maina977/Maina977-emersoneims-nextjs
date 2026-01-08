@@ -22,7 +22,7 @@ export default function WebGLGradientMesh() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
     if (!gl) {
       console.warn('WebGL not supported');
       return;
@@ -121,6 +121,7 @@ export default function WebGLGradientMesh() {
 
     // Compile shader
     function compileShader(source: string, type: number): WebGLShader | null {
+      if (!gl) return null; // TypeScript null check
       const shader = gl.createShader(type);
       if (!shader) return null;
       gl.shaderSource(shader, source);

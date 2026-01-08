@@ -28,6 +28,10 @@ import FloatingActionBubbles from '@/components/conversion/FloatingActionBubbles
 import LiveSalesNotifications from '@/components/conversion/LiveSalesNotifications';
 import UrgencyBar from '@/components/conversion/UrgencyBar';
 
+// AI PERSONALIZATION & SEO DOMINATION
+import IntelligentPersonalization from '@/components/ai/IntelligentPersonalization';
+import AdvancedSEO, { SEOEventTracker } from '@/components/seo/AdvancedSEO';
+
 // Default messages for the root layout (English)
 const defaultMessages = {
   "Home": "Home",
@@ -337,6 +341,17 @@ export default function RootLayout({
         <UrgencyBar />
         <FloatingActionBubbles />
         <LiveSalesNotifications />
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            🧠 AI PERSONALIZATION - Website That Feels Alive
+        ════════════════════════════════════════════════════════════════════ */}
+        <IntelligentPersonalization />
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            🚀 ADVANCED SEO - Dominate All Search Engines Across 47 Counties
+        ════════════════════════════════════════════════════════════════════ */}
+        <AdvancedSEO />
+        <SEOEventTracker />
 
         {/* ═══════════════════════════════════════════════════════════════════
             DEFERRED SCRIPTS - Load after page is interactive
