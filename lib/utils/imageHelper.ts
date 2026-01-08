@@ -20,7 +20,7 @@ export function getOptimizedImageUrl(
   }
 ): string {
   const categoryImages = imageAssets[category] as Record<string, string> | undefined;
-  const baseUrl = categoryImages?.[key] || options?.fallback || imageAssets.fallbacks.placeholder;
+  const baseUrl = categoryImages?.[key] || options?.fallback || imageAssets.fallback.default;
   
   // If it's a WordPress URL, we can add query params for optimization
   if (baseUrl.includes('wp-content')) {

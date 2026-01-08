@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
 
@@ -19,6 +19,22 @@ interface PageTransitionProps {
   children: ReactNode;
 }
 
+// Define transition configurations
+const transitionConfig = {
+  smooth: {
+    duration: 0.8,
+    ease: [0.6, 0.05, 0.01, 0.9] as [number, number, number, number],
+  },
+  fast: {
+    duration: 0.5,
+    ease: 'easeOut' as const,
+  },
+  liquid: {
+    duration: 0.9,
+    ease: [0.87, 0, 0.13, 1] as [number, number, number, number],
+  },
+};
+
 export default function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname();
 
@@ -31,7 +47,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
     return 'fade';
   };
 
-  const variants = {
+  const variants: Record<string, Variants> = {
     // Slide up with scale
     slideUp: {
       initial: {
@@ -43,19 +59,11 @@ export default function PageTransition({ children }: PageTransitionProps) {
         y: 0,
         scale: 1,
         opacity: 1,
-        transition: {
-          duration: 0.8,
-          ease: [0.6, 0.05, 0.01, 0.9],
-        },
       },
       exit: {
         y: '-100%',
         scale: 1.1,
         opacity: 0,
-        transition: {
-          duration: 0.6,
-          ease: [0.6, 0.05, 0.01, 0.9],
-        },
       },
     },
 
@@ -68,18 +76,10 @@ export default function PageTransition({ children }: PageTransitionProps) {
       animate: {
         clipPath: 'circle(150% at 50% 50%)',
         opacity: 1,
-        transition: {
-          duration: 1,
-          ease: [0.6, 0.05, 0.01, 0.9],
-        },
       },
       exit: {
         clipPath: 'circle(0% at 50% 50%)',
         opacity: 0,
-        transition: {
-          duration: 0.7,
-          ease: [0.6, 0.05, 0.01, 0.9],
-        },
       },
     },
 
@@ -90,17 +90,9 @@ export default function PageTransition({ children }: PageTransitionProps) {
       },
       animate: {
         clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)',
-        transition: {
-          duration: 0.9,
-          ease: [0.87, 0, 0.13, 1],
-        },
       },
       exit: {
         clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 100% 100%)',
-        transition: {
-          duration: 0.7,
-          ease: [0.87, 0, 0.13, 1],
-        },
       },
     },
 
@@ -113,18 +105,10 @@ export default function PageTransition({ children }: PageTransitionProps) {
       animate: {
         clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)',
         opacity: 1,
-        transition: {
-          duration: 1,
-          ease: [0.6, 0.05, 0.01, 0.9],
-        },
       },
       exit: {
         clipPath: 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)',
         opacity: 0,
-        transition: {
-          duration: 0.8,
-          ease: [0.6, 0.05, 0.01, 0.9],
-        },
       },
     },
 
@@ -137,18 +121,10 @@ export default function PageTransition({ children }: PageTransitionProps) {
       animate: {
         opacity: 1,
         scale: 1,
-        transition: {
-          duration: 0.5,
-          ease: 'easeOut',
-        },
       },
       exit: {
         opacity: 0,
         scale: 1.05,
-        transition: {
-          duration: 0.4,
-          ease: 'easeIn',
-        },
       },
     },
   };
@@ -163,6 +139,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         animate="animate"
         exit="exit"
         variants={variants[currentVariant]}
+        transition={transitionConfig.smooth}
         className="min-h-screen"
       >
         {children}
