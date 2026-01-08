@@ -14,7 +14,9 @@
       "Bash(git commit:*)",
       "Bash(ls -la \"c:\\\\Users\\\\PC\\\\my-app\\\\public\\\\videos\"\" 2>&1 || echo \"Directory does not exist \")",
       "Bash(cat:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(where:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

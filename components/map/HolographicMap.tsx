@@ -57,11 +57,20 @@ export default function HolographicMap() {
     mouseY.set((e.clientY - rect.top) / rect.height);
   };
 
-  // Initialize particle system
+  // Initialize particle system with mobile optimization
   useEffect(() => {
     const generateParticles = () => {
+      // Detect mobile/tablet for performance optimization
+      const isMobile = typeof window !== 'undefined' && (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        window.innerWidth < 768
+      );
+
+      // Reduce particles on mobile: 50 instead of 150 (66% reduction)
+      const particleCount = isMobile ? 50 : 150;
+
       const newParticles: Particle[] = [];
-      for (let i = 0; i < 150; i++) {
+      for (let i = 0; i < particleCount; i++) {
         newParticles.push({
           id: i,
           x: Math.random() * 100,

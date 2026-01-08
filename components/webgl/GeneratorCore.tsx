@@ -4,6 +4,8 @@ import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, MeshDistortMaterial, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
+import WebGLFallback from './WebGLFallback';
 
 function RotatingCore() {
   const coreRef = useRef<THREE.Mesh>(null);
@@ -113,24 +115,26 @@ export default function GeneratorCore({
 
   return (
     <div className={`w-full h-full ${className}`}>
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
-      >
-        <RotatingCore />
-        <OrbitControls
-          enableZoom={true}
-          enablePan={false}
-          autoRotate={true}
-          autoRotateSpeed={0.5}
-          minDistance={3}
-          maxDistance={8}
-        />
-        <Environment resolution={64}>
-          <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
-          <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
-        </Environment>
-      </Canvas>
+      <ErrorBoundary fallback={<WebGLFallback message="Generator Core unavailable" type="generator" />}>
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 50 }}
+          gl={{ antialias: true, alpha: true }}
+        >
+          <RotatingCore />
+          <OrbitControls
+            enableZoom={true}
+            enablePan={false}
+            autoRotate={true}
+            autoRotateSpeed={0.5}
+            minDistance={3}
+            maxDistance={8}
+          />
+          <Environment resolution={64}>
+            <Lightformer intensity={1.2} position={[0, 5, -10]} scale={[20, 20, 1]} color="#fbbf24" />
+            <Lightformer intensity={1.0} position={[0, -5, -10]} scale={[20, 20, 1]} color="#00ffff" />
+          </Environment>
+        </Canvas>
+      </ErrorBoundary>
     </div>
   );
 }
