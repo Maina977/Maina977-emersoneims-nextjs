@@ -13,6 +13,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import UnifiedCTA, { CTASection } from '@/components/cta/UnifiedCTA';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
+import WebGLGradientMesh from '@/components/awwwards/WebGLGradientMesh';
+import ScrollCinematic from '@/components/awwwards/ScrollCinematic';
+import MorphingText, { GlitchText } from '@/components/awwwards/MorphingText';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECTIONS: Regular imports for stability (no lazy loading issues)
@@ -66,7 +69,12 @@ export default function AwwwardsHomepage() {
   
   return (
     <div ref={containerRef} className="relative bg-black overflow-hidden">
-        
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            AWWWARDS SOTD: GPU-Accelerated Gradient Mesh Background
+        ════════════════════════════════════════════════════════════════════ */}
+        <WebGLGradientMesh />
+
         {/* Accessibility Widget - Universal Access for All Users */}
         <AccessibilityWidget />
         
@@ -151,13 +159,18 @@ export default function AwwwardsHomepage() {
                 >
                   POWER
                 </motion.span>
-                <motion.span 
+                <motion.span
                   className="block text-transparent bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text font-light"
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6, duration: 1 }}
                 >
-                  REDEFINED
+                  <MorphingText
+                    words={['REDEFINED', 'ENGINEERED', 'GUARANTEED', 'UNSTOPPABLE']}
+                    interval={4000}
+                    glitchIntensity={0.6}
+                    className="text-transparent bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text"
+                  />
                 </motion.span>
               </h1>
               
@@ -562,6 +575,12 @@ export default function AwwwardsHomepage() {
             </div>
           </div>
         </section>
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            AWWWARDS SOTD: CINEMATIC SCROLL STORYTELLING
+            Revolutionary scroll-jacking experience - Apple-level immersion
+        ════════════════════════════════════════════════════════════════════ */}
+        <ScrollCinematic />
 
         {/* SECTION 6: Social Proof - Testimonials with Real Clients */}
         <TestimonialsSection />

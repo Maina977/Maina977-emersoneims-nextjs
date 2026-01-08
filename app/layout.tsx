@@ -21,6 +21,7 @@ import WebsiteStatsCounter from '@/components/social/WebsiteStatsCounter';
 
 // Client-side only components wrapper (loaded after page is interactive)
 import ClientSideComponents from '@/components/layout/ClientSideComponents';
+import LiquidCursor from '@/components/awwwards/LiquidCursor';
 
 // Default messages for the root layout (English)
 const defaultMessages = {
@@ -319,6 +320,11 @@ export default function RootLayout({
             NON-CRITICAL: Client-side components loaded after page is interactive
         ════════════════════════════════════════════════════════════════════ */}
         <ClientSideComponents />
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            AWWWARDS SOTD: Revolutionary Liquid Magnetic Cursor
+        ════════════════════════════════════════════════════════════════════ */}
+        <LiquidCursor />
 
         {/* ═══════════════════════════════════════════════════════════════════
             DEFERRED SCRIPTS - Load after page is interactive
