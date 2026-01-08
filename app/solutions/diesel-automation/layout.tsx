@@ -29,7 +29,7 @@ export default function DieselAutomationLayout({ children }: { children: React.R
           { "@type": "Question", "name": "How long does AMF panel installation take?", "acceptedAnswer": { "@type": "Answer", "text": "AMF panel installation typically takes 1-3 days: Day 1 for panel mounting and cable routing, Day 2 for connections and wiring, Day 3 for commissioning and testing. Complex installations may take longer." } }
         ]
       },
-      { "@type": "Service", "serviceType": "Generator Automation", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
+      { "@type": "Service", "serviceType": "Generator Automation", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
     ]
   };
 

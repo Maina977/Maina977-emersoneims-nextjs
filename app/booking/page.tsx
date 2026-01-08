@@ -370,7 +370,7 @@ export default function BookingPage() {
                   <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
                     <p className="text-red-400 font-medium">
                       🚨 For emergencies, we recommend calling us directly at{' '}
-                      <a href="tel:+254768860655" className="underline">+254 768 860 655</a>{' '}
+                      <a href="tel:+254768860665" className="underline">+254768860665</a>{' '}
                       for fastest response.
                     </p>
                   </div>
@@ -556,10 +556,10 @@ export default function BookingPage() {
             <p className="text-gray-400 mb-4">Prefer to talk to someone directly?</p>
             <div className="flex flex-wrap justify-center gap-4">
               <a
-                href="tel:+254768860655"
+                href="tel:+254768860665"
                 className="px-6 py-3 bg-white/10 text-white rounded-full hover:bg-white/20 transition-colors"
               >
-                📞 +254 768 860 655
+                📞 +254768860665
               </a>
               <a
                 href="https://wa.me/254768860655"

@@ -639,7 +639,7 @@ export default function AerospaceCockpit() {
                 </div>
                 
                 <div className="text-center text-xs text-gray-500 mt-6">
-                  24/7 Emergency: +254 768 860 655
+                  24/7 Emergency: +254768860665
                 </div>
               </div>
             </div>

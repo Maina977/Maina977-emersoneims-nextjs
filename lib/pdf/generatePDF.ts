@@ -198,7 +198,7 @@ export function generateQuotePDF(quote: GeneratorQuote): void {
     <div class="contact-info">
       <div class="contact-item">
         <div class="label">Phone</div>
-        <div class="value">+254 768 860 655</div>
+        <div class="value">+254768860665</div>
       </div>
       <div class="contact-item">
         <div class="label">Email</div>
@@ -206,7 +206,7 @@ export function generateQuotePDF(quote: GeneratorQuote): void {
       </div>
       <div class="contact-item">
         <div class="label">WhatsApp</div>
-        <div class="value">+254 768 860 655</div>
+        <div class="value">+254768860665</div>
       </div>
     </div>
     <p style="text-align: center; color: #666; font-size: 14px;">
@@ -428,7 +428,7 @@ export function generateServiceReportPDF(report: ServiceReport): void {
 
   <div class="footer">
     <p><strong>Emerson Electrical & Industrial Maintenance Services (EIMS)</strong></p>
-    <p>Phone: +254 768 860 655 | Email: info@emersoneims.com</p>
+    <p>Phone: +254768860665 | Email: info@emersoneims.com</p>
     <p>www.emersoneims.com</p>
   </div>
 

@@ -882,7 +882,7 @@ export default function TroubleshootingWizardPage() {
                       💬 WhatsApp Expert
                     </a>
                     <a
-                      href="tel:+254768860655"
+                      href="tel:+254768860665"
                       className="px-6 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-colors"
                     >
                       📞 Call Now

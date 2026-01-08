@@ -608,7 +608,7 @@ export default function GeneratorRentalPage() {
               href="tel:0782914717"
               className="px-8 py-4 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/30"
             >
-              📞 Call: 0782 914 717
+              📞 Call: 0782914717
             </a>
           </div>
           <p className="mt-6 text-white/60">

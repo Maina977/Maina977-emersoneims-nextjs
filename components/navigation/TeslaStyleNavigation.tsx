@@ -68,7 +68,7 @@ const MEGA_MENUS = {
         ],
       },
     ],
-    cta: { href: '/contact', label: 'Free Consultation', phone: '0782 914 717' },
+    cta: { href: '/contact', label: 'Free Consultation', phone: '0782914717' },
   },
   diagnostics: {
     title: 'Diagnostic Tools',
@@ -123,7 +123,7 @@ const MEGA_MENUS = {
         ],
       },
     ],
-    cta: { href: '/booking', label: 'Book Now', phone: '0782 914 717' },
+    cta: { href: '/booking', label: 'Book Now', phone: '0782914717' },
   },
 };
 

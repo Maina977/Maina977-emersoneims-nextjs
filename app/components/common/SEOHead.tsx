@@ -50,7 +50,7 @@ export default function SEOHead({ title, description, keywords, canonical, openG
     "contactPoint": [
       {
         "@type": "ContactPoint",
-        "telephone": "+254768860655",
+        "telephone": "+254768860665",
         "contactType": "customer service",
         "areaServed": "KE",
         "availableLanguage": ["English", "Swahili"]

@@ -678,7 +678,7 @@ export default function GeneratorSizingCalculator() {
                         </div>
                         <div className="text-xs text-gray-500 mb-3">
                           <div><strong>Available from:</strong> EmersonEIMS</div>
-                          <div><strong>Contact:</strong> +254 768 860 655 | +254 782 914 717</div>
+                          <div><strong>Contact:</strong> +254768860665 | +254782914717</div>
                           <div><strong>Status:</strong> <span className="text-green-400">{gen.availability}</span></div>
                           <div><strong>Lead Time:</strong> {gen.leadTime}</div>
                         </div>

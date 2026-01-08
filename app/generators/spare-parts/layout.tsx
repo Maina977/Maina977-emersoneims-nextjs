@@ -60,7 +60,7 @@ const jsonLd = {
       '@id': 'https://emersoneims.com/generators/spare-parts/#store',
       name: 'EmersonEIMS Generator Parts Store',
       description: 'Kenya\'s largest inventory of generator spare parts for Cummins, Caterpillar, Perkins, FG Wilson, and all major brands',
-      telephone: '+254768860655',
+      telephone: '+254768860665',
       address: {
         '@type': 'PostalAddress',
         streetAddress: 'Old North Airport Road',

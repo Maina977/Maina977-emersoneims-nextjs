@@ -29,7 +29,7 @@ export default function BoreholePumpsLayout({ children }: { children: React.Reac
           { "@type": "Question", "name": "How often should I service my borehole pump?", "acceptedAnswer": { "@type": "Answer", "text": "Monthly: Check current draw and flow rate. Quarterly: Megger test insulation. Annually: Full performance test. Every 3-5 years: Pull pump for inspection, check impeller wear, replace seals. More frequent in sandy water conditions." } }
         ]
       },
-      { "@type": "Service", "serviceType": "Borehole Pump Services", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
+      { "@type": "Service", "serviceType": "Borehole Pump Services", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
     ]
   };
 

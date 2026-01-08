@@ -97,7 +97,7 @@ export default function NotFound() {
               href="tel:0782914717" 
               className="flex items-center gap-2 text-orange-500 hover:text-orange-400 transition"
             >
-              <span>📞</span> 0782 914 717
+              <span>📞</span> 0782914717
             </a>
             <a 
               href="https://wa.me/254768860655" 

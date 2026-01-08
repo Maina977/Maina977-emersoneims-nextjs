@@ -40,7 +40,7 @@ export default function SolarSizingLayout({ children }: { children: React.ReactN
           { "@type": "HowToStep", "name": "Size Inverter", "text": "Peak load watts × 1.25 + surge allowance = Inverter VA" }
         ]
       },
-      { "@type": "Service", "serviceType": "Solar System Design", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
+      { "@type": "Service", "serviceType": "Solar System Design", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
     ]
   };
 

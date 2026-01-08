@@ -23,7 +23,7 @@ export default function LiveChat() {
     // Simulate bot response
     setTimeout(() => {
       const botResponse = {
-        text: "Thank you for your message! Our team will respond shortly. For immediate assistance, call +254 768 860 655.",
+        text: "Thank you for your message! Our team will respond shortly. For immediate assistance, call +254768860665.",
         sender: 'bot' as const,
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       };

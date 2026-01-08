@@ -555,7 +555,7 @@ function generateExpertGuidance(symptoms: string[], matches: MatchedCode[]): str
     return 'Contact EmersonEIMS for AVR replacement or winding repairs - requires specialized test equipment.';
   }
   
-  return 'Contact EmersonEIMS (+254 768 860 655) if the issue persists after basic troubleshooting or if you lack the required tools.';
+  return 'Contact EmersonEIMS (+254768860665) if the issue persists after basic troubleshooting or if you lack the required tools.';
 }
 
 /**

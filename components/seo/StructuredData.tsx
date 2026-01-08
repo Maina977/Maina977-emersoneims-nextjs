@@ -43,7 +43,7 @@ export function OrganizationSchema() {
     contactPoint: [
       {
         '@type': 'ContactPoint',
-        telephone: '+254-768-860-655',
+        telephone: '+254768860665',
         contactType: 'customer service',
         areaServed: ['KE', 'TZ', 'UG', 'RW', 'BI', 'SS', 'ET', 'SO'],
         availableLanguage: ['en', 'sw'],
@@ -57,7 +57,7 @@ export function OrganizationSchema() {
       },
       {
         '@type': 'ContactPoint',
-        telephone: '+254-782-914-717',
+        telephone: '+254782914717',
         contactType: 'technical support',
         areaServed: ['KE'],
         availableLanguage: ['en', 'sw']
@@ -100,7 +100,7 @@ export function LocalBusinessSchema({ county }: { county?: string }) {
       addressRegion: county ? `${county} County` : 'Nairobi County',
       addressCountry: 'KE'
     },
-    telephone: '+254768860655',
+    telephone: '+254768860665',
     email: 'info@emersoneims.com',
     openingHoursSpecification: [{
       '@type': 'OpeningHoursSpecification',
@@ -128,7 +128,7 @@ export function ServiceSchema({ service, county }: { service: string; county?: s
     provider: {
       '@type': 'LocalBusiness',
       name: 'Emerson EiMS',
-      telephone: '+254768860655'
+      telephone: '+254768860665'
     },
     areaServed: {
       '@type': 'City',

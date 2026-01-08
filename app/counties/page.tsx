@@ -63,10 +63,10 @@ export default function CountiesPage() {
 
           <div className="flex flex-wrap gap-4 mb-12">
             <a 
-              href="tel:+254768860655"
+              href="tel:+254768860665"
               className="px-8 py-4 bg-brand-gold text-black font-bold rounded-lg hover:bg-brand-gold/90 transition-all"
             >
-              📞 Call +254 768 860 655
+              📞 Call +254768860665
             </a>
             <Link 
               href="/contact"
@@ -236,10 +236,10 @@ export default function CountiesPage() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <a 
-              href="tel:+254768860655"
+              href="tel:+254768860665"
               className="px-8 py-4 bg-brand-gold text-black font-bold rounded-lg hover:bg-brand-gold/90 transition-all text-lg"
             >
-              📞 Call: +254 768 860 655
+              📞 Call: +254768860665
             </a>
             <a 
               href="mailto:info@emersoneims.com"

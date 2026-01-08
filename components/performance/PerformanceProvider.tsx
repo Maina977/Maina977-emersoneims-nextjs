@@ -259,7 +259,7 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
               },
               contactPoint: {
                 '@type': 'ContactPoint',
-                telephone: '+254-768-860-655',
+                telephone: '+254768860665',
                 contactType: 'Customer Service',
               },
             }}

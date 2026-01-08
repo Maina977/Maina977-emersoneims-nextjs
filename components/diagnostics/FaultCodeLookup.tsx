@@ -533,7 +533,7 @@ export default function FaultCodeLookup() {
                 Try a different search term or contact our technical team
               </p>
               <a
-                href="tel:+254768860655"
+                href="tel:+254768860665"
                 className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-lg hover:scale-105 transition-transform"
               >
                 📞 Call Technical Support

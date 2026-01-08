@@ -29,7 +29,7 @@ export default function SolarLayout({ children }: { children: React.ReactNode })
           { "@type": "Question", "name": "Can I connect solar to KPLC in Kenya?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, through KPLC Net Metering program. Requirements: Grid-tie inverter with anti-islanding, application to KPLC, inspection and approval, bidirectional meter installation. Export excess power and get credited on your bill." } }
         ]
       },
-      { "@type": "Service", "serviceType": "Solar Installation and Maintenance", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
+      { "@type": "Service", "serviceType": "Solar Installation and Maintenance", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
     ]
   };
 

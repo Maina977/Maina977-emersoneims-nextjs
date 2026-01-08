@@ -44,7 +44,7 @@ export default function ACSolutionsLayout({ children }: { children: React.ReactN
       {
         "@type": "Service",
         "serviceType": "Air Conditioning Services",
-        "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" },
+        "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" },
         "areaServed": { "@type": "Country", "name": "Kenya" }
       }
     ]

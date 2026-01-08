@@ -60,7 +60,7 @@ const FAQ_DATA = [
     id: 'gen-8',
     category: 'Generators',
     question: 'Do you provide emergency generator repair services?',
-    answer: 'Yes! We offer 24/7 emergency response with <2 hour response time in Nairobi and <24 hours across all 47 Kenya counties. Call +254 768 860 655 for immediate assistance.',
+    answer: 'Yes! We offer 24/7 emergency response with <2 hour response time in Nairobi and <24 hours across all 47 Kenya counties. Call +254768860665 for immediate assistance.',
     tags: ['emergency', 'repair', '24/7', 'response']
   },
 

@@ -40,7 +40,7 @@ export default function MotorRewindingLayout({ children }: { children: React.Rea
           { "@type": "HowToStep", "name": "Read Result", "text": "After 1 minute, read insulation resistance. Should be >5MΩ for new, >1MΩ acceptable for old motors" }
         ]
       },
-      { "@type": "Service", "serviceType": "Motor Rewinding and Repair", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
+      { "@type": "Service", "serviceType": "Motor Rewinding and Repair", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
     ]
   };
 

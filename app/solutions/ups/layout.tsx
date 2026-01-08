@@ -29,7 +29,7 @@ export default function UPSSolutionsLayout({ children }: { children: React.React
           { "@type": "Question", "name": "How much does UPS installation cost in Kenya?", "acceptedAnswer": { "@type": "Answer", "text": "UPS installation in Kenya: Small office (1-3kVA): KES 15,000-30,000. Server room (5-10kVA): KES 50,000-100,000. Data center (20kVA+): KES 150,000-500,000." } }
         ]
       },
-      { "@type": "Service", "serviceType": "UPS Installation and Maintenance", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
+      { "@type": "Service", "serviceType": "UPS Installation and Maintenance", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
     ]
   };
 

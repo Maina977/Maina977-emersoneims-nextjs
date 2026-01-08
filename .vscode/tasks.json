@@ -125,6 +125,17 @@
 			},
 			"isBackground": false,
 			"problemMatcher": []
+		},
+		{
+			"label": "check-website-contacts",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Invoke-WebRequest -Uri 'http://127.0.0.1:3020' -UseBasicParsing | Select-String -Pattern '0782914717|0768860665|WhatsApp'"
+			],
+			"isBackground": false
 		}
 	]
 }

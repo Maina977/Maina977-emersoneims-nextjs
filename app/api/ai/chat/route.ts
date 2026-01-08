@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeSymptoms, searchFaultCodes, getExactCode, DiagnosticResult } from '@/lib/ai/diagnosticAI';
+import { isClaudeAPIEnabled, chatWithContext, analyzeDiagnostic, estimateCost } from '@/lib/ai/claudeService';
 
 type ChatContext = {
   page?: string;
@@ -52,24 +53,61 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a diagnostic query
     const isDiagnosticQuery = checkDiagnosticQuery(message, context);
-    
+
     let response: string;
     let diagnosticData: DiagnosticResult | null = null;
-    
-    if (isDiagnosticQuery) {
-      // Use AI Diagnostic Engine
-      diagnosticData = analyzeSymptoms(message);
-      response = formatDiagnosticResponse(message, diagnosticData);
+    let tokenUsage: { inputTokens: number; outputTokens: number } | null = null;
+
+    // Try Claude API first if enabled
+    if (isClaudeAPIEnabled()) {
+      try {
+        if (isDiagnosticQuery) {
+          // Use Claude for enhanced diagnostic analysis
+          diagnosticData = analyzeSymptoms(message);
+          const claudeResult = await analyzeDiagnostic(
+            message,
+            diagnosticData.detectedBrand || undefined,
+            diagnosticData.matchedCodes.map(c => c.code)
+          );
+
+          // Combine Claude analysis with our pattern matching
+          response = formatClaudeDiagnosticResponse(message, diagnosticData, claudeResult.analysis);
+          tokenUsage = claudeResult.usage;
+        } else {
+          // Use Claude for general chat
+          const result = await chatWithContext(message, context ?? {});
+          response = result.response;
+          tokenUsage = result.usage;
+        }
+      } catch (error) {
+        console.error('Claude API failed, falling back to rule-based system:', error);
+        // Fallback to rule-based system
+        if (isDiagnosticQuery) {
+          diagnosticData = analyzeSymptoms(message);
+          response = formatDiagnosticResponse(message, diagnosticData);
+        } else {
+          response = await generateAIResponse(message, context ?? {});
+        }
+      }
     } else {
-      // Use standard chat responses
-      response = await generateAIResponse(message, context ?? {});
+      // Use rule-based system
+      if (isDiagnosticQuery) {
+        diagnosticData = analyzeSymptoms(message);
+        response = formatDiagnosticResponse(message, diagnosticData);
+      } else {
+        response = await generateAIResponse(message, context ?? {});
+      }
     }
+
+    // Calculate cost if using Claude API
+    const costEstimate = tokenUsage ? estimateCost(tokenUsage.inputTokens, tokenUsage.outputTokens) : null;
 
     return NextResponse.json({
       conversationId,
       response,
       timestamp: Date.now(),
       isDiagnostic: isDiagnosticQuery,
+      usedClaudeAPI: isClaudeAPIEnabled() && tokenUsage !== null,
       diagnosticData: diagnosticData ? {
         confidence: diagnosticData.confidence,
         matchedCodesCount: diagnosticData.matchedCodes.length,
@@ -77,7 +115,14 @@ export async function POST(request: NextRequest) {
         detectedBrand: diagnosticData.detectedBrand,
         estimatedDifficulty: diagnosticData.estimatedDifficulty,
         estimatedTime: diagnosticData.estimatedTime
-      } : null
+      } : null,
+      ...(tokenUsage && {
+        apiUsage: {
+          inputTokens: tokenUsage.inputTokens,
+          outputTokens: tokenUsage.outputTokens,
+          estimatedCost: costEstimate?.totalCost.toFixed(4)
+        }
+      })
     });
   } catch (error) {
     console.error('AI chat error:', error);
@@ -113,6 +158,35 @@ function checkDiagnosticQuery(message: string, context?: ChatContext): boolean {
 }
 
 /**
+ * Format Claude-enhanced diagnostic response
+ */
+function formatClaudeDiagnosticResponse(
+  query: string,
+  diagnosticResult: DiagnosticResult,
+  claudeAnalysis: string
+): string {
+  const brandInfo = diagnosticResult.detectedBrand ? ` (${diagnosticResult.detectedBrand})` : '';
+
+  let response = `🤖 **AI-Enhanced Diagnostic Analysis**${brandInfo}\n\n`;
+
+  // Add Claude's analysis
+  response += claudeAnalysis;
+
+  // Add matched codes from our database if available
+  if (diagnosticResult.matchedCodes.length > 0) {
+    response += `\n\n---\n\n### 📋 Matched Fault Codes from Our Database\n`;
+    diagnosticResult.matchedCodes.slice(0, 3).forEach((code, i) => {
+      response += `${i + 1}. \`${code.code}\` - ${code.title} (${code.confidence}% match)\n`;
+    });
+  }
+
+  // Add footer
+  response += `\n\n---\n📞 **Need Expert Help?** Call **+254768860665** for immediate assistance.`;
+
+  return response;
+}
+
+/**
  * Format diagnostic results into readable response
  */
 function formatDiagnosticResponse(query: string, result: DiagnosticResult): string {
@@ -144,7 +218,7 @@ I analyzed your query but couldn't find specific fault codes matching your descr
 
 Or visit our **[Diagnostic Suite](/diagnostic-suite)** for interactive troubleshooting.
 
-📞 Need immediate help? Call **+254 768 860 655**`;
+📞 Need immediate help? Call **+254768860665**`;
   }
   
   // Format matched results
@@ -249,7 +323,7 @@ function formatExactCodeResponse(code: ReturnType<typeof getExactCode>): string 
     response += `**Solution:** ${code.solution}\n\n`;
   }
 
-  response += `---\n📞 Need assistance? Contact EmersonEIMS at **+254 768 860 655**`;
+  response += `---\n📞 Need assistance? Contact EmersonEIMS at **+254768860665**`;
 
   return response;
 }
@@ -288,7 +362,7 @@ Are you looking for a new installation, need service, or have a diagnostic quest
 
   // Contact queries
   if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('email')) {
-    return `You can reach us at info@emersoneims.com or call **+254 768 860 655**. Would you like me to help you get in touch with our team right now?`;
+    return `You can reach us at info@emersoneims.com or call **+254768860665**. Would you like me to help you get in touch with our team right now?`;
   }
 
   // Greetings

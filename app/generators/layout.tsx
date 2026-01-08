@@ -103,7 +103,7 @@ const jsonLd = {
       contactPoint: [
         {
           '@type': 'ContactPoint',
-          telephone: '+254768860655',
+          telephone: '+254768860665',
           contactType: 'sales',
           areaServed: 'KE',
           availableLanguage: ['English', 'Swahili'],
@@ -165,7 +165,7 @@ const jsonLd = {
       '@id': 'https://emersoneims.com/#localbusiness',
       name: 'EmersonEIMS - Generator Sales & Services',
       image: 'https://emersoneims.com/logo.png',
-      telephone: '+254768860655',
+      telephone: '+254768860665',
       email: 'info@emersoneims.com',
       address: {
         '@type': 'PostalAddress',

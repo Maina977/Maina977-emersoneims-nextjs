@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nUpdate: Replace logo with new Emerson EIMS Logo and Tagline\n\n- Updated logo in SciFiHeader component\n- Updated logo in SciFiFooter component  \n- Updated logo in TeslaStyleNavigation component\n- Changed from logo-tagline.png to Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png\n- Improved sizing: h-16 w-auto for better aspect ratio preservation\n- Changed object-cover to object-contain for proper logo display\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(npx vercel --prod)",
+      "Bash(node scripts/updateAllContacts.mjs:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nUpdate: Replace all contact information across entire website\n\nUpdated contact details throughout the website:\n- Phone 1: 0768860665\n- Phone 2: 0782914717\n- Email 1: info@emersoneims.com\n- Email 2: emersoneimservices@gmail.com\n\nFiles updated: 99 files\nTotal replacements: 527\n\nUpdated in:\n- All county pages \\(47 counties\\)\n- All solution pages\n- All generator pages\n- Components \\(footer, header, navigation, contact forms\\)\n- API routes \\(chat, diagnostics, streaming\\)\n- SEO configuration and structured data\n- Library files \\(PDF generation, AI services\\)\n- Public files \\(robots.txt, security.txt\\)\n- All blog and service pages\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

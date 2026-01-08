@@ -126,7 +126,7 @@ At 75% load (efficient operation):
 
 Our team has sized thousands of generators across Kenya. For a free consultation:
 
-📞 **Call:** 0768 860 655 or 0782 914 717
+📞 **Call:** 0768 860 655 or 0782914717
 📍 **Visit:** Our showroom in Nairobi
 💬 **WhatsApp:** Send your power bill for instant sizing
 
@@ -276,7 +276,7 @@ This is one of the best investments you can make in Kenya today.
 
 We'll analyze your actual Kenya Power bills and design a system that maximizes your ROI.
 
-📞 **Call:** 0768 860 655 or 0782 914 717
+📞 **Call:** 0768 860 655 or 0782914717
 📧 **Email:** Send your last 3 months' power bills
 🏠 **Site Visit:** Free assessment within Nairobi
 
@@ -459,7 +459,7 @@ All packages include:
 
 ## Schedule Your Service
 
-📞 **Call:** 0768 860 655 or 0782 914 717
+📞 **Call:** 0768 860 655 or 0782914717
 📍 **WhatsApp:** Send your generator model for instant quote
 🏠 **Coverage:** All 47 counties in Kenya
 
@@ -615,7 +615,7 @@ After 20+ years in Kenya:
 
 We stock both diesel and petrol generators from trusted brands. Let us analyze your specific situation:
 
-📞 **Call:** 0768 860 655 or 0782 914 717
+📞 **Call:** 0768 860 655 or 0782914717
 📧 **Email:** Tell us your power needs and usage pattern
 🏠 **Visit:** See both types in action at our showroom
 
@@ -837,7 +837,7 @@ Not sure which battery is right for you? Our solar team will:
 3. Match with compatible inverter
 4. Provide complete system quote
 
-📞 **Call:** 0768 860 655 or 0782 914 717
+📞 **Call:** 0768 860 655 or 0782914717
 📧 **Email:** Send your Kenya Power bill for analysis
 🏠 **Site Visit:** Free in Nairobi area
 
@@ -1090,7 +1090,7 @@ We offer turnkey solutions:
 
 Don't wait for the next outage to cost you money. Contact us for:
 
-📞 **Call:** 0768 860 655 or 0782 914 717
+📞 **Call:** 0768 860 655 or 0782914717
 📧 **Email:** Request site survey
 🏢 **Coverage:** All 47 counties
 

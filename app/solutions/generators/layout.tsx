@@ -78,7 +78,7 @@ export default function GeneratorSolutionsLayout({ children }: { children: React
         "provider": {
           "@type": "LocalBusiness",
           "name": "EmersonEIMS",
-          "telephone": "+254768860655",
+          "telephone": "+254768860665",
           "address": { "@type": "PostalAddress", "addressCountry": "KE", "addressLocality": "Nairobi" }
         },
         "areaServed": { "@type": "Country", "name": "Kenya" },

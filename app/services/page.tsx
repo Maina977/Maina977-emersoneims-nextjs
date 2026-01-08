@@ -535,7 +535,7 @@ function QuickContactCTA() {
                 </svg>
               </motion.button>
             </Link>
-            <a href="tel:+254768860655">
+            <a href="tel:+254768860665">
               <motion.button
                 whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.2)' }}
                 whileTap={{ scale: 0.95 }}

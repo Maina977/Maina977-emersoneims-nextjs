@@ -9,13 +9,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  analyzeSymptoms, 
-  searchFaultCodes, 
+import {
+  analyzeSymptoms,
+  searchFaultCodes,
   getExactCode,
   DiagnosticResult,
   MatchedCode
 } from '@/lib/ai/diagnosticAI';
+import { isClaudeAPIEnabled, analyzeDiagnostic, estimateCost } from '@/lib/ai/claudeService';
 
 type DiagnoseRequestBody = {
   query: string;
@@ -43,16 +44,16 @@ export async function POST(request: NextRequest) {
         // Direct code lookup
         result = handleLookup(query);
         break;
-      
+
       case 'search':
         // Keyword search
         result = handleSearch(query);
         break;
-      
+
       case 'analyze':
       default:
-        // Full AI analysis
-        result = handleAnalysis(query);
+        // Full AI analysis (async)
+        result = await handleAnalysis(query, brand);
         break;
     }
 
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Diagnostic API error:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to process diagnostic request',
         message: error instanceof Error ? error.message : 'Unknown error'
@@ -84,6 +85,13 @@ type DiagnosticAPIResponse = {
   analysis?: DiagnosticResult;
   code?: MatchedCode;
   summary?: string;
+  claudeAnalysis?: string;
+  usedClaudeAPI?: boolean;
+  apiUsage?: {
+    inputTokens: number;
+    outputTokens: number;
+    estimatedCost: string;
+  };
 };
 
 /**
@@ -145,26 +153,60 @@ function handleSearch(query: string): DiagnosticAPIResponse {
 }
 
 /**
- * Full AI symptom analysis
+ * Full AI symptom analysis with optional Claude enhancement
  */
-function handleAnalysis(query: string): DiagnosticAPIResponse {
+async function handleAnalysis(query: string, brand?: string): Promise<DiagnosticAPIResponse> {
   const analysis = analyzeSymptoms(query);
-  
+
+  // Try Claude API if enabled
+  if (isClaudeAPIEnabled()) {
+    try {
+      const claudeResult = await analyzeDiagnostic(
+        query,
+        brand || analysis.detectedBrand || undefined,
+        analysis.matchedCodes.map(c => c.code)
+      );
+
+      const costEstimate = estimateCost(claudeResult.usage.inputTokens, claudeResult.usage.outputTokens);
+
+      return {
+        found: analysis.matchedCodes.length > 0,
+        confidence: claudeResult.confidence,
+        analysis,
+        results: analysis.matchedCodes,
+        summary: analysis.aiSummary,
+        claudeAnalysis: claudeResult.analysis,
+        usedClaudeAPI: true,
+        apiUsage: {
+          inputTokens: claudeResult.usage.inputTokens,
+          outputTokens: claudeResult.usage.outputTokens,
+          estimatedCost: costEstimate.totalCost.toFixed(4)
+        }
+      };
+    } catch (error) {
+      console.error('Claude API failed in handleAnalysis, using rule-based system:', error);
+      // Fall through to rule-based response
+    }
+  }
+
+  // Rule-based response (fallback or when Claude not enabled)
   if (analysis.matchedCodes.length > 0) {
     return {
       found: true,
       confidence: analysis.confidence,
       analysis,
       results: analysis.matchedCodes,
-      summary: analysis.aiSummary
+      summary: analysis.aiSummary,
+      usedClaudeAPI: false
     };
   }
-  
+
   return {
     found: false,
     confidence: 0,
     analysis,
-    summary: 'Unable to match symptoms to specific fault codes. Please provide more details or check our Diagnostic Suite.'
+    summary: 'Unable to match symptoms to specific fault codes. Please provide more details or check our Diagnostic Suite.',
+    usedClaudeAPI: false
   };
 }
 

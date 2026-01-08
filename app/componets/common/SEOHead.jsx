@@ -26,7 +26,7 @@ export default function SEOHead({ title, description, keywords }) {
     "logo": "https://www.emersoneims.com/wp-content/uploads/2025/10/emerson-eims-logo.png",
     "email": ["info@emersoneims.com", "emersoneimservices@gmail.com"],
     "contactPoint": [
-      { "@type": "ContactPoint", telephone: "+254768860655", contactType: "sales", areaServed: ["KE", "TZ", "UG"], availableLanguage: ["English", "Swahili"] },
+      { "@type": "ContactPoint", telephone: "+254768860665", contactType: "sales", areaServed: ["KE", "TZ", "UG"], availableLanguage: ["English", "Swahili"] },
       { "@type": "ContactPoint", telephone: "+254782914717", contactType: "technical support", areaServed: ["KE", "TZ", "UG"], availableLanguage: ["English", "Swahili"] }
     ],
     "address": {

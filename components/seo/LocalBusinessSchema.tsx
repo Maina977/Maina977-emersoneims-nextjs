@@ -20,7 +20,7 @@ export default function LocalBusinessSchema({
   name,
   description,
   url,
-  telephone = "+254 768 860 655", // Default primary phone
+  telephone = "+254768860665", // Default primary phone
   address,
   image = "/images/logo-tagline.png",
   priceRange = "$$$"

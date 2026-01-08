@@ -106,7 +106,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
                   href="tel:0782914717" 
                   className="text-orange-500 hover:text-orange-400"
                 >
-                  📞 0782 914 717
+                  📞 0782914717
                 </a>
                 <span className="hidden sm:inline text-gray-700">|</span>
                 <a 

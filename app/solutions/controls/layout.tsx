@@ -32,7 +32,7 @@ export default function ControlsSolutionsLayout({ children }: { children: React.
       {
         "@type": "Service",
         "serviceType": "Generator Controller Services",
-        "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" },
+        "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" },
         "areaServed": { "@type": "Country", "name": "Kenya" }
       }
     ]

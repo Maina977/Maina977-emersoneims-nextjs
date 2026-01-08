@@ -1,4 +1,6 @@
 {
+  "claude.model": "claude-opus-4-5-20251101",
+  "anthropic.claude-code.model": "opus",
   "typescript.preferences.includePackageJsonAutoImports": "off",
   "typescript.suggest.autoImports": true,
   "typescript.validate.enable": true,

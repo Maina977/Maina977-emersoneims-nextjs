@@ -29,7 +29,7 @@ export default function PowerInterruptionsLayout({ children }: { children: React
           { "@type": "Question", "name": "How much does a voltage stabilizer cost in Kenya?", "acceptedAnswer": { "@type": "Answer", "text": "Voltage stabilizer prices in Kenya: 1kVA: KES 8,000-15,000. 3kVA: KES 20,000-35,000. 5kVA: KES 35,000-60,000. 10kVA: KES 70,000-120,000. Industrial 50kVA+: KES 300,000+. Servo stabilizers cost more but last longer." } }
         ]
       },
-      { "@type": "Service", "serviceType": "Power Quality Solutions", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
+      { "@type": "Service", "serviceType": "Power Quality Solutions", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
     ]
   };
 

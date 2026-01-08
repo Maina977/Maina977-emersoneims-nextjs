@@ -29,7 +29,7 @@ export default function IncineratorsLayout({ children }: { children: React.React
           { "@type": "Question", "name": "What waste can be incinerated?", "acceptedAnswer": { "@type": "Answer", "text": "Suitable: Medical waste, pathological waste, sharps, pharmaceutical waste, confidential documents, general non-recyclable waste. NOT suitable: Heavy metals, radioactive materials, large metal objects, pressurized containers, PVC (without proper scrubbers)." } }
         ]
       },
-      { "@type": "Service", "serviceType": "Incinerator Services", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860655" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
+      { "@type": "Service", "serviceType": "Incinerator Services", "provider": { "@type": "LocalBusiness", "name": "EmersonEIMS", "telephone": "+254768860665" }, "areaServed": { "@type": "Country", "name": "Kenya" } }
     ]
   };
 

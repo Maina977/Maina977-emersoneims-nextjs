@@ -253,7 +253,7 @@ export default function BlogPage() {
           <p className="text-lg">
             Have questions? Call us: <a href="tel:0768860655" className="text-orange-500 font-bold hover:underline">0768 860 655</a>
             {' '}or{' '}
-            <a href="tel:0782914717" className="text-orange-500 font-bold hover:underline">0782 914 717</a>
+            <a href="tel:0782914717" className="text-orange-500 font-bold hover:underline">0782914717</a>
           </p>
         </div>
       </section>

@@ -193,11 +193,11 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="text-white font-semibold">Phone Numbers</h4>
-                    <a href="tel:+254768860655" className="block text-brand-gold hover:text-yellow-400 mt-1">
-                      +254 768 860 655
+                    <a href="tel:+254768860665" className="block text-brand-gold hover:text-yellow-400 mt-1">
+                      +254768860665
                     </a>
                     <a href="tel:+254723456789" className="block text-brand-gold hover:text-yellow-400">
-                      +254 782 914 717
+                      +254782914717
                     </a>
                   </div>
                 </div>
@@ -308,7 +308,7 @@ export default function ContactPage() {
               contact today and join thousands of satisfied clients across Kenya enjoying reliable power.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-6">
-              <a href="tel:+254768860655" className="sci-fi-button px-10 py-4">
+              <a href="tel:+254768860665" className="sci-fi-button px-10 py-4">
                 Call Us Now
               </a>
               <a href="https://wa.me/254768860655" className="sci-fi-outline px-10 py-4">

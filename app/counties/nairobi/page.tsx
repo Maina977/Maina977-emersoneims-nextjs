@@ -29,7 +29,7 @@ const SERVICES = [
 
 export const metadata: Metadata = {
   title: `Generator, Solar & Electrical Services in ${COUNTY_DATA.name} County | Emerson EiMS Kenya`,
-  description: `Professional generator installation, solar power, UPS, and electrical services in ${COUNTY_DATA.name} County. Covering all ${COUNTY_DATA.constituencies.length} constituencies. 24/7 emergency service. Call +254 768 860 655`,
+  description: `Professional generator installation, solar power, UPS, and electrical services in ${COUNTY_DATA.name} County. Covering all ${COUNTY_DATA.constituencies.length} constituencies. 24/7 emergency service. Call +254768860665`,
   keywords: `generator ${COUNTY_DATA.name}, solar installation ${COUNTY_DATA.name}, generator repair ${COUNTY_DATA.name}, ups ${COUNTY_DATA.name}, electrician ${COUNTY_DATA.name}, generator service ${COUNTY_DATA.name} county, solar company ${COUNTY_DATA.name}, generator maintenance ${COUNTY_DATA.name}, power solutions ${COUNTY_DATA.name}, ${COUNTY_DATA.constituencies.join(', ')}, generator installation ${COUNTY_DATA.name} kenya, best generator company ${COUNTY_DATA.name}, emergency generator repair ${COUNTY_DATA.name}`,
   openGraph: {
     title: `Generator & Solar Services in ${COUNTY_DATA.name} County | Emerson EiMS`,
@@ -95,13 +95,13 @@ export default function NairobiCountyPage() {
                 href="tel:+254782914717"
                 className="flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-lg hover:scale-105 transition-all shadow-lg"
               >
-                🚨 Emergency: +254 782 914 717
+                🚨 Emergency: +254782914717
               </a>
               <a 
-                href="tel:+254768860655"
+                href="tel:+254768860665"
                 className="flex items-center justify-center gap-3 px-6 py-4 bg-white/10 border border-white/20 text-white font-bold rounded-lg hover:bg-white/20 transition-all"
               >
-                📞 General: +254 768 860 655
+                📞 General: +254768860665
               </a>
             </div>
           </div>
@@ -322,16 +322,16 @@ export default function NairobiCountyPage() {
           </h2>
           <div className="flex flex-wrap gap-4 justify-center">
             <a 
-              href="tel:+254768860655"
+              href="tel:+254768860665"
               className="px-8 py-4 bg-brand-gold text-black font-bold rounded-lg hover:bg-brand-gold/90 transition-all"
             >
-              📞 +254 768 860 655
+              📞 +254768860665
             </a>
             <a 
               href="tel:+254782914717"
               className="px-8 py-4 border border-brand-gold/30 text-brand-gold rounded-lg hover:bg-brand-gold/10 transition-all"
             >
-              📞 +254 782 914 717
+              📞 +254782914717
             </a>
           </div>
           <p className="text-gray-400 mt-6">

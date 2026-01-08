@@ -251,8 +251,8 @@ export function generateMetadata(config: {
     : `${title} | Emerson EiMS - Power & Energy Solutions Kenya`;
 
   const fullDescription = location
-    ? `${description} Professional ${service || 'power solutions'} in ${location}, Kenya. 24/7 service, certified engineers, all major brands. Call +254 768 860 655`
-    : `${description} Leading power and energy solutions provider in Kenya. Generators, Solar, UPS, Electrical Services across all 47 counties. Call +254 768 860 655`;
+    ? `${description} Professional ${service || 'power solutions'} in ${location}, Kenya. 24/7 service, certified engineers, all major brands. Call +254768860665`
+    : `${description} Leading power and energy solutions provider in Kenya. Generators, Solar, UPS, Electrical Services across all 47 counties. Call +254768860665`;
 
   const allKeywords = [
     ...keywords,
@@ -330,7 +330,7 @@ export function generateStructuredData(type: 'Organization' | 'LocalBusiness' | 
       },
       contactPoint: [{
         '@type': 'ContactPoint',
-        telephone: '+254-768-860-655',
+        telephone: '+254768860665',
         contactType: 'customer service',
         areaServed: ['KE', 'TZ', 'UG', 'RW'],
         availableLanguage: ['en', 'sw']
@@ -351,7 +351,7 @@ export function generateStructuredData(type: 'Organization' | 'LocalBusiness' | 
       '@type': 'LocalBusiness',
       priceRange: 'KES 50,000 - KES 10,000,000',
       openingHours: 'Mo-Su 00:00-24:00',
-      telephone: '+254768860655',
+      telephone: '+254768860665',
       email: 'info@emersoneims.com',
       hasMap: 'https://goo.gl/maps/xxx',
       geo: {

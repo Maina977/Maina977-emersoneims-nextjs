@@ -776,7 +776,7 @@ export default function GeneratorInstallationPage() {
               href="tel:0782914717"
               className="px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-600 text-white font-bold rounded-xl hover:from-blue-500 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/30"
             >
-              📞 Call: 0782 914 717
+              📞 Call: 0782914717
             </a>
           </div>
           <div className="mt-8">

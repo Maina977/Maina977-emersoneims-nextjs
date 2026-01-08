@@ -35,18 +35,18 @@ export default function CallUs({ performanceTier }) {
           aria-label="Call 0768 860 655"
           onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: rippleScale, duration: 0.3 })}
           onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, duration: 0.3 })}
-          onClick={() => (window.location.href = "tel:+254768860655")}
+          onClick={() => (window.location.href = "tel:+254768860665")}
         >
           0768 860 655
         </button>
         <button
           className="orb"
-          aria-label="Call 0782 914 717"
+          aria-label="Call 0782914717"
           onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: rippleScale, duration: 0.3 })}
           onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, duration: 0.3 })}
           onClick={() => (window.location.href = "tel:+254782914717")}
         >
-          0782 914 717
+          0782914717
         </button>
       </div>
     </section>

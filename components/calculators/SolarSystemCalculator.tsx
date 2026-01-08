@@ -606,7 +606,7 @@ export default function SolarSystemCalculator() {
                         </div>
                         <div className="text-xs text-gray-500 mb-3">
                           <div><strong>Available from:</strong> EmersonEIMS</div>
-                          <div><strong>Contact:</strong> +254 768 860 655 | +254 782 914 717</div>
+                          <div><strong>Contact:</strong> +254768860665 | +254782914717</div>
                           <div><strong>Status:</strong> <span className="text-green-400">{panel.availability}</span></div>
                         </div>
                         <button className="w-full py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg font-semibold transition-all">
@@ -662,7 +662,7 @@ export default function SolarSystemCalculator() {
                         </div>
                         <div className="text-xs text-gray-500 mb-3">
                           <div><strong>Features:</strong> {inverter.features.slice(0, 3).join(', ')}</div>
-                          <div className="mt-1"><strong>Available from:</strong> EmersonEIMS | +254 768 860 655</div>
+                          <div className="mt-1"><strong>Available from:</strong> EmersonEIMS | +254768860665</div>
                           <div><strong>Status:</strong> <span className="text-green-400">{inverter.availability}</span></div>
                         </div>
                         <button className="w-full py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg font-semibold transition-all">
@@ -718,7 +718,7 @@ export default function SolarSystemCalculator() {
                         </div>
                         <div className="text-xs text-gray-500 mb-3">
                           <div><strong>Features:</strong> {battery.features.slice(0, 3).join(', ')}</div>
-                          <div className="mt-1"><strong>Available from:</strong> EmersonEIMS | +254 768 860 655</div>
+                          <div className="mt-1"><strong>Available from:</strong> EmersonEIMS | +254768860665</div>
                           <div><strong>Status:</strong> <span className="text-green-400">{battery.availability}</span></div>
                         </div>
                         <button className="w-full py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg font-semibold transition-all">
