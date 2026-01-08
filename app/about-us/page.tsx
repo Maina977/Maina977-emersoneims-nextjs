@@ -458,7 +458,7 @@ export default function AboutUsPage() {
             viewport={{ once: true }}
           >
             <OptimizedImage
-              src="/images/logo-tagline.png"
+              src="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png"
               alt="EmersonEIMS Logo"
               width={400}
               height={200}

@@ -69,7 +69,7 @@ export const MEDIA_ASSETS: Record<string, MediaAsset> = {
   
   // Logo
   'logo-main': {
-    url: '/images/logo-tagline.png',
+    url: '/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png',
     type: 'image',
     alt: 'EmersonEIMS Logo',
     usedIn: [],

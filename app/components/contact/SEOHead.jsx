@@ -26,7 +26,7 @@ export default function SEOHead({ title, description, keywords, canonical, openG
     "@type": "Organization",
     "name": "EmersonEIMS",
     "url": "https://www.emersoneims.com",
-    "logo": "https://www.emersoneims.com/images/logo-tagline.png",
+    "logo": "https://www.emersoneims.com/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png",
     "contactPoint": [
       {
         "@type": "ContactPoint",

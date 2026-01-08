@@ -138,7 +138,7 @@ export default function RootLayout({
     "name": "EmersonEIMS",
     "alternateName": "Emerson Energy Infrastructure Management Solutions",
     "url": siteUrl,
-    "logo": `${siteUrl}/images/logo-tagline.png`,
+    "logo": `${siteUrl}/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png`,
     "description": "Premium Power Engineering & Intelligent Energy Solutions. Powering Kenya's Future Through Intelligent Energy Solutions.",
     "address": {
       "@type": "PostalAddress",
@@ -250,7 +250,7 @@ export default function RootLayout({
         <link rel="preconnect" href={siteUrl} crossOrigin="" />
         
         {/* Preload Critical Resources for Fast Loading */}
-        <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" />
+        <link rel="preload" href="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png" as="image" type="image/png" />
         <link rel="preload" href="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp" as="image" type="image/webp" fetchPriority="high" />
         
         {/* Video Prefetch - Lower priority to not block initial render */}

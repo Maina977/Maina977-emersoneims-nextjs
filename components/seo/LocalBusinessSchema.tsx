@@ -22,7 +22,7 @@ export default function LocalBusinessSchema({
   url,
   telephone = "+254768860665", // Default primary phone
   address,
-  image = "/images/logo-tagline.png",
+  image = "/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png",
   priceRange = "$$$"
 }: LocalBusinessProps) {
   const schema = {
