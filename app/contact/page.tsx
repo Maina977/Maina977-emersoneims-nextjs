@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import Link from 'next/link';
+import HolographicMap from '@/components/map/HolographicMap';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🚀 SCI-FI PREMIUM CONTACT PAGE - AWWWARD SOTD WORTHY
@@ -547,104 +548,89 @@ function StatsDisplay() {
   );
 }
 
-// Location Map Section
+// Revolutionary Location Map Section
 function LocationSection() {
   return (
-    <section className="relative py-20">
+    <section className="relative py-20 bg-gradient-to-b from-black via-gray-900/50 to-black">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
-          <p className="text-amber-400 font-mono text-sm mb-4">// HEADQUARTERS_LOCATION</p>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Visit Our Command Center</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Located in Embakasi, Nairobi along Old North Airport Road — your trusted partner 
-            for comprehensive power and energy solutions across Kenya.
+          <p className="text-amber-400 font-mono text-sm mb-4">// HOLOGRAPHIC_NAVIGATION_SYSTEM</p>
+          <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+              Experience The Future
+            </span>
+            <br />
+            <span className="text-white">of Location Mapping</span>
+          </h2>
+          <p className="text-gray-400 max-w-3xl mx-auto text-lg">
+            Interact with our revolutionary 3D holographic map system. Switch between satellite, hologram,
+            and 3D render modes to explore our headquarters location in ways never before seen on the web.
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-8 items-center">
-          {/* Map Embed with Sci-Fi Frame */}
-          <HoloCard className="aspect-video">
-            <div className="relative w-full h-full min-h-[400px]">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8191803668074!2d36.8219!3d-1.2864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1234567890"
-                width="100%"
-                height="100%"
-                style={{ border: 0, filter: 'grayscale(100%) contrast(1.2) brightness(0.8)' }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="rounded-2xl"
-              />
-              {/* Overlay with coordinates */}
-              <div className="absolute bottom-4 left-4 bg-black/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-amber-500/30">
-                <p className="text-amber-400 font-mono text-xs">LAT: -1.2864° | LONG: 36.8219°</p>
+        {/* Revolutionary Holographic Map */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-12"
+        >
+          <HolographicMap />
+        </motion.div>
+
+        {/* Additional Location Info Cards */}
+        <div className="grid md:grid-cols-3 gap-6 mt-12">
+          <HoloCard delay={0.1}>
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
               </div>
+              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">// ADDRESS</p>
+              <p className="text-white font-semibold text-lg mb-1">Embakasi, Nairobi</p>
+              <p className="text-gray-400 text-sm">Old North Airport Road</p>
+              <p className="text-gray-400 text-sm">P.O. Box 387-00521</p>
             </div>
           </HoloCard>
 
-          {/* Address Details */}
-          <div className="space-y-6">
-            <HoloCard delay={0.1}>
-              <div className="p-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-1">// PHYSICAL_ADDRESS</p>
-                    <p className="text-white font-semibold text-lg">Embakasi Area, Nairobi</p>
-                    <p className="text-gray-400 mt-1">Old North Airport Road</p>
-                    <p className="text-gray-400">P.O. Box 387-00521, Nairobi</p>
-                  </div>
-                </div>
-              </div>
-            </HoloCard>
-
-            <HoloCard delay={0.2}>
-              <div className="p-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-1">// OPERATING_HOURS</p>
-                    <p className="text-white font-semibold text-lg">Mon - Fri: 8:00 AM - 6:00 PM</p>
-                    <p className="text-gray-400 mt-1">Saturday: 9:00 AM - 2:00 PM</p>
-                    <p className="text-red-400 font-medium mt-2 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                      24/7 Emergency: Always Available
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </HoloCard>
-
-            <motion.a
-              href="https://maps.google.com/?q=Nairobi+Kenya"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="block w-full py-4 bg-white/5 border border-white/10 rounded-xl text-center text-white font-medium hover:bg-white/10 transition-colors"
-            >
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          <HoloCard delay={0.2}>
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Get Directions
-              </span>
-            </motion.a>
-          </div>
+              </div>
+              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">// HOURS</p>
+              <p className="text-white font-semibold mb-1">Mon-Fri: 8AM-6PM</p>
+              <p className="text-gray-400 text-sm mb-2">Sat: 9AM-2PM</p>
+              <p className="text-red-400 font-medium text-sm flex items-center gap-2">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                24/7 Emergency
+              </p>
+            </div>
+          </HoloCard>
+
+          <HoloCard delay={0.3}>
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">// COVERAGE</p>
+              <p className="text-white font-semibold mb-1">All 47 Counties</p>
+              <p className="text-gray-400 text-sm mb-2">Kenya-Wide Service</p>
+              <p className="text-green-400 font-medium text-sm">2hr Response Time</p>
+            </div>
+          </HoloCard>
         </div>
       </div>
     </section>
