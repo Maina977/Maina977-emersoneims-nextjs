@@ -17,12 +17,12 @@ export default function GeneratorPage() {
       <section className="relative w-full h-screen overflow-hidden bg-black">
         <video
           className="absolute inset-0 w-full h-full object-cover cinematic"
-          src="/media/cummins-warehouse.mp4"
+          src="/videos/Solution(1).mp4"
           autoPlay
           muted
           loop
           playsInline
-          poster="/media/cummins-poster.jpg"
+          poster="/images/GEN 2-1920x1080.png"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
