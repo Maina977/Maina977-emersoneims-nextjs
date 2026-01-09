@@ -1,0 +1,573 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-09",
+  "totalParts": 537,
+  "categories": [
+    {
+      "id": "generators",
+      "name": "Generator Parts",
+      "icon": "⚡",
+      "description": "Comprehensive generator components for all major brands",
+      "subcategories": [
+        {
+          "id": "filters",
+          "name": "Filters",
+          "parts": [
+            {
+              "partNo": "FF5052",
+              "name": "Fuel Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Fuel Filter",
+              "compatibility": ["4BT", "6BT", "6CT", "ISBe", "QSB"],
+              "specifications": {
+                "micronRating": "10 micron",
+                "flow": "100 GPH",
+                "threadSize": "1-12 UN",
+                "length": "5.75 inches",
+                "diameter": "3.75 inches"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3500,
+                "bulkPrice": 3000,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 250,
+                "location": "Nairobi Warehouse",
+                "reorderPoint": 50,
+                "leadTime": "Same Day"
+              },
+              "media": {
+                "images": ["/images/parts/FF5052-main.webp"],
+                "datasheet": "/docs/FF5052-specs.pdf"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "cummins", "maintenance", "diesel"]
+            },
+            {
+              "partNo": "LF9009",
+              "name": "Oil Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Oil Filter",
+              "compatibility": ["6BT5.9", "6CT8.3", "ISBe", "QSB"],
+              "specifications": {
+                "micronRating": "25 micron",
+                "flow": "8 GPM",
+                "threadSize": "1-12 UN",
+                "bypassPressure": "12-16 PSI"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2800,
+                "bulkPrice": 2400,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 180,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["oil", "filtration", "cummins", "maintenance", "lubrication"]
+            },
+            {
+              "partNo": "AF25556",
+              "name": "Air Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Air Filter",
+              "compatibility": ["4BT", "6BT", "6CT"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "12.5 inches",
+                "diameter": "8.5 inches",
+                "efficiency": "99.9%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4200,
+                "bulkPrice": 3600,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 120,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "cummins", "intake"]
+            },
+            {
+              "partNo": "WF2054",
+              "name": "Coolant Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Coolant Filter",
+              "compatibility": ["6BT", "6CT", "ISBe", "QSB", "QSL"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "height": "6.5 inches",
+                "threadSize": "1-12 UN",
+                "flowRate": "25 GPM"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3200,
+                "bulkPrice": 2800,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["coolant", "filtration", "cummins", "cooling"]
+            }
+          ]
+        },
+        {
+          "id": "engine-parts",
+          "name": "Engine Components",
+          "parts": [
+            {
+              "partNo": "3802429",
+              "name": "Piston Kit - 6BT5.9",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["6BT5.9-G", "6BT5.9-GM"],
+              "specifications": {
+                "bore": "102mm",
+                "ringGrooves": "3",
+                "compressionHeight": "75mm",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 28000,
+                "bulkPrice": 24000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 45,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "cummins", "major-overhaul"]
+            },
+            {
+              "partNo": "3802263",
+              "name": "Cylinder Liner Kit - 6BT",
+              "brand": "Cummins",
+              "category": "Liner",
+              "compatibility": ["6BT5.9"],
+              "specifications": {
+                "outerDiameter": "110mm",
+                "innerDiameter": "102mm",
+                "length": "215mm",
+                "material": "Cast Iron"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 32000,
+                "bulkPrice": 28000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 35,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 days"
+              },
+              "warranty": "24 months",
+              "tags": ["liner", "cylinder", "engine", "cummins", "major-overhaul"]
+            },
+            {
+              "partNo": "3803711",
+              "name": "Turbocharger - HX35W",
+              "brand": "Holset/Cummins",
+              "category": "Turbocharger",
+              "compatibility": ["6BT5.9", "6CT8.3"],
+              "specifications": {
+                "compressorWheelDiameter": "56mm",
+                "turbineWheelDiameter": "60mm",
+                "maxBoost": "25 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 95000,
+                "bulkPrice": 85000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "boost", "cummins", "performance"]
+            },
+            {
+              "partNo": "3804682",
+              "name": "Fuel Injector - 6BT5.9",
+              "brand": "Bosch/Cummins",
+              "category": "Injector",
+              "compatibility": ["6BT5.9-G"],
+              "specifications": {
+                "injectionPressure": "1600 bar",
+                "nozzleType": "Multi-hole",
+                "flowRate": "350 cc/min",
+                "sprayAngle": "150 degrees"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 42000,
+                "bulkPrice": 38000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 62,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "cummins", "diesel"]
+            }
+          ]
+        },
+        {
+          "id": "electrical",
+          "name": "Electrical Components",
+          "parts": [
+            {
+              "partNo": "3935531",
+              "name": "AVR - MX321",
+              "brand": "Stamford/Cummins",
+              "category": "Automatic Voltage Regulator",
+              "compatibility": ["Stamford Alternators", "Leroy Somer", "Marathon"],
+              "specifications": {
+                "inputVoltage": "180-265V AC",
+                "outputVoltage": "190-253V AC",
+                "frequency": "50/60Hz",
+                "responseTime": "<100ms"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 38000,
+                "bulkPrice": 34000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "18 months",
+              "tags": ["avr", "voltage-regulator", "electrical", "alternator"]
+            },
+            {
+              "partNo": "3935533",
+              "name": "Deep Sea Controller DSE7320",
+              "brand": "Deep Sea Electronics",
+              "category": "Generator Controller",
+              "compatibility": ["All Generators"],
+              "specifications": {
+                "display": "LCD Backlit",
+                "inputs": "Configurable",
+                "communication": "RS232, RS485, CAN",
+                "functions": "Auto Start, Load Management, Protection"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 125000,
+                "bulkPrice": 110000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 15,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 days"
+              },
+              "warranty": "24 months",
+              "tags": ["controller", "dse", "control-panel", "automation"]
+            },
+            {
+              "partNo": "3957597",
+              "name": "Starter Motor - 24V",
+              "brand": "Bosch",
+              "category": "Starter Motor",
+              "compatibility": ["6BT5.9", "6CT8.3"],
+              "specifications": {
+                "voltage": "24V",
+                "power": "5.5 kW",
+                "teeth": "11",
+                "rotation": "Clockwise"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 48000,
+                "bulkPrice": 43000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "18 months",
+              "tags": ["starter", "motor", "electrical", "starting-system"]
+            },
+            {
+              "partNo": "3971519",
+              "name": "Alternator - Stamford UC274",
+              "brand": "Stamford",
+              "category": "Alternator",
+              "compatibility": ["30-50 kVA Generators"],
+              "specifications": {
+                "outputPower": "50 kVA",
+                "voltage": "400/230V",
+                "frequency": "50Hz",
+                "efficiency": "93%",
+                "ipRating": "IP23"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 185000,
+                "bulkPrice": 165000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "Limited Stock",
+                "quantity": 8,
+                "location": "Nairobi Warehouse",
+                "leadTime": "3-5 days"
+              },
+              "warranty": "24 months",
+              "tags": ["alternator", "generator-head", "stamford", "power-generation"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "solar",
+      "name": "Solar Components",
+      "icon": "☀️",
+      "description": "Complete solar system components from tier-1 manufacturers",
+      "subcategories": [
+        {
+          "id": "panels",
+          "name": "Solar Panels",
+          "parts": [
+            {
+              "partNo": "LONGI-430W",
+              "name": "Longi Hi-MO 5m 430W Panel",
+              "brand": "Longi",
+              "category": "Monocrystalline Panel",
+              "specifications": {
+                "power": "430W",
+                "efficiency": "21.7%",
+                "voltage": "41.5V",
+                "current": "10.36A",
+                "dimensions": "1903×1134×30mm",
+                "weight": "21.5 kg",
+                "cells": "108 Half-Cut",
+                "tempCoefficient": "-0.34%/°C"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 18500,
+                "bulkPrice": 16500,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 500,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 days"
+              },
+              "certifications": ["IEC 61215", "IEC 61730", "ISO 9001"],
+              "warranty": "25 years performance, 12 years product",
+              "tags": ["solar", "panel", "monocrystalline", "longi", "tier-1"]
+            },
+            {
+              "partNo": "JA-SOLAR-550W",
+              "name": "JA Solar JAM72S30 550W",
+              "brand": "JA Solar",
+              "category": "Monocrystalline Panel",
+              "specifications": {
+                "power": "550W",
+                "efficiency": "21.3%",
+                "voltage": "41.8V",
+                "current": "13.16A",
+                "dimensions": "2278×1134×35mm",
+                "weight": "27.5 kg",
+                "cells": "144 Half-Cut"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 22000,
+                "bulkPrice": 19500,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 380,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 days"
+              },
+              "certifications": ["IEC 61215", "IEC 61730", "ISO 9001"],
+              "warranty": "25 years performance, 12 years product",
+              "tags": ["solar", "panel", "monocrystalline", "ja-solar", "tier-1", "high-power"]
+            },
+            {
+              "partNo": "TRINA-665W",
+              "name": "Trina Vertex S+ 665W",
+              "brand": "Trina Solar",
+              "category": "Monocrystalline Panel",
+              "specifications": {
+                "power": "665W",
+                "efficiency": "21.5%",
+                "voltage": "38.4V",
+                "current": "17.32A",
+                "dimensions": "2384×1303×35mm",
+                "weight": "34.5 kg",
+                "cells": "210mm Half-Cut"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 26500,
+                "bulkPrice": 23500,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 220,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 days"
+              },
+              "certifications": ["IEC 61215", "IEC 61730", "ISO 9001"],
+              "warranty": "25 years performance, 15 years product",
+              "tags": ["solar", "panel", "monocrystalline", "trina", "tier-1", "ultra-high-power"]
+            }
+          ]
+        },
+        {
+          "id": "inverters",
+          "name": "Inverters",
+          "parts": [
+            {
+              "partNo": "GROWATT-5KW",
+              "name": "Growatt MIN 5000TL-X",
+              "brand": "Growatt",
+              "category": "String Inverter",
+              "specifications": {
+                "power": "5000W",
+                "inputVoltage": "120-550V DC",
+                "outputVoltage": "230V AC",
+                "efficiency": "98.4%",
+                "mpptTrackers": "2",
+                "communication": "WiFi, RS485",
+                "protection": "IP65"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 95000,
+                "bulkPrice": 85000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 65,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "10 years",
+              "tags": ["inverter", "string", "growatt", "solar", "grid-tied"]
+            },
+            {
+              "partNo": "DEYE-8KW-HYBRID",
+              "name": "Deye SUN-8K-SG04LP3",
+              "brand": "Deye",
+              "category": "Hybrid Inverter",
+              "specifications": {
+                "power": "8000W",
+                "batteryVoltage": "48V",
+                "inputVoltage": "125-550V DC",
+                "outputVoltage": "230V AC",
+                "efficiency": "97.6%",
+                "mpptTrackers": "2",
+                "batteryType": "Lithium/Lead-Acid"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 145000,
+                "bulkPrice": 130000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "10 years",
+              "tags": ["inverter", "hybrid", "deye", "solar", "battery-ready"]
+            }
+          ]
+        },
+        {
+          "id": "batteries",
+          "name": "Batteries",
+          "parts": [
+            {
+              "partNo": "PYLON-US5000",
+              "name": "Pylontech US5000 Battery",
+              "brand": "Pylontech",
+              "category": "Lithium Battery",
+              "specifications": {
+                "capacity": "4.8 kWh",
+                "voltage": "48V",
+                "cycles": "6000+",
+                "dod": "90%",
+                "weight": "37 kg",
+                "communication": "CAN/RS485",
+                "dimensions": "440×410×89mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 198000,
+                "bulkPrice": 185000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 85,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 days"
+              },
+              "warranty": "10 years",
+              "tags": ["battery", "lithium", "pylontech", "solar", "storage"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "searchIndexes": {
+    "brands": ["Cummins", "Longi", "JA Solar", "Trina Solar", "Growatt", "Deye", "Pylontech", "Stamford", "Deep Sea Electronics", "Bosch", "Holset"],
+    "categories": ["Filters", "Engine Components", "Electrical Components", "Solar Panels", "Inverters", "Batteries"],
+    "topSearches": ["fuel filter", "oil filter", "avr", "solar panel", "inverter", "battery", "controller", "turbocharger"]
+  }
+}
