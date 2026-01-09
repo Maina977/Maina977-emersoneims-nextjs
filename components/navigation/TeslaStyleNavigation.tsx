@@ -197,44 +197,33 @@ export default function TeslaStyleNavigation({
         data-active-section={activeSection}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? 'bg-black/90 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20'
-            : 'bg-gradient-to-b from-black/80 to-transparent'
+            ? 'bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/30'
+            : 'bg-gradient-to-b from-black/90 via-black/70 to-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3">
-          <div className="flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-16 py-4">
+          <div className="flex items-center justify-between gap-8">
             {/* Logo - Clean Professional Design */}
             <Link
               href="/"
               aria-label="Emerson EiMS home"
-              className="flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 group"
+              className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-lg group"
             >
-              <div className="relative flex items-center gap-4 transition-all duration-300 group-hover:scale-[1.03]">
-                {/* Logo Image - No Box, Clean & Professional */}
+              <div className="relative transition-all duration-300 group-hover:scale-[1.02]">
                 <Image
                   src="/images/logo-tagline.png"
                   alt="EmersonEIMS - Kenya's #1 Power Solutions"
-                  width={280}
-                  height={70}
+                  width={240}
+                  height={60}
                   priority
-                  sizes="(max-width: 768px) 180px, (max-width: 1024px) 220px, 280px"
-                  className="h-14 sm:h-16 lg:h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.3)] group-hover:drop-shadow-[0_0_25px_rgba(251,191,36,0.5)] transition-all duration-300"
+                  sizes="(max-width: 768px) 160px, (max-width: 1024px) 200px, 240px"
+                  className="h-12 sm:h-14 lg:h-16 w-auto object-contain drop-shadow-[0_0_20px_rgba(251,191,36,0.25)] group-hover:drop-shadow-[0_0_30px_rgba(251,191,36,0.4)] transition-all duration-300"
                 />
-
-                {/* Tagline - Desktop Only */}
-                <div className="hidden xl:flex flex-col -space-y-1">
-                  <span className="text-xs font-bold tracking-wide text-amber-400 uppercase">
-                    Reliable Power
-                  </span>
-                  <span className="text-xs font-bold tracking-wide text-cyan-400 uppercase">
-                    Without Limits
-                  </span>
-                </div>
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-1">
+            {/* Desktop Navigation - Properly Spaced */}
+            <div className="hidden lg:flex items-center gap-2 xl:gap-3 flex-1 justify-end">
               {NAV_ITEMS.map((item) =>
                 item.type === 'mega' && item.key ? (
                   <div
@@ -244,24 +233,24 @@ export default function TeslaStyleNavigation({
                     onMouseLeave={handleMegaLeave}
                   >
                     <button
-                      className={`px-3 py-2 text-[11px] font-semibold transition-all duration-300 rounded-lg flex items-center gap-1 ${
-                        item.highlight 
+                      className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 rounded-lg flex items-center gap-1.5 whitespace-nowrap ${
+                        item.highlight
                           ? activeMega === item.key
-                            ? 'text-amber-300 bg-amber-500/20 border border-amber-400/50'
-                            : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border border-amber-500/30'
+                            ? 'text-amber-300 bg-amber-500/20 border border-amber-400/50 shadow-lg shadow-amber-500/10'
+                            : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50'
                           : activeMega === item.key
-                            ? 'text-amber-400 bg-amber-500/10'
-                            : 'text-white/70 hover:text-white hover:bg-white/5'
+                            ? 'text-white bg-white/10 border border-white/20'
+                            : 'text-white/80 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
                       }`}
                     >
                       {item.label}
                       <svg
-                        className={`w-3 h-3 transition-transform duration-300 ${activeMega === item.key ? 'rotate-180' : ''}`}
+                        className={`w-3.5 h-3.5 transition-transform duration-300 ${activeMega === item.key ? 'rotate-180' : ''}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
                   </div>
@@ -269,26 +258,27 @@ export default function TeslaStyleNavigation({
                   <Link
                     key={item.href}
                     href={item.href!}
-                    className={`px-3 py-2 text-[11px] font-semibold transition-all duration-300 whitespace-nowrap rounded-lg ${
+                    className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 whitespace-nowrap rounded-lg border ${
                       item.highlight
-                        ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border border-amber-500/30'
-                        : 'text-white/70 hover:text-white hover:bg-white/5'
+                        ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border-amber-500/30 hover:border-amber-400/50'
+                        : 'text-white/80 hover:text-white hover:bg-white/5 border-transparent hover:border-white/10'
                     }`}
                   >
                     {item.label}
                   </Link>
                 )
               )}
-              
-              <div className="ml-2 pl-2 border-l border-white/10">
+
+              {/* Language Switcher with Clear Separation */}
+              <div className="ml-4 pl-4 border-l border-white/20">
                 <LanguageSwitcher />
               </div>
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - Better Positioned */}
             <button
               type="button"
-              className="lg:hidden relative p-2 text-white/80 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+              className="lg:hidden relative p-3 text-white/90 hover:text-white transition-colors rounded-xl hover:bg-white/10 border border-transparent hover:border-white/20"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
@@ -303,21 +293,21 @@ export default function TeslaStyleNavigation({
                     closed: { rotate: 0, y: 0 },
                     open: { rotate: 45, y: 6 },
                   }}
-                  className="w-5 h-0.5 bg-current block mb-1.5 origin-center transition-all"
+                  className="w-6 h-0.5 bg-current block mb-1.5 origin-center transition-all rounded-full"
                 />
                 <motion.span
                   variants={{
                     closed: { opacity: 1 },
                     open: { opacity: 0 },
                   }}
-                  className="w-5 h-0.5 bg-current block mb-1.5"
+                  className="w-6 h-0.5 bg-current block mb-1.5 rounded-full"
                 />
                 <motion.span
                   variants={{
                     closed: { rotate: 0, y: 0 },
                     open: { rotate: -45, y: -6 },
                   }}
-                  className="w-5 h-0.5 bg-current block origin-center transition-all"
+                  className="w-6 h-0.5 bg-current block origin-center transition-all rounded-full"
                 />
               </motion.div>
             </button>
