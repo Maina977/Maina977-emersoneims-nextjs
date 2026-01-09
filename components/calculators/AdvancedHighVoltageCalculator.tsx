@@ -823,7 +823,7 @@ export default function AdvancedHighVoltageCalculator() {
           Standards: IEC 60364, IEEE 80, BS 7671
         </div>
         <a 
-          href="https://wa.me/254768860655?text=I%20need%20help%20with%20electrical%20infrastructure%20design"
+          href="https://wa.me/254768860665?text=I%20need%20help%20with%20electrical%20infrastructure%20design"
           target="_blank"
           className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold"
         >

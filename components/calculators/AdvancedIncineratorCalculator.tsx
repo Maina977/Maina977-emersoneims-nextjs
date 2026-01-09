@@ -610,7 +610,7 @@ export default function AdvancedIncineratorCalculator() {
           {results.selectedCapacity} kg/hr | {results.totalDailyWaste.toFixed(0)} kg/day | {systemConfig.incineratorType}
         </div>
         <a 
-          href="https://wa.me/254768860655?text=I%20need%20incinerator%20quote"
+          href="https://wa.me/254768860665?text=I%20need%20incinerator%20quote"
           target="_blank"
           className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold"
         >

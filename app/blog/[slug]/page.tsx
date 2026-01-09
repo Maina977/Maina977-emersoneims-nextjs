@@ -1230,7 +1230,7 @@ export default async function BlogArticlePage({ params }: Props) {
               📞 Call 0768 860 655
             </a>
             <a 
-              href="https://wa.me/254768860655" 
+              href="https://wa.me/254768860665" 
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-3 bg-green-600 rounded-lg font-semibold hover:bg-green-700 transition"

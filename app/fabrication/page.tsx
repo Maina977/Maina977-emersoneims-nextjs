@@ -334,13 +334,13 @@ export default function FabricationPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <a
-                href="tel:+254XXXXXXXXX"
+                href="tel:+254768860665"
                 className="bg-gradient-to-r from-amber-500 to-amber-600 text-black px-8 py-4 rounded-xl font-bold text-lg hover:from-amber-600 hover:to-amber-700 transition-all"
               >
                 📞 Call Fabrication Shop
               </a>
               <a
-                href="https://wa.me/254XXXXXXXXX"
+                href="https://wa.me/254768860665"
                 className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all"
               >
                 💬 WhatsApp Quote

@@ -803,7 +803,7 @@ export default function KnowledgeBasePage() {
               <Link href="/booking" className="px-6 py-3 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-600 transition-colors">
                 📅 Book Service
               </Link>
-              <a href="https://wa.me/254768860655" className="px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors">
+              <a href="https://wa.me/254768860665" className="px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors">
                 💬 WhatsApp
               </a>
             </div>

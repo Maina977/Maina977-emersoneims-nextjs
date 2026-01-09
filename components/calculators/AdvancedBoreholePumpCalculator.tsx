@@ -615,7 +615,7 @@ export default function AdvancedBoreholePumpCalculator() {
           {results.selectedMotorPower} kW | {results.flowRateLimited.toFixed(1)} m³/hr | TDH: {results.totalDynamicHead.toFixed(0)}m
         </div>
         <a 
-          href="https://wa.me/254768860655?text=I%20need%20borehole%20pump%20installation"
+          href="https://wa.me/254768860665?text=I%20need%20borehole%20pump%20installation"
           target="_blank"
           className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold"
         >

@@ -707,7 +707,7 @@ export default function GalleryPage() {
             <Link href="/booking" className="px-8 py-4 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition-colors">
               📅 Book a Consultation
             </Link>
-            <a href="https://wa.me/254768860655" className="px-8 py-4 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition-colors">
+            <a href="https://wa.me/254768860665" className="px-8 py-4 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition-colors">
               💬 Chat on WhatsApp
             </a>
           </div>
@@ -812,7 +812,7 @@ export default function GalleryPage() {
                         Get Quote
                       </Link>
                       <a 
-                        href="https://wa.me/254768860655"
+                        href="https://wa.me/254768860665"
                         className="flex-1 px-4 py-3 bg-white/10 text-white font-medium rounded-lg text-center hover:bg-white/20 transition-colors"
                       >
                         WhatsApp

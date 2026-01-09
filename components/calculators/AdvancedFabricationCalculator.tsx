@@ -715,7 +715,7 @@ export default function AdvancedFabricationCalculator() {
           Precision fabrication with quality materials
         </div>
         <a 
-          href="https://wa.me/254768860655?text=I%20need%20fabrication%20quote"
+          href="https://wa.me/254768860665?text=I%20need%20fabrication%20quote"
           target="_blank"
           className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold"
         >

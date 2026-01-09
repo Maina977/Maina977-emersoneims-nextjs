@@ -132,7 +132,7 @@ export default function BookingPage() {
               Back to Home
             </Link>
             <a
-              href={`https://wa.me/254768860655?text=Hi! I just submitted a booking for ${selectedService?.label} on ${formData.date} at ${formData.time}. My name is ${formData.name}.`}
+              href={`https://wa.me/254768860665?text=Hi! I just submitted a booking for ${selectedService?.label} on ${formData.date} at ${formData.time}. My name is ${formData.name}.`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors"
@@ -562,7 +562,7 @@ export default function BookingPage() {
                 📞 +254768860665
               </a>
               <a
-                href="https://wa.me/254768860655"
+                href="https://wa.me/254768860665"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"

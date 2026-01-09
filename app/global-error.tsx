@@ -110,7 +110,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
                 </a>
                 <span className="hidden sm:inline text-gray-700">|</span>
                 <a 
-                  href="https://wa.me/254768860655" 
+                  href="https://wa.me/254768860665" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-green-500 hover:text-green-400"

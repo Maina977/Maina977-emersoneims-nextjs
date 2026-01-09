@@ -403,13 +403,13 @@ export default function GeneratorServicesPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <a
-                href="tel:+254XXXXXXXXX"
+                href="tel:+254768860665"
                 className="bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-red-600 hover:to-red-700 transition-all animate-pulse"
               >
                 🚨 Emergency: Call Now
               </a>
               <a
-                href="https://wa.me/254XXXXXXXXX"
+                href="https://wa.me/254768860665"
                 className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all"
               >
                 💬 WhatsApp Quote
