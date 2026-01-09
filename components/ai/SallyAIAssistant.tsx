@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 /**
- * 🤖 EMMA - AI CHAT ASSISTANT
+ * 🤖 SALLY - AI CHAT ASSISTANT
  *
  * Revolutionary personalized AI that greets users by name
  * GAME-CHANGER: First generator company in Kenya with personal AI chat
@@ -22,7 +22,7 @@ import Link from 'next/link';
 interface Message {
   id: string;
   text: string;
-  sender: 'emma' | 'user';
+  sender: 'sally' | 'user';
   timestamp: Date;
   options?: {
     label: string;
@@ -50,7 +50,7 @@ const LOCATIONS = [
   'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Other'
 ];
 
-export default function EmmaAIAssistant() {
+export default function SallyAIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -62,20 +62,20 @@ export default function EmmaAIAssistant() {
 
   // Auto-open after 3 seconds on first visit
   useEffect(() => {
-    const hasSeenEmma = localStorage.getItem('emma_seen');
+    const hasSeenEmma = localStorage.getItem('sally_seen');
     if (!hasSeenEmma) {
       const timer = setTimeout(() => {
         setIsOpen(true);
-        sendEmmaMessage(
-          "👋 Hi there! I'm Emma, your AI assistant at EmersonEIMS. What's your name?",
+        sendSallyMessage(
+          "👋 Hi there! I'm Sally, your AI assistant at EmersonEIMS. What's your name?",
           []
         );
-        localStorage.setItem('emma_seen', 'true');
+        localStorage.setItem('sally_seen', 'true');
       }, 3000);
       return () => clearTimeout(timer);
     } else {
       // Load previous profile if exists
-      const savedProfile = localStorage.getItem('emma_profile');
+      const savedProfile = localStorage.getItem('sally_profile');
       if (savedProfile) {
         const profile = JSON.parse(savedProfile);
         setUserProfile(profile);
@@ -88,13 +88,13 @@ export default function EmmaAIAssistant() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendEmmaMessage = (text: string, options?: { label: string; action: string }[], delay = 1000) => {
+  const sendSallyMessage = (text: string, options?: { label: string; action: string }[], delay = 1000) => {
     setIsTyping(true);
     setTimeout(() => {
       const message: Message = {
         id: Date.now().toString(),
         text,
-        sender: 'emma',
+        sender: 'sally',
         timestamp: new Date(),
         options,
       };
@@ -119,9 +119,9 @@ export default function EmmaAIAssistant() {
     sendUserMessage(name);
     const updatedProfile = { ...userProfile, name: name.trim() };
     setUserProfile(updatedProfile);
-    localStorage.setItem('emma_profile', JSON.stringify(updatedProfile));
+    localStorage.setItem('sally_profile', JSON.stringify(updatedProfile));
 
-    sendEmmaMessage(
+    sendSallyMessage(
       `Great to meet you, ${name}! 🎉\n\nI'm here to help with generators, solar solutions, motor rewinding, and more.\n\nWhat brings you to EmersonEIMS today?`,
       SERVICES.map(s => ({ label: s.label, action: `interest:${s.value}` })),
       1500
@@ -136,7 +136,7 @@ export default function EmmaAIAssistant() {
     sendUserMessage(selectedService.label);
     const updatedProfile = { ...userProfile, interest: service };
     setUserProfile(updatedProfile);
-    localStorage.setItem('emma_profile', JSON.stringify(updatedProfile));
+    localStorage.setItem('sally_profile', JSON.stringify(updatedProfile));
 
     let response = '';
     const name = userProfile.name || 'there';
@@ -161,7 +161,7 @@ export default function EmmaAIAssistant() {
         response = `${name}, we'd love to help! Tell me more about what you need, and where you're located.`;
     }
 
-    sendEmmaMessage(
+    sendSallyMessage(
       response,
       LOCATIONS.map(loc => ({ label: loc, action: `location:${loc}` })),
       1000
@@ -173,12 +173,12 @@ export default function EmmaAIAssistant() {
     sendUserMessage(location);
     const updatedProfile = { ...userProfile, location };
     setUserProfile(updatedProfile);
-    localStorage.setItem('emma_profile', JSON.stringify(updatedProfile));
+    localStorage.setItem('sally_profile', JSON.stringify(updatedProfile));
 
     const name = userProfile.name || 'there';
     const response = `Perfect, ${name}! We serve ${location} with 24/7 support. 🚀\n\nHow would you like to proceed?`;
 
-    sendEmmaMessage(
+    sendSallyMessage(
       response,
       [
         { label: '📞 Call Us Now', action: 'call' },
@@ -231,7 +231,7 @@ export default function EmmaAIAssistant() {
     } else {
       sendUserMessage(userInput);
       const name = userProfile.name || 'there';
-      sendEmmaMessage(
+      sendSallyMessage(
         `Thanks ${name}! Let me connect you with our team who can help with that specifically. 📞 Call 0768-860665 or WhatsApp us!`,
         [
           { label: '📞 Call Now', action: 'call' },
@@ -255,17 +255,17 @@ export default function EmmaAIAssistant() {
             onClick={() => {
               setIsOpen(true);
               if (messages.length === 0) {
-                const savedProfile = localStorage.getItem('emma_profile');
+                const savedProfile = localStorage.getItem('sally_profile');
                 if (savedProfile) {
                   const profile = JSON.parse(savedProfile);
-                  sendEmmaMessage(
+                  sendSallyMessage(
                     `Welcome back, ${profile.name}! 👋\n\nHow can I help you today?`,
                     SERVICES.map(s => ({ label: s.label, action: `interest:${s.value}` }))
                   );
                   setConversationStep(1);
                 } else {
-                  sendEmmaMessage(
-                    "👋 Hi there! I'm Emma, your AI assistant at EmersonEIMS. What's your name?",
+                  sendSallyMessage(
+                    "👋 Hi there! I'm Sally, your AI assistant at EmersonEIMS. What's your name?",
                     []
                   );
                 }
