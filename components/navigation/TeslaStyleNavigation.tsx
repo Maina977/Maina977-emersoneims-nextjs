@@ -203,36 +203,30 @@ export default function TeslaStyleNavigation({
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3">
           <div className="flex items-center justify-between">
-            {/* Logo */}
+            {/* Logo - Clean Professional Design */}
             <Link
               href="/"
               aria-label="Emerson EiMS home"
-              className="flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 group"
+              className="flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 group"
             >
-              <div className="relative flex items-center gap-3 cursor-pointer transition-all duration-500 group-hover:scale-[1.02]">
-                <div className="absolute -inset-3 bg-gradient-to-r from-amber-500/40 via-amber-400/50 to-amber-500/40 blur-2xl opacity-70 group-hover:opacity-100 transition-all duration-700 animate-pulse"></div>
-                
-                <div className="relative">
-                  <div className="absolute -inset-[2px] bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 rounded-xl opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
-                  <div className="relative bg-white rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-2xl shadow-amber-500/30 group-hover:shadow-amber-400/50 transition-all duration-500">
-                    <Image
-                      src="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png"
-                      alt="EmersonEIMS - Kenya's #1 Power Solutions"
-                      width={320}
-                      height={80}
-                      priority
-                      sizes="(max-width: 768px) 200px, 320px"
-                      className="h-12 sm:h-16 lg:h-20 w-full object-contain"
-                    />
-                  </div>
-                </div>
-                
-                <div className="hidden lg:flex flex-col -space-y-0.5">
-                  <span className="text-[10px] font-black tracking-wider bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300 bg-clip-text text-transparent uppercase">
+              <div className="relative flex items-center gap-4 transition-all duration-300 group-hover:scale-[1.03]">
+                {/* Logo Image - No Box, Clean & Professional */}
+                <Image
+                  src="/images/logo-tagline.png"
+                  alt="EmersonEIMS - Kenya's #1 Power Solutions"
+                  width={280}
+                  height={70}
+                  priority
+                  sizes="(max-width: 768px) 180px, (max-width: 1024px) 220px, 280px"
+                  className="h-14 sm:h-16 lg:h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.3)] group-hover:drop-shadow-[0_0_25px_rgba(251,191,36,0.5)] transition-all duration-300"
+                />
+
+                {/* Tagline - Desktop Only */}
+                <div className="hidden xl:flex flex-col -space-y-1">
+                  <span className="text-xs font-bold tracking-wide text-amber-400 uppercase">
                     Reliable Power
                   </span>
-                  <span className="text-[10px] font-black tracking-wider bg-gradient-to-r from-cyan-300 via-cyan-400 to-cyan-300 bg-clip-text text-transparent uppercase">
+                  <span className="text-xs font-bold tracking-wide text-cyan-400 uppercase">
                     Without Limits
                   </span>
                 </div>
