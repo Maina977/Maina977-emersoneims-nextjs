@@ -96,7 +96,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
               <p className="text-gray-500 mb-4">Need immediate assistance?</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center text-sm">
                 <a 
-                  href="tel:0768860655" 
+                  href="tel:0768860665" 
                   className="text-orange-500 hover:text-orange-400"
                 >
                   📞 0768 860 655

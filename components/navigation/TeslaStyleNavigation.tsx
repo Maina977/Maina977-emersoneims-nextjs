@@ -510,7 +510,7 @@ export default function TeslaStyleNavigation({
                   <h4 className="font-bold text-white mb-2">Need Help?</h4>
                   <p className="text-sm text-white/60 mb-4">Call us for immediate assistance</p>
                   <a
-                    href="tel:0768860655"
+                    href="tel:0768860665"
                     className="block w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold rounded-xl text-center"
                   >
                     📞 0768 860 655

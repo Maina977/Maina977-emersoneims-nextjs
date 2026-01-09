@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Generator Spare Parts Kenya | Filters, Engine Parts, Electrical | All Brands | EmersonEIMS',
-  description: 'Complete generator spare parts inventory: oil filters, fuel filters, air filters, engine parts, electrical components for Cummins, Caterpillar, Perkins, FG Wilson, Kohler, MTU generators. Genuine & OEM parts. Fast delivery across Kenya. Call 0768860655.',
+  description: 'Complete generator spare parts inventory: oil filters, fuel filters, air filters, engine parts, electrical components for Cummins, Caterpillar, Perkins, FG Wilson, Kohler, MTU generators. Genuine & OEM parts. Fast delivery across Kenya. Call 0768860665.',
   keywords: [
     'generator oil filter Kenya', 'generator fuel filter', 'generator air filter', 'oil filter Cummins',
     'fuel filter Perkins', 'air filter Caterpillar', 'coolant filter generator', 'hydraulic filter',

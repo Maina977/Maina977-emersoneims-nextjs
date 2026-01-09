@@ -1224,7 +1224,7 @@ export default async function BlogArticlePage({ params }: Props) {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 
-              href="tel:0768860655" 
+              href="tel:0768860665" 
               className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg font-semibold hover:opacity-90 transition"
             >
               📞 Call 0768 860 655

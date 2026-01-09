@@ -708,7 +708,7 @@ const MicroInteractions = () => {
 
 export const company = {
   name: "EMERSONEIMS",
-  phones: ["0768860655", "0782914717"],
+  phones: ["0768860665", "0782914717"],
   emails: ["info@emersoneims.com", "emersoneimservices@gmail.com"],
   address: "P.O. Box 387-00521, Old North Airport Road, Nairobi, Kenya",
 };

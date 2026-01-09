@@ -767,7 +767,7 @@ export default function GeneratorInstallationPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:0768860655"
+              href="tel:0768860665"
               className="px-8 py-4 bg-gradient-to-r from-green-400 to-green-600 text-black font-bold rounded-xl hover:from-green-500 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg shadow-green-500/30"
             >
               📞 Call: 0768 860 655

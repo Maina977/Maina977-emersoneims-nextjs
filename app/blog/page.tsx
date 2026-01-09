@@ -251,7 +251,7 @@ export default function BlogPage() {
       <section className="py-12 px-4 bg-orange-500/10 border-t border-orange-500/20">
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-lg">
-            Have questions? Call us: <a href="tel:0768860655" className="text-orange-500 font-bold hover:underline">0768 860 655</a>
+            Have questions? Call us: <a href="tel:0768860665" className="text-orange-500 font-bold hover:underline">0768 860 665</a>
             {' '}or{' '}
             <a href="tel:0782914717" className="text-orange-500 font-bold hover:underline">0782914717</a>
           </p>

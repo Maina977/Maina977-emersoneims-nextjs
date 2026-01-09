@@ -273,37 +273,37 @@ export default function InteractiveProductCard({
 }
 
 /**
- * Sample usage data for generators
+ * REAL GENERATORS - ACTUAL STOCK AVAILABLE
  */
 export const sampleProducts: Product[] = [
   {
-    id: 'gen-500',
-    name: 'Caterpillar 500kVA',
-    power: '500kVA / 400kW',
-    price: 'KES 4.5M',
-    image: '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
-    badge: 'BESTSELLER',
-    stock: 5,
+    id: 'cummins-44kva',
+    name: 'Cummins 44kVA',
+    power: '44kVA / 35kW',
+    price: 'KES 1,300,000',
+    image: '/images/KIVUKONI SCHOOL CUMMINS GENERATOR .webp',
+    badge: 'SPECIAL OFFER',
+    stock: 2,
     features: [
+      'Genuine Cummins Engine',
       'Automatic Transfer Switch',
-      '24/7 Remote Monitoring',
-      'Fuel-Efficient Engine',
       'Soundproof Canopy',
+      '2-Year Warranty',
     ],
     inStock: true,
   },
   {
-    id: 'gen-250',
-    name: 'Perkins 250kVA',
-    power: '250kVA / 200kW',
-    price: 'KES 2.8M',
-    image: '/images/GEN 2-1920x1080.png',
-    badge: 'HOT DEAL',
-    stock: 3,
+    id: 'cummins-60kva',
+    name: 'Cummins 60kVA',
+    power: '60kVA / 48kW',
+    price: 'KES 1,500,000',
+    image: '/images/KIVUKONI SCHOOL CUMMINS GENERATOR .webp',
+    badge: 'SPECIAL OFFER',
+    stock: 2,
     features: [
-      'UK Engineering',
-      'Low Fuel Consumption',
-      'Weather-Resistant',
+      'Genuine Cummins Engine',
+      'Automatic Transfer Switch',
+      'Weather-Resistant Canopy',
       '2-Year Warranty',
     ],
     inStock: true,

@@ -599,7 +599,7 @@ export default function GeneratorRentalPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:0768860655"
+              href="tel:0768860665"
               className="px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-600 text-white font-bold rounded-xl hover:from-blue-500 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/30"
             >
               📞 Call: 0768 860 655

@@ -17,7 +17,7 @@ test.describe('Contact Page', () => {
     const content = await page.textContent('body');
     
     // Check for Emerson phone numbers
-    expect(content).toContain('0768860655');
+    expect(content).toContain('0768860665');
     // Or formatted version
     const hasPhone = content?.includes('0768') || content?.includes('768');
     expect(hasPhone).toBeTruthy();
