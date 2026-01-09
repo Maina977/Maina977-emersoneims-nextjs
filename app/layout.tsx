@@ -23,6 +23,9 @@ import WebsiteStatsCounter from '@/components/social/WebsiteStatsCounter';
 import ClientSideComponents from '@/components/layout/ClientSideComponents';
 import LiquidCursor from '@/components/awwwards/LiquidCursor';
 
+// 🤖 EMMA AI ASSISTANT - Personalized Visitor Engagement
+import EmmaAIAssistant from '@/components/ai/EmmaAIAssistant';
+
 // CONVERSION BOOSTERS - Turn Every Click Into Business
 import FloatingActionBubbles from '@/components/conversion/FloatingActionBubbles';
 import LiveSalesNotifications from '@/components/conversion/LiveSalesNotifications';
@@ -324,7 +327,14 @@ export default function RootLayout({
             Shows real-time visitors, clicks, and activity notifications
         ════════════════════════════════════════════════════════════════════ */}
         <WebsiteStatsCounter />
-        
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            🤖 EMMA AI ASSISTANT - Personalized Visitor Welcome
+            Greets visitors by name, creates instant connection
+            Position: Above accessibility widget (z-index managed internally)
+        ════════════════════════════════════════════════════════════════ */}
+        <EmmaAIAssistant />
+
         {/* ═══════════════════════════════════════════════════════════════════
             NON-CRITICAL: Client-side components loaded after page is interactive
         ════════════════════════════════════════════════════════════════════ */}
