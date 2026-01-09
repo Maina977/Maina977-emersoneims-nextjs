@@ -18,11 +18,7 @@ const usedGenerators = [
     features: ["Fully serviced", "Load tested", "OEM parts", "6-month service history"],
     status: "In Stock",
     statusColor: "bg-green-500",
-    images: [
-      "/images/IMG-20250804-WA0006.jpg",
-      "/images/GEN%202-1920x1080.png",
-      "https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-5-scaled.png",
-    ],
+    images: [],
   },
   {
     brand: "Perkins",
@@ -32,10 +28,7 @@ const usedGenerators = [
     features: ["Fuel efficient", "Low hours", "New filters", "Painted"],
     status: "Limited Stock",
     statusColor: "bg-yellow-500",
-    images: [
-      "https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-5-scaled.png",
-      "/images/IMG-20250804-WA0006.jpg",
-    ],
+    images: [],
   },
   {
     brand: "Caterpillar",
@@ -45,10 +38,7 @@ const usedGenerators = [
     features: ["Heavy-duty", "Low hours", "Full service", "Canopy available"],
     status: "In Stock",
     statusColor: "bg-green-500",
-    images: [
-      "https://www.emersoneims.com/wp-content/uploads/2025/11/80-scaled.png",
-      "/images/GEN%202-1920x1080.png",
-    ],
+    images: [],
   },
   {
     brand: "Volvo Penta",
@@ -58,10 +48,7 @@ const usedGenerators = [
     features: ["Low emissions", "Advanced controls", "Soundproofed", "Containerized"],
     status: "Available Soon",
     statusColor: "bg-blue-500",
-    images: [
-      "https://www.emersoneims.com/wp-content/uploads/2025/11/77.png",
-      "https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-5-scaled.png",
-    ],
+    images: [],
   },
   {
     brand: "SDMO",
@@ -71,9 +58,7 @@ const usedGenerators = [
     features: ["French engineered", "Robust design", "Easy maintenance", "Export ready"],
     status: "In Stock",
     statusColor: "bg-green-500",
-    images: [
-      "/images/GEN%202-1920x1080.png",
-    ],
+    images: [],
   },
   {
     brand: "Wei Chai",
@@ -83,9 +68,7 @@ const usedGenerators = [
     features: ["Cost effective", "Fully tested", "New batteries", "Serviced"],
     status: "In Stock",
     statusColor: "bg-green-500",
-    images: [
-      "https://www.emersoneims.com/wp-content/uploads/2025/11/GEN-5-scaled.png",
-    ],
+    images: [],
   },
 ];
 
