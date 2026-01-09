@@ -66,7 +66,7 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         name: 'Contact Us',
         short_name: 'Contact',
-        description: 'Call 0768 860 655 or 0782914717',
+        description: 'Call 0768 860 665 or 0782914717',
         url: '/contact',
         icons: [{ src: '/icon-contact.png', sizes: '96x96' }],
       },

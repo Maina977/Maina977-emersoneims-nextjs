@@ -75,22 +75,22 @@ describe('Price Formatting', () => {
 
 describe('Phone Validation', () => {
   it('validates correct Kenyan mobile numbers', () => {
-    expect(isValidKenyanPhone('0768860655')).toBe(true);
+    expect(isValidKenyanPhone('0768860665')).toBe(true);
     expect(isValidKenyanPhone('0782914717')).toBe(true);
   });
 
   it('validates numbers with country code', () => {
-    expect(isValidKenyanPhone('254768860655')).toBe(true);
+    expect(isValidKenyanPhone('254768860665')).toBe(true);
   });
 
   it('rejects invalid numbers', () => {
     expect(isValidKenyanPhone('123456')).toBe(false);
-    expect(isValidKenyanPhone('0868860655')).toBe(false);
+    expect(isValidKenyanPhone('0868860665')).toBe(false);
   });
 
   it('handles formatted numbers', () => {
-    expect(isValidKenyanPhone('076-886-0655')).toBe(true);
-    expect(isValidKenyanPhone('+254 768 860655')).toBe(true);
+    expect(isValidKenyanPhone('076-886-0665')).toBe(true);
+    expect(isValidKenyanPhone('+254 768 860665')).toBe(true);
   });
 });
 

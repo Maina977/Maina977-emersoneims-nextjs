@@ -278,7 +278,7 @@ export default function InteractiveProductCard({
 export const sampleProducts: Product[] = [
   {
     id: 'gen-500',
-    name: 'Cummins 500kVA',
+    name: 'Caterpillar 500kVA',
     power: '500kVA / 400kW',
     price: 'KES 4.5M',
     image: '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
