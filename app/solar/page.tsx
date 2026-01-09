@@ -1201,17 +1201,144 @@ export default function PremiumApp() {
             </div>
           </section>
 
-          <section className="mx-auto max-w-7xl px-6 py-12" aria-labelledby="warranty-heading">
-            <h2 id="warranty-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">Warranties & guarantees</h2>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <WarrantyBadge label="Panels" detail="25-year performance / 12-year product" />
-              <WarrantyBadge label="Batteries" detail="10-year / ≥6000 cycles" />
-              <WarrantyBadge label="Inverters" detail="5-year product" />
-              <WarrantyBadge label="Design" detail="Accuracy guarantee" />
-              <WarrantyBadge label="Support" detail="24/7 for mission-critical" />
+          {/* ═══════════════════════════════════════════════════════════════════
+              REVOLUTIONARY WARRANTY SECTION - Industry-Leading Solar Coverage
+          ════════════════════════════════════════════════════════════════ */}
+          <section className="py-24 bg-gradient-to-b from-black via-gray-900/50 to-black" aria-labelledby="warranty-heading">
+            <div className="mx-auto max-w-7xl px-6">
+              <div className="text-center mb-16">
+                <h2 id="warranty-heading" className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  Industry-Leading Solar Warranties
+                </h2>
+                <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                  Every solar system backed by comprehensive coverage - panels, batteries, inverters, and installation
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-8">
+                {/* 25-Year Panel Warranty */}
+                <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-8 rounded-2xl border border-amber-500/30 backdrop-blur-sm hover:scale-105 transition-transform">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+                      <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">25 Years</h3>
+                      <p className="text-sm text-gray-400">Solar Panel Performance</p>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 text-sm text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Performance guarantee - 80% efficiency after 25 years</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Minimum 90% efficiency after 10 years</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Manufacturer defects coverage</span>
+                    </li>
+                  </ul>
+                  <div className="mt-6 pt-6 border-t border-white/10">
+                    <p className="text-xs text-gray-400 text-center">✓ Tier 1 Panel Manufacturers Only</p>
+                  </div>
+                </div>
+
+                {/* 10-Year Electronics Warranty */}
+                <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-8 rounded-2xl border border-blue-500/30 backdrop-blur-sm hover:scale-105 transition-transform">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+                      <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">10 Years</h3>
+                      <p className="text-sm text-gray-400">System Electronics</p>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 text-sm text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Inverter replacement if defective</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>MPPT charge controller coverage</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>System monitoring equipment</span>
+                    </li>
+                  </ul>
+                  <div className="mt-6 pt-6 border-t border-white/10">
+                    <p className="text-xs text-gray-400 text-center">✓ Premium Brand Electronics</p>
+                  </div>
+                </div>
+
+                {/* 5-Year Installation & Battery */}
+                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-8 rounded-2xl border border-green-500/30 backdrop-blur-sm hover:scale-105 transition-transform">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                      <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">5 Years</h3>
+                      <p className="text-sm text-gray-400">Installation & Battery</p>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 text-sm text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Battery capacity guarantee (lithium-ion)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Installation workmanship</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Mounting structure integrity</span>
+                    </li>
+                  </ul>
+                  <div className="mt-6 pt-6 border-t border-white/10">
+                    <p className="text-xs text-gray-400 text-center">✓ EmersonEIMS Quality Guarantee</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Support Contact */}
+              <div className="mt-12 text-center">
+                <p className="text-gray-400">
+                  24/7 Support: <a href="tel:+254768860665" className="text-amber-500 hover:text-amber-400 font-semibold">0768 860 665</a> | <a href="tel:+254782914717" className="text-amber-500 hover:text-amber-400 font-semibold">0782 914 717</a>
+                </p>
+              </div>
             </div>
           </section>
-
           <SolarInstallationGallery />
           <TestimonialList />
           <CaseStudyList />

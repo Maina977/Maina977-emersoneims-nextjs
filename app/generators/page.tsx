@@ -317,6 +317,176 @@ export default function GeneratorPage() {
         </motion.div>
       </motion.section>
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          WARRANTY SECTION - Industry-Leading Coverage
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="py-24 bg-gradient-to-b from-black via-gray-900/50 to-black">
+        <div className="eims-shell">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Industry-Leading Warranties
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              Every Cummins generator backed by comprehensive coverage and lifetime support
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Main Product Warranty */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-8 rounded-2xl border border-amber-500/30 backdrop-blur-sm"
+              whileHover={{ scale: 1.02, boxShadow: '0 20px 40px rgba(251, 191, 36, 0.3)' }}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+                  <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">2-Year Warranty</h3>
+                  <p className="text-sm text-gray-400">Comprehensive Product Coverage</p>
+                </div>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  'Cummins engine components and factory defects',
+                  'Alternator and starter motor coverage',
+                  'Control panel and electrical wiring',
+                  'Free maintenance for first 6 months',
+                  '24/7 emergency breakdown support'
+                ].map((item, i) => (
+                  <motion.li
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className="flex items-start gap-2 text-gray-300"
+                  >
+                    <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-sm leading-relaxed">{item}</span>
+                  </motion.li>
+                ))}
+              </ul>
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.8 }}
+                className="mt-6 pt-6 border-t border-white/10"
+              >
+                <p className="text-xs text-gray-400 text-center">
+                  ✓ Backed by EmersonEIMS Quality Guarantee
+                </p>
+              </motion.div>
+            </motion.div>
+
+            {/* Service Guarantee */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-8 rounded-2xl border border-blue-500/30 backdrop-blur-sm"
+              whileHover={{ scale: 1.02, boxShadow: '0 20px 40px rgba(59, 130, 246, 0.3)' }}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+                  <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">6-Month Service</h3>
+                  <p className="text-sm text-gray-400">Complimentary Maintenance</p>
+                </div>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  'Free preventive maintenance visits',
+                  'Oil and filter changes included',
+                  'Performance optimization checks',
+                  'Load bank testing'
+                ].map((item, i) => (
+                  <motion.li
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5 + i * 0.1 }}
+                    className="flex items-start gap-2 text-gray-300"
+                  >
+                    <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-sm leading-relaxed">{item}</span>
+                  </motion.li>
+                ))}
+              </ul>
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.9 }}
+                className="mt-6 pt-6 border-t border-white/10"
+              >
+                <p className="text-xs text-center text-gray-400">
+                  📞 24/7 Support: <span className="text-blue-400">0768 860 665</span>
+                </p>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Warranty Terms Summary */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.6 }}
+            className="mt-12 max-w-4xl mx-auto"
+          >
+            <div className="bg-gradient-to-r from-gray-900 to-black p-6 rounded-xl border border-gray-800">
+              <h4 className="text-lg font-semibold text-white mb-4 text-center">Warranty Coverage Details</h4>
+              <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-400">
+                <div>
+                  <p className="flex items-start gap-2">
+                    <span className="text-green-500">✓</span>
+                    <span>Warranty valid from installation date</span>
+                  </p>
+                  <p className="flex items-start gap-2 mt-2">
+                    <span className="text-green-500">✓</span>
+                    <span>Parts and labor covered during warranty period</span>
+                  </p>
+                </div>
+                <div>
+                  <p className="flex items-start gap-2">
+                    <span className="text-green-500">✓</span>
+                    <span>Regular maintenance required to maintain warranty</span>
+                  </p>
+                  <p className="flex items-start gap-2 mt-2">
+                    <span className="text-green-500">✓</span>
+                    <span>Contact within 48 hours of issue discovery</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Interactive Blobs Section */}
       <section className="relative py-20 bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden">
         {!isLite && (
