@@ -211,31 +211,48 @@ export default function AccessibilityWidget() {
         }
       `}</style>
 
-      {/* Floating Accessibility Button - Always Visible with Label - Positioned ABOVE stats counter */}
+      {/* Floating Accessibility Button - ALWAYS VISIBLE - Positioned ABOVE stats counter */}
       <motion.button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 left-4 z-50 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-lg shadow-blue-600/40 flex items-center gap-2 px-4 py-3 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group"
-        aria-label="Open Accessibility Options - This website is accessible for visually impaired users"
-        title="Accessibility Options - WCAG 2.1 AAA Compliant"
-        whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(37, 99, 235, 0.4)' }}
+        className="fixed bottom-24 left-4 z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-3 px-5 py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"
+        aria-label="Open Accessibility Options - We fully support visually impaired users with screen readers, high contrast, large text and more"
+        title="♿ Accessibility Options - Click here for visually impaired support. WCAG 2.1 AAA Compliant"
+        whileHover={{ scale: 1.08, boxShadow: '0 25px 50px rgba(37, 99, 235, 0.5)' }}
         whileTap={{ scale: 0.98 }}
         initial={{ opacity: 1, scale: 1, x: 0 }}
-        animate={{ opacity: 1, scale: 1, x: 0 }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          x: 0,
+          boxShadow: [
+            '0 10px 30px rgba(37, 99, 235, 0.4)',
+            '0 15px 40px rgba(37, 99, 235, 0.6)',
+            '0 10px 30px rgba(37, 99, 235, 0.4)',
+          ],
+        }}
+        transition={{
+          boxShadow: { duration: 2, repeat: Infinity },
+        }}
       >
         {/* Accessibility Icon with pulse animation */}
-        <span className="relative">
+        <span className="relative text-2xl">
           <AccessibilityIcon />
           <span className="absolute inset-0 rounded-full bg-white/30 animate-ping" />
         </span>
-        
-        {/* Label - Always visible */}
-        <span className="font-semibold text-sm whitespace-nowrap">
-          Accessibility
-        </span>
-        
-        {/* WCAG Badge */}
-        <span className="bg-white/20 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white/30">
-          AAA
+
+        {/* Label - Always visible with clear text */}
+        <div className="flex flex-col items-start">
+          <span className="font-bold text-base whitespace-nowrap">
+            Accessibility
+          </span>
+          <span className="text-xs text-blue-100 whitespace-nowrap">
+            For Visually Impaired
+          </span>
+        </div>
+
+        {/* WCAG Badge - Larger and more prominent */}
+        <span className="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full border-2 border-white shadow-lg">
+          ♿ AAA
         </span>
         
         {/* Active indicator - shows when settings are enabled */}
@@ -273,21 +290,30 @@ export default function AccessibilityWidget() {
               aria-label="Accessibility Settings"
             >
               {/* Header */}
-              <div className="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AccessibilityIcon />
-                  <div>
-                    <h2 className="font-bold text-lg">Accessibility</h2>
-                    <p className="text-blue-100 text-xs">Customize your experience</p>
+              <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 text-white px-6 py-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <AccessibilityIcon />
+                    <div>
+                      <h2 className="font-bold text-xl">♿ Accessibility Options</h2>
+                      <p className="text-blue-100 text-sm">For All Users Including Visually Impaired</p>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                    aria-label="Close accessibility panel"
+                  >
+                    <CloseIcon />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-blue-500 rounded-lg transition-colors"
-                  aria-label="Close accessibility panel"
-                >
-                  <CloseIcon />
-                </button>
+
+                {/* Accessibility Statement */}
+                <div className="bg-white/10 rounded-lg px-3 py-2 border border-white/20">
+                  <p className="text-xs text-blue-50 leading-relaxed">
+                    <strong>EmersonEIMS is committed to digital accessibility.</strong> We provide tools for visually impaired users, screen reader support, and WCAG 2.1 AAA compliance.
+                  </p>
+                </div>
               </div>
 
               {/* Settings */}
