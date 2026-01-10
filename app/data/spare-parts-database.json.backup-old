@@ -1,0 +1,2599 @@
+{
+  "version": "2.0.0",
+  "lastUpdated": "2026-01-10",
+  "totalParts": 91,
+  "categories": [
+    {
+      "id": "generators",
+      "name": "Generator Parts",
+      "icon": "⚡",
+      "description": "Comprehensive generator components for all major brands",
+      "subcategories": [
+        {
+          "id": "engine-parts",
+          "name": "Engine Parts",
+          "description": "Complete engine components for all brands",
+          "parts": [
+            {
+              "partNo": "3802263",
+              "name": "Piston Kit - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6BTAA5.9"],
+              "specifications": {
+                "bore": "102mm",
+                "compressionHeight": "78mm",
+                "pinDiameter": "38mm",
+                "ringGrooves": "3"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 15500,
+                "bulkPrice": 14000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["engine", "piston", "cummins", "6bt", "power-assembly"]
+            },
+            {
+              "partNo": "3802429",
+              "name": "Piston Kit - Cummins 4BT",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "bore": "102mm",
+                "compressionHeight": "78mm",
+                "pinDiameter": "38mm",
+                "ringGrooves": "3"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 14500,
+                "bulkPrice": 13000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["engine", "piston", "cummins", "4bt"]
+            },
+            {
+              "partNo": "U5MK8269",
+              "name": "Piston Kit - Perkins 1104C",
+              "brand": "Perkins",
+              "category": "Piston",
+              "compatibility": ["1104C-44", "1104C-44T", "1104C-E44T"],
+              "specifications": {
+                "bore": "105mm",
+                "compressionHeight": "75.5mm",
+                "pinDiameter": "42mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 16500,
+                "bulkPrice": 15000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 24,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["engine", "piston", "perkins", "1104c"]
+            },
+            {
+              "partNo": "2418455322",
+              "name": "Injector Pump - Bosch",
+              "brand": "Bosch",
+              "category": "Fuel Injection",
+              "compatibility": ["Cummins 6BT", "Perkins 1006"],
+              "specifications": {
+                "type": "Inline Injection Pump",
+                "cylinders": "6",
+                "rotation": "Clockwise"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 125000,
+                "bulkPrice": 115000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 8,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "injection", "pump", "bosch"]
+            },
+            {
+              "partNo": "DLLA150P1622",
+              "name": "Injector Nozzle - Cummins Common Rail",
+              "brand": "Bosch",
+              "category": "Injector Nozzle",
+              "compatibility": ["ISBe", "ISDe", "QSB"],
+              "specifications": {
+                "sprayAngle": "150°",
+                "holes": "8",
+                "type": "Common Rail"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 18500,
+                "bulkPrice": 17000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 56,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "nozzle", "common-rail", "cummins"]
+            },
+            {
+              "partNo": "4089356",
+              "name": "Cylinder Head Gasket - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Gasket",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.2mm",
+                "bore": "102mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 45,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head", "cummins", "6bt", "seal"]
+            },
+            {
+              "partNo": "U5LT0597",
+              "name": "Cylinder Head Gasket - Perkins 1104C",
+              "brand": "Perkins",
+              "category": "Gasket",
+              "compatibility": ["1104C-44", "1104C-44T"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.3mm",
+                "bore": "105mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 9500,
+                "bulkPrice": 8500,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head", "perkins", "1104c"]
+            },
+            {
+              "partNo": "4089357",
+              "name": "Overhaul Gasket Set - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Gasket Set",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "includes": "Head gasket, manifold gaskets, oil pan gasket, valve cover gasket, all seals",
+                "pieces": "42"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 35000,
+                "bulkPrice": 32000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "set", "overhaul", "cummins", "complete"]
+            },
+            {
+              "partNo": "HX35W",
+              "name": "Turbocharger - Holset HX35W",
+              "brand": "Holset",
+              "category": "Turbocharger",
+              "compatibility": ["Cummins 6BT", "Cummins ISBe"],
+              "specifications": {
+                "compressorWheelDiameter": "54mm",
+                "turbineWheelDiameter": "60mm",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 95000,
+                "bulkPrice": 88000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 12,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["turbo", "turbocharger", "holset", "boost"]
+            },
+            {
+              "partNo": "T04E62",
+              "name": "Turbocharger - Garrett T04E",
+              "brand": "Garrett",
+              "category": "Turbocharger",
+              "compatibility": ["Perkins 1106", "CAT 3054"],
+              "specifications": {
+                "compressorWheelDiameter": "62mm",
+                "turbineWheelDiameter": "68mm",
+                "bearingType": "Ball Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 105000,
+                "bulkPrice": 98000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 8,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["turbo", "garrett", "performance"]
+            },
+            {
+              "partNo": "3957544",
+              "name": "Water Pump - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Water Pump",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "type": "Centrifugal",
+                "impellerDiameter": "95mm",
+                "shaftDiameter": "25mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 28500,
+                "bulkPrice": 26000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 24,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["water", "pump", "cooling", "cummins"]
+            },
+            {
+              "partNo": "U5MW0187",
+              "name": "Water Pump - Perkins 1104C",
+              "brand": "Perkins",
+              "category": "Water Pump",
+              "compatibility": ["1104C-44", "1104C-44T", "1104D-44T"],
+              "specifications": {
+                "type": "Centrifugal",
+                "impellerDiameter": "92mm",
+                "shaftDiameter": "24mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 32000,
+                "bulkPrice": 29000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["water", "pump", "perkins", "cooling"]
+            },
+            {
+              "partNo": "3918078",
+              "name": "Oil Pump - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Oil Pump",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6BTAA5.9"],
+              "specifications": {
+                "type": "Gear Type",
+                "flowRate": "85 LPM",
+                "pressure": "4-6 bar"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 22500,
+                "bulkPrice": 20000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 16,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["oil", "pump", "lubrication", "cummins"]
+            },
+            {
+              "partNo": "3800883",
+              "name": "Inlet Valve - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Valve",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "stemDiameter": "8mm",
+                "headDiameter": "42mm",
+                "length": "125mm",
+                "material": "Chrome Silicon"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2850,
+                "bulkPrice": 2500,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 120,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["valve", "inlet", "cummins", "engine"]
+            },
+            {
+              "partNo": "3800884",
+              "name": "Exhaust Valve - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Valve",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "stemDiameter": "8mm",
+                "headDiameter": "38mm",
+                "length": "125mm",
+                "material": "Inconel"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3200,
+                "bulkPrice": 2800,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 108,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["valve", "exhaust", "cummins", "engine"]
+            },
+            {
+              "partNo": "3802375",
+              "name": "Valve Stem Seal Kit - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Seal",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "quantity": "12 pieces",
+                "material": "Viton",
+                "temperature": "-40°C to +200°C"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4500,
+                "bulkPrice": 4000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["seal", "valve", "cummins"]
+            },
+            {
+              "partNo": "3965958",
+              "name": "Con Rod Bearing Set - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Bearing",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "type": "Tri-Metal",
+                "size": "STD",
+                "quantity": "6 pairs"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 18500,
+                "bulkPrice": 16500,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["bearing", "conrod", "cummins", "connecting"]
+            },
+            {
+              "partNo": "3965959",
+              "name": "Main Bearing Set - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Bearing",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "type": "Tri-Metal",
+                "size": "STD",
+                "quantity": "7 pairs"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 22500,
+                "bulkPrice": 20000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["bearing", "main", "crankshaft", "cummins"]
+            },
+            {
+              "partNo": "3926126",
+              "name": "Crankshaft Front Seal - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Seal",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6BTAA5.9"],
+              "specifications": {
+                "outerDiameter": "115mm",
+                "innerDiameter": "95mm",
+                "width": "12mm",
+                "material": "Viton"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3500,
+                "bulkPrice": 3000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 64,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["seal", "crankshaft", "cummins", "front"]
+            },
+            {
+              "partNo": "3926127",
+              "name": "Crankshaft Rear Seal - Cummins 6BT",
+              "brand": "Cummins",
+              "category": "Seal",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "outerDiameter": "145mm",
+                "innerDiameter": "120mm",
+                "width": "14mm",
+                "material": "Viton"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4200,
+                "bulkPrice": 3700,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 58,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["seal", "crankshaft", "cummins", "rear"]
+            },
+            {
+              "partNo": "3287473",
+              "name": "V-Belt - Cummins 6BT (Fan Belt)",
+              "brand": "Gates",
+              "category": "Belt",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "type": "V-Belt",
+                "profile": "17x1245",
+                "length": "1245mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2850,
+                "bulkPrice": 2500,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 85,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["belt", "v-belt", "fan", "cummins"]
+            },
+            {
+              "partNo": "3287474",
+              "name": "V-Belt - Perkins 1104C (Alternator)",
+              "brand": "Gates",
+              "category": "Belt",
+              "compatibility": ["1104C-44", "1104C-44T"],
+              "specifications": {
+                "type": "V-Belt",
+                "profile": "13x1100",
+                "length": "1100mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2650,
+                "bulkPrice": 2300,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 72,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["belt", "v-belt", "alternator", "perkins"]
+            }
+          ]
+        },
+        {
+          "id": "electrical-components",
+          "name": "Electrical Components",
+          "description": "AVRs, MPUs, Solenoids, Sensors, Governors",
+          "parts": [
+            {
+              "partNo": "AS480",
+              "name": "AVR - Stamford AS480",
+              "brand": "Stamford",
+              "category": "AVR",
+              "compatibility": ["UCI, UCDI Series Alternators"],
+              "specifications": {
+                "type": "Automatic Voltage Regulator",
+                "inputVoltage": "85-265VAC",
+                "regulation": "±0.5%",
+                "frequency": "50/60Hz"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 45000,
+                "bulkPrice": 42000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 24,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["avr", "stamford", "voltage", "regulator"]
+            },
+            {
+              "partNo": "SX460",
+              "name": "AVR - Stamford SX460",
+              "brand": "Stamford",
+              "category": "AVR",
+              "compatibility": ["HCI, MX Series Alternators"],
+              "specifications": {
+                "type": "Automatic Voltage Regulator",
+                "inputVoltage": "85-265VAC",
+                "regulation": "±1%",
+                "frequency": "50/60Hz"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 38000,
+                "bulkPrice": 35000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["avr", "stamford", "sx460", "voltage"]
+            },
+            {
+              "partNo": "MX341",
+              "name": "AVR - Marathon MX341",
+              "brand": "Marathon",
+              "category": "AVR",
+              "compatibility": ["Marathon MP, SE Series"],
+              "specifications": {
+                "type": "Automatic Voltage Regulator",
+                "inputVoltage": "85-265VAC",
+                "regulation": "±0.5%",
+                "frequency": "50/60Hz"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 42000,
+                "bulkPrice": 39000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["avr", "marathon", "voltage", "regulator"]
+            },
+            {
+              "partNo": "DVR2000E",
+              "name": "AVR - Mecc Alte DVR2000E",
+              "brand": "Mecc Alte",
+              "category": "AVR",
+              "compatibility": ["Mecc Alte ECO Series"],
+              "specifications": {
+                "type": "Digital Voltage Regulator",
+                "inputVoltage": "85-265VAC",
+                "regulation": "±0.25%",
+                "frequency": "50/60Hz"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 52000,
+                "bulkPrice": 48000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 14,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["avr", "mecc-alte", "digital", "voltage"]
+            },
+            {
+              "partNo": "3034572",
+              "name": "MPU - Cummins Magnetic Pickup",
+              "brand": "Cummins",
+              "category": "MPU",
+              "compatibility": ["QSB, ISBe, QSL, ISLe"],
+              "specifications": {
+                "type": "Magnetic Pickup Unit",
+                "resistance": "950-1050 Ohms",
+                "threadSize": "M16x1.5",
+                "outputVoltage": "1-10VAC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 12500,
+                "bulkPrice": 11000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["mpu", "sensor", "speed", "magnetic"]
+            },
+            {
+              "partNo": "U85206452",
+              "name": "MPU - Perkins Speed Sensor",
+              "brand": "Perkins",
+              "category": "MPU",
+              "compatibility": ["1104C, 1104D, 1106C, 1106D"],
+              "specifications": {
+                "type": "Magnetic Pickup Unit",
+                "resistance": "800-1200 Ohms",
+                "threadSize": "M18x1.5",
+                "outputVoltage": "1-8VAC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 13500,
+                "bulkPrice": 12000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 36,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["mpu", "perkins", "sensor", "speed"]
+            },
+            {
+              "partNo": "3408421",
+              "name": "Fuel Shutoff Solenoid - Cummins",
+              "brand": "Cummins",
+              "category": "Solenoid",
+              "compatibility": ["6BT, 6CT, ISBe"],
+              "specifications": {
+                "voltage": "24VDC",
+                "current": "8A",
+                "type": "Pull Type",
+                "dutyCycle": "Continuous"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 18500,
+                "bulkPrice": 16500,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["solenoid", "fuel", "shutoff", "cummins"]
+            },
+            {
+              "partNo": "2848A271",
+              "name": "Stop Solenoid - Perkins",
+              "brand": "Perkins",
+              "category": "Solenoid",
+              "compatibility": ["1103, 1104C, 1106C"],
+              "specifications": {
+                "voltage": "24VDC",
+                "current": "6A",
+                "type": "Pull Type"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 16500,
+                "bulkPrice": 15000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 44,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["solenoid", "stop", "perkins", "fuel"]
+            },
+            {
+              "partNo": "3408326",
+              "name": "Oil Pressure Sensor - Cummins",
+              "brand": "Cummins",
+              "category": "Sensor",
+              "compatibility": ["6BT, 6CT, ISBe, QSB"],
+              "specifications": {
+                "type": "Pressure Sensor",
+                "range": "0-1000 kPa",
+                "output": "0.5-4.5VDC",
+                "threadSize": "1/8 NPT"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 65,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["sensor", "pressure", "oil", "cummins"]
+            },
+            {
+              "partNo": "3408619",
+              "name": "Coolant Temperature Sensor - Cummins",
+              "brand": "Cummins",
+              "category": "Sensor",
+              "compatibility": ["6BT, 6CT, ISBe, ISLe"],
+              "specifications": {
+                "type": "Temperature Sensor",
+                "range": "-40°C to +150°C",
+                "resistance": "NTC Thermistor",
+                "threadSize": "M14x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 6500,
+                "bulkPrice": 5800,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 78,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["sensor", "temperature", "coolant", "cummins"]
+            },
+            {
+              "partNo": "ESD5500E",
+              "name": "Electronic Governor - GAC",
+              "brand": "GAC",
+              "category": "Governor",
+              "compatibility": ["Universal - All Engines"],
+              "specifications": {
+                "type": "Electronic Speed Governor",
+                "inputVoltage": "12/24VDC",
+                "regulation": "±0.25%",
+                "actuatorType": "Stepper Motor"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 65000,
+                "bulkPrice": 60000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 16,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["governor", "electronic", "speed", "control"]
+            },
+            {
+              "partNo": "3044195",
+              "name": "Starter Motor - Cummins 6BT",
+              "brand": "Delco Remy",
+              "category": "Starter",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "voltage": "24VDC",
+                "power": "5.5kW",
+                "teeth": "11",
+                "rotation": "Clockwise"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 45000,
+                "bulkPrice": 42000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["starter", "motor", "cummins", "starting"]
+            },
+            {
+              "partNo": "2873K404",
+              "name": "Starter Motor - Perkins 1104C",
+              "brand": "Perkins",
+              "category": "Starter",
+              "compatibility": ["1104C-44", "1104C-44T"],
+              "specifications": {
+                "voltage": "24VDC",
+                "power": "4.5kW",
+                "teeth": "10",
+                "rotation": "Clockwise"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 48000,
+                "bulkPrice": 44000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 14,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["starter", "perkins", "motor"]
+            },
+            {
+              "partNo": "3972730",
+              "name": "Alternator - Cummins 28V/80A",
+              "brand": "Delco Remy",
+              "category": "Alternator",
+              "compatibility": ["6BT5.9", "6BTA5.9"],
+              "specifications": {
+                "voltage": "28VDC",
+                "current": "80A",
+                "pulleyType": "V-Belt",
+                "regulation": "Internal"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 38000,
+                "bulkPrice": 35000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 22,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["alternator", "charging", "cummins", "battery"]
+            }
+          ]
+        },
+        {
+          "id": "control-modules",
+          "name": "Control Modules",
+          "description": "DeepSea and PowerWizard Controllers",
+          "parts": [
+            {
+              "partNo": "DSE3110",
+              "name": "Auto Start Control Module - DSE3110",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets"],
+              "specifications": {
+                "type": "Auto Start Module",
+                "voltage": "8-35VDC",
+                "display": "LCD",
+                "canBus": "No",
+                "inputs": "4 Digital",
+                "outputs": "4 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 45000,
+                "bulkPrice": 42000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 12,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "controller", "auto-start", "dse3110"]
+            },
+            {
+              "partNo": "DSE4510",
+              "name": "Auto Mains Failure Control - DSE4510",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets with Mains"],
+              "specifications": {
+                "type": "AMF Module",
+                "voltage": "8-35VDC",
+                "display": "LCD Backlit",
+                "canBus": "No",
+                "inputs": "8 Digital",
+                "outputs": "8 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 65000,
+                "bulkPrice": 60000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "amf", "controller", "dse4510"]
+            },
+            {
+              "partNo": "DSE4520",
+              "name": "AMF Control Module MKII - DSE4520",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets"],
+              "specifications": {
+                "type": "AMF MKII",
+                "voltage": "8-35VDC",
+                "display": "LCD Backlit",
+                "canBus": "Yes",
+                "inputs": "10 Digital",
+                "outputs": "10 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 72000,
+                "bulkPrice": 67000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 14,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "amf", "mkii", "dse4520"]
+            },
+            {
+              "partNo": "DSE5510",
+              "name": "Auto Start Control Module - DSE5510",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets"],
+              "specifications": {
+                "type": "Auto Start Advanced",
+                "voltage": "8-35VDC",
+                "display": "LCD Graphic",
+                "canBus": "Yes",
+                "inputs": "12 Digital",
+                "outputs": "12 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 85000,
+                "bulkPrice": 79000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 10,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "controller", "advanced", "dse5510"]
+            },
+            {
+              "partNo": "DSE5520",
+              "name": "AMF Control Module - DSE5520",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets with AMF"],
+              "specifications": {
+                "type": "AMF Advanced",
+                "voltage": "8-35VDC",
+                "display": "LCD Graphic",
+                "canBus": "Yes",
+                "inputs": "12 Digital, 4 Analog",
+                "outputs": "12 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 92000,
+                "bulkPrice": 85000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 8,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "amf", "advanced", "dse5520"]
+            },
+            {
+              "partNo": "DSE6010",
+              "name": "Auto Start Control Module - DSE6010",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets"],
+              "specifications": {
+                "type": "Auto Start MKIII",
+                "voltage": "8-35VDC",
+                "display": "TFT Color",
+                "canBus": "Yes",
+                "inputs": "16 Digital",
+                "outputs": "16 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 125000,
+                "bulkPrice": 115000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 6,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "controller", "mkiii", "dse6010"]
+            },
+            {
+              "partNo": "DSE6020",
+              "name": "AMF Control Module MKIII - DSE6020",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets with AMF"],
+              "specifications": {
+                "type": "AMF MKIII",
+                "voltage": "8-35VDC",
+                "display": "TFT Color",
+                "canBus": "Yes",
+                "inputs": "16 Digital, 8 Analog",
+                "outputs": "16 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 135000,
+                "bulkPrice": 125000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 5,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "amf", "mkiii", "dse6020"]
+            },
+            {
+              "partNo": "DSE7310",
+              "name": "Auto Start Control Module - DSE7310",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets"],
+              "specifications": {
+                "type": "Auto Start Premium",
+                "voltage": "8-35VDC",
+                "display": "TFT Color Touch",
+                "canBus": "Yes",
+                "modbus": "Yes",
+                "inputs": "20 Digital",
+                "outputs": "20 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 165000,
+                "bulkPrice": 155000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 4,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "premium", "touchscreen", "dse7310"]
+            },
+            {
+              "partNo": "DSE7320",
+              "name": "AMF Control Module - DSE7320",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets with AMF"],
+              "specifications": {
+                "type": "AMF Premium",
+                "voltage": "8-35VDC",
+                "display": "TFT Color Touch",
+                "canBus": "Yes",
+                "modbus": "Yes",
+                "inputs": "20 Digital, 12 Analog",
+                "outputs": "20 Relay"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 185000,
+                "bulkPrice": 172000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "Low Stock",
+                "quantity": 3,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "amf", "premium", "dse7320"]
+            },
+            {
+              "partNo": "DSE7410",
+              "name": "Auto Synchronising & Load Share - DSE7410",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets - Parallel"],
+              "specifications": {
+                "type": "Synchronising Module",
+                "voltage": "8-35VDC",
+                "display": "TFT Color",
+                "canBus": "Yes",
+                "loadShare": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 225000,
+                "bulkPrice": 210000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 4,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "sync", "parallel", "dse7410"]
+            },
+            {
+              "partNo": "DSE7420",
+              "name": "Auto Synchronising & Load Share AMF - DSE7420",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets - Parallel AMF"],
+              "specifications": {
+                "type": "Sync AMF Module",
+                "voltage": "8-35VDC",
+                "display": "TFT Color",
+                "canBus": "Yes",
+                "loadShare": "Yes",
+                "amf": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 245000,
+                "bulkPrice": 228000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 3,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "sync", "amf", "parallel", "dse7420"]
+            },
+            {
+              "partNo": "DSE8610",
+              "name": "MKII+ Auto Start Control - DSE8610",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets"],
+              "specifications": {
+                "type": "Auto Start MKII+",
+                "voltage": "8-35VDC",
+                "display": "TFT Color",
+                "canBus": "Yes",
+                "modbus": "Yes",
+                "ethernet": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 195000,
+                "bulkPrice": 182000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 6,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "mkii+", "ethernet", "dse8610"]
+            },
+            {
+              "partNo": "DSE8620",
+              "name": "MKII+ AMF Control - DSE8620",
+              "brand": "Deep Sea Electronics",
+              "category": "Controller",
+              "compatibility": ["All Generator Sets with AMF"],
+              "specifications": {
+                "type": "AMF MKII+",
+                "voltage": "8-35VDC",
+                "display": "TFT Color",
+                "canBus": "Yes",
+                "modbus": "Yes",
+                "ethernet": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 215000,
+                "bulkPrice": 200000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 5,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["deepsea", "amf", "mkii+", "dse8620"]
+            },
+            {
+              "partNo": "PW10",
+              "name": "PowerWizard 1.0 Control",
+              "brand": "Woodward",
+              "category": "Controller",
+              "compatibility": ["Cummins, CAT, Perkins Engines"],
+              "specifications": {
+                "type": "Engine Controller",
+                "voltage": "12/24VDC",
+                "display": "LED",
+                "canBus": "No"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 55000,
+                "bulkPrice": 51000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 8,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["woodward", "powerwizard", "pw1.0"]
+            },
+            {
+              "partNo": "PW11",
+              "name": "PowerWizard 1.1 Control",
+              "brand": "Woodward",
+              "category": "Controller",
+              "compatibility": ["Cummins, CAT, Perkins Engines"],
+              "specifications": {
+                "type": "Engine Controller",
+                "voltage": "12/24VDC",
+                "display": "LED Enhanced",
+                "canBus": "No"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 62000,
+                "bulkPrice": 57000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 6,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["woodward", "powerwizard", "pw1.1"]
+            },
+            {
+              "partNo": "PW20",
+              "name": "PowerWizard 2.0 Digital Control",
+              "brand": "Woodward",
+              "category": "Controller",
+              "compatibility": ["Cummins, CAT, Perkins Engines"],
+              "specifications": {
+                "type": "Digital Engine Controller",
+                "voltage": "12/24VDC",
+                "display": "LCD",
+                "canBus": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 95000,
+                "bulkPrice": 88000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 5,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["woodward", "powerwizard", "pw2.0", "digital"]
+            },
+            {
+              "partNo": "PW21",
+              "name": "PowerWizard 2.1 Advanced Control",
+              "brand": "Woodward",
+              "category": "Controller",
+              "compatibility": ["Cummins, CAT, Perkins Engines"],
+              "specifications": {
+                "type": "Advanced Digital Controller",
+                "voltage": "12/24VDC",
+                "display": "LCD Backlit",
+                "canBus": "Yes",
+                "modbus": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 115000,
+                "bulkPrice": 107000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 4,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["woodward", "powerwizard", "pw2.1", "advanced"]
+            },
+            {
+              "partNo": "PW30",
+              "name": "PowerWizard 3.0 Premium Control",
+              "brand": "Woodward",
+              "category": "Controller",
+              "compatibility": ["Cummins QSX, ISX, X15 Engines"],
+              "specifications": {
+                "type": "Premium Digital Controller",
+                "voltage": "12/24VDC",
+                "display": "TFT Color",
+                "canBus": "Yes",
+                "modbus": "Yes",
+                "ethernet": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 185000,
+                "bulkPrice": 172000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "Low Stock",
+                "quantity": 2,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["woodward", "powerwizard", "pw3.0", "premium"]
+            },
+            {
+              "partNo": "INPOWER",
+              "name": "InPower Controller",
+              "brand": "Cummins",
+              "category": "Controller",
+              "compatibility": ["Cummins QSB, QSL, QSX Engines"],
+              "specifications": {
+                "type": "Integrated Power Controller",
+                "voltage": "12/24VDC",
+                "display": "LCD",
+                "canBus": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 145000,
+                "bulkPrice": 135000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 3,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "24 months",
+              "tags": ["cummins", "inpower", "integrated"]
+            }
+          ]
+        },
+        {
+          "id": "switchgear",
+          "name": "Contactors, Breakers, Relays & Timers",
+          "description": "CHINT, ABB, Siemens, Schneider Electric Components",
+          "parts": [
+            {
+              "partNo": "CJX2-0910",
+              "name": "AC Contactor 9A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "9A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1850,
+                "bulkPrice": 1650,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 150,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "9a", "switchgear"]
+            },
+            {
+              "partNo": "CJX2-1210",
+              "name": "AC Contactor 12A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "12A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2100,
+                "bulkPrice": 1850,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 140,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "12a"]
+            },
+            {
+              "partNo": "CJX2-1810",
+              "name": "AC Contactor 18A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "18A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2650,
+                "bulkPrice": 2350,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 125,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "18a"]
+            },
+            {
+              "partNo": "CJX2-2510",
+              "name": "AC Contactor 25A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "25A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3200,
+                "bulkPrice": 2850,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 110,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "25a"]
+            },
+            {
+              "partNo": "CJX2-3210",
+              "name": "AC Contactor 32A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "32A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3850,
+                "bulkPrice": 3450,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "32a"]
+            },
+            {
+              "partNo": "CJX2-4011",
+              "name": "AC Contactor 40A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "40A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4650,
+                "bulkPrice": 4150,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 85,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "40a"]
+            },
+            {
+              "partNo": "CJX2-5011",
+              "name": "AC Contactor 50A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "50A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 5500,
+                "bulkPrice": 4950,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 72,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "50a"]
+            },
+            {
+              "partNo": "CJX2-6511",
+              "name": "AC Contactor 65A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "65A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 6850,
+                "bulkPrice": 6200,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 58,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "65a"]
+            },
+            {
+              "partNo": "CJX2-8011",
+              "name": "AC Contactor 80A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "80A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7700,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "80a"]
+            },
+            {
+              "partNo": "CJX2-9511",
+              "name": "AC Contactor 95A - CHINT",
+              "brand": "CHINT",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "95A",
+                "voltage": "220-440VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 10500,
+                "bulkPrice": 9500,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["contactor", "chint", "95a"]
+            },
+            {
+              "partNo": "A9-30-10",
+              "name": "AC Contactor 30A - ABB",
+              "brand": "ABB",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "30A",
+                "voltage": "220-690VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 5500,
+                "bulkPrice": 5000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "24 months",
+              "tags": ["contactor", "abb", "30a", "premium"]
+            },
+            {
+              "partNo": "A50-30-11",
+              "name": "AC Contactor 50A - ABB",
+              "brand": "ABB",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "50A",
+                "voltage": "220-690VAC",
+                "coilVoltage": "24V/110V/220VAC",
+                "poles": "3P",
+                "auxiliaryContacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7800,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "24 months",
+              "tags": ["contactor", "abb", "50a"]
+            },
+            {
+              "partNo": "3RT1034-1AP00",
+              "name": "AC Contactor 40A - Siemens",
+              "brand": "Siemens",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "40A",
+                "voltage": "220-690VAC",
+                "coilVoltage": "230VAC",
+                "poles": "3P",
+                "series": "3RT1"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 9500,
+                "bulkPrice": 8700,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["contactor", "siemens", "40a", "3rt1"]
+            },
+            {
+              "partNo": "LC1D25M7",
+              "name": "TeSys D Contactor 25A - Schneider",
+              "brand": "Schneider Electric",
+              "category": "Contactor",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "rating": "25A",
+                "voltage": "220-690VAC",
+                "coilVoltage": "220VAC",
+                "poles": "3P",
+                "series": "TeSys D"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 6500,
+                "bulkPrice": 5900,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 35,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "24 months",
+              "tags": ["contactor", "schneider", "tesys", "25a"]
+            },
+            {
+              "partNo": "NXB-63-3P-16A",
+              "name": "MCB 16A 3P - CHINT",
+              "brand": "CHINT",
+              "category": "Circuit Breaker",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "type": "MCB",
+                "rating": "16A",
+                "poles": "3P",
+                "breakingCapacity": "6kA",
+                "curve": "C"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1850,
+                "bulkPrice": 1650,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 200,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["mcb", "breaker", "chint", "16a"]
+            },
+            {
+              "partNo": "NXB-63-3P-32A",
+              "name": "MCB 32A 3P - CHINT",
+              "brand": "CHINT",
+              "category": "Circuit Breaker",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "type": "MCB",
+                "rating": "32A",
+                "poles": "3P",
+                "breakingCapacity": "6kA",
+                "curve": "C"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2100,
+                "bulkPrice": 1850,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 180,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["mcb", "breaker", "chint", "32a"]
+            },
+            {
+              "partNo": "NXB-63-3P-63A",
+              "name": "MCB 63A 3P - CHINT",
+              "brand": "CHINT",
+              "category": "Circuit Breaker",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "type": "MCB",
+                "rating": "63A",
+                "poles": "3P",
+                "breakingCapacity": "6kA",
+                "curve": "C"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2850,
+                "bulkPrice": 2550,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 145,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["mcb", "breaker", "chint", "63a"]
+            },
+            {
+              "partNo": "NM1-125S/3300-100A",
+              "name": "MCCB 100A 3P - CHINT",
+              "brand": "CHINT",
+              "category": "Circuit Breaker",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "type": "MCCB",
+                "rating": "100A",
+                "poles": "3P",
+                "breakingCapacity": "50kA",
+                "adjustable": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 18500,
+                "bulkPrice": 16500,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["mccb", "breaker", "chint", "100a"]
+            },
+            {
+              "partNo": "NM1-250S/3300-200A",
+              "name": "MCCB 200A 3P - CHINT",
+              "brand": "CHINT",
+              "category": "Circuit Breaker",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "type": "MCCB",
+                "rating": "200A",
+                "poles": "3P",
+                "breakingCapacity": "50kA",
+                "adjustable": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 32000,
+                "bulkPrice": 29000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["mccb", "breaker", "chint", "200a"]
+            },
+            {
+              "partNo": "ST3PA-ON-DELAY",
+              "name": "Time Relay On-Delay 0.1s-100h - CHINT",
+              "brand": "CHINT",
+              "category": "Timer",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "type": "On-Delay Timer",
+                "range": "0.1s - 100h",
+                "voltage": "24-240VAC/DC",
+                "contacts": "1CO"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3500,
+                "bulkPrice": 3100,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 65,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["timer", "relay", "on-delay", "chint"]
+            },
+            {
+              "partNo": "ST3PA-OFF-DELAY",
+              "name": "Time Relay Off-Delay 0.1s-100h - CHINT",
+              "brand": "CHINT",
+              "category": "Timer",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "type": "Off-Delay Timer",
+                "range": "0.1s - 100h",
+                "voltage": "24-240VAC/DC",
+                "contacts": "1CO"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3500,
+                "bulkPrice": 3100,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 58,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["timer", "relay", "off-delay", "chint"]
+            },
+            {
+              "partNo": "JRS1-09-25",
+              "name": "Thermal Overload Relay 9-25A - CHINT",
+              "brand": "CHINT",
+              "category": "Relay",
+              "compatibility": ["CJX2 Contactors"],
+              "specifications": {
+                "type": "Thermal Overload",
+                "range": "9-25A",
+                "class": "10A",
+                "contacts": "1NO+1NC"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2850,
+                "bulkPrice": 2550,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["relay", "overload", "thermal", "chint"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "solar",
+      "name": "Solar Components",
+      "icon": "☀️",
+      "description": "Complete solar power system components",
+      "subcategories": [
+        {
+          "id": "solar-panels",
+          "name": "Solar Panels",
+          "description": "Monocrystalline and Polycrystalline panels",
+          "parts": [
+            {
+              "partNo": "JKM550M-7RL4",
+              "name": "Jinko Solar Panel 550W Mono",
+              "brand": "Jinko Solar",
+              "category": "Solar Panel",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "power": "550W",
+                "type": "Monocrystalline PERC",
+                "efficiency": "21.2%",
+                "voc": "49.5V",
+                "isc": "14.05A",
+                "vmpp": "41.7V",
+                "impp": "13.19A",
+                "dimensions": "2278x1134x35mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 28500,
+                "bulkPrice": 26000,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 450,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "25 years performance",
+              "tags": ["solar", "panel", "jinko", "550w", "mono"]
+            },
+            {
+              "partNo": "JKM450M-60HL4",
+              "name": "Jinko Solar Panel 450W Mono",
+              "brand": "Jinko Solar",
+              "category": "Solar Panel",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "power": "450W",
+                "type": "Monocrystalline",
+                "efficiency": "20.8%",
+                "voc": "49.1V",
+                "isc": "11.57A",
+                "vmpp": "41.5V",
+                "impp": "10.84A",
+                "dimensions": "2108x1048x35mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 23500,
+                "bulkPrice": 21500,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 580,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "25 years performance",
+              "tags": ["solar", "panel", "jinko", "450w", "mono"]
+            },
+            {
+              "partNo": "CS3U-370MS",
+              "name": "Canadian Solar Panel 370W Mono",
+              "brand": "Canadian Solar",
+              "category": "Solar Panel",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "power": "370W",
+                "type": "Monocrystalline PERC",
+                "efficiency": "19.5%",
+                "voc": "40.9V",
+                "isc": "11.53A",
+                "vmpp": "34.2V",
+                "impp": "10.82A",
+                "dimensions": "1776x1052x35mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 19500,
+                "bulkPrice": 17800,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 320,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "25 years performance",
+              "tags": ["solar", "panel", "canadian", "370w", "mono"]
+            },
+            {
+              "partNo": "TSM-DE09.08-330W",
+              "name": "Trina Solar Panel 330W Poly",
+              "brand": "Trina Solar",
+              "category": "Solar Panel",
+              "compatibility": ["Universal"],
+              "specifications": {
+                "power": "330W",
+                "type": "Polycrystalline",
+                "efficiency": "17.2%",
+                "voc": "46.2V",
+                "isc": "9.27A",
+                "vmpp": "37.8V",
+                "impp": "8.73A",
+                "dimensions": "1960x992x40mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 16500,
+                "bulkPrice": 15000,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 280,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "25 years performance",
+              "tags": ["solar", "panel", "trina", "330w", "poly"]
+            }
+          ]
+        },
+        {
+          "id": "solar-inverters",
+          "name": "Solar Inverters",
+          "description": "Hybrid, On-Grid, Off-Grid Inverters",
+          "parts": [
+            {
+              "partNo": "SPF5000T-HVM",
+              "name": "Growatt 5kW Hybrid Inverter",
+              "brand": "Growatt",
+              "category": "Inverter",
+              "compatibility": ["48V Battery Systems"],
+              "specifications": {
+                "power": "5000W",
+                "type": "Hybrid",
+                "batteryVoltage": "48VDC",
+                "mpptVoltage": "120-450VDC",
+                "efficiency": "97.6%",
+                "waveform": "Pure Sine Wave"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 125000,
+                "bulkPrice": 115000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 45,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "10 years",
+              "tags": ["inverter", "growatt", "hybrid", "5kw"]
+            },
+            {
+              "partNo": "SUN-8K-SG03LP1",
+              "name": "Deye 8kW Hybrid Inverter",
+              "brand": "Deye",
+              "category": "Inverter",
+              "compatibility": ["48V Battery Systems"],
+              "specifications": {
+                "power": "8000W",
+                "type": "Hybrid",
+                "batteryVoltage": "48VDC",
+                "mpptVoltage": "90-550VDC",
+                "efficiency": "97.8%",
+                "waveform": "Pure Sine Wave"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 185000,
+                "bulkPrice": 172000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "10 years",
+              "tags": ["inverter", "deye", "hybrid", "8kw"]
+            },
+            {
+              "partNo": "MPII-48/5000/70-50",
+              "name": "Victron MultiPlus II 5kW",
+              "brand": "Victron Energy",
+              "category": "Inverter",
+              "compatibility": ["48V Battery Systems"],
+              "specifications": {
+                "power": "5000W",
+                "type": "Inverter/Charger",
+                "batteryVoltage": "48VDC",
+                "chargerCurrent": "70A",
+                "efficiency": "96%",
+                "waveform": "Pure Sine Wave"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 285000,
+                "bulkPrice": 265000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "5 years",
+              "tags": ["inverter", "victron", "multiplus", "5kw", "premium"]
+            },
+            {
+              "partNo": "STP25000TL-30",
+              "name": "SMA 25kW String Inverter",
+              "brand": "SMA",
+              "category": "Inverter",
+              "compatibility": ["Commercial On-Grid"],
+              "specifications": {
+                "power": "25000W",
+                "type": "On-Grid String",
+                "mpptVoltage": "150-800VDC",
+                "efficiency": "98.4%",
+                "phases": "3-Phase"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 450000,
+                "bulkPrice": 420000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "Low Stock",
+                "quantity": 6,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "10 years",
+              "tags": ["inverter", "sma", "on-grid", "25kw", "commercial"]
+            }
+          ]
+        },
+        {
+          "id": "solar-batteries",
+          "name": "Solar Batteries",
+          "description": "Lithium, Gel, AGM Batteries",
+          "parts": [
+            {
+              "partNo": "US3000C",
+              "name": "Pylontech 3.5kWh Lithium Battery",
+              "brand": "Pylontech",
+              "category": "Battery",
+              "compatibility": ["48V Systems"],
+              "specifications": {
+                "capacity": "3.55kWh",
+                "voltage": "48V",
+                "type": "LiFePO4",
+                "cycles": "6000+ @80% DOD",
+                "maxDischargeCurrent": "37A",
+                "dimensions": "440x420x130mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 185000,
+                "bulkPrice": 172000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 65,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "10 years",
+              "tags": ["battery", "lithium", "pylontech", "lifepo4", "3.5kwh"]
+            },
+            {
+              "partNo": "BYD-LVS-4.0",
+              "name": "BYD 4kWh Lithium Battery",
+              "brand": "BYD",
+              "category": "Battery",
+              "compatibility": ["48V Systems"],
+              "specifications": {
+                "capacity": "4.0kWh",
+                "voltage": "51.2V",
+                "type": "LiFePO4",
+                "cycles": "6000+ @90% DOD",
+                "maxDischargeCurrent": "50A",
+                "dimensions": "670x400x175mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 195000,
+                "bulkPrice": 182000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "10 years",
+              "tags": ["battery", "lithium", "byd", "lifepo4", "4kwh"]
+            },
+            {
+              "partNo": "GEL-12V-200AH",
+              "name": "Narada 12V 200Ah Gel Battery",
+              "brand": "Narada",
+              "category": "Battery",
+              "compatibility": ["12V/24V/48V Systems"],
+              "specifications": {
+                "capacity": "200Ah",
+                "voltage": "12V",
+                "type": "Gel Deep Cycle",
+                "cycles": "1500+ @50% DOD",
+                "lifespan": "12-15 years",
+                "dimensions": "522x240x220mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 42000,
+                "bulkPrice": 38000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 125,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "5 years",
+              "tags": ["battery", "gel", "narada", "12v", "200ah"]
+            }
+          ]
+        },
+        {
+          "id": "solar-accessories",
+          "name": "Solar Accessories",
+          "description": "Charge Controllers, Cables, Connectors",
+          "parts": [
+            {
+              "partNo": "MPPT-150/70",
+              "name": "Victron MPPT 150/70 Charge Controller",
+              "brand": "Victron Energy",
+              "category": "Charge Controller",
+              "compatibility": ["12V/24V/48V Systems"],
+              "specifications": {
+                "type": "MPPT",
+                "maxPVVoltage": "150V",
+                "maxCurrent": "70A",
+                "efficiency": "98%",
+                "batteryVoltage": "12/24/48V Auto"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 95000,
+                "bulkPrice": 88000,
+                "minimumOrder": 2
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "5 years",
+              "tags": ["mppt", "controller", "victron", "70a"]
+            },
+            {
+              "partNo": "PV-CABLE-4MM",
+              "name": "Solar Cable 4mm² DC (per meter)",
+              "brand": "Helukabel",
+              "category": "Cable",
+              "compatibility": ["Solar Installations"],
+              "specifications": {
+                "size": "4mm²",
+                "type": "PV Double Insulated",
+                "voltage": "1000V DC",
+                "temperature": "-40°C to +90°C",
+                "uvResistant": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 180,
+                "bulkPrice": 155,
+                "minimumOrder": 100
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 5000,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "25 years",
+              "tags": ["cable", "solar", "4mm", "pv"]
+            },
+            {
+              "partNo": "MC4-CONNECTOR",
+              "name": "MC4 Connector Pair",
+              "brand": "Multi-Contact",
+              "category": "Connector",
+              "compatibility": ["Solar Panels"],
+              "specifications": {
+                "type": "MC4 Solar Connector",
+                "voltage": "1000V DC",
+                "current": "30A",
+                "ipRating": "IP67",
+                "uvResistant": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 350,
+                "bulkPrice": 300,
+                "minimumOrder": 50
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 2500,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "25 years",
+              "tags": ["connector", "mc4", "solar"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

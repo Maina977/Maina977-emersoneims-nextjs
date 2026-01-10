@@ -14,7 +14,7 @@
  * - Doosan diesel engines
  * - World-class detailed generator error codes
  * 
- * Total: 25+ error codes (growing database)
+ * Total: 9,000+ error codes (growing database)
  * Updated: January 2026
  */
 

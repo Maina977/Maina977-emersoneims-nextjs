@@ -217,7 +217,7 @@ const FAQ_DATA = [
     id: 'diag-1',
     category: 'Diagnostics',
     question: 'What is the EmersonEIMS Diagnostic Suite?',
-    answer: 'Our free, industry-first diagnostic tool contains 25+ error codes for all major generator brands. Features include AI-powered symptom analysis, voice commands, offline capability, 47 language support, and step-by-step repair guides. No login required.',
+    answer: 'Our free, industry-first diagnostic tool contains 9,000+ error codes for all major generator brands. Features include AI-powered symptom analysis, voice commands, offline capability, 47 language support, and step-by-step repair guides. No login required.',
     tags: ['diagnostic suite', 'error codes', 'ai', 'free']
   },
   {
@@ -538,7 +538,7 @@ export default function FAQPage() {
               <Link href="/diagnostic-suite" className="p-6 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 transition-colors text-center group">
                 <div className="text-4xl mb-3">🔧</div>
                 <h3 className="font-semibold text-white group-hover:text-blue-400">Diagnostics</h3>
-                <p className="text-sm text-gray-400">25+ error codes</p>
+                <p className="text-sm text-gray-400">9,000+ error codes</p>
               </Link>
               <Link href="/knowledge-base" className="p-6 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 transition-colors text-center group">
                 <div className="text-4xl mb-3">📚</div>
