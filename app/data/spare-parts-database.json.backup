@@ -1,0 +1,2521 @@
+{
+  "version": "2.0.0",
+  "lastUpdated": "2026-01-10",
+  "totalParts": 1247,
+  "categories": [
+    {
+      "id": "generator-engine",
+      "name": "Generator Engine Parts",
+      "icon": "⚙️",
+      "description": "Comprehensive engine components for all major generator brands",
+      "subcategories": [
+        {
+          "id": "filters",
+          "name": "Filters - All Types",
+          "parts": [
+            {
+              "partNo": "FF5052",
+              "name": "Fuel Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Fuel Filter",
+              "compatibility": ["4BT", "6BT", "6CT", "ISBe", "QSB"],
+              "specifications": {
+                "micronRating": "10 micron",
+                "flow": "100 GPH",
+                "threadSize": "1-12 UN",
+                "length": "5.75 inches",
+                "diameter": "3.75 inches"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3500,
+                "bulkPrice": 3000,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 250,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "cummins", "maintenance", "diesel"]
+            },
+            {
+              "partNo": "FF5320",
+              "name": "Fuel Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Fuel Filter",
+              "compatibility": ["ISBe4", "ISBe6", "QSB6.7"],
+              "specifications": {
+                "micronRating": "7 micron",
+                "flow": "120 GPH",
+                "threadSize": "1-14 UN",
+                "length": "6.25 inches"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3800,
+                "bulkPrice": 3300,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 180,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "cummins", "diesel"]
+            },
+            {
+              "partNo": "FF5485",
+              "name": "Fuel Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Fuel Filter",
+              "compatibility": ["ISLe", "QSL9"],
+              "specifications": {
+                "micronRating": "10 micron",
+                "flow": "150 GPH",
+                "threadSize": "1-12 UN"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4200,
+                "bulkPrice": 3700,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 140,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "cummins"]
+            },
+            {
+              "partNo": "LF9009",
+              "name": "Oil Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Oil Filter",
+              "compatibility": ["6BT5.9", "6CT8.3", "ISBe", "QSB"],
+              "specifications": {
+                "micronRating": "25 micron",
+                "flow": "8 GPM",
+                "threadSize": "1-12 UN",
+                "bypassPressure": "12-16 PSI"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2800,
+                "bulkPrice": 2400,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 180,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["oil", "filtration", "cummins", "lubrication"]
+            },
+            {
+              "partNo": "LF9080",
+              "name": "Oil Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Oil Filter",
+              "compatibility": ["ISBe", "QSB6.7", "QSL9"],
+              "specifications": {
+                "micronRating": "25 micron",
+                "flow": "10 GPM",
+                "threadSize": "1-12 UN"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3200,
+                "bulkPrice": 2700,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 160,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["oil", "filtration", "cummins"]
+            },
+            {
+              "partNo": "LF3977",
+              "name": "Oil Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Oil Filter",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "micronRating": "25 micron",
+                "flow": "6 GPM",
+                "threadSize": "3/4-16 UN"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2400,
+                "bulkPrice": 2000,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 200,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["oil", "filtration", "cummins"]
+            },
+            {
+              "partNo": "AF25556",
+              "name": "Air Filter Primary - Fleetguard",
+              "brand": "Cummins",
+              "category": "Air Filter",
+              "compatibility": ["4BT", "6BT", "6CT"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "12.5 inches",
+                "diameter": "8.5 inches",
+                "efficiency": "99.9%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4200,
+                "bulkPrice": 3600,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 120,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "cummins", "intake"]
+            },
+            {
+              "partNo": "AF25557",
+              "name": "Air Filter Safety - Fleetguard",
+              "brand": "Cummins",
+              "category": "Air Filter",
+              "compatibility": ["4BT", "6BT", "6CT"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "11 inches",
+                "diameter": "7.5 inches",
+                "efficiency": "99.9%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3200,
+                "bulkPrice": 2800,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 100,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "cummins", "safety"]
+            },
+            {
+              "partNo": "AF26395",
+              "name": "Air Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Air Filter",
+              "compatibility": ["ISBe", "QSB6.7"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "14 inches",
+                "diameter": "9 inches",
+                "efficiency": "99.9%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4800,
+                "bulkPrice": 4200,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "cummins"]
+            },
+            {
+              "partNo": "WF2054",
+              "name": "Coolant Filter - Fleetguard",
+              "brand": "Cummins",
+              "category": "Coolant Filter",
+              "compatibility": ["6BT", "6CT", "ISBe", "QSB", "QSL"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "height": "6.5 inches",
+                "threadSize": "1-12 UN",
+                "flowRate": "25 GPM"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3200,
+                "bulkPrice": 2800,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["coolant", "filtration", "cummins", "cooling"]
+            },
+            {
+              "partNo": "2656F853",
+              "name": "Fuel Filter - Perkins",
+              "brand": "Perkins",
+              "category": "Fuel Filter",
+              "compatibility": ["1103A", "1104C", "1106C"],
+              "specifications": {
+                "micronRating": "10 micron",
+                "flow": "95 GPH",
+                "threadSize": "M16x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3200,
+                "bulkPrice": 2800,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 150,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "perkins", "diesel"]
+            },
+            {
+              "partNo": "2656F843",
+              "name": "Fuel Filter - Perkins",
+              "brand": "Perkins",
+              "category": "Fuel Filter",
+              "compatibility": ["1006", "1106D"],
+              "specifications": {
+                "micronRating": "10 micron",
+                "flow": "100 GPH",
+                "threadSize": "M16x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3400,
+                "bulkPrice": 3000,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 130,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "perkins"]
+            },
+            {
+              "partNo": "2654403",
+              "name": "Oil Filter - Perkins",
+              "brand": "Perkins",
+              "category": "Oil Filter",
+              "compatibility": ["1103A", "1104C", "1106C", "1106D"],
+              "specifications": {
+                "micronRating": "25 micron",
+                "flow": "8 GPM",
+                "threadSize": "3/4-16 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2600,
+                "bulkPrice": 2200,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 170,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["oil", "filtration", "perkins"]
+            },
+            {
+              "partNo": "26510362",
+              "name": "Air Filter - Perkins",
+              "brand": "Perkins",
+              "category": "Air Filter",
+              "compatibility": ["1103A", "1104C"],
+              "specifications": {
+                "filterType": "Panel Type",
+                "height": "10 inches",
+                "width": "8 inches",
+                "efficiency": "99.5%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3800,
+                "bulkPrice": 3300,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 110,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "perkins"]
+            },
+            {
+              "partNo": "26510343",
+              "name": "Air Filter Outer - Perkins",
+              "brand": "Perkins",
+              "category": "Air Filter",
+              "compatibility": ["1006", "1106D"],
+              "specifications": {
+                "filterType": "Cylindrical",
+                "height": "12 inches",
+                "diameter": "8 inches",
+                "efficiency": "99.5%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4000,
+                "bulkPrice": 3500,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 90,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "perkins"]
+            },
+            {
+              "partNo": "26561117",
+              "name": "Coolant Filter - Perkins",
+              "brand": "Perkins",
+              "category": "Coolant Filter",
+              "compatibility": ["1103A", "1104C", "1106C", "1106D"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "height": "6 inches",
+                "threadSize": "M16x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3000,
+                "bulkPrice": 2600,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 85,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["coolant", "filtration", "perkins"]
+            },
+            {
+              "partNo": "32925694",
+              "name": "Fuel Filter - Volvo Penta",
+              "brand": "Volvo Penta",
+              "category": "Fuel Filter",
+              "compatibility": ["TAD734GE", "TAD940GE", "TWD1643GE"],
+              "specifications": {
+                "micronRating": "10 micron",
+                "flow": "110 GPH",
+                "threadSize": "M20x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4500,
+                "bulkPrice": 4000,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 75,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "volvo", "diesel"]
+            },
+            {
+              "partNo": "21707133",
+              "name": "Oil Filter - Volvo Penta",
+              "brand": "Volvo Penta",
+              "category": "Oil Filter",
+              "compatibility": ["TAD734GE", "TAD940GE"],
+              "specifications": {
+                "micronRating": "25 micron",
+                "flow": "10 GPM",
+                "threadSize": "M24x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3500,
+                "bulkPrice": 3100,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 65,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["oil", "filtration", "volvo"]
+            },
+            {
+              "partNo": "21337557",
+              "name": "Air Filter - Volvo Penta",
+              "brand": "Volvo Penta",
+              "category": "Air Filter",
+              "compatibility": ["TAD734GE", "TAD940GE", "TWD1643GE"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "13 inches",
+                "diameter": "9 inches",
+                "efficiency": "99.9%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 5200,
+                "bulkPrice": 4600,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 55,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "volvo"]
+            },
+            {
+              "partNo": "1R-0750",
+              "name": "Fuel Filter - Caterpillar",
+              "brand": "Caterpillar",
+              "category": "Fuel Filter",
+              "compatibility": ["C4.4", "C6.6", "C7.1", "C9"],
+              "specifications": {
+                "micronRating": "7 micron",
+                "flow": "120 GPH",
+                "threadSize": "1-14 UN"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4800,
+                "bulkPrice": 4300,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "caterpillar", "diesel"]
+            },
+            {
+              "partNo": "1R-0739",
+              "name": "Fuel Water Separator - Caterpillar",
+              "brand": "Caterpillar",
+              "category": "Fuel Filter",
+              "compatibility": ["C4.4", "C6.6", "C7.1"],
+              "specifications": {
+                "micronRating": "10 micron",
+                "flow": "100 GPH",
+                "waterSeparation": "95%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4200,
+                "bulkPrice": 3700,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 85,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["fuel", "filtration", "caterpillar", "water-separator"]
+            },
+            {
+              "partNo": "1R-0716",
+              "name": "Oil Filter - Caterpillar",
+              "brand": "Caterpillar",
+              "category": "Oil Filter",
+              "compatibility": ["C4.4", "C6.6", "C7.1", "C9"],
+              "specifications": {
+                "micronRating": "25 micron",
+                "flow": "9 GPM",
+                "threadSize": "1-12 UN"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3800,
+                "bulkPrice": 3300,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 105,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["oil", "filtration", "caterpillar"]
+            },
+            {
+              "partNo": "6I-2505",
+              "name": "Air Filter Primary - Caterpillar",
+              "brand": "Caterpillar",
+              "category": "Air Filter",
+              "compatibility": ["C4.4", "C6.6"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "11.5 inches",
+                "diameter": "8 inches",
+                "efficiency": "99.9%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 5500,
+                "bulkPrice": 4900,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 70,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "caterpillar"]
+            },
+            {
+              "partNo": "6I-2506",
+              "name": "Air Filter Secondary - Caterpillar",
+              "brand": "Caterpillar",
+              "category": "Air Filter",
+              "compatibility": ["C4.4", "C6.6"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "10 inches",
+                "diameter": "7 inches",
+                "efficiency": "99.9%"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4200,
+                "bulkPrice": "3700",
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 65,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["air", "filtration", "caterpillar", "safety"]
+            }
+          ]
+        },
+        {
+          "id": "pistons-rings",
+          "name": "Pistons & Piston Rings",
+          "parts": [
+            {
+              "partNo": "3802429",
+              "name": "Piston Kit - 6BT5.9",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["6BT5.9-G", "6BT5.9-GM"],
+              "specifications": {
+                "bore": "102mm",
+                "ringGrooves": "3",
+                "compressionHeight": "75mm",
+                "material": "Aluminum Alloy",
+                "pistonPin": "42mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 28000,
+                "bulkPrice": 24000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 45,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "cummins", "overhaul"]
+            },
+            {
+              "partNo": "3802657",
+              "name": "Piston Kit - 4BT3.9",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "bore": "102mm",
+                "ringGrooves": "3",
+                "compressionHeight": "75mm",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 24000,
+                "bulkPrice": 21000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "cummins", "overhaul"]
+            },
+            {
+              "partNo": "3804374",
+              "name": "Piston Kit - 6CT8.3",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "bore": "114mm",
+                "ringGrooves": "3",
+                "compressionHeight": "85mm",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 32000,
+                "bulkPrice": 28000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "cummins", "overhaul"]
+            },
+            {
+              "partNo": "3800544",
+              "name": "Piston Ring Set - 6BT5.9",
+              "brand": "Cummins",
+              "category": "Piston Rings",
+              "compatibility": ["6BT5.9"],
+              "specifications": {
+                "bore": "102mm",
+                "topRing": "2.5mm",
+                "secondRing": "2.5mm",
+                "oilRing": "4mm",
+                "material": "Chrome Steel"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 12000,
+                "bulkPrice": 10500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 65,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-rings", "engine", "cummins", "overhaul"]
+            },
+            {
+              "partNo": "3800328",
+              "name": "Piston Ring Set - 4BT3.9",
+              "brand": "Cummins",
+              "category": "Piston Rings",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "bore": "102mm",
+                "topRing": "2.5mm",
+                "secondRing": "2.5mm",
+                "oilRing": "4mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 10000,
+                "bulkPrice": 8800,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 58,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-rings", "engine", "cummins"]
+            },
+            {
+              "partNo": "3804500",
+              "name": "Piston Ring Set - 6CT8.3",
+              "brand": "Cummins",
+              "category": "Piston Rings",
+              "compatibility": ["6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "bore": "114mm",
+                "topRing": "3mm",
+                "secondRing": "3mm",
+                "oilRing": "5mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 14000,
+                "bulkPrice": 12300,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-rings", "engine", "cummins"]
+            },
+            {
+              "partNo": "U5LL0059",
+              "name": "Piston Kit - 1103A/1104C",
+              "brand": "Perkins",
+              "category": "Piston",
+              "compatibility": ["1103A-33", "1104C-44"],
+              "specifications": {
+                "bore": "105mm",
+                "ringGrooves": "3",
+                "compressionHeight": "72mm",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 26000,
+                "bulkPrice": 23000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 35,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "perkins", "overhaul"]
+            },
+            {
+              "partNo": "U5LL0058",
+              "name": "Piston Kit - 1106C/1106D",
+              "brand": "Perkins",
+              "category": "Piston",
+              "compatibility": ["1106C-E66TA", "1106D-E66TA"],
+              "specifications": {
+                "bore": "105mm",
+                "ringGrooves": "3",
+                "compressionHeight": "72mm",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 28000,
+                "bulkPrice": 25000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 30,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "perkins", "overhaul"]
+            },
+            {
+              "partNo": "U5LT0121",
+              "name": "Piston Ring Set - 1103A",
+              "brand": "Perkins",
+              "category": "Piston Rings",
+              "compatibility": ["1103A-33", "1103A-33T"],
+              "specifications": {
+                "bore": "105mm",
+                "topRing": "2.5mm",
+                "secondRing": "2.5mm",
+                "oilRing": "4mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 11000,
+                "bulkPrice": 9700,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 52,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-rings", "engine", "perkins"]
+            },
+            {
+              "partNo": "U5LT0122",
+              "name": "Piston Ring Set - 1104C",
+              "brand": "Perkins",
+              "category": "Piston Rings",
+              "compatibility": ["1104C-44", "1104C-44T"],
+              "specifications": {
+                "bore": "105mm",
+                "topRing": "2.5mm",
+                "secondRing": "2.5mm",
+                "oilRing": "4mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 11500,
+                "bulkPrice": 10200,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-rings", "engine", "perkins"]
+            },
+            {
+              "partNo": "466634",
+              "name": "Piston Kit - TAD734GE",
+              "brand": "Volvo Penta",
+              "category": "Piston",
+              "compatibility": ["TAD734GE", "TAD940GE"],
+              "specifications": {
+                "bore": "108mm",
+                "ringGrooves": "3",
+                "compressionHeight": "78mm",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 35000,
+                "bulkPrice": 31000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 22,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "volvo", "overhaul"]
+            },
+            {
+              "partNo": "466635",
+              "name": "Piston Ring Set - TAD734GE",
+              "brand": "Volvo Penta",
+              "category": "Piston Rings",
+              "compatibility": ["TAD734GE", "TAD940GE"],
+              "specifications": {
+                "bore": "108mm",
+                "topRing": "2.8mm",
+                "secondRing": "2.8mm",
+                "oilRing": "4.5mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 15000,
+                "bulkPrice": 13200,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 35,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-rings", "engine", "volvo"]
+            },
+            {
+              "partNo": "274-4820",
+              "name": "Piston Kit - C4.4",
+              "brand": "Caterpillar",
+              "category": "Piston",
+              "compatibility": ["C4.4"],
+              "specifications": {
+                "bore": "105mm",
+                "ringGrooves": "3",
+                "compressionHeight": "73mm",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 32000,
+                "bulkPrice": 28500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "caterpillar", "overhaul"]
+            },
+            {
+              "partNo": "197-9322",
+              "name": "Piston Kit - C6.6",
+              "brand": "Caterpillar",
+              "category": "Piston",
+              "compatibility": ["C6.6"],
+              "specifications": {
+                "bore": "105mm",
+                "ringGrooves": "3",
+                "compressionHeight": "73mm",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 34000,
+                "bulkPrice": 30000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 25,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "24 months",
+              "tags": ["piston", "engine", "caterpillar", "overhaul"]
+            },
+            {
+              "partNo": "235-8670",
+              "name": "Piston Ring Set - C4.4",
+              "brand": "Caterpillar",
+              "category": "Piston Rings",
+              "compatibility": ["C4.4"],
+              "specifications": {
+                "bore": "105mm",
+                "topRing": "2.5mm",
+                "secondRing": "2.5mm",
+                "oilRing": "4mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 13500,
+                "bulkPrice": 12000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-rings", "engine", "caterpillar"]
+            },
+            {
+              "partNo": "197-9320",
+              "name": "Piston Ring Set - C6.6",
+              "brand": "Caterpillar",
+              "category": "Piston Rings",
+              "compatibility": ["C6.6"],
+              "specifications": {
+                "bore": "105mm",
+                "topRing": "2.5mm",
+                "secondRing": "2.5mm",
+                "oilRing": "4mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 14500,
+                "bulkPrice": 12800,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-rings", "engine", "caterpillar"]
+            }
+          ]
+        },
+        {
+          "id": "gaskets",
+          "name": "Gaskets & Overhaul Sets",
+          "parts": [
+            {
+              "partNo": "3802375",
+              "name": "Cylinder Head Gasket - 6BT5.9",
+              "brand": "Cummins",
+              "category": "Gasket",
+              "compatibility": ["6BT5.9"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.5mm",
+                "bore": "102mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 55,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "cummins", "overhaul"]
+            },
+            {
+              "partNo": "3802376",
+              "name": "Cylinder Head Gasket - 4BT3.9",
+              "brand": "Cummins",
+              "category": "Gasket",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.5mm",
+                "bore": "102mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 7200,
+                "bulkPrice": 6400,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "cummins"]
+            },
+            {
+              "partNo": "3804896",
+              "name": "Cylinder Head Gasket - 6CT8.3",
+              "brand": "Cummins",
+              "category": "Gasket",
+              "compatibility": ["6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.8mm",
+                "bore": "114mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 9500,
+                "bulkPrice": 8400,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "cummins"]
+            },
+            {
+              "partNo": "3802917",
+              "name": "Upper Gasket Set - 6BT5.9",
+              "brand": "Cummins",
+              "category": "Gasket Set",
+              "compatibility": ["6BT5.9"],
+              "specifications": {
+                "includes": "Head Gasket, Valve Cover, Manifold, Thermostat",
+                "pieces": "15"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 15000,
+                "bulkPrice": 13200,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 35,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "upper-set", "cummins", "overhaul"]
+            },
+            {
+              "partNo": "3802918",
+              "name": "Lower Gasket Set - 6BT5.9",
+              "brand": "Cummins",
+              "category": "Gasket Set",
+              "compatibility": ["6BT5.9"],
+              "specifications": {
+                "includes": "Oil Pan, Crankshaft Seals, Timing Cover",
+                "pieces": "12"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 12000,
+                "bulkPrice": 10500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "lower-set", "cummins"]
+            },
+            {
+              "partNo": "3802376",
+              "name": "Full Overhaul Gasket Set - 6BT5.9",
+              "brand": "Cummins",
+              "category": "Overhaul Set",
+              "compatibility": ["6BT5.9"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "27+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 25000,
+                "bulkPrice": 22000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "cummins", "major-overhaul"]
+            },
+            {
+              "partNo": "3800731",
+              "name": "Full Overhaul Gasket Set - 4BT3.9",
+              "brand": "Cummins",
+              "category": "Overhaul Set",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "24+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 22000,
+                "bulkPrice": 19500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 25,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "cummins"]
+            },
+            {
+              "partNo": "3804897",
+              "name": "Full Overhaul Gasket Set - 6CT8.3",
+              "brand": "Cummins",
+              "category": "Overhaul Set",
+              "compatibility": ["6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "30+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 28000,
+                "bulkPrice": 24500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 22,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "cummins"]
+            },
+            {
+              "partNo": "U5LB0167",
+              "name": "Cylinder Head Gasket - 1103A",
+              "brand": "Perkins",
+              "category": "Gasket",
+              "compatibility": ["1103A-33", "1103A-33T"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.4mm",
+                "bore": "105mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 7800,
+                "bulkPrice": 6900,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 45,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "perkins"]
+            },
+            {
+              "partNo": "U5LB0168",
+              "name": "Cylinder Head Gasket - 1104C",
+              "brand": "Perkins",
+              "category": "Gasket",
+              "compatibility": ["1104C-44", "1104C-44T"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.4mm",
+                "bore": "105mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8200,
+                "bulkPrice": 7200,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "perkins"]
+            },
+            {
+              "partNo": "U5LB0169",
+              "name": "Cylinder Head Gasket - 1106C/D",
+              "brand": "Perkins",
+              "category": "Gasket",
+              "compatibility": ["1106C-E66TA", "1106D-E66TA"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.4mm",
+                "bore": "105mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8800,
+                "bulkPrice": 7800,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "perkins"]
+            },
+            {
+              "partNo": "U5LT0154",
+              "name": "Upper Gasket Set - 1103A",
+              "brand": "Perkins",
+              "category": "Gasket Set",
+              "compatibility": ["1103A-33", "1103A-33T"],
+              "specifications": {
+                "includes": "Head Gasket, Valve Cover, Manifold",
+                "pieces": "14"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 13500,
+                "bulkPrice": 12000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "upper-set", "perkins"]
+            },
+            {
+              "partNo": "U5LT0155",
+              "name": "Full Overhaul Gasket Set - 1103A",
+              "brand": "Perkins",
+              "category": "Overhaul Set",
+              "compatibility": ["1103A-33", "1103A-33T"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "26+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 23000,
+                "bulkPrice": 20500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 24,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "perkins", "major-overhaul"]
+            },
+            {
+              "partNo": "U5LT0156",
+              "name": "Full Overhaul Gasket Set - 1104C",
+              "brand": "Perkins",
+              "category": "Overhaul Set",
+              "compatibility": ["1104C-44", "1104C-44T"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "26+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 24000,
+                "bulkPrice": 21500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 22,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "perkins"]
+            },
+            {
+              "partNo": "U5LT0157",
+              "name": "Full Overhaul Gasket Set - 1106C/D",
+              "brand": "Perkins",
+              "category": "Overhaul Set",
+              "compatibility": ["1106C-E66TA", "1106D-E66TA"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "28+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 26000,
+                "bulkPrice": 23000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 20,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "perkins"]
+            },
+            {
+              "partNo": "467450",
+              "name": "Cylinder Head Gasket - TAD734GE",
+              "brand": "Volvo Penta",
+              "category": "Gasket",
+              "compatibility": ["TAD734GE", "TAD940GE"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.6mm",
+                "bore": "108mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 11000,
+                "bulkPrice": 9800,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "volvo"]
+            },
+            {
+              "partNo": "467451",
+              "name": "Full Overhaul Gasket Set - TAD734GE",
+              "brand": "Volvo Penta",
+              "category": "Overhaul Set",
+              "compatibility": ["TAD734GE"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "32+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 32000,
+                "bulkPrice": 28500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "volvo"]
+            },
+            {
+              "partNo": "236-7675",
+              "name": "Cylinder Head Gasket - C4.4",
+              "brand": "Caterpillar",
+              "category": "Gasket",
+              "compatibility": ["C4.4"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.5mm",
+                "bore": "105mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 9800,
+                "bulkPrice": 8700,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "caterpillar"]
+            },
+            {
+              "partNo": "197-9321",
+              "name": "Cylinder Head Gasket - C6.6",
+              "brand": "Caterpillar",
+              "category": "Gasket",
+              "compatibility": ["C6.6"],
+              "specifications": {
+                "material": "Multi-Layer Steel",
+                "thickness": "1.5mm",
+                "bore": "105mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 10500,
+                "bulkPrice": 9300,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket", "head-gasket", "caterpillar"]
+            },
+            {
+              "partNo": "274-4821",
+              "name": "Full Overhaul Gasket Set - C4.4",
+              "brand": "Caterpillar",
+              "category": "Overhaul Set",
+              "compatibility": ["C4.4"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "28+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 28000,
+                "bulkPrice": 25000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 20,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "caterpillar"]
+            },
+            {
+              "partNo": "197-9323",
+              "name": "Full Overhaul Gasket Set - C6.6",
+              "brand": "Caterpillar",
+              "category": "Overhaul Set",
+              "compatibility": ["C6.6"],
+              "specifications": {
+                "includes": "Complete Upper and Lower Sets",
+                "pieces": "30+"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 30000,
+                "bulkPrice": 26800,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["gasket-set", "overhaul-set", "caterpillar"]
+            }
+          ]
+        },
+        {
+          "id": "turbochargers",
+          "name": "Turbochargers",
+          "parts": [
+            {
+              "partNo": "3803711",
+              "name": "Turbocharger HX35W",
+              "brand": "Holset/Cummins",
+              "category": "Turbocharger",
+              "compatibility": ["6BT5.9", "6CT8.3"],
+              "specifications": {
+                "compressorWheelDiameter": "56mm",
+                "turbineWheelDiameter": "60mm",
+                "maxBoost": "25 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 95000,
+                "bulkPrice": 85000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "boost", "cummins", "holset"]
+            },
+            {
+              "partNo": "3590044",
+              "name": "Turbocharger HX40W",
+              "brand": "Holset/Cummins",
+              "category": "Turbocharger",
+              "compatibility": ["6CT8.3", "ISLe"],
+              "specifications": {
+                "compressorWheelDiameter": "60mm",
+                "turbineWheelDiameter": "66mm",
+                "maxBoost": "28 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 115000,
+                "bulkPrice": 102000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 15,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "cummins", "holset"]
+            },
+            {
+              "partNo": "4038471",
+              "name": "Turbocharger HX50",
+              "brand": "Holset/Cummins",
+              "category": "Turbocharger",
+              "compatibility": ["ISM", "QSM11"],
+              "specifications": {
+                "compressorWheelDiameter": "70mm",
+                "turbineWheelDiameter": "76mm",
+                "maxBoost": "32 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 145000,
+                "bulkPrice": 130000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 12,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "cummins", "holset", "heavy-duty"]
+            },
+            {
+              "partNo": "3596959",
+              "name": "Turbocharger HE221W",
+              "brand": "Holset/Cummins",
+              "category": "Turbocharger",
+              "compatibility": ["ISBe4", "QSB4.5"],
+              "specifications": {
+                "compressorWheelDiameter": "48mm",
+                "turbineWheelDiameter": "52mm",
+                "maxBoost": "22 PSI",
+                "bearingType": "Ball Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 82000,
+                "bulkPrice": 73000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 22,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "cummins", "holset"]
+            },
+            {
+              "partNo": "2674A404",
+              "name": "Turbocharger - Perkins 1104C",
+              "brand": "Perkins",
+              "category": "Turbocharger",
+              "compatibility": ["1104C-44T", "1104C-E44T"],
+              "specifications": {
+                "compressorWheelDiameter": "52mm",
+                "turbineWheelDiameter": "56mm",
+                "maxBoost": "24 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 88000,
+                "bulkPrice": 78000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 16,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "perkins"]
+            },
+            {
+              "partNo": "2674A405",
+              "name": "Turbocharger - Perkins 1106D",
+              "brand": "Perkins",
+              "category": "Turbocharger",
+              "compatibility": ["1106D-E66TA"],
+              "specifications": {
+                "compressorWheelDiameter": "56mm",
+                "turbineWheelDiameter": "60mm",
+                "maxBoost": "26 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 98000,
+                "bulkPrice": 87000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 14,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "perkins"]
+            },
+            {
+              "partNo": "21989251",
+              "name": "Turbocharger - Volvo TAD734GE",
+              "brand": "Volvo Penta",
+              "category": "Turbocharger",
+              "compatibility": ["TAD734GE"],
+              "specifications": {
+                "compressorWheelDiameter": "58mm",
+                "turbineWheelDiameter": "62mm",
+                "maxBoost": "27 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 125000,
+                "bulkPrice": 112000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 10,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "volvo"]
+            },
+            {
+              "partNo": "21989252",
+              "name": "Turbocharger - Volvo TAD940GE",
+              "brand": "Volvo Penta",
+              "category": "Turbocharger",
+              "compatibility": ["TAD940GE"],
+              "specifications": {
+                "compressorWheelDiameter": "62mm",
+                "turbineWheelDiameter": "68mm",
+                "maxBoost": "30 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 138000,
+                "bulkPrice": 123000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 8,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "volvo"]
+            },
+            {
+              "partNo": "10R-2658",
+              "name": "Turbocharger - Caterpillar C4.4",
+              "brand": "Caterpillar",
+              "category": "Turbocharger",
+              "compatibility": ["C4.4"],
+              "specifications": {
+                "compressorWheelDiameter": "50mm",
+                "turbineWheelDiameter": "54mm",
+                "maxBoost": "23 PSI",
+                "bearingType": "Ball Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 105000,
+                "bulkPrice": 93000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 12,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "caterpillar"]
+            },
+            {
+              "partNo": "10R-2659",
+              "name": "Turbocharger - Caterpillar C6.6",
+              "brand": "Caterpillar",
+              "category": "Turbocharger",
+              "compatibility": ["C6.6"],
+              "specifications": {
+                "compressorWheelDiameter": "54mm",
+                "turbineWheelDiameter": "58mm",
+                "maxBoost": "25 PSI",
+                "bearingType": "Ball Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 118000,
+                "bulkPrice": 105000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 10,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["turbo", "turbocharger", "caterpillar"]
+            },
+            {
+              "partNo": "752610-5032S",
+              "name": "Turbocharger - Garrett GT2052V",
+              "brand": "Garrett",
+              "category": "Turbocharger",
+              "compatibility": ["Universal - Various Engines"],
+              "specifications": {
+                "compressorWheelDiameter": "52mm",
+                "turbineWheelDiameter": "56mm",
+                "maxBoost": "24 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 78000,
+                "bulkPrice": 69000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["turbo", "turbocharger", "garrett", "universal"]
+            },
+            {
+              "partNo": "753420-5006S",
+              "name": "Turbocharger - Garrett GT2056V",
+              "brand": "Garrett",
+              "category": "Turbocharger",
+              "compatibility": ["Universal - Various Engines"],
+              "specifications": {
+                "compressorWheelDiameter": "56mm",
+                "turbineWheelDiameter": "60mm",
+                "maxBoost": "26 PSI",
+                "bearingType": "Journal Bearing"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 85000,
+                "bulkPrice": 75000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 15,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["turbo", "turbocharger", "garrett", "universal"]
+            }
+          ]
+        },
+        {
+          "id": "injectors-pumps",
+          "name": "Injectors, Nozzles & Pumps",
+          "parts": [
+            {
+              "partNo": "3804682",
+              "name": "Fuel Injector - 6BT5.9",
+              "brand": "Bosch/Cummins",
+              "category": "Injector",
+              "compatibility": ["6BT5.9-G"],
+              "specifications": {
+                "injectionPressure": "1600 bar",
+                "nozzleType": "Multi-hole",
+                "flowRate": "350 cc/min",
+                "sprayAngle": "150 degrees"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 42000,
+                "bulkPrice": 38000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 62,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "cummins", "diesel"]
+            },
+            {
+              "partNo": "3802130",
+              "name": "Fuel Injector - 4BT3.9",
+              "brand": "Bosch/Cummins",
+              "category": "Injector",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "injectionPressure": "1500 bar",
+                "nozzleType": "Multi-hole",
+                "flowRate": "320 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 38000,
+                "bulkPrice": 34000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 55,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "cummins"]
+            },
+            {
+              "partNo": "3804681",
+              "name": "Fuel Injector - 6CT8.3",
+              "brand": "Bosch/Cummins",
+              "category": "Injector",
+              "compatibility": ["6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "injectionPressure": "1700 bar",
+                "nozzleType": "Multi-hole",
+                "flowRate": "380 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 45000,
+                "bulkPrice": 40500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "cummins"]
+            },
+            {
+              "partNo": "4940640",
+              "name": "Common Rail Injector - ISBe",
+              "brand": "Bosch/Cummins",
+              "category": "Injector",
+              "compatibility": ["ISBe4", "ISBe6"],
+              "specifications": {
+                "injectionPressure": "2000 bar",
+                "nozzleType": "Common Rail",
+                "flowRate": "400 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 52000,
+                "bulkPrice": 47000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "cummins", "common-rail"]
+            },
+            {
+              "partNo": "5263262",
+              "name": "Common Rail Injector - QSB6.7",
+              "brand": "Bosch/Cummins",
+              "category": "Injector",
+              "compatibility": ["QSB6.7"],
+              "specifications": {
+                "injectionPressure": "2200 bar",
+                "nozzleType": "Common Rail",
+                "flowRate": "420 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 56000,
+                "bulkPrice": 50500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "cummins", "common-rail"]
+            },
+            {
+              "partNo": "131406340",
+              "name": "Injector Nozzle DLLA150P340",
+              "brand": "Bosch",
+              "category": "Injector Nozzle",
+              "compatibility": ["Various Cummins, Perkins"],
+              "specifications": {
+                "nozzleType": "5-Hole",
+                "sprayAngle": "150 degrees",
+                "holeSize": "0.28mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7500,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["nozzle", "injector-nozzle", "bosch"]
+            },
+            {
+              "partNo": "131406430",
+              "name": "Injector Nozzle DLLA155P430",
+              "brand": "Bosch",
+              "category": "Injector Nozzle",
+              "compatibility": ["Various Cummins"],
+              "specifications": {
+                "nozzleType": "5-Hole",
+                "sprayAngle": "155 degrees",
+                "holeSize": "0.30mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 9000,
+                "bulkPrice": 8000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 88,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["nozzle", "injector-nozzle", "bosch"]
+            },
+            {
+              "partNo": "2645A747",
+              "name": "Fuel Injector - Perkins 1103A",
+              "brand": "Delphi/Perkins",
+              "category": "Injector",
+              "compatibility": ["1103A-33", "1103A-33T"],
+              "specifications": {
+                "injectionPressure": "1600 bar",
+                "nozzleType": "Multi-hole",
+                "flowRate": "340 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 40000,
+                "bulkPrice": 36000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 45,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "perkins"]
+            },
+            {
+              "partNo": "2645A746",
+              "name": "Fuel Injector - Perkins 1104C",
+              "brand": "Delphi/Perkins",
+              "category": "Injector",
+              "compatibility": ["1104C-44", "1104C-44T"],
+              "specifications": {
+                "injectionPressure": "1650 bar",
+                "nozzleType": "Multi-hole",
+                "flowRate": "360 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 42000,
+                "bulkPrice": 38000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "perkins"]
+            },
+            {
+              "partNo": "2645A748",
+              "name": "Common Rail Injector - Perkins 1106D",
+              "brand": "Delphi/Perkins",
+              "category": "Injector",
+              "compatibility": ["1106D-E66TA"],
+              "specifications": {
+                "injectionPressure": "2000 bar",
+                "nozzleType": "Common Rail",
+                "flowRate": "390 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 50000,
+                "bulkPrice": 45000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 35,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "perkins", "common-rail"]
+            },
+            {
+              "partNo": "20798683",
+              "name": "Common Rail Injector - Volvo TAD734GE",
+              "brand": "Delphi/Volvo",
+              "category": "Injector",
+              "compatibility": ["TAD734GE"],
+              "specifications": {
+                "injectionPressure": "2100 bar",
+                "nozzleType": "Common Rail",
+                "flowRate": "410 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 58000,
+                "bulkPrice": 52000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "volvo", "common-rail"]
+            },
+            {
+              "partNo": "20798684",
+              "name": "Common Rail Injector - Volvo TAD940GE",
+              "brand": "Delphi/Volvo",
+              "category": "Injector",
+              "compatibility": ["TAD940GE"],
+              "specifications": {
+                "injectionPressure": "2200 bar",
+                "nozzleType": "Common Rail",
+                "flowRate": "430 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 62000,
+                "bulkPrice": 56000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 24,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "volvo", "common-rail"]
+            },
+            {
+              "partNo": "326-4700",
+              "name": "Common Rail Injector - Cat C4.4",
+              "brand": "Caterpillar",
+              "category": "Injector",
+              "compatibility": ["C4.4"],
+              "specifications": {
+                "injectionPressure": "2000 bar",
+                "nozzleType": "Common Rail",
+                "flowRate": "380 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 54000,
+                "bulkPrice": 48500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "caterpillar", "common-rail"]
+            },
+            {
+              "partNo": "326-4701",
+              "name": "Common Rail Injector - Cat C6.6",
+              "brand": "Caterpillar",
+              "category": "Injector",
+              "compatibility": ["C6.6"],
+              "specifications": {
+                "injectionPressure": "2100 bar",
+                "nozzleType": "Common Rail",
+                "flowRate": "400 cc/min"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 57000,
+                "bulkPrice": 51500,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["injector", "fuel", "caterpillar", "common-rail"]
+            },
+            {
+              "partNo": "3960902",
+              "name": "Fuel Injection Pump - 6BT5.9",
+              "brand": "Bosch/Cummins",
+              "category": "Injection Pump",
+              "compatibility": ["6BT5.9"],
+              "specifications": {
+                "pumpType": "P7100",
+                "maxPressure": "1800 bar",
+                "flow": "600 cc/stroke"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 185000,
+                "bulkPrice": 165000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 12,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["injection-pump", "fuel-pump", "cummins", "bosch"]
+            },
+            {
+              "partNo": "3960901",
+              "name": "Fuel Injection Pump - 4BT3.9",
+              "brand": "Bosch/Cummins",
+              "category": "Injection Pump",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "pumpType": "P7100",
+                "maxPressure": "1700 bar",
+                "flow": "500 cc/stroke"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 165000,
+                "bulkPrice": 148000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 10,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["injection-pump", "fuel-pump", "cummins", "bosch"]
+            },
+            {
+              "partNo": "4988835",
+              "name": "High Pressure Fuel Pump - ISBe",
+              "brand": "Bosch/Cummins",
+              "category": "Injection Pump",
+              "compatibility": ["ISBe4", "ISBe6"],
+              "specifications": {
+                "pumpType": "CP3",
+                "maxPressure": "2200 bar",
+                "flow": "800 cc/stroke"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 225000,
+                "bulkPrice": 202000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 8,
+                "location": "Nairobi Warehouse",
+                "leadTime": "3-5 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["injection-pump", "fuel-pump", "cummins", "common-rail"]
+            },
+            {
+              "partNo": "2644H014",
+              "name": "Fuel Injection Pump - Perkins 1103A",
+              "brand": "Delphi/Perkins",
+              "category": "Injection Pump",
+              "compatibility": ["1103A-33", "1103A-33T"],
+              "specifications": {
+                "pumpType": "Rotary",
+                "maxPressure": "1700 bar",
+                "flow": "550 cc/stroke"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 175000,
+                "bulkPrice": 157000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 9,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["injection-pump", "fuel-pump", "perkins"]
+            },
+            {
+              "partNo": "2644H015",
+              "name": "Fuel Injection Pump - Perkins 1104C",
+              "brand": "Delphi/Perkins",
+              "category": "Injection Pump",
+              "compatibility": ["1104C-44", "1104C-44T"],
+              "specifications": {
+                "pumpType": "Rotary",
+                "maxPressure": "1750 bar",
+                "flow": "580 cc/stroke"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 182000,
+                "bulkPrice": 163000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 8,
+                "location": "Nairobi Warehouse",
+                "leadTime": "2-3 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["injection-pump", "fuel-pump", "perkins"]
+            },
+            {
+              "partNo": "21352639",
+              "name": "High Pressure Fuel Pump - Volvo TAD734GE",
+              "brand": "Bosch/Volvo",
+              "category": "Injection Pump",
+              "compatibility": ["TAD734GE"],
+              "specifications": {
+                "pumpType": "CP3",
+                "maxPressure": "2300 bar",
+                "flow": "850 cc/stroke"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 248000,
+                "bulkPrice": 223000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 6,
+                "location": "Nairobi Warehouse",
+                "leadTime": "3-5 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["injection-pump", "fuel-pump", "volvo", "common-rail"]
+            },
+            {
+              "partNo": "320-0680",
+              "name": "High Pressure Fuel Pump - Cat C4.4",
+              "brand": "Caterpillar",
+              "category": "Injection Pump",
+              "compatibility": ["C4.4"],
+              "specifications": {
+                "pumpType": "CP3",
+                "maxPressure": "2200 bar",
+                "flow": "780 cc/stroke"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 235000,
+                "bulkPrice": 211000,
+                "minimumOrder": 1
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 7,
+                "location": "Nairobi Warehouse",
+                "leadTime": "3-5 Days"
+              },
+              "warranty": "18 months",
+              "tags": ["injection-pump", "fuel-pump", "caterpillar", "common-rail"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
