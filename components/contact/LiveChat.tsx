@@ -115,7 +115,7 @@ export default function LiveChat() {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-2 text-center">
-                Or call us: <a href="tel:0782914717" className="text-amber-400 hover:text-amber-300">0782914717</a>
+                Or call us: <a href="tel:+254782914717" className="text-amber-400 hover:text-amber-300">+254782914717</a>
               </p>
             </div>
           </motion.div>

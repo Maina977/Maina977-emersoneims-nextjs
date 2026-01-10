@@ -13,7 +13,7 @@ export default function QuickContactForm() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   const whatsappNumber = useMemo(() => {
-    return '0768860665';
+    return '+254768860665';
   }, []);
 
   const whatsappHref = useMemo(() => {

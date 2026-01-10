@@ -510,14 +510,14 @@ export default function UniversalDiagnosticPage() {
                             {/* CTA Buttons */}
                             <div className="flex gap-3 mt-4 pt-4 border-t border-gray-700">
                               <a 
-                                href="https://wa.me/0768860665" 
+                                href="https://wa.me/254768860665" 
                                 target="_blank"
                                 className="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded text-center text-sm font-bold"
                               >
                                 📱 WhatsApp Expert
                               </a>
                               <a 
-                                href="tel:0782914717"
+                                href="tel:+254782914717"
                                 className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded text-center text-sm font-bold"
                               >
                                 📞 Call Now
@@ -552,16 +552,16 @@ export default function UniversalDiagnosticPage() {
                   <p className="text-gray-400 text-sm mb-4">Our certified technicians are available 24/7</p>
                   <div className="space-y-2">
                     <a 
-                      href="https://wa.me/0768860665"
+                      href="https://wa.me/254768860665"
                       className="block w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded font-bold text-center"
                     >
-                      💬 WhatsApp: 0768860665
+                      💬 WhatsApp: +254768860665
                     </a>
                     <a 
-                      href="tel:0768860665"
+                      href="tel:+254768860665"
                       className="block w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded font-bold text-center"
                     >
-                      📞 Call: 0768860665
+                      📞 Call: +254768860665
                     </a>
                   </div>
                 </div>

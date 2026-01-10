@@ -488,7 +488,7 @@ function IssuesList({ issues }: { issues: typeof commonIssues }) {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  Fix This Issue: 0768 860 655
+                  Fix This Issue: +254 768 860 665
                 </a>
                 <a 
                   href="#service-request" 
@@ -526,7 +526,7 @@ export default function GeneratorMaintenancePage() {
           <div className="flex flex-wrap gap-4">
             <a href="tel:+254768860665" className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-all flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-              Emergency: 0768 860 655
+              Emergency: +254 768 860 665
             </a>
             <a href="#service-request" className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg border border-white/20 transition-all">
               Request Service Quote
@@ -756,10 +756,10 @@ export default function GeneratorMaintenancePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="tel:+254768860665" className="px-8 py-4 bg-white text-orange-600 font-bold rounded-lg text-lg hover:bg-gray-100 transition-colors">
-              📞 Call: 0768 860 655
+              📞 Call: +254 768 860 665
             </a>
             <a href="tel:+254782914717" className="px-8 py-4 bg-black/20 text-white font-bold rounded-lg text-lg hover:bg-black/30 transition-colors">
-              📞 Alt: 0782914717
+              📞 Alt: +254782914717
             </a>
           </div>
         </div>

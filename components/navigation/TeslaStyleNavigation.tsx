@@ -46,7 +46,7 @@ const MEGA_MENUS = {
         ],
       },
     ],
-    cta: { href: '/contact', label: 'Get a Quote', phone: '0768 860 655' },
+    cta: { href: '/contact', label: 'Get a Quote', phone: '+254 768 860 665' },
   },
   solar: {
     title: 'Solar Solutions',
@@ -68,7 +68,7 @@ const MEGA_MENUS = {
         ],
       },
     ],
-    cta: { href: '/contact', label: 'Free Consultation', phone: '0782914717' },
+    cta: { href: '/contact', label: 'Free Consultation', phone: '+254782914717' },
   },
   diagnostics: {
     title: 'Diagnostic Tools',
@@ -92,7 +92,7 @@ const MEGA_MENUS = {
         ],
       },
     ],
-    cta: { href: '/contact', label: 'Get Support', phone: '0768 860 655' },
+    cta: { href: '/contact', label: 'Get Support', phone: '+254 768 860 665' },
   },
   services: {
     title: 'Our Services',
@@ -123,7 +123,7 @@ const MEGA_MENUS = {
         ],
       },
     ],
-    cta: { href: '/booking', label: 'Book Now', phone: '0782914717' },
+    cta: { href: '/booking', label: 'Book Now', phone: '+254782914717' },
   },
 };
 
@@ -494,10 +494,10 @@ export default function TeslaStyleNavigation({
                   <h4 className="font-bold text-white mb-2">Need Help?</h4>
                   <p className="text-sm text-white/60 mb-4">Call us for immediate assistance</p>
                   <a
-                    href="tel:0768860665"
+                    href="tel:+254768860665"
                     className="block w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold rounded-xl text-center"
                   >
-                    📞 0768 860 655
+                    📞 +254 768 860 665
                   </a>
                 </div>
 

@@ -96,17 +96,17 @@ export default function GlobalError({ error, reset }: ErrorProps) {
               <p className="text-gray-500 mb-4">Need immediate assistance?</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center text-sm">
                 <a 
-                  href="tel:0768860665" 
+                  href="tel:+254768860665" 
                   className="text-orange-500 hover:text-orange-400"
                 >
-                  📞 0768 860 655
+                  📞 +254 768 860 665
                 </a>
                 <span className="hidden sm:inline text-gray-700">|</span>
                 <a 
-                  href="tel:0782914717" 
+                  href="tel:+254782914717" 
                   className="text-orange-500 hover:text-orange-400"
                 >
-                  📞 0782914717
+                  📞 +254782914717
                 </a>
                 <span className="hidden sm:inline text-gray-700">|</span>
                 <a 

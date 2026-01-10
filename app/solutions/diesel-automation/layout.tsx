@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "AMF Panel & Generator Automation Kenya | ATS, Remote Monitoring | EmersonEIMS",
-  description: "Diesel generator automation in Kenya. AMF panels, ATS installation, auto-start systems, remote monitoring. DSE controllers, ComAp integration. AMF panel fabrication, commissioning. Call 0768 860 655.",
+  description: "Diesel generator automation in Kenya. AMF panels, ATS installation, auto-start systems, remote monitoring. DSE controllers, ComAp integration. AMF panel fabrication, commissioning. Call +254 768 860 665.",
   keywords: "AMF panel Kenya, ATS Kenya, automatic transfer switch Kenya, generator automation Kenya, auto start generator Kenya, DSE controller Kenya, remote generator monitoring, AMF installation Nairobi, generator changeover switch, diesel automation",
   openGraph: {
     title: "Generator Automation Kenya | AMF Panels & ATS Systems | EmersonEIMS",

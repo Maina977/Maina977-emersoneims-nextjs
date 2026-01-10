@@ -444,7 +444,7 @@ export default function GeneratorPage() {
                 className="mt-6 pt-6 border-t border-white/10"
               >
                 <p className="text-xs text-center text-gray-400">
-                  📞 24/7 Support: <span className="text-blue-400">0768 860 665</span>
+                  📞 24/7 Support: <span className="text-blue-400">+254 768 860 665</span>
                 </p>
               </motion.div>
             </motion.div>

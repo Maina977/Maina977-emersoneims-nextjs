@@ -302,7 +302,7 @@ export function SmartCTA({ className = '' }: { className?: string }) {
     // Business hours - emphasize call
     else if (hour >= 8 && hour < 17) {
       setCtaText('📞 Call Now - Speak to Expert');
-      setCtaUrl('tel:0768860665');
+      setCtaUrl('tel:+254768860665');
     }
     // Weekend
     else if (new Date().getDay() === 0 || new Date().getDay() === 6) {

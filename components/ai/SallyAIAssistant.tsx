@@ -200,7 +200,7 @@ export default function SallyAIAssistant() {
       switch (action) {
         case 'call':
           sendUserMessage('📞 Call');
-          window.location.href = 'tel:0768860665';
+          window.location.href = 'tel:+254768860665';
           break;
         case 'whatsapp':
           sendUserMessage('💬 WhatsApp');
@@ -232,7 +232,7 @@ export default function SallyAIAssistant() {
       sendUserMessage(userInput);
       const name = userProfile.name || 'there';
       sendSallyMessage(
-        `Thanks ${name}! Let me connect you with our team who can help with that specifically. 📞 Call 0768-860665 or WhatsApp us!`,
+        `Thanks ${name}! Let me connect you with our team who can help with that specifically. 📞 Call +254-768-860665 or WhatsApp us!`,
         [
           { label: '📞 Call Now', action: 'call' },
           { label: '💬 WhatsApp', action: 'whatsapp' },
@@ -428,7 +428,7 @@ export default function SallyAIAssistant() {
                   {/* Quick Actions */}
                   <div className="mt-3 flex gap-2">
                     <Link
-                      href="tel:0768860665"
+                      href="tel:+254768860665"
                       className="flex-1 text-center px-3 py-2 bg-green-100 text-green-700 text-xs font-medium rounded-lg hover:bg-green-200 transition-colors"
                     >
                       📞 Call

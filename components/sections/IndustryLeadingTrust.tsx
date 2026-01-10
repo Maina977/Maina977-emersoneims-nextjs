@@ -331,7 +331,7 @@ export default function IndustryLeadingTrust() {
             </div>
             <div className="flex gap-3">
               <Link
-                href="https://wa.me/0768860665"
+                href="https://wa.me/+254768860665"
                 className="px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-semibold rounded-lg transition-all"
               >
                 WhatsApp

@@ -700,7 +700,7 @@ export default function SciFiContactPage() {
             transition={{ delay: 0.7 }}
             className="flex flex-wrap justify-center gap-4"
           >
-            <a href="tel:0782914717">
+            <a href="tel:+254782914717">
               <motion.button
                 whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(251,191,36,0.4)' }}
                 whileTap={{ scale: 0.95 }}
@@ -775,9 +775,9 @@ export default function SciFiContactPage() {
             <ContactMethodCard
               icon={<svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>}
               title="VOICE_LINK"
-              value="0782914717"
+              value="+254782914717"
               subtext="Direct line to our operations center. Available 24/7 for emergencies."
-              href="tel:0782914717"
+              href="tel:+254782914717"
               delay={0}
               gradient="from-green-500 to-emerald-600"
             />
@@ -795,7 +795,7 @@ export default function SciFiContactPage() {
               title="INSTANT_LINK"
               value="WhatsApp"
               subtext="Quick response channel for urgent queries and real-time support."
-              href="https://wa.me/0768860665"
+              href="https://wa.me/254768860665"
               delay={0.2}
               gradient="from-green-600 to-green-700"
             />
@@ -816,7 +816,7 @@ export default function SciFiContactPage() {
                 <div className="bg-white p-2 rounded-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwa.me%2F0768860665%3Ftext%3DHello%2520EmersonEIMS&color=22c55e&format=png"
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwa.me%2F254768860665%3Ftext%3DHello%2520EmersonEIMS&color=22c55e&format=png"
                     alt="Scan to WhatsApp"
                     width={120}
                     height={120}
@@ -963,7 +963,7 @@ export default function SciFiContactPage() {
               we&apos;ve got Kenya covered. Connect with us today.
             </p>
             <div className="flex flex-wrap justify-center gap-4 pt-4">
-              <a href="tel:0768860665">
+              <a href="tel:+254768860665">
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(251,191,36,0.5)' }}
                   whileTap={{ scale: 0.95 }}
@@ -972,7 +972,7 @@ export default function SciFiContactPage() {
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  Call Now: 0768 860 655
+                  Call Now: +254 768 860 665
                 </motion.button>
               </a>
             </div>

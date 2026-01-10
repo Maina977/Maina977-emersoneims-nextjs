@@ -288,7 +288,7 @@ export default function AdvancedSEO() {
             name: 'Do you offer 24/7 emergency generator repairs?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! EmersonEIMS provides 24/7 emergency generator repair services across all 47 Kenyan counties. Call 0768-860665 for immediate assistance.',
+              text: 'Yes! EmersonEIMS provides 24/7 emergency generator repair services across all 47 Kenyan counties. Call +254-768-860665 for immediate assistance.',
             },
           },
           {

@@ -66,8 +66,8 @@ export default function Error({ error, reset }: ErrorProps) {
         {/* Quick Contact */}
         <p className="mt-8 text-gray-500 text-sm">
           Need help? Call{' '}
-          <a href="tel:0768860665" className="text-orange-500 hover:underline">
-            0768 860 655
+          <a href="tel:+254768860665" className="text-orange-500 hover:underline">
+            +254 768 860 665
           </a>
         </p>
       </div>

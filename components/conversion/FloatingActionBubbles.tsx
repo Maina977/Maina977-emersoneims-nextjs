@@ -34,7 +34,7 @@ const actions: Action[] = [
     id: 'call',
     label: 'Call Now',
     icon: '📞',
-    phone: '0768860665',
+    phone: '+254768860665',
     color: 'from-green-500 to-emerald-600',
     gradient: 'bg-gradient-to-br from-green-500 to-emerald-600',
     urgency: '24/7 Available',

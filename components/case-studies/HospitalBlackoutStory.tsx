@@ -403,7 +403,7 @@ export default function HospitalBlackoutStory() {
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors"
               >
                 <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                Emergency Hotline: 0768-860665
+                Emergency Hotline: +254-768-860665
               </Link>
               <Link
                 href="/diagnostic-journey"

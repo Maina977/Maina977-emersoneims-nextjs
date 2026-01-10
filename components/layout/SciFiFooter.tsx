@@ -168,18 +168,18 @@ export default function SciFiFooter() {
               <li className="text-gray-400">
                 <span className="text-cyan-400">PHONE:</span>
                 <div className="mt-1">
-                    <a href="tel:0782914717" className="hover:text-cyan-300 transition-colors">
-                      0782914717
+                    <a href="tel:+254782914717" className="hover:text-cyan-300 transition-colors">
+                      +254782914717
                     </a>
                   </div>
                   <div>
-                    <a href="tel:0768860665" className="hover:text-cyan-300 transition-colors">
-                      0768860665
+                    <a href="tel:+254768860665" className="hover:text-cyan-300 transition-colors">
+                      +254768860665
                     </a>
                   </div>
                   <div>
-                    <a href="https://wa.me/0768860665" className="hover:text-green-400 transition-colors" target="_blank" rel="noopener noreferrer">
-                      WhatsApp: 0768860665
+                    <a href="https://wa.me/+254768860665" className="hover:text-green-400 transition-colors" target="_blank" rel="noopener noreferrer">
+                      WhatsApp: +254768860665
                     </a>
                 </div>
               </li>

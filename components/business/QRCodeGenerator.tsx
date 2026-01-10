@@ -40,8 +40,8 @@ const COMPANY_INFO = {
   name: 'EmersonEIMS',
   fullName: 'Emerson Electrical & Instrumentation Management Services',
   website: 'https://www.emersoneims.com',
-  phone: '0782914717',
-  whatsapp: '0768860665', // Primary WhatsApp number
+  phone: '+254782914717',
+  whatsapp: '+254768860665', // Primary WhatsApp number
   email: 'info@emersoneims.com',
   address: 'P.O. Box 387-00521, Old North Airport Road, Nairobi, Kenya',
   tagline: 'Reliable Power. Without Limits.',

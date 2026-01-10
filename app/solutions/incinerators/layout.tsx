@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Incinerator Solutions Kenya | Medical Waste, Installation, NEMA Compliance | EmersonEIMS",
-  description: "Incinerator solutions in Kenya. Medical waste incinerators, installation, maintenance, NEMA emissions compliance. Hospital incinerators, industrial waste disposal. All capacities available. Call 0768 860 655.",
+  description: "Incinerator solutions in Kenya. Medical waste incinerators, installation, maintenance, NEMA emissions compliance. Hospital incinerators, industrial waste disposal. All capacities available. Call +254 768 860 665.",
   keywords: "incinerator Kenya, medical waste incinerator Kenya, hospital incinerator, waste incinerator Nairobi, NEMA compliance incinerator, industrial incinerator Kenya, cremator Kenya, incinerator installation, incinerator maintenance",
   openGraph: {
     title: "Incinerator Solutions Kenya | Medical & Industrial Waste | EmersonEIMS",

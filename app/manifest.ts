@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Emerson Energy - Generators & Solar Power Kenya',
     short_name: 'Emerson',
-    description: 'Kenya\'s #1 generator and solar power company. 20+ years experience, 47 counties, 24/7 support. Call 0768 860 655.',
+    description: 'Kenya\'s #1 generator and solar power company. 20+ years experience, 47 counties, 24/7 support. Call +254 768 860 665.',
     start_url: '/',
     display: 'standalone',
     background_color: '#000000',
@@ -66,7 +66,7 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         name: 'Contact Us',
         short_name: 'Contact',
-        description: 'Call 0768 860 665 or 0782914717',
+        description: 'Call +254 768 860 665 or +254 782 914 717',
         url: '/contact',
         icons: [{ src: '/icon-contact.png', sizes: '96x96' }],
       },

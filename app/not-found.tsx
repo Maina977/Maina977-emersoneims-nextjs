@@ -88,16 +88,16 @@ export default function NotFound() {
           <p className="text-gray-500 mb-4">Still can&apos;t find what you need?</p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
             <a
-              href="tel:0768860665"
+              href="tel:+254768860665"
               className="flex items-center gap-2 text-orange-500 hover:text-orange-400 transition"
             >
-              <span>📞</span> 0768 860 665
+              <span>📞</span> +254 768 860 665
             </a>
             <a 
-              href="tel:0782914717" 
+              href="tel:+254782914717" 
               className="flex items-center gap-2 text-orange-500 hover:text-orange-400 transition"
             >
-              <span>📞</span> 0782914717
+              <span>📞</span> +254782914717
             </a>
             <a
               href="https://wa.me/254768860665" 

@@ -711,7 +711,7 @@ const MicroInteractions = () => {
 
 export const company = {
   name: "EMERSONEIMS",
-  phones: ["0768860665", "0782914717"],
+  phones: ["+254768860665", "+254782914717"],
   emails: ["info@emersoneims.com", "emersoneimservices@gmail.com"],
   address: "P.O. Box 387-00521, Old North Airport Road, Nairobi, Kenya",
 };
@@ -1334,7 +1334,7 @@ export default function PremiumApp() {
               {/* Support Contact */}
               <div className="mt-12 text-center">
                 <p className="text-gray-400">
-                  24/7 Support: <a href="tel:+254768860665" className="text-amber-500 hover:text-amber-400 font-semibold">0768 860 665</a> | <a href="tel:+254782914717" className="text-amber-500 hover:text-amber-400 font-semibold">0782 914 717</a>
+                  24/7 Support: <a href="tel:+254768860665" className="text-amber-500 hover:text-amber-400 font-semibold">+254 768 860 665</a> | <a href="tel:+254782914717" className="text-amber-500 hover:text-amber-400 font-semibold">+254 782 914 717</a>
                 </p>
               </div>
             </div>

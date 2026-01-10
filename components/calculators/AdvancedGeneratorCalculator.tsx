@@ -883,7 +883,7 @@ export default function AdvancedGeneratorCalculator() {
             <span className="text-gray-400">Recommended: <span className="text-green-400 font-bold">{results.optimalSize} kVA</span></span>
           </div>
           <a 
-            href="https://wa.me/0768860665?text=I%20need%20a%20quote%20for%20a%20{results.optimalSize}kVA%20generator"
+            href="https://wa.me/+254768860665?text=I%20need%20a%20quote%20for%20a%20{results.optimalSize}kVA%20generator"
             target="_blank"
             className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold"
           >

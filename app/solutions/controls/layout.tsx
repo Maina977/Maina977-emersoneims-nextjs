@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Generator Controller Solutions | DeepSea DSE, PowerWizard | EmersonEIMS Kenya",
-  description: "Expert DeepSea DSE and PowerWizard controller solutions in Kenya. Fault code database, configuration guides, communication setup. DSE7310, DSE7320, DSE8610, PowerWizard 1.0/2.0. Call 0768 860 655.",
+  description: "Expert DeepSea DSE and PowerWizard controller solutions in Kenya. Fault code database, configuration guides, communication setup. DSE7310, DSE7320, DSE8610, PowerWizard 1.0/2.0. Call +254 768 860 665.",
   keywords: "DeepSea controller Kenya, DSE7310 Kenya, DSE7320 fault codes, PowerWizard Kenya, generator controller repair, AMF controller Kenya, DSE configuration, generator controller fault codes, DSE8610 parallel, Modbus generator, RS485 generator",
   openGraph: {
     title: "Generator Controller Solutions | DeepSea & PowerWizard Experts | EmersonEIMS",
