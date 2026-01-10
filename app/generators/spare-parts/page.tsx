@@ -3,7 +3,7 @@
  *
  * THE FEATURE THAT CHANGES WEBSITE HISTORY
  *
- * - 537+ parts with complete specifications
+ * - 90+ parts with complete specifications
  * - Sci-fi holographic interface
  * - Real-time inventory tracking
  * - Instant WhatsApp quotations

@@ -24,7 +24,7 @@ export default function FAQSchema() {
         "name": "Do you provide generator spare parts across Kenya?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! EmersonEIMS maintains a comprehensive spare parts database with 1247+ genuine parts including filters, engine components (pistons, gaskets, turbos, injectors), electrical parts (AVRs, MPUs, solenoids, sensors), control modules (DeepSea, PowerWizard), and switchgear. We deliver spare parts to all 47 counties in Kenya with same-day availability for stock items in Nairobi."
+          "text": "Yes! EmersonEIMS maintains a comprehensive spare parts database with 90+ genuine parts including filters, engine components (pistons, gaskets, turbos, injectors), electrical parts (AVRs, MPUs, solenoids, sensors), control modules (DeepSea, PowerWizard), and switchgear. We deliver spare parts to all 47 counties in Kenya with same-day availability for stock items in Nairobi."
         }
       },
       {
@@ -88,7 +88,7 @@ export default function FAQSchema() {
         "name": "Can I get a quotation for spare parts online?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! Visit our revolutionary spare parts module at emersoneims.com/generators/spare-parts to browse 1247+ parts with real-time pricing, stock availability, and instant quotation generation. Search by part number, generator model, or component type. Request quotes online 24/7 or call +254 768 860 665 for technical assistance."
+          "text": "Yes! Visit our revolutionary spare parts module at emersoneims.com/generators/spare-parts to browse 90+ parts with real-time pricing, stock availability, and instant quotation generation. Search by part number, generator model, or component type. Request quotes online 24/7 or call +254 768 860 665 for technical assistance."
         }
       }
     ]
