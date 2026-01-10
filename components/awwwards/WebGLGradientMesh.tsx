@@ -22,11 +22,14 @@ export default function WebGLGradientMesh() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
-    if (!gl) {
+    const glContext = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
+    if (!glContext) {
       console.warn('WebGL not supported');
       return;
     }
+
+    // Type assertion: We know gl is not null after the check above
+    const gl: WebGLRenderingContext = glContext;
 
     // Vertex shader
     const vertexShaderSource = `
@@ -121,7 +124,6 @@ export default function WebGLGradientMesh() {
 
     // Compile shader
     function compileShader(source: string, type: number): WebGLShader | null {
-      if (!gl) return null; // TypeScript null check
       const shader = gl.createShader(type);
       if (!shader) return null;
       gl.shaderSource(shader, source);
