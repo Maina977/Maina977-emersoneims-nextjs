@@ -283,7 +283,15 @@ export default function EnhancedGeneratorCalculator() {
   );
 }
 
-function InputCard({ label, value, onChange, min, max, step, icon }: any) {
+function InputCard({ label, value, onChange, min, max, step, icon }: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  min: number;
+  max: number;
+  step: number;
+  icon: string;
+}) {
   return (
     <div className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-800">
       <div className="flex items-center gap-3 mb-4">
@@ -561,8 +569,13 @@ function ResultsSection({ results, inputs }: { results: any; inputs: CalculatorI
   );
 }
 
-function StatCard({ label, value, icon, color }: any) {
-  const colors = {
+function StatCard({ label, value, icon, color }: {
+  label: string;
+  value: string | number;
+  icon: string;
+  color: 'amber' | 'green' | 'red' | 'purple';
+}) {
+  const colors: Record<'amber' | 'green' | 'red' | 'purple', string> = {
     amber: 'from-amber-500/20 to-orange-600/20 border-amber-500/30',
     green: 'from-green-500/20 to-emerald-600/20 border-green-500/30',
     red: 'from-red-500/20 to-rose-600/20 border-red-500/30',
@@ -578,7 +591,11 @@ function StatCard({ label, value, icon, color }: any) {
   );
 }
 
-function ChartCard({ title, icon, children }: any) {
+function ChartCard({ title, icon, children }: {
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-800">
       <div className="flex items-center gap-3 mb-6">
