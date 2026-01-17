@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Grid, List, Zap, Sun, Settings, ShoppingCart, X } from 'lucide-react';
-import sparePartsDatabase from '@/app/data/spare-parts-database.json';
+import sparePartsDatabase from '@/app/data/spare-parts-database-COMPLETE.json';
 
 /**
  * 🚀 REVOLUTIONARY SPARE PARTS MODULE

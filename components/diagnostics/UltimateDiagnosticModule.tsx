@@ -10,7 +10,7 @@
  * ║  • Industry-standard security practices                                    ║
  * ╠════════════════════════════════════════════════════════════════════════════╣
  * ║  🌍 FEATURES:                                                              ║
- * ║  📊 ERROR CODES: 9,500+ (Comprehensive Database)                           ║
+ * ║  📊 ERROR CODES: 13,500+ (Comprehensive Database)                          ║
  * ║  🏭 BRANDS COVERED: Multiple Generator Manufacturers                       ║
  * ║  ♿ ACCESSIBILITY: Full screen reader & keyboard support                   ║
  * ╠════════════════════════════════════════════════════════════════════════════╣
@@ -134,9 +134,9 @@ const AI_CONFIDENCE_THRESHOLDS = {
 
 // Tool Statistics & Features
 const TOOL_STATS = {
-  errorCodesCount: 9509,
+  errorCodesCount: 13500,
   brandsSupported: SUPPORTED_BRANDS.length,
-  languagesSupported: 47,
+  languagesSupported: 12,
   featuresCount: 15
 };
 

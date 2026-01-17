@@ -6,10 +6,10 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlassmorphicCard from '@/components/effects/GlassmorphicCard';
 
-// Import all error code databases
+// Import all error code databases - Total: 13,500+ codes
 import comprehensiveErrorCodes from '@/app/data/diagnostic/comprehensiveErrorCodes.json';
 import { brandSpecificErrorCodes } from '@/app/data/diagnostic/brandSpecificErrorCodes';
-import wordpressDetailedCodes from '@/app/data/diagnostic/wordpressDetailedFaultCodes.json';
+import { WORDPRESS_FAULT_CODES } from '@/lib/data/wordpressFaultCodes';
 
 interface FaultCodeResult {
   brand?: string;
@@ -86,31 +86,28 @@ export default function FaultCodeLookup() {
       });
     });
 
-    // Add WordPress detailed codes
-    wordpressDetailedCodes.forEach((error: any) => {
+    // Add WordPress fault codes (3,996 codes)
+    WORDPRESS_FAULT_CODES.forEach((error) => {
       combined.push({
         brand: error.brand,
         model: error.model,
         code: error.code,
         category: error.category,
-        issue: error.symptom,
-        symptom: error.symptom,
+        issue: error.title,
+        symptom: error.description,
         severity: error.severity,
-        symptoms: [error.symptom],
+        symptoms: error.symptoms || [],
         causes: error.causes || [],
-        solution: error.detailedFix || error.fix,
-        detailedFix: error.detailedFix,
-        parts: error.parts || [],
-        tools: error.tools || [],
-        estimatedTime: error.estimatedTime,
-        estimatedCost: error.estimatedCost,
-        preventiveMaintenance: error.preventiveMaintenance,
+        solution: error.solutions?.[0]?.solution || error.description,
+        detailedFix: error.solutions?.map(s => `[${s.difficulty}] ${s.solution}`).join('\n'),
+        parts: error.solutions?.[0]?.parts || [],
+        tools: error.solutions?.[0]?.tools || [],
+        estimatedTime: error.solutions?.[0]?.timeEstimate,
+        estimatedCost: error.solutions?.[0]?.cost,
+        preventiveMaintenance: error.preventiveMeasures?.join(', '),
         safetyWarnings: error.safetyWarnings,
         relatedCodes: error.relatedCodes,
-        expertTips: error.expertTips,
-        videoGuide: error.videoGuide,
-        pdfManual: error.pdfManual,
-        emergencyContact: error.emergencyContact
+        expertTips: error.whenToCallExpert
       });
     });
 

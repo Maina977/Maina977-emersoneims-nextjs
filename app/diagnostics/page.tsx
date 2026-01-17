@@ -577,7 +577,7 @@ export default function UniversalDiagnosticPage() {
             <Link href="/diagnostic-suite" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">🔧</div>
               <div className="font-bold text-white">Diagnostic Suite</div>
-              <div className="text-sm text-gray-400">5,930+ error codes database</div>
+              <div className="text-sm text-gray-400">13,500+ error codes database</div>
             </Link>
             <Link href="/diagnostic-cockpit" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">🎛️</div>

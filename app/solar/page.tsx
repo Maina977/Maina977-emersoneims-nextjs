@@ -718,17 +718,17 @@ export const company = {
 
 export const heroImages = [
   {
-    src: "https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png",
-    alt: "Solar installation cinematic view",
-    width: 3840, height: 2160, priority: true,
+    src: "/images/solar power for farms.png",
+    alt: "Solar installation for farms - professional solar power systems",
+    width: 1920, height: 1080, priority: true,
   },
 ];
 
 export const galleryImages = [
-  { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/7.png", alt: "Solar showcase 7", width: 3840, height: 2160 },
-  { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/1-1.png", alt: "Solar showcase 1", width: 3840, height: 2160 },
-  { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/5.png", alt: "Solar showcase 5", width: 3840, height: 2160 },
-  { src: "https://www.emersoneims.com/wp-content/uploads/2025/11/2.png", alt: "Solar showcase 2", width: 3840, height: 2160 },
+  { src: "/images/solar changeover control.png", alt: "Solar changeover control panel - Crafted Details", width: 1920, height: 1080 },
+  { src: "/images/solar hotel heaters.png", alt: "Solar hotel water heaters - Premium Materials", width: 1920, height: 1080 },
+  { src: "/images/solar for flower farms.png", alt: "Solar power for flower farms - Robust Engineering", width: 1920, height: 1080 },
+  { src: "/images/solar-water-pumping.png", alt: "Solar water pumping systems - Cinematic Visual", width: 1920, height: 1080 },
 ];
 
 export type Panel = {
