@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import errorCodes from '@/app/data/diagnostic/errorCodes.json';
+import comprehensiveErrorCodes from '@/app/data/diagnostic/comprehensiveErrorCodes.json';
 
 export default function GlobalSearch() {
   const [query, setQuery] = useState('');
-  const results = errorCodes.filter(
+  const results = comprehensiveErrorCodes.filter(
     e =>
       e.code.toLowerCase().includes(query.toLowerCase()) ||
       e.issue.toLowerCase().includes(query.toLowerCase())

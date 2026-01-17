@@ -146,7 +146,7 @@ export default function SallyAIAssistant() {
         response = `${name}, for emergency power, we offer 48-hour installation with our Cummins generators. ⚡\n\nWhere are you located?`;
         break;
       case 'repair':
-        response = `${name}, our technicians can diagnose and repair any generator issue. We cover 5,930+ error codes! 🔧\n\nWhere is your generator located?`;
+        response = `${name}, our technicians can diagnose and repair any generator issue. We cover 9,500+ error codes! 🔧\n\nWhere is your generator located?`;
         break;
       case 'solar':
         response = `${name}, we provide complete solar installations for homes and businesses. ☀️\n\nWhich county are you in?`;

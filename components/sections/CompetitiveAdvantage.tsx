@@ -30,7 +30,7 @@ const COMPARISON_POINTS = [
   },
   {
     feature: 'Diagnostic Capability',
-    emersonEIMS: '5,930+ error codes, AI-assisted diagnosis',
+    emersonEIMS: '9,500+ error codes, AI-assisted diagnosis',
     industry: 'Basic diagnostics only',
     advantage: true,
   },

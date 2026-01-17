@@ -1,9 +1,9 @@
 'use client';
 
-import errorCodes from '@/app/data/diagnostic/errorCodes.json';
+import comprehensiveErrorCodes from '@/app/data/diagnostic/comprehensiveErrorCodes.json';
 
 export default function ErrorList({ service }) {
-  const entries = errorCodes.filter(e => e.service === service);
+  const entries = comprehensiveErrorCodes.filter(e => e.service === service);
   return (
     <div className="mt-4 p-4 bg-gray-800 rounded border border-gray-600">
       <h3 className="text-lg font-bold text-yellow-400 mb-2">

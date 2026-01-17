@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 // Real statistics from the UltimateDiagnosticModule
 const DIAGNOSTIC_STATS = {
-  totalErrorCodes: 5930,
+  totalErrorCodes: 9509,
   brandsSupported: 12,
   languagesSupported: 47,
   offlineCapable: true,
@@ -171,7 +171,7 @@ export default function DiagnosticModuleShowcase() {
             <div className="relative text-center">
               <div className="text-8xl sm:text-9xl lg:text-[12rem] font-bold leading-none mb-4">
                 <span className="text-transparent bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text">
-                  <AnimatedCounter target={5930} duration={2.5} suffix="+" />
+                  <AnimatedCounter target={9509} duration={2.5} suffix="+" />
                 </span>
               </div>
               <div className="text-2xl sm:text-3xl text-white font-semibold mb-2">

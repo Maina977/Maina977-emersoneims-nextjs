@@ -272,7 +272,7 @@ export default function AdvancedSEO() {
             name: 'How do I diagnose generator problems?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS offers comprehensive generator diagnostics with 5,930+ error codes. Our diagnostic suite helps identify issues instantly with step-by-step solutions.',
+              text: 'EmersonEIMS offers comprehensive generator diagnostics with 9,500+ error codes. Our diagnostic suite helps identify issues instantly with step-by-step solutions.',
             },
           },
           {
@@ -280,7 +280,7 @@ export default function AdvancedSEO() {
             name: 'What generator brands do you service?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'We service all major brands: Cummins, Perkins, FG Wilson, Caterpillar, SDMO, and more. Our database covers 5,930+ error codes across all manufacturers.',
+              text: 'We service all major brands: Cummins, Perkins, FG Wilson, Caterpillar, SDMO, and more. Our database covers 9,500+ error codes across all manufacturers.',
             },
           },
           {

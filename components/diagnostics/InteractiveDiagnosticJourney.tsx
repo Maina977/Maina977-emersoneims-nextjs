@@ -7,7 +7,7 @@ import Link from 'next/link';
 /**
  * 🏆 AWWWARDS SOTD WEAPON: INTERACTIVE DIAGNOSTIC JOURNEY
  *
- * What Apple Doesn't Have: 5,930 real error codes with interactive storytelling
+ * What Apple Doesn't Have: 9,500+ real error codes with interactive storytelling
  * This is our unfair advantage - transform data into an immersive experience
  *
  * Features:
@@ -27,7 +27,7 @@ interface ErrorCode {
   affectedSystems: string[];
 }
 
-// Sample from actual 5,930 error codes
+// Sample from actual 9,500+ error codes
 const featuredCodes: ErrorCode[] = [
   {
     code: '1234',
@@ -64,7 +64,7 @@ const featuredCodes: ErrorCode[] = [
 ];
 
 const stats = {
-  totalCodes: 5930,
+  totalCodes: 9509,
   brands: ['Cummins', 'Caterpillar', 'Perkins', 'FG Wilson', 'Kohler', 'MTU', 'Deutz', 'SDMO'],
   solvedToday: 847,
   averageResolveTime: '12 minutes',
@@ -152,7 +152,7 @@ export default function InteractiveDiagnosticJourney() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <StatCard number="5,930" label="Error Codes" />
+              <StatCard number="9,509" label="Error Codes" />
               <StatCard number="847" label="Solved Today" />
               <StatCard number="12 min" label="Avg Resolution" />
               <StatCard number="8" label="Brands Covered" />
