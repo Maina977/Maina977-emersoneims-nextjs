@@ -55,7 +55,7 @@ const caseStudies: CaseStudy[] = [
     industry: 'Agriculture',
     location: 'Naivasha, Kenya',
     challenge: 'Cold storage facilities requiring 24/7 power for flower preservation. Power failures causing significant crop losses and export delays.',
-    solution: 'Deployed 300+100kVA redundant generator system with automatic load management, temperature monitoring integration, and predictive maintenance alerts.',
+    solution: 'Deployed 300+100kVA redundant generator system with automatic load management, temperature monitoring integration, and scheduled maintenance alerts.',
     results: [
       { metric: 'Cold Chain', value: '100%', improvement: 'maintained' },
       { metric: 'Crop Losses', value: '-95%', improvement: 'reduced' },

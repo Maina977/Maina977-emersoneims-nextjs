@@ -500,13 +500,13 @@ export default function AwwwardsHomepage() {
                   <span className="text-transparent bg-gradient-to-r from-amber-400 to-cyan-400 bg-clip-text"> Systems</span>
                 </h2>
                 <p className="text-lg sm:text-xl lg:text-2xl text-gray-200 max-w-3xl leading-relaxed">
-                  Advanced automation systems. Remote monitoring. Predictive maintenance. 
+                  Advanced automation systems. Remote monitoring. Scheduled maintenance alerts.
                   <span className="text-amber-400 font-medium"> 24/7 support</span>.
                 </p>
                 
                 {/* Feature tags */}
                 <div className="mt-8 flex flex-wrap gap-3">
-                  {['Remote Access', 'Real-time Alerts', 'Predictive AI', 'Auto-Sync'].map((tag, i) => (
+                  {['Remote Access', 'SMS Alerts', 'Auto-Sync', 'Easy Controls'].map((tag, i) => (
                     <motion.span
                       key={tag}
                       initial={{ opacity: 0, y: 10 }}

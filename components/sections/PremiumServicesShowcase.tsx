@@ -14,7 +14,7 @@ const services = [
     icon: '⚡',
     color: 'from-amber-500 to-orange-600',
     stats: { capacity: '45,000+ kVA', installed: '523+ units' },
-    features: ['24/7 Emergency Response', 'Predictive Maintenance', 'Remote Monitoring', 'Parts Inventory'],
+    features: ['24/7 Emergency Response', 'Scheduled Maintenance', 'Remote Monitoring', 'Parts Inventory'],
     href: '/services/generators',
   },
   {
@@ -243,7 +243,7 @@ export default function PremiumServicesShowcase() {
             <span className="text-lg">→</span>
           </Link>
           <p className="mt-4 text-gray-500 text-sm">
-            Free AI-powered diagnostics for all 9 services • Q&A • Calculators • Instant Quotes
+            Free diagnostic tools for all 9 services • Q&A • Calculators • Instant Quotes
           </p>
         </motion.div>
       </div>

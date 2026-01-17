@@ -14,15 +14,13 @@ import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
-// Real statistics from the UltimateDiagnosticModule
+// Actual statistics from the diagnostic database
 const DIAGNOSTIC_STATS = {
   totalErrorCodes: 9509,
   brandsSupported: 12,
-  languagesSupported: 47,
   offlineCapable: true,
-  voiceControl: true,
-  aiAssisted: true,
-  accessibility: 'WCAG 2.1 AAA',
+  freeToUse: true,
+  noLoginRequired: true,
 };
 
 const SUPPORTED_BRANDS = [
@@ -32,12 +30,12 @@ const SUPPORTED_BRANDS = [
 ];
 
 const UNIQUE_FEATURES = [
-  { icon: '🧠', title: 'AI-Powered Analysis', desc: 'Machine learning fault prediction' },
-  { icon: '🎤', title: 'Voice Commands', desc: 'Hands-free operation' },
+  { icon: '🔍', title: 'Smart Search', desc: 'Find any error code instantly' },
+  { icon: '📖', title: 'Step-by-Step Guides', desc: 'Detailed repair instructions' },
   { icon: '📴', title: 'Works Offline', desc: 'Full PWA capability' },
-  { icon: '♿', title: 'WCAG AAA', desc: 'Complete accessibility' },
-  { icon: '🌍', title: '47 Languages', desc: 'Global reach' },
-  { icon: '⚡', title: 'Real-time', desc: 'Instant diagnostics' },
+  { icon: '♿', title: 'Accessible Design', desc: 'Easy to use for everyone' },
+  { icon: '🌍', title: 'Multi-Brand Support', desc: '12 generator brands covered' },
+  { icon: '⚡', title: 'Instant Results', desc: 'No waiting, no signup required' },
 ];
 
 // Animated counter component
@@ -231,7 +229,7 @@ export default function DiagnosticModuleShowcase() {
           ))}
         </div>
 
-        {/* Comparison Statement */}
+        {/* Key Benefits Statement */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -241,12 +239,14 @@ export default function DiagnosticModuleShowcase() {
         >
           <div className="inline-block p-8 rounded-2xl bg-gradient-to-r from-amber-500/10 via-transparent to-cyan-500/10 border border-white/10">
             <p className="text-xl sm:text-2xl text-gray-300">
-              <span className="text-white font-bold">Competitors: ~500 codes</span>
+              <span className="text-amber-400 font-bold">9,500+ Error Codes</span>
               <span className="mx-4 text-gray-600">|</span>
-              <span className="text-amber-400 font-bold">EmersonEIMS: 5,930+ codes</span>
+              <span className="text-white font-bold">12 Generator Brands</span>
+              <span className="mx-4 text-gray-600">|</span>
+              <span className="text-cyan-400 font-bold">100% Free</span>
             </p>
             <p className="text-gray-500 mt-2">
-              10x more comprehensive than any alternative
+              The most comprehensive generator diagnostic database in East Africa
             </p>
           </div>
         </motion.div>

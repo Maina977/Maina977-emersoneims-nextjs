@@ -30,7 +30,7 @@ const COMPARISON_POINTS = [
   },
   {
     feature: 'Diagnostic Capability',
-    emersonEIMS: '9,500+ error codes, AI-assisted diagnosis',
+    emersonEIMS: '9,500+ error codes with step-by-step guides',
     industry: 'Basic diagnostics only',
     advantage: true,
   },
@@ -73,7 +73,7 @@ const VALUE_PROPOSITIONS = [
   },
   {
     title: 'Preventive Over Reactive',
-    description: 'Predictive maintenance and monitoring prevents failures before they happen, minimizing costly downtime.',
+    description: 'Scheduled maintenance and monitoring prevents failures before they happen, minimizing costly downtime.',
     icon: '🛡️',
   },
   {
