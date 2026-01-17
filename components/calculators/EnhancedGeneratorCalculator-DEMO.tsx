@@ -207,7 +207,7 @@ export default function EnhancedGeneratorCalculator() {
           <InputCard
             label="Total Load (kW)"
             value={inputs.totalLoad}
-            onChange={(v) => setInputs({ ...inputs, totalLoad: v })}
+            onChange={(v: number) => setInputs({ ...inputs, totalLoad: v })}
             min={0}
             max={1000}
             step={5}
@@ -216,7 +216,7 @@ export default function EnhancedGeneratorCalculator() {
           <InputCard
             label="Critical Load (kW)"
             value={inputs.criticalLoad}
-            onChange={(v) => setInputs({ ...inputs, criticalLoad: v })}
+            onChange={(v: number) => setInputs({ ...inputs, criticalLoad: v })}
             min={0}
             max={inputs.totalLoad}
             step={5}
@@ -225,7 +225,7 @@ export default function EnhancedGeneratorCalculator() {
           <InputCard
             label="Starting Load (kW)"
             value={inputs.startingLoad}
-            onChange={(v) => setInputs({ ...inputs, startingLoad: v })}
+            onChange={(v: number) => setInputs({ ...inputs, startingLoad: v })}
             min={inputs.totalLoad}
             max={2000}
             step={10}
@@ -234,7 +234,7 @@ export default function EnhancedGeneratorCalculator() {
           <InputCard
             label="Hours/Day"
             value={inputs.hoursPerDay}
-            onChange={(v) => setInputs({ ...inputs, hoursPerDay: v })}
+            onChange={(v: number) => setInputs({ ...inputs, hoursPerDay: v })}
             min={1}
             max={24}
             step={1}
@@ -243,7 +243,7 @@ export default function EnhancedGeneratorCalculator() {
           <InputCard
             label="Altitude (meters)"
             value={inputs.altitude}
-            onChange={(v) => setInputs({ ...inputs, altitude: v })}
+            onChange={(v: number) => setInputs({ ...inputs, altitude: v })}
             min={0}
             max={5000}
             step={100}
@@ -252,7 +252,7 @@ export default function EnhancedGeneratorCalculator() {
           <InputCard
             label="Temperature (°C)"
             value={inputs.temperature}
-            onChange={(v) => setInputs({ ...inputs, temperature: v })}
+            onChange={(v: number) => setInputs({ ...inputs, temperature: v })}
             min={-20}
             max={60}
             step={1}
