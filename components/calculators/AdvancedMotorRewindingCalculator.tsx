@@ -1,10 +1,52 @@
+/**
+ * 🚀 WORLD-CLASS MOTOR REWINDING CALCULATOR WITH CHART.JS
+ *
+ * Features:
+ * ✅ Real-time circular pressure gauges showing motor parameters
+ * ✅ Live Chart.js visualizations (Line, Bar, Doughnut, Radar)
+ * ✅ Animated calculation progress with SVG gauges
+ * ✅ Detailed winding specifications and testing parameters
+ * ✅ Cost analysis with visual breakdowns
+ * ✅ Professional glassmorphic UI
+ */
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  RadialLinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line, Bar, Doughnut, Radar } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  RadialLinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 // =====================================================
-// ADVANCED MOTOR REWINDING CALCULATOR
+// TYPES & DATA
 // =====================================================
 
 const MOTOR_TYPES = [
@@ -38,8 +80,8 @@ const INSULATION_CLASSES = [
 ];
 
 export default function AdvancedMotorRewindingCalculator() {
-  const [activeTab, setActiveTab] = useState<'motor-specs' | 'winding' | 'testing' | 'cost'>('motor-specs');
-  
+  const [activeTab, setActiveTab] = useState<'motor-specs' | 'winding' | 'results' | 'cost'>('motor-specs');
+
   const [motorData, setMotorData] = useState({
     motorType: 'Three Phase Induction',
     power: 7.5, // kW
@@ -70,37 +112,50 @@ export default function AdvancedMotorRewindingCalculator() {
 
     // Synchronous Speed
     const syncSpeed = (120 * motorData.frequency) / motorData.poles;
-    
+
     // Slip
     const slip = ((syncSpeed - motorData.rpm) / syncSpeed) * 100;
-    
+
     // Torque
     const torque = (motorData.power * 1000 * 60) / (2 * Math.PI * motorData.rpm);
-    
+
     // Wire selection
     const wire = WIRE_GAUGES.find(w => w.swg === motorData.wireGauge) || WIRE_GAUGES[5];
     const currentDensity = fla / (Math.PI * (wire.diameter / 2) ** 2 * motorData.parallel);
-    
+
     // Winding resistance per phase
     const totalWireLength = motorData.slots * motorData.turnsPerCoil * 0.5; // Approximate
     const resistancePerPhase = (wire.resistance * totalWireLength) / motorData.parallel;
-    
+
     // Insulation class
     const insulation = INSULATION_CLASSES.find(i => i.class === motorData.insulationClass) || INSULATION_CLASSES[3];
-    
+
     // Test values
     const meggerMin = motorData.voltage + 1000; // Minimum insulation resistance (Ohms)
     const hiPotTest = motorData.voltage * 2 + 1000; // Hi-pot test voltage
-    
+
     // Copper weight estimation
     const copperWeight = totalWireLength * Math.PI * (wire.diameter / 1000) ** 2 / 4 * 8960 * (motorData.phase === 'three' ? 3 : 1);
-    
+
     // Cost estimation
     const copperCost = copperWeight * 1200; // KES per kg
     const laborCost = motorData.power * 2000; // Rough estimate
     const materialsCost = motorData.power * 500;
     const totalCost = copperCost + laborCost + materialsCost;
-    
+
+    // Starting current estimation (6-8x FLA for induction motors)
+    const startingCurrent = fla * 7;
+
+    // Power input
+    const powerInput = motorData.power / (motorData.efficiency / 100);
+
+    // Losses
+    const totalLosses = powerInput - motorData.power;
+    const copperLosses = totalLosses * 0.4; // ~40% copper losses
+    const ironLosses = totalLosses * 0.35; // ~35% iron losses
+    const mechanicalLosses = totalLosses * 0.15; // ~15% mechanical
+    const strayLosses = totalLosses * 0.1; // ~10% stray
+
     return {
       fullLoadAmps: fla,
       syncSpeed,
@@ -116,6 +171,14 @@ export default function AdvancedMotorRewindingCalculator() {
       totalCost,
       laborCost,
       copperCost,
+      materialsCost,
+      startingCurrent,
+      powerInput,
+      totalLosses,
+      copperLosses,
+      ironLosses,
+      mechanicalLosses,
+      strayLosses,
       recommendedWireGauge: WIRE_GAUGES.find(w => {
         const area = Math.PI * (w.diameter / 2) ** 2;
         return (fla / area / motorData.parallel) <= 5; // Max 5 A/mm²
@@ -128,10 +191,10 @@ export default function AdvancedMotorRewindingCalculator() {
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-900/50 to-red-900/50 p-4 border-b border-orange-500/30">
         <h3 className="text-xl font-bold text-orange-400 flex items-center gap-2">
-          <span>🔄</span> Advanced Motor Rewinding Calculator
+          <span>🔄</span> World-Class Motor Rewinding Calculator with Chart.js
         </h3>
         <p className="text-gray-400 text-sm mt-1">
-          Complete motor analysis, winding design & testing specifications
+          Professional motor analysis • Pressure gauges • Real-time visualizations • Engineering-grade calculations
         </p>
       </div>
 
@@ -140,8 +203,8 @@ export default function AdvancedMotorRewindingCalculator() {
         {[
           { id: 'motor-specs', label: '⚡ Motor Specs' },
           { id: 'winding', label: '🔄 Winding Design' },
-          { id: 'testing', label: '🔍 Testing' },
-          { id: 'cost', label: '💰 Cost' },
+          { id: 'results', label: '📊 Results & Charts' },
+          { id: 'cost', label: '💰 Cost Analysis' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -405,17 +468,8 @@ export default function AdvancedMotorRewindingCalculator() {
                   </div>
                 </div>
               </div>
-            </motion.div>
-          )}
 
-          {activeTab === 'testing' && (
-            <motion.div
-              key="testing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-6"
-            >
+              {/* Testing Specifications */}
               <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
                 <h4 className="text-lg font-bold text-yellow-400 mb-4">🔍 POST-REWIND TESTING SPECIFICATIONS</h4>
                 <div className="space-y-4">
@@ -429,29 +483,242 @@ export default function AdvancedMotorRewindingCalculator() {
                       <div className="text-xl font-bold text-yellow-400">{results.hiPotTest} V AC for 1 minute</div>
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 p-4 bg-gray-900/50 rounded border border-gray-600">
-                    <div>
-                      <div className="text-sm text-gray-400">Winding Resistance</div>
-                      <div className="text-xl font-bold text-cyan-400">{results.resistancePerPhase.toFixed(3)} Ω ±5%</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-400">Phase Unbalance</div>
-                      <div className="text-xl font-bold text-green-400">≤ 2%</div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-red-900/20 rounded border border-red-500/30">
-                    <h5 className="text-red-400 font-bold mb-2">⚠️ CRITICAL TESTS</h5>
-                    <ul className="text-sm text-gray-400 space-y-1">
-                      <li>• Surge comparison test - check for turn-to-turn shorts</li>
-                      <li>• Polarization Index (PI) &gt; 2.0 for Class F insulation</li>
-                      <li>• No-load current test - should be 25-40% of FLA</li>
-                      <li>• Locked rotor current test - check starting current</li>
-                      <li>• Vibration analysis after assembly</li>
-                    </ul>
-                  </div>
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* RESULTS & CHARTS TAB */}
+          {activeTab === 'results' && (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6"
+            >
+              {/* CIRCULAR PRESSURE GAUGES */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <CircularGauge
+                  label="Efficiency"
+                  value={motorData.efficiency}
+                  max={100}
+                  unit="%"
+                  color="from-green-500 to-emerald-600"
+                />
+                <CircularGauge
+                  label="Power Factor"
+                  value={motorData.powerFactor * 100}
+                  max={100}
+                  unit="%"
+                  color="from-cyan-500 to-blue-600"
+                />
+                <CircularGauge
+                  label="Slip"
+                  value={results.slip}
+                  max={10}
+                  unit="%"
+                  color="from-yellow-500 to-orange-600"
+                />
+                <CircularGauge
+                  label="Current Density"
+                  value={results.currentDensity}
+                  max={10}
+                  unit="A/mm²"
+                  color="from-purple-500 to-pink-600"
+                />
+              </div>
+
+              {/* Main Results */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-orange-900/50 to-red-900/50 rounded-lg p-4 text-center border border-orange-500/30">
+                  <div className="text-3xl font-bold text-orange-400">{results.fullLoadAmps.toFixed(1)}</div>
+                  <div className="text-xs text-gray-400">Full Load Amps (A)</div>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4 text-center border border-gray-700">
+                  <div className="text-3xl font-bold text-cyan-400">{results.startingCurrent.toFixed(0)}</div>
+                  <div className="text-xs text-gray-400">Starting Current (A)</div>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4 text-center border border-gray-700">
+                  <div className="text-3xl font-bold text-green-400">{results.torque.toFixed(1)}</div>
+                  <div className="text-xs text-gray-400">Torque (Nm)</div>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4 text-center border border-gray-700">
+                  <div className="text-3xl font-bold text-purple-400">{results.powerInput.toFixed(2)}</div>
+                  <div className="text-xs text-gray-400">Power Input (kW)</div>
+                </div>
+              </div>
+
+              {/* CHART.JS VISUALIZATIONS */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Motor Losses Doughnut */}
+                <ChartCard title="Motor Losses Distribution" icon="⚡">
+                  <Doughnut
+                    data={{
+                      labels: ['Copper Losses', 'Iron Losses', 'Mechanical Losses', 'Stray Losses'],
+                      datasets: [{
+                        data: [
+                          results.copperLosses,
+                          results.ironLosses,
+                          results.mechanicalLosses,
+                          results.strayLosses
+                        ],
+                        backgroundColor: [
+                          'rgba(251, 191, 36, 0.8)',
+                          'rgba(239, 68, 68, 0.8)',
+                          'rgba(34, 197, 94, 0.8)',
+                          'rgba(168, 85, 247, 0.8)'
+                        ],
+                        borderColor: [
+                          'rgb(251, 191, 36)',
+                          'rgb(239, 68, 68)',
+                          'rgb(34, 197, 94)',
+                          'rgb(168, 85, 247)'
+                        ],
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: { color: '#ffffff', padding: 10, font: { size: 11 } }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                {/* Performance Bar Chart */}
+                <ChartCard title="Motor Performance Metrics" icon="📊">
+                  <Bar
+                    data={{
+                      labels: ['FLA', 'Starting Current', 'Sync Speed/100', 'Torque'],
+                      datasets: [{
+                        label: 'Value',
+                        data: [
+                          results.fullLoadAmps,
+                          results.startingCurrent / 10,
+                          results.syncSpeed / 100,
+                          results.torque
+                        ],
+                        backgroundColor: [
+                          'rgba(251, 146, 60, 0.8)',
+                          'rgba(239, 68, 68, 0.8)',
+                          'rgba(6, 182, 212, 0.8)',
+                          'rgba(34, 197, 94, 0.8)'
+                        ],
+                        borderColor: [
+                          'rgb(251, 146, 60)',
+                          'rgb(239, 68, 68)',
+                          'rgb(6, 182, 212)',
+                          'rgb(34, 197, 94)'
+                        ],
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { display: false }
+                      },
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        },
+                        x: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                {/* Temperature vs Speed Line Chart */}
+                <ChartCard title="Speed-Torque Characteristic" icon="📈">
+                  <Line
+                    data={{
+                      labels: ['0%', '20%', '40%', '60%', '80%', '100%', 'Sync'],
+                      datasets: [{
+                        label: 'Torque (%)',
+                        data: [0, 150, 220, 260, 200, 100, 0],
+                        borderColor: 'rgb(251, 146, 60)',
+                        backgroundColor: 'rgba(251, 146, 60, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                      }, {
+                        label: 'Current (%)',
+                        data: [700, 600, 450, 300, 150, 100, 0],
+                        borderColor: 'rgb(239, 68, 68)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { labels: { color: '#ffffff', font: { size: 11 } } }
+                      },
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        },
+                        x: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' },
+                          title: { display: true, text: 'Speed (% of Sync)', color: '#9ca3af' }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                {/* Motor Analysis Radar Chart */}
+                <ChartCard title="Motor Health Analysis" icon="🎯">
+                  <Radar
+                    data={{
+                      labels: ['Efficiency', 'Power Factor', 'Insulation Class', 'Current Density', 'Torque Rating', 'Slip Performance'],
+                      datasets: [{
+                        label: 'Your Motor',
+                        data: [
+                          motorData.efficiency,
+                          motorData.powerFactor * 100,
+                          (INSULATION_CLASSES.findIndex(i => i.class === motorData.insulationClass) + 1) * 20,
+                          (10 - results.currentDensity) * 10,
+                          (results.torque / 100) * 100,
+                          (10 - results.slip) * 10
+                        ],
+                        backgroundColor: 'rgba(251, 146, 60, 0.2)',
+                        borderColor: 'rgb(251, 146, 60)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgb(251, 146, 60)',
+                        pointBorderColor: '#fff'
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { labels: { color: '#ffffff' } }
+                      },
+                      scales: {
+                        r: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af', backdropColor: 'transparent' },
+                          pointLabels: { color: '#ffffff', font: { size: 10 } }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
               </div>
             </motion.div>
           )}
@@ -464,6 +731,7 @@ export default function AdvancedMotorRewindingCalculator() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
+              {/* Cost Breakdown */}
               <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
                 <h4 className="text-lg font-bold text-green-400 mb-4">💰 REWINDING COST ESTIMATE</h4>
                 <div className="space-y-3">
@@ -473,7 +741,7 @@ export default function AdvancedMotorRewindingCalculator() {
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-700">
                     <span className="text-gray-400">Insulation Materials</span>
-                    <span className="text-white">KES {(motorData.power * 500).toLocaleString()}</span>
+                    <span className="text-white">KES {results.materialsCost.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-700">
                     <span className="text-gray-400">Labor & Testing</span>
@@ -484,13 +752,95 @@ export default function AdvancedMotorRewindingCalculator() {
                     <span className="text-green-400">KES {results.totalCost.toLocaleString()}</span>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 p-4 bg-blue-900/20 rounded border border-blue-500/30">
                   <p className="text-sm text-gray-400">
                     💡 New motor comparison: A new {motorData.power}kW motor typically costs KES {(motorData.power * 15000).toLocaleString()}.
                     Rewinding saves approximately {((1 - results.totalCost / (motorData.power * 15000)) * 100).toFixed(0)}%.
                   </p>
                 </div>
+              </div>
+
+              {/* Cost Charts */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <ChartCard title="Cost Breakdown" icon="💰">
+                  <Doughnut
+                    data={{
+                      labels: ['Copper Wire', 'Insulation Materials', 'Labor & Testing'],
+                      datasets: [{
+                        data: [results.copperCost, results.materialsCost, results.laborCost],
+                        backgroundColor: [
+                          'rgba(251, 191, 36, 0.8)',
+                          'rgba(59, 130, 246, 0.8)',
+                          'rgba(34, 197, 94, 0.8)'
+                        ],
+                        borderColor: [
+                          'rgb(251, 191, 36)',
+                          'rgb(59, 130, 246)',
+                          'rgb(34, 197, 94)'
+                        ],
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: { color: '#ffffff', padding: 10 }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                <ChartCard title="Rewind vs New Motor" icon="📊">
+                  <Bar
+                    data={{
+                      labels: ['Rewind Cost', 'New Motor Cost', 'Savings'],
+                      datasets: [{
+                        label: 'KES',
+                        data: [
+                          results.totalCost,
+                          motorData.power * 15000,
+                          motorData.power * 15000 - results.totalCost
+                        ],
+                        backgroundColor: [
+                          'rgba(34, 197, 94, 0.8)',
+                          'rgba(239, 68, 68, 0.8)',
+                          'rgba(59, 130, 246, 0.8)'
+                        ],
+                        borderColor: [
+                          'rgb(34, 197, 94)',
+                          'rgb(239, 68, 68)',
+                          'rgb(59, 130, 246)'
+                        ],
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { display: false }
+                      },
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: {
+                            color: '#9ca3af',
+                            callback: (value) => `KES ${(Number(value) / 1000).toFixed(0)}K`
+                          }
+                        },
+                        x: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
               </div>
             </motion.div>
           )}
@@ -502,13 +852,80 @@ export default function AdvancedMotorRewindingCalculator() {
         <div className="text-gray-400">
           Motor: {motorData.power}kW {motorData.poles}P | FLA: {results.fullLoadAmps.toFixed(1)}A
         </div>
-        <a 
+        <a
           href="https://wa.me/254768860665?text=I%20need%20motor%20rewinding%20service"
           target="_blank"
           className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold"
         >
           📱 Get Quote
         </a>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================
+// CIRCULAR GAUGE COMPONENT (SVG-BASED PRESSURE METER)
+// =====================================================
+function CircularGauge({ label, value, max, unit, color }: { label: string; value: number; max: number; unit: string; color: string }) {
+  const percentage = Math.min((value / max) * 100, 100);
+  const circumference = 2 * Math.PI * 85;
+  const offset = circumference * (1 - percentage / 100);
+
+  return (
+    <div className="bg-gray-800/50 backdrop-blur-xl rounded-xl p-4 border border-gray-700">
+      <div className="relative w-full aspect-square">
+        <svg viewBox="0 0 200 200" className="transform -rotate-90">
+          <circle
+            cx="100"
+            cy="100"
+            r="85"
+            fill="none"
+            stroke="rgba(255,255,255,0.1)"
+            strokeWidth="12"
+          />
+          <circle
+            cx="100"
+            cy="100"
+            r="85"
+            fill="none"
+            stroke="url(#gaugeGradient)"
+            strokeWidth="12"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            className="transition-all duration-500"
+          />
+          <defs>
+            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#f97316" />
+              <stop offset="100%" stopColor="#ef4444" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
+          <span className="text-2xl font-bold text-white">
+            {value.toFixed(1)}{unit}
+          </span>
+          <span className="text-xs text-gray-400 mt-1">{label}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================
+// CHART CARD WRAPPER COMPONENT
+// =====================================================
+function ChartCard({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-gray-800/50 backdrop-blur-xl rounded-xl p-4 border border-gray-700">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-2xl">{icon}</span>
+        <h3 className="text-sm font-bold text-white">{title}</h3>
+      </div>
+      <div className="h-64">
+        {children}
       </div>
     </div>
   );

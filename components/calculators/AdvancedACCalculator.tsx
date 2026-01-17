@@ -1,10 +1,51 @@
+/**
+ * 🚀 WORLD-CLASS AC SIZING CALCULATOR WITH CHART.JS
+ *
+ * Features:
+ * ✅ Real-time circular pressure gauges showing cooling metrics
+ * ✅ Live Chart.js visualizations (Line, Bar, Doughnut, Radar)
+ * ✅ Comprehensive heat load breakdown with visual analysis
+ * ✅ Energy efficiency ratings and cost projections
+ * ✅ Professional glassmorphic UI
+ */
+
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  RadialLinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line, Bar, Doughnut, Radar } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  RadialLinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 // =====================================================
-// ADVANCED AC SIZING CALCULATOR
+// DATA CONSTANTS
 // =====================================================
 
 const ROOM_TYPES = [
@@ -42,7 +83,7 @@ const STANDARD_AC_SIZES = [
 
 export default function AdvancedACCalculator() {
   const [activeTab, setActiveTab] = useState<'room' | 'loads' | 'results' | 'cost'>('room');
-  
+
   const [roomData, setRoomData] = useState({
     length: 5,
     width: 4,
@@ -66,11 +107,11 @@ export default function AdvancedACCalculator() {
   const results = useMemo(() => {
     const area = roomData.length * roomData.width;
     const volume = area * roomData.height;
-    
+
     // Base heat load from room
     const roomTypeData = ROOM_TYPES.find(r => r.type === roomData.roomType) || ROOM_TYPES[0];
-    let baseBTU = area * roomTypeData.btuPerSqm;
-    
+    const baseBTU = area * roomTypeData.btuPerSqm;
+
     // Window heat gain
     const windowOrientationFactor = {
       'North': 1.0,
@@ -79,58 +120,58 @@ export default function AdvancedACCalculator() {
       'West': 1.2,
     }[roomData.windowOrientation] || 1.0;
     const windowBTU = roomData.windows * roomData.windowArea * 800 * windowOrientationFactor;
-    
+
     // Roof exposure
     const roofBTU = roomData.roofExposure ? area * 150 : 0;
-    
+
     // People heat load (400 BTU per person for office, 600 for active)
     const peopleBTU = roomData.numPeople * (roomData.roomType === 'Gym/Fitness' ? 600 : 400);
-    
+
     // Equipment heat load (3.41 BTU per Watt)
     const computerBTU = roomData.numComputers * 300 * 3.41; // 300W per computer
     const lightingBTU = roomData.lighting * 3.41;
     const equipmentBTU = roomData.otherEquipment * 3.41;
-    
+
     // Temperature differential factor
     const tempDiff = roomData.outdoorTemp - roomData.indoorTemp;
     const tempFactor = 1 + (tempDiff - 10) * 0.02; // Adjust for temperature difference
-    
+
     // Humidity factor
     const humidityFactor = 1 + (roomData.humidity - 50) * 0.005;
-    
+
     // Total heat load
     const totalBTU = (baseBTU + windowBTU + roofBTU + peopleBTU + computerBTU + lightingBTU + equipmentBTU) * tempFactor * humidityFactor;
-    
+
     // Safety factor (20%)
     const designBTU = totalBTU * 1.2;
-    
+
     // Convert to tons and kW
     const tons = designBTU / 12000;
     const kw = designBTU / 3412;
-    
+
     // Select nearest standard size
     const selectedSize = STANDARD_AC_SIZES.find(s => s.btu >= designBTU) || STANDARD_AC_SIZES[STANDARD_AC_SIZES.length - 1];
-    
+
     // Multiple units calculation
     const unitsNeeded = Math.ceil(designBTU / 24000); // Max 2-ton units for residential
-    
+
     // Energy efficiency
     const acTypeData = AC_TYPES.find(a => a.type === roomData.acType) || AC_TYPES[0];
     const eer = acTypeData.efficiencyMin + (roomData.energyRating - 1) * (acTypeData.efficiencyMax - acTypeData.efficiencyMin) / 4;
     const powerConsumption = designBTU / (eer * 3.412); // Watts
-    
+
     // Operating cost
     const hoursPerDay = 10;
     const daysPerMonth = 30;
     const electricityRate = 25; // KES per kWh
     const monthlyConsumption = powerConsumption / 1000 * hoursPerDay * daysPerMonth;
     const monthlyCost = monthlyConsumption * electricityRate;
-    
+
     // Purchase cost estimate
     const baseCost = selectedSize.btu * 6; // KES 6 per BTU base
     const purchaseCost = baseCost * acTypeData.priceMultiplier;
     const installationCost = purchaseCost * 0.15;
-    
+
     return {
       area,
       volume,
@@ -138,6 +179,8 @@ export default function AdvancedACCalculator() {
       windowBTU,
       roofBTU,
       peopleBTU,
+      computerBTU,
+      lightingBTU,
       equipmentBTU: computerBTU + lightingBTU + equipmentBTU,
       totalBTU,
       designBTU,
@@ -152,6 +195,8 @@ export default function AdvancedACCalculator() {
       purchaseCost,
       installationCost,
       totalCost: purchaseCost + installationCost,
+      tempDiff,
+      coolingEfficiency: (designBTU / powerConsumption) * 100,
     };
   }, [roomData]);
 
@@ -160,10 +205,10 @@ export default function AdvancedACCalculator() {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-900/50 to-cyan-900/50 p-4 border-b border-blue-500/30">
         <h3 className="text-xl font-bold text-blue-400 flex items-center gap-2">
-          <span>❄️</span> Advanced AC Sizing Calculator
+          <span>❄️</span> World-Class AC Sizing Calculator with Chart.js
         </h3>
         <p className="text-gray-400 text-sm mt-1">
-          Complete heat load calculation with energy analysis & cost estimation
+          Professional heat load analysis • Pressure gauges • Real-time visualizations • Energy optimization
         </p>
       </div>
 
@@ -172,8 +217,8 @@ export default function AdvancedACCalculator() {
         {[
           { id: 'room', label: '🏠 Room Details' },
           { id: 'loads', label: '🔥 Heat Loads' },
-          { id: 'results', label: '❄️ AC Sizing' },
-          { id: 'cost', label: '💰 Costs' },
+          { id: 'results', label: '📊 Results & Charts' },
+          { id: 'cost', label: '💰 Cost Analysis' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -326,7 +371,7 @@ export default function AdvancedACCalculator() {
                     className="w-full bg-black border border-gray-600 rounded px-3 py-2 text-white"
                   >
                     {[1, 2, 3, 4, 5].map(s => (
-                      <option key={s} value={s}>{s} Star{'⭐'.repeat(s)}</option>
+                      <option key={s} value={s}>{s} Star{'*'.repeat(s)}</option>
                     ))}
                   </select>
                 </div>
@@ -356,24 +401,24 @@ export default function AdvancedACCalculator() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
+              {/* Heat Load Breakdown */}
               <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
                 <h4 className="text-lg font-bold text-orange-400 mb-4">🔥 HEAT LOAD BREAKDOWN</h4>
                 <div className="space-y-3">
                   {[
-                    { label: 'Room Base Load', value: results.baseBTU, color: 'blue' },
-                    { label: 'Window Heat Gain', value: results.windowBTU, color: 'yellow' },
-                    { label: 'Roof Exposure', value: results.roofBTU, color: 'orange' },
-                    { label: 'People (Occupancy)', value: results.peopleBTU, color: 'red' },
-                    { label: 'Equipment & Lighting', value: results.equipmentBTU, color: 'purple' },
+                    { label: 'Room Base Load', value: results.baseBTU, color: 'bg-blue-500' },
+                    { label: 'Window Heat Gain', value: results.windowBTU, color: 'bg-yellow-500' },
+                    { label: 'Roof Exposure', value: results.roofBTU, color: 'bg-orange-500' },
+                    { label: 'People (Occupancy)', value: results.peopleBTU, color: 'bg-red-500' },
+                    { label: 'Equipment & Lighting', value: results.equipmentBTU, color: 'bg-purple-500' },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center gap-4">
                       <span className="text-gray-400 w-40">{item.label}</span>
                       <div className="flex-1 bg-gray-700 rounded-full h-3 overflow-hidden">
-                        <div 
-                          className={`h-3 rounded-full bg-${item.color}-500`}
-                          style={{ 
-                            width: `${(item.value / results.totalBTU) * 100}%`,
-                            backgroundColor: `var(--color-${item.color}-500, #3b82f6)`
+                        <div
+                          className={`h-3 rounded-full ${item.color}`}
+                          style={{
+                            width: `${Math.min((item.value / results.totalBTU) * 100, 100)}%`
                           }}
                         />
                       </div>
@@ -390,9 +435,93 @@ export default function AdvancedACCalculator() {
                   </div>
                 </div>
               </div>
+
+              {/* Heat Load Chart */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <ChartCard title="Heat Load Distribution" icon="🔥">
+                  <Doughnut
+                    data={{
+                      labels: ['Room Base', 'Windows', 'Roof', 'People', 'Equipment'],
+                      datasets: [{
+                        data: [
+                          results.baseBTU,
+                          results.windowBTU,
+                          results.roofBTU,
+                          results.peopleBTU,
+                          results.equipmentBTU
+                        ],
+                        backgroundColor: [
+                          'rgba(59, 130, 246, 0.8)',
+                          'rgba(251, 191, 36, 0.8)',
+                          'rgba(251, 146, 60, 0.8)',
+                          'rgba(239, 68, 68, 0.8)',
+                          'rgba(168, 85, 247, 0.8)'
+                        ],
+                        borderColor: [
+                          'rgb(59, 130, 246)',
+                          'rgb(251, 191, 36)',
+                          'rgb(251, 146, 60)',
+                          'rgb(239, 68, 68)',
+                          'rgb(168, 85, 247)'
+                        ],
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: { color: '#ffffff', padding: 10, font: { size: 11 } }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                <ChartCard title="Heat Load Comparison" icon="📊">
+                  <Bar
+                    data={{
+                      labels: ['Base', 'Windows', 'Roof', 'People', 'Equipment'],
+                      datasets: [{
+                        label: 'BTU/hr',
+                        data: [
+                          results.baseBTU,
+                          results.windowBTU,
+                          results.roofBTU,
+                          results.peopleBTU,
+                          results.equipmentBTU
+                        ],
+                        backgroundColor: 'rgba(6, 182, 212, 0.8)',
+                        borderColor: 'rgb(6, 182, 212)',
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { display: false }
+                      },
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        },
+                        x: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+              </div>
             </motion.div>
           )}
 
+          {/* RESULTS & CHARTS TAB */}
           {activeTab === 'results' && (
             <motion.div
               key="results"
@@ -401,6 +530,39 @@ export default function AdvancedACCalculator() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
+              {/* CIRCULAR PRESSURE GAUGES */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <CircularGauge
+                  label="Cooling Capacity"
+                  value={results.tons}
+                  max={10}
+                  unit=" Tons"
+                  color="from-blue-500 to-cyan-600"
+                />
+                <CircularGauge
+                  label="EER Rating"
+                  value={results.eer}
+                  max={7}
+                  unit=""
+                  color="from-green-500 to-emerald-600"
+                />
+                <CircularGauge
+                  label="Power Draw"
+                  value={results.powerConsumption / 1000}
+                  max={10}
+                  unit=" kW"
+                  color="from-yellow-500 to-orange-600"
+                />
+                <CircularGauge
+                  label="Temp Diff"
+                  value={results.tempDiff}
+                  max={20}
+                  unit="°C"
+                  color="from-red-500 to-pink-600"
+                />
+              </div>
+
+              {/* Main Sizing Results */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="bg-gradient-to-br from-blue-900/50 to-cyan-900/50 rounded-lg p-4 text-center border border-blue-500/30">
                   <div className="text-3xl font-bold text-blue-400">{results.designBTU.toLocaleString()}</div>
@@ -420,6 +582,7 @@ export default function AdvancedACCalculator() {
                 </div>
               </div>
 
+              {/* Recommended AC */}
               <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-lg p-6 border border-cyan-500/30">
                 <h4 className="text-lg font-bold text-cyan-400 mb-2">✅ RECOMMENDED AC</h4>
                 <div className="text-3xl font-bold text-white mb-2">
@@ -430,26 +593,166 @@ export default function AdvancedACCalculator() {
                 </p>
               </div>
 
-              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                <h4 className="text-sm font-bold text-yellow-400 mb-3">⚡ ENERGY ANALYSIS</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-400">Power Consumption:</span>
-                    <span className="text-white ml-2">{(results.powerConsumption / 1000).toFixed(2)} kW</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">EER (Efficiency):</span>
-                    <span className="text-white ml-2">{results.eer.toFixed(2)}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Monthly Usage:</span>
-                    <span className="text-white ml-2">{results.monthlyConsumption.toFixed(0)} kWh</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Monthly Cost:</span>
-                    <span className="text-green-400 ml-2">KES {results.monthlyCost.toLocaleString()}</span>
-                  </div>
-                </div>
+              {/* CHART.JS VISUALIZATIONS */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Monthly Energy Cost Projection */}
+                <ChartCard title="12-Month Energy Cost Projection" icon="💰">
+                  <Line
+                    data={{
+                      labels: Array.from({ length: 12 }, (_, i) => `Month ${i + 1}`),
+                      datasets: [{
+                        label: 'Monthly Cost (KES)',
+                        data: Array.from({ length: 12 }, () => results.monthlyCost),
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                      }, {
+                        label: 'Cumulative Cost (KES)',
+                        data: Array.from({ length: 12 }, (_, i) => results.monthlyCost * (i + 1)),
+                        borderColor: 'rgb(251, 191, 36)',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { labels: { color: '#ffffff', font: { size: 11 } } }
+                      },
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: {
+                            color: '#9ca3af',
+                            callback: (value) => `KES ${(Number(value) / 1000).toFixed(0)}K`
+                          }
+                        },
+                        x: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af', font: { size: 10 } }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                {/* AC Type Comparison */}
+                <ChartCard title="AC Type Efficiency Comparison" icon="❄️">
+                  <Bar
+                    data={{
+                      labels: AC_TYPES.map(a => a.type),
+                      datasets: [{
+                        label: 'Max EER',
+                        data: AC_TYPES.map(a => a.efficiencyMax),
+                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                        borderColor: 'rgb(34, 197, 94)',
+                        borderWidth: 2
+                      }, {
+                        label: 'Min EER',
+                        data: AC_TYPES.map(a => a.efficiencyMin),
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgb(239, 68, 68)',
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { labels: { color: '#ffffff' } }
+                      },
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        },
+                        x: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af', font: { size: 9 } }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                {/* Energy Analysis */}
+                <ChartCard title="Energy Performance Analysis" icon="⚡">
+                  <Radar
+                    data={{
+                      labels: ['Efficiency', 'Cooling Power', 'Energy Savings', 'Room Coverage', 'Cost Efficiency', 'Environmental'],
+                      datasets: [{
+                        label: 'Your AC System',
+                        data: [
+                          (results.eer / 7) * 100,
+                          (results.tons / 5) * 100,
+                          roomData.energyRating * 20,
+                          (results.area / 50) * 100,
+                          (1 - results.monthlyCost / 50000) * 100,
+                          roomData.energyRating * 20
+                        ],
+                        backgroundColor: 'rgba(6, 182, 212, 0.2)',
+                        borderColor: 'rgb(6, 182, 212)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgb(6, 182, 212)',
+                        pointBorderColor: '#fff'
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { labels: { color: '#ffffff' } }
+                      },
+                      scales: {
+                        r: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af', backdropColor: 'transparent' },
+                          pointLabels: { color: '#ffffff', font: { size: 10 } }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                {/* Standard AC Sizes */}
+                <ChartCard title="Standard AC Sizes vs Your Need" icon="📐">
+                  <Bar
+                    data={{
+                      labels: STANDARD_AC_SIZES.map(s => `${s.tons}T`),
+                      datasets: [{
+                        label: 'BTU Capacity',
+                        data: STANDARD_AC_SIZES.map(s => s.btu),
+                        backgroundColor: STANDARD_AC_SIZES.map(s =>
+                          s.btu === results.selectedSize.btu ? 'rgba(34, 197, 94, 0.8)' : 'rgba(107, 114, 128, 0.5)'
+                        ),
+                        borderColor: STANDARD_AC_SIZES.map(s =>
+                          s.btu === results.selectedSize.btu ? 'rgb(34, 197, 94)' : 'rgb(107, 114, 128)'
+                        ),
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { display: false }
+                      },
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        },
+                        x: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
               </div>
             </motion.div>
           )}
@@ -497,6 +800,84 @@ export default function AdvancedACCalculator() {
                   </div>
                 </div>
               </div>
+
+              {/* Cost Charts */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <ChartCard title="Investment vs Operating Cost (5 Years)" icon="📈">
+                  <Line
+                    data={{
+                      labels: ['Year 0', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+                      datasets: [{
+                        label: 'Total Cost (KES)',
+                        data: [
+                          results.totalCost,
+                          results.totalCost + results.monthlyCost * 12,
+                          results.totalCost + results.monthlyCost * 24,
+                          results.totalCost + results.monthlyCost * 36,
+                          results.totalCost + results.monthlyCost * 48,
+                          results.totalCost + results.monthlyCost * 60
+                        ],
+                        borderColor: 'rgb(239, 68, 68)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { labels: { color: '#ffffff' } }
+                      },
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: {
+                            color: '#9ca3af',
+                            callback: (value) => `KES ${(Number(value) / 1000).toFixed(0)}K`
+                          }
+                        },
+                        x: {
+                          grid: { color: 'rgba(255,255,255,0.1)' },
+                          ticks: { color: '#9ca3af' }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+
+                <ChartCard title="Cost Breakdown" icon="💵">
+                  <Doughnut
+                    data={{
+                      labels: ['AC Unit', 'Installation', 'Annual Electricity'],
+                      datasets: [{
+                        data: [results.purchaseCost, results.installationCost, results.monthlyCost * 12],
+                        backgroundColor: [
+                          'rgba(59, 130, 246, 0.8)',
+                          'rgba(34, 197, 94, 0.8)',
+                          'rgba(251, 191, 36, 0.8)'
+                        ],
+                        borderColor: [
+                          'rgb(59, 130, 246)',
+                          'rgb(34, 197, 94)',
+                          'rgb(251, 191, 36)'
+                        ],
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: { color: '#ffffff', padding: 10 }
+                        }
+                      }
+                    }}
+                  />
+                </ChartCard>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -507,13 +888,80 @@ export default function AdvancedACCalculator() {
         <div className="text-gray-400">
           Room: {results.area}m² | Capacity: {results.selectedSize.btu.toLocaleString()} BTU
         </div>
-        <a 
+        <a
           href="https://wa.me/254768860665?text=I%20need%20AC%20installation"
           target="_blank"
           className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold"
         >
           📱 Get Quote
         </a>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================
+// CIRCULAR GAUGE COMPONENT (SVG-BASED PRESSURE METER)
+// =====================================================
+function CircularGauge({ label, value, max, unit, color }: { label: string; value: number; max: number; unit: string; color: string }) {
+  const percentage = Math.min((value / max) * 100, 100);
+  const circumference = 2 * Math.PI * 85;
+  const offset = circumference * (1 - percentage / 100);
+
+  return (
+    <div className="bg-gray-800/50 backdrop-blur-xl rounded-xl p-4 border border-gray-700">
+      <div className="relative w-full aspect-square">
+        <svg viewBox="0 0 200 200" className="transform -rotate-90">
+          <circle
+            cx="100"
+            cy="100"
+            r="85"
+            fill="none"
+            stroke="rgba(255,255,255,0.1)"
+            strokeWidth="12"
+          />
+          <circle
+            cx="100"
+            cy="100"
+            r="85"
+            fill="none"
+            stroke="url(#acGaugeGradient)"
+            strokeWidth="12"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            className="transition-all duration-500"
+          />
+          <defs>
+            <linearGradient id="acGaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#06b6d4" />
+              <stop offset="100%" stopColor="#3b82f6" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
+          <span className="text-2xl font-bold text-white">
+            {value.toFixed(1)}{unit}
+          </span>
+          <span className="text-xs text-gray-400 mt-1">{label}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================
+// CHART CARD WRAPPER COMPONENT
+// =====================================================
+function ChartCard({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-gray-800/50 backdrop-blur-xl rounded-xl p-4 border border-gray-700">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-2xl">{icon}</span>
+        <h3 className="text-sm font-bold text-white">{title}</h3>
+      </div>
+      <div className="h-64">
+        {children}
       </div>
     </div>
   );
