@@ -9,7 +9,7 @@ import "@/styles/accessibility.css"; // WCAG 2.1 AAA Accessibility Styles
 // ═══════════════════════════════════════════════════════════════════════════════
 import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
-import { OrganizationSchema } from '@/components/seo/StructuredData';
+import { OrganizationSchema, WebSiteSchema, DiagnosticSuiteSchema } from '@/components/seo/StructuredData';
 import FAQSchema from '@/components/seo/FAQSchema';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import { ScreenReaderAnnouncerProvider } from '@/components/accessibility/ScreenReaderAnnouncer';
@@ -440,9 +440,11 @@ export default function RootLayout({
         {/* Keyboard Shortcuts Reference for Screen Readers */}
         <KeyboardShortcutsHelper />
         
-        {/* Global Structured Data for SEO */}
+        {/* Global Structured Data for SEO - Rich Snippets */}
         <OrganizationSchema />
-        
+        <WebSiteSchema />
+        <DiagnosticSuiteSchema />
+
         <nav id="main-navigation" aria-label="Main navigation">
           <TeslaStyleNavigation />
         </nav>

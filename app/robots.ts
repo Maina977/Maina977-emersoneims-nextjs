@@ -2,14 +2,34 @@ import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
-  
+
   return {
     rules: [
-      // Default rules for all crawlers
+      // Default rules for all crawlers - optimized for maximum visibility
       {
         userAgent: '*',
-        allow: '/',
-        disallow: ['/api/', '/admin/', '/_next/', '/private/', '*.json$'],
+        allow: [
+          '/',
+          '/generators/',
+          '/solar/',
+          '/solutions/',
+          '/services/',
+          '/blog/',
+          '/counties/',
+          '/diagnostics/',
+          '/diagnostic-suite/',
+          '/diagnostic-journey/',
+          '/fault-code-lookup/',
+          '/calculators/',
+          '/contact/',
+          '/about-us/',
+          '/knowledge-base/',
+          '/troubleshooting/',
+          '/faq/',
+          '/gallery/',
+          '/booking/',
+        ],
+        disallow: ['/api/', '/admin/', '/_next/static/', '/private/', '*.json$', '/test-*'],
       },
       // Google - Priority crawler, no delay
       {

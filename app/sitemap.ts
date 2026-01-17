@@ -11,6 +11,16 @@ const counties = [
   'baringo', 'embu', 'isiolo', 'elgeyo-marakwet'
 ];
 
+// Blog posts for sitemap
+const blogPosts = [
+  'complete-guide-generator-sizing-kenya',
+  'solar-power-investment-roi-kenya',
+  'generator-maintenance-checklist',
+  'ups-systems-buying-guide',
+  'motor-rewinding-when-to-repair',
+  'power-backup-solutions-hospitals'
+];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
   const currentDate = new Date();
@@ -286,6 +296,72 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // ═══════════════════════════════════════════════════════════════════════════════
+  // BLOG & CONTENT PAGES - Authority Building
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const blogPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    ...blogPosts.map(slug => ({
+      url: `${baseUrl}/blog/${slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+    {
+      url: `${baseUrl}/knowledge-base`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/faq`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/troubleshooting`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // TOOLS & CALCULATORS - High Engagement Pages
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const toolPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/calculators`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/diagnostic-journey`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/booking`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/gallery`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════════════
   // COUNTY PAGES - Local SEO Dominance (47 Counties)
   // ═══════════════════════════════════════════════════════════════════════════════
   const countyPages: MetadataRoute.Sitemap = [
@@ -302,7 +378,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     })),
   ];
-  
+
   // Combine all pages for comprehensive sitemap
   return [
     ...mainPages,
@@ -310,6 +386,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...solarPages,
     ...diagnosticPages,
     ...servicePages,
+    ...blogPages,
+    ...toolPages,
     ...countyPages,
   ];
 }

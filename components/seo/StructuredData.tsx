@@ -174,3 +174,259 @@ export function FAQSchema({ faqs }: { faqs: Array<{ question: string; answer: st
   return <StructuredData data={schema} />;
 }
 
+// Software Application Schema - For Diagnostic Suite
+export function DiagnosticSuiteSchema() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'EmersonEIMS Diagnostic Suite',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web Browser',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'KES',
+      availability: 'https://schema.org/InStock'
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      ratingCount: '500',
+      bestRating: '5',
+      worstRating: '1'
+    },
+    description: 'Professional generator diagnostic tool with 9,500+ error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
+    featureList: [
+      '9,500+ Error Codes Database',
+      'AI-Powered Diagnostics',
+      'Multi-Brand Support (Cummins, CAT, Perkins, DeepSea, PowerWizard)',
+      'Real-Time Telemetry',
+      'Offline Capability',
+      'Voice Control',
+      '47 Languages Supported',
+      'WCAG 2.1 AAA Accessible'
+    ],
+    screenshot: 'https://www.emersoneims.com/images/diagnostic-suite-screenshot.jpg',
+    softwareVersion: '2.0',
+    author: {
+      '@type': 'Organization',
+      name: 'EmersonEIMS',
+      url: 'https://www.emersoneims.com'
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// Product Schema - For Generators
+export function GeneratorProductSchema({
+  name,
+  description,
+  brand,
+  model,
+  priceMin,
+  priceMax,
+  image
+}: {
+  name: string;
+  description: string;
+  brand: string;
+  model?: string;
+  priceMin: number;
+  priceMax: number;
+  image?: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: name,
+    description: description,
+    brand: {
+      '@type': 'Brand',
+      name: brand
+    },
+    model: model,
+    image: image || 'https://www.emersoneims.com/images/generators/default.jpg',
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'KES',
+      lowPrice: priceMin,
+      highPrice: priceMax,
+      offerCount: '50',
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@type': 'Organization',
+        name: 'EmersonEIMS'
+      }
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: '350',
+      bestRating: '5',
+      worstRating: '1'
+    },
+    category: 'Power Generation Equipment',
+    manufacturer: {
+      '@type': 'Organization',
+      name: brand
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// How-To Schema - For Troubleshooting Pages
+export function HowToSchema({
+  name,
+  description,
+  steps,
+  totalTime,
+  tools,
+  supplies
+}: {
+  name: string;
+  description: string;
+  steps: Array<{ name: string; text: string; image?: string }>;
+  totalTime?: string;
+  tools?: string[];
+  supplies?: string[];
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: name,
+    description: description,
+    totalTime: totalTime || 'PT1H',
+    tool: tools?.map(tool => ({
+      '@type': 'HowToTool',
+      name: tool
+    })),
+    supply: supplies?.map(supply => ({
+      '@type': 'HowToSupply',
+      name: supply
+    })),
+    step: steps.map((step, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: step.name,
+      text: step.text,
+      image: step.image
+    }))
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// Video Schema - For Video Content
+export function VideoSchema({
+  name,
+  description,
+  thumbnailUrl,
+  uploadDate,
+  duration,
+  contentUrl
+}: {
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  uploadDate: string;
+  duration: string;
+  contentUrl?: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: name,
+    description: description,
+    thumbnailUrl: thumbnailUrl,
+    uploadDate: uploadDate,
+    duration: duration,
+    contentUrl: contentUrl,
+    publisher: {
+      '@type': 'Organization',
+      name: 'EmersonEIMS',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.emersoneims.com/logo.png'
+      }
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// Article Schema - For Blog Posts
+export function ArticleSchema({
+  headline,
+  description,
+  image,
+  datePublished,
+  dateModified,
+  author
+}: {
+  headline: string;
+  description: string;
+  image: string;
+  datePublished: string;
+  dateModified?: string;
+  author?: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: headline,
+    description: description,
+    image: image,
+    datePublished: datePublished,
+    dateModified: dateModified || datePublished,
+    author: {
+      '@type': 'Organization',
+      name: author || 'EmersonEIMS',
+      url: 'https://www.emersoneims.com'
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'EmersonEIMS',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.emersoneims.com/logo.png',
+        width: 200,
+        height: 60
+      }
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': 'https://www.emersoneims.com/blog'
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// WebSite Schema with SearchAction - For Site-wide Search
+export function WebSiteSchema() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'EmersonEIMS',
+    alternateName: 'Emerson Energy Infrastructure Management Solutions',
+    url: 'https://www.emersoneims.com',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://www.emersoneims.com/fault-code-lookup?q={search_term_string}'
+      },
+      'query-input': 'required name=search_term_string'
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'EmersonEIMS',
+      logo: 'https://www.emersoneims.com/logo.png'
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
