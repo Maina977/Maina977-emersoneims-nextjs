@@ -203,22 +203,27 @@ export default function TeslaStyleNavigation({
       >
         <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-16 py-4">
           <div className="flex items-center justify-between gap-8">
-            {/* Logo - Clean Professional Design */}
+            {/* Logo - Clear Professional Design with Visible Tagline */}
             <Link
               href="/"
-              aria-label="Emerson EiMS home"
+              aria-label="Emerson EiMS - Kenya's #1 Power Solutions"
               className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-lg group"
             >
               <div className="relative transition-all duration-300 group-hover:scale-[1.02]">
                 <Image
                   src="/images/logo-tagline.png"
                   alt="EmersonEIMS - Kenya's #1 Power Solutions"
-                  width={240}
-                  height={60}
+                  width={280}
+                  height={70}
                   priority
-                  sizes="(max-width: 768px) 160px, (max-width: 1024px) 200px, 240px"
-                  className="h-12 sm:h-14 lg:h-16 w-auto object-contain drop-shadow-[0_0_20px_rgba(251,191,36,0.25)] group-hover:drop-shadow-[0_0_30px_rgba(251,191,36,0.4)] transition-all duration-300"
+                  quality={100}
+                  sizes="(max-width: 640px) 180px, (max-width: 768px) 200px, (max-width: 1024px) 240px, 280px"
+                  className="h-14 sm:h-16 lg:h-[72px] xl:h-20 w-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] filter brightness-110 contrast-105 group-hover:drop-shadow-[0_4px_20px_rgba(251,191,36,0.4)] transition-all duration-300"
                 />
+                {/* Tagline - Visible on larger screens */}
+                <span className="hidden xl:block absolute -bottom-4 left-0 right-0 text-center text-[10px] font-medium tracking-[0.2em] text-amber-400/90 uppercase">
+                  Kenya's #1 Power Solutions
+                </span>
               </div>
             </Link>
 
