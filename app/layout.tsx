@@ -431,20 +431,35 @@ export default function RootLayout({
         <meta name="application-name" content="EmersonEIMS" />
         <meta name="apple-mobile-web-app-title" content="EmersonEIMS" />
         
-        {/* DNS Prefetch for Performance */}
+        {/* ═══════════════════════════════════════════════════════════════════
+            EXTREME PERFORMANCE - FASTEST WEBSITE IN THE WORLD
+            DNS Prefetch, Preconnect, Preload for instant loading
+        ════════════════════════════════════════════════════════════════════ */}
+
+        {/* DNS Prefetch - Resolve domains early */}
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        
-        {/* Preconnect to Critical Origins */}
+        <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+
+        {/* Preconnect to Critical Origins - Establish connections early */}
         <link rel="dns-prefetch" href={siteUrl} />
         <link rel="preconnect" href={siteUrl} crossOrigin="" />
-        
-        {/* Preload Critical Resources for Fast Loading */}
-        <link rel="preload" href="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png" as="image" type="image/png" />
-        <link rel="preload" href="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp" as="image" type="image/webp" fetchPriority="high" />
-        
-        {/* Video Prefetch - Key videos for fast loading */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Preload Critical Resources - Load immediately */}
+        <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" fetchPriority="high" />
+        <link rel="preload" href="/images/GEN%202-1920x1080.png" as="image" type="image/png" />
+
+        {/* Preload Cinematic Video - For generators page instant playback */}
+        <link rel="preload" href="/videos/VID-20250930-WA0000%20(3).mp4" as="video" type="video/mp4" />
+
+        {/* Prefetch Secondary Resources */}
         <link rel="prefetch" href="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" as="video" type="video/mp4" />
-        <link rel="prefetch" href="/videos/VID-20250930-WA0000%20(3).mp4" as="video" type="video/mp4" />
+        <link rel="prefetch" href="/generators" />
+        <link rel="prefetch" href="/solar" />
+        <link rel="prefetch" href="/services" />
 
         {/* Performance Optimization Meta - Mobile & Desktop */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
@@ -469,10 +484,6 @@ export default function RootLayout({
         <link rel="alternate" hrefLang="en" href={`${siteUrl}`} />
         <link rel="alternate" hrefLang="sw" href={`${siteUrl}/sw`} />
         <link rel="alternate" hrefLang="x-default" href={`${siteUrl}`} />
-        
-        {/* Performance: Preconnect to external resources */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang="en">
         <ScreenReaderAnnouncerProvider>

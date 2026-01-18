@@ -5,16 +5,18 @@
  * ⚠️ IMPORTANT: Version updated to force cache clear
  */
 
-const CACHE_VERSION = 'v3-20260102-force';
+const CACHE_VERSION = 'v4-20260119-ultrafast';
 const STATIC_CACHE = `static-cache-${CACHE_VERSION}`;
 const IMAGES_CACHE = `images-cache-${CACHE_VERSION}`;
 const PAGES_CACHE = `pages-cache-${CACHE_VERSION}`;
 const API_CACHE = `api-cache-${CACHE_VERSION}`;
+const VIDEO_CACHE = `video-cache-${CACHE_VERSION}`;
 
-// Static assets to precache - MINIMAL for fast startup
+// Static assets to precache - Critical for instant loading
 const PRECACHE_ASSETS = [
   '/manifest.webmanifest',
   '/favicon.ico',
+  '/images/logo-tagline.png',
 ];
 
 // Install event - SKIP WAITING IMMEDIATELY
@@ -83,6 +85,15 @@ self.addEventListener('fetch', (event) => {
   // Handle API requests with network-first
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request, API_CACHE, 5 * 60));
+    return;
+  }
+
+  // Handle videos with cache-first for INSTANT playback
+  if (
+    request.destination === 'video' ||
+    /\.(mp4|webm|ogg|mov)$/i.test(url.pathname)
+  ) {
+    event.respondWith(cacheFirst(request, VIDEO_CACHE, 365 * 24 * 60 * 60));
     return;
   }
 
