@@ -228,7 +228,7 @@ export default function TeslaStyleNavigation({
                 {/* BOLD Tagline - Always Visible on md+ screens */}
                 <div className="hidden md:flex absolute -bottom-5 left-0 right-0 justify-center">
                   <span className="px-3 py-0.5 bg-gradient-to-r from-amber-500/90 to-amber-600/90 text-white text-[9px] sm:text-[10px] lg:text-xs font-bold tracking-[0.15em] uppercase rounded-full shadow-lg shadow-amber-500/30 border border-amber-400/50 backdrop-blur-sm">
-                    Kenya's #1 Power Solutions
+                    Reliable Power. Without Limits.
                   </span>
                 </div>
               </div>
