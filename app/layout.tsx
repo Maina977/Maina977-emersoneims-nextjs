@@ -29,7 +29,6 @@ import SallyAIAssistant from '@/components/ai/SallyAIAssistant';
 
 // CONVERSION BOOSTERS - Turn Every Click Into Business
 import FloatingActionBubbles from '@/components/conversion/FloatingActionBubbles';
-import LiveSalesNotifications from '@/components/conversion/LiveSalesNotifications';
 import UrgencyBar from '@/components/conversion/UrgencyBar';
 
 // AI PERSONALIZATION & SEO DOMINATION
@@ -483,7 +482,6 @@ export default function RootLayout({
         ════════════════════════════════════════════════════════════════════ */}
         <UrgencyBar />
         <FloatingActionBubbles />
-        <LiveSalesNotifications />
 
         {/* ═══════════════════════════════════════════════════════════════════
             🧠 AI PERSONALIZATION - Website That Feels Alive
