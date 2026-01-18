@@ -64,6 +64,7 @@ import {
   type ErrorCode,
   type PredictiveMaintenance
 } from '@/lib/data/generatorErrorCodes';
+import { TRANSLATIONS, getTranslation, type TranslationStrings } from '@/lib/translations/diagnosticTranslations';
 
 // ==========================================
 // GLOBAL CONFIGURATION
@@ -78,55 +79,20 @@ const CONTACT_INFO = {
   emergencyHotline: '+254768860665'
 };
 
-// World's Most Comprehensive Language Support (47 Languages)
+// 12 Languages with FULL translations - We deliver what we promise
 const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸', rtl: false },
+  { code: 'sw', name: 'Kiswahili', flag: '🇰🇪', rtl: false },  // Kenya's national language
+  { code: 'fr', name: 'Français', flag: '🇫🇷', rtl: false },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦', rtl: true },
   { code: 'es', name: 'Español', flag: '🇪🇸', rtl: false },
   { code: 'zh', name: '中文', flag: '🇨🇳', rtl: false },
-  { code: 'ar', name: 'العربية', flag: '🇸🇦', rtl: true },
   { code: 'hi', name: 'हिन्दी', flag: '🇮🇳', rtl: false },
-  { code: 'fr', name: 'Français', flag: '🇫🇷', rtl: false },
+  { code: 'pt', name: 'Português', flag: '🇧🇷', rtl: false },
   { code: 'de', name: 'Deutsch', flag: '🇩🇪', rtl: false },
   { code: 'ja', name: '日本語', flag: '🇯🇵', rtl: false },
-  { code: 'pt', name: 'Português', flag: '🇧🇷', rtl: false },
   { code: 'ru', name: 'Русский', flag: '🇷🇺', rtl: false },
   { code: 'ko', name: '한국어', flag: '🇰🇷', rtl: false },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹', rtl: false },
-  { code: 'nl', name: 'Nederlands', flag: '🇳🇱', rtl: false },
-  { code: 'pl', name: 'Polski', flag: '🇵🇱', rtl: false },
-  { code: 'tr', name: 'Türkçe', flag: '🇹🇷', rtl: false },
-  { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳', rtl: false },
-  { code: 'th', name: 'ไทย', flag: '🇹🇭', rtl: false },
-  { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩', rtl: false },
-  { code: 'ms', name: 'Bahasa Melayu', flag: '🇲🇾', rtl: false },
-  { code: 'sw', name: 'Kiswahili', flag: '🇰🇪', rtl: false },
-  { code: 'he', name: 'עברית', flag: '🇮🇱', rtl: true },
-  { code: 'fa', name: 'فارسی', flag: '🇮🇷', rtl: true },
-  { code: 'uk', name: 'Українська', flag: '🇺🇦', rtl: false },
-  { code: 'cs', name: 'Čeština', flag: '🇨🇿', rtl: false },
-  { code: 'el', name: 'Ελληνικά', flag: '🇬🇷', rtl: false },
-  { code: 'sv', name: 'Svenska', flag: '🇸🇪', rtl: false },
-  { code: 'da', name: 'Dansk', flag: '🇩🇰', rtl: false },
-  { code: 'fi', name: 'Suomi', flag: '🇫🇮', rtl: false },
-  { code: 'no', name: 'Norsk', flag: '🇳🇴', rtl: false },
-  { code: 'ro', name: 'Română', flag: '🇷🇴', rtl: false },
-  { code: 'hu', name: 'Magyar', flag: '🇭🇺', rtl: false },
-  { code: 'bg', name: 'Български', flag: '🇧🇬', rtl: false },
-  { code: 'hr', name: 'Hrvatski', flag: '🇭🇷', rtl: false },
-  { code: 'sk', name: 'Slovenčina', flag: '🇸🇰', rtl: false },
-  { code: 'sl', name: 'Slovenščina', flag: '🇸🇮', rtl: false },
-  { code: 'lt', name: 'Lietuvių', flag: '🇱🇹', rtl: false },
-  { code: 'lv', name: 'Latviešu', flag: '🇱🇻', rtl: false },
-  { code: 'et', name: 'Eesti', flag: '🇪🇪', rtl: false },
-  { code: 'bn', name: 'বাংলা', flag: '🇧🇩', rtl: false },
-  { code: 'ta', name: 'தமிழ்', flag: '🇮🇳', rtl: false },
-  { code: 'te', name: 'తెలుగు', flag: '🇮🇳', rtl: false },
-  { code: 'mr', name: 'मराठी', flag: '🇮🇳', rtl: false },
-  { code: 'gu', name: 'ગુજરાતી', flag: '🇮🇳', rtl: false },
-  { code: 'ur', name: 'اردو', flag: '🇵🇰', rtl: true },
-  { code: 'fil', name: 'Filipino', flag: '🇵🇭', rtl: false },
-  { code: 'af', name: 'Afrikaans', flag: '🇿🇦', rtl: false },
-  { code: 'am', name: 'አማርኛ', flag: '🇪🇹', rtl: false },
 ];
 
 // AI Confidence Levels
@@ -471,6 +437,12 @@ export default function UltimateDiagnosticModule() {
   
   // 🌍 WORLD'S #1 FEATURES - Advanced State
   const [selectedLanguage, setSelectedLanguage] = useState(SUPPORTED_LANGUAGES[0]);
+
+  // Get translations for current language - REAL MULTILINGUAL SUPPORT
+  const t: TranslationStrings = useMemo(() => {
+    return getTranslation(selectedLanguage.code);
+  }, [selectedLanguage.code]);
+
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showTelemetryPanel, setShowTelemetryPanel] = useState(false);
@@ -1510,23 +1482,23 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
             </div>
           </div>
           
-          {/* Telemetry Bar */}
+          {/* Telemetry Bar - TRANSLATED */}
           <div className="mt-3 py-2 border-t border-gray-800 flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs">
               <div className="flex items-center gap-2">
-                <span className="text-gray-500">ERROR CODES:</span>
-                <span className="text-cyan-400 font-bold">5,930+</span>
+                <span className="text-gray-500">{t.errorCodes}:</span>
+                <span className="text-cyan-400 font-bold">{TOTAL_ERROR_CODES.toLocaleString()}+</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-gray-500">BRANDS:</span>
+                <span className="text-gray-500">{t.brands}:</span>
                 <span className="text-cyan-400 font-bold">{SUPPORTED_BRANDS.length}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-gray-500">SAVED:</span>
-                <span className="text-amber-400 font-bold">{savedCodes.length}</span>
+                <span className="text-gray-500">{t.languages}:</span>
+                <span className="text-purple-400 font-bold">12</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-gray-500">RESULTS:</span>
+                <span className="text-gray-500">{t.resultsFound.split(' ')[0].toUpperCase()}:</span>
                 <span className="text-green-400 font-bold">{searchResults.length}</span>
               </div>
             </div>
@@ -1693,7 +1665,7 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
                 </option>
               ))}
             </select>
-            <span className="text-[8px] text-gray-600">47 LANGUAGES</span>
+            <span className="text-[8px] text-gray-600">12 {t.languages}</span>
           </div>
         </div>
       </div>
@@ -1807,10 +1779,10 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
               
               <div className="p-6">
                 <div className="flex flex-col lg:flex-row gap-4">
-                  {/* Main Search Input */}
+                  {/* Main Search Input - TRANSLATED */}
                   <div className="flex-1">
                     <label htmlFor="error-search" className="block text-[10px] text-gray-500 mb-2 uppercase tracking-wider">
-                      Enter Error Code / Symptom / Keyword
+                      {t.searchPlaceholder.split('...')[0]}
                     </label>
                     <div className="relative">
                       <input
@@ -1818,9 +1790,10 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
                         type="search"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="e.g., 111, overheat, no start, low oil..."
+                        placeholder={t.searchPlaceholder}
                         className="w-full px-4 py-4 pl-12 bg-black/80 border border-cyan-500/30 rounded text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 font-mono text-lg"
                         aria-describedby="search-help"
+                        dir={selectedLanguage.rtl ? 'rtl' : 'ltr'}
                       />
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500 text-xl">◎</span>
                       {searchQuery && (
@@ -1829,19 +1802,22 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                         >
-                          <span className="text-xs text-cyan-400 font-mono">{searchResults.length} FOUND</span>
+                          <span className="text-xs text-cyan-400 font-mono">{searchResults.length} {t.resultsFound.split(' ').slice(-1)[0].toUpperCase()}</span>
                         </motion.div>
                       )}
                     </div>
                     <p id="search-help" className="text-[10px] text-gray-600 mt-2 font-mono">
-                      TIP: Enter error code (111) / symptom (won&apos;t start) / problem description
+                      {selectedLanguage.code === 'en'
+                        ? "TIP: Enter error code (111) / symptom (won't start) / problem description"
+                        : t.searchPlaceholder
+                      }
                     </p>
                   </div>
-                  
-                  {/* Brand Filter */}
+
+                  {/* Brand Filter - TRANSLATED */}
                   <div className="w-full lg:w-64">
                     <label htmlFor="brand-filter" className="block text-[10px] text-gray-500 mb-2 uppercase tracking-wider">
-                      Generator Brand Filter
+                      {t.filterByBrand}
                     </label>
                     <select
                       id="brand-filter"
@@ -1849,7 +1825,7 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
                       onChange={(e) => setSelectedBrand(e.target.value)}
                       className="w-full px-4 py-4 bg-black/80 border border-cyan-500/30 rounded text-white focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
                     >
-                      <option value="all">ALL BRANDS</option>
+                      <option value="all">{t.allBrands.toUpperCase()}</option>
                       {SUPPORTED_BRANDS.map(brand => (
                         <option key={brand} value={brand}>{brand.toUpperCase()}</option>
                       ))}
