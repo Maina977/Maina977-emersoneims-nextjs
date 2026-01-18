@@ -1403,20 +1403,32 @@ export const TOTAL_ERROR_CODES = ALL_ERROR_CODES.length;
 // =====================================================
 
 // Search function for error codes - searches ALL databases
+// Made robust against null/undefined values to prevent runtime errors
 export function searchErrorCodes(query: string): ErrorCode[] {
+  if (!query) return [];
+
   const lowerQuery = query.toLowerCase().trim();
 
   if (!lowerQuery) return [];
 
-  return ALL_ERROR_CODES.filter(code =>
-    code.code.toLowerCase().includes(lowerQuery) ||
-    code.title.toLowerCase().includes(lowerQuery) ||
-    code.description.toLowerCase().includes(lowerQuery) ||
-    code.brand.toLowerCase().includes(lowerQuery) ||
-    code.category.toLowerCase().includes(lowerQuery) ||
-    code.symptoms.some(s => s.toLowerCase().includes(lowerQuery)) ||
-    code.causes.some(c => c.toLowerCase().includes(lowerQuery))
-  );
+  return ALL_ERROR_CODES.filter(code => {
+    try {
+      // Safely check each field with null guards
+      const codeMatch = code.code?.toLowerCase()?.includes(lowerQuery) ?? false;
+      const titleMatch = code.title?.toLowerCase()?.includes(lowerQuery) ?? false;
+      const descMatch = code.description?.toLowerCase()?.includes(lowerQuery) ?? false;
+      const brandMatch = code.brand?.toLowerCase()?.includes(lowerQuery) ?? false;
+      const categoryMatch = code.category?.toLowerCase()?.includes(lowerQuery) ?? false;
+      const symptomMatch = code.symptoms?.some(s => s?.toLowerCase()?.includes(lowerQuery)) ?? false;
+      const causeMatch = code.causes?.some(c => c?.toLowerCase()?.includes(lowerQuery)) ?? false;
+
+      return codeMatch || titleMatch || descMatch || brandMatch || categoryMatch || symptomMatch || causeMatch;
+    } catch (error) {
+      // If any field causes an error, skip this code but don't crash
+      console.warn('Error searching code:', code?.code, error);
+      return false;
+    }
+  });
 }
 
 // Get codes by brand - searches ALL databases

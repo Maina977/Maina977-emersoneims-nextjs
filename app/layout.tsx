@@ -66,26 +66,72 @@ const yandexVerification = process.env.NEXT_PUBLIC_YANDEX_VERIFICATION;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "EmersonEIMS - Reliable Power. Without Limits.",
-    template: "%s | EmersonEIMS - Premium Energy Solutions Kenya"
+    default: "Generator Companies in Kenya | EmersonEIMS - #1 Power Solutions Provider",
+    template: "%s | EmersonEIMS - Best Generator & Solar Company Kenya"
   },
-  description: "Premium Power Engineering & Intelligent Energy Solutions in Kenya. Powering Kenya's Future Through Intelligent Energy Solutions - Generators, Solar Systems, UPS & Comprehensive Diagnostics.",
+  description: "Kenya's Leading Generator Company - Sales, Installation, Maintenance & Repairs. 12+ Years Experience, 500+ Projects, 47 Counties Coverage. Cummins, Perkins, FG Wilson Authorized. 24/7 Emergency Service. Call +254768860665",
   keywords: [
-    // Core Services
-    "energy solutions Kenya", "generator installation Kenya", "solar power Kenya", "UPS systems Kenya",
-    "power backup Kenya", "EmersonEIMS", "power engineering Kenya", "intelligent energy solutions",
-    "reliable power Kenya", "energy infrastructure management", "commercial generators Kenya",
-    "industrial power solutions", "renewable energy Kenya", "power diagnostics Kenya",
-    "energy audits Kenya", "fuel management systems", "switchgear maintenance Kenya",
-    
+    // ===== HIGH-PRIORITY SEARCH TERMS (Google Ranking Focus) =====
+    "generator companies in Kenya", "generator company Kenya", "best generator company in Kenya",
+    "generator suppliers in Kenya", "generator dealers Kenya", "generator sellers Kenya",
+    "buy generator Kenya", "generator shop Kenya", "generator store Nairobi",
+
+    // Generator Sales & Products
+    "generators for sale Kenya", "diesel generators Kenya", "industrial generators Kenya",
+    "commercial generators Kenya", "silent generators Kenya", "used generators Kenya",
+    "Cummins generators Kenya", "Perkins generators Kenya", "FG Wilson generators Kenya",
+    "Caterpillar generators Kenya", "generator prices Kenya", "cheap generators Kenya",
+
+    // Generator Services
+    "generator installation Kenya", "generator maintenance Kenya", "generator repair Kenya",
+    "generator service Kenya", "generator hire Kenya", "generator rental Kenya",
+    "generator spare parts Kenya", "generator parts supplier Kenya",
+    "24/7 generator service Kenya", "emergency generator repair Nairobi",
+
+    // Solar Keywords
+    "solar companies Kenya", "solar installation Kenya", "solar panels Kenya",
+    "solar power systems Kenya", "best solar company Kenya", "solar energy Kenya",
+    "commercial solar Kenya", "residential solar Kenya", "solar water heater Kenya",
+
+    // UPS & Power Backup
+    "UPS systems Kenya", "UPS suppliers Kenya", "power backup Kenya",
+    "uninterruptible power supply Kenya", "APC UPS Kenya", "battery backup Kenya",
+
+    // Diagnostics & Error Codes
+    "generator error codes", "generator fault codes", "Cummins fault codes",
+    "Perkins error codes", "generator troubleshooting Kenya", "power diagnostics Kenya",
+
+    // Motor & Electrical Services
+    "motor rewinding Kenya", "electric motor repair Kenya", "borehole pump Kenya",
+    "electrical services Kenya", "AC installation Kenya", "HVAC services Kenya",
+
+    // Location-Based (47 Counties)
+    "generators Nairobi", "generator company Nairobi", "solar installation Nairobi",
+    "generators Mombasa", "generator company Mombasa", "solar Mombasa",
+    "generators Kisumu", "generators Nakuru", "generators Eldoret",
+    "generators Kiambu", "generators Machakos", "generators Thika",
+    "generators Nyeri", "generators Meru", "generators Kisii",
+    "generators Kakamega", "generators Garissa", "generators Malindi",
+
     // Swahili Keywords (Local Dominance)
-    "nguvu za jua Kenya", "jenereta Kenya", "uuzaji wa jenereta", "fundi wa stima",
-    "solaris Kenya", "backup power Nairobi",
-    
-    // Major Counties (Market Dominance)
-    "generators Nairobi", "solar Mombasa", "power solutions Kisumu", "energy Nakuru",
-    "generators Eldoret", "solar Thika", "power backup Kiambu", "energy Machakos",
-    "generators Kisii", "solar Malindi", "power solutions Kitale", "energy Nyeri"
+    "jenereta Kenya", "kuuza jenereta", "bei ya jenereta", "fundi wa jenereta",
+    "nguvu za jua Kenya", "solari Kenya", "stima backup Kenya",
+
+    // Industry-Specific
+    "hospital generators Kenya", "hotel generators Kenya", "factory generators Kenya",
+    "construction site generators", "farm generators Kenya", "school generators Kenya",
+    "office backup power Kenya", "data center UPS Kenya",
+
+    // Brand-Specific Searches
+    "Cummins dealer Kenya", "Perkins dealer Kenya", "FG Wilson dealer Kenya",
+    "DeepSea controller Kenya", "generator controller Kenya",
+    "Kohler generators Kenya", "Generac generators Kenya",
+
+    // Long-Tail Keywords
+    "where to buy generator in Nairobi", "best generator for home Kenya",
+    "generator size calculator Kenya", "how much is a generator in Kenya",
+    "generator maintenance cost Kenya", "generator fuel consumption calculator",
+    "solar vs generator Kenya", "hybrid solar generator Kenya"
   ],
   authors: [{ name: "EmersonEIMS" }],
   creator: "EmersonEIMS",
@@ -99,15 +145,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_KE",
     url: siteUrl,
-    siteName: "EmersonEIMS",
-    title: "EmersonEIMS - Reliable Power. Without Limits.",
-    description: "Premium Power Engineering & Intelligent Energy Solutions. Powering Kenya's Future Through Intelligent Energy Solutions - Generators, Solar, UPS & Diagnostics across 47 Counties.",
+    siteName: "EmersonEIMS - Generator Companies in Kenya",
+    title: "EmersonEIMS - #1 Generator Company in Kenya | Sales, Installation & Repairs",
+    description: "Kenya's Best Generator Company - Cummins, Perkins, FG Wilson Sales & Service. 12 Years Experience, 500+ Projects, 47 Counties. Solar Installation, UPS Systems, Motor Rewinding. 24/7 Emergency Service. Call +254768860665",
     images: [
       {
         url: `${siteUrl}/og-image.jpg`,
         width: 1200,
         height: 630,
-        alt: "EmersonEIMS - Reliable Power. Without Limits.",
+        alt: "EmersonEIMS - Best Generator Company in Kenya",
         type: "image/jpeg",
       }
     ],
@@ -117,8 +163,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "EmersonEIMS - Reliable Power. Without Limits.",
-    description: "Premium Power Engineering & Intelligent Energy Solutions in Kenya. Powering Kenya's Future Through Intelligent Energy Solutions - Generators, Solar, UPS & Diagnostics.",
+    title: "EmersonEIMS - Best Generator Company in Kenya",
+    description: "Kenya's #1 Generator & Solar Company. Cummins, Perkins, FG Wilson Authorized Dealer. Sales, Installation, Maintenance. 24/7 Service. 47 Counties. Call +254768860665",
     images: [`${siteUrl}/og-image.jpg`],
     creator: "@EmersonEIMS",
     site: "@EmersonEIMS",

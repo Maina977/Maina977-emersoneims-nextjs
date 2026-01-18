@@ -41,28 +41,43 @@ export default function AdvancedSEO() {
           {
             '@type': 'Organization',
             '@id': 'https://www.emersoneims.com/#organization',
-            name: 'EmersonEIMS',
+            name: 'EmersonEIMS - Best Generator Company in Kenya',
+            alternateName: ['EmersonEIMS', 'Emerson Energy & Infrastructure Management Solutions', 'Generator Companies in Kenya', 'Generator Suppliers Kenya'],
             url: 'https://www.emersoneims.com',
-            logo: 'https://www.emersoneims.com/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png',
-            description: 'Kenya\'s #1 Power Solutions Provider - Generators, Solar, UPS Systems',
+            logo: 'https://www.emersoneims.com/images/logo-tagline.png',
+            description: 'Kenya\'s #1 Generator Company - Sales, Installation, Maintenance & Repairs. Cummins, Perkins, FG Wilson Authorized Dealer. Solar, UPS, Motor Rewinding. 12+ Years Experience, 500+ Projects, 47 Counties.',
+            foundingDate: '2012',
+            numberOfEmployees: '50+',
+            slogan: 'Reliable Power. Without Limits.',
             sameAs: [
               'https://www.facebook.com/EmersonEIMS',
               'https://twitter.com/EmersonEIMS',
               'https://www.linkedin.com/company/emersoneims',
+              'https://www.instagram.com/emersoneims',
+              'https://www.youtube.com/@emersoneims',
             ],
-            contactPoint: {
-              '@type': 'ContactPoint',
-              telephone: '+254-768-860665',
-              contactType: 'Customer Service',
-              areaServed: 'KE',
-              availableLanguage: ['English', 'Swahili'],
-              hoursAvailable: {
-                '@type': 'OpeningHoursSpecification',
-                dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-                opens: '00:00',
-                closes: '23:59',
+            contactPoint: [
+              {
+                '@type': 'ContactPoint',
+                telephone: '+254-768-860665',
+                contactType: 'Sales',
+                areaServed: 'KE',
+                availableLanguage: ['English', 'Swahili'],
+                hoursAvailable: {
+                  '@type': 'OpeningHoursSpecification',
+                  dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                  opens: '00:00',
+                  closes: '23:59',
+                },
               },
-            },
+              {
+                '@type': 'ContactPoint',
+                telephone: '+254-782-914717',
+                contactType: 'Technical Support',
+                areaServed: 'KE',
+                availableLanguage: ['English', 'Swahili'],
+              },
+            ],
             aggregateRating: {
               '@type': 'AggregateRating',
               ratingValue: '4.9',
@@ -70,6 +85,7 @@ export default function AdvancedSEO() {
               bestRating: '5',
               worstRating: '1',
             },
+            award: ['Best Generator Company Kenya 2024', 'Top Power Solutions Provider East Africa'],
           },
           // Local Business for each county
           ...generateCountySchemas(),
@@ -272,7 +288,7 @@ export default function AdvancedSEO() {
             name: 'How do I diagnose generator problems?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS offers comprehensive generator diagnostics with 9,500+ error codes. Our diagnostic suite helps identify issues instantly with step-by-step solutions.',
+              text: 'EmersonEIMS offers Kenya\'s most comprehensive generator diagnostics with 13,500+ error codes covering all major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
             },
           },
           {
@@ -280,7 +296,7 @@ export default function AdvancedSEO() {
             name: 'What generator brands do you service?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'We service all major brands: Cummins, Perkins, FG Wilson, Caterpillar, SDMO, and more. Our database covers 9,500+ error codes across all manufacturers.',
+              text: 'We are authorized dealers for Cummins, Perkins, FG Wilson, Caterpillar, SDMO, John Deere, Volvo Penta, MTU, Kohler, and Generac. Our database covers 13,500+ error codes across all manufacturers with solutions.',
             },
           },
           {
@@ -288,7 +304,7 @@ export default function AdvancedSEO() {
             name: 'Do you offer 24/7 emergency generator repairs?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! EmersonEIMS provides 24/7 emergency generator repair services across all 47 Kenyan counties. Call +254-768-860665 for immediate assistance.',
+              text: 'Yes! EmersonEIMS provides 24/7 emergency generator repair services across all 47 Kenyan counties. We have certified technicians on standby. Call +254-768-860665 for immediate assistance.',
             },
           },
           {
@@ -296,7 +312,23 @@ export default function AdvancedSEO() {
             name: 'How long does generator installation take?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Standard generator installations take 3-5 days. Emergency installations can be completed within 48 hours. We handle all permits, civil works, and electrical connections.',
+              text: 'Standard generator installations take 3-5 days. Emergency installations can be completed within 48 hours. We handle all permits, civil works, ATS integration, and electrical connections.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Which is the best generator company in Kenya?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'EmersonEIMS is Kenya\'s #1 rated generator company with 12+ years experience, 500+ completed projects, and coverage in all 47 counties. We are authorized dealers for Cummins, Perkins, and FG Wilson with 24/7 service.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How much does a generator cost in Kenya?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Generator prices in Kenya range from KES 500,000 for small 20kVA units to KES 15,000,000+ for large 2000kVA industrial generators. EmersonEIMS offers competitive prices with financing options. Call for a free quote.',
             },
           },
         ],

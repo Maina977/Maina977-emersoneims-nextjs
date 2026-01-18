@@ -28,8 +28,699 @@ interface TroubleshootResult {
   callExpert: boolean;
 }
 
-// Complete troubleshooting decision trees
+// Complete troubleshooting decision trees for ALL services
 const TROUBLESHOOT_TREES: Record<string, TroubleshootNode[]> = {
+  // ========== SOLAR SYSTEM TROUBLESHOOTING ==========
+  solar: [
+    {
+      id: 'start',
+      question: 'What issue are you experiencing with your solar system?',
+      options: [
+        { label: '⚡ No power output', nextId: 'no-power' },
+        { label: '📉 Low power/reduced output', nextId: 'low-power' },
+        { label: '🔋 Battery not charging', nextId: 'battery-issue' },
+        { label: '🔴 Inverter error/fault', nextId: 'inverter-error' },
+        { label: '🌡️ System overheating', nextId: 'overheating' }
+      ]
+    },
+    {
+      id: 'no-power',
+      question: 'Are the solar panels receiving sunlight?',
+      options: [
+        { label: 'Yes, clear sunny day', nextId: 'check-inverter' },
+        { label: 'Panels are shaded or dirty', result: {
+          diagnosis: 'Shading or Soiling Issue',
+          severity: 'low',
+          causes: ['Tree shadows', 'Dust accumulation', 'Bird droppings', 'Nearby building shadows'],
+          solutions: ['Clean panels with water and soft cloth', 'Trim overhanging trees', 'Install bird deterrents', 'Consider panel repositioning'],
+          diyPossible: true, estimatedCost: 'Free - KES 5,000', timeToFix: '1-2 hours', callExpert: false
+        }}
+      ]
+    },
+    {
+      id: 'check-inverter',
+      question: 'What is the inverter display showing?',
+      options: [
+        { label: 'No display/completely off', result: {
+          diagnosis: 'Inverter Power Failure',
+          severity: 'high',
+          causes: ['DC disconnect open', 'Blown fuse', 'Inverter failure', 'Wiring issue'],
+          solutions: ['Check DC disconnect switch', 'Inspect fuses', 'Check DC voltage from panels', 'Professional inverter diagnosis'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 200,000', timeToFix: '2-8 hours', callExpert: true
+        }},
+        { label: 'Showing error code', nextId: 'inverter-error' },
+        { label: 'Display on but no output', result: {
+          diagnosis: 'Grid/Load Connection Issue',
+          severity: 'medium',
+          causes: ['AC breaker tripped', 'Grid fault', 'Wiring problem', 'Inverter internal fault'],
+          solutions: ['Check AC breaker', 'Verify grid power', 'Inspect output connections', 'Professional diagnosis'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 50,000', timeToFix: '1-4 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'low-power',
+      question: 'When did you notice the reduced output?',
+      options: [
+        { label: 'Gradual decline over months', result: {
+          diagnosis: 'Panel Degradation or Soiling',
+          severity: 'low',
+          causes: ['Normal panel aging', 'Accumulated dirt', 'Micro-cracks', 'Hot spot development'],
+          solutions: ['Professional panel cleaning', 'Thermal imaging inspection', 'Panel performance testing', 'Consider panel replacement if over 15 years'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 100,000', timeToFix: '2-4 hours', callExpert: true
+        }},
+        { label: 'Sudden drop', result: {
+          diagnosis: 'String or Panel Failure',
+          severity: 'high',
+          causes: ['Failed panel', 'Broken string fuse', 'Damaged cable', 'Junction box failure'],
+          solutions: ['Check string voltages', 'Inspect panel junction boxes', 'Test individual panels', 'Replace failed components'],
+          diyPossible: false, estimatedCost: 'KES 20,000 - 150,000', timeToFix: '2-6 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'battery-issue',
+      question: 'What type of battery system do you have?',
+      options: [
+        { label: 'Lead-acid batteries', result: {
+          diagnosis: 'Lead-Acid Battery Issue',
+          severity: 'medium',
+          causes: ['Low electrolyte', 'Sulfation', 'Dead cells', 'Charge controller issue', 'Age (3+ years)'],
+          solutions: ['Check electrolyte levels', 'Test specific gravity', 'Equalize charge if flooded type', 'Test battery capacity', 'Replace if over 4 years'],
+          diyPossible: true, estimatedCost: 'KES 5,000 - 100,000', timeToFix: '1-3 hours', callExpert: false
+        }},
+        { label: 'Lithium batteries', result: {
+          diagnosis: 'Lithium Battery/BMS Issue',
+          severity: 'medium',
+          causes: ['BMS fault', 'Cell imbalance', 'Temperature protection', 'Communication error'],
+          solutions: ['Check BMS error codes', 'Verify temperature range', 'Check communication cables', 'Professional BMS reset'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 300,000', timeToFix: '2-4 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'inverter-error',
+      question: 'What type of error is displayed?',
+      options: [
+        { label: 'Overload/overcurrent', result: {
+          diagnosis: 'Inverter Overload',
+          severity: 'medium',
+          causes: ['Too many loads connected', 'Motor starting surge', 'Short circuit on output', 'Inverter undersized'],
+          solutions: ['Reduce connected load', 'Add soft starters for motors', 'Check for shorts', 'Upgrade inverter size'],
+          diyPossible: true, estimatedCost: 'Free - KES 200,000', timeToFix: '30 min - 2 hours', callExpert: false
+        }},
+        { label: 'Over/under voltage', result: {
+          diagnosis: 'Voltage Regulation Issue',
+          severity: 'medium',
+          causes: ['Grid voltage unstable', 'Battery voltage incorrect', 'Inverter settings', 'Faulty voltage sensor'],
+          solutions: ['Check grid voltage', 'Verify battery voltage', 'Adjust inverter settings', 'Install voltage stabilizer'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 80,000', timeToFix: '1-4 hours', callExpert: true
+        }},
+        { label: 'Ground fault/isolation', result: {
+          diagnosis: 'Ground Fault Detected',
+          severity: 'high',
+          causes: ['Cable insulation damage', 'Water ingress', 'Panel frame grounding issue', 'Inverter isolation failure'],
+          solutions: ['STOP system immediately', 'Inspect all wiring', 'Check for water damage', 'Professional insulation testing'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 50,000', timeToFix: '2-6 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'overheating',
+      question: 'What component is overheating?',
+      options: [
+        { label: 'Inverter', result: {
+          diagnosis: 'Inverter Overheating',
+          severity: 'high',
+          causes: ['Poor ventilation', 'High ambient temperature', 'Overload', 'Fan failure', 'Dust buildup'],
+          solutions: ['Improve ventilation', 'Clean dust from vents', 'Check cooling fans', 'Reduce load', 'Relocate if in direct sun'],
+          diyPossible: true, estimatedCost: 'Free - KES 20,000', timeToFix: '1-3 hours', callExpert: false
+        }},
+        { label: 'Batteries', result: {
+          diagnosis: 'Battery Overheating - CRITICAL',
+          severity: 'critical',
+          causes: ['Overcharging', 'Internal short', 'High ambient temperature', 'BMS failure'],
+          solutions: ['STOP charging immediately', 'Ensure ventilation', 'Do not touch batteries', 'Call expert immediately', 'Risk of fire/explosion'],
+          diyPossible: false, estimatedCost: 'KES 50,000 - 300,000', timeToFix: '4-8 hours', callExpert: true
+        }}
+      ]
+    }
+  ],
+
+  // ========== UPS SYSTEM TROUBLESHOOTING ==========
+  ups: [
+    {
+      id: 'start',
+      question: 'What issue are you experiencing with your UPS?',
+      options: [
+        { label: '🔴 UPS not turning on', nextId: 'wont-turn-on' },
+        { label: '⚡ No output power', nextId: 'no-output' },
+        { label: '🔋 Short backup time', nextId: 'short-backup' },
+        { label: '🔔 Constant beeping', nextId: 'beeping' },
+        { label: '⚠️ Error/fault display', nextId: 'error' }
+      ]
+    },
+    {
+      id: 'wont-turn-on',
+      question: 'Is mains power available?',
+      options: [
+        { label: 'Yes, mains is on', result: {
+          diagnosis: 'UPS Internal Fault',
+          severity: 'high',
+          causes: ['Blown internal fuse', 'Failed power supply', 'Control board failure', 'Input breaker tripped'],
+          solutions: ['Check input breaker', 'Verify input voltage', 'Check internal fuses if accessible', 'Professional repair needed'],
+          diyPossible: false, estimatedCost: 'KES 15,000 - 100,000', timeToFix: '2-6 hours', callExpert: true
+        }},
+        { label: 'No, mains is off', result: {
+          diagnosis: 'Battery Depleted',
+          severity: 'low',
+          causes: ['Batteries fully discharged', 'Long outage', 'Weak/old batteries'],
+          solutions: ['Wait for mains to return', 'UPS will restart when charged', 'Consider battery replacement if frequent'],
+          diyPossible: true, estimatedCost: 'Free - KES 50,000', timeToFix: '2-4 hours charging', callExpert: false
+        }}
+      ]
+    },
+    {
+      id: 'no-output',
+      question: 'Is the UPS displaying any information?',
+      options: [
+        { label: 'Display shows overload', result: {
+          diagnosis: 'UPS Overloaded',
+          severity: 'medium',
+          causes: ['Connected load exceeds capacity', 'Motor starting surge', 'Short circuit on output'],
+          solutions: ['Disconnect some loads', 'Check load calculations', 'Identify power-hungry equipment', 'Upgrade UPS if undersized'],
+          diyPossible: true, estimatedCost: 'Free', timeToFix: '15-30 minutes', callExpert: false
+        }},
+        { label: 'Shows battery fault', result: {
+          diagnosis: 'Battery Failure',
+          severity: 'high',
+          causes: ['Dead battery cells', 'Battery over 3 years old', 'Connection loose', 'Battery fuse blown'],
+          solutions: ['Check battery connections', 'Test battery voltage', 'Replace batteries', 'Verify battery fuse'],
+          diyPossible: true, estimatedCost: 'KES 20,000 - 200,000', timeToFix: '1-3 hours', callExpert: false
+        }},
+        { label: 'Normal display but no output', result: {
+          diagnosis: 'Output Circuit Fault',
+          severity: 'high',
+          causes: ['Output breaker tripped', 'Inverter failure', 'Static bypass activated', 'Output fuse blown'],
+          solutions: ['Check output breaker', 'Verify bypass switch position', 'Professional inverter testing'],
+          diyPossible: false, estimatedCost: 'KES 30,000 - 150,000', timeToFix: '2-6 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'short-backup',
+      question: 'How old are the batteries?',
+      options: [
+        { label: 'Less than 2 years', result: {
+          diagnosis: 'Load Increase or Battery Issue',
+          severity: 'medium',
+          causes: ['Increased connected load', 'Defective battery', 'Charger not working properly', 'Incorrect battery type'],
+          solutions: ['Audit connected load', 'Test battery capacity', 'Check charger output', 'Verify battery specifications'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 80,000', timeToFix: '1-3 hours', callExpert: true
+        }},
+        { label: '2-4 years', result: {
+          diagnosis: 'Battery Aging',
+          severity: 'medium',
+          causes: ['Normal battery degradation', 'High temperature exposure', 'Deep discharge cycles'],
+          solutions: ['Plan battery replacement', 'Test battery capacity', 'Consider higher quality batteries'],
+          diyPossible: true, estimatedCost: 'KES 30,000 - 200,000', timeToFix: '1-2 hours', callExpert: false
+        }},
+        { label: 'Over 4 years', result: {
+          diagnosis: 'Batteries End of Life',
+          severity: 'high',
+          causes: ['Natural battery aging', 'Capacity below 80%'],
+          solutions: ['Replace batteries immediately', 'Use same type and capacity', 'Consider lithium upgrade'],
+          diyPossible: true, estimatedCost: 'KES 40,000 - 300,000', timeToFix: '1-3 hours', callExpert: false
+        }}
+      ]
+    },
+    {
+      id: 'beeping',
+      question: 'What is the beep pattern?',
+      options: [
+        { label: 'Continuous beep', result: {
+          diagnosis: 'Critical Alarm - Overload or Fault',
+          severity: 'critical',
+          causes: ['Severe overload', 'Internal fault', 'Battery critical', 'Output short circuit'],
+          solutions: ['Reduce load immediately', 'Check for shorts', 'Note error codes', 'Call technician'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 100,000', timeToFix: '1-4 hours', callExpert: true
+        }},
+        { label: 'Intermittent beep (every few seconds)', result: {
+          diagnosis: 'On Battery / Low Battery Warning',
+          severity: 'low',
+          causes: ['Mains power failure', 'Battery running low', 'Input voltage out of range'],
+          solutions: ['Check mains power', 'Reduce non-essential loads', 'Wait for mains to restore'],
+          diyPossible: true, estimatedCost: 'Free', timeToFix: 'N/A', callExpert: false
+        }},
+        { label: 'Single beep on startup', result: {
+          diagnosis: 'Normal Operation',
+          severity: 'low',
+          causes: ['Self-test completed', 'Normal startup'],
+          solutions: ['No action needed', 'UPS is working correctly'],
+          diyPossible: true, estimatedCost: 'Free', timeToFix: 'N/A', callExpert: false
+        }}
+      ]
+    },
+    {
+      id: 'error',
+      question: 'What type of error is shown?',
+      options: [
+        { label: 'Fan failure', result: {
+          diagnosis: 'Cooling Fan Failure',
+          severity: 'high',
+          causes: ['Fan motor failure', 'Dust blockage', 'Fan connector loose'],
+          solutions: ['Clean UPS vents', 'Check fan operation', 'Replace fan', 'Ensure adequate ventilation'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 40,000', timeToFix: '1-3 hours', callExpert: true
+        }},
+        { label: 'Rectifier/charger fault', result: {
+          diagnosis: 'Charger Circuit Failure',
+          severity: 'high',
+          causes: ['Charger board failure', 'Input surge damage', 'Component aging'],
+          solutions: ['Professional diagnosis', 'Board repair/replacement', 'Check input protection'],
+          diyPossible: false, estimatedCost: 'KES 30,000 - 100,000', timeToFix: '2-6 hours', callExpert: true
+        }},
+        { label: 'Communication fault', result: {
+          diagnosis: 'Monitoring/Communication Error',
+          severity: 'low',
+          causes: ['Network cable disconnected', 'SNMP card issue', 'Software glitch'],
+          solutions: ['Check network connection', 'Restart monitoring software', 'Update firmware'],
+          diyPossible: true, estimatedCost: 'Free - KES 20,000', timeToFix: '30 min - 2 hours', callExpert: false
+        }}
+      ]
+    }
+  ],
+
+  // ========== HVAC/AC TROUBLESHOOTING ==========
+  hvac: [
+    {
+      id: 'start',
+      question: 'What issue are you experiencing with your AC/HVAC?',
+      options: [
+        { label: '❄️ Not cooling', nextId: 'not-cooling' },
+        { label: '💨 Weak airflow', nextId: 'weak-airflow' },
+        { label: '🔊 Strange noises', nextId: 'noises' },
+        { label: '💧 Water leaking', nextId: 'leaking' },
+        { label: '🔴 Unit not starting', nextId: 'not-starting' }
+      ]
+    },
+    {
+      id: 'not-cooling',
+      question: 'Is the outdoor unit (condenser) running?',
+      options: [
+        { label: 'Yes, running normally', nextId: 'cooling-check-indoor' },
+        { label: 'Not running at all', result: {
+          diagnosis: 'Outdoor Unit Failure',
+          severity: 'high',
+          causes: ['Compressor failure', 'Capacitor failure', 'Contactor issue', 'Power supply problem'],
+          solutions: ['Check circuit breaker', 'Test capacitor', 'Check contactor', 'Compressor replacement if failed'],
+          diyPossible: false, estimatedCost: 'KES 15,000 - 150,000', timeToFix: '2-6 hours', callExpert: true
+        }},
+        { label: 'Running but making noise', result: {
+          diagnosis: 'Compressor or Fan Issue',
+          severity: 'high',
+          causes: ['Compressor starting to fail', 'Fan motor bearing worn', 'Low refrigerant causing strain'],
+          solutions: ['Professional diagnosis', 'Check refrigerant level', 'May need compressor replacement'],
+          diyPossible: false, estimatedCost: 'KES 20,000 - 200,000', timeToFix: '2-8 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'cooling-check-indoor',
+      question: 'Is cold air coming from the indoor unit?',
+      options: [
+        { label: 'Slightly cool but not cold', result: {
+          diagnosis: 'Low Refrigerant or Dirty System',
+          severity: 'medium',
+          causes: ['Refrigerant leak', 'Dirty filters', 'Dirty coils', 'Blocked condenser'],
+          solutions: ['Clean or replace filters', 'Clean indoor and outdoor coils', 'Check for refrigerant leaks', 'Recharge refrigerant if low'],
+          diyPossible: true, estimatedCost: 'KES 3,000 - 30,000', timeToFix: '1-3 hours', callExpert: false
+        }},
+        { label: 'Room temperature air', result: {
+          diagnosis: 'Refrigerant System Failure',
+          severity: 'high',
+          causes: ['Major refrigerant leak', 'Compressor not compressing', 'Expansion valve stuck', 'System blockage'],
+          solutions: ['Professional leak detection', 'Pressure testing', 'Component replacement as needed'],
+          diyPossible: false, estimatedCost: 'KES 15,000 - 100,000', timeToFix: '3-8 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'weak-airflow',
+      question: 'When was the filter last cleaned/replaced?',
+      options: [
+        { label: 'Over 3 months ago or never', result: {
+          diagnosis: 'Clogged Air Filter',
+          severity: 'low',
+          causes: ['Dust accumulation', 'Pet hair', 'Normal use'],
+          solutions: ['Remove and wash filter (if reusable)', 'Replace disposable filter', 'Clean every 2-4 weeks'],
+          diyPossible: true, estimatedCost: 'Free - KES 3,000', timeToFix: '15-30 minutes', callExpert: false
+        }},
+        { label: 'Recently cleaned', result: {
+          diagnosis: 'Blower or Duct Issue',
+          severity: 'medium',
+          causes: ['Blower motor failing', 'Blower wheel dirty', 'Duct blockage', 'Damper closed'],
+          solutions: ['Check blower wheel for dirt', 'Inspect ductwork', 'Test blower motor', 'Check damper positions'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 50,000', timeToFix: '1-4 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'noises',
+      question: 'What type of noise is it?',
+      options: [
+        { label: 'Squealing/screeching', result: {
+          diagnosis: 'Belt or Bearing Issue',
+          severity: 'medium',
+          causes: ['Worn belt', 'Dry bearings', 'Motor starting to fail'],
+          solutions: ['Replace belt if applicable', 'Lubricate bearings', 'Replace motor if worn'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 40,000', timeToFix: '1-3 hours', callExpert: true
+        }},
+        { label: 'Rattling/vibrating', result: {
+          diagnosis: 'Loose Components',
+          severity: 'low',
+          causes: ['Loose screws or panels', 'Debris in unit', 'Loose fan blade'],
+          solutions: ['Tighten all visible screws', 'Remove debris', 'Check fan blade security'],
+          diyPossible: true, estimatedCost: 'Free - KES 5,000', timeToFix: '30 min - 1 hour', callExpert: false
+        }},
+        { label: 'Grinding', result: {
+          diagnosis: 'Motor Bearing Failure - STOP UNIT',
+          severity: 'critical',
+          causes: ['Bearing completely worn', 'Motor shaft damage'],
+          solutions: ['Turn off immediately', 'Motor replacement needed', 'Continued use will cause more damage'],
+          diyPossible: false, estimatedCost: 'KES 15,000 - 60,000', timeToFix: '2-4 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'leaking',
+      question: 'Where is the water coming from?',
+      options: [
+        { label: 'From indoor unit', result: {
+          diagnosis: 'Drain Line Blockage',
+          severity: 'medium',
+          causes: ['Clogged drain line', 'Dirty drain pan', 'Algae growth', 'Drain pump failure'],
+          solutions: ['Clear drain line with vacuum or compressed air', 'Clean drain pan', 'Add algae tablets', 'Check drain pump if equipped'],
+          diyPossible: true, estimatedCost: 'Free - KES 5,000', timeToFix: '30 min - 2 hours', callExpert: false
+        }},
+        { label: 'From outdoor unit', result: {
+          diagnosis: 'Normal Condensation or Refrigerant Leak',
+          severity: 'low',
+          causes: ['Normal operation in humid weather', 'Defrost cycle water', 'Refrigerant leak (if oily)'],
+          solutions: ['Normal if clear water', 'Check for oily residue (indicates refrigerant leak)', 'Call expert if refrigerant suspected'],
+          diyPossible: true, estimatedCost: 'Free - KES 30,000', timeToFix: 'Varies', callExpert: false
+        }}
+      ]
+    },
+    {
+      id: 'not-starting',
+      question: 'What happens when you try to turn it on?',
+      options: [
+        { label: 'Nothing at all', result: {
+          diagnosis: 'Power Supply Issue',
+          severity: 'medium',
+          causes: ['Tripped breaker', 'Blown fuse', 'Faulty thermostat', 'Control board failure'],
+          solutions: ['Check and reset breaker', 'Check thermostat batteries', 'Verify power at unit', 'Professional diagnosis'],
+          diyPossible: true, estimatedCost: 'Free - KES 30,000', timeToFix: '30 min - 3 hours', callExpert: false
+        }},
+        { label: 'Clicks but doesnt run', result: {
+          diagnosis: 'Compressor Start Failure',
+          severity: 'high',
+          causes: ['Faulty capacitor', 'Failed start relay', 'Compressor locked', 'Low voltage'],
+          solutions: ['Test and replace capacitor', 'Check start relay', 'Check voltage', 'May need compressor'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 150,000', timeToFix: '1-6 hours', callExpert: true
+        }}
+      ]
+    }
+  ],
+
+  // ========== MOTOR TROUBLESHOOTING ==========
+  motor: [
+    {
+      id: 'start',
+      question: 'What issue are you experiencing with the motor?',
+      options: [
+        { label: '🔴 Motor wont start', nextId: 'wont-start' },
+        { label: '🌡️ Motor overheating', nextId: 'overheating' },
+        { label: '🔊 Unusual noise/vibration', nextId: 'noise' },
+        { label: '⚡ Tripping breaker', nextId: 'tripping' },
+        { label: '🔄 Low speed/power', nextId: 'low-power' }
+      ]
+    },
+    {
+      id: 'wont-start',
+      question: 'What happens when power is applied?',
+      options: [
+        { label: 'Hums but doesnt turn', result: {
+          diagnosis: 'Single Phase or Mechanical Lock',
+          severity: 'high',
+          causes: ['Single phasing (one phase missing)', 'Capacitor failure (single phase motor)', 'Bearing seized', 'Load jammed'],
+          solutions: ['Check all 3 phases with multimeter', 'Test/replace capacitor', 'Try to rotate shaft by hand', 'Check driven equipment'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 80,000', timeToFix: '1-4 hours', callExpert: true
+        }},
+        { label: 'Nothing at all', result: {
+          diagnosis: 'Power Supply or Winding Failure',
+          severity: 'high',
+          causes: ['No power to motor', 'Open winding', 'Thermal overload tripped', 'Contactor not pulling in'],
+          solutions: ['Check power supply', 'Reset thermal overload', 'Test contactor coil', 'Winding resistance test'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 100,000', timeToFix: '1-6 hours', callExpert: true
+        }},
+        { label: 'Starts then trips instantly', nextId: 'tripping' }
+      ]
+    },
+    {
+      id: 'overheating',
+      question: 'Is the motor running under normal load?',
+      options: [
+        { label: 'Yes, normal operation', result: {
+          diagnosis: 'Cooling or Electrical Issue',
+          severity: 'high',
+          causes: ['Blocked cooling vents', 'Fan failure', 'Voltage imbalance', 'Insulation breakdown starting'],
+          solutions: ['Clean cooling vents', 'Check fan operation', 'Measure voltage on all phases', 'Insulation resistance test'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 60,000', timeToFix: '1-4 hours', callExpert: true
+        }},
+        { label: 'Higher than normal load', result: {
+          diagnosis: 'Overload Condition',
+          severity: 'medium',
+          causes: ['Driven equipment problem', 'Motor undersized', 'Misalignment', 'Bearing wear'],
+          solutions: ['Reduce load', 'Check alignment', 'Inspect driven equipment', 'Consider larger motor'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 200,000', timeToFix: '2-8 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'noise',
+      question: 'What type of noise?',
+      options: [
+        { label: 'Grinding/rough running', result: {
+          diagnosis: 'Bearing Failure',
+          severity: 'critical',
+          causes: ['Worn bearings', 'Lack of lubrication', 'Bearing contamination'],
+          solutions: ['STOP motor to prevent winding damage', 'Replace bearings', 'Check seals', 'May need rewinding if delayed'],
+          diyPossible: false, estimatedCost: 'KES 15,000 - 80,000', timeToFix: '2-6 hours', callExpert: true
+        }},
+        { label: 'Electrical humming/buzzing', result: {
+          diagnosis: 'Electrical Issue',
+          severity: 'medium',
+          causes: ['Loose laminations', 'Voltage imbalance', 'Single phasing', 'Harmonic distortion'],
+          solutions: ['Check voltage balance', 'Measure current on all phases', 'Check power quality', 'Motor inspection'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 50,000', timeToFix: '1-4 hours', callExpert: true
+        }},
+        { label: 'Mechanical vibration', result: {
+          diagnosis: 'Alignment or Balance Issue',
+          severity: 'medium',
+          causes: ['Shaft misalignment', 'Unbalanced rotor', 'Loose mounting', 'Coupling wear'],
+          solutions: ['Check and correct alignment', 'Tighten mounting bolts', 'Inspect coupling', 'Dynamic balancing if needed'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 40,000', timeToFix: '1-4 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'tripping',
+      question: 'How quickly does it trip?',
+      options: [
+        { label: 'Instantly on start', result: {
+          diagnosis: 'Short Circuit or Ground Fault',
+          severity: 'critical',
+          causes: ['Winding short circuit', 'Ground fault in motor', 'Cable damage', 'Starter fault'],
+          solutions: ['Do NOT restart', 'Insulation resistance test (Megger)', 'Check cables', 'Motor likely needs rewinding'],
+          diyPossible: false, estimatedCost: 'KES 30,000 - 150,000', timeToFix: '4-24 hours', callExpert: true
+        }},
+        { label: 'After running for a while', result: {
+          diagnosis: 'Overload or Thermal Issue',
+          severity: 'medium',
+          causes: ['Overloaded', 'Poor cooling', 'Voltage drop', 'Overload relay set too low'],
+          solutions: ['Check current draw vs nameplate', 'Clean motor cooling', 'Check voltage at motor', 'Adjust overload setting'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 50,000', timeToFix: '1-4 hours', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'low-power',
+      question: 'Has anything changed recently?',
+      options: [
+        { label: 'Power supply changes', result: {
+          diagnosis: 'Voltage or Frequency Issue',
+          severity: 'medium',
+          causes: ['Low voltage', 'Frequency variation', 'Phase imbalance', 'VFD issue if installed'],
+          solutions: ['Check voltage at motor terminals', 'Verify frequency', 'Check VFD settings', 'Install voltage stabilizer'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 100,000', timeToFix: '1-4 hours', callExpert: true
+        }},
+        { label: 'No changes/gradual decline', result: {
+          diagnosis: 'Motor Degradation',
+          severity: 'medium',
+          causes: ['Winding deterioration', 'Bearing wear', 'Air gap changes', 'Age-related wear'],
+          solutions: ['Motor testing (insulation, vibration)', 'Consider rewinding', 'Plan replacement', 'Predictive maintenance'],
+          diyPossible: false, estimatedCost: 'KES 20,000 - 200,000', timeToFix: '1-3 days', callExpert: true
+        }}
+      ]
+    }
+  ],
+
+  // ========== BOREHOLE PUMP TROUBLESHOOTING ==========
+  borehole: [
+    {
+      id: 'start',
+      question: 'What issue are you experiencing with the borehole pump?',
+      options: [
+        { label: '💧 No water coming out', nextId: 'no-water' },
+        { label: '📉 Low water pressure/flow', nextId: 'low-flow' },
+        { label: '⚡ Motor not running', nextId: 'motor-issue' },
+        { label: '🔄 Pump cycling on/off', nextId: 'cycling' },
+        { label: '🟤 Dirty/sandy water', nextId: 'dirty-water' }
+      ]
+    },
+    {
+      id: 'no-water',
+      question: 'Is the pump motor running?',
+      options: [
+        { label: 'Yes, motor is running', nextId: 'pump-not-pumping' },
+        { label: 'No, motor not running', nextId: 'motor-issue' }
+      ]
+    },
+    {
+      id: 'pump-not-pumping',
+      question: 'How long has the pump been in use?',
+      options: [
+        { label: 'Less than 3 years', result: {
+          diagnosis: 'Pump Blockage or Water Level Issue',
+          severity: 'medium',
+          causes: ['Water table dropped', 'Pump inlet blocked', 'Check valve stuck', 'Air lock in pipe'],
+          solutions: ['Check water level in borehole', 'Wait for water table to recover', 'Check valve inspection', 'Try priming/air release'],
+          diyPossible: false, estimatedCost: 'KES 5,000 - 50,000', timeToFix: '2-6 hours', callExpert: true
+        }},
+        { label: '3-7 years', result: {
+          diagnosis: 'Impeller or Wear Ring Wear',
+          severity: 'high',
+          causes: ['Worn impellers', 'Damaged wear rings', 'Shaft wear', 'Sand erosion'],
+          solutions: ['Pull pump for inspection', 'Replace worn parts', 'Consider pump replacement if severe'],
+          diyPossible: false, estimatedCost: 'KES 50,000 - 200,000', timeToFix: '4-8 hours', callExpert: true
+        }},
+        { label: 'Over 7 years', result: {
+          diagnosis: 'Pump End of Life',
+          severity: 'high',
+          causes: ['Normal wear and tear', 'Seal failure', 'Motor winding degradation'],
+          solutions: ['Replace pump', 'Consider more efficient model', 'Upgrade pipe size if needed'],
+          diyPossible: false, estimatedCost: 'KES 100,000 - 500,000', timeToFix: '1-2 days', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'low-flow',
+      question: 'Was the flow always low or did it decrease?',
+      options: [
+        { label: 'Gradually decreased', result: {
+          diagnosis: 'Pump Wear or Borehole Silting',
+          severity: 'medium',
+          causes: ['Worn pump impellers', 'Borehole silting up', 'Clogged screen', 'Check valve partial blockage'],
+          solutions: ['Pump inspection and servicing', 'Borehole cleaning/rehabilitation', 'Screen cleaning'],
+          diyPossible: false, estimatedCost: 'KES 30,000 - 150,000', timeToFix: '4-8 hours', callExpert: true
+        }},
+        { label: 'Sudden decrease', result: {
+          diagnosis: 'Blockage or Leak',
+          severity: 'medium',
+          causes: ['Pipe leak/burst', 'Valve partially closed', 'Pressure tank issue', 'Pump damage'],
+          solutions: ['Check all valves are open', 'Inspect visible piping', 'Check pressure tank', 'Pull pump if needed'],
+          diyPossible: false, estimatedCost: 'KES 10,000 - 100,000', timeToFix: '2-6 hours', callExpert: true
+        }},
+        { label: 'Always been low', result: {
+          diagnosis: 'Undersized System or Low Yield',
+          severity: 'medium',
+          causes: ['Pump too small', 'Borehole low yield', 'Pipe too small', 'Too much head'],
+          solutions: ['Borehole yield test', 'Review pump sizing', 'Check pipe sizing', 'Consider system upgrade'],
+          diyPossible: false, estimatedCost: 'KES 20,000 - 300,000', timeToFix: '1-3 days', callExpert: true
+        }}
+      ]
+    },
+    {
+      id: 'motor-issue',
+      question: 'Is power reaching the motor?',
+      options: [
+        { label: 'Starter shows power', result: {
+          diagnosis: 'Motor or Cable Failure',
+          severity: 'high',
+          causes: ['Motor winding failure', 'Submersible cable damaged', 'Seal failure (motor flooded)', 'Capacitor failure'],
+          solutions: ['Insulation resistance test', 'Pull pump for inspection', 'Motor rewinding or replacement', 'Replace cable if damaged'],
+          diyPossible: false, estimatedCost: 'KES 50,000 - 200,000', timeToFix: '4-8 hours', callExpert: true
+        }},
+        { label: 'No power at starter', result: {
+          diagnosis: 'Power Supply Issue',
+          severity: 'medium',
+          causes: ['Tripped breaker', 'Control panel fault', 'Contactor failure', 'Overload tripped'],
+          solutions: ['Check and reset breaker', 'Check control panel', 'Test contactor', 'Reset overload if tripped'],
+          diyPossible: true, estimatedCost: 'KES 0 - 30,000', timeToFix: '30 min - 2 hours', callExpert: false
+        }}
+      ]
+    },
+    {
+      id: 'cycling',
+      question: 'How quickly does it cycle on and off?',
+      options: [
+        { label: 'Every few seconds', result: {
+          diagnosis: 'Pressure Switch or Tank Issue',
+          severity: 'medium',
+          causes: ['Waterlogged pressure tank', 'Pressure switch faulty', 'Major leak in system', 'Check valve failure'],
+          solutions: ['Check pressure tank air charge', 'Adjust/replace pressure switch', 'Find and fix leaks', 'Replace check valve'],
+          diyPossible: true, estimatedCost: 'KES 5,000 - 50,000', timeToFix: '1-4 hours', callExpert: false
+        }},
+        { label: 'Every few minutes', result: {
+          diagnosis: 'Minor Leak or Settings Issue',
+          severity: 'low',
+          causes: ['Small leak', 'Pressure switch needs adjustment', 'Check valve leaking slightly'],
+          solutions: ['Check for leaks in system', 'Adjust pressure switch settings', 'Inspect check valve'],
+          diyPossible: true, estimatedCost: 'KES 0 - 20,000', timeToFix: '1-2 hours', callExpert: false
+        }}
+      ]
+    },
+    {
+      id: 'dirty-water',
+      question: 'What does the water look like?',
+      options: [
+        { label: 'Sandy/gritty', result: {
+          diagnosis: 'Borehole Screen or Casing Issue',
+          severity: 'high',
+          causes: ['Screen damage', 'Casing corrosion', 'Pump set too low', 'Gravel pack failure'],
+          solutions: ['Pull pump to inspect depth', 'Borehole camera inspection', 'May need re-screening', 'Consider new borehole if severe'],
+          diyPossible: false, estimatedCost: 'KES 50,000 - 500,000', timeToFix: '1-5 days', callExpert: true
+        }},
+        { label: 'Rusty/brown', result: {
+          diagnosis: 'Iron Bacteria or Casing Corrosion',
+          severity: 'medium',
+          causes: ['Iron bacteria growth', 'Corroding steel casing', 'High iron content in water'],
+          solutions: ['Shock chlorination', 'Iron removal filter', 'PVC casing liner if corrosion', 'Water treatment system'],
+          diyPossible: false, estimatedCost: 'KES 30,000 - 200,000', timeToFix: '2-5 days', callExpert: true
+        }},
+        { label: 'Cloudy/milky', result: {
+          diagnosis: 'Air in System or Sediment',
+          severity: 'low',
+          causes: ['Air entrainment', 'Fine sediment', 'New pump installation', 'Water table issues'],
+          solutions: ['Let system run to clear', 'Install sediment filter', 'Check for air leaks in suction'],
+          diyPossible: true, estimatedCost: 'KES 5,000 - 30,000', timeToFix: '1-3 hours', callExpert: false
+        }}
+      ]
+    }
+  ],
+
+  // ========== GENERATOR TROUBLESHOOTING (existing) ==========
   generator: [
     {
       id: 'start',
@@ -727,24 +1418,20 @@ export default function TroubleshootingWizardPage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   {[
                     { id: 'generator', label: '⚡ Generator', desc: 'Diesel/petrol generators' },
-                    { id: 'solar', label: '☀️ Solar System', desc: 'Panels, inverters, batteries', disabled: true },
-                    { id: 'ups', label: '🔋 UPS System', desc: 'Uninterruptible power', disabled: true },
-                    { id: 'hvac', label: '❄️ AC/HVAC', desc: 'Air conditioning', disabled: true }
+                    { id: 'solar', label: '☀️ Solar System', desc: 'Panels, inverters, batteries' },
+                    { id: 'ups', label: '🔋 UPS System', desc: 'Uninterruptible power supply' },
+                    { id: 'hvac', label: '❄️ AC/HVAC', desc: 'Air conditioning systems' },
+                    { id: 'motor', label: '🔄 Motor', desc: 'Electric motors & rewinding' },
+                    { id: 'borehole', label: '💧 Borehole Pump', desc: 'Submersible pumps' }
                   ].map(eq => (
                     <button
                       key={eq.id}
-                      onClick={() => !eq.disabled && setEquipmentType(eq.id)}
-                      disabled={eq.disabled}
-                      className={`p-6 rounded-xl text-left transition-all ${
-                        eq.disabled 
-                          ? 'bg-white/5 opacity-50 cursor-not-allowed'
-                          : 'bg-white/10 hover:bg-white/20 hover:scale-[1.02] hover:border-orange-500/50 border border-white/10'
-                      }`}
+                      onClick={() => setEquipmentType(eq.id)}
+                      className="p-6 rounded-xl text-left transition-all bg-white/10 hover:bg-white/20 hover:scale-[1.02] hover:border-orange-500/50 border border-white/10"
                     >
                       <div className="text-3xl mb-2">{eq.label.split(' ')[0]}</div>
                       <div className="text-lg font-semibold text-white">{eq.label.split(' ').slice(1).join(' ')}</div>
                       <div className="text-sm text-gray-400">{eq.desc}</div>
-                      {eq.disabled && <div className="text-xs text-orange-400 mt-2">Coming soon</div>}
                     </button>
                   ))}
                 </div>
