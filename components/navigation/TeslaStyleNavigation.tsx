@@ -203,29 +203,28 @@ export default function TeslaStyleNavigation({
       >
         <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-16 py-4">
           <div className="flex items-center justify-between gap-8">
-            {/* Logo - Clean Tesla-Style Design */}
+            {/* Logo - Premium Visible Design with Light Background */}
             <Link
               href="/"
               aria-label="Emerson EiMS - Reliable Power. Without Limits."
-              className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-lg group"
+              className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl group"
             >
-              <div className="flex flex-col items-center gap-1 transition-all duration-300 group-hover:scale-[1.02]">
-                {/* Main Logo Image - Crystal Clear */}
+              {/* Premium Logo Container - White Background for Maximum Visibility */}
+              <div className="relative bg-white rounded-xl px-4 py-2 sm:px-5 sm:py-2.5 lg:px-6 lg:py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3),0_0_40px_rgba(251,191,36,0.15)] transition-all duration-300 group-hover:shadow-[0_6px_30px_rgba(0,0,0,0.4),0_0_50px_rgba(251,191,36,0.25)] group-hover:scale-[1.02] border border-amber-200/50">
+                {/* Subtle Gold Accent Border */}
+                <div className="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-amber-400/20 via-orange-400/20 to-amber-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px', background: 'linear-gradient(90deg, rgba(251,191,36,0.3), rgba(249,115,22,0.3), rgba(251,191,36,0.3))', WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude' }} />
+
+                {/* Main Logo Image - Large & Crystal Clear */}
                 <Image
                   src="/images/logo-tagline.png"
-                  alt="EmersonEIMS"
-                  width={280}
-                  height={70}
+                  alt="EmersonEIMS - Reliable Power. Without Limits."
+                  width={320}
+                  height={80}
                   priority
                   quality={100}
-                  sizes="(max-width: 640px) 160px, (max-width: 768px) 180px, (max-width: 1024px) 220px, 280px"
-                  className="h-12 sm:h-14 lg:h-16 xl:h-[70px] w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                  sizes="(max-width: 640px) 180px, (max-width: 768px) 220px, (max-width: 1024px) 280px, 320px"
+                  className="h-14 sm:h-16 lg:h-[72px] xl:h-20 w-auto object-contain"
                 />
-
-                {/* Tagline - Clean text below logo */}
-                <span className="hidden md:block text-[10px] lg:text-[11px] font-medium tracking-[0.2em] text-amber-400 uppercase">
-                  Reliable Power. Without Limits.
-                </span>
               </div>
             </Link>
 
