@@ -45,8 +45,10 @@ const AdvancedIncineratorCalculator = dynamic(() => import('@/components/calcula
 });
 
 // Define calculators object after all dynamic imports
+// IMPORTANT: Keys must match NINE_SERVICES id values exactly
 const calculators: Record<string, any> = {
-  'generator': AdvancedGeneratorCalculator,
+  'generators': AdvancedGeneratorCalculator,       // matches id: 'generators'
+  'generator': AdvancedGeneratorCalculator,        // alias for backward compatibility
   'solar': AdvancedSolarCalculator,
   'high-voltage': AdvancedHighVoltageCalculator,
   'motor-rewinding': AdvancedMotorRewindingCalculator,

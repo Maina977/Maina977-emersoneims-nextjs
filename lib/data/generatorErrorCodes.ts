@@ -1,9 +1,19 @@
 /**
  * GENERATOR ERROR CODE DATABASE
  * The most comprehensive generator error code database in the world
- * 5,930+ error codes across all major brands
+ * 13,500+ error codes across all major brands
  * Updated: January 2026
+ *
+ * Sources:
+ * - Primary database: 9,509 codes (comprehensiveErrorCodes.json)
+ * - WordPress Plugin database: 3,996 codes (wordpressFaultCodes.ts)
+ * - Manual additions: Additional brand-specific codes
+ *
+ * Total: 13,505+ comprehensive error codes
  */
+
+import comprehensiveErrorCodes from '@/app/data/diagnostic/comprehensiveErrorCodes.json';
+import { WORDPRESS_FAULT_CODES, type WordPressFaultCode } from './wordpressFaultCodes';
 
 export interface ErrorCode {
   code: string;
@@ -1285,11 +1295,120 @@ export const GENERATOR_ERROR_CODES: ErrorCode[] = [
   }
 ];
 
-// Search function for error codes
+// =====================================================
+// COMBINED ERROR CODE DATABASE - 13,500+ CODES
+// =====================================================
+
+// Convert comprehensive error codes from JSON
+function convertComprehensiveCode(code: any): ErrorCode {
+  return {
+    code: code.code || code.errorCode || '',
+    brand: code.brand || code.manufacturer || 'Universal',
+    category: code.category || code.system || 'General',
+    severity: (code.severity || 'warning') as ErrorCode['severity'],
+    title: code.title || code.name || code.description?.substring(0, 50) || 'Unknown Error',
+    description: code.description || code.details || '',
+    symptoms: code.symptoms || code.indicators || [],
+    causes: code.causes || code.possibleCauses || [],
+    diagnosticSteps: (code.diagnosticSteps || code.troubleshooting || []).map((step: any, idx: number) => ({
+      step: step.step || idx + 1,
+      action: step.action || step.instruction || step,
+      expectedResult: step.expectedResult || step.expected || 'Check result',
+      tools: step.tools || []
+    })),
+    solutions: (code.solutions || code.fixes || []).map((sol: any) => ({
+      difficulty: (sol.difficulty || 'moderate') as 'easy' | 'moderate' | 'advanced' | 'expert',
+      timeEstimate: sol.timeEstimate || sol.time || '1-2 hours',
+      solution: sol.solution || sol.description || sol,
+      tools: sol.tools || [],
+      parts: sol.parts || [],
+      cost: sol.cost || 'Varies'
+    })),
+    preventiveMeasures: code.preventiveMeasures || code.prevention || [],
+    relatedCodes: code.relatedCodes || [],
+    safetyWarnings: code.safetyWarnings || code.warnings || [],
+    whenToCallExpert: code.whenToCallExpert || code.expertAdvice || 'If issue persists after basic troubleshooting'
+  };
+}
+
+// Convert WordPress fault codes to standard format
+function convertWordPressCode(wpCode: WordPressFaultCode): ErrorCode {
+  return {
+    code: wpCode.code,
+    brand: wpCode.brand,
+    category: wpCode.category,
+    severity: wpCode.severity === 'critical' ? 'critical' : wpCode.severity === 'warning' ? 'warning' : 'info',
+    title: wpCode.title,
+    description: wpCode.description,
+    symptoms: wpCode.symptoms || [],
+    causes: wpCode.causes || [],
+    diagnosticSteps: (wpCode.diagnosticSteps || []).map((step, idx) => ({
+      step: step.step || idx + 1,
+      action: step.action,
+      expectedResult: step.expectedResult,
+      tools: step.tools || []
+    })),
+    solutions: (wpCode.solutions || []).map(sol => ({
+      difficulty: sol.difficulty,
+      timeEstimate: sol.timeEstimate,
+      solution: sol.solution,
+      tools: sol.tools || [],
+      parts: sol.parts || [],
+      cost: sol.cost || 'Varies'
+    })),
+    preventiveMeasures: wpCode.preventiveMeasures || [],
+    relatedCodes: wpCode.relatedCodes || [],
+    safetyWarnings: wpCode.safetyWarnings || [],
+    whenToCallExpert: wpCode.whenToCallExpert || 'If issue persists'
+  };
+}
+
+// Combine all error code sources into one comprehensive database
+const comprehensiveCodes: ErrorCode[] = (comprehensiveErrorCodes as any[]).map(convertComprehensiveCode);
+const wordPressCodes: ErrorCode[] = WORDPRESS_FAULT_CODES.map(convertWordPressCode);
+
+// Create unified error code database - deduplicate by code+brand
+const codeMap = new Map<string, ErrorCode>();
+
+// Add base codes first
+GENERATOR_ERROR_CODES.forEach(code => {
+  const key = `${code.brand}-${code.code}`.toLowerCase();
+  codeMap.set(key, code);
+});
+
+// Add comprehensive codes
+comprehensiveCodes.forEach(code => {
+  const key = `${code.brand}-${code.code}`.toLowerCase();
+  if (!codeMap.has(key)) {
+    codeMap.set(key, code);
+  }
+});
+
+// Add WordPress codes
+wordPressCodes.forEach(code => {
+  const key = `${code.brand}-${code.code}`.toLowerCase();
+  if (!codeMap.has(key)) {
+    codeMap.set(key, code);
+  }
+});
+
+// Export the complete unified database
+export const ALL_ERROR_CODES: ErrorCode[] = Array.from(codeMap.values());
+
+// Total count for display
+export const TOTAL_ERROR_CODES = ALL_ERROR_CODES.length;
+
+// =====================================================
+// SEARCH FUNCTIONS - Search through ALL 13,500+ codes
+// =====================================================
+
+// Search function for error codes - searches ALL databases
 export function searchErrorCodes(query: string): ErrorCode[] {
   const lowerQuery = query.toLowerCase().trim();
-  
-  return GENERATOR_ERROR_CODES.filter(code => 
+
+  if (!lowerQuery) return [];
+
+  return ALL_ERROR_CODES.filter(code =>
     code.code.toLowerCase().includes(lowerQuery) ||
     code.title.toLowerCase().includes(lowerQuery) ||
     code.description.toLowerCase().includes(lowerQuery) ||
@@ -1300,17 +1419,43 @@ export function searchErrorCodes(query: string): ErrorCode[] {
   );
 }
 
-// Get codes by brand
+// Get codes by brand - searches ALL databases
 export function getCodesByBrand(brand: string): ErrorCode[] {
-  return GENERATOR_ERROR_CODES.filter(code => 
-    code.brand.toLowerCase() === brand.toLowerCase() ||
-    (brand.toLowerCase() === 'all')
+  if (brand.toLowerCase() === 'all') {
+    return ALL_ERROR_CODES;
+  }
+  return ALL_ERROR_CODES.filter(code =>
+    code.brand.toLowerCase() === brand.toLowerCase()
   );
 }
 
-// Get codes by severity
+// Get codes by severity - searches ALL databases
 export function getCodesBySeverity(severity: ErrorCode['severity']): ErrorCode[] {
-  return GENERATOR_ERROR_CODES.filter(code => code.severity === severity);
+  return ALL_ERROR_CODES.filter(code => code.severity === severity);
+}
+
+// Get code by exact code and brand
+export function getExactCode(codeString: string, brand?: string): ErrorCode | undefined {
+  const lowerCode = codeString.toLowerCase();
+  return ALL_ERROR_CODES.find(code => {
+    const codeMatch = code.code.toLowerCase() === lowerCode;
+    if (brand) {
+      return codeMatch && code.brand.toLowerCase() === brand.toLowerCase();
+    }
+    return codeMatch;
+  });
+}
+
+// Get all unique brands
+export function getAllBrands(): string[] {
+  const brands = new Set(ALL_ERROR_CODES.map(code => code.brand));
+  return Array.from(brands).sort();
+}
+
+// Get all unique categories
+export function getAllCategories(): string[] {
+  const categories = new Set(ALL_ERROR_CODES.map(code => code.category));
+  return Array.from(categories).sort();
 }
 
 // Predictive maintenance calculator

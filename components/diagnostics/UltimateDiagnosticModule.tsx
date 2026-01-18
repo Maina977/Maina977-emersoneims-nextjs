@@ -50,10 +50,14 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { 
-  GENERATOR_ERROR_CODES, 
-  searchErrorCodes, 
+import {
+  GENERATOR_ERROR_CODES,
+  ALL_ERROR_CODES,
+  TOTAL_ERROR_CODES,
+  searchErrorCodes,
   getCodesByBrand,
+  getExactCode,
+  getAllBrands,
   calculatePredictiveMaintenance,
   DIAGNOSTIC_TOOLS,
   SUPPORTED_BRANDS,
@@ -133,10 +137,12 @@ const AI_CONFIDENCE_THRESHOLDS = {
 };
 
 // Tool Statistics & Features
+// Tool Statistics - Uses actual database counts
 const TOOL_STATS = {
-  errorCodesCount: 13500,
+  // Use actual count from combined database (9,509 + 3,996 = 13,505+)
+  get errorCodesCount() { return TOTAL_ERROR_CODES || 13500; },
   brandsSupported: SUPPORTED_BRANDS.length,
-  languagesSupported: 12,
+  languagesSupported: 12, // Actively supported languages with translations
   featuresCount: 15
 };
 
