@@ -8,6 +8,7 @@ import { SectionLead, GeneratorCalculator, MTBFChart, ErrorFrequencyChart } from
 import { cumminsGenerators } from "@/app/lib/data/cumminsgenerators";
 import { generatorServices } from "@/app/lib/data/generatorservices";
 import OptimizedVideo from "@/components/media/OptimizedVideo";
+import CinematicVideo from "@/components/media/CinematicVideo";
 import OptimizedImage from "@/components/media/OptimizedImage";
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
@@ -28,7 +29,7 @@ const RealTimeMonitor = lazy(() => import('@/components/diagnostics/RealTimeMoni
 const DiagnosticMachine = lazy(() => import('@/components/diagnostics/DiagnosticMachine'));
 const MissionControlDiagnostics = lazy(() => import('@/components/diagnostics/MissionControlDiagnostics'));
 
-// Video Hero Component
+// Video Hero Component - Cinematic Hollywood Grade
 const VideoHero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   return (
@@ -37,23 +38,24 @@ const VideoHero = () => {
       animate={{ opacity: 1 }}
       className="relative w-full h-[60vh] mb-12 rounded-2xl overflow-hidden"
     >
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
+      <CinematicVideo
+        src="/videos/VID-20250930-WA0000%20(3).mp4"
+        poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
+        autoPlay={true}
+        loop={true}
+        muted={true}
+        playsInline={true}
+        colorGrade="blockbuster"
+        vignette={true}
         onLoadedData={() => setVideoLoaded(true)}
         className="w-full h-full object-cover"
-        poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
-      >
-        <source src="/videos/VID-20250930-WA0000%20(3).mp4" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-[5]" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: videoLoaded ? 1 : 0, y: videoLoaded ? 0 : 20 }}
         transition={{ delay: 0.5 }}
-        className="absolute bottom-0 left-0 right-0 p-8 text-white"
+        className="absolute bottom-0 left-0 right-0 p-8 text-white z-10"
       >
         <h2 className="text-4xl font-bold mb-4">Generator Excellence</h2>
         <p className="text-xl text-gray-300">From installation to maintenance, we deliver power reliability</p>
@@ -254,21 +256,25 @@ export default function GeneratorPage() {
           </div>
         </Suspense>
       )}
-      {/* Enhanced Hero Video */}
+      {/* Enhanced Hero Video - Hollywood Cinematic Grade */}
       <motion.section
         className="relative w-full h-screen overflow-hidden bg-black"
         style={{ opacity: heroOpacity, scale: heroScale }}
       >
-        <OptimizedVideo
+        <CinematicVideo
           src="/videos/VID-20250930-WA0000%20(3).mp4"
           poster="/images/GEN%202-1920x1080.png"
           autoPlay={true}
           loop={true}
           muted={true}
           playsInline={true}
+          priority={true}
+          colorGrade="hollywood"
+          vignette={true}
+          filmGrain={false}
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none z-[5]" />
         
         <motion.div
           className="relative z-10 eims-shell flex flex-col items-center justify-center h-full text-center"

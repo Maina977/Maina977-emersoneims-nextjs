@@ -442,11 +442,17 @@ export default function RootLayout({
         <link rel="preload" href="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png" as="image" type="image/png" />
         <link rel="preload" href="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp" as="image" type="image/webp" fetchPriority="high" />
         
-        {/* Video Prefetch - Lower priority to not block initial render */}
+        {/* Video Prefetch - Key videos for fast loading */}
         <link rel="prefetch" href="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" as="video" type="video/mp4" />
-        
-        {/* Performance Optimization Meta */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <link rel="prefetch" href="/videos/VID-20250930-WA0000%20(3).mp4" as="video" type="video/mp4" />
+
+        {/* Performance Optimization Meta - Mobile & Desktop */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+
+        {/* Mobile Performance Hints */}
+        <meta name="format-detection" content="telephone=yes" />
+        <meta name="HandheldFriendly" content="true" />
+        <meta name="MobileOptimized" content="width" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
         
         {/* Apple Touch Icons */}
