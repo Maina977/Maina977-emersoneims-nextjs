@@ -734,15 +734,15 @@ export default function SolarSystemCalculator() {
               <GlassmorphicCard intensity="heavy" className="p-8">
                 <h3 className="text-2xl font-bold mb-6 text-center text-white">Ready to Go Solar?</h3>
                 <div className="grid md:grid-cols-3 gap-4">
-                  <button className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-green-500/50">
+                  <a href="/contact?type=solar-quote" className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-green-500/50 text-center">
                     📞 Request Quote
-                  </button>
-                  <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-blue-500/50">
+                  </a>
+                  <a href="/contact?type=site-visit&service=solar" className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-blue-500/50 text-center">
                     📅 Schedule Site Visit
-                  </button>
-                  <button className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-purple-500/50">
+                  </a>
+                  <a href="/contact?type=pdf-report&service=solar" className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-purple-500/50 text-center">
                     📄 Download PDF Report
-                  </button>
+                  </a>
                 </div>
                 <div className="mt-6 text-center text-gray-400 text-sm">
                   <p>💚 Financing available from 20% deposit | 🛡️ 25-year performance warranty | ⚡ Professional installation by certified engineers</p>

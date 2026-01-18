@@ -70,10 +70,10 @@ const ACTION_CONFIG: Record<CTAAction, { href: string; label: string; icon: stri
     label: 'Free Consultation', 
     icon: '👨‍💼' 
   },
-  'download': { 
-    href: '/resources', 
-    label: 'Download Brochure', 
-    icon: '📥' 
+  'download': {
+    href: '/contact?type=brochure',
+    label: 'Download Brochure',
+    icon: '📥'
   },
   'diagnostic': { 
     href: '/diagnostic-cockpit', 

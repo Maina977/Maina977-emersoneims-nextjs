@@ -16,6 +16,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -363,13 +364,15 @@ function ResultsWithCharts({ results, type }: { results: any; type: string }) {
       </div>
 
       {/* Detailed Report Button */}
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full py-6 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl font-bold text-xl text-black hover:shadow-2xl hover:shadow-amber-500/50 transition-all"
-      >
-        📄 Download Complete Engineering Report (PDF)
-      </motion.button>
+      <Link href="/contact?type=engineering-report">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full py-6 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl font-bold text-xl text-black hover:shadow-2xl hover:shadow-amber-500/50 transition-all text-center cursor-pointer"
+        >
+          📄 Get Complete Engineering Report (PDF)
+        </motion.div>
+      </Link>
     </motion.div>
   );
 }

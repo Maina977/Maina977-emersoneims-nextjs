@@ -410,9 +410,12 @@ const AdvancedSystemCalculator = () => {
               </div>
             </div>
 
-            <button className="w-full py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-yellow-500/30">
-              Download Detailed Proposal PDF
-            </button>
+            <a
+              href={`/contact?type=solar-proposal&size=${systemSize}&consumption=${consumption}`}
+              className="block w-full py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-yellow-500/30 text-center"
+            >
+              📄 Get Detailed Proposal PDF
+            </a>
           </div>
         )}
       </div>
@@ -685,15 +688,15 @@ const MicroInteractions = () => {
             Join 2,450+ satisfied clients who have switched to sustainable solar power
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="group px-8 py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50">
+            <a href="/contact?type=solar-consultation" className="group px-8 py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50">
               <span className="flex items-center justify-center space-x-2">
                 <span>Schedule Free Consultation</span>
                 <span className="transform group-hover:translate-x-1 transition-transform">→</span>
               </span>
-            </button>
-            <button className="px-8 py-4 border-2 border-yellow-300 text-yellow-300 font-bold rounded-xl text-lg hover:bg-yellow-300/10 transition-all duration-300 transform hover:scale-105">
-              Download Brochure
-            </button>
+            </a>
+            <a href="/contact?type=brochure&service=solar" className="px-8 py-4 border-2 border-yellow-300 text-yellow-300 font-bold rounded-xl text-lg hover:bg-yellow-300/10 transition-all duration-300 transform hover:scale-105 text-center">
+              📥 Download Brochure
+            </a>
           </div>
         </div>
         
