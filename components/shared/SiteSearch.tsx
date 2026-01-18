@@ -14,24 +14,24 @@ interface SearchResult {
 const searchData: SearchResult[] = [
   // Pages
   { title: "Home", url: "/", description: "Premium power engineering homepage", category: "Page" },
-  { title: "Services", url: "/service", description: "Ten comprehensive service chapters", category: "Page" },
-  { title: "Solutions", url: "/solution", description: "Engineering solutions and guides", category: "Page" },
+  { title: "Services", url: "/services", description: "Ten comprehensive service chapters", category: "Page" },
+  { title: "Solutions", url: "/solutions", description: "Engineering solutions and guides", category: "Page" },
   { title: "Generators", url: "/generators", description: "Cummins generators from 20kVA to 2000kVA", category: "Page" },
   { title: "Solar", url: "/solar", description: "Solar energy solutions and calculators", category: "Page" },
   { title: "Diagnostics", url: "/diagnostics", description: "Universal diagnostic machine and tools", category: "Page" },
   { title: "Contact", url: "/contact", description: "Get in touch with our team", category: "Page" },
   { title: "About Us", url: "/about-us", description: "Learn about Emerson EiMS", category: "Page" },
-  
+
   // Services
-  { title: "Diesel Generators", url: "/service#diesel", description: "Generator installation, maintenance, and repair", category: "Service" },
-  { title: "Solar Energy", url: "/service#solar", description: "Solar panel installation and maintenance", category: "Service" },
-  { title: "UPS Systems", url: "/service#ups", description: "Uninterruptible power supply systems", category: "Service" },
-  { title: "High Voltage", url: "/service#hv", description: "High voltage infrastructure solutions", category: "Service" },
-  { title: "Motor Rewinding", url: "/service#motor", description: "Motor repair and rewinding services", category: "Service" },
-  { title: "Water Systems", url: "/service#water", description: "Borehole pumps and water systems", category: "Service" },
-  { title: "HVAC Systems", url: "/service#hvac", description: "Air conditioning and ventilation", category: "Service" },
-  { title: "Incinerators", url: "/service#incin", description: "Waste management and incineration", category: "Service" },
-  
+  { title: "Diesel Generators", url: "/solutions/generators", description: "Generator installation, maintenance, and repair", category: "Service" },
+  { title: "Solar Energy", url: "/solutions/solar", description: "Solar panel installation and maintenance", category: "Service" },
+  { title: "UPS Systems", url: "/solutions/ups", description: "Uninterruptible power supply systems", category: "Service" },
+  { title: "High Voltage", url: "/services", description: "High voltage infrastructure solutions", category: "Service" },
+  { title: "Motor Rewinding", url: "/solutions/motor-rewinding", description: "Motor repair and rewinding services", category: "Service" },
+  { title: "Water Systems", url: "/solutions/borehole-pumps", description: "Borehole pumps and water systems", category: "Service" },
+  { title: "HVAC Systems", url: "/solutions/ac", description: "Air conditioning and ventilation", category: "Service" },
+  { title: "Incinerators", url: "/solutions/incinerators", description: "Waste management and incineration", category: "Service" },
+
   // Solutions
   { title: "Generator Solutions", url: "/solutions/generators", description: "Generator troubleshooting and solutions", category: "Solution" },
   { title: "Solar Sizing", url: "/solutions/solar-sizing", description: "Calculate optimal solar system size", category: "Solution" },

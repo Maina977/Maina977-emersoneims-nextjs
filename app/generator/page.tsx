@@ -103,7 +103,7 @@ export default function GeneratorPage() {
           </div>
           
           <div className="text-center mt-12">
-            <a href="/generator/service" className="sci-fi-button">View All Services</a>
+            <a href="/services" className="sci-fi-button">View All Services</a>
           </div>
         </div>
       </section>

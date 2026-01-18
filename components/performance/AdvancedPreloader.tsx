@@ -24,8 +24,8 @@ export default function AdvancedPreloader() {
     // Preload critical routes
     const routes = [
       '/about-us',
-      '/service',
-      '/solution',
+      '/services',
+      '/solutions',
     ];
 
     const preloadResources = async () => {

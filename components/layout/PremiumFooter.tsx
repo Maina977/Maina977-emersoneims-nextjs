@@ -9,7 +9,7 @@ const SOCIAL_LINKS = [
 const FOOTER_LINKS = {
   company: [
     { label: 'About Us', href: '/about-us' },
-    { label: 'Services', href: '/service' },
+    { label: 'Services', href: '/services' },
     { label: 'Book a Service', href: '/booking' },
     { label: 'Project Gallery', href: '/gallery' },
     { label: 'Careers', href: '/careers' },

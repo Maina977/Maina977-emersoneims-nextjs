@@ -517,8 +517,8 @@ export default function AboutUsPage() {
             >
               Get in Touch
             </a>
-            <a 
-              href="/service" 
+            <a
+              href="/services"
               className="px-8 py-4 border-2 border-amber-400 text-amber-400 font-bold rounded-xl hover:bg-amber-400/10 transition-all"
             >
               Explore Services

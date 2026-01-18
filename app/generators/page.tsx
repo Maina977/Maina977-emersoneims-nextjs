@@ -699,7 +699,7 @@ export default function GeneratorPage() {
           </div>
           
           <div className="text-center mt-12">
-            <a href="/service" className="cta-button-primary" aria-label="View all generator services">
+            <a href="/services" className="cta-button-primary" aria-label="View all generator services">
               <span>View All Services {'\u2192'}</span>
             </a>
           </div>

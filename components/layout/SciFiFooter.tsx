@@ -20,8 +20,8 @@ const FOOTER_SECTIONS = [
   {
     title: 'Solutions',
     links: [
-      { href: '/solution', label: 'Engineering Solutions' },
-      { href: '/service', label: 'Services' },
+      { href: '/solutions', label: 'Engineering Solutions' },
+      { href: '/services', label: 'Services' },
       { href: '/diagnostic-suite', label: 'Generator Diagnostics' },
     ],
   },
