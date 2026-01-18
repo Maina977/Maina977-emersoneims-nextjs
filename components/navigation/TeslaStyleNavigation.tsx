@@ -203,34 +203,29 @@ export default function TeslaStyleNavigation({
       >
         <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-16 py-4">
           <div className="flex items-center justify-between gap-8">
-            {/* Logo - PREMIUM Professional Design with BOLD Visible Tagline */}
+            {/* Logo - Clean Tesla-Style Design */}
             <Link
               href="/"
-              aria-label="Emerson EiMS - Kenya's #1 Power Solutions"
+              aria-label="Emerson EiMS - Reliable Power. Without Limits."
               className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-lg group"
             >
-              <div className="relative transition-all duration-300 group-hover:scale-[1.03]">
-                {/* Glow Effect Behind Logo */}
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-amber-500/20 blur-xl rounded-full scale-110 opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
-
-                {/* Main Logo Image - Enhanced Visibility */}
+              <div className="flex flex-col items-center gap-1 transition-all duration-300 group-hover:scale-[1.02]">
+                {/* Main Logo Image - Crystal Clear */}
                 <Image
                   src="/images/logo-tagline.png"
-                  alt="EmersonEIMS - Kenya's #1 Power Solutions"
-                  width={300}
-                  height={80}
+                  alt="EmersonEIMS"
+                  width={280}
+                  height={70}
                   priority
                   quality={100}
-                  sizes="(max-width: 640px) 200px, (max-width: 768px) 220px, (max-width: 1024px) 260px, 300px"
-                  className="relative h-16 sm:h-[72px] lg:h-20 xl:h-24 w-auto object-contain filter brightness-125 contrast-110 saturate-110 drop-shadow-[0_0_20px_rgba(251,191,36,0.5)] group-hover:drop-shadow-[0_0_30px_rgba(251,191,36,0.7)] transition-all duration-500"
+                  sizes="(max-width: 640px) 160px, (max-width: 768px) 180px, (max-width: 1024px) 220px, 280px"
+                  className="h-12 sm:h-14 lg:h-16 xl:h-[70px] w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
                 />
 
-                {/* BOLD Tagline - Always Visible on md+ screens */}
-                <div className="hidden md:flex absolute -bottom-5 left-0 right-0 justify-center">
-                  <span className="px-3 py-0.5 bg-gradient-to-r from-amber-500/90 to-amber-600/90 text-white text-[9px] sm:text-[10px] lg:text-xs font-bold tracking-[0.15em] uppercase rounded-full shadow-lg shadow-amber-500/30 border border-amber-400/50 backdrop-blur-sm">
-                    Reliable Power. Without Limits.
-                  </span>
-                </div>
+                {/* Tagline - Clean text below logo */}
+                <span className="hidden md:block text-[10px] lg:text-[11px] font-medium tracking-[0.2em] text-amber-400 uppercase">
+                  Reliable Power. Without Limits.
+                </span>
               </div>
             </Link>
 
