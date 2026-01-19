@@ -25,15 +25,8 @@ import Image from 'next/image';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 
-// Cinematic Cummins generator images with Hollywood color grading
-const cumminsImages = [
-  '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg',
-  '/images/enhanced/GREENHEART KILIFI GENERATOR-4K-CINEMATIC.jpg',
-  '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg',
-  '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg',
-  '/images/KIVUKONI SCHOOL CUMMINS GENERATOR .webp',
-  '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
-];
+// Cinematic Cummins generator image with Hollywood color grading
+const cumminsImage = '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -616,7 +609,7 @@ export default function SOTDWinningHomepage() {
                     {/* Actual Cummins Generator Image with Hollywood Color Grading */}
                     <div className="absolute inset-0">
                       <Image
-                        src={cumminsImages[i % cumminsImages.length]}
+                        src={cumminsImage}
                         alt={`Cummins ${gen.model} Generator - ${gen.standby} KVA`}
                         fill
                         className="object-cover transition-all duration-700 group-hover:scale-110"
