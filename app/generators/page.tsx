@@ -261,20 +261,51 @@ export default function GeneratorPage() {
         className="relative w-full h-screen overflow-hidden bg-black"
         style={{ opacity: heroOpacity, scale: heroScale }}
       >
-        <CinematicVideo
-          src="/videos/VID-20250930-WA0000%20(3).mp4"
-          poster="/images/GEN%202-1920x1080.png"
-          autoPlay={true}
-          loop={true}
-          muted={true}
-          playsInline={true}
-          priority={true}
-          colorGrade="hollywood"
-          vignette={true}
-          filmGrain={false}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none z-[5]" />
+        {/* Cinematic Video Background */}
+        <div className="absolute inset-0 w-full h-full">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              filter: 'contrast(1.15) saturate(1.25) brightness(0.95) sepia(0.08)',
+            }}
+          >
+            <source src="/videos/VID-20250930-WA0000 (3).mp4" type="video/mp4" />
+          </video>
+
+          {/* Hollywood Orange/Teal Color Grade Overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none z-[1]"
+            style={{
+              background: 'linear-gradient(180deg, rgba(255,140,80,0.12) 0%, transparent 40%, rgba(0,80,120,0.15) 100%)',
+            }}
+          />
+
+          {/* Cinematic Vignette */}
+          <div
+            className="absolute inset-0 pointer-events-none z-[2]"
+            style={{
+              background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.5) 100%)',
+            }}
+          />
+
+          {/* Anamorphic Lens Flare */}
+          <motion.div
+            className="absolute top-1/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none z-[3]"
+            animate={{
+              opacity: [0.2, 0.6, 0.2],
+              scaleX: [0.8, 1.2, 0.8],
+            }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </div>
+
+        {/* Dark Gradient Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 pointer-events-none z-[5]" />
         
         <motion.div
           className="relative z-10 eims-shell flex flex-col items-center justify-center h-full text-center"
