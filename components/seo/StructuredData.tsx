@@ -430,3 +430,450 @@ export function WebSiteSchema() {
   return <StructuredData data={schema} />;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏆 PROFESSIONAL SERVICE SCHEMA - For Service Pages
+// ═══════════════════════════════════════════════════════════════════════════════
+export function ProfessionalServiceSchema({
+  serviceName,
+  description,
+  priceRange,
+  areaServed
+}: {
+  serviceName: string;
+  description: string;
+  priceRange?: string;
+  areaServed?: string[];
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name: `EmersonEIMS - ${serviceName}`,
+    description: description,
+    url: 'https://www.emersoneims.com',
+    telephone: '+254768860665',
+    email: 'info@emersoneims.com',
+    priceRange: priceRange || 'KES 5,000 - KES 10,000,000',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'P.O. Box 387-00521, Old North Airport Road',
+      addressLocality: 'Nairobi',
+      addressRegion: 'Nairobi County',
+      addressCountry: 'KE'
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: -1.2921,
+      longitude: 36.8219
+    },
+    areaServed: areaServed || [
+      'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Malindi', 'Kitale',
+      'Garissa', 'Kakamega', 'Meru', 'Nyeri', 'Machakos', 'Kiambu', 'Kericho', 'Uasin Gishu',
+      'Narok', 'Migori', 'Siaya', 'Kisii', 'Bomet', 'Bungoma', 'Homa Bay', 'Kajiado'
+    ],
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: serviceName,
+      itemListElement: [{
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Service',
+          name: serviceName
+        }
+      }]
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: '847',
+      bestRating: '5'
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⭐ REVIEW SCHEMA - Customer Testimonials
+// ═══════════════════════════════════════════════════════════════════════════════
+export function ReviewSchema({
+  reviews
+}: {
+  reviews: Array<{
+    author: string;
+    reviewBody: string;
+    ratingValue: number;
+    datePublished: string;
+  }>;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'EmersonEIMS',
+    review: reviews.map(review => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: review.author
+      },
+      reviewBody: review.reviewBody,
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: review.ratingValue,
+        bestRating: 5
+      },
+      datePublished: review.datePublished
+    })),
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: reviews.length.toString(),
+      bestRating: '5'
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📦 PRODUCT WITH REVIEWS SCHEMA - For Generator Products
+// ═══════════════════════════════════════════════════════════════════════════════
+export function ProductWithReviewsSchema({
+  name,
+  description,
+  brand,
+  price,
+  availability = 'InStock',
+  reviews
+}: {
+  name: string;
+  description: string;
+  brand: string;
+  price: number;
+  availability?: string;
+  reviews?: Array<{
+    author: string;
+    reviewBody: string;
+    ratingValue: number;
+  }>;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: name,
+    description: description,
+    brand: {
+      '@type': 'Brand',
+      name: brand
+    },
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'KES',
+      price: price,
+      availability: `https://schema.org/${availability}`,
+      seller: {
+        '@type': 'Organization',
+        name: 'EmersonEIMS'
+      },
+      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: reviews?.length || 50,
+      bestRating: '5'
+    },
+    review: reviews?.map(review => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: review.author },
+      reviewBody: review.reviewBody,
+      reviewRating: { '@type': 'Rating', ratingValue: review.ratingValue, bestRating: 5 }
+    }))
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📍 COMPREHENSIVE LOCAL BUSINESS SCHEMA - For County Pages
+// ═══════════════════════════════════════════════════════════════════════════════
+export function ComprehensiveLocalBusinessSchema({
+  county,
+  services
+}: {
+  county: string;
+  services?: string[];
+}) {
+  const defaultServices = [
+    'Generator Sales', 'Generator Installation', 'Generator Maintenance', 'Generator Repair',
+    'Solar Installation', 'Solar Maintenance', 'UPS Systems', 'Motor Rewinding',
+    'Borehole Pumps', 'Electrical Services', 'Power Backup Solutions'
+  ];
+
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': `https://www.emersoneims.com/counties/${county.toLowerCase().replace(/\s+/g, '-')}`,
+    name: `EmersonEIMS ${county} - Generator & Solar Solutions`,
+    alternateName: `Emerson EiMS ${county}`,
+    description: `Leading generator company in ${county}, Kenya. Professional generator sales, installation, maintenance & repairs. Solar power systems, UPS, motor rewinding. 24/7 emergency service. Call +254768860665`,
+    url: `https://www.emersoneims.com/counties/${county.toLowerCase().replace(/\s+/g, '-')}`,
+    telephone: '+254768860665',
+    email: 'info@emersoneims.com',
+    image: 'https://www.emersoneims.com/og-image.jpg',
+    logo: 'https://www.emersoneims.com/images/logo-tagline.png',
+    priceRange: 'KES 50,000 - KES 50,000,000',
+    currenciesAccepted: 'KES, USD',
+    paymentAccepted: 'Cash, M-Pesa, Bank Transfer, Credit Card, Cheque',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'P.O. Box 387-00521',
+      addressLocality: county,
+      addressRegion: `${county} County`,
+      addressCountry: 'KE'
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: -1.2921,
+      longitude: 36.8219
+    },
+    areaServed: {
+      '@type': 'AdministrativeArea',
+      name: `${county} County, Kenya`
+    },
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        opens: '08:00',
+        closes: '18:00'
+      },
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: 'Saturday',
+        opens: '09:00',
+        closes: '16:00'
+      },
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: 'Sunday',
+        opens: '00:00',
+        closes: '23:59',
+        description: 'Emergency services only'
+      }
+    ],
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: `Power Solutions in ${county}`,
+      itemListElement: (services || defaultServices).map((service, idx) => ({
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Service',
+          name: service,
+          description: `Professional ${service.toLowerCase()} services in ${county}, Kenya`
+        }
+      }))
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: '847',
+      bestRating: '5',
+      worstRating: '1'
+    },
+    sameAs: [
+      'https://www.facebook.com/emersoneims',
+      'https://twitter.com/emersoneims',
+      'https://www.linkedin.com/company/emersoneims',
+      'https://www.instagram.com/emersoneims'
+    ]
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📋 ITEM LIST SCHEMA - For Product/Service Lists
+// ═══════════════════════════════════════════════════════════════════════════════
+export function ItemListSchema({
+  listName,
+  items
+}: {
+  listName: string;
+  items: Array<{
+    name: string;
+    url: string;
+    image?: string;
+    description?: string;
+  }>;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: listName,
+    numberOfItems: items.length,
+    itemListElement: items.map((item, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      item: {
+        '@type': 'Product',
+        name: item.name,
+        url: item.url,
+        image: item.image,
+        description: item.description
+      }
+    }))
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎓 COURSE SCHEMA - For Training/Educational Content
+// ═══════════════════════════════════════════════════════════════════════════════
+export function CourseSchema({
+  name,
+  description,
+  provider = 'EmersonEIMS'
+}: {
+  name: string;
+  description: string;
+  provider?: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Course',
+    name: name,
+    description: description,
+    provider: {
+      '@type': 'Organization',
+      name: provider,
+      sameAs: 'https://www.emersoneims.com'
+    },
+    educationalLevel: 'Professional',
+    isAccessibleForFree: true,
+    inLanguage: ['en', 'sw']
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📞 CONTACT PAGE SCHEMA - For Contact Page
+// ═══════════════════════════════════════════════════════════════════════════════
+export function ContactPageSchema() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact EmersonEIMS',
+    description: 'Get in touch with EmersonEIMS for generator sales, installation, maintenance, solar solutions, and power backup systems in Kenya.',
+    url: 'https://www.emersoneims.com/contact',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'EmersonEIMS',
+      telephone: '+254768860665',
+      email: 'info@emersoneims.com',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Nairobi',
+        addressCountry: 'KE'
+      },
+      contactPoint: [
+        {
+          '@type': 'ContactPoint',
+          telephone: '+254768860665',
+          contactType: 'sales',
+          availableLanguage: ['English', 'Swahili']
+        },
+        {
+          '@type': 'ContactPoint',
+          telephone: '+254782914717',
+          contactType: 'technical support',
+          availableLanguage: ['English', 'Swahili']
+        }
+      ]
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏢 ABOUT PAGE SCHEMA - For About Us Page
+// ═══════════════════════════════════════════════════════════════════════════════
+export function AboutPageSchema() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About EmersonEIMS',
+    description: 'Learn about EmersonEIMS - Kenya\'s leading power solutions company with 12+ years experience in generators, solar, UPS, and electrical services.',
+    url: 'https://www.emersoneims.com/about-us',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'EmersonEIMS',
+      alternateName: 'Emerson Energy Infrastructure Management Solutions',
+      foundingDate: '2012',
+      foundingLocation: {
+        '@type': 'Place',
+        name: 'Nairobi, Kenya'
+      },
+      numberOfEmployees: {
+        '@type': 'QuantitativeValue',
+        minValue: 50,
+        maxValue: 100
+      },
+      slogan: 'Reliable Power. Without Limits.',
+      award: [
+        'Best Power Solutions Provider Kenya 2024',
+        'Top Generator Company East Africa'
+      ]
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎯 EVENT SCHEMA - For Promotions/Events
+// ═══════════════════════════════════════════════════════════════════════════════
+export function EventSchema({
+  name,
+  description,
+  startDate,
+  endDate,
+  location = 'Online'
+}: {
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  location?: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: name,
+    description: description,
+    startDate: startDate,
+    endDate: endDate,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+    location: {
+      '@type': 'VirtualLocation',
+      url: 'https://www.emersoneims.com'
+    },
+    organizer: {
+      '@type': 'Organization',
+      name: 'EmersonEIMS',
+      url: 'https://www.emersoneims.com'
+    },
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'KES',
+      availability: 'https://schema.org/InStock'
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+

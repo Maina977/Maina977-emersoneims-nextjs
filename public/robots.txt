@@ -260,25 +260,54 @@ User-agent: Wayback Machine
 Disallow: /
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# BLOCKED: OTHER REGIONAL & MISCELLANEOUS BOTS
+# INTERNATIONAL SEARCH ENGINES (ALLOWED FOR GLOBAL REACH)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Yandex (Russia) - Allow for international traffic
 User-agent: YandexBot
-Disallow: /
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 2
 
+# Baidu (China) - Allow for international traffic
 User-agent: Baiduspider
-Disallow: /
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 3
 
+# Sogou (China)
 User-agent: Sogou
-Disallow: /
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Crawl-delay: 3
+
+# Naver (South Korea)
+User-agent: Yeti
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Crawl-delay: 2
+
+# Seznam (Czech Republic)
+User-agent: SeznamBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Crawl-delay: 2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BLOCKED: MISCELLANEOUS BOTS
+# ═══════════════════════════════════════════════════════════════════════════════
 
 User-agent: Exabot
 Disallow: /
 
 User-agent: Gigabot
-Disallow: /
-
-User-agent: SeznamBot
 Disallow: /
 
 # ═══════════════════════════════════════════════════════════════════════════════
