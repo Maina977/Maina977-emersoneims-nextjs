@@ -1,47 +1,194 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # EMERSONEIMS ROBOTS.TXT
 # Enterprise-Grade Bot Management & SEO Optimization
+# OPTIMIZED FOR: GOOGLE, BING, YAHOO, META (FACEBOOK)
 # © 2026 EmersonEIMS. All Rights Reserved.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# WELCOME: LEGITIMATE SEARCH ENGINE CRAWLERS
+# 🔥 PRIORITY #1: GOOGLE - World's Largest Search Engine
+# Full access for all Google crawlers - NO delays for maximum indexing
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Google (Main Search)
+# Google Main Search Bot
 User-agent: Googlebot
 Allow: /
+Allow: /generators
+Allow: /solar
+Allow: /services
+Allow: /solutions
+Allow: /contact
+Allow: /counties
+Allow: /diagnostics
+Allow: /spare-parts
+Allow: /blog
 Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
-Crawl-delay: 1
 
-# Google Images
+# Google Images - Full image access
 User-agent: Googlebot-Image
+Allow: /
 Allow: /images/
 Allow: /og-image.jpg
 Disallow: /api/
 
-# Google Video
+# Google Video - Full video access
 User-agent: Googlebot-Video
+Allow: /
 Allow: /videos/
 Disallow: /api/
 
-# Bing
+# Google News
+User-agent: Googlebot-News
+Allow: /
+Allow: /blog/
+Disallow: /api/
+
+# Google Mobile
+User-agent: Googlebot-Mobile
+Allow: /
+Disallow: /api/
+
+# Google AdsBot - For ad quality
+User-agent: AdsBot-Google
+Allow: /
+Disallow: /api/
+
+# Google AdsBot Mobile
+User-agent: AdsBot-Google-Mobile
+Allow: /
+Disallow: /api/
+
+# Google Mediapartners (AdSense)
+User-agent: Mediapartners-Google
+Allow: /
+
+# Google Storebot (Shopping)
+User-agent: Storebot-Google
+Allow: /
+Allow: /generators
+Allow: /spare-parts
+Disallow: /api/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🔥 PRIORITY #2: BING - Microsoft Search Engine (Powers Yahoo, DuckDuckGo)
+# Full access for Bing crawlers
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Bing Main Bot
 User-agent: Bingbot
 Allow: /
+Allow: /generators
+Allow: /solar
+Allow: /services
+Allow: /solutions
+Allow: /contact
+Allow: /counties
+Allow: /diagnostics
+Allow: /spare-parts
+Allow: /blog
 Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
-Crawl-delay: 2
+Crawl-delay: 1
 
-# Yahoo
-User-agent: Slurp
+# Bing Preview Bot
+User-agent: BingPreview
+Allow: /
+Disallow: /api/
+
+# MSN Bot
+User-agent: msnbot
 Allow: /
 Disallow: /api/
 Disallow: /admin/
-Crawl-delay: 2
+Crawl-delay: 1
+
+# MSN Media Bot
+User-agent: msnbot-media
+Allow: /
+Allow: /images/
+Allow: /videos/
+Disallow: /api/
+
+# Microsoft AdIdxBot (Bing Ads)
+User-agent: AdIdxBot
+Allow: /
+Disallow: /api/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🔥 PRIORITY #3: YAHOO - Major Search Engine
+# Full access for Yahoo crawlers
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Yahoo Slurp (Main Bot)
+User-agent: Slurp
+Allow: /
+Allow: /generators
+Allow: /solar
+Allow: /services
+Allow: /solutions
+Allow: /contact
+Allow: /counties
+Allow: /diagnostics
+Allow: /spare-parts
+Allow: /blog
+Disallow: /api/
+Disallow: /admin/
+Crawl-delay: 1
+
+# Yahoo Japan
+User-agent: Y!J-ASR
+Allow: /
+Disallow: /api/
+
+# Yahoo Cache
+User-agent: Yahoo! Slurp
+Allow: /
+Disallow: /api/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🔥 PRIORITY #4: META (FACEBOOK, INSTAGRAM, WHATSAPP)
+# Full access for social sharing and Open Graph
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Facebook External Hit (Link Previews)
+User-agent: facebookexternalhit
+Allow: /
+Allow: /generators
+Allow: /solar
+Allow: /services
+Allow: /contact
+Allow: /blog
+Disallow: /api/
+
+# Facebook Catalog Bot
+User-agent: facebookcatalog
+Allow: /
+Allow: /generators
+Allow: /spare-parts
+Disallow: /api/
+
+# Meta Crawlers
+User-agent: meta-externalagent
+Allow: /
+Disallow: /api/
+
+# Instagram Bot
+User-agent: Instagrambot
+Allow: /
+Disallow: /api/
+
+# WhatsApp Link Preview
+User-agent: WhatsApp
+Allow: /
+Disallow: /api/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OTHER MAJOR SEARCH ENGINES & SOCIAL PLATFORMS
+# ═══════════════════════════════════════════════════════════════════════════════
 
 # DuckDuckGo
 User-agent: DuckDuckBot
@@ -50,38 +197,40 @@ Disallow: /api/
 Disallow: /admin/
 Crawl-delay: 1
 
-# Apple
+# Apple (Siri, Spotlight)
 User-agent: Applebot
 Allow: /
 Disallow: /api/
 Disallow: /admin/
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SOCIAL MEDIA CRAWLERS (ALLOWED)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Facebook
-User-agent: facebookexternalhit
-Allow: /
-Disallow: /api/
-
-# Twitter
+# Twitter/X Bot
 User-agent: Twitterbot
 Allow: /
 Disallow: /api/
 
-# LinkedIn
+# LinkedIn Bot
 User-agent: LinkedInBot
 Allow: /
 Disallow: /api/
 
-# WhatsApp
-User-agent: WhatsApp
+# Pinterest Bot
+User-agent: Pinterest
+Allow: /
+Allow: /images/
+Disallow: /api/
+
+# Telegram Bot
+User-agent: TelegramBot
 Allow: /
 Disallow: /api/
 
-# Telegram
-User-agent: TelegramBot
+# Slack Bot
+User-agent: Slackbot
+Allow: /
+Disallow: /api/
+
+# Discord Bot
+User-agent: Discordbot
 Allow: /
 Disallow: /api/
 
