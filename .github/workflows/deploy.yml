@@ -10,10 +10,15 @@ on:
       - main
       - master
 
+env:
+  NEXT_PUBLIC_SITE_URL: https://www.emersoneims.com
+  WORDPRESS_SITE_URL: https://www.emersoneims.com
+  WORDPRESS_API_URL: https://www.emersoneims.com/wp-json/wp/v2
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,26 +26,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Run type check
-        run: npm run type-check || true
-        continue-on-error: true
-
-      - name: Run linter
-        run: npm run lint || true
-        continue-on-error: true
-
       - name: Build project
         run: npm run build
         env:
-          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com' }}
-          WORDPRESS_SITE_URL: ${{ secrets.WORDPRESS_SITE_URL || 'https://www.emersoneims.com' }}
-          WORDPRESS_API_URL: ${{ secrets.WORDPRESS_API_URL || 'https://www.emersoneims.com/wp-json/wp/v2' }}
+          NEXT_TELEMETRY_DISABLED: 1
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
