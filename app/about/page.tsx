@@ -4,7 +4,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 
 // ==================== ENHANCEMENT 1: HIGH-CONTRAST COMPLIANCE LAYER ====================
 // This adds WCAG-AAA compliance WITHOUT changing your color scheme
@@ -137,10 +136,12 @@ const PerformanceOptimizer = () => {
     // Cleanup function for ScrollTrigger
     return () => {
       if (typeof window !== 'undefined') {
-        const gsap = require('gsap');
-        const ScrollTrigger = require('gsap/ScrollTrigger');
-        gsap.registerPlugin(ScrollTrigger);
-        ScrollTrigger.getAll().forEach((trigger: any) => trigger.kill());
+        // Dynamic import for GSAP cleanup
+        import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+          ScrollTrigger.getAll().forEach((trigger: { kill: () => void }) => trigger.kill());
+        }).catch(() => {
+          // GSAP not available, skip cleanup
+        });
       }
     };
   }, []);
@@ -204,9 +205,8 @@ const NarrativeEnhancer = () => {
   useEffect(() => {
     const years = [2013, 2015, 2019, 2023];
     const handleScroll = () => {
-      const scrollPos = window.scrollY + window.innerHeight / 2;
       const sections = document.querySelectorAll('section');
-      
+
       sections.forEach((section, index) => {
         const rect = section.getBoundingClientRect();
         if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
@@ -216,7 +216,7 @@ const NarrativeEnhancer = () => {
         }
       });
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);

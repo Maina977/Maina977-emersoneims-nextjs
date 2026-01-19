@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState, Suspense, lazy, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import OptimizedImage from "@/components/media/OptimizedImage";
-import { HeroHeading, SectionHeading } from "@/components/typography/CinematicHeadingVariants";
+import { SectionHeading } from "@/components/typography/CinematicHeadingVariants";
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
@@ -376,9 +376,7 @@ export default function AboutUsPage() {
   const prefersReducedMotion = useReducedMotion();
   const { isLite } = usePerformanceTier();
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
+  useScroll({ target: containerRef }); // Track scroll for future animations
 
   // Section tracking for navigation
   useEffect(() => {

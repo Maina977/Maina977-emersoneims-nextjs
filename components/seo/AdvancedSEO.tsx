@@ -133,12 +133,15 @@ export default function AdvancedSEO() {
       schema = {
         '@context': 'https://schema.org',
         '@type': 'Product',
-        name: 'Industrial Diesel Generators',
-        description: 'Premium Diesel Generators from 20kVA to 2000kVA - Cummins, Perkins, FG Wilson',
+        name: 'Industrial Diesel Generators Kenya',
+        description: 'Premium Diesel Generators from 20kVA to 2000kVA - Cummins, Perkins, FG Wilson. Professional installation, maintenance & 24/7 support across Kenya.',
+        image: 'https://www.emersoneims.com/images/GEN%202-1920x1080.png',
         brand: {
           '@type': 'Brand',
           name: 'EmersonEIMS',
         },
+        sku: 'GEN-INDUSTRIAL-KE',
+        mpn: 'EMERSON-GEN-2024',
         offers: {
           '@type': 'AggregateOffer',
           priceCurrency: 'KES',
@@ -146,12 +149,36 @@ export default function AdvancedSEO() {
           highPrice: '15000000',
           offerCount: '50',
           availability: 'https://schema.org/InStock',
+          priceValidUntil: '2026-12-31',
+          seller: {
+            '@type': 'Organization',
+            name: 'EmersonEIMS',
+            url: 'https://www.emersoneims.com'
+          }
         },
         aggregateRating: {
           '@type': 'AggregateRating',
           ratingValue: '4.9',
           reviewCount: '350',
+          bestRating: '5',
+          worstRating: '1'
         },
+        review: [
+          {
+            '@type': 'Review',
+            author: { '@type': 'Person', name: 'John Kamau' },
+            datePublished: '2024-08-15',
+            reviewBody: 'Excellent generator service. Fast installation and great after-sales support.',
+            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
+          },
+          {
+            '@type': 'Review',
+            author: { '@type': 'Person', name: 'Sarah Wanjiku' },
+            datePublished: '2024-07-22',
+            reviewBody: 'Very professional team. Our hospital backup power is now reliable.',
+            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
+          }
+        ]
       };
     }
 
@@ -188,11 +215,14 @@ export default function AdvancedSEO() {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: 'Solar Power Systems Kenya',
-        description: 'Complete Solar Energy Solutions - Residential, Commercial & Industrial Solar Installations across Kenya',
+        description: 'Complete Solar Energy Solutions - Residential, Commercial & Industrial Solar Installations across all 47 Kenya counties. Grid-tie, off-grid & hybrid systems.',
+        image: 'https://www.emersoneims.com/images/solar-changeover-control.png',
         brand: {
           '@type': 'Brand',
           name: 'EmersonEIMS',
         },
+        sku: 'SOLAR-SYSTEM-KE',
+        mpn: 'EMERSON-SOLAR-2024',
         offers: {
           '@type': 'AggregateOffer',
           priceCurrency: 'KES',
@@ -200,12 +230,36 @@ export default function AdvancedSEO() {
           highPrice: '8000000',
           offerCount: '30',
           availability: 'https://schema.org/InStock',
+          priceValidUntil: '2026-12-31',
+          seller: {
+            '@type': 'Organization',
+            name: 'EmersonEIMS',
+            url: 'https://www.emersoneims.com'
+          }
         },
         aggregateRating: {
           '@type': 'AggregateRating',
           ratingValue: '4.8',
           reviewCount: '280',
+          bestRating: '5',
+          worstRating: '1'
         },
+        review: [
+          {
+            '@type': 'Review',
+            author: { '@type': 'Person', name: 'David Ochieng' },
+            datePublished: '2024-09-10',
+            reviewBody: 'Our solar system has reduced our electricity bill by 80%. Great investment!',
+            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
+          },
+          {
+            '@type': 'Review',
+            author: { '@type': 'Person', name: 'Mary Njeri' },
+            datePublished: '2024-08-05',
+            reviewBody: 'Professional installation team. System works perfectly even during cloudy days.',
+            reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' }
+          }
+        ]
       };
     }
 

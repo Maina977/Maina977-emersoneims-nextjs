@@ -13,7 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { analyzeSymptoms, searchFaultCodes, getExactCode, DiagnosticResult } from '@/lib/ai/diagnosticAI';
+import { analyzeSymptoms, getExactCode, DiagnosticResult } from '@/lib/ai/diagnosticAI';
 import { isClaudeAPIEnabled, chatWithContext, analyzeDiagnostic, estimateCost } from '@/lib/ai/claudeService';
 
 type ChatContext = {

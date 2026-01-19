@@ -280,7 +280,7 @@ function SciFiContactForm() {
       <div className="grid md:grid-cols-2 gap-6">
         <div className="relative">
           <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-            // IDENTIFICATION
+            {'// IDENTIFICATION'}
           </label>
           <input
             type="text"
@@ -303,7 +303,7 @@ function SciFiContactForm() {
         
         <div className="relative">
           <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-            // COMM_LINK
+            {'// COMM_LINK'}
           </label>
           <input
             type="email"
@@ -322,7 +322,7 @@ function SciFiContactForm() {
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-            // DIRECT_LINE
+            {'// DIRECT_LINE'}
           </label>
           <input
             type="tel"
@@ -337,7 +337,7 @@ function SciFiContactForm() {
         
         <div>
           <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-            // SERVICE_TYPE
+            {'// SERVICE_TYPE'}
           </label>
           <select
             value={formData.service}
@@ -366,7 +366,7 @@ function SciFiContactForm() {
       {/* Urgency Level */}
       <div>
         <label className="block text-xs text-amber-400 uppercase tracking-wider mb-3 font-mono">
-          // PRIORITY_LEVEL
+          {'// PRIORITY_LEVEL'}
         </label>
         <div className="flex gap-4">
           {[
@@ -402,7 +402,7 @@ function SciFiContactForm() {
       {/* Message */}
       <div>
         <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-          // TRANSMISSION_DATA
+          {'// TRANSMISSION_DATA'}
         </label>
         <textarea
           placeholder="Describe your power requirements..."
@@ -559,7 +559,7 @@ function LocationSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <p className="text-amber-400 font-mono text-sm mb-4">// HOLOGRAPHIC_NAVIGATION_SYSTEM</p>
+          <p className="text-amber-400 font-mono text-sm mb-4">{'// HOLOGRAPHIC_NAVIGATION_SYSTEM'}</p>
           <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
             <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
               Experience The Future
@@ -594,7 +594,7 @@ function LocationSection() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">// ADDRESS</p>
+              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">{'// ADDRESS'}</p>
               <p className="text-white font-semibold text-lg mb-1">Embakasi, Nairobi</p>
               <p className="text-gray-400 text-sm">Old North Airport Road</p>
               <p className="text-gray-400 text-sm">P.O. Box 387-00521</p>
@@ -608,7 +608,7 @@ function LocationSection() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">// HOURS</p>
+              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">{'// HOURS'}</p>
               <p className="text-white font-semibold mb-1">Mon-Fri: 8AM-6PM</p>
               <p className="text-gray-400 text-sm mb-2">Sat: 9AM-2PM</p>
               <p className="text-red-400 font-medium text-sm flex items-center gap-2">
@@ -625,7 +625,7 @@ function LocationSection() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">// COVERAGE</p>
+              <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">{'// COVERAGE'}</p>
               <p className="text-white font-semibold mb-1">All 47 Counties</p>
               <p className="text-gray-400 text-sm mb-2">Kenya-Wide Service</p>
               <p className="text-green-400 font-medium text-sm">2hr Response Time</p>
