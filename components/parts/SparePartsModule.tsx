@@ -352,15 +352,17 @@ export default function SparePartsModule() {
                       {part.warranty && `${part.warranty} warranty`}
                     </p>
 
-                    {/* Add to Quote Button */}
-                    <motion.button
-                      onClick={() => addToCart(part)}
-                      className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-700 transition-all duration-300"
+                    {/* Add to Quote Button - Direct WhatsApp */}
+                    <motion.a
+                      href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I need a quote for:\n\n📦 Part: ${part.name}\n🔢 Part No: ${part.partNo}\n🏭 Brand: ${part.brand}\n💰 Price: KES ${part.pricing.retailPrice.toLocaleString()}\n\nPlease confirm availability and delivery time.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 text-center"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      Add to Quote
-                    </motion.button>
+                      📱 Get Quote on WhatsApp
+                    </motion.a>
                   </div>
                 </motion.div>
               ))}
@@ -405,14 +407,16 @@ export default function SparePartsModule() {
                       <p className="text-2xl font-bold text-cyan-400 mb-2">
                         KES {part.pricing.retailPrice.toLocaleString()}
                       </p>
-                      <motion.button
-                        onClick={() => addToCart(part)}
-                        className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg hover:from-cyan-600 hover:to-blue-700"
+                      <motion.a
+                        href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I need a quote for:\n\n📦 Part: ${part.name}\n🔢 Part No: ${part.partNo}\n🏭 Brand: ${part.brand}\n💰 Price: KES ${part.pricing.retailPrice.toLocaleString()}\n\nPlease confirm availability and delivery time.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-700"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        Add to Quote
-                      </motion.button>
+                        📱 Get Quote
+                      </motion.a>
                     </div>
                   </div>
                 </motion.div>
