@@ -218,9 +218,14 @@ export default function GeneratorPartsPage() {
                 <p className="text-gray-400 text-sm mb-4">{part.description}</p>
                 <div className="flex justify-between items-center">
                   <span className="text-2xl font-bold text-amber-400">{part.price}</span>
-                  <button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black px-6 py-2 rounded-lg font-semibold hover:from-amber-600 hover:to-amber-700 transition-all">
+                  <a
+                    href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I'd like to order: ${part.name} (${part.price})`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 text-black px-6 py-2 rounded-lg font-semibold hover:from-amber-600 hover:to-amber-700 transition-all"
+                  >
                     Order Now
-                  </button>
+                  </a>
                 </div>
               </motion.div>
             ))}

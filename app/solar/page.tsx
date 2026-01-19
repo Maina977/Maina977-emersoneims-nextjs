@@ -1564,9 +1564,9 @@ export default function PremiumApp() {
                 © {new Date().getFullYear()} EmersonEIMS. Premium Solar Solutions for Kenya.
               </p>
               <div className="flex space-x-6 mt-4 md:mt-0">
-                <button className="text-white/50 hover:text-yellow-300 transition-colors">Privacy</button>
-                <button className="text-white/50 hover:text-yellow-300 transition-colors">Terms</button>
-                <button className="text-white/50 hover:text-yellow-300 transition-colors">Sitemap</button>
+                <a href="/privacy" className="text-white/50 hover:text-yellow-300 transition-colors">Privacy</a>
+                <a href="/terms" className="text-white/50 hover:text-yellow-300 transition-colors">Terms</a>
+                <a href="/sitemap.xml" className="text-white/50 hover:text-yellow-300 transition-colors">Sitemap</a>
               </div>
             </div>
           </div>
