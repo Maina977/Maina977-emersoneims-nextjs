@@ -21,8 +21,19 @@ import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
+
+// Cinematic Cummins generator images with Hollywood color grading
+const cumminsImages = [
+  '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg',
+  '/images/enhanced/GREENHEART KILIFI GENERATOR-4K-CINEMATIC.jpg',
+  '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg',
+  '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg',
+  '/images/KIVUKONI SCHOOL CUMMINS GENERATOR .webp',
+  '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
+];
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -600,46 +611,68 @@ export default function SOTDWinningHomepage() {
                     </div>
                   )}
 
-                  {/* Generator Image Area - Cinematic Treatment */}
+                  {/* Generator Image Area - Hollywood Cinematic Treatment */}
                   <div className="relative h-48 overflow-hidden">
-                    {/* Hollywood Color Grade Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#ff8c42]/10 via-transparent to-cyan-500/10 z-10" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent z-10" />
-
-                    {/* Generator Silhouette/Icon */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.div
-                        className={`relative w-32 h-24 ${
-                          gen.tier === 'flagship' ? 'text-[#ff8c42]' :
-                          gen.tier === 'premium' ? 'text-amber-500' : 'text-cyan-400/60'
-                        }`}
-                        animate={{
+                    {/* Actual Cummins Generator Image with Hollywood Color Grading */}
+                    <div className="absolute inset-0">
+                      <Image
+                        src={cumminsImages[i % cumminsImages.length]}
+                        alt={`Cummins ${gen.model} Generator - ${gen.standby} KVA`}
+                        fill
+                        className="object-cover transition-all duration-700 group-hover:scale-110"
+                        style={{
                           filter: gen.tier === 'flagship'
-                            ? ['drop-shadow(0 0 10px rgba(255,140,66,0.5))', 'drop-shadow(0 0 20px rgba(255,140,66,0.8))', 'drop-shadow(0 0 10px rgba(255,140,66,0.5))']
-                            : undefined
+                            ? 'contrast(1.15) saturate(1.3) brightness(0.95) sepia(0.1)'
+                            : gen.tier === 'premium'
+                            ? 'contrast(1.1) saturate(1.2) brightness(0.9) sepia(0.08)'
+                            : 'contrast(1.05) saturate(1.1) brightness(0.85) sepia(0.05)',
                         }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                      >
-                        <svg viewBox="0 0 120 80" fill="currentColor" className="w-full h-full opacity-40 group-hover:opacity-70 transition-opacity">
-                          <rect x="5" y="20" width="110" height="50" rx="4" />
-                          <rect x="15" y="10" width="25" height="15" rx="2" />
-                          <rect x="80" y="10" width="25" height="15" rx="2" />
-                          <circle cx="30" cy="45" r="8" fill="none" stroke="currentColor" strokeWidth="2" />
-                          <circle cx="90" cy="45" r="8" fill="none" stroke="currentColor" strokeWidth="2" />
-                          <rect x="45" y="30" width="30" height="25" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                        </svg>
-                      </motion.div>
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      />
                     </div>
+
+                    {/* Hollywood Orange/Teal Color Grade Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#ff8c42]/20 via-transparent to-cyan-500/15 z-10 mix-blend-overlay" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 via-transparent to-[#00b4d8]/10 z-10 mix-blend-soft-light" />
+
+                    {/* Cinematic Vignette */}
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(0,0,0,0.6)_100%)] z-10" />
+
+                    {/* Bottom Fade for Text Readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/50 to-transparent z-10" />
+
+                    {/* Anamorphic Lens Flare (Flagship Only) */}
+                    {gen.tier === 'flagship' && (
+                      <motion.div
+                        className="absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-[#ff8c42]/60 to-transparent z-20"
+                        animate={{
+                          opacity: [0.3, 0.8, 0.3],
+                          scaleX: [0.9, 1.1, 0.9]
+                        }}
+                        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                      />
+                    )}
 
                     {/* Power Rating Badge */}
                     <div className="absolute bottom-3 left-3 z-20">
-                      <div className={`text-3xl font-display font-bold ${
+                      <div className={`text-3xl font-display font-bold drop-shadow-lg ${
                         gen.tier === 'flagship' ? 'text-[#ff8c42]' :
                         gen.tier === 'premium' ? 'text-amber-400' : 'text-white'
                       }`}>
                         {gen.standby}
-                        <span className="text-sm font-normal text-text-secondary ml-1">KVA</span>
+                        <span className="text-sm font-normal text-white/80 ml-1">KVA</span>
                       </div>
+                    </div>
+
+                    {/* CUMMINS Watermark */}
+                    <div className="absolute top-3 left-3 z-20">
+                      <span className={`text-xs font-bold tracking-wider uppercase px-2 py-1 rounded ${
+                        gen.tier === 'flagship'
+                          ? 'bg-[#ff8c42]/90 text-black'
+                          : 'bg-black/60 text-white/90 backdrop-blur-sm'
+                      }`}>
+                        CUMMINS
+                      </span>
                     </div>
                   </div>
 
