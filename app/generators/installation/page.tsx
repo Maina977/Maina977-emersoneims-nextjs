@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 
 // Comprehensive Installation Knowledge Database
 const installationPhases = [
@@ -571,45 +572,164 @@ function InstallationPhaseCard({ phase, isExpanded, onToggle }: { phase: typeof 
 export default function GeneratorInstallationPage() {
   const [expandedPhase, setExpandedPhase] = useState<string | null>('site-assessment');
   const [expandedType, setExpandedType] = useState<string | null>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
+  const textY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-black to-blue-900/20" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-block mb-4 px-4 py-2 bg-green-500/20 rounded-full text-green-400 text-sm font-medium">
-              Professional Generator Installation Services
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-green-300 via-white to-green-300 bg-clip-text text-transparent">
-              Complete Generator Installation
+      {/* Cinematic Hero Section with Hollywood Color Grading */}
+      <section ref={heroRef} className="relative h-[90vh] min-h-[700px] overflow-hidden">
+        {/* Background Image with Cinematic Scale */}
+        <motion.div
+          className="absolute inset-0"
+          style={{ scale: heroScale }}
+        >
+          <Image
+            src="/images/907.png"
+            alt="Generator Installation"
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
+
+          {/* Hollywood Cinematic Color Grading Overlays */}
+          {/* Teal/Green Color Grade - Installation & Engineering Theme */}
+          <div className="absolute inset-0 mix-blend-color" style={{ background: 'linear-gradient(135deg, rgba(0, 80, 60, 0.3) 0%, rgba(0, 200, 150, 0.2) 100%)' }} />
+
+          {/* Deep Contrast Enhancement */}
+          <div className="absolute inset-0 mix-blend-overlay" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%)' }} />
+
+          {/* Blue-Green Shadow Tint - Cinematic Shadows */}
+          <div className="absolute inset-0 mix-blend-multiply" style={{ background: 'linear-gradient(to bottom, rgba(0, 30, 40, 0.5) 0%, rgba(10, 40, 30, 0.4) 100%)' }} />
+
+          {/* Cool Green Highlight Push - Engineering Feel */}
+          <div className="absolute inset-0 mix-blend-soft-light" style={{ background: 'radial-gradient(ellipse at 30% 30%, rgba(50, 255, 150, 0.25) 0%, transparent 60%)' }} />
+
+          {/* Film Grain Texture */}
+          <div
+            className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            }}
+          />
+
+          {/* Vignette Effect */}
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)' }} />
+
+          {/* Cinematic Letterbox Gradient - Top */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/80 to-transparent" />
+
+          {/* Cinematic Letterbox Gradient - Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black via-black/90 to-transparent" />
+        </motion.div>
+
+        {/* Animated Engineering Pulse Effect */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.1, 0] }}
+          transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse' }}
+          style={{ background: 'linear-gradient(45deg, transparent 40%, rgba(50, 255, 150, 0.12) 50%, transparent 60%)' }}
+        />
+
+        {/* Hero Content */}
+        <motion.div
+          className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6"
+          style={{ opacity: heroOpacity, y: textY }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="max-w-5xl"
+          >
+            {/* Cinematic Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
+            >
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">Professional Installation Services</span>
+            </motion.div>
+
+            {/* Main Title with Cinematic Typography */}
+            <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 leading-tight">
+              <span className="block bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent drop-shadow-2xl">
+                Complete Generator
+              </span>
+              <span className="block bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
+                Installation
+              </span>
             </h1>
-            <p className="text-xl text-white/80 max-w-3xl mx-auto">
-              From site assessment to commissioning, we handle every aspect of your generator installation 
-              with precision engineering and strict compliance to all Kenya standards.
-            </p>
-          </div>
-          
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            {[
-              { value: '1,200+', label: 'Installations Completed', icon: '🏗️' },
-              { value: '47', label: 'Counties Covered', icon: '📍' },
-              { value: '24/7', label: 'Emergency Support', icon: '🔧' },
-              { value: '100%', label: 'Compliance Rate', icon: '✅' },
-            ].map((stat, idx) => (
-              <div key={idx} className="bg-white/5 rounded-xl p-6 text-center border border-white/10">
-                <div className="text-3xl mb-2">{stat.icon}</div>
-                <div className="text-3xl font-bold text-green-400">{stat.value}</div>
-                <div className="text-white/60 text-sm">{stat.label}</div>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+              className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed mb-10"
+            >
+              From site assessment to commissioning, precision engineering with strict compliance to all Kenya standards.
+            </motion.p>
+
+            {/* Quick Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.9 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
+            >
+              {[
+                { value: '1,200+', label: 'Installations Completed', icon: '🏗️' },
+                { value: '47', label: 'Counties Covered', icon: '📍' },
+                { value: '24/7', label: 'Emergency Support', icon: '🔧' },
+                { value: '100%', label: 'Compliance Rate', icon: '✅' },
+              ].map((stat, idx) => (
+                <div key={idx} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 text-center border border-white/10">
+                  <div className="text-2xl mb-1">{stat.icon}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-green-400">{stat.value}</div>
+                  <div className="text-white/60 text-xs md:text-sm">{stat.label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+          >
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="flex flex-col items-center gap-2"
+            >
+              <span className="text-xs text-white/50 uppercase tracking-widest">Scroll</span>
+              <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2">
+                <motion.div
+                  animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-1.5 h-1.5 bg-green-500 rounded-full"
+                />
               </div>
-            ))}
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        {/* Cinematic Anamorphic Lens Flare */}
+        <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500/20 to-transparent blur-sm" />
       </section>
 
       {/* Installation Process - 8 Phases */}
