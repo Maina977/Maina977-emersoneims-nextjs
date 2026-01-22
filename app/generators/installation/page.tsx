@@ -592,7 +592,7 @@ export default function GeneratorInstallationPage() {
           style={{ scale: heroScale }}
         >
           <Image
-            src="/images/907.png"
+            src="/images/80.png"
             alt="Generator Installation"
             fill
             priority
