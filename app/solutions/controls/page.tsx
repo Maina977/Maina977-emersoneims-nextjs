@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import SectionLead from "../../components/generators/SectionLead";
+import { useState, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import Image from 'next/image';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 
 // =====================================================
@@ -401,13 +401,152 @@ export default function ControlsSolutionHub() {
   const [expandedController, setExpandedController] = useState<string | null>(null);
   const [expandedFaultCategory, setExpandedFaultCategory] = useState<string | null>('DeepSea Engine Faults');
   const [expandedConfig, setExpandedConfig] = useState<string | null>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
+  const textY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   return (
     <main className="bg-black min-h-screen">
-      <SectionLead
-        title="DeepSea &amp; PowerWizard Solutions Hub"
-        subtitle="The most comprehensive generator controller programming, configuration, and troubleshooting guide in East Africa. Master every fault code, parameter, and communication protocol."
-      />
+      {/* Cinematic Hero Section with Hollywood Color Grading */}
+      <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
+        {/* Background Image with Cinematic Scale */}
+        <motion.div
+          className="absolute inset-0"
+          style={{ scale: heroScale }}
+        >
+          <Image
+            src="/images/7320.png"
+            alt="Generator Control Systems"
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
+
+          {/* Hollywood Cinematic Color Grading Overlays */}
+          {/* Teal/Green Color Grade - Technology & Control Theme */}
+          <div className="absolute inset-0 mix-blend-color" style={{ background: 'linear-gradient(135deg, rgba(0, 60, 80, 0.3) 0%, rgba(0, 180, 120, 0.15) 100%)' }} />
+
+          {/* Deep Contrast Enhancement */}
+          <div className="absolute inset-0 mix-blend-overlay" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.6) 100%)' }} />
+
+          {/* Blue Shadow Tint - Cinematic Shadows */}
+          <div className="absolute inset-0 mix-blend-multiply" style={{ background: 'linear-gradient(to bottom, rgba(5, 20, 40, 0.5) 0%, rgba(10, 25, 20, 0.4) 100%)' }} />
+
+          {/* Cool Cyan Highlight Push - Tech Feel */}
+          <div className="absolute inset-0 mix-blend-soft-light" style={{ background: 'radial-gradient(ellipse at 30% 20%, rgba(0, 200, 180, 0.25) 0%, transparent 60%)' }} />
+
+          {/* Film Grain Texture */}
+          <div
+            className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            }}
+          />
+
+          {/* Vignette Effect */}
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)' }} />
+
+          {/* Cinematic Letterbox Gradient - Top */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/80 to-transparent" />
+
+          {/* Cinematic Letterbox Gradient - Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black via-black/90 to-transparent" />
+        </motion.div>
+
+        {/* Animated Tech Pulse */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.12, 0] }}
+          transition={{ duration: 5, repeat: Infinity, repeatType: 'reverse' }}
+          style={{ background: 'linear-gradient(45deg, transparent 40%, rgba(0, 200, 150, 0.15) 50%, transparent 60%)' }}
+        />
+
+        {/* Hero Content */}
+        <motion.div
+          className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6"
+          style={{ opacity: heroOpacity, y: textY }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="max-w-5xl"
+          >
+            {/* Cinematic Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
+            >
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">Controller Experts</span>
+            </motion.div>
+
+            {/* Main Title with Cinematic Typography */}
+            <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 leading-tight">
+              <span className="block bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent drop-shadow-2xl">
+                DeepSea & PowerWizard
+              </span>
+              <span className="block bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
+                Solutions Hub
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+              className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed"
+            >
+              The most comprehensive generator controller programming, configuration, and troubleshooting guide in East Africa.
+            </motion.p>
+
+            {/* Decorative Line */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 1.2, delay: 1 }}
+              className="mt-8 h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-emerald-500 to-transparent"
+            />
+          </motion.div>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            className="absolute bottom-12 left-1/2 -translate-x-1/2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+          >
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="flex flex-col items-center gap-2"
+            >
+              <span className="text-xs text-white/50 uppercase tracking-widest">Scroll</span>
+              <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2">
+                <motion.div
+                  animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-1.5 h-1.5 bg-emerald-500 rounded-full"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        {/* Cinematic Anamorphic Lens Flare */}
+        <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent blur-sm" />
+      </section>
 
       {/* Tab Navigation */}
       <section className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10">
