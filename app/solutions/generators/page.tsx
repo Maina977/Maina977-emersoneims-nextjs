@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import SectionLead from "../../components/generators/SectionLead";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
@@ -653,6 +654,127 @@ export default function GeneratorsSolutionHub() {
 
   return (
     <main className="bg-black min-h-screen">
+      {/* CINEMATIC HERO SECTION - Hollywood Color Graded */}
+      <section className="relative h-[70vh] md:h-[80vh] overflow-hidden">
+        {/* Hero Image with Cinematic Treatment */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/70.png"
+            alt="Industrial Diesel Generator Solutions - EmersonEIMS Kenya"
+            fill
+            priority
+            className="object-cover object-center"
+            style={{
+              filter: 'contrast(1.12) saturate(1.2) brightness(0.95) sepia(0.08)',
+            }}
+            sizes="100vw"
+          />
+        </div>
+
+        {/* Hollywood Orange/Teal Color Grade Overlay */}
+        <div
+          className="absolute inset-0 z-[1]"
+          style={{
+            background: 'linear-gradient(180deg, rgba(255,140,80,0.1) 0%, transparent 40%, rgba(0,80,120,0.15) 100%)',
+          }}
+        />
+
+        {/* Cinematic Vignette */}
+        <div
+          className="absolute inset-0 z-[2]"
+          style={{
+            background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.6) 100%)',
+          }}
+        />
+
+        {/* Bottom Gradient for Content Fade */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-[3]" />
+
+        {/* Anamorphic Lens Flare */}
+        <motion.div
+          className="absolute top-1/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent z-[4]"
+          animate={{
+            opacity: [0.2, 0.5, 0.2],
+            scaleX: [0.8, 1.1, 0.8],
+          }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+
+        {/* Hero Content */}
+        <div className="absolute inset-0 z-[5] flex items-end">
+          <div className="max-w-7xl mx-auto px-6 pb-16 md:pb-24 w-full">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {/* Premium Badge */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-amber-500/40 bg-amber-500/10 backdrop-blur-sm"
+              >
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-sm text-amber-300 tracking-wider uppercase font-medium">Complete Technical Resource</span>
+              </motion.div>
+
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                Generator
+                <span className="block text-transparent bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 bg-clip-text">
+                  Solutions Hub
+                </span>
+              </h1>
+
+              <p className="text-lg md:text-xl text-gray-200 max-w-2xl leading-relaxed mb-8">
+                Installation guides, maintenance schedules, fault diagnosis, and repair procedures.
+                <span className="text-amber-400 font-medium"> The most comprehensive generator resource in East Africa.</span>
+              </p>
+
+              {/* Quick Stats */}
+              <div className="flex flex-wrap gap-6 text-sm">
+                <div className="flex items-center gap-2 text-white/80">
+                  <span className="text-amber-500">✓</span>
+                  <span>50+ Fault Codes</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/80">
+                  <span className="text-amber-500">✓</span>
+                  <span>Detailed Procedures</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/80">
+                  <span className="text-amber-500">✓</span>
+                  <span>Expert Technicians</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[6]"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-xs text-white/50 uppercase tracking-widest">Scroll</span>
+            <div className="w-6 h-10 border border-white/30 rounded-full flex justify-center pt-2">
+              <motion.div
+                className="w-1 h-2 bg-amber-400 rounded-full"
+                animate={{ y: [0, 6, 0], opacity: [1, 0.3, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Corner Brackets - Cinematic Frame */}
+        <div className="absolute top-8 left-8 w-16 h-16 border-l-2 border-t-2 border-amber-500/40 z-[6] hidden md:block" />
+        <div className="absolute top-8 right-8 w-16 h-16 border-r-2 border-t-2 border-amber-500/40 z-[6] hidden md:block" />
+        <div className="absolute bottom-8 left-8 w-16 h-16 border-l-2 border-b-2 border-amber-500/40 z-[6] hidden md:block" />
+        <div className="absolute bottom-8 right-8 w-16 h-16 border-r-2 border-b-2 border-amber-500/40 z-[6] hidden md:block" />
+      </section>
+
       <SectionLead
         title="Diesel Generator Solutions Hub"
         subtitle="The most comprehensive generator troubleshooting, installation, maintenance &amp; repair guide in East Africa. No one else provides this depth of technical knowledge."
