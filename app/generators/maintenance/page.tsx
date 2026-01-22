@@ -1,7 +1,9 @@
 ﻿// Generator Maintenance & Engine Overhaul Services - All 47 Counties Kenya
 // SEO-OPTIMIZED: World's Most Comprehensive Generator Service Coverage
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import Image from 'next/image';
 
 // Metadata moved to layout or generateMetadata for client components
 // SEO metadata is in the head section below
@@ -506,47 +508,179 @@ function IssuesList({ issues }: { issues: typeof commonIssues }) {
 }
 
 export default function GeneratorMaintenancePage() {
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
+  const textY = useTransform(scrollYProgress, [0, 1], [0, 100]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white">
-      {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-orange-900/30 to-black" />
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/20 rounded-full border border-orange-500/30 mb-6">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-orange-300 text-sm font-medium">24/7 Emergency Service Available</span>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            <span className="text-orange-500">Generator Maintenance</span>
-            <br />& Engine Overhaul Services
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mb-8">
-            Kenya&apos;s most comprehensive generator maintenance network. Expert technicians serving all 47 counties with preventive maintenance, emergency repairs, and complete engine overhauls for every brand.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a href="tel:+254768860665" className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-all flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-              Emergency: +254 768 860 665
-            </a>
-            <a href="#service-request" className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg border border-white/20 transition-all">
-              Request Service Quote
-            </a>
-          </div>
-          {/* Trust Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
-            {[
-              { value: '47', label: 'Counties Covered' },
-              { value: '20+', label: 'Brands Serviced' },
-              { value: '15,000+', label: 'Generators Maintained' },
-              { value: '98%', label: 'First-Time Fix Rate' },
-            ].map((stat, i) => (
-              <div key={i} className="text-center p-4 bg-white/5 rounded-xl border border-white/10">
-                <div className="text-3xl font-bold text-orange-500">{stat.value}</div>
-                <div className="text-gray-400 text-sm mt-1">{stat.label}</div>
+      {/* Cinematic Hero Section with Hollywood Color Grading */}
+      <section ref={heroRef} className="relative h-[90vh] min-h-[700px] overflow-hidden">
+        {/* Background Image with Cinematic Scale */}
+        <motion.div
+          className="absolute inset-0"
+          style={{ scale: heroScale }}
+        >
+          <Image
+            src="/images/IMG_20240620_152044_448 (1).jpg"
+            alt="Generator Maintenance Service"
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
+
+          {/* Hollywood Cinematic Color Grading Overlays */}
+          {/* Teal/Orange Color Grade - Industrial Maintenance Theme */}
+          <div className="absolute inset-0 mix-blend-color" style={{ background: 'linear-gradient(135deg, rgba(0, 50, 70, 0.3) 0%, rgba(255, 120, 40, 0.25) 100%)' }} />
+
+          {/* Deep Contrast Enhancement */}
+          <div className="absolute inset-0 mix-blend-overlay" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%)' }} />
+
+          {/* Blue Shadow Tint - Cinematic Shadows */}
+          <div className="absolute inset-0 mix-blend-multiply" style={{ background: 'linear-gradient(to bottom, rgba(10, 20, 40, 0.5) 0%, rgba(30, 15, 5, 0.4) 100%)' }} />
+
+          {/* Warm Highlight Push - Engine Heat Feel */}
+          <div className="absolute inset-0 mix-blend-soft-light" style={{ background: 'radial-gradient(ellipse at 40% 30%, rgba(255, 140, 50, 0.3) 0%, transparent 60%)' }} />
+
+          {/* Film Grain Texture */}
+          <div
+            className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            }}
+          />
+
+          {/* Vignette Effect */}
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)' }} />
+
+          {/* Cinematic Letterbox Gradient - Top */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/80 to-transparent" />
+
+          {/* Cinematic Letterbox Gradient - Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black via-black/90 to-transparent" />
+        </motion.div>
+
+        {/* Animated Heat Shimmer Effect */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.1, 0] }}
+          transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse' }}
+          style={{ background: 'linear-gradient(45deg, transparent 40%, rgba(255, 100, 30, 0.12) 50%, transparent 60%)' }}
+        />
+
+        {/* Hero Content */}
+        <motion.div
+          className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6"
+          style={{ opacity: heroOpacity, y: textY }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="max-w-5xl"
+          >
+            {/* Cinematic Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
+            >
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">24/7 Emergency Service Available</span>
+            </motion.div>
+
+            {/* Main Title with Cinematic Typography */}
+            <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 leading-tight">
+              <span className="block bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500 bg-clip-text text-transparent drop-shadow-2xl">
+                Generator Maintenance
+              </span>
+              <span className="block bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent">
+                & Engine Overhaul
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+              className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed mb-8"
+            >
+              Kenya&apos;s most comprehensive generator maintenance network. Expert technicians serving all 47 counties.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.9 }}
+              className="flex flex-wrap gap-4 justify-center mb-12"
+            >
+              <a href="tel:+254768860665" className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-all flex items-center gap-2 backdrop-blur-sm">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                Emergency: +254 768 860 665
+              </a>
+              <a href="#service-request" className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg border border-white/20 transition-all backdrop-blur-sm">
+                Request Service Quote
+              </a>
+            </motion.div>
+
+            {/* Trust Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.1 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
+              {[
+                { value: '47', label: 'Counties Covered' },
+                { value: '20+', label: 'Brands Serviced' },
+                { value: '15,000+', label: 'Generators Maintained' },
+                { value: '98%', label: 'First-Time Fix Rate' },
+              ].map((stat, i) => (
+                <div key={i} className="text-center p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
+                  <div className="text-2xl md:text-3xl font-bold text-orange-500">{stat.value}</div>
+                  <div className="text-gray-400 text-xs md:text-sm mt-1">{stat.label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+          >
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="flex flex-col items-center gap-2"
+            >
+              <span className="text-xs text-white/50 uppercase tracking-widest">Scroll</span>
+              <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2">
+                <motion.div
+                  animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-1.5 h-1.5 bg-orange-500 rounded-full"
+                />
               </div>
-            ))}
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        {/* Cinematic Anamorphic Lens Flare */}
+        <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/20 to-transparent blur-sm" />
       </section>
 
       {/* Service Packages Section */}
