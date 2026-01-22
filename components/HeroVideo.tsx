@@ -76,7 +76,7 @@ export default function HeroVideo() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             poster="/og-image.jpg"
             className={`hero-video transition-opacity duration-1000 ${isVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
           >

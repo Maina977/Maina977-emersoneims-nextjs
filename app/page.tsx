@@ -99,17 +99,20 @@ export default function AwwwardsHomepage() {
               className={`object-cover scale-110 transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
               sizes="100vw"
             />
-            {/* Video loads after image is visible */}
+            {/* Video loads after image is visible - Ultra-fast with poster fallback */}
             <video
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              preload="metadata"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="none"
+              poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
               onLoadedData={() => setVideoLoaded(true)}
+              onCanPlayThrough={() => setVideoLoaded(true)}
               className={`absolute inset-0 w-full h-full object-cover scale-110 transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
-              style={{ 
+              style={{
                 willChange: 'auto',
+                contentVisibility: 'auto',
               }}
             >
               <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" />

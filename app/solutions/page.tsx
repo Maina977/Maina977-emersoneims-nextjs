@@ -155,7 +155,7 @@ export default function SolutionsHome() {
               <video
                 className="w-full aspect-video object-cover"
                 controls
-                preload="metadata"
+                preload="none"
                 poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
                 playsInline
                 style={{ filter: 'contrast(1.05) saturate(1.1)' }}

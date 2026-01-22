@@ -35,6 +35,8 @@ const CinematicNarrative = () => {
         loop
         muted
         playsInline
+        preload="none"
+        poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
         className="absolute inset-0 w-full h-full object-cover opacity-50"
         src="https://assets.mixkit.co/videos/preview/mixkit-solar-panels-on-the-roof-of-a-house-41506-large.mp4"
       />
@@ -934,6 +936,7 @@ export function SolarInstallationGallery() {
                 loop
                 muted
                 playsInline
+                preload="none"
                 poster={install.poster}
                 className="w-full h-auto"
               >
