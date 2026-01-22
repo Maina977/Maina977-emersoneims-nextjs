@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import Image from 'next/image';
 import OptimizedImage from "@/components/media/OptimizedImage";
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
+import { SectionLead } from "@/components/generators";
 
 // Lazy load WebGL scene
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
