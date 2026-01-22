@@ -106,20 +106,32 @@ export default function AdvancedSEO() {
               name: 'Power Solutions Catalog',
               itemListElement: [
                 {
-                  '@type': 'Offer',
-                  itemOffered: {
-                    '@type': 'Product',
-                    name: 'Diesel Generators',
-                    description: '20kVA to 2000kVA Industrial Generators',
-                  },
+                  '@type': 'OfferCatalog',
+                  name: 'Generator Solutions',
+                  itemListElement: [
+                    {
+                      '@type': 'Offer',
+                      itemOffered: {
+                        '@type': 'Service',
+                        name: 'Generator Sales & Installation',
+                        description: '20kVA to 2000kVA Industrial Generators - Sales, Installation, Maintenance',
+                      },
+                    },
+                  ],
                 },
                 {
-                  '@type': 'Offer',
-                  itemOffered: {
-                    '@type': 'Product',
-                    name: 'Solar Power Systems',
-                    description: 'Complete Solar Solutions for Residential & Commercial',
-                  },
+                  '@type': 'OfferCatalog',
+                  name: 'Solar Solutions',
+                  itemListElement: [
+                    {
+                      '@type': 'Offer',
+                      itemOffered: {
+                        '@type': 'Service',
+                        name: 'Solar Power Installation',
+                        description: 'Complete Solar Solutions for Residential & Commercial',
+                      },
+                    },
+                  ],
                 },
               ],
             },

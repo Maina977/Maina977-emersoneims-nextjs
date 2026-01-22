@@ -468,14 +468,16 @@ export default function RootLayout({
         {
           "@type": "Offer",
           "itemOffered": {
-            "@type": "Product",
-            "name": "Spare Parts - Generators, Solar, Motors",
-            "description": "Comprehensive spare parts catalog with 1,247 genuine parts for generators (Cummins, Perkins, CAT), solar systems, motors, and switchgear.",
-            "brand": "EmersonEIMS",
-            "offers": {
-              "@type": "AggregateOffer",
-              "priceCurrency": "KES",
-              "availability": "https://schema.org/InStock"
+            "@type": "Service",
+            "name": "Generator & Solar Spare Parts Supply",
+            "description": "Comprehensive spare parts catalog with 1,247 genuine parts for generators (Cummins, Perkins, CAT), solar systems, motors, and switchgear. Fast delivery across Kenya.",
+            "provider": {
+              "@type": "LocalBusiness",
+              "name": "EmersonEIMS"
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Kenya"
             }
           }
         }

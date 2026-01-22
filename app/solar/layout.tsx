@@ -141,25 +141,28 @@ const jsonLd = {
           {
             '@type': 'Offer',
             itemOffered: {
-              '@type': 'Product',
-              name: 'Residential Solar Systems',
-              description: 'Complete home solar systems from 3kW to 20kW',
+              '@type': 'Service',
+              name: 'Residential Solar Installation',
+              description: 'Complete home solar systems from 3kW to 20kW with professional installation',
+              provider: { '@id': 'https://emersoneims.com/#organization' },
             },
           },
           {
             '@type': 'Offer',
             itemOffered: {
-              '@type': 'Product',
-              name: 'Commercial Solar Systems',
-              description: 'Business and industrial solar from 20kW to 1MW+',
+              '@type': 'Service',
+              name: 'Commercial Solar Installation',
+              description: 'Business and industrial solar from 20kW to 1MW+ with turnkey solutions',
+              provider: { '@id': 'https://emersoneims.com/#organization' },
             },
           },
           {
             '@type': 'Offer',
             itemOffered: {
-              '@type': 'Product',
-              name: 'Solar Batteries',
-              description: 'LFP lithium batteries for energy storage',
+              '@type': 'Service',
+              name: 'Solar Battery Storage Solutions',
+              description: 'LFP lithium batteries for energy storage with installation and warranty',
+              provider: { '@id': 'https://emersoneims.com/#organization' },
             },
           },
         ],
@@ -169,6 +172,7 @@ const jsonLd = {
       '@type': 'Product',
       '@id': 'https://emersoneims.com/solar/#product',
       name: 'Solar Panel Systems Kenya',
+      image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png',
       brand: {
         '@type': 'Brand',
         name: 'EmersonEIMS Solar',
@@ -177,8 +181,11 @@ const jsonLd = {
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',
+        lowPrice: '150000',
+        highPrice: '15000000',
         availability: 'https://schema.org/InStock',
         seller: { '@id': 'https://emersoneims.com/#organization' },
+        offerCount: '100',
       },
       aggregateRating: {
         '@type': 'AggregateRating',

@@ -142,6 +142,7 @@ const jsonLd = {
       '@type': 'Product',
       '@id': 'https://emersoneims.com/generators/#product',
       name: 'Cummins Diesel Generators',
+      image: 'https://www.emersoneims.com/wp-content/uploads/2024/09/cummins-generator.jpg',
       brand: {
         '@type': 'Brand',
         name: 'Cummins',
@@ -150,9 +151,11 @@ const jsonLd = {
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',
+        lowPrice: '450000',
+        highPrice: '25000000',
         availability: 'https://schema.org/InStock',
         seller: { '@id': 'https://emersoneims.com/#organization' },
-        offerCount: '50+',
+        offerCount: '50',
       },
       aggregateRating: {
         '@type': 'AggregateRating',
