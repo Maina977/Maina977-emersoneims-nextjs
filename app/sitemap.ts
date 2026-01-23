@@ -1,8 +1,11 @@
 import { MetadataRoute } from 'next';
+import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
+import { SEO_SERVICES } from '@/lib/data/seo-services';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🗺️ COMPREHENSIVE SITEMAP FOR #1 SEO RANKING
-// All 47 Kenya Counties + Services + Products + Content
+// All 47 Kenya Counties + 290 Constituencies + 15 Services + Products + Content
+// Total: ~7,000+ strategically targeted SEO pages
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // All 47 Kenya Counties for Local SEO Dominance
@@ -543,8 +546,67 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // ═══════════════════════════════════════════════════════════════════════════════
+  // KENYA LOCATION-SERVICE PAGES - Comprehensive Local SEO (~7,000+ Pages)
+  // /kenya/[county]/[service] + /kenya/[county]/[constituency]/[service]
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const kenyaLocationPages: MetadataRoute.Sitemap = [];
+
+  // Kenya landing page
+  kenyaLocationPages.push({
+    url: `${baseUrl}/kenya`,
+    lastModified: currentDate,
+    changeFrequency: 'daily',
+    priority: 0.9,
+  });
+
+  // Generate pages for each county
+  for (const county of KENYA_LOCATIONS) {
+    // County landing page
+    kenyaLocationPages.push({
+      url: `${baseUrl}/kenya/${county.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    });
+
+    // County + Service pages (47 counties × 15 services = 705 pages)
+    for (const service of SEO_SERVICES) {
+      kenyaLocationPages.push({
+        url: `${baseUrl}/kenya/${county.slug}/${service.slug}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      });
+    }
+
+    // Constituency pages + Constituency + Service pages
+    for (const constituency of county.constituencies) {
+      // Constituency landing page
+      kenyaLocationPages.push({
+        url: `${baseUrl}/kenya/${county.slug}/${constituency.slug}`,
+        lastModified: currentDate,
+        changeFrequency: 'monthly',
+        priority: 0.7,
+      });
+
+      // Constituency + Service pages (290 constituencies × 15 services = 4,350 pages)
+      for (const service of SEO_SERVICES) {
+        kenyaLocationPages.push({
+          url: `${baseUrl}/kenya/${county.slug}/${constituency.slug}/${service.slug}`,
+          lastModified: currentDate,
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        });
+      }
+
+      // Note: Village pages are generated on-demand via ISR
+      // They're discovered through internal linking, not sitemap
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════
   // COMBINE ALL PAGES FOR COMPREHENSIVE SITEMAP
-  // Total: 500+ High-Quality URLs
+  // Total: 7,000+ High-Quality URLs
   // ═══════════════════════════════════════════════════════════════════════════════
   return [
     ...mainPages,
@@ -562,5 +624,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...serviceLocationPages,
     ...industryPages,
     ...sparePartsPages,
+    ...kenyaLocationPages,
   ];
 }
