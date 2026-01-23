@@ -611,7 +611,7 @@ export default function AwwwardsHomepage() {
         <section className="py-32 sm:py-40 bg-black relative overflow-hidden">
           {/* Ambient background */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(251,191,36,0.05),transparent_70%)]" />
-          
+
           <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
             <motion.p
               initial={{ opacity: 0 }}
@@ -621,7 +621,7 @@ export default function AwwwardsHomepage() {
             >
               By The Numbers
             </motion.p>
-            
+
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 lg:gap-16">
               {[
                 { num: '500+', label: 'Projects Delivered', icon: '🔧' },
@@ -653,6 +653,119 @@ export default function AwwwardsHomepage() {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* SECTION 5.5: Kenya Service Areas - SEO Internal Linking */}
+        <section className="py-24 sm:py-32 bg-gradient-to-b from-black via-gray-900/50 to-black relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(6,182,212,0.05),transparent_50%)]" />
+
+          <div className="max-w-7xl mx-auto px-6 sm:px-12 relative">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <span className="text-cyan-400 text-sm uppercase tracking-[0.3em] mb-4 block font-medium">Nationwide Coverage</span>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+                Generator Services Across
+                <span className="text-transparent bg-gradient-to-r from-amber-400 to-cyan-400 bg-clip-text"> All 47 Counties</span>
+              </h2>
+              <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+                Professional generator installation, repair, maintenance, and rental services throughout Kenya
+              </p>
+            </motion.div>
+
+            {/* Major Counties Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+              {[
+                { name: 'Nairobi', slug: 'nairobi', highlight: true },
+                { name: 'Mombasa', slug: 'mombasa', highlight: true },
+                { name: 'Kisumu', slug: 'kisumu', highlight: true },
+                { name: 'Nakuru', slug: 'nakuru', highlight: true },
+                { name: 'Kiambu', slug: 'kiambu', highlight: false },
+                { name: 'Machakos', slug: 'machakos', highlight: false },
+                { name: 'Kilifi', slug: 'kilifi', highlight: false },
+                { name: 'Uasin Gishu', slug: 'uasin-gishu', highlight: false },
+                { name: 'Kajiado', slug: 'kajiado', highlight: false },
+                { name: 'Nyeri', slug: 'nyeri', highlight: false },
+                { name: 'Meru', slug: 'meru', highlight: false },
+                { name: 'Kakamega', slug: 'kakamega', highlight: false },
+              ].map((county, i) => (
+                <motion.div
+                  key={county.slug}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <Link
+                    href={`/kenya/${county.slug}`}
+                    className={`block p-4 rounded-xl border transition-all text-center group ${
+                      county.highlight
+                        ? 'bg-gradient-to-br from-amber-500/10 to-cyan-500/10 border-amber-500/30 hover:border-amber-400'
+                        : 'bg-white/5 border-white/10 hover:border-cyan-400/50 hover:bg-white/10'
+                    }`}
+                  >
+                    <span className={`font-medium transition-colors ${
+                      county.highlight ? 'text-amber-400 group-hover:text-amber-300' : 'text-white group-hover:text-cyan-400'
+                    }`}>
+                      {county.name}
+                    </span>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Popular Services Links */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white/5 rounded-2xl p-6 border border-white/10 mb-8"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4 text-center">Popular Generator Services</h3>
+              <div className="flex flex-wrap justify-center gap-3">
+                {[
+                  { label: 'Generator Companies Nairobi', href: '/kenya/nairobi/generator-companies' },
+                  { label: 'Generator Repairs Mombasa', href: '/kenya/mombasa/generator-repairs' },
+                  { label: 'Generator Rental Kisumu', href: '/kenya/kisumu/generator-lease' },
+                  { label: 'Diesel Generators Nakuru', href: '/kenya/nakuru/diesel-generators' },
+                  { label: 'Generator Maintenance Kiambu', href: '/kenya/kiambu/generator-maintenance' },
+                  { label: 'Solar Installation Nairobi', href: '/kenya/nairobi/solar-installation' },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="px-4 py-2 rounded-full bg-black/50 border border-white/10 text-sm text-gray-300 hover:text-amber-400 hover:border-amber-400/50 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* CTA to View All Counties */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <Link
+                href="/kenya"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg"
+              >
+                <span>View All 47 Counties</span>
+                <motion.span
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  →
+                </motion.span>
+              </Link>
+            </motion.div>
           </div>
         </section>
 

@@ -23,6 +23,14 @@ const FOOTER_LINKS = {
     { label: 'Knowledge Base', href: '/knowledge-base' },
     { label: 'FAQ', href: '/faq' },
   ],
+  serviceAreas: [
+    { label: 'All Kenya Counties', href: '/kenya' },
+    { label: 'Nairobi', href: '/kenya/nairobi' },
+    { label: 'Mombasa', href: '/kenya/mombasa' },
+    { label: 'Kisumu', href: '/kenya/kisumu' },
+    { label: 'Nakuru', href: '/kenya/nakuru' },
+    { label: 'Kiambu', href: '/kenya/kiambu' },
+  ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy' },
     { label: 'Terms of Service', href: '/terms' },
@@ -91,7 +99,7 @@ export default function PremiumFooter() {
           </div>
 
           {/* Links Columns */}
-          <nav aria-label="Footer" className="lg:col-span-4 lg:col-start-6 grid grid-cols-1 sm:grid-cols-2 gap-12 lg:gap-8">
+          <nav aria-label="Footer" className="lg:col-span-5 lg:col-start-6 grid grid-cols-1 sm:grid-cols-3 gap-12 lg:gap-6">
             <div>
               <h4 className="text-sm font-mono text-brand-gold mb-6 tracking-wider uppercase">Company</h4>
               <ul className="space-y-4">
@@ -112,6 +120,22 @@ export default function PremiumFooter() {
               <h4 className="text-sm font-mono text-brand-gold mb-6 tracking-wider uppercase">Solutions</h4>
               <ul className="space-y-4">
                 {FOOTER_LINKS.solutions.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-mono text-brand-gold mb-6 tracking-wider uppercase">Service Areas</h4>
+              <ul className="space-y-4">
+                {FOOTER_LINKS.serviceAreas.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
