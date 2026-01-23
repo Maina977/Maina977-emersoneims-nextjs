@@ -243,6 +243,28 @@ export default function GeneratorPage() {
 
   return (
     <main ref={containerRef} className="eims-section min-h-screen relative">
+      {/* VideoObject Schema - Fixes Google Search Console video indexing */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'VideoObject',
+            name: 'Industrial Diesel Generators Kenya - Emerson EiMS',
+            description: 'Premium diesel generators from 20kVA to 2000kVA for industrial and commercial use in Kenya. Cummins, Perkins, and CAT generators with installation and maintenance.',
+            thumbnailUrl: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
+            uploadDate: '2024-01-01',
+            contentUrl: 'https://www.emersoneims.com/videos/VID-20250930-WA0000%20(3).mp4',
+            embedUrl: 'https://www.emersoneims.com/generators',
+            duration: 'PT45S',
+            publisher: {
+              '@type': 'Organization',
+              name: 'Emerson EiMS',
+              logo: { '@type': 'ImageObject', url: 'https://www.emersoneims.com/logo.png' }
+            }
+          })
+        }}
+      />
       {/* Holographic Laser Overlay */}
       {!isLite && <HolographicLaser intensity="medium" color="#fbbf24" />}
       

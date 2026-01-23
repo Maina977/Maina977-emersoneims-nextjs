@@ -1369,6 +1369,65 @@ export default function PremiumApp() {
 
   return (
     <>
+      {/* VideoObject Schema for SEO - Solar Installation Videos */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            {
+              '@context': 'https://schema.org',
+              '@type': 'VideoObject',
+              name: 'Complete Solar Installation Process - Emerson EiMS Kenya',
+              description: 'Watch our expert team install a complete solar system from start to finish. Professional solar panel installation, wiring, and inverter setup for homes and businesses in Kenya.',
+              thumbnailUrl: 'https://www.emersoneims.com/images/solar%20power%20farms.png',
+              uploadDate: '2024-01-01',
+              contentUrl: 'https://www.emersoneims.com/videos/SOLAR%20INSTALLATION%206%20(1).mp4',
+              embedUrl: 'https://www.emersoneims.com/solar',
+              duration: 'PT120S',
+              publisher: {
+                '@type': 'Organization',
+                name: 'Emerson EiMS',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://www.emersoneims.com/images/Emerson%20EIMS%20Logo%20and%20Tagline%20PNG-Picsart-BackgroundRemover.png',
+                  width: 400,
+                  height: 200
+                }
+              },
+              potentialAction: {
+                '@type': 'WatchAction',
+                target: 'https://www.emersoneims.com/solar'
+              }
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'VideoObject',
+              name: 'Solar System Commissioning - Emerson EiMS Kenya',
+              description: 'Final testing and commissioning of solar installation. Quality assurance, system verification, and handover for residential and commercial solar systems in Kenya.',
+              thumbnailUrl: 'https://www.emersoneims.com/images/solar%20for%20flower%20farms.png',
+              uploadDate: '2024-01-01',
+              contentUrl: 'https://www.emersoneims.com/videos/SOLAR%20INSTALLATION%207.mp4',
+              embedUrl: 'https://www.emersoneims.com/solar',
+              duration: 'PT90S',
+              publisher: {
+                '@type': 'Organization',
+                name: 'Emerson EiMS',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://www.emersoneims.com/images/Emerson%20EIMS%20Logo%20and%20Tagline%20PNG-Picsart-BackgroundRemover.png',
+                  width: 400,
+                  height: 200
+                }
+              },
+              potentialAction: {
+                '@type': 'WatchAction',
+                target: 'https://www.emersoneims.com/solar'
+              }
+            }
+          ])
+        }}
+      />
+
       <Head>
         <title>EMERSONEIMS Premium | Elite Solar Solutions for Kenya</title>
         <meta name="description" content="World-class solar solutions with cinematic experience, advanced calculators, and interactive county data. Premium solar for Kenya." />

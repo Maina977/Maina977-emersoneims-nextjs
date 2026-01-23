@@ -22,6 +22,38 @@ const SOLUTIONS_LINKS = [
 export default function SolutionsHome() {
   return (
     <main className="bg-black min-h-screen">
+      {/* VideoObject Schema for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'VideoObject',
+            name: 'Power Solutions in Action - Emerson EiMS Kenya',
+            description: 'Watch how Emerson EiMS delivers world-class power solutions including generators, solar systems, and energy infrastructure across Kenya and East Africa.',
+            thumbnailUrl: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
+            uploadDate: '2024-01-01',
+            contentUrl: 'https://www.emersoneims.com/videos/Solution(1).mp4',
+            embedUrl: 'https://www.emersoneims.com/solutions',
+            duration: 'PT60S',
+            publisher: {
+              '@type': 'Organization',
+              name: 'Emerson EiMS',
+              logo: {
+                '@type': 'ImageObject',
+                url: 'https://www.emersoneims.com/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png',
+                width: 400,
+                height: 200
+              }
+            },
+            potentialAction: {
+              '@type': 'WatchAction',
+              target: 'https://www.emersoneims.com/solutions'
+            }
+          })
+        }}
+      />
+
       <SectionLead
         title="Solutions: your engineering bible"
         subtitle="Authoritative guides for diesel generators, controls, solar, power quality, AC, UPS, automation, pumps, incinerators, and motors."

@@ -71,6 +71,32 @@ export default function AwwwardsHomepage() {
   return (
     <div ref={containerRef} className="relative bg-black overflow-hidden">
 
+        {/* VideoObject Schema - Fixes Google Search Console "Video isn't on a watch page" error */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'VideoObject',
+              name: 'Emerson EiMS - Power Solutions Kenya',
+              description: 'Premium generator and solar power solutions for homes and businesses across Kenya. 15+ years of engineering excellence powering East Africa.',
+              thumbnailUrl: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
+              uploadDate: '2024-01-01',
+              contentUrl: 'https://www.emersoneims.com/videos/FOR%20TRIALS%20IN%20KADENCE.mp4',
+              embedUrl: 'https://www.emersoneims.com/',
+              duration: 'PT30S',
+              publisher: {
+                '@type': 'Organization',
+                name: 'Emerson EiMS',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://www.emersoneims.com/logo.png'
+                }
+              }
+            })
+          }}
+        />
+
         {/* ═══════════════════════════════════════════════════════════════════
             AWWWARDS SOTD: GPU-Accelerated Gradient Mesh Background
         ════════════════════════════════════════════════════════════════════ */}

@@ -415,6 +415,38 @@ export default function AboutUsPage() {
         data-active-section={activeSection}
         className="eims-section min-h-screen relative"
       >
+        {/* VideoObject Schema for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'VideoObject',
+              name: 'EmersonEIMS - Our Work in Action Kenya',
+              description: 'Real projects, real results. Watch how Emerson EiMS delivers power solutions across Kenya. Over a decade of powering Kenya with generators, solar, and energy infrastructure.',
+              thumbnailUrl: 'https://www.emersoneims.com/images/solar%20power%20farms.png',
+              uploadDate: '2024-01-01',
+              contentUrl: 'https://www.emersoneims.com/videos/FOR%20TRIALS%20IN%20KADENCE.mp4',
+              embedUrl: 'https://www.emersoneims.com/about-us',
+              duration: 'PT45S',
+              publisher: {
+                '@type': 'Organization',
+                name: 'Emerson EiMS',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://www.emersoneims.com/images/Emerson%20EIMS%20Logo%20and%20Tagline%20PNG-Picsart-BackgroundRemover.png',
+                  width: 400,
+                  height: 200
+                }
+              },
+              potentialAction: {
+                '@type': 'WatchAction',
+                target: 'https://www.emersoneims.com/about-us'
+              }
+            })
+          }}
+        />
+
         <ContrastComplianceLayer />
         
         {/* Holographic Laser Overlay */}

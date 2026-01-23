@@ -13,6 +13,38 @@ export const metadata = {
 export default function GeneratorPage() {
   return (
     <main className="min-h-screen">
+      {/* VideoObject Schema for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'VideoObject',
+            name: 'Cummins Generators - Power Solutions Kenya | Emerson EiMS',
+            description: 'Premium Cummins diesel generators from 20kVA to 2000kVA. Verified specs, professional installation, and engineering excellence for Kenya.',
+            thumbnailUrl: 'https://www.emersoneims.com/images/GEN%202-1920x1080.png',
+            uploadDate: '2024-01-01',
+            contentUrl: 'https://www.emersoneims.com/videos/Solution(1).mp4',
+            embedUrl: 'https://www.emersoneims.com/generator',
+            duration: 'PT60S',
+            publisher: {
+              '@type': 'Organization',
+              name: 'Emerson EiMS',
+              logo: {
+                '@type': 'ImageObject',
+                url: 'https://www.emersoneims.com/images/Emerson%20EIMS%20Logo%20and%20Tagline%20PNG-Picsart-BackgroundRemover.png',
+                width: 400,
+                height: 200
+              }
+            },
+            potentialAction: {
+              '@type': 'WatchAction',
+              target: 'https://www.emersoneims.com/generator'
+            }
+          })
+        }}
+      />
+
       {/* Hero Video */}
       <section className="relative w-full h-screen overflow-hidden bg-black">
         <video
