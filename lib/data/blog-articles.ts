@@ -939,9 +939,8 @@ Tell us your power needs and budget, and we'll recommend the best options:
 Serving all 47 counties in Kenya with quality power solutions.
     `
   },
-];
 
-// Article 4: Generator Safety Tips
+  // Article 4: Generator Safety Tips
   {
     id: 'generator-safety-tips-kenya',
     slug: 'generator-safety-tips-kenya',
