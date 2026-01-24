@@ -1,25 +1,27 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * EMERSONEIMS SECURITY MIDDLEWARE
- * Enterprise-Grade Protection Against Attacks, Bots, and Malicious Activity
+ * EMERSONEIMS MIDDLEWARE
+ * Multi-language Support + Enterprise-Grade Security
  * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * Protection Layers:
- * 1. Bot Detection & Blocking
- * 2. Rate Limiting
- * 3. SQL Injection Prevention
- * 4. XSS Attack Prevention
- * 5. Suspicious User-Agent Blocking
+ *
+ * Features:
+ * 1. Internationalization (11 Languages via Cookie)
+ * 2. Bot Detection & Blocking
+ * 3. Rate Limiting
+ * 4. SQL Injection Prevention
+ * 5. XSS Attack Prevention
  * 6. Path Traversal Prevention
- * 7. Malicious Request Filtering
- * 8. DDoS Basic Protection
- * 
+ *
  * © 2026 EmersonEIMS. All Rights Reserved.
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+
+// Supported locales
+const locales = ['en', 'sw', 'fr', 'de', 'es', 'pt', 'zh', 'nl', 'am', 'so', 'ar'];
+const defaultLocale = 'en';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECURITY CONFIGURATION
@@ -93,7 +95,7 @@ const MALICIOUS_PATTERNS = [
   /phpinfo/i, // PHP info exposure
   /wp-admin|wp-login|wp-content/i, // WordPress attacks (we're not WP)
   /\.php|\.asp|\.aspx|\.jsp/i, // Script file access
-  /\/admin|\/administrator|\/manager/i, // Admin access attempts
+  /\/administrator|\/manager/i, // Admin access attempts (removed /admin to allow /admin/analytics)
   /\/phpmyadmin|\/mysql|\/myadmin/i, // Database admin
   /\/\.env|\/\.git|\/\.htaccess/i, // Config file access
 ];
@@ -115,17 +117,17 @@ function getClientIP(request: NextRequest): string {
 
 function isMaliciousBot(userAgent: string): boolean {
   const ua = userAgent.toLowerCase();
-  
+
   // Check if it's an allowed bot first
   for (const allowed of ALLOWED_BOTS) {
     if (ua.includes(allowed)) return false;
   }
-  
+
   // Check for blocked bots
   for (const blocked of BLOCKED_USER_AGENTS) {
     if (ua.includes(blocked)) return true;
   }
-  
+
   return false;
 }
 
@@ -139,7 +141,7 @@ function containsMaliciousPattern(url: string): boolean {
   for (const allowed of ALLOWED_ADMIN_PATHS) {
     if (url.startsWith(allowed)) return false;
   }
-  
+
   for (const pattern of MALICIOUS_PATTERNS) {
     if (pattern.test(url)) return true;
   }
@@ -149,30 +151,67 @@ function containsMaliciousPattern(url: string): boolean {
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const record = rateLimitStore.get(ip);
-  
+
   if (!record || now > record.resetTime) {
     rateLimitStore.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
     return false;
   }
-  
+
   record.count++;
-  
+
   if (record.count > RATE_LIMIT_MAX_REQUESTS) {
     return true;
   }
-  
+
   return false;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MIDDLEWARE
+// LOCALE DETECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function getLocaleFromPathname(pathname: string): string | null {
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments.length > 0 && locales.includes(segments[0])) {
+    return segments[0];
+  }
+  return null;
+}
+
+function getPreferredLocale(request: NextRequest): string {
+  // 1. Check URL for locale prefix
+  const pathLocale = getLocaleFromPathname(request.nextUrl.pathname);
+  if (pathLocale) return pathLocale;
+
+  // 2. Check cookie
+  const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
+  if (cookieLocale && locales.includes(cookieLocale)) return cookieLocale;
+
+  // 3. Check Accept-Language header
+  const acceptLanguage = request.headers.get('accept-language');
+  if (acceptLanguage) {
+    const languages = acceptLanguage.split(',').map(lang => {
+      const [code] = lang.trim().split(';');
+      return code.split('-')[0].toLowerCase();
+    });
+    for (const lang of languages) {
+      if (locales.includes(lang)) return lang;
+    }
+  }
+
+  return defaultLocale;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMBINED MIDDLEWARE
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function middleware(request: NextRequest) {
-  const url = request.nextUrl.pathname + request.nextUrl.search;
+  const pathname = request.nextUrl.pathname;
+  const url = pathname + request.nextUrl.search;
   const userAgent = request.headers.get('user-agent') || '';
   const clientIP = getClientIP(request);
-  
+
   // ─────────────────────────────────────────────────────────────────────────────
   // 1. MALICIOUS BOT DETECTION
   // ─────────────────────────────────────────────────────────────────────────────
@@ -180,7 +219,7 @@ export function middleware(request: NextRequest) {
     console.log(`🚫 BLOCKED: Malicious bot from ${clientIP} - UA: ${userAgent.substring(0, 50)}`);
     return new NextResponse('Access Denied', { status: 403 });
   }
-  
+
   // ─────────────────────────────────────────────────────────────────────────────
   // 2. MALICIOUS URL PATTERN DETECTION
   // ─────────────────────────────────────────────────────────────────────────────
@@ -188,13 +227,13 @@ export function middleware(request: NextRequest) {
     console.log(`🚫 BLOCKED: Malicious request from ${clientIP} - URL: ${url.substring(0, 100)}`);
     return new NextResponse('Forbidden', { status: 403 });
   }
-  
+
   // ─────────────────────────────────────────────────────────────────────────────
   // 3. RATE LIMITING
   // ─────────────────────────────────────────────────────────────────────────────
   if (isRateLimited(clientIP)) {
     console.log(`🚫 RATE LIMITED: ${clientIP}`);
-    return new NextResponse('Too Many Requests', { 
+    return new NextResponse('Too Many Requests', {
       status: 429,
       headers: {
         'Retry-After': '60',
@@ -203,7 +242,7 @@ export function middleware(request: NextRequest) {
       }
     });
   }
-  
+
   // ─────────────────────────────────────────────────────────────────────────────
   // 4. BLOCK SENSITIVE FILE ACCESS
   // ─────────────────────────────────────────────────────────────────────────────
@@ -222,23 +261,55 @@ export function middleware(request: NextRequest) {
     '/database',
     '/logs',
   ];
-  
+
   for (const path of blockedPaths) {
     if (url.toLowerCase().includes(path)) {
       console.log(`🚫 BLOCKED: Sensitive path access from ${clientIP} - ${url}`);
       return new NextResponse('Not Found', { status: 404 });
     }
   }
-  
+
   // ─────────────────────────────────────────────────────────────────────────────
-  // 5. ADD SECURITY HEADERS TO RESPONSE
+  // 5. INTERNATIONALIZATION - Handle locale prefixed URLs
+  // ─────────────────────────────────────────────────────────────────────────────
+  const pathLocale = getLocaleFromPathname(pathname);
+
+  // If URL has locale prefix (e.g., /sw/solutions), rewrite to base path
+  if (pathLocale && pathLocale !== defaultLocale) {
+    // Remove locale prefix from URL
+    const newPathname = pathname.replace(`/${pathLocale}`, '') || '/';
+    const newUrl = request.nextUrl.clone();
+    newUrl.pathname = newPathname;
+
+    // Rewrite to the base path (keep same page, just different locale)
+    const response = NextResponse.rewrite(newUrl);
+
+    // Set locale cookie so the page knows which language to display
+    response.cookies.set('NEXT_LOCALE', pathLocale, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      sameSite: 'lax',
+    });
+
+    // Add security headers
+    response.headers.set('X-Security-Verified', 'EmersonEIMS-Protected');
+    response.headers.set('X-Request-ID', `EIMS-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+    response.headers.set('X-Locale', pathLocale);
+
+    return response;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 6. PASS THROUGH WITH SECURITY HEADERS
   // ─────────────────────────────────────────────────────────────────────────────
   const response = NextResponse.next();
-  
-  // Add security tracking header
+
+  // Get preferred locale and set header for the app to use
+  const preferredLocale = getPreferredLocale(request);
   response.headers.set('X-Security-Verified', 'EmersonEIMS-Protected');
   response.headers.set('X-Request-ID', `EIMS-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
-  
+  response.headers.set('X-Locale', preferredLocale);
+
   return response;
 }
 
@@ -256,8 +327,9 @@ export const config = {
      * - sitemap.xml (SEO sitemap)
      * - robots.txt (SEO robots)
      * - manifest.webmanifest (PWA manifest)
-     * - public folder files
+     * - public folder files (images, fonts, videos)
+     * - api routes
      */
-    '/((?!_next/static|_next/image|favicon.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|images|fonts|videos|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$).*)',
+    '/((?!_next/static|_next/image|api|favicon.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|images|fonts|videos|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$).*)',
   ],
 };

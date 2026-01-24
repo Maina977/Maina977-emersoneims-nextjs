@@ -17,6 +17,7 @@ import { KeyboardShortcutsHelper } from '@/components/accessibility/FocusManagem
 import { AntiScrapingMeta } from '@/components/security/SecurityShield';
 import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, getLocale } from 'next-intl/server';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import WebsiteStatsCounter from '@/components/social/WebsiteStatsCounter';
 
@@ -34,18 +35,6 @@ import UrgencyBar from '@/components/conversion/UrgencyBar';
 // AI PERSONALIZATION & SEO DOMINATION
 import IntelligentPersonalization from '@/components/ai/IntelligentPersonalization';
 import AdvancedSEO, { SEOEventTracker } from '@/components/seo/AdvancedSEO';
-
-// Default messages for the root layout (English)
-const defaultMessages = {
-  "Home": "Home",
-  "About": "About",
-  "Diagnostics": "Diagnostics",
-  "Services": "Services",
-  "Contact": "Contact",
-  "Solar": "Solar",
-  "Generators": "Generators",
-  "Solutions": "Solutions"
-};
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
@@ -308,12 +297,16 @@ export const metadata: Metadata = {
   category: 'technology',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const isDev = process.env.NODE_ENV !== 'production';
+
+  // Get locale and messages dynamically from cookie
+  const locale = await getLocale();
+  const messages = await getMessages();
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -486,7 +479,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang={locale} className="scroll-smooth">
       <head>
         {/* Structured Data - LocalBusiness Schema */}
         <script
@@ -600,9 +593,9 @@ export default function RootLayout({
         <link rel="alternate" hrefLang="sw" href={`${siteUrl}/sw`} />
         <link rel="alternate" hrefLang="x-default" href={`${siteUrl}`} />
       </head>
-      <body className={`${inter.className} antialiased`} suppressHydrationWarning lang="en">
+      <body className={`${inter.className} antialiased`} suppressHydrationWarning lang={locale}>
         <ScreenReaderAnnouncerProvider>
-        <NextIntlClientProvider locale="en" messages={defaultMessages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
         
         {/* Real-time Analytics Tracker */}
         <AnalyticsTracker />
