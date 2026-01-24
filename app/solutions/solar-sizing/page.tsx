@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SectionLead from "../../components/generators/SectionLead";
+import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 
 // =====================================================
@@ -265,9 +265,13 @@ export default function SolarSizingHub() {
 
   return (
     <main className="bg-black min-h-screen">
-      <SectionLead
+      <CinematicHeroImage
+        src="/images/3 (1).png"
+        alt="Solar System Sizing"
         title="Solar System Sizing Hub"
         subtitle="Professional solar system design tools. Calculate your load, size panels, batteries, and inverters. Get it right the first time with our comprehensive sizing guides."
+        colorGrade="hollywood"
+        height="h-[50vh]"
       />
 
       {/* Tab Navigation */}

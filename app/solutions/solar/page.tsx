@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SectionLead from "../../components/generators/SectionLead";
+import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
 
@@ -416,9 +416,13 @@ export default function SolarSolutionHub() {
 
   return (
     <main className="bg-black min-h-screen">
-      <SectionLead
+      <CinematicHeroImage
+        src="/images/1 (1).png"
+        alt="Solar Power Solutions"
         title="Solar Power Solutions Hub"
         subtitle="Complete guide to solar installation, maintenance, and troubleshooting. From panel selection to inverter fault codes - everything you need to maximize your solar investment."
+        colorGrade="hollywood"
+        height="h-[50vh]"
       />
 
       {/* Tab Navigation */}

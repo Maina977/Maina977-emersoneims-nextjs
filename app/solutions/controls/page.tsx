@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
+import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 
 // =====================================================
 // COMPREHENSIVE DEEPSEA & POWERWIZARD SOLUTIONS HUB
@@ -421,7 +422,7 @@ export default function ControlsSolutionHub() {
           style={{ scale: heroScale }}
         >
           <Image
-            src="/images/7320.png"
+            src="/images/68.png"
             alt="Generator Control Systems"
             fill
             priority

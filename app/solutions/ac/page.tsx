@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SectionLead from "../../components/generators/SectionLead";
+import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 
 // =====================================================
@@ -363,9 +363,13 @@ export default function ACSolutionHub() {
 
   return (
     <main className="bg-black min-h-screen">
-      <SectionLead
+      <CinematicHeroImage
+        src="/images/hvac-industrial-cooling.png"
+        alt="Air Conditioning Solutions"
         title="Air Conditioning Solutions Hub"
         subtitle="Complete guide to AC installation, maintenance, and troubleshooting. From BTU sizing to refrigerant handling - professional knowledge at your fingertips."
+        colorGrade="hollywood"
+        height="h-[50vh]"
       />
 
       {/* Tab Navigation */}

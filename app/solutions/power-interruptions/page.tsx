@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SectionLead from "../../components/generators/SectionLead";
+import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 
 const TABS = [
@@ -48,9 +48,13 @@ export default function PowerInterruptionsHub() {
 
   return (
     <main className="bg-black min-h-screen">
-      <SectionLead
+      <CinematicHeroImage
+        src="/images/generator-canopy-fabrication.png"
+        alt="Power Interruptions Solutions"
         title="Power Interruptions Solutions"
         subtitle="Comprehensive guide to power quality problems, surge protection, and voltage issues. Protect your equipment and operations."
+        colorGrade="hollywood"
+        height="h-[50vh]"
       />
 
       <section className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10">

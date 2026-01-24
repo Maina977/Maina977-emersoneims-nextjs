@@ -1,6 +1,6 @@
 'use client';
 
-import SectionLead from "../components/generators/SectionLead";
+import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import UnifiedCTA, { CTASection } from "@/components/cta/UnifiedCTA";
@@ -54,9 +54,13 @@ export default function SolutionsHome() {
         }}
       />
 
-      <SectionLead
-        title="Solutions: your engineering bible"
+      <CinematicHeroImage
+        src="/images/70.png"
+        alt="Power Solutions"
+        title="Solutions: Your Engineering Bible"
         subtitle="Authoritative guides for diesel generators, controls, solar, power quality, AC, UPS, automation, pumps, incinerators, and motors."
+        colorGrade="hollywood"
+        height="h-[50vh]"
       />
 
       <section className="mx-auto max-w-7xl px-6 pb-20">
