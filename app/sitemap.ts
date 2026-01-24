@@ -57,24 +57,20 @@ const generatorSizes = [
   '600kva', '750kva', '800kva', '1000kva', '1250kva', '1500kva', '2000kva'
 ];
 
-// Blog posts for sitemap
+// Blog posts for sitemap - matches lib/data/blog-articles.ts
 const blogPosts = [
-  'complete-guide-generator-sizing-kenya',
-  'solar-power-investment-roi-kenya',
-  'generator-maintenance-checklist',
-  'ups-systems-buying-guide',
-  'motor-rewinding-when-to-repair',
-  'power-backup-solutions-hospitals',
-  'how-to-choose-generator-kenya',
-  'diesel-vs-petrol-generator',
-  'generator-fuel-consumption-guide',
-  'solar-roi-calculator-kenya',
-  'backup-power-for-hospitals',
-  'industrial-generators-guide',
-  'generator-noise-reduction-tips',
-  'generator-load-calculation',
-  'automatic-transfer-switch-guide',
-  'generator-maintenance-schedule'
+  'generator-maintenance-tips-kenya',
+  'generator-cost-saving-strategies',
+  'generator-buying-guide-kenya',
+  'generator-safety-tips-kenya',
+  'generator-fire-safety-prevention',
+  'solar-energy-solutions-kenya',
+  'weather-impact-generators-kenya-counties',
+  'diy-generator-maintenance-home',
+  'diesel-generator-best-practices',
+  'generator-roi-analysis-kenya',
+  'solar-installation-tips-kenya',
+  'generator-procurement-kenya',
 ];
 
 // Error Code Categories for Diagnostic Pages
