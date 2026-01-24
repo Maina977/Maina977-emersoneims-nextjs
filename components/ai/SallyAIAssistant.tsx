@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 
 /**
  * EMMA - AI CHAT ASSISTANT FOR EMERSONEIMS
@@ -26,7 +27,7 @@ import Link from 'next/link';
 interface Message {
   id: string;
   text: string;
-  sender: 'emma' | 'user';
+  sender: 'sally' | 'user';
   timestamp: Date;
   options?: {
     label: string;
@@ -212,19 +213,19 @@ export default function SallyAIAssistant() {
 
   // Auto-open after 5 seconds on first visit
   useEffect(() => {
-    const hasSeenEmma = localStorage.getItem('emma_seen');
-    if (!hasSeenEmma) {
+    const hasSeenSally = localStorage.getItem('sally_seen');
+    if (!hasSeenSally) {
       const timer = setTimeout(() => {
         setIsOpen(true);
-        sendEmmaMessage(
-          "Hello! I'm Emma, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,247 spare parts.\n\nWhat's your name?",
+        sendSallyMessage(
+          "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,247 spare parts.\n\nWhat's your name?",
           []
         );
-        localStorage.setItem('emma_seen', 'true');
+        localStorage.setItem('sally_seen', 'true');
       }, 5000);
       return () => clearTimeout(timer);
     } else {
-      const savedProfile = localStorage.getItem('emma_profile');
+      const savedProfile = localStorage.getItem('sally_profile');
       if (savedProfile) {
         const profile = JSON.parse(savedProfile);
         setUserProfile(profile);
@@ -237,13 +238,13 @@ export default function SallyAIAssistant() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendEmmaMessage = (text: string, options?: { label: string; action: string }[], delay = 1000) => {
+  const sendSallyMessage = (text: string, options?: { label: string; action: string }[], delay = 1000) => {
     setIsTyping(true);
     setTimeout(() => {
       const message: Message = {
         id: Date.now().toString(),
         text,
-        sender: 'emma',
+        sender: 'sally',
         timestamp: new Date(),
         options,
       };
@@ -314,9 +315,9 @@ export default function SallyAIAssistant() {
     sendUserMessage(name);
     const updatedProfile = { ...userProfile, name: name.trim() };
     setUserProfile(updatedProfile);
-    localStorage.setItem('emma_profile', JSON.stringify(updatedProfile));
+    localStorage.setItem('sally_profile', JSON.stringify(updatedProfile));
 
-    sendEmmaMessage(
+    sendSallyMessage(
       `Great to meet you, ${name}!\n\nEmersonEIMS offers 9 comprehensive services:\n\n${SERVICES_LIST.map(s => `${s.icon} ${s.label}`).join('\n')}\n\nWhich service are you interested in?`,
       SERVICES_LIST.map(s => ({ label: `${s.icon} ${s.label}`, action: `interest:${s.value}` })),
       1500
@@ -331,12 +332,12 @@ export default function SallyAIAssistant() {
     sendUserMessage(`${selectedService.icon} ${selectedService.label}`);
     const updatedProfile = { ...userProfile, interest: service };
     setUserProfile(updatedProfile);
-    localStorage.setItem('emma_profile', JSON.stringify(updatedProfile));
+    localStorage.setItem('sally_profile', JSON.stringify(updatedProfile));
 
     const name = userProfile.name || 'there';
     const detailedResponse = getServiceDetails(service, name);
 
-    sendEmmaMessage(
+    sendSallyMessage(
       detailedResponse + '\n\nWhich county are you located in?',
       LOCATIONS.map(loc => ({ label: loc, action: `location:${loc}` })),
       1000
@@ -348,7 +349,7 @@ export default function SallyAIAssistant() {
     sendUserMessage(location);
     const updatedProfile = { ...userProfile, location };
     setUserProfile(updatedProfile);
-    localStorage.setItem('emma_profile', JSON.stringify(updatedProfile));
+    localStorage.setItem('sally_profile', JSON.stringify(updatedProfile));
 
     const name = userProfile.name || 'there';
     const interest = userProfile.interest || '';
@@ -363,7 +364,7 @@ export default function SallyAIAssistant() {
 
     locationResponse += 'How would you like to proceed?';
 
-    sendEmmaMessage(
+    sendSallyMessage(
       locationResponse,
       [
         { label: '📞 Call Us Now', action: 'call' },
@@ -385,7 +386,7 @@ export default function SallyAIAssistant() {
     const lowerQuestion = question.toLowerCase();
 
     if (lowerQuestion.includes('price') || lowerQuestion.includes('cost') || lowerQuestion.includes('how much')) {
-      sendEmmaMessage(
+      sendSallyMessage(
         `${name}, pricing varies based on your specific requirements:\n\n` +
         `**Generator Services:**\n` +
         `- Service calls: From KSh 5,000\n` +
@@ -401,7 +402,7 @@ export default function SallyAIAssistant() {
         ]
       );
     } else if (lowerQuestion.includes('emergency') || lowerQuestion.includes('urgent')) {
-      sendEmmaMessage(
+      sendSallyMessage(
         `${name}, for EMERGENCIES, contact us immediately:\n\n` +
         `📞 Primary: +254-768-860-665\n` +
         `📞 Secondary: +254-782-914-717\n\n` +
@@ -416,7 +417,7 @@ export default function SallyAIAssistant() {
         ]
       );
     } else if (lowerQuestion.includes('error') || lowerQuestion.includes('fault') || lowerQuestion.includes('code')) {
-      sendEmmaMessage(
+      sendSallyMessage(
         `${name}, we have a comprehensive diagnostic database with 13,500+ error codes!\n\n` +
         `**Supported Brands:**\n` +
         `Cummins, Caterpillar, Perkins, DeepSea, PowerCommand, Volvo, MTU, Deutz, Kohler, Generac, and more.\n\n` +
@@ -432,7 +433,7 @@ export default function SallyAIAssistant() {
         ]
       );
     } else if (lowerQuestion.includes('parts') || lowerQuestion.includes('spare')) {
-      sendEmmaMessage(
+      sendSallyMessage(
         `${name}, we stock 1,247+ genuine spare parts!\n\n` +
         `**Parts Categories:**\n` +
         `- Filters (oil, fuel, air, water)\n` +
@@ -451,7 +452,7 @@ export default function SallyAIAssistant() {
       );
     } else {
       // Default detailed response
-      sendEmmaMessage(
+      sendSallyMessage(
         `${name}, thanks for your question!\n\n` +
         `To give you the most accurate information, I recommend speaking with our technical team:\n\n` +
         `📞 Call: +254-768-860-665\n` +
@@ -536,17 +537,17 @@ export default function SallyAIAssistant() {
             onClick={() => {
               setIsOpen(true);
               if (messages.length === 0) {
-                const savedProfile = localStorage.getItem('emma_profile');
+                const savedProfile = localStorage.getItem('sally_profile');
                 if (savedProfile) {
                   const profile = JSON.parse(savedProfile);
-                  sendEmmaMessage(
+                  sendSallyMessage(
                     `Welcome back, ${profile.name}!\n\nI'm here to help with generators, solar, spare parts, and all our services.\n\nWhat can I assist you with today?`,
                     SERVICES_LIST.slice(0, 4).map(s => ({ label: `${s.icon} ${s.label}`, action: `interest:${s.value}` }))
                   );
                   setConversationStep(1);
                 } else {
-                  sendEmmaMessage(
-                    "Hello! I'm Emma, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,247 spare parts.\n\nWhat's your name?",
+                  sendSallyMessage(
+                    "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,247 spare parts.\n\nWhat's your name?",
                     []
                   );
                 }
@@ -554,17 +555,23 @@ export default function SallyAIAssistant() {
             }}
             className="fixed bottom-32 right-6 z-[9998] w-16 h-16 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white rounded-full shadow-2xl flex items-center justify-center group hover:scale-110 transition-transform"
             whileHover={{ rotate: 10 }}
-            aria-label="Chat with Emma - AI Assistant"
+            aria-label="Chat with Sally - AI Assistant"
           >
-            {/* Emma Avatar */}
-            <div className="relative">
-              <span className="text-2xl">💬</span>
+            {/* Sally Avatar */}
+            <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/50">
+              <Image
+                src="/images/sally.jpg"
+                alt="Sally - AI Assistant"
+                fill
+                className="object-cover"
+                sizes="48px"
+              />
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse" />
             </div>
 
             {/* Tooltip */}
             <div className="absolute right-full mr-3 bg-black text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              Chat with Emma
+              Chat with Sally
             </div>
 
             {/* Notification Badge */}
@@ -598,14 +605,18 @@ export default function SallyAIAssistant() {
             {/* Header */}
             <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <span className="text-xl">🤖</span>
-                  </div>
+                <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white/30">
+                  <Image
+                    src="/images/sally.jpg"
+                    alt="Sally"
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">Emma</h3>
+                  <h3 className="font-bold text-lg">Sally</h3>
                   <p className="text-xs text-amber-100">EmersonEIMS AI Assistant</p>
                 </div>
               </div>
