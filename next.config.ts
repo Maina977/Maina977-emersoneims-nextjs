@@ -186,6 +186,25 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Sitemap & Robots - Short cache for quick updates
+      {
+        source: '/sitemap.xml',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, s-maxage=3600, stale-while-revalidate=60',
+          },
+        ],
+      },
+      {
+        source: '/robots.txt',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, s-maxage=3600, stale-while-revalidate=60',
+          },
+        ],
+      },
     ];
   },
 
