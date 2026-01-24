@@ -98,12 +98,21 @@ function resolvePage(
   return null;
 }
 
-// Generate static params for key pages
+// Priority counties for full static generation (major cities)
+const PRIORITY_COUNTIES = [
+  'nairobi', 'mombasa', 'kisumu', 'nakuru', 'eldoret',
+  'kiambu', 'machakos', 'kajiado', 'nyeri', 'meru'
+];
+
+// Generate static params for key pages only (reduced for deployment size)
+// Other pages generated on-demand with ISR
 export async function generateStaticParams() {
   const params: { county: string; slug: string[] }[] = [];
 
   for (const county of KENYA_LOCATIONS) {
-    // County + Service pages (~705 combinations)
+    const isPriority = PRIORITY_COUNTIES.includes(county.slug);
+
+    // County + Service pages for ALL counties (~705 combinations)
     for (const service of SEO_SERVICES) {
       params.push({
         county: county.slug,
@@ -111,23 +120,19 @@ export async function generateStaticParams() {
       });
     }
 
-    // Constituency landing pages (~290 pages)
-    for (const constituency of county.constituencies) {
-      params.push({
-        county: county.slug,
-        slug: [constituency.slug],
-      });
-
-      // Constituency + Service pages (~6000+ combinations)
-      for (const service of SEO_SERVICES) {
+    // Only pre-generate constituency pages for priority counties
+    // Other constituencies generated on-demand via ISR
+    if (isPriority) {
+      for (const constituency of county.constituencies) {
         params.push({
           county: county.slug,
-          slug: [constituency.slug, service.slug],
+          slug: [constituency.slug],
         });
       }
-
-      // Village pages and Village + Service pages generated on-demand via ISR
     }
+
+    // Constituency + Service pages generated on-demand via ISR
+    // Village pages generated on-demand via ISR
   }
 
   return params;
