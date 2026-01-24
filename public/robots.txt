@@ -22,9 +22,11 @@ Allow: /counties
 Allow: /diagnostics
 Allow: /spare-parts
 Allow: /blog
+Allow: /sitemap.xml
 Disallow: /api/
 Disallow: /admin/
-Disallow: /_next/
+Disallow: /_next/static/
+Disallow: /_next/image/
 Disallow: /private/
 
 # Google Images - Full image access
@@ -478,7 +480,6 @@ Crawl-delay: 5
 # SITEMAP LOCATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-Sitemap: https://emersoneims.com/sitemap.xml
 Sitemap: https://www.emersoneims.com/sitemap.xml
 
 # ═══════════════════════════════════════════════════════════════════════════════
