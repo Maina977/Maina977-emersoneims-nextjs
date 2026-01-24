@@ -2,6 +2,10 @@ import { MetadataRoute } from 'next';
 import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 
+// Force dynamic generation - bypass edge cache completely
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🗺️ COMPREHENSIVE SITEMAP FOR #1 SEO RANKING
 // All 47 Kenya Counties + 290 Constituencies + 15 Services + Products + Content

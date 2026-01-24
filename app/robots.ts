@@ -1,5 +1,9 @@
 import { MetadataRoute } from 'next';
 
+// Force dynamic generation - bypass edge cache
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
