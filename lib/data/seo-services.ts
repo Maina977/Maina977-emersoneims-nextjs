@@ -18,7 +18,7 @@ export interface SEOService {
   keywords: string[];
   description: string;
   icon: string;
-  category: 'generators' | 'solar' | 'motors' | 'ups' | 'electrical';
+  category: 'generators' | 'solar' | 'motors' | 'ups' | 'electrical' | 'ac' | 'borehole' | 'automation' | 'incinerators';
   metaTemplate: {
     title: string;
     description: string;
@@ -1258,6 +1258,388 @@ export const SEO_SERVICES: SEOService[] = [
         question: 'What electrical services do you offer in {location}?',
         answer: 'We offer complete electrical services including installation, maintenance, repairs, and upgrades in {location}.'
       }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // ❄️ AIR CONDITIONING (AC) SERVICES
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  {
+    id: 'ac-companies',
+    slug: 'ac-companies',
+    name: 'AC Companies',
+    shortName: 'AC Companies',
+    keywords: ['AC companies', 'air conditioning companies', 'HVAC companies', 'AC company near me', 'air conditioning company', 'AC contractor', 'AC dealer', 'best AC company', 'air conditioning contractor', 'HVAC contractor'],
+    description: 'Leading air conditioning companies',
+    icon: 'Building2',
+    category: 'ac',
+    metaTemplate: {
+      title: 'AC Companies in {location} | Best Air Conditioning Companies Kenya',
+      description: 'Top AC companies in {location}. Professional air conditioning installation, repair & maintenance. All brands. Free quotes. Call +254768860665',
+      h1: 'AC Companies in {location}'
+    },
+    features: ['Licensed AC contractors', 'All major brands', 'Residential & commercial', 'Installation & repairs', 'Maintenance contracts', '24/7 emergency service'],
+    faqs: [
+      { question: 'What is the best AC company in {location}?', answer: 'Emerson EIMS is a leading AC company in {location}, offering professional installation, repair, and maintenance for all AC brands.' },
+      { question: 'Do AC companies in {location} offer free quotes?', answer: 'Yes, we provide free site assessments and quotes for AC installation in {location}. No obligation.' },
+      { question: 'Which AC brands do you install in {location}?', answer: 'We install all major brands including Daikin, Samsung, LG, Carrier, Midea, and more in {location}.' }
+    ]
+  },
+  {
+    id: 'ac-installation',
+    slug: 'ac-installation',
+    name: 'AC Installation',
+    shortName: 'AC Installation',
+    keywords: ['AC installation', 'air conditioning installation', 'install AC', 'AC fitting', 'AC installation cost', 'AC installer', 'split AC installation', 'central AC installation', 'AC installation near me'],
+    description: 'Professional AC installation services',
+    icon: 'Snowflake',
+    category: 'ac',
+    metaTemplate: {
+      title: 'AC Installation in {location} | Air Conditioning Installation Kenya',
+      description: 'Professional AC installation in {location}. Split, cassette & central AC. All brands. Quality workmanship. Warranty included. Call +254768860665',
+      h1: 'AC Installation in {location}'
+    },
+    features: ['Split AC installation', 'Cassette AC installation', 'Central AC systems', 'VRF/VRV systems', 'Ductwork installation', 'Quality copper piping'],
+    faqs: [
+      { question: 'How much does AC installation cost in {location}?', answer: 'AC installation costs in {location} range from KES 15,000-50,000 depending on AC type and complexity. We provide free quotes.' },
+      { question: 'How long does AC installation take in {location}?', answer: 'Standard split AC installation in {location} takes 3-5 hours. Larger systems may take 1-2 days.' },
+      { question: 'Do you install all AC brands in {location}?', answer: 'Yes, our technicians install all AC brands including Daikin, Samsung, LG, Carrier, Midea in {location}.' }
+    ]
+  },
+  {
+    id: 'ac-repair',
+    slug: 'ac-repair',
+    name: 'AC Repair',
+    shortName: 'AC Repair',
+    keywords: ['AC repair', 'air conditioning repair', 'AC fix', 'AC not cooling', 'AC technician', 'AC repair near me', 'air conditioner repair', 'HVAC repair', 'AC not working', 'AC service'],
+    description: 'Expert AC repair services',
+    icon: 'Wrench',
+    category: 'ac',
+    metaTemplate: {
+      title: 'AC Repair in {location} | Air Conditioning Repair Service Kenya',
+      description: 'AC repair in {location}. AC not cooling? Leaking? Making noise? Fast repairs. All brands serviced. 24/7 emergency. Call +254768860665',
+      h1: 'AC Repair in {location}'
+    },
+    features: ['All AC brands repaired', 'Gas refilling', 'Compressor repair', 'PCB/control board repair', 'Leak detection & repair', '24/7 emergency service'],
+    faqs: [
+      { question: 'My AC is not cooling in {location}. What should I do?', answer: 'Common causes include low gas, dirty filters, or compressor issues. Call us at +254768860665 for fast diagnosis and repair in {location}.' },
+      { question: 'How much does AC repair cost in {location}?', answer: 'AC repair costs in {location} depend on the issue. Gas refill from KES 5,000, repairs from KES 3,000. We provide upfront quotes.' },
+      { question: 'Do you offer emergency AC repair in {location}?', answer: 'Yes, we provide 24/7 emergency AC repair in {location}. Call us anytime for urgent AC issues.' }
+    ]
+  },
+  {
+    id: 'ac-maintenance',
+    slug: 'ac-maintenance',
+    name: 'AC Maintenance',
+    shortName: 'AC Service',
+    keywords: ['AC maintenance', 'AC servicing', 'AC service', 'air conditioning maintenance', 'AC cleaning', 'AC filter cleaning', 'AC tune up', 'HVAC maintenance', 'AC maintenance near me', 'AC service contract'],
+    description: 'Professional AC maintenance services',
+    icon: 'Settings',
+    category: 'ac',
+    metaTemplate: {
+      title: 'AC Maintenance in {location} | Air Conditioning Service Kenya',
+      description: 'AC maintenance in {location}. Regular servicing extends AC life. Filter cleaning, gas check, full service. AMC available. Call +254768860665',
+      h1: 'AC Maintenance in {location}'
+    },
+    features: ['Filter cleaning', 'Coil cleaning', 'Gas level check', 'Electrical inspection', 'Performance testing', 'Annual service contracts'],
+    faqs: [
+      { question: 'How often should AC be serviced in {location}?', answer: 'We recommend AC servicing every 3-4 months in {location} for optimal performance and efficiency.' },
+      { question: 'What is included in AC maintenance in {location}?', answer: 'Our AC maintenance includes filter cleaning, coil cleaning, gas check, electrical inspection, and performance testing.' },
+      { question: 'Do you offer AC maintenance contracts in {location}?', answer: 'Yes, our Annual Maintenance Contracts in {location} include regular visits, priority response, and discounted repairs.' }
+    ]
+  },
+  {
+    id: 'ac-gas-refill',
+    slug: 'ac-gas-refill',
+    name: 'AC Gas Refill',
+    shortName: 'AC Gas',
+    keywords: ['AC gas refill', 'AC gas top up', 'AC refrigerant', 'AC gas recharge', 'R410A gas', 'R22 gas', 'AC freon', 'AC gas refill near me', 'air conditioner gas', 'AC gas price'],
+    description: 'AC gas refilling and refrigerant services',
+    icon: 'Wind',
+    category: 'ac',
+    metaTemplate: {
+      title: 'AC Gas Refill in {location} | AC Refrigerant Recharge Kenya',
+      description: 'AC gas refill in {location}. R410A, R22, R32 refrigerant. Professional service. Leak detection included. Fair prices. Call +254768860665',
+      h1: 'AC Gas Refill in {location}'
+    },
+    features: ['R410A refrigerant', 'R22 refrigerant', 'R32 refrigerant', 'Leak detection', 'Vacuum pump service', 'Pressure testing'],
+    faqs: [
+      { question: 'How much does AC gas refill cost in {location}?', answer: 'AC gas refill in {location} costs from KES 5,000-15,000 depending on AC size and gas type.' },
+      { question: 'How do I know if my AC needs gas in {location}?', answer: 'Signs include AC not cooling properly, ice on pipes, or hissing sounds. We can diagnose your AC in {location}.' },
+      { question: 'Do you check for leaks before refilling AC gas?', answer: 'Yes, we always check for leaks first. Refilling a leaking AC wastes money. We fix leaks before refilling.' }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // 💧 BOREHOLE & WATER PUMP SERVICES
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  {
+    id: 'borehole-drilling',
+    slug: 'borehole-drilling',
+    name: 'Borehole Drilling',
+    shortName: 'Borehole Drilling',
+    keywords: ['borehole drilling', 'borehole drilling companies', 'drill borehole', 'water borehole', 'borehole drilling cost', 'borehole drilling near me', 'borehole contractors', 'water well drilling', 'borehole drilling Kenya'],
+    description: 'Professional borehole drilling services',
+    icon: 'Drill',
+    category: 'borehole',
+    metaTemplate: {
+      title: 'Borehole Drilling in {location} | Borehole Drilling Companies Kenya',
+      description: 'Borehole drilling in {location}. Professional drilling services. Survey, drilling & pump installation. Competitive rates. Call +254768860665',
+      h1: 'Borehole Drilling in {location}'
+    },
+    features: ['Hydro-geological survey', 'Professional drilling', 'Casing installation', 'Pump installation', 'Water testing', 'Completion certificate'],
+    faqs: [
+      { question: 'How much does borehole drilling cost in {location}?', answer: 'Borehole drilling in {location} costs from KES 3,000-5,000 per meter depending on geology. Average borehole is 80-150m deep.' },
+      { question: 'How long does borehole drilling take in {location}?', answer: 'Borehole drilling in {location} typically takes 3-7 days depending on depth and rock conditions.' },
+      { question: 'Do you provide borehole survey in {location}?', answer: 'Yes, we conduct hydro-geological surveys before drilling to identify the best location in {location}.' }
+    ]
+  },
+  {
+    id: 'borehole-pumps',
+    slug: 'borehole-pumps',
+    name: 'Borehole Pumps',
+    shortName: 'Borehole Pumps',
+    keywords: ['borehole pumps', 'submersible pumps', 'borehole pump installation', 'water pump', 'borehole pump price', 'borehole pump repair', 'submersible pump', 'deep well pump', 'solar borehole pump', 'borehole pumps Kenya'],
+    description: 'Borehole pump installation and repairs',
+    icon: 'Droplet',
+    category: 'borehole',
+    metaTemplate: {
+      title: 'Borehole Pumps in {location} | Submersible Pump Installation Kenya',
+      description: 'Borehole pumps in {location}. Submersible pump installation, repair & maintenance. Grundfos, Pedrollo, DAB pumps. Call +254768860665',
+      h1: 'Borehole Pumps in {location}'
+    },
+    features: ['Submersible pumps', 'Solar borehole pumps', 'Pump installation', 'Pump repairs', 'Control panels', 'Water storage tanks'],
+    faqs: [
+      { question: 'What size borehole pump do I need in {location}?', answer: 'Pump size depends on borehole depth, yield, and water demand. We assess and recommend the right pump in {location}.' },
+      { question: 'How much do borehole pumps cost in {location}?', answer: 'Borehole pumps in {location} range from KES 50,000-300,000 depending on capacity and brand.' },
+      { question: 'Do you install solar borehole pumps in {location}?', answer: 'Yes, we specialize in solar-powered borehole pumps in {location}. Ideal for areas without electricity.' }
+    ]
+  },
+  {
+    id: 'water-pump-repair',
+    slug: 'water-pump-repair',
+    name: 'Water Pump Repair',
+    shortName: 'Pump Repair',
+    keywords: ['water pump repair', 'pump repair', 'borehole pump repair', 'submersible pump repair', 'pump not working', 'pump technician', 'pump repair near me', 'pump service', 'water pump service'],
+    description: 'Water pump repair and maintenance services',
+    icon: 'Wrench',
+    category: 'borehole',
+    metaTemplate: {
+      title: 'Water Pump Repair in {location} | Borehole Pump Repair Kenya',
+      description: 'Water pump repair in {location}. Submersible, centrifugal & booster pump repairs. Motor rewinding. Fast service. Call +254768860665',
+      h1: 'Water Pump Repair in {location}'
+    },
+    features: ['Submersible pump repair', 'Motor rewinding', 'Impeller replacement', 'Seal replacement', 'Control panel repair', 'Emergency service'],
+    faqs: [
+      { question: 'My borehole pump stopped working in {location}. What do I do?', answer: 'Call us at +254768860665. We provide fast pump diagnosis and repair in {location}.' },
+      { question: 'How much does pump repair cost in {location}?', answer: 'Pump repair costs in {location} depend on the problem. Motor rewinding from KES 15,000, general repairs from KES 5,000.' },
+      { question: 'Can you repair submersible pumps in {location}?', answer: 'Yes, we specialize in submersible pump repairs including motor rewinding and seal replacement in {location}.' }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // 🎛️ CONTROLS & AUTOMATION SERVICES
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  {
+    id: 'control-panels',
+    slug: 'control-panels',
+    name: 'Control Panels',
+    shortName: 'Control Panels',
+    keywords: ['control panels', 'electrical control panel', 'motor control panel', 'MCC panel', 'control panel design', 'control panel fabrication', 'industrial control panel', 'PLC panel', 'automation panel'],
+    description: 'Custom control panel design and fabrication',
+    icon: 'Cpu',
+    category: 'automation',
+    metaTemplate: {
+      title: 'Control Panels in {location} | Electrical Control Panel Fabrication',
+      description: 'Control panels in {location}. Custom design & fabrication. Motor control, PLC panels, automation. Quality workmanship. Call +254768860665',
+      h1: 'Control Panels in {location}'
+    },
+    features: ['Custom panel design', 'Motor control centers', 'PLC panels', 'Distribution boards', 'ATS panels', 'Remote monitoring'],
+    faqs: [
+      { question: 'Do you design custom control panels in {location}?', answer: 'Yes, we design and fabricate custom control panels in {location} for generators, motors, pumps, and industrial processes.' },
+      { question: 'What types of control panels do you make in {location}?', answer: 'We make motor control centers, PLC panels, generator ATS panels, distribution boards, and automation panels.' },
+      { question: 'How long does panel fabrication take in {location}?', answer: 'Standard control panels take 1-2 weeks. Complex panels may take 3-4 weeks depending on specifications.' }
+    ]
+  },
+  {
+    id: 'plc-programming',
+    slug: 'plc-programming',
+    name: 'PLC Programming',
+    shortName: 'PLC Programming',
+    keywords: ['PLC programming', 'PLC programmer', 'industrial automation', 'Siemens PLC', 'Allen Bradley', 'Mitsubishi PLC', 'automation programming', 'SCADA', 'HMI programming', 'PLC services'],
+    description: 'PLC programming and industrial automation',
+    icon: 'Code',
+    category: 'automation',
+    metaTemplate: {
+      title: 'PLC Programming in {location} | Industrial Automation Kenya',
+      description: 'PLC programming in {location}. Siemens, Allen Bradley, Mitsubishi. Industrial automation, SCADA, HMI. Expert programmers. Call +254768860665',
+      h1: 'PLC Programming in {location}'
+    },
+    features: ['Siemens PLC', 'Allen Bradley PLC', 'Mitsubishi PLC', 'HMI/SCADA', 'VFD integration', 'Remote monitoring'],
+    faqs: [
+      { question: 'What PLC brands do you program in {location}?', answer: 'We program Siemens, Allen Bradley, Mitsubishi, Schneider, Omron, and Delta PLCs in {location}.' },
+      { question: 'Do you offer PLC training in {location}?', answer: 'Yes, we provide PLC training for operators and maintenance staff in {location}.' },
+      { question: 'Can you upgrade our old control system in {location}?', answer: 'Yes, we modernize old relay-based systems to PLC control in {location}.' }
+    ]
+  },
+  {
+    id: 'automation-services',
+    slug: 'automation-services',
+    name: 'Automation Services',
+    shortName: 'Automation',
+    keywords: ['automation services', 'industrial automation', 'process automation', 'factory automation', 'building automation', 'automation company', 'automation solutions', 'automation near me', 'control systems'],
+    description: 'Industrial and building automation services',
+    icon: 'Cog',
+    category: 'automation',
+    metaTemplate: {
+      title: 'Automation Services in {location} | Industrial Automation Kenya',
+      description: 'Automation services in {location}. Industrial, process & building automation. PLC, SCADA, VFD. Complete solutions. Call +254768860665',
+      h1: 'Automation Services in {location}'
+    },
+    features: ['Process automation', 'Factory automation', 'Building automation', 'Energy management', 'Remote monitoring', 'System integration'],
+    faqs: [
+      { question: 'What automation services do you offer in {location}?', answer: 'We offer industrial automation, process control, building automation, and energy management systems in {location}.' },
+      { question: 'Can automation reduce costs in {location}?', answer: 'Yes, automation typically reduces labor costs, improves efficiency, and minimizes errors. ROI in 1-2 years.' },
+      { question: 'Do you provide automation maintenance in {location}?', answer: 'Yes, we offer maintenance contracts for automation systems including PLC, SCADA, and VFD in {location}.' }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // 🔥 INCINERATOR SERVICES
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  {
+    id: 'incinerators',
+    slug: 'incinerators',
+    name: 'Incinerators',
+    shortName: 'Incinerators',
+    keywords: ['incinerators', 'waste incinerator', 'medical incinerator', 'hospital incinerator', 'incinerator for sale', 'buy incinerator', 'incinerator Kenya', 'incinerator price', 'industrial incinerator', 'incinerator installation'],
+    description: 'Medical and industrial incinerators',
+    icon: 'Flame',
+    category: 'incinerators',
+    metaTemplate: {
+      title: 'Incinerators in {location} | Medical & Industrial Incinerators Kenya',
+      description: 'Incinerators in {location}. Medical, hospital & industrial incinerators. NEMA compliant. Installation & maintenance. Call +254768860665',
+      h1: 'Incinerators in {location}'
+    },
+    features: ['Medical waste incinerators', 'Hospital incinerators', 'Industrial incinerators', 'NEMA compliant', 'Installation service', 'Maintenance contracts'],
+    faqs: [
+      { question: 'What types of incinerators do you supply in {location}?', answer: 'We supply medical waste, hospital, industrial, and general waste incinerators in {location}. All NEMA compliant.' },
+      { question: 'How much do incinerators cost in {location}?', answer: 'Incinerator prices in {location} range from KES 500,000 to KES 5,000,000+ depending on capacity.' },
+      { question: 'Do your incinerators meet NEMA standards?', answer: 'Yes, all our incinerators meet NEMA environmental standards for emissions. We assist with approvals.' }
+    ]
+  },
+  {
+    id: 'incinerator-installation',
+    slug: 'incinerator-installation',
+    name: 'Incinerator Installation',
+    shortName: 'Incinerator Install',
+    keywords: ['incinerator installation', 'install incinerator', 'incinerator setup', 'medical incinerator installation', 'hospital incinerator installation', 'incinerator commissioning', 'incinerator contractor'],
+    description: 'Professional incinerator installation services',
+    icon: 'Tool',
+    category: 'incinerators',
+    metaTemplate: {
+      title: 'Incinerator Installation in {location} | Professional Setup Kenya',
+      description: 'Incinerator installation in {location}. Professional setup, commissioning & training. NEMA compliance. Warranty included. Call +254768860665',
+      h1: 'Incinerator Installation in {location}'
+    },
+    features: ['Site preparation', 'Professional installation', 'Commissioning', 'Operator training', 'NEMA documentation', 'After-sales support'],
+    faqs: [
+      { question: 'Do you install incinerators in {location}?', answer: 'Yes, we provide complete incinerator installation including site preparation, installation, commissioning, and training in {location}.' },
+      { question: 'How long does incinerator installation take in {location}?', answer: 'Incinerator installation in {location} typically takes 1-2 weeks including civil works and commissioning.' },
+      { question: 'Do you help with NEMA approval in {location}?', answer: 'Yes, we assist with NEMA environmental impact assessment and approval documentation in {location}.' }
+    ]
+  },
+  {
+    id: 'incinerator-maintenance',
+    slug: 'incinerator-maintenance',
+    name: 'Incinerator Maintenance',
+    shortName: 'Incinerator Service',
+    keywords: ['incinerator maintenance', 'incinerator service', 'incinerator repair', 'incinerator servicing', 'incinerator parts', 'incinerator burner service', 'incinerator maintenance contract'],
+    description: 'Incinerator maintenance and repair services',
+    icon: 'Settings',
+    category: 'incinerators',
+    metaTemplate: {
+      title: 'Incinerator Maintenance in {location} | Repair & Service Kenya',
+      description: 'Incinerator maintenance in {location}. Regular servicing, repairs, spare parts. Keep your incinerator efficient. AMC available. Call +254768860665',
+      h1: 'Incinerator Maintenance in {location}'
+    },
+    features: ['Regular servicing', 'Burner maintenance', 'Refractory repair', 'Control system service', 'Spare parts supply', 'Emergency repairs'],
+    faqs: [
+      { question: 'How often should incinerators be serviced in {location}?', answer: 'Incinerators should be serviced monthly for burners and quarterly for full maintenance in {location}.' },
+      { question: 'Do you supply incinerator spare parts in {location}?', answer: 'Yes, we supply burners, refractory materials, thermocouples, and other incinerator parts in {location}.' },
+      { question: 'Do you offer incinerator AMC in {location}?', answer: 'Yes, our Annual Maintenance Contracts include regular visits and priority support in {location}.' }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // ⚡ POWER BACKUP & ATS
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  {
+    id: 'power-backup',
+    slug: 'power-backup',
+    name: 'Power Backup',
+    shortName: 'Power Backup',
+    keywords: ['power backup', 'backup power', 'power backup solutions', 'standby power', 'emergency power', 'power backup system', 'backup power supply', 'power backup near me', 'backup power Kenya'],
+    description: 'Complete power backup solutions',
+    icon: 'BatteryCharging',
+    category: 'ups',
+    metaTemplate: {
+      title: 'Power Backup in {location} | Backup Power Solutions Kenya',
+      description: 'Power backup solutions in {location}. Generators, UPS, solar, inverters. Never lose power again. Free assessment. Call +254768860665',
+      h1: 'Power Backup in {location}'
+    },
+    features: ['Generator backup', 'UPS systems', 'Solar backup', 'Inverter systems', 'Hybrid solutions', 'Automatic changeover'],
+    faqs: [
+      { question: 'What is the best power backup solution in {location}?', answer: 'The best solution depends on your needs. Generators for long outages, UPS for instant backup, solar for sustainability.' },
+      { question: 'How do I choose power backup in {location}?', answer: 'Consider outage duration, critical loads, budget, and space. We provide free assessments in {location}.' },
+      { question: 'Can I combine different backup systems in {location}?', answer: 'Yes, hybrid systems combining solar, batteries, and generators provide the best reliability.' }
+    ]
+  },
+  {
+    id: 'automatic-transfer-switch',
+    slug: 'automatic-transfer-switch',
+    name: 'Automatic Transfer Switch',
+    shortName: 'ATS',
+    keywords: ['automatic transfer switch', 'ATS', 'changeover switch', 'transfer switch', 'generator ATS', 'automatic changeover', 'ATS panel', 'ATS installation', 'transfer switch Kenya'],
+    description: 'Automatic transfer switch installation',
+    icon: 'ToggleRight',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Automatic Transfer Switch in {location} | ATS Installation Kenya',
+      description: 'Automatic transfer switch (ATS) in {location}. Seamless power changeover. Generator & mains integration. Professional installation. Call +254768860665',
+      h1: 'Automatic Transfer Switch in {location}'
+    },
+    features: ['Automatic changeover', 'Manual bypass', 'Multiple sources', 'Load management', 'Remote monitoring', 'All capacities'],
+    faqs: [
+      { question: 'What is an automatic transfer switch?', answer: 'An ATS automatically switches power between mains and generator when outages occur in {location}.' },
+      { question: 'How much does ATS installation cost in {location}?', answer: 'ATS installation in {location} ranges from KES 50,000-300,000 depending on capacity and features.' },
+      { question: 'Can you install ATS for existing generators in {location}?', answer: 'Yes, we retrofit ATS systems to existing generators in {location}.' }
+    ]
+  },
+  {
+    id: 'inverter-systems',
+    slug: 'inverter-systems',
+    name: 'Inverter Systems',
+    shortName: 'Inverters',
+    keywords: ['inverter systems', 'power inverter', 'home inverter', 'inverter battery', 'inverter for home', 'inverter installation', 'inverter Kenya', 'buy inverter', 'inverter price', 'best inverter'],
+    description: 'Inverter and battery backup systems',
+    icon: 'Zap',
+    category: 'ups',
+    metaTemplate: {
+      title: 'Inverter Systems in {location} | Home & Office Inverters Kenya',
+      description: 'Inverter systems in {location}. Home & office power backup. Quality inverters & batteries. Installation included. Call +254768860665',
+      h1: 'Inverter Systems in {location}'
+    },
+    features: ['Pure sine wave inverters', 'Battery backup', 'Automatic charging', 'Home inverters', 'Office inverters', 'Expandable systems'],
+    faqs: [
+      { question: 'How long can an inverter power my home in {location}?', answer: 'Runtime depends on battery capacity and load. A typical system provides 4-8 hours backup in {location}.' },
+      { question: 'What size inverter do I need in {location}?', answer: 'For a typical home in {location}, a 3-5kVA inverter can power lights, TV, fridge, and fans.' },
+      { question: 'How much do inverter systems cost in {location}?', answer: 'Inverter systems in {location} range from KES 50,000 for basic to KES 300,000+ for large capacity.' }
     ]
   }
 ];
