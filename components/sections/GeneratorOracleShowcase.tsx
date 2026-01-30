@@ -19,8 +19,8 @@ const ORACLE_FEATURES = [
   {
     icon: '⚡',
     stat: '5',
-    label: 'Controller Brands',
-    desc: 'DSE, ComAp, Woodward, SmartGen, PowerWizard',
+    label: 'Compatible Brands',
+    desc: 'Major controller manufacturers',
   },
   {
     icon: '🔄',
@@ -36,7 +36,8 @@ const ORACLE_FEATURES = [
   },
 ];
 
-const SUPPORTED_CONTROLLERS = [
+// Compatible controller models (not endorsed by these manufacturers)
+const COMPATIBLE_CONTROLLERS = [
   'DSE 4520', 'DSE 7320', 'DSE 8610', 'DSE 8620',
   'InteliLite NT', 'InteliGen NT', 'InteliSys NT',
   'EasyGen 3000', 'EasyGen 3500',
@@ -256,7 +257,7 @@ export default function GeneratorOracleShowcase() {
           </motion.div>
         </div>
 
-        {/* Supported Controllers */}
+        {/* Compatible Controllers */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -264,10 +265,10 @@ export default function GeneratorOracleShowcase() {
           className="mb-12"
         >
           <h3 className="text-center text-lg font-medium text-slate-400 mb-6">
-            Supported Controllers
+            Compatible Controller Models
           </h3>
           <div className="flex flex-wrap justify-center gap-3">
-            {SUPPORTED_CONTROLLERS.map((controller, i) => (
+            {COMPATIBLE_CONTROLLERS.map((controller, i) => (
               <motion.span
                 key={controller}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -285,6 +286,28 @@ export default function GeneratorOracleShowcase() {
           </div>
         </motion.div>
 
+        {/* FREE TRIAL Banner */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="mb-8"
+        >
+          <div className="bg-gradient-to-r from-green-500/20 via-emerald-500/20 to-green-500/20 border-2 border-green-500/50 rounded-2xl p-6 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-3">
+              <span className="text-4xl">🎉</span>
+              <div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">FREE ACCESS</div>
+                <div className="text-green-400 font-medium">Until March 1st, 2026</div>
+              </div>
+              <span className="text-4xl">🎉</span>
+            </div>
+            <p className="text-slate-300 text-sm">
+              Try Generator Oracle completely FREE! From March 2nd, 2026: <span className="text-amber-400 font-bold">KES 20,000/year</span>
+            </p>
+          </div>
+        </motion.div>
+
         {/* CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -295,11 +318,11 @@ export default function GeneratorOracleShowcase() {
           <div className="inline-flex flex-col sm:flex-row gap-4 items-center">
             <Link
               href="/generator-oracle"
-              className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg rounded-xl hover:from-cyan-600 hover:to-blue-700 transition-all shadow-lg shadow-cyan-500/25 overflow-hidden"
+              className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/25 overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-2">
                 <span>🔮</span>
-                Launch Generator Oracle
+                Try FREE Now
                 <motion.span
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
@@ -321,12 +344,26 @@ export default function GeneratorOracleShowcase() {
               href="/generator-oracle/purchase"
               className="px-8 py-4 bg-amber-500/10 text-amber-400 font-bold text-lg rounded-xl border-2 border-amber-500/50 hover:bg-amber-500/20 hover:border-amber-400 transition-all"
             >
-              Get PRO License - KES 5,000
+              View PRO Plans - KES 20,000/yr
             </Link>
           </div>
 
           <p className="text-slate-500 text-sm mt-6">
-            Free preview available • PRO unlocks all 20,000+ codes • Lifetime access
+            🎁 100% FREE until March 1st, 2026 • Full access to all 20,000+ codes • No credit card required
+          </p>
+        </motion.div>
+
+        {/* Trademark Disclaimer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mt-12 pt-8 border-t border-slate-800"
+        >
+          <p className="text-slate-600 text-xs text-center max-w-3xl mx-auto leading-relaxed">
+            <strong>Disclaimer:</strong> Generator Oracle is an independent diagnostic assistant developed by Emerson EIMS.
+            Compatible with controllers from leading manufacturers including DeepSea, ComAp, Woodward, SmartGen, and Caterpillar PowerWizard.
+            These are trademarks of their respective owners. This tool is not affiliated with or endorsed by these companies.
           </p>
         </motion.div>
       </div>

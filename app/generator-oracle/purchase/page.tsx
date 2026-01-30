@@ -3,15 +3,23 @@
 /**
  * Generator Oracle Purchase Page
  * Complete purchase flow with payment verification
+ *
+ * PRICING: KES 20,000/year (from March 2nd, 2026)
+ * FREE TRIAL: Until March 1st, 2026
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { generateDeviceFingerprint } from '@/lib/generator-oracle/licensing';
 
 type PaymentMethod = 'mpesa' | 'bank';
-type Step = 'payment' | 'verification' | 'success';
+type Step = 'info' | 'payment' | 'verification' | 'success';
+
+// Check if still in free trial
+const FREE_TRIAL_END = new Date('2026-03-02T00:00:00');
+const isFreeTrial = () => new Date() < FREE_TRIAL_END;
+const getDaysRemaining = () => Math.max(0, Math.ceil((FREE_TRIAL_END.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
 
 const PAYMENT_INFO = {
   mpesa: {
@@ -74,7 +82,7 @@ export default function PurchasePage() {
           email: formData.email.trim().toLowerCase(),
           paymentMethod,
           deviceId,
-          amount: 5000,
+          amount: 20000,
           currency: 'KES',
         }),
       });
@@ -161,13 +169,13 @@ export default function PurchasePage() {
               {/* Header */}
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-white mb-2">Complete Your Purchase</h1>
-                <p className="text-slate-400">Generator Oracle PRO - Lifetime Access</p>
+                <p className="text-slate-400">Generator Oracle PRO - Annual Subscription</p>
               </div>
 
               {/* Price Card */}
               <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-2 border-amber-500/50 rounded-2xl p-6 mb-6 text-center">
-                <div className="text-4xl font-bold text-white mb-1">KES 5,000</div>
-                <div className="text-amber-400">One-time payment • Lifetime access</div>
+                <div className="text-4xl font-bold text-white mb-1">KES 20,000</div>
+                <div className="text-amber-400">Annual subscription • Full access for 12 months</div>
               </div>
 
               {/* Payment Method Tabs */}
@@ -228,7 +236,7 @@ export default function PurchasePage() {
                       <li className="flex gap-3">
                         <span className="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm font-bold flex-shrink-0">5</span>
                         <div>
-                          Enter Amount: <span className="font-mono font-bold text-amber-400 bg-slate-800 px-2 py-1 rounded">5000</span>
+                          Enter Amount: <span className="font-mono font-bold text-amber-400 bg-slate-800 px-2 py-1 rounded">20000</span>
                         </div>
                       </li>
                       <li className="flex gap-3">
@@ -272,7 +280,7 @@ export default function PurchasePage() {
                       </div>
                       <div className="flex justify-between py-2">
                         <span className="text-slate-400">Amount</span>
-                        <span className="text-amber-400 font-bold">KES 5,000</span>
+                        <span className="text-amber-400 font-bold">KES 20,000</span>
                       </div>
                     </div>
 

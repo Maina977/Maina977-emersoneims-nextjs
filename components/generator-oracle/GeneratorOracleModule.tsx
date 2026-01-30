@@ -48,6 +48,7 @@ import {
 } from '@/lib/generator-oracle/indexedDBService';
 import LicenseGate from './LicenseGate';
 import InstallPrompt from './InstallPrompt';
+import DiagnosticDashboard from './DiagnosticDashboard';
 
 // Contact info
 const CONTACT_INFO = {
@@ -1134,6 +1135,15 @@ export default function GeneratorOracleModule() {
                     </div>
                   )}
                 </HoloPanel>
+
+                {/* Premium Diagnostic Dashboard with Charts */}
+                {selectedModel && (
+                  <DiagnosticDashboard
+                    parameters={liveParams}
+                    controllerModel={selectedModel}
+                    totalFaultCodes={totalCodes}
+                  />
+                )}
 
                 {/* Analysis Results */}
                 {parameterAnalysis.length > 0 && (

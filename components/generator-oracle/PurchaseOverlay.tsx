@@ -3,12 +3,23 @@
 /**
  * PurchaseOverlay - Shown when user doesn't have a valid license
  * Displays product features, pricing, and payment instructions
+ *
+ * PRICING: KES 20,000/year (from March 2nd, 2026)
+ * FREE until March 1st, 2026
  */
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { type License } from '@/lib/generator-oracle/licensing';
+
+// Pricing configuration
+const PRICING = {
+  amount: 20000,
+  currency: 'KES',
+  period: 'year',
+  usdEquivalent: 154, // Approximate USD equivalent
+};
 
 interface PurchaseOverlayProps {
   onActivateClick: () => void;
@@ -24,8 +35,8 @@ const FEATURES = [
   },
   {
     icon: '⚡',
-    title: '5 Controller Brands',
-    desc: 'DeepSea, ComAp, Woodward, SmartGen, PowerWizard',
+    title: 'Compatible with 5 Brands',
+    desc: 'Works with DeepSea, ComAp, Woodward, SmartGen, PowerWizard controllers',
   },
   {
     icon: '🔄',
@@ -43,9 +54,9 @@ const FEATURES = [
     desc: 'English, Swahili, French, Arabic & more',
   },
   {
-    icon: '♾️',
-    title: 'Lifetime Updates',
-    desc: 'One payment - all future codes included',
+    icon: '📊',
+    title: 'Annual Updates',
+    desc: 'Regular database updates with new codes',
   },
 ];
 
@@ -249,10 +260,10 @@ export default function PurchaseOverlay({
 
               <div className="relative">
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl font-bold text-white">KES 5,000</span>
-                  <span className="text-slate-400">one-time</span>
+                  <span className="text-5xl font-bold text-white">KES 20,000</span>
+                  <span className="text-slate-400">/year</span>
                 </div>
-                <p className="text-amber-400 font-medium mb-4">~ USD $39 | Lifetime Access</p>
+                <p className="text-amber-400 font-medium mb-4">~ USD $154 | Annual Subscription</p>
 
                 <ul className="space-y-2 mb-6">
                   {['Full access to all 20,000+ fault codes', 'Unlimited searches & diagnoses', 'Offline mobile app access', 'All future updates included'].map(item => (
@@ -301,7 +312,7 @@ export default function PurchaseOverlay({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Amount:</span>
-                        <span className="text-amber-400 font-mono font-bold">KES 5,000</span>
+                        <span className="text-amber-400 font-mono font-bold">KES 20,000</span>
                       </div>
                       <div className="pt-2 border-t border-slate-700 text-sm text-slate-400">
                         {PAYMENT_METHODS.mpesa.instructions}
@@ -323,7 +334,7 @@ export default function PurchaseOverlay({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Amount:</span>
-                        <span className="text-amber-400 font-mono font-bold">KES 5,000</span>
+                        <span className="text-amber-400 font-mono font-bold">KES 20,000</span>
                       </div>
                     </div>
                   )}
@@ -391,15 +402,21 @@ export default function PurchaseOverlay({
           </motion.div>
         </div>
 
-        {/* Footer */}
+        {/* Footer with Trademark Disclaimer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-12 text-center"
+          className="mt-12 text-center space-y-4"
         >
           <p className="text-slate-500 text-sm">
-            © 2025 EmersonEIMS. Generator Oracle is a registered trademark.
+            © 2025 EmersonEIMS. Generator Oracle is a product of Emerson EIMS.
+          </p>
+          <p className="text-slate-600 text-xs max-w-2xl mx-auto leading-relaxed">
+            <strong>Disclaimer:</strong> This software is an independent diagnostic assistant.
+            Compatible with controllers from leading manufacturers. DeepSea, ComAp, Woodward,
+            SmartGen, and Caterpillar PowerWizard are trademarks of their respective owners.
+            This tool is independently developed and not affiliated with or endorsed by these companies.
           </p>
         </motion.div>
       </div>
