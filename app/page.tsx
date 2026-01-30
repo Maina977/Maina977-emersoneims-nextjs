@@ -25,6 +25,7 @@ import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import CaseStudiesSection from '@/components/sections/CaseStudiesSection';
 import TrustBadgesSection from '@/components/sections/TrustBadgesSection';
 import DiagnosticModuleShowcase from '@/components/sections/DiagnosticModuleShowcase';
+import GeneratorOracleShowcase from '@/components/sections/GeneratorOracleShowcase';
 import PremiumServicesShowcase from '@/components/sections/PremiumServicesShowcase';
 import IndustryLeadingTrust from '@/components/sections/IndustryLeadingTrust';
 import LiveOperationsDashboard from '@/components/sections/LiveOperationsDashboard';
@@ -253,6 +254,9 @@ export default function AwwwardsHomepage() {
                 <div className="flex items-center gap-2">
                   <span className="text-amber-500">✓</span> 24/7 Support
                 </div>
+                <Link href="/generator-oracle" className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
+                  <span className="text-cyan-500">🔮</span> 20,000+ Fault Codes
+                </Link>
               </motion.div>
             </motion.div>
           </motion.div>
@@ -810,7 +814,10 @@ export default function AwwwardsHomepage() {
         {/* SECTION 7.5: WORLD'S MOST ADVANCED DIAGNOSTIC MODULE - Our Unique Advantage */}
         <DiagnosticModuleShowcase />
 
-        {/* SECTION 7.6: Premium Services Showcase - All 9 Services */}
+        {/* SECTION 7.6: GENERATOR ORACLE - Premium Diagnostic Tool Showcase */}
+        <GeneratorOracleShowcase />
+
+        {/* SECTION 7.7: Premium Services Showcase - All 9 Services */}
         <PremiumServicesShowcase />
 
         {/* SECTION 8: Trust Badges & Certifications */}

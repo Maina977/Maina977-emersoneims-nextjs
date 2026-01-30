@@ -77,6 +77,7 @@ const MEGA_MENUS = {
       {
         title: 'Diagnostic Tools',
         items: [
+          { href: '/generator-oracle', label: 'Generator Oracle', icon: '🔮', desc: '20,000+ fault codes - PRO' },
           { href: '/diagnostics', label: '9-Service Diagnostic', icon: '🔬', desc: 'Comprehensive service check' },
           { href: '/diagnostic-suite', label: 'Generator Diagnostic', icon: '⚡', desc: 'Real-time monitoring' },
           { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive problem solver' },
