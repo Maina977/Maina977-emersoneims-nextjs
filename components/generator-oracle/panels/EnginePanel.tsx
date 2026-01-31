@@ -1,10 +1,11 @@
 'use client';
 
 /**
- * Engine Control Panel - Aircraft Cockpit Style
- * All engine parameters with detailed visualization
+ * Engine Control Panel - Aircraft Cockpit Style with Editable Inputs
+ * All engine parameters with detailed visualization AND input fields
  */
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface EngineParameters {
@@ -20,6 +21,83 @@ interface EngineParameters {
   turboBoostPressure: number | null;
 }
 
+// ==================== EDITABLE INPUT FIELD ====================
+function EditableInput({
+  label,
+  value,
+  unit,
+  min,
+  max,
+  step = 1,
+  onChange,
+  color = 'cyan',
+  icon,
+}: {
+  label: string;
+  value: number | null;
+  unit: string;
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (value: number | null) => void;
+  color?: 'cyan' | 'amber' | 'green' | 'red' | 'purple';
+  icon?: string;
+}) {
+  const [isFocused, setIsFocused] = useState(false);
+
+  const colorClasses = {
+    cyan: 'border-cyan-500/50 focus:border-cyan-400 text-cyan-400',
+    amber: 'border-amber-500/50 focus:border-amber-400 text-amber-400',
+    green: 'border-green-500/50 focus:border-green-400 text-green-400',
+    red: 'border-red-500/50 focus:border-red-400 text-red-400',
+    purple: 'border-purple-500/50 focus:border-purple-400 text-purple-400',
+  };
+
+  const glowColors = {
+    cyan: 'rgba(6,182,212,0.3)',
+    amber: 'rgba(245,158,11,0.3)',
+    green: 'rgba(34,197,94,0.3)',
+    red: 'rgba(239,68,68,0.3)',
+    purple: 'rgba(139,92,246,0.3)',
+  };
+
+  return (
+    <div className="relative">
+      <label className="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">
+        {icon && <span className="mr-1">{icon}</span>}
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          type="number"
+          value={value ?? ''}
+          onChange={(e) => {
+            const val = e.target.value === '' ? null : parseFloat(e.target.value);
+            onChange(val);
+          }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          min={min}
+          max={max}
+          step={step}
+          placeholder="--"
+          className={`w-full px-3 py-2 bg-slate-950/80 rounded-lg border ${colorClasses[color]} font-mono text-lg transition-all outline-none placeholder-slate-600`}
+          style={{
+            boxShadow: isFocused ? `0 0 15px ${glowColors[color]}` : 'none',
+          }}
+        />
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">
+          {unit}
+        </span>
+      </div>
+      <div className="flex justify-between mt-1 text-[9px] text-slate-600">
+        <span>Min: {min}</span>
+        <span>Max: {max}</span>
+      </div>
+    </div>
+  );
+}
+
 // ==================== AIRCRAFT DIAL GAUGE ====================
 function AircraftDial({
   value,
@@ -27,7 +105,7 @@ function AircraftDial({
   max,
   label,
   unit,
-  size = 160,
+  size = 140,
   zones,
   tickCount = 10,
   decimals = 0,
@@ -47,14 +125,13 @@ function AircraftDial({
   const center = size / 2;
   const radius = (size - 40) / 2;
 
-  // Generate tick marks
   const ticks = [...Array(tickCount + 1)].map((_, i) => {
     const tickAngle = -135 + (i / tickCount) * 270;
     const rad = (tickAngle * Math.PI) / 180;
-    const innerR = radius - 15;
-    const outerR = radius - 5;
+    const innerR = radius - 12;
+    const outerR = radius - 4;
     const tickValue = min + (i / tickCount) * (max - min);
-    const labelR = radius - 28;
+    const labelR = radius - 24;
 
     return {
       x1: center + innerR * Math.cos(rad),
@@ -71,7 +148,6 @@ function AircraftDial({
   return (
     <div className="relative flex flex-col items-center">
       <svg width={size} height={size}>
-        {/* Outer bezel */}
         <defs>
           <linearGradient id={`bezel-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#1e293b" />
@@ -79,7 +155,7 @@ function AircraftDial({
             <stop offset="100%" stopColor="#1e293b" />
           </linearGradient>
           <filter id={`glow-${label}`}>
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
             <feMerge>
               <feMergeNode in="coloredBlur"/>
               <feMergeNode in="SourceGraphic"/>
@@ -87,33 +163,15 @@ function AircraftDial({
           </filter>
         </defs>
 
-        {/* Outer ring */}
-        <circle
-          cx={center}
-          cy={center}
-          r={radius + 15}
-          fill={`url(#bezel-${label})`}
-          stroke="rgba(100,116,139,0.3)"
-          strokeWidth="1"
-        />
+        <circle cx={center} cy={center} r={radius + 12} fill={`url(#bezel-${label})`} stroke="rgba(100,116,139,0.3)" strokeWidth="1" />
+        <circle cx={center} cy={center} r={radius + 4} fill="#0a0a0f" stroke="rgba(6,182,212,0.2)" strokeWidth="1" />
 
-        {/* Inner face */}
-        <circle
-          cx={center}
-          cy={center}
-          r={radius + 5}
-          fill="#0a0a0f"
-          stroke="rgba(6,182,212,0.2)"
-          strokeWidth="1"
-        />
-
-        {/* Color zones */}
         {zones?.map((zone, idx) => {
           const startAngle = -135 + ((zone.start - min) / (max - min)) * 270;
           const endAngle = -135 + ((zone.end - min) / (max - min)) * 270;
           const startRad = (startAngle * Math.PI) / 180;
           const endRad = (endAngle * Math.PI) / 180;
-          const arcRadius = radius - 2;
+          const arcRadius = radius - 1;
 
           const x1 = center + arcRadius * Math.cos(startRad);
           const y1 = center + arcRadius * Math.sin(startRad);
@@ -127,112 +185,48 @@ function AircraftDial({
               d={`M ${x1} ${y1} A ${arcRadius} ${arcRadius} 0 ${largeArc} 1 ${x2} ${y2}`}
               fill="none"
               stroke={zone.color}
-              strokeWidth="8"
+              strokeWidth="6"
               opacity="0.6"
             />
           );
         })}
 
-        {/* Tick marks */}
         {ticks.map((tick, i) => (
           <g key={i}>
-            <line
-              x1={tick.x1}
-              y1={tick.y1}
-              x2={tick.x2}
-              y2={tick.y2}
-              stroke={tick.isMajor ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)'}
-              strokeWidth={tick.isMajor ? 2 : 1}
-            />
+            <line x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2} stroke={tick.isMajor ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)'} strokeWidth={tick.isMajor ? 2 : 1} />
             {tick.isMajor && (
-              <text
-                x={tick.labelX}
-                y={tick.labelY}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="rgba(255,255,255,0.6)"
-                fontSize="9"
-                fontFamily="monospace"
-              >
+              <text x={tick.labelX} y={tick.labelY} textAnchor="middle" dominantBaseline="middle" fill="rgba(255,255,255,0.5)" fontSize="8" fontFamily="monospace">
                 {Math.round(tick.value)}
               </text>
             )}
           </g>
         ))}
 
-        {/* Needle pivot point shadow */}
-        <circle
-          cx={center}
-          cy={center}
-          r="8"
-          fill="rgba(0,0,0,0.5)"
-        />
+        <circle cx={center} cy={center} r="6" fill="rgba(0,0,0,0.5)" />
 
-        {/* Needle */}
         <motion.g
           initial={{ rotate: -135 }}
           animate={{ rotate: angle }}
           transition={{ type: 'spring', stiffness: 100, damping: 15 }}
           style={{ transformOrigin: `${center}px ${center}px` }}
         >
-          {/* Needle glow */}
-          <line
-            x1={center}
-            y1={center}
-            x2={center}
-            y2={center - radius + 20}
-            stroke="rgba(239,68,68,0.5)"
-            strokeWidth="6"
-            strokeLinecap="round"
-            filter={`url(#glow-${label})`}
-          />
-          {/* Main needle */}
+          <line x1={center} y1={center} x2={center} y2={center - radius + 18} stroke="rgba(239,68,68,0.5)" strokeWidth="4" strokeLinecap="round" filter={`url(#glow-${label})`} />
           <polygon
-            points={`
-              ${center - 3},${center + 10}
-              ${center + 3},${center + 10}
-              ${center + 1.5},${center - radius + 20}
-              ${center - 1.5},${center - radius + 20}
-            `}
+            points={`${center - 2},${center + 8} ${center + 2},${center + 8} ${center + 1},${center - radius + 18} ${center - 1},${center - radius + 18}`}
             fill="#ef4444"
             stroke="rgba(255,255,255,0.2)"
             strokeWidth="0.5"
           />
         </motion.g>
 
-        {/* Center cap */}
-        <circle
-          cx={center}
-          cy={center}
-          r="6"
-          fill="linear-gradient(135deg, #334155, #1e293b)"
-          stroke="rgba(255,255,255,0.2)"
-          strokeWidth="1"
-        />
+        <circle cx={center} cy={center} r="5" fill="#334155" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
 
-        {/* Unit label at bottom */}
-        <text
-          x={center}
-          y={center + 30}
-          textAnchor="middle"
-          fill="rgba(6,182,212,0.8)"
-          fontSize="11"
-          fontFamily="monospace"
-        >
+        <text x={center} y={center + 24} textAnchor="middle" fill="rgba(6,182,212,0.8)" fontSize="9" fontFamily="monospace">
           {unit}
         </text>
       </svg>
 
-      {/* Digital readout */}
-      <div className="mt-2 px-3 py-1 bg-slate-950/80 rounded border border-slate-700/50">
-        <span className="text-lg font-mono font-bold text-cyan-400">
-          {value !== null ? value.toFixed(decimals) : '--'}
-        </span>
-        <span className="text-xs text-slate-500 ml-1">{unit}</span>
-      </div>
-
-      {/* Label */}
-      <span className="mt-1 text-xs text-slate-400 uppercase tracking-wider">{label}</span>
+      <span className="mt-1 text-[10px] text-slate-400 uppercase tracking-wider">{label}</span>
     </div>
   );
 }
@@ -244,7 +238,7 @@ function VerticalBarIndicator({
   max,
   label,
   unit,
-  height = 150,
+  height = 120,
   warningMin,
   warningMax,
   criticalMin,
@@ -275,55 +269,28 @@ function VerticalBarIndicator({
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <span className="text-[10px] text-slate-500 uppercase tracking-wider">{label}</span>
-
-      <div className="relative" style={{ height, width: 40 }}>
-        {/* Background */}
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-[9px] text-slate-500 uppercase tracking-wider">{label}</span>
+      <div className="relative" style={{ height, width: 32 }}>
         <div className="absolute inset-0 bg-slate-900/80 rounded-lg border border-slate-700/50 overflow-hidden">
-          {/* Tick marks */}
           {[...Array(11)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute left-0 right-0 h-px bg-slate-700/50"
-              style={{ bottom: `${i * 10}%` }}
-            />
+            <div key={i} className="absolute left-0 right-0 h-px bg-slate-700/50" style={{ bottom: `${i * 10}%` }} />
           ))}
-
-          {/* Fill */}
           <motion.div
             className={`absolute bottom-0 left-1 right-1 rounded-b ${getColor()}`}
             initial={{ height: 0 }}
             animate={{ height: `${percentage}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            style={{
-              boxShadow: value !== null ? `0 0 20px ${color === 'cyan' ? 'rgba(6,182,212,0.5)' : 'rgba(245,158,11,0.5)'}` : 'none',
-            }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
           />
-
-          {/* Pointer */}
-          <motion.div
-            className="absolute left-0 right-0 flex items-center"
-            initial={{ bottom: 0 }}
-            animate={{ bottom: `${percentage}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          >
-            <div className="w-2 h-2 bg-white rotate-45 -translate-x-1" />
-          </motion.div>
         </div>
-
-        {/* Scale labels */}
-        <div className="absolute -right-6 top-0 bottom-0 flex flex-col justify-between text-[8px] text-slate-500 font-mono">
+        <div className="absolute -right-5 top-0 bottom-0 flex flex-col justify-between text-[7px] text-slate-500 font-mono">
           <span>{max}</span>
-          <span>{Math.round((max + min) / 2)}</span>
           <span>{min}</span>
         </div>
       </div>
-
-      {/* Value display */}
       <div className="text-center">
-        <span className="text-sm font-mono text-cyan-400">{value ?? '--'}</span>
-        <span className="text-[10px] text-slate-500 ml-0.5">{unit}</span>
+        <span className="text-xs font-mono text-cyan-400">{value ?? '--'}</span>
+        <span className="text-[8px] text-slate-500 ml-0.5">{unit}</span>
       </div>
     </div>
   );
@@ -344,112 +311,51 @@ function EngineSchematic({ params }: { params: EngineParameters }) {
   };
 
   return (
-    <div className="relative p-6 bg-slate-950/50 rounded-xl border border-cyan-500/20">
-      <svg viewBox="0 0 400 250" className="w-full h-auto">
-        {/* Engine block outline */}
-        <rect
-          x="100"
-          y="50"
-          width="200"
-          height="150"
-          rx="10"
-          fill="none"
-          stroke="rgba(6,182,212,0.3)"
-          strokeWidth="2"
-        />
+    <div className="relative p-4 bg-slate-950/50 rounded-xl border border-cyan-500/20">
+      <svg viewBox="0 0 400 200" className="w-full h-auto">
+        <rect x="100" y="40" width="200" height="120" rx="10" fill="none" stroke="rgba(6,182,212,0.3)" strokeWidth="2" />
 
-        {/* Cylinders */}
         {[0, 1, 2, 3].map(i => (
           <g key={i}>
-            <rect
-              x={120 + i * 45}
-              y="70"
-              width="35"
-              height="60"
-              rx="5"
-              fill="rgba(30,41,59,0.8)"
-              stroke="rgba(100,116,139,0.5)"
-              strokeWidth="1"
-            />
-            {/* Piston animation */}
+            <rect x={120 + i * 45} y="55" width="35" height="50" rx="5" fill="rgba(30,41,59,0.8)" stroke="rgba(100,116,139,0.5)" strokeWidth="1" />
             <motion.rect
               x={125 + i * 45}
               width="25"
-              height="20"
+              height="16"
               rx="3"
               fill="rgba(100,116,139,0.8)"
-              animate={{ y: [85, 95, 85] }}
+              animate={{ y: [70, 78, 70] }}
               transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.125 }}
             />
           </g>
         ))}
 
-        {/* Oil system */}
         <g>
-          <path
-            d="M 100 180 L 50 180 L 50 220 L 100 220"
-            fill="none"
-            stroke="rgba(245,158,11,0.5)"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          <circle cx="50" cy="200" r="15" className={getStatusColor(params.oilPressure, 30, 20, false)} />
-          <text x="50" y="204" textAnchor="middle" fontSize="8" fill="white">OIL</text>
+          <path d="M 100 140 L 55 140 L 55 175 L 100 175" fill="none" stroke="rgba(245,158,11,0.5)" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="55" cy="157" r="12" className={getStatusColor(params.oilPressure, 30, 20, false)} />
+          <text x="55" y="160" textAnchor="middle" fontSize="7" fill="white">OIL</text>
         </g>
 
-        {/* Coolant system */}
         <g>
-          <path
-            d="M 300 80 L 350 80 L 350 120 L 300 120"
-            fill="none"
-            stroke="rgba(6,182,212,0.5)"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          <circle cx="350" cy="100" r="15" className={getStatusColor(params.coolantTemp, 90, 100)} />
-          <text x="350" y="104" textAnchor="middle" fontSize="8" fill="white">COOL</text>
+          <path d="M 300 60 L 340 60 L 340 95 L 300 95" fill="none" stroke="rgba(6,182,212,0.5)" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="340" cy="77" r="12" className={getStatusColor(params.coolantTemp, 90, 100)} />
+          <text x="340" y="80" textAnchor="middle" fontSize="7" fill="white">COOL</text>
         </g>
 
-        {/* Exhaust */}
         <g>
-          <path
-            d="M 300 160 L 380 160 L 380 200"
-            fill="none"
-            stroke="rgba(239,68,68,0.5)"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          <motion.circle
-            cx="380"
-            cy="200"
-            r="8"
-            fill="rgba(239,68,68,0.3)"
-            animate={{ r: [8, 12, 8], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          />
-          <text x="380" y="220" textAnchor="middle" fontSize="8" fill="rgba(239,68,68,0.8)">EXH</text>
+          <path d="M 300 130 L 360 130 L 360 165" fill="none" stroke="rgba(239,68,68,0.5)" strokeWidth="3" strokeLinecap="round" />
+          <motion.circle cx="360" cy="165" r="6" fill="rgba(239,68,68,0.3)" animate={{ r: [6, 10, 6], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 1, repeat: Infinity }} />
+          <text x="360" y="182" textAnchor="middle" fontSize="7" fill="rgba(239,68,68,0.8)">EXH</text>
         </g>
 
-        {/* Turbo */}
         {params.turboBoostPressure !== null && (
           <g>
-            <motion.circle
-              cx="60"
-              cy="100"
-              r="20"
-              fill="rgba(139,92,246,0.2)"
-              stroke="rgba(139,92,246,0.5)"
-              strokeWidth="2"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              style={{ transformOrigin: '60px 100px' }}
-            />
-            <text x="60" y="104" textAnchor="middle" fontSize="8" fill="rgba(139,92,246,0.8)">TURBO</text>
+            <motion.circle cx="55" cy="77" r="15" fill="rgba(139,92,246,0.2)" stroke="rgba(139,92,246,0.5)" strokeWidth="2" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} style={{ transformOrigin: '55px 77px' }} />
+            <text x="55" y="80" textAnchor="middle" fontSize="7" fill="rgba(139,92,246,0.8)">TURBO</text>
           </g>
         )}
 
-        {/* RPM indicator */}
-        <text x="200" y="35" textAnchor="middle" fontSize="12" fill="rgba(6,182,212,0.8)" fontFamily="monospace">
+        <text x="200" y="28" textAnchor="middle" fontSize="11" fill="rgba(6,182,212,0.8)" fontFamily="monospace">
           {params.rpm ? `${params.rpm} RPM` : '-- RPM'}
         </text>
       </svg>
@@ -465,6 +371,8 @@ export default function EnginePanel({
   parameters: EngineParameters;
   onParameterChange: <K extends keyof EngineParameters>(key: K, value: EngineParameters[K]) => void;
 }) {
+  const [isEditMode, setIsEditMode] = useState(true);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -473,25 +381,155 @@ export default function EnginePanel({
           <span className="text-3xl">⚙️</span>
           <div>
             <h2 className="text-xl font-bold text-amber-400 uppercase tracking-wider">Engine Control Panel</h2>
-            <p className="text-sm text-slate-500">Real-time engine monitoring and diagnostics</p>
+            <p className="text-sm text-slate-500">Enter engine parameters for diagnostics</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <motion.div
-            className="w-3 h-3 rounded-full bg-green-500"
-            animate={{ opacity: [1, 0.5, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-          <span className="text-sm text-green-400 uppercase tracking-wider">Monitoring Active</span>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsEditMode(!isEditMode)}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+              isEditMode
+                ? 'bg-amber-500/20 border border-amber-500/50 text-amber-400'
+                : 'bg-slate-800/50 border border-slate-700 text-slate-400'
+            }`}
+          >
+            {isEditMode ? '✏️ Edit Mode' : '👁️ View Mode'}
+          </button>
+          <div className="flex items-center gap-2">
+            <motion.div className="w-3 h-3 rounded-full bg-green-500" animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
+            <span className="text-sm text-green-400 uppercase tracking-wider">Active</span>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Left - Primary Dials */}
+        {/* Left - Input Fields */}
         <div className="col-span-12 lg:col-span-4">
           <div className="p-6 bg-slate-900/50 rounded-xl border border-amber-500/20">
-            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">Primary Indicators</h3>
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span>📝</span> Enter Engine Parameters
+            </h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <EditableInput
+                label="Engine RPM"
+                value={parameters.rpm}
+                unit="RPM"
+                min={0}
+                max={2500}
+                step={10}
+                onChange={(val) => onParameterChange('rpm', val)}
+                color="amber"
+                icon="🔄"
+              />
+              <EditableInput
+                label="Oil Pressure"
+                value={parameters.oilPressure}
+                unit="PSI"
+                min={0}
+                max={100}
+                step={1}
+                onChange={(val) => onParameterChange('oilPressure', val)}
+                color="amber"
+                icon="🛢️"
+              />
+              <EditableInput
+                label="Oil Temperature"
+                value={parameters.oilTemperature}
+                unit="°C"
+                min={0}
+                max={150}
+                step={1}
+                onChange={(val) => onParameterChange('oilTemperature', val)}
+                color="red"
+                icon="🌡️"
+              />
+              <EditableInput
+                label="Coolant Temp"
+                value={parameters.coolantTemp}
+                unit="°C"
+                min={0}
+                max={120}
+                step={1}
+                onChange={(val) => onParameterChange('coolantTemp', val)}
+                color="cyan"
+                icon="❄️"
+              />
+              <EditableInput
+                label="Coolant Pressure"
+                value={parameters.coolantPressure}
+                unit="PSI"
+                min={0}
+                max={30}
+                step={0.5}
+                onChange={(val) => onParameterChange('coolantPressure', val)}
+                color="cyan"
+                icon="💧"
+              />
+              <EditableInput
+                label="Fuel Pressure"
+                value={parameters.fuelPressure}
+                unit="PSI"
+                min={0}
+                max={80}
+                step={1}
+                onChange={(val) => onParameterChange('fuelPressure', val)}
+                color="green"
+                icon="⛽"
+              />
+              <EditableInput
+                label="Intake Air Temp"
+                value={parameters.intakeAirTemp}
+                unit="°C"
+                min={-20}
+                max={80}
+                step={1}
+                onChange={(val) => onParameterChange('intakeAirTemp', val)}
+                color="cyan"
+                icon="💨"
+              />
+              <EditableInput
+                label="Exhaust Temp"
+                value={parameters.exhaustTemp}
+                unit="°C"
+                min={0}
+                max={800}
+                step={5}
+                onChange={(val) => onParameterChange('exhaustTemp', val)}
+                color="red"
+                icon="🔥"
+              />
+              <EditableInput
+                label="Turbo Boost"
+                value={parameters.turboBoostPressure}
+                unit="PSI"
+                min={0}
+                max={40}
+                step={0.5}
+                onChange={(val) => onParameterChange('turboBoostPressure', val)}
+                color="purple"
+                icon="🌀"
+              />
+              <EditableInput
+                label="Engine Hours"
+                value={parameters.engineHours}
+                unit="hrs"
+                min={0}
+                max={100000}
+                step={1}
+                onChange={(val) => onParameterChange('engineHours', val)}
+                color="purple"
+                icon="⏱️"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Center - Gauges */}
+        <div className="col-span-12 lg:col-span-5">
+          <div className="p-6 bg-slate-900/50 rounded-xl border border-cyan-500/20 mb-6">
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4 text-center">Live Gauges</h3>
             <div className="grid grid-cols-2 gap-4">
               <AircraftDial
                 value={parameters.rpm}
@@ -499,7 +537,7 @@ export default function EnginePanel({
                 max={2000}
                 label="Tachometer"
                 unit="RPM"
-                size={150}
+                size={130}
                 tickCount={10}
                 zones={[
                   { start: 0, end: 800, color: '#22c55e' },
@@ -514,7 +552,7 @@ export default function EnginePanel({
                 max={100}
                 label="Oil Pressure"
                 unit="PSI"
-                size={150}
+                size={130}
                 tickCount={10}
                 zones={[
                   { start: 0, end: 20, color: '#ef4444' },
@@ -529,7 +567,7 @@ export default function EnginePanel({
                 max={120}
                 label="Coolant Temp"
                 unit="°C"
-                size={150}
+                size={130}
                 tickCount={12}
                 zones={[
                   { start: 0, end: 40, color: '#3b82f6' },
@@ -544,7 +582,7 @@ export default function EnginePanel({
                 max={150}
                 label="Oil Temp"
                 unit="°C"
-                size={150}
+                size={130}
                 tickCount={10}
                 zones={[
                   { start: 0, end: 60, color: '#3b82f6' },
@@ -555,96 +593,53 @@ export default function EnginePanel({
               />
             </div>
           </div>
+
+          <EngineSchematic params={parameters} />
         </div>
 
-        {/* Center - Engine Schematic & Data */}
-        <div className="col-span-12 lg:col-span-5 space-y-6">
-          <EngineSchematic params={parameters} />
-
-          {/* Additional Parameters */}
-          <div className="p-6 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">Secondary Parameters</h3>
-            <div className="grid grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-slate-950/50 rounded-lg">
-                <div className="text-[10px] text-slate-500 uppercase">Fuel Pressure</div>
-                <div className="text-xl font-mono text-cyan-400">{parameters.fuelPressure ?? '--'}</div>
-                <div className="text-[10px] text-slate-500">PSI</div>
-              </div>
-              <div className="text-center p-3 bg-slate-950/50 rounded-lg">
-                <div className="text-[10px] text-slate-500 uppercase">Intake Air</div>
-                <div className="text-xl font-mono text-cyan-400">{parameters.intakeAirTemp ?? '--'}</div>
-                <div className="text-[10px] text-slate-500">°C</div>
-              </div>
-              <div className="text-center p-3 bg-slate-950/50 rounded-lg">
-                <div className="text-[10px] text-slate-500 uppercase">Exhaust</div>
-                <div className="text-xl font-mono text-red-400">{parameters.exhaustTemp ?? '--'}</div>
-                <div className="text-[10px] text-slate-500">°C</div>
-              </div>
-              <div className="text-center p-3 bg-slate-950/50 rounded-lg">
-                <div className="text-[10px] text-slate-500 uppercase">Turbo Boost</div>
-                <div className="text-xl font-mono text-purple-400">{parameters.turboBoostPressure ?? '--'}</div>
-                <div className="text-[10px] text-slate-500">PSI</div>
-              </div>
+        {/* Right - Vertical Bars & Summary */}
+        <div className="col-span-12 lg:col-span-3 space-y-6">
+          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4 text-center">Level Indicators</h3>
+            <div className="flex justify-around">
+              <VerticalBarIndicator value={parameters.oilPressure} min={0} max={100} label="Oil Press" unit="PSI" height={140} warningMin={25} criticalMin={15} color="amber" />
+              <VerticalBarIndicator value={parameters.coolantTemp} min={0} max={120} label="Coolant" unit="°C" height={140} warningMax={95} criticalMax={105} color="cyan" />
+              <VerticalBarIndicator value={parameters.fuelPressure} min={0} max={60} label="Fuel Press" unit="PSI" height={140} warningMin={20} criticalMin={10} color="green" />
             </div>
           </div>
 
-          {/* Engine Hours */}
-          <div className="p-6 bg-slate-900/50 rounded-xl border border-purple-500/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Total Engine Hours</div>
-                <div className="text-4xl font-mono font-bold text-purple-400" style={{ textShadow: '0 0 20px rgba(139,92,246,0.5)' }}>
-                  {parameters.engineHours !== null ? parameters.engineHours.toLocaleString() : '--'}
-                </div>
+          {/* Engine Hours Summary */}
+          <div className="p-4 bg-slate-900/50 rounded-xl border border-purple-500/20">
+            <div className="text-center">
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider">Total Engine Hours</div>
+              <div className="text-3xl font-mono font-bold text-purple-400 mt-1" style={{ textShadow: '0 0 20px rgba(139,92,246,0.5)' }}>
+                {parameters.engineHours !== null ? parameters.engineHours.toLocaleString() : '--'}
               </div>
-              <div className="text-right">
-                <div className="text-[10px] text-slate-500 uppercase">Service Due</div>
+              <div className="mt-3 pt-3 border-t border-slate-700">
+                <div className="text-[10px] text-slate-500 uppercase">Next Service</div>
                 <div className="text-lg font-mono text-amber-400">
                   {parameters.engineHours !== null ? Math.max(0, 500 - (parameters.engineHours % 500)) : '--'} hrs
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Right - Vertical Bars */}
-        <div className="col-span-12 lg:col-span-3">
-          <div className="p-6 bg-slate-900/50 rounded-xl border border-cyan-500/20 h-full">
-            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-6 text-center">Level Indicators</h3>
-            <div className="flex justify-around">
-              <VerticalBarIndicator
-                value={parameters.oilPressure}
-                min={0}
-                max={100}
-                label="Oil Press"
-                unit="PSI"
-                height={180}
-                warningMin={25}
-                criticalMin={15}
-                color="amber"
-              />
-              <VerticalBarIndicator
-                value={parameters.coolantTemp}
-                min={0}
-                max={120}
-                label="Coolant"
-                unit="°C"
-                height={180}
-                warningMax={95}
-                criticalMax={105}
-                color="cyan"
-              />
-              <VerticalBarIndicator
-                value={parameters.fuelPressure}
-                min={0}
-                max={60}
-                label="Fuel Press"
-                unit="PSI"
-                height={180}
-                warningMin={20}
-                criticalMin={10}
-                color="green"
-              />
+          {/* Quick Values */}
+          <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-3">Quick Values</h3>
+            <div className="space-y-2">
+              {[
+                { label: 'Intake Air', value: parameters.intakeAirTemp, unit: '°C', color: 'text-cyan-400' },
+                { label: 'Exhaust', value: parameters.exhaustTemp, unit: '°C', color: 'text-red-400' },
+                { label: 'Turbo Boost', value: parameters.turboBoostPressure, unit: 'PSI', color: 'text-purple-400' },
+              ].map((item) => (
+                <div key={item.label} className="flex justify-between items-center p-2 bg-slate-950/50 rounded">
+                  <span className="text-xs text-slate-500">{item.label}</span>
+                  <span className={`font-mono text-sm ${item.color}`}>
+                    {item.value ?? '--'} {item.unit}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
