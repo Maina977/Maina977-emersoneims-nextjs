@@ -39,6 +39,7 @@ import EnginePanel from './panels/EnginePanel';
 import ElectricalPanel from './panels/ElectricalPanel';
 import FaultDiagnosticsPanel from './panels/FaultDiagnosticsPanel';
 import TechnicianAssistantPanel from './panels/TechnicianAssistantPanel';
+import AdvancedDiagnosticsPanel from './panels/AdvancedDiagnosticsPanel';
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -319,7 +320,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'assistant' | 'history' | 'settings'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'assistant' | 'history' | 'settings'>('command');
 
   // Controller selection
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
@@ -554,6 +555,7 @@ export default function GeneratorOracleModule() {
                   <NavTab icon="⚙️" label="Engine" active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
                   <NavTab icon="⚡" label="Electrical" active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
                   <NavTab icon="🔧" label="Faults" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
+                  <NavTab icon="🚀" label="Advanced" active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
                   <NavTab icon="🛠️" label="Assistant" active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
                   <NavTab icon="📋" label="History" active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
                   <NavTab icon="⚙️" label="Settings" active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
@@ -570,6 +572,7 @@ export default function GeneratorOracleModule() {
                     <option value="engine">⚙️ Engine</option>
                     <option value="electrical">⚡ Electrical</option>
                     <option value="faults">🔧 Faults</option>
+                    <option value="advanced">🚀 Advanced AI</option>
                     <option value="assistant">🛠️ Assistant</option>
                     <option value="history">📋 History</option>
                     <option value="settings">⚙️ Settings</option>
@@ -877,6 +880,18 @@ export default function GeneratorOracleModule() {
                       searchResults={searchResults as any}
                       isSearching={isSearching}
                     />
+                  </motion.div>
+                )}
+
+                {/* ADVANCED DIAGNOSTICS */}
+                {activeScreen === 'advanced' && (
+                  <motion.div
+                    key="advanced"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <AdvancedDiagnosticsPanel />
                   </motion.div>
                 )}
 
