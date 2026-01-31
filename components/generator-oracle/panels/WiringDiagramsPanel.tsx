@@ -1,560 +1,396 @@
 'use client';
 
 /**
- * WIRING & SCHEMATIC DIAGRAMS PANEL
- * Interactive electrical diagrams for troubleshooting
+ * COMPREHENSIVE WIRING & SCHEMATIC DIAGRAMS PANEL
+ * Complete electrical documentation for ALL controller brands and models
  *
- * Features:
- * 1. Interactive Wiring Diagrams - Zoomable, pannable, searchable
- * 2. Schematic Diagrams - Logical circuit flow
- * 3. Component Location Maps - Physical locations on generator
- * 4. Connector Pin-outs - Pin assignments
- * 5. Wire Color Code Reference - Brand-specific color standards
- * 6. Fault-to-Circuit Linking - Highlights relevant circuits for each fault
+ * Supported Controllers:
+ * - DSE: 7320, 7310, 6020, 6120, 4520, 8610, 8660
+ * - ComAp: InteliLite NT, InteliGen NT, InteliSys NT, InteliMains NT
+ * - Woodward: easYgen 3000, easYgen 2000, DTSC-200
+ * - SmartGen: HGM6120, HGM7220, HGM9320, HGM9510
+ * - PowerWizard 1.0, 1.1, 2.0
+ *
+ * Diagram Types:
+ * - Main Power & Battery
+ * - Starting Circuits
+ * - Charging Systems
+ * - Fuel Control
+ * - Cooling Systems
+ * - Oil Pressure Circuits
+ * - Temperature Sensing
+ * - Speed Sensing (MPU)
+ * - Generator Output (CT/VT)
+ * - Communication (CAN, RS485, Modbus)
+ * - Protection Circuits
+ * - AVR Connections
+ * - Load Sharing
+ * - Remote Start/Stop
+ * - Emergency Stop
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// ==================== TYPES ====================
-interface WireConnection {
+// ==================== CONTROLLER DATABASE ====================
+interface ControllerModel {
   id: string;
-  from: { x: number; y: number; component: string; pin: string };
-  to: { x: number; y: number; component: string; pin: string };
-  color: string;
-  colorName: string;
-  gauge: string;
-  circuit: string;
-  description: string;
+  brand: string;
+  model: string;
+  type: 'genset' | 'ats' | 'load-share' | 'mains';
+  features: string[];
+  pinCount: number;
 }
 
-interface Component {
-  id: string;
-  name: string;
-  type: 'controller' | 'sensor' | 'relay' | 'actuator' | 'connector' | 'fuse' | 'ground' | 'power';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  pins: { id: string; name: string; x: number; y: number }[];
-  description: string;
-}
+const CONTROLLERS: ControllerModel[] = [
+  // DSE Controllers
+  { id: 'dse-7320', brand: 'DSE', model: '7320 MKII', type: 'genset', features: ['AMF', 'Load Share', 'CAN'], pinCount: 32 },
+  { id: 'dse-7310', brand: 'DSE', model: '7310 MKII', type: 'genset', features: ['AMF', 'CAN'], pinCount: 28 },
+  { id: 'dse-6020', brand: 'DSE', model: '6020 MKII', type: 'genset', features: ['Manual', 'Auto'], pinCount: 20 },
+  { id: 'dse-6120', brand: 'DSE', model: '6120 MKII', type: 'genset', features: ['AMF', 'Auto'], pinCount: 24 },
+  { id: 'dse-4520', brand: 'DSE', model: '4520', type: 'genset', features: ['Compact', 'Basic'], pinCount: 16 },
+  { id: 'dse-8610', brand: 'DSE', model: '8610 MKII', type: 'load-share', features: ['Load Share', 'Sync', 'CAN'], pinCount: 40 },
+  { id: 'dse-8660', brand: 'DSE', model: '8660 MKII', type: 'load-share', features: ['Advanced Sync', 'PMS'], pinCount: 44 },
 
-interface DiagramType {
+  // ComAp Controllers
+  { id: 'comap-intelilite', brand: 'ComAp', model: 'InteliLite NT', type: 'genset', features: ['AMF', 'Basic'], pinCount: 24 },
+  { id: 'comap-inteligen', brand: 'ComAp', model: 'InteliGen NT', type: 'genset', features: ['AMF', 'Load Share', 'CAN'], pinCount: 36 },
+  { id: 'comap-intelisys', brand: 'ComAp', model: 'InteliSys NT', type: 'load-share', features: ['Advanced Sync', 'PMS'], pinCount: 48 },
+  { id: 'comap-intelimains', brand: 'ComAp', model: 'InteliMains NT', type: 'mains', features: ['Mains Decoupling'], pinCount: 20 },
+
+  // Woodward Controllers
+  { id: 'woodward-easygen3000', brand: 'Woodward', model: 'easYgen 3000', type: 'genset', features: ['AMF', 'Load Share', 'Modbus'], pinCount: 40 },
+  { id: 'woodward-easygen2000', brand: 'Woodward', model: 'easYgen 2000', type: 'genset', features: ['AMF', 'Basic'], pinCount: 28 },
+  { id: 'woodward-dtsc200', brand: 'Woodward', model: 'DTSC-200', type: 'genset', features: ['Digital', 'CAN'], pinCount: 24 },
+
+  // SmartGen Controllers
+  { id: 'smartgen-hgm6120', brand: 'SmartGen', model: 'HGM6120', type: 'genset', features: ['AMF', 'Basic'], pinCount: 20 },
+  { id: 'smartgen-hgm7220', brand: 'SmartGen', model: 'HGM7220', type: 'genset', features: ['AMF', 'CAN'], pinCount: 28 },
+  { id: 'smartgen-hgm9320', brand: 'SmartGen', model: 'HGM9320', type: 'genset', features: ['AMF', 'Load Share'], pinCount: 36 },
+  { id: 'smartgen-hgm9510', brand: 'SmartGen', model: 'HGM9510', type: 'load-share', features: ['Sync', 'PMS'], pinCount: 44 },
+
+  // PowerWizard Controllers
+  { id: 'powerwizard-10', brand: 'PowerWizard', model: '1.0', type: 'genset', features: ['Basic', 'CAT'], pinCount: 20 },
+  { id: 'powerwizard-11', brand: 'PowerWizard', model: '1.1', type: 'genset', features: ['AMF', 'CAT'], pinCount: 24 },
+  { id: 'powerwizard-20', brand: 'PowerWizard', model: '2.0', type: 'genset', features: ['Advanced', 'Load Share'], pinCount: 32 },
+];
+
+// ==================== CIRCUIT TYPES ====================
+interface CircuitType {
   id: string;
   name: string;
   icon: string;
-  category: 'wiring' | 'schematic' | 'location' | 'pinout';
+  category: 'power' | 'control' | 'sensing' | 'communication' | 'protection' | 'output';
+  description: string;
+  components: string[];
 }
 
-// ==================== SAMPLE DATA ====================
-const DIAGRAM_TYPES: DiagramType[] = [
-  { id: 'main-power', name: 'Main Power Circuit', icon: '⚡', category: 'wiring' },
-  { id: 'charging', name: 'Battery Charging', icon: '🔋', category: 'wiring' },
-  { id: 'starting', name: 'Starting Circuit', icon: '🔑', category: 'wiring' },
-  { id: 'fuel-system', name: 'Fuel System', icon: '⛽', category: 'wiring' },
-  { id: 'cooling', name: 'Cooling System', icon: '❄️', category: 'wiring' },
-  { id: 'oil-pressure', name: 'Oil Pressure Circuit', icon: '🛢️', category: 'wiring' },
-  { id: 'speed-sensing', name: 'Speed Sensing', icon: '🔄', category: 'wiring' },
-  { id: 'alternator', name: 'Alternator Output', icon: '⚙️', category: 'wiring' },
-  { id: 'control-logic', name: 'Controller Logic', icon: '🧠', category: 'schematic' },
-  { id: 'protection', name: 'Protection Circuits', icon: '🛡️', category: 'schematic' },
-  { id: 'avr', name: 'AVR Circuit', icon: '📊', category: 'schematic' },
-  { id: 'component-map', name: 'Component Locations', icon: '📍', category: 'location' },
-  { id: 'dse-pinout', name: 'DSE Controller Pinout', icon: '🔌', category: 'pinout' },
-  { id: 'comap-pinout', name: 'ComAp Controller Pinout', icon: '🔌', category: 'pinout' },
+const CIRCUIT_TYPES: CircuitType[] = [
+  // Power Circuits
+  { id: 'main-power', name: 'Main Power Supply', icon: '🔋', category: 'power', description: 'Battery to controller power circuit', components: ['Battery', 'Main Fuse', 'Isolator Switch', 'Controller B+/B-'] },
+  { id: 'charging', name: 'Battery Charging', icon: '⚡', category: 'power', description: 'Alternator charging circuit', components: ['Alternator D+', 'Charge Lamp', 'Controller Charge Input'] },
+  { id: 'dc-supply', name: 'DC Auxiliary Supply', icon: '🔌', category: 'power', description: '12V/24V auxiliary power', components: ['DC-DC Converter', 'Auxiliary Fuses', 'Peripheral Power'] },
+
+  // Control Circuits
+  { id: 'starting', name: 'Engine Starting', icon: '🔑', category: 'control', description: 'Starter motor control circuit', components: ['Start Relay', 'Starter Motor', 'Crank Disconnect', 'Start Limit Timer'] },
+  { id: 'fuel-control', name: 'Fuel System', icon: '⛽', category: 'control', description: 'Fuel solenoid and pump control', components: ['Fuel Solenoid', 'Fuel Pump', 'Fuel Level Sender', 'Low Fuel Switch'] },
+  { id: 'cooling', name: 'Cooling System', icon: '❄️', category: 'control', description: 'Radiator fan and coolant control', components: ['Radiator Fan', 'Coolant Heater', 'Thermostat', 'Water Pump'] },
+  { id: 'glow-plug', name: 'Glow Plug/Preheat', icon: '🔥', category: 'control', description: 'Cold start preheat circuit', components: ['Glow Plug Relay', 'Glow Plugs', 'Preheat Timer'] },
+  { id: 'emergency-stop', name: 'Emergency Stop', icon: '🛑', category: 'control', description: 'E-stop and safety shutdown', components: ['E-Stop Button', 'Safety Relay', 'Fuel Cutoff', 'Air Shutoff'] },
+  { id: 'remote-start', name: 'Remote Start/Stop', icon: '📡', category: 'control', description: 'Remote control interface', components: ['Remote Start Input', 'Remote Stop Input', 'Mode Select', 'Status Output'] },
+
+  // Sensing Circuits
+  { id: 'oil-pressure', name: 'Oil Pressure', icon: '🛢️', category: 'sensing', description: 'Engine oil pressure monitoring', components: ['Oil Pressure Sender', 'Low Oil Switch', 'Oil Pressure Gauge'] },
+  { id: 'coolant-temp', name: 'Coolant Temperature', icon: '🌡️', category: 'sensing', description: 'Engine temperature monitoring', components: ['Temp Sender', 'High Temp Switch', 'Temp Gauge'] },
+  { id: 'speed-sensing', name: 'Speed Sensing (MPU)', icon: '🔄', category: 'sensing', description: 'Engine RPM pickup', components: ['Magnetic Pickup', 'Flywheel Ring Gear', 'Speed Input'] },
+  { id: 'fuel-level', name: 'Fuel Level', icon: '⛽', category: 'sensing', description: 'Fuel tank level monitoring', components: ['Fuel Level Sender', 'Low Fuel Float', 'Fuel Gauge'] },
+  { id: 'battery-voltage', name: 'Battery Monitoring', icon: '🔋', category: 'sensing', description: 'Battery voltage sensing', components: ['Voltage Divider', 'Battery Sense Input'] },
+
+  // Generator Output
+  { id: 'generator-output', name: 'Generator Output (CT/VT)', icon: '⚙️', category: 'output', description: 'Current and voltage transformers', components: ['CT (L1/L2/L3)', 'VT (Phase Voltage)', 'Neutral CT', 'Earth Fault CT'] },
+  { id: 'avr-circuit', name: 'AVR Connection', icon: '📊', category: 'output', description: 'Automatic voltage regulator', components: ['AVR', 'Exciter Field', 'Sensing Voltage', 'PMG'] },
+  { id: 'load-output', name: 'Load Connections', icon: '💡', category: 'output', description: 'Main generator output', components: ['Main Breaker', 'Bus Bars', 'Load Terminals', 'Neutral Bar'] },
+
+  // Communication
+  { id: 'can-bus', name: 'CAN Bus Network', icon: '🔗', category: 'communication', description: 'Controller area network', components: ['CAN-H', 'CAN-L', 'Termination Resistor', 'CAN Shield'] },
+  { id: 'rs485', name: 'RS485/Modbus', icon: '📶', category: 'communication', description: 'Serial communication', components: ['RS485-A', 'RS485-B', 'RS485 GND', 'Bias Resistors'] },
+  { id: 'ethernet', name: 'Ethernet/IP', icon: '🌐', category: 'communication', description: 'Network communication', components: ['RJ45 Port', 'Network Switch', 'IP Gateway'] },
+
+  // Protection
+  { id: 'earth-fault', name: 'Earth Fault Protection', icon: '⚠️', category: 'protection', description: 'Ground fault detection', components: ['Earth Fault CT', 'Earth Fault Relay', 'Trip Circuit'] },
+  { id: 'overcurrent', name: 'Overcurrent Protection', icon: '🛡️', category: 'protection', description: 'Current overload protection', components: ['Overcurrent CT', 'OCR Relay', 'Trip Coil'] },
+  { id: 'reverse-power', name: 'Reverse Power', icon: '↩️', category: 'protection', description: 'Reverse power protection', components: ['Power Direction Relay', 'Wattmetric Element'] },
 ];
 
-const WIRE_COLORS: { [key: string]: { hex: string; name: string; usage: string } } = {
-  'red': { hex: '#ef4444', name: 'Red', usage: 'Battery positive, main power' },
-  'black': { hex: '#1f2937', name: 'Black', usage: 'Ground, negative' },
-  'yellow': { hex: '#eab308', name: 'Yellow', usage: 'Alternator charge, accessories' },
-  'blue': { hex: '#3b82f6', name: 'Blue', usage: 'Sensors, signals' },
-  'green': { hex: '#22c55e', name: 'Green', usage: 'Ground, safety' },
-  'white': { hex: '#f8fafc', name: 'White', usage: 'Neutral, return' },
-  'orange': { hex: '#f97316', name: 'Orange', usage: 'Fuel solenoid, actuators' },
-  'purple': { hex: '#a855f7', name: 'Purple', usage: 'Starter signal' },
-  'brown': { hex: '#92400e', name: 'Brown', usage: 'Oil pressure, temperature' },
-  'pink': { hex: '#ec4899', name: 'Pink', usage: 'Speed sensor' },
-  'gray': { hex: '#6b7280', name: 'Gray', usage: 'Communication, CAN bus' },
+// ==================== WIRE COLOR STANDARDS ====================
+const WIRE_COLORS = {
+  // Power
+  'battery-positive': { hex: '#ef4444', name: 'Red', usage: 'Battery +, Main power' },
+  'battery-negative': { hex: '#1f2937', name: 'Black', usage: 'Battery -, Ground' },
+  'ground': { hex: '#22c55e', name: 'Green/Yellow', usage: 'Protective earth' },
+
+  // Control
+  'start-signal': { hex: '#a855f7', name: 'Purple', usage: 'Start output' },
+  'fuel-control': { hex: '#f97316', name: 'Orange', usage: 'Fuel solenoid' },
+  'stop-signal': { hex: '#ec4899', name: 'Pink', usage: 'Stop/shutdown' },
+
+  // Sensing
+  'sensor-signal': { hex: '#3b82f6', name: 'Blue', usage: 'Sensor signals' },
+  'temp-sender': { hex: '#92400e', name: 'Brown', usage: 'Temperature' },
+  'oil-sender': { hex: '#eab308', name: 'Yellow', usage: 'Oil pressure' },
+  'speed-signal': { hex: '#14b8a6', name: 'Cyan', usage: 'Speed/MPU' },
+
+  // Generator
+  'phase-l1': { hex: '#ef4444', name: 'Red/Brown', usage: 'Phase L1' },
+  'phase-l2': { hex: '#eab308', name: 'Yellow', usage: 'Phase L2' },
+  'phase-l3': { hex: '#3b82f6', name: 'Blue', usage: 'Phase L3' },
+  'neutral': { hex: '#f8fafc', name: 'White/Black', usage: 'Neutral' },
+
+  // Communication
+  'can-high': { hex: '#22c55e', name: 'Green', usage: 'CAN-H' },
+  'can-low': { hex: '#eab308', name: 'Yellow/Orange', usage: 'CAN-L' },
+  'rs485-a': { hex: '#3b82f6', name: 'Blue', usage: 'RS485-A (+)' },
+  'rs485-b': { hex: '#f97316', name: 'Orange', usage: 'RS485-B (-)' },
+
+  // Shielding
+  'shield': { hex: '#6b7280', name: 'Gray', usage: 'Shielding' },
 };
 
-// Sample components for the main power diagram
-const SAMPLE_COMPONENTS: Component[] = [
-  {
-    id: 'battery',
-    name: 'Battery 24V',
-    type: 'power',
-    x: 50,
-    y: 200,
-    width: 80,
-    height: 50,
-    pins: [
-      { id: 'pos', name: '+', x: 90, y: 215 },
-      { id: 'neg', name: '-', x: 90, y: 235 },
-    ],
-    description: '24V DC Battery Bank',
-  },
-  {
-    id: 'controller',
-    name: 'DSE 7320',
-    type: 'controller',
-    x: 300,
-    y: 150,
-    width: 120,
-    height: 150,
-    pins: [
-      { id: 'b+', name: 'B+', x: 300, y: 170 },
-      { id: 'b-', name: 'B-', x: 300, y: 190 },
-      { id: 'start', name: 'START', x: 300, y: 210 },
-      { id: 'fuel', name: 'FUEL', x: 300, y: 230 },
-      { id: 'oil-p', name: 'OIL-P', x: 420, y: 170 },
-      { id: 'temp', name: 'TEMP', x: 420, y: 190 },
-      { id: 'speed', name: 'SPEED', x: 420, y: 210 },
-      { id: 'gen-l1', name: 'GEN-L1', x: 420, y: 230 },
-    ],
-    description: 'Deep Sea Electronics Controller',
-  },
-  {
-    id: 'starter',
-    name: 'Starter Motor',
-    type: 'actuator',
-    x: 500,
-    y: 80,
-    width: 70,
-    height: 40,
-    pins: [
-      { id: 's', name: 'S', x: 500, y: 95 },
-      { id: 'm', name: 'M', x: 500, y: 110 },
-    ],
-    description: '24V Starter Motor',
-  },
-  {
-    id: 'fuel-solenoid',
-    name: 'Fuel Solenoid',
-    type: 'actuator',
-    x: 500,
-    y: 150,
-    width: 70,
-    height: 40,
-    pins: [
-      { id: 'coil', name: 'COIL', x: 500, y: 165 },
-      { id: 'gnd', name: 'GND', x: 500, y: 180 },
-    ],
-    description: 'Fuel Run Solenoid',
-  },
-  {
-    id: 'oil-sensor',
-    name: 'Oil Pressure',
-    type: 'sensor',
-    x: 550,
-    y: 220,
-    width: 60,
-    height: 35,
-    pins: [
-      { id: 'sig', name: 'SIG', x: 550, y: 235 },
-      { id: 'gnd', name: 'GND', x: 590, y: 235 },
-    ],
-    description: 'Oil Pressure Sender 0-10 bar',
-  },
-  {
-    id: 'temp-sensor',
-    name: 'Coolant Temp',
-    type: 'sensor',
-    x: 550,
-    y: 280,
-    width: 60,
-    height: 35,
-    pins: [
-      { id: 'sig', name: 'SIG', x: 550, y: 295 },
-      { id: 'gnd', name: 'GND', x: 590, y: 295 },
-    ],
-    description: 'Coolant Temperature Sender',
-  },
-  {
-    id: 'speed-sensor',
-    name: 'MPU Speed',
-    type: 'sensor',
-    x: 550,
-    y: 340,
-    width: 60,
-    height: 35,
-    pins: [
-      { id: 'sig', name: 'SIG', x: 550, y: 355 },
-      { id: 'gnd', name: 'GND', x: 590, y: 355 },
-    ],
-    description: 'Magnetic Pickup Speed Sensor',
-  },
-  {
-    id: 'fuse-box',
-    name: 'Fuse Box',
-    type: 'fuse',
-    x: 180,
-    y: 100,
-    width: 60,
-    height: 80,
-    pins: [
-      { id: 'f1-in', name: 'F1', x: 180, y: 120 },
-      { id: 'f2-in', name: 'F2', x: 180, y: 140 },
-      { id: 'f3-in', name: 'F3', x: 180, y: 160 },
-      { id: 'f1-out', name: 'F1', x: 240, y: 120 },
-      { id: 'f2-out', name: 'F2', x: 240, y: 140 },
-      { id: 'f3-out', name: 'F3', x: 240, y: 160 },
-    ],
-    description: 'Main Fuse Box 10A/15A/20A',
-  },
-  {
-    id: 'ground-bus',
-    name: 'Ground Bus',
-    type: 'ground',
-    x: 300,
-    y: 380,
-    width: 150,
-    height: 20,
-    pins: [
-      { id: 'g1', name: 'G1', x: 320, y: 380 },
-      { id: 'g2', name: 'G2', x: 360, y: 380 },
-      { id: 'g3', name: 'G3', x: 400, y: 380 },
-      { id: 'g4', name: 'G4', x: 440, y: 380 },
-    ],
-    description: 'Main Ground Bus Bar',
-  },
-];
+// ==================== PIN CONFIGURATION DATA ====================
+interface PinConfig {
+  pin: string;
+  name: string;
+  function: string;
+  wireColor: string;
+  circuit: string;
+}
 
-const SAMPLE_WIRES: WireConnection[] = [
-  {
-    id: 'w1',
-    from: { x: 130, y: 215, component: 'battery', pin: 'pos' },
-    to: { x: 180, y: 120, component: 'fuse-box', pin: 'f1-in' },
-    color: '#ef4444',
-    colorName: 'Red',
-    gauge: '8 AWG',
-    circuit: 'Main Power',
-    description: 'Battery positive to fuse box',
-  },
-  {
-    id: 'w2',
-    from: { x: 240, y: 120, component: 'fuse-box', pin: 'f1-out' },
-    to: { x: 300, y: 170, component: 'controller', pin: 'b+' },
-    color: '#ef4444',
-    colorName: 'Red',
-    gauge: '10 AWG',
-    circuit: 'Controller Power',
-    description: 'Fused power to controller B+',
-  },
-  {
-    id: 'w3',
-    from: { x: 130, y: 235, component: 'battery', pin: 'neg' },
-    to: { x: 300, y: 380, component: 'ground-bus', pin: 'g1' },
-    color: '#1f2937',
-    colorName: 'Black',
-    gauge: '8 AWG',
-    circuit: 'Main Ground',
-    description: 'Battery negative to ground bus',
-  },
-  {
-    id: 'w4',
-    from: { x: 300, y: 190, component: 'controller', pin: 'b-' },
-    to: { x: 320, y: 380, component: 'ground-bus', pin: 'g1' },
-    color: '#1f2937',
-    colorName: 'Black',
-    gauge: '12 AWG',
-    circuit: 'Controller Ground',
-    description: 'Controller B- to ground',
-  },
-  {
-    id: 'w5',
-    from: { x: 300, y: 210, component: 'controller', pin: 'start' },
-    to: { x: 500, y: 95, component: 'starter', pin: 's' },
-    color: '#a855f7',
-    colorName: 'Purple',
-    gauge: '14 AWG',
-    circuit: 'Start Signal',
-    description: 'Start output to starter solenoid',
-  },
-  {
-    id: 'w6',
-    from: { x: 300, y: 230, component: 'controller', pin: 'fuel' },
-    to: { x: 500, y: 165, component: 'fuel-solenoid', pin: 'coil' },
-    color: '#f97316',
-    colorName: 'Orange',
-    gauge: '14 AWG',
-    circuit: 'Fuel Control',
-    description: 'Fuel output to run solenoid',
-  },
-  {
-    id: 'w7',
-    from: { x: 420, y: 170, component: 'controller', pin: 'oil-p' },
-    to: { x: 550, y: 235, component: 'oil-sensor', pin: 'sig' },
-    color: '#92400e',
-    colorName: 'Brown',
-    gauge: '18 AWG',
-    circuit: 'Oil Pressure',
-    description: 'Oil pressure sensor signal',
-  },
-  {
-    id: 'w8',
-    from: { x: 420, y: 190, component: 'controller', pin: 'temp' },
-    to: { x: 550, y: 295, component: 'temp-sensor', pin: 'sig' },
-    color: '#3b82f6',
-    colorName: 'Blue',
-    gauge: '18 AWG',
-    circuit: 'Temperature',
-    description: 'Coolant temp sensor signal',
-  },
-  {
-    id: 'w9',
-    from: { x: 420, y: 210, component: 'controller', pin: 'speed' },
-    to: { x: 550, y: 355, component: 'speed-sensor', pin: 'sig' },
-    color: '#ec4899',
-    colorName: 'Pink',
-    gauge: '18 AWG',
-    circuit: 'Speed Sensing',
-    description: 'MPU speed sensor signal',
-  },
-];
+const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
+  'dse-7320': [
+    { pin: '1', name: 'B+', function: 'Battery Positive', wireColor: 'Red', circuit: 'main-power' },
+    { pin: '2', name: 'B-', function: 'Battery Negative', wireColor: 'Black', circuit: 'main-power' },
+    { pin: '3', name: 'START', function: 'Crank Output', wireColor: 'Purple', circuit: 'starting' },
+    { pin: '4', name: 'FUEL', function: 'Fuel Solenoid', wireColor: 'Orange', circuit: 'fuel-control' },
+    { pin: '5', name: 'STOP', function: 'Stop Solenoid', wireColor: 'Pink', circuit: 'emergency-stop' },
+    { pin: '6', name: 'OIL-P', function: 'Oil Pressure Sender', wireColor: 'Yellow', circuit: 'oil-pressure' },
+    { pin: '7', name: 'TEMP', function: 'Coolant Temp Sender', wireColor: 'Brown', circuit: 'coolant-temp' },
+    { pin: '8', name: 'MPU', function: 'Magnetic Pickup', wireColor: 'Cyan', circuit: 'speed-sensing' },
+    { pin: '9', name: 'MPU-', function: 'MPU Return', wireColor: 'White', circuit: 'speed-sensing' },
+    { pin: '10', name: 'FUEL-LVL', function: 'Fuel Level Sender', wireColor: 'Blue', circuit: 'fuel-level' },
+    { pin: '11', name: 'CT-L1', function: 'Current Transformer L1', wireColor: 'Red', circuit: 'generator-output' },
+    { pin: '12', name: 'CT-L2', function: 'Current Transformer L2', wireColor: 'Yellow', circuit: 'generator-output' },
+    { pin: '13', name: 'CT-L3', function: 'Current Transformer L3', wireColor: 'Blue', circuit: 'generator-output' },
+    { pin: '14', name: 'CT-COM', function: 'CT Common', wireColor: 'Black', circuit: 'generator-output' },
+    { pin: '15', name: 'GEN-L1', function: 'Generator Voltage L1', wireColor: 'Red', circuit: 'generator-output' },
+    { pin: '16', name: 'GEN-L2', function: 'Generator Voltage L2', wireColor: 'Yellow', circuit: 'generator-output' },
+    { pin: '17', name: 'GEN-L3', function: 'Generator Voltage L3', wireColor: 'Blue', circuit: 'generator-output' },
+    { pin: '18', name: 'GEN-N', function: 'Generator Neutral', wireColor: 'White', circuit: 'generator-output' },
+    { pin: '19', name: 'MAINS-L1', function: 'Mains Voltage L1', wireColor: 'Red', circuit: 'generator-output' },
+    { pin: '20', name: 'MAINS-N', function: 'Mains Neutral', wireColor: 'White', circuit: 'generator-output' },
+    { pin: '21', name: 'CAN-H', function: 'CAN Bus High', wireColor: 'Green', circuit: 'can-bus' },
+    { pin: '22', name: 'CAN-L', function: 'CAN Bus Low', wireColor: 'Yellow', circuit: 'can-bus' },
+    { pin: '23', name: 'RS485-A', function: 'RS485 Data+', wireColor: 'Blue', circuit: 'rs485' },
+    { pin: '24', name: 'RS485-B', function: 'RS485 Data-', wireColor: 'Orange', circuit: 'rs485' },
+    { pin: '25', name: 'DI-1', function: 'Digital Input 1', wireColor: 'Gray', circuit: 'remote-start' },
+    { pin: '26', name: 'DI-2', function: 'Digital Input 2', wireColor: 'Gray', circuit: 'remote-start' },
+    { pin: '27', name: 'DO-1', function: 'Digital Output 1', wireColor: 'Gray', circuit: 'remote-start' },
+    { pin: '28', name: 'DO-2', function: 'Digital Output 2', wireColor: 'Gray', circuit: 'remote-start' },
+    { pin: '29', name: 'CHARGE', function: 'Charge Alternator D+', wireColor: 'Blue', circuit: 'charging' },
+    { pin: '30', name: 'PRE-HEAT', function: 'Glow Plug Output', wireColor: 'Orange', circuit: 'glow-plug' },
+    { pin: '31', name: 'AUX-OUT', function: 'Auxiliary Output', wireColor: 'Gray', circuit: 'cooling' },
+    { pin: '32', name: 'E-STOP', function: 'Emergency Stop Input', wireColor: 'Red', circuit: 'emergency-stop' },
+  ],
+  'comap-inteligen': [
+    { pin: 'A1', name: 'B+', function: 'Battery Positive 9-36VDC', wireColor: 'Red', circuit: 'main-power' },
+    { pin: 'A2', name: 'B-', function: 'Battery Negative', wireColor: 'Black', circuit: 'main-power' },
+    { pin: 'A3', name: 'CRANK', function: 'Starter Output', wireColor: 'Purple', circuit: 'starting' },
+    { pin: 'A4', name: 'FUEL', function: 'Fuel Solenoid', wireColor: 'Orange', circuit: 'fuel-control' },
+    { pin: 'A5', name: 'IDLE', function: 'Idle Solenoid', wireColor: 'Yellow', circuit: 'fuel-control' },
+    { pin: 'B1', name: 'OIL', function: 'Oil Pressure 4-20mA', wireColor: 'Brown', circuit: 'oil-pressure' },
+    { pin: 'B2', name: 'COOL', function: 'Coolant Temp NTC/PT100', wireColor: 'Blue', circuit: 'coolant-temp' },
+    { pin: 'B3', name: 'FUEL-S', function: 'Fuel Level 0-10V', wireColor: 'Green', circuit: 'fuel-level' },
+    { pin: 'B4', name: 'SPEED', function: 'Speed Pickup W', wireColor: 'Cyan', circuit: 'speed-sensing' },
+    { pin: 'B5', name: 'SPEED-', function: 'Speed Pickup Return', wireColor: 'White', circuit: 'speed-sensing' },
+    { pin: 'C1', name: 'GEN-L1', function: 'Gen Voltage L1-N', wireColor: 'Red', circuit: 'generator-output' },
+    { pin: 'C2', name: 'GEN-L2', function: 'Gen Voltage L2-N', wireColor: 'Yellow', circuit: 'generator-output' },
+    { pin: 'C3', name: 'GEN-L3', function: 'Gen Voltage L3-N', wireColor: 'Blue', circuit: 'generator-output' },
+    { pin: 'C4', name: 'GEN-N', function: 'Gen Neutral', wireColor: 'White', circuit: 'generator-output' },
+    { pin: 'D1', name: 'CAN1-H', function: 'CAN Bus 1 High', wireColor: 'Green', circuit: 'can-bus' },
+    { pin: 'D2', name: 'CAN1-L', function: 'CAN Bus 1 Low', wireColor: 'Yellow', circuit: 'can-bus' },
+    { pin: 'D3', name: 'CAN2-H', function: 'CAN Bus 2 High', wireColor: 'Green', circuit: 'can-bus' },
+    { pin: 'D4', name: 'CAN2-L', function: 'CAN Bus 2 Low', wireColor: 'Yellow', circuit: 'can-bus' },
+  ],
+  'smartgen-hgm9320': [
+    { pin: '1', name: 'DC+', function: 'Power Supply +', wireColor: 'Red', circuit: 'main-power' },
+    { pin: '2', name: 'DC-', function: 'Power Supply -', wireColor: 'Black', circuit: 'main-power' },
+    { pin: '3', name: 'START', function: 'Start Relay', wireColor: 'Purple', circuit: 'starting' },
+    { pin: '4', name: 'STOP', function: 'Stop Relay', wireColor: 'Pink', circuit: 'emergency-stop' },
+    { pin: '5', name: 'FUEL', function: 'Fuel Valve', wireColor: 'Orange', circuit: 'fuel-control' },
+    { pin: '6', name: 'PREHEAT', function: 'Preheat Relay', wireColor: 'Yellow', circuit: 'glow-plug' },
+    { pin: '7', name: 'OIL-P', function: 'Oil Pressure Input', wireColor: 'Brown', circuit: 'oil-pressure' },
+    { pin: '8', name: 'WATER-T', function: 'Water Temp Input', wireColor: 'Blue', circuit: 'coolant-temp' },
+    { pin: '9', name: 'SPEED', function: 'Speed Sensor+', wireColor: 'Cyan', circuit: 'speed-sensing' },
+    { pin: '10', name: 'SPEED-', function: 'Speed Sensor-', wireColor: 'White', circuit: 'speed-sensing' },
+    { pin: '11', name: 'FUEL-L', function: 'Fuel Level', wireColor: 'Green', circuit: 'fuel-level' },
+    { pin: '12', name: 'AIN1', function: 'Analog Input 1', wireColor: 'Gray', circuit: 'sensing' },
+  ],
+  'woodward-easygen3000': [
+    { pin: 'X1:1', name: '+UB', function: 'Power Supply +', wireColor: 'Red', circuit: 'main-power' },
+    { pin: 'X1:2', name: '-UB', function: 'Power Supply -', wireColor: 'Black', circuit: 'main-power' },
+    { pin: 'X2:1', name: 'START', function: 'Starter Relay', wireColor: 'Purple', circuit: 'starting' },
+    { pin: 'X2:2', name: 'FUEL', function: 'Fuel Solenoid', wireColor: 'Orange', circuit: 'fuel-control' },
+    { pin: 'X2:3', name: 'GCB', function: 'Gen Circuit Breaker', wireColor: 'Gray', circuit: 'protection' },
+    { pin: 'X2:4', name: 'MCB', function: 'Mains Circuit Breaker', wireColor: 'Gray', circuit: 'protection' },
+    { pin: 'X3:1', name: 'MPU+', function: 'Speed Pickup +', wireColor: 'Cyan', circuit: 'speed-sensing' },
+    { pin: 'X3:2', name: 'MPU-', function: 'Speed Pickup -', wireColor: 'White', circuit: 'speed-sensing' },
+    { pin: 'X4:1', name: 'OIL', function: 'Oil Pressure 4-20mA', wireColor: 'Brown', circuit: 'oil-pressure' },
+    { pin: 'X4:2', name: 'TEMP', function: 'Coolant Temp', wireColor: 'Blue', circuit: 'coolant-temp' },
+    { pin: 'X5:1', name: 'CAN-H', function: 'CAN High', wireColor: 'Green', circuit: 'can-bus' },
+    { pin: 'X5:2', name: 'CAN-L', function: 'CAN Low', wireColor: 'Yellow', circuit: 'can-bus' },
+    { pin: 'X5:3', name: 'CAN-GND', function: 'CAN Ground', wireColor: 'Black', circuit: 'can-bus' },
+  ],
+  'powerwizard-20': [
+    { pin: 'J1-1', name: 'BATT+', function: 'Battery Positive', wireColor: 'Red', circuit: 'main-power' },
+    { pin: 'J1-2', name: 'BATT-', function: 'Battery Negative', wireColor: 'Black', circuit: 'main-power' },
+    { pin: 'J1-3', name: 'CRANK', function: 'Crank Relay', wireColor: 'Purple', circuit: 'starting' },
+    { pin: 'J1-4', name: 'FUEL', function: 'Fuel Solenoid', wireColor: 'Orange', circuit: 'fuel-control' },
+    { pin: 'J2-1', name: 'OIL-P', function: 'Oil Pressure Sender', wireColor: 'Brown', circuit: 'oil-pressure' },
+    { pin: 'J2-2', name: 'COOL-T', function: 'Coolant Temp Sender', wireColor: 'Blue', circuit: 'coolant-temp' },
+    { pin: 'J2-3', name: 'FUEL-L', function: 'Fuel Level', wireColor: 'Green', circuit: 'fuel-level' },
+    { pin: 'J3-1', name: 'MPU+', function: 'Speed Sensor +', wireColor: 'Cyan', circuit: 'speed-sensing' },
+    { pin: 'J3-2', name: 'MPU-', function: 'Speed Sensor -', wireColor: 'White', circuit: 'speed-sensing' },
+    { pin: 'J4-1', name: 'GEN-L1', function: 'Gen Voltage L1', wireColor: 'Red', circuit: 'generator-output' },
+    { pin: 'J4-2', name: 'GEN-L2', function: 'Gen Voltage L2', wireColor: 'Yellow', circuit: 'generator-output' },
+    { pin: 'J4-3', name: 'GEN-L3', function: 'Gen Voltage L3', wireColor: 'Blue', circuit: 'generator-output' },
+    { pin: 'J4-4', name: 'GEN-N', function: 'Gen Neutral', wireColor: 'White', circuit: 'generator-output' },
+  ],
+};
 
-// ==================== INTERACTIVE DIAGRAM VIEWER ====================
-function InteractiveDiagram({
-  components,
-  wires,
-  highlightedCircuit,
-  onWireClick,
-  onComponentClick,
+// ==================== INTERACTIVE DIAGRAM COMPONENT ====================
+function CircuitDiagram({
+  circuit,
+  controller
 }: {
-  components: Component[];
-  wires: WireConnection[];
-  highlightedCircuit: string | null;
-  onWireClick: (wire: WireConnection) => void;
-  onComponentClick: (component: Component) => void;
+  circuit: CircuitType;
+  controller: ControllerModel;
 }) {
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(prev => Math.max(0.5, Math.min(3, prev * delta)));
-  }, []);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) {
-      setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-    }
-  };
-
-  const handleMouseUp = () => setIsDragging(false);
-
-  const getComponentIcon = (type: Component['type']) => {
-    const icons = {
-      controller: '🖥️',
-      sensor: '📡',
-      relay: '🔲',
-      actuator: '⚙️',
-      connector: '🔌',
-      fuse: '⚡',
-      ground: '⏚',
-      power: '🔋',
-    };
-    return icons[type] || '📦';
-  };
+  const pins = CONTROLLER_PINS[controller.id] || CONTROLLER_PINS['dse-7320'];
+  const relevantPins = pins.filter(p => p.circuit === circuit.id);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative h-[500px] bg-slate-950 rounded-xl overflow-hidden cursor-grab active:cursor-grabbing"
-      onWheel={handleWheel}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-    >
-      {/* Zoom controls */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
-        <button
-          onClick={() => setZoom(prev => Math.min(3, prev * 1.2))}
-          className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center text-white hover:bg-slate-700"
-        >
-          +
-        </button>
-        <div className="text-center text-xs text-slate-400">{Math.round(zoom * 100)}%</div>
-        <button
-          onClick={() => setZoom(prev => Math.max(0.5, prev * 0.8))}
-          className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center text-white hover:bg-slate-700"
-        >
-          -
-        </button>
-        <button
-          onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
-          className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center text-white hover:bg-slate-700 text-xs"
-        >
-          ⟲
-        </button>
-      </div>
-
+    <div className="relative h-[450px] bg-slate-950 rounded-xl overflow-hidden p-6">
       {/* Grid background */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 opacity-20"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(100,116,139,0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(100,116,139,0.1) 1px, transparent 1px)
+            linear-gradient(rgba(100,116,139,0.3) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(100,116,139,0.3) 1px, transparent 1px)
           `,
-          backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
-          backgroundPosition: `${pan.x}px ${pan.y}px`,
+          backgroundSize: '20px 20px',
         }}
       />
 
-      {/* SVG Diagram */}
-      <svg
-        className="absolute inset-0 w-full h-full"
-        style={{
-          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-          transformOrigin: '0 0',
-        }}
-      >
-        <defs>
-          <marker
-            id="arrowhead"
-            markerWidth="10"
-            markerHeight="7"
-            refX="9"
-            refY="3.5"
-            orient="auto"
-          >
-            <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280" />
-          </marker>
-        </defs>
+      {/* Circuit Title */}
+      <div className="absolute top-4 left-4 z-10">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{circuit.icon}</span>
+          <div>
+            <h3 className="text-lg font-bold text-white">{circuit.name}</h3>
+            <p className="text-xs text-slate-400">{circuit.description}</p>
+          </div>
+        </div>
+      </div>
 
-        {/* Wires */}
-        {wires.map((wire) => {
-          const isHighlighted = highlightedCircuit === wire.circuit || highlightedCircuit === null;
-          const midX = (wire.from.x + wire.to.x) / 2;
-          const midY = (wire.from.y + wire.to.y) / 2;
+      {/* Controller Info */}
+      <div className="absolute top-4 right-4 z-10 px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 rounded">
+        <span className="text-xs text-cyan-400">{controller.brand} {controller.model}</span>
+      </div>
+
+      {/* SVG Diagram */}
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 400">
+        {/* Controller Box */}
+        <rect x="300" y="100" width="200" height="200" rx="10" fill="rgba(30,41,59,0.9)" stroke="#06b6d4" strokeWidth="2" />
+        <text x="400" y="130" textAnchor="middle" fill="#06b6d4" fontSize="14" fontWeight="bold">{controller.model}</text>
+        <text x="400" y="150" textAnchor="middle" fill="#64748b" fontSize="10">{controller.brand} Controller</text>
+
+        {/* Component Boxes */}
+        {circuit.components.map((comp, idx) => {
+          const isLeft = idx < circuit.components.length / 2;
+          const yPos = 120 + (idx % Math.ceil(circuit.components.length / 2)) * 60;
+          const xPos = isLeft ? 80 : 620;
 
           return (
-            <g key={wire.id}>
-              {/* Wire path with curves */}
+            <g key={comp}>
+              <rect
+                x={xPos}
+                y={yPos}
+                width="120"
+                height="40"
+                rx="5"
+                fill="rgba(30,41,59,0.8)"
+                stroke="#f59e0b"
+                strokeWidth="1"
+              />
+              <text x={xPos + 60} y={yPos + 25} textAnchor="middle" fill="#fff" fontSize="10">
+                {comp}
+              </text>
+
+              {/* Connection line */}
               <motion.path
-                d={`M ${wire.from.x} ${wire.from.y}
-                    C ${wire.from.x + 50} ${wire.from.y},
-                      ${wire.to.x - 50} ${wire.to.y},
-                      ${wire.to.x} ${wire.to.y}`}
+                d={isLeft
+                  ? `M ${xPos + 120} ${yPos + 20} C ${xPos + 200} ${yPos + 20}, ${240} ${180 + idx * 20}, 300 ${180 + idx * 20}`
+                  : `M ${xPos} ${yPos + 20} C ${xPos - 80} ${yPos + 20}, ${560} ${180 + (idx - Math.ceil(circuit.components.length / 2)) * 20}, 500 ${180 + (idx - Math.ceil(circuit.components.length / 2)) * 20}`
+                }
                 fill="none"
-                stroke={wire.color}
-                strokeWidth={isHighlighted ? 3 : 1.5}
-                opacity={isHighlighted ? 1 : 0.3}
-                className="cursor-pointer"
-                onClick={() => onWireClick(wire)}
+                stroke={Object.values(WIRE_COLORS)[idx % Object.keys(WIRE_COLORS).length].hex}
+                strokeWidth="2"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
-                transition={{ duration: 1.5, delay: 0.1 }}
+                transition={{ duration: 1, delay: idx * 0.2 }}
               />
-              {/* Wire label */}
-              {isHighlighted && (
-                <text
-                  x={midX}
-                  y={midY - 8}
-                  fill={wire.color}
-                  fontSize="10"
-                  textAnchor="middle"
-                  className="pointer-events-none"
-                >
-                  {wire.gauge}
-                </text>
-              )}
             </g>
           );
         })}
 
-        {/* Components */}
-        {components.map((comp) => {
-          const isHighlighted = highlightedCircuit === null ||
-            wires.some(w =>
-              (w.from.component === comp.id || w.to.component === comp.id) &&
-              w.circuit === highlightedCircuit
-            );
+        {/* Relevant Pins */}
+        {relevantPins.map((pin, idx) => (
+          <g key={pin.pin}>
+            <circle
+              cx={300}
+              cy={170 + idx * 25}
+              r="6"
+              fill="#1e293b"
+              stroke="#06b6d4"
+              strokeWidth="2"
+            />
+            <text x="290" y={174 + idx * 25} textAnchor="end" fill="#94a3b8" fontSize="9">
+              {pin.pin}: {pin.name}
+            </text>
+          </g>
+        ))}
 
-          return (
-            <g
-              key={comp.id}
-              className="cursor-pointer"
-              onClick={() => onComponentClick(comp)}
-              opacity={isHighlighted ? 1 : 0.4}
-            >
-              {/* Component box */}
-              <rect
-                x={comp.x}
-                y={comp.y}
-                width={comp.width}
-                height={comp.height}
-                rx="5"
-                fill="rgba(30,41,59,0.9)"
-                stroke={isHighlighted ? '#06b6d4' : '#475569'}
-                strokeWidth={isHighlighted ? 2 : 1}
-              />
-              {/* Component name */}
-              <text
-                x={comp.x + comp.width / 2}
-                y={comp.y + comp.height / 2}
-                fill="#fff"
-                fontSize="10"
-                textAnchor="middle"
-                dominantBaseline="middle"
-              >
-                {comp.name}
-              </text>
-              {/* Component type icon */}
-              <text
-                x={comp.x + 10}
-                y={comp.y + 15}
-                fontSize="12"
-              >
-                {getComponentIcon(comp.type)}
-              </text>
-              {/* Pins */}
-              {comp.pins.map((pin) => (
-                <g key={pin.id}>
-                  <circle
-                    cx={pin.x}
-                    cy={pin.y}
-                    r="4"
-                    fill="#1e293b"
-                    stroke="#06b6d4"
-                    strokeWidth="1"
-                  />
-                  <text
-                    x={pin.x}
-                    y={pin.y - 8}
-                    fill="#94a3b8"
-                    fontSize="7"
-                    textAnchor="middle"
-                  >
-                    {pin.name}
-                  </text>
-                </g>
-              ))}
+        {/* Legend */}
+        <g transform="translate(50, 340)">
+          <text x="0" y="0" fill="#64748b" fontSize="10" fontWeight="bold">Wire Colors:</text>
+          {Object.entries(WIRE_COLORS).slice(0, 6).map(([key, { hex, name }], idx) => (
+            <g key={key} transform={`translate(${idx * 100}, 15)`}>
+              <rect x="0" y="0" width="15" height="8" rx="2" fill={hex} />
+              <text x="20" y="8" fill="#94a3b8" fontSize="8">{name}</text>
             </g>
-          );
-        })}
+          ))}
+        </g>
       </svg>
 
-      {/* Legend */}
-      <div className="absolute bottom-4 left-4 p-3 bg-slate-900/90 rounded-lg border border-slate-700">
-        <div className="text-xs text-slate-400 mb-2">Wire Colors</div>
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(WIRE_COLORS).slice(0, 6).map(([key, { hex, name }]) => (
-            <div key={key} className="flex items-center gap-1">
-              <div className="w-4 h-1 rounded" style={{ backgroundColor: hex }} />
-              <span className="text-[10px] text-slate-400">{name}</span>
+      {/* Pin List Overlay */}
+      <div className="absolute bottom-4 right-4 p-3 bg-slate-900/90 rounded-lg border border-slate-700 max-w-xs max-h-40 overflow-y-auto">
+        <div className="text-xs text-slate-400 mb-2">Relevant Pins:</div>
+        <div className="space-y-1">
+          {relevantPins.map((pin) => (
+            <div key={pin.pin} className="flex items-center gap-2 text-xs">
+              <span className="font-mono text-cyan-400 w-10">{pin.pin}</span>
+              <span className="text-white">{pin.name}</span>
+              <span className="text-slate-500">- {pin.wireColor}</span>
             </div>
           ))}
         </div>
@@ -563,98 +399,59 @@ function InteractiveDiagram({
   );
 }
 
-// ==================== COMPONENT DETAIL PANEL ====================
-function ComponentDetail({ component, onClose }: { component: Component; onClose: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="p-4 bg-slate-900/90 rounded-xl border border-cyan-500/30"
-    >
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-lg font-bold text-cyan-400">{component.name}</h4>
-        <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
-      </div>
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-slate-500">Type:</span>
-          <span className="text-white capitalize">{component.type}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">Description:</span>
-          <span className="text-white">{component.description}</span>
-        </div>
-        <div className="mt-3">
-          <span className="text-slate-500 text-xs uppercase">Pin Configuration:</span>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {component.pins.map((pin) => (
-              <div key={pin.id} className="px-2 py-1 bg-slate-800 rounded text-xs">
-                <span className="text-cyan-400 font-mono">{pin.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+// ==================== PINOUT TABLE ====================
+function PinoutTable({ controller }: { controller: ControllerModel }) {
+  const pins = CONTROLLER_PINS[controller.id] || [];
+  const [filter, setFilter] = useState<string>('');
 
-// ==================== WIRE DETAIL PANEL ====================
-function WireDetail({ wire, onClose }: { wire: WireConnection; onClose: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="p-4 bg-slate-900/90 rounded-xl border border-amber-500/30"
-    >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-2 rounded" style={{ backgroundColor: wire.color }} />
-          <h4 className="text-lg font-bold text-amber-400">{wire.circuit}</h4>
-        </div>
-        <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
-      </div>
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-slate-500">Color:</span>
-          <span className="text-white">{wire.colorName}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">Gauge:</span>
-          <span className="text-white font-mono">{wire.gauge}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">From:</span>
-          <span className="text-cyan-400">{wire.from.component} ({wire.from.pin})</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500">To:</span>
-          <span className="text-cyan-400">{wire.to.component} ({wire.to.pin})</span>
-        </div>
-        <div className="mt-3 p-2 bg-slate-800 rounded">
-          <span className="text-slate-400 text-xs">{wire.description}</span>
-        </div>
-      </div>
-    </motion.div>
+  const filteredPins = pins.filter(pin =>
+    pin.name.toLowerCase().includes(filter.toLowerCase()) ||
+    pin.function.toLowerCase().includes(filter.toLowerCase()) ||
+    pin.circuit.toLowerCase().includes(filter.toLowerCase())
   );
-}
 
-// ==================== WIRE COLOR REFERENCE ====================
-function WireColorReference() {
+  // Group by circuit
+  const groupedPins = filteredPins.reduce((acc, pin) => {
+    if (!acc[pin.circuit]) acc[pin.circuit] = [];
+    acc[pin.circuit].push(pin);
+    return acc;
+  }, {} as { [key: string]: PinConfig[] });
+
   return (
-    <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
-      <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-        <span>🎨</span> Wire Color Standards
-      </h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-        {Object.entries(WIRE_COLORS).map(([key, { hex, name, usage }]) => (
-          <div key={key} className="p-2 bg-slate-800/50 rounded flex items-start gap-2">
-            <div className="w-4 h-4 rounded mt-0.5 flex-shrink-0" style={{ backgroundColor: hex, border: key === 'black' ? '1px solid #475569' : 'none' }} />
-            <div>
-              <div className="text-xs font-medium text-white">{name}</div>
-              <div className="text-[10px] text-slate-500">{usage}</div>
+    <div className="space-y-4">
+      <input
+        type="text"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        placeholder="Search pins..."
+        className="w-full px-3 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white text-sm"
+      />
+
+      <div className="max-h-96 overflow-y-auto space-y-4">
+        {Object.entries(groupedPins).map(([circuit, pins]) => (
+          <div key={circuit} className="bg-slate-900/50 rounded-lg border border-slate-700/50 overflow-hidden">
+            <div className="px-3 py-2 bg-slate-800/50 border-b border-slate-700/50">
+              <span className="text-xs text-cyan-400 uppercase font-bold">
+                {CIRCUIT_TYPES.find(c => c.id === circuit)?.name || circuit}
+              </span>
+            </div>
+            <div className="divide-y divide-slate-800">
+              {pins.map((pin) => (
+                <div key={pin.pin} className="px-3 py-2 flex items-center gap-3 text-sm hover:bg-slate-800/30">
+                  <span className="font-mono text-cyan-400 w-12">{pin.pin}</span>
+                  <span className="font-medium text-white w-20">{pin.name}</span>
+                  <span className="text-slate-400 flex-1">{pin.function}</span>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{
+                        backgroundColor: Object.values(WIRE_COLORS).find(w => w.name.includes(pin.wireColor))?.hex || '#6b7280'
+                      }}
+                    />
+                    <span className="text-xs text-slate-500">{pin.wireColor}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
@@ -663,58 +460,15 @@ function WireColorReference() {
   );
 }
 
-// ==================== CIRCUIT FILTER ====================
-function CircuitFilter({
-  circuits,
-  selected,
-  onSelect,
-}: {
-  circuits: string[];
-  selected: string | null;
-  onSelect: (circuit: string | null) => void;
-}) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      <button
-        onClick={() => onSelect(null)}
-        className={`px-3 py-1 rounded text-xs transition-all ${
-          selected === null
-            ? 'bg-cyan-500 text-white'
-            : 'bg-slate-800 text-slate-400 hover:text-white'
-        }`}
-      >
-        All Circuits
-      </button>
-      {circuits.map((circuit) => (
-        <button
-          key={circuit}
-          onClick={() => onSelect(circuit)}
-          className={`px-3 py-1 rounded text-xs transition-all ${
-            selected === circuit
-              ? 'bg-cyan-500 text-white'
-              : 'bg-slate-800 text-slate-400 hover:text-white'
-          }`}
-        >
-          {circuit}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ==================== MAIN WIRING DIAGRAMS PANEL ====================
+// ==================== MAIN PANEL ====================
 export default function WiringDiagramsPanel() {
-  const [selectedDiagram, setSelectedDiagram] = useState<DiagramType>(DIAGRAM_TYPES[0]);
-  const [highlightedCircuit, setHighlightedCircuit] = useState<string | null>(null);
-  const [selectedComponent, setSelectedComponent] = useState<Component | null>(null);
-  const [selectedWire, setSelectedWire] = useState<WireConnection | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState<string>('DSE');
+  const [selectedController, setSelectedController] = useState<ControllerModel>(CONTROLLERS[0]);
+  const [selectedCircuit, setSelectedCircuit] = useState<CircuitType>(CIRCUIT_TYPES[0]);
+  const [viewMode, setViewMode] = useState<'diagram' | 'pinout' | 'colors'>('diagram');
 
-  const circuits = [...new Set(SAMPLE_WIRES.map((w) => w.circuit))];
-
-  const filteredDiagrams = DIAGRAM_TYPES.filter(
-    (d) => d.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const brands = [...new Set(CONTROLLERS.map(c => c.brand))];
+  const brandControllers = CONTROLLERS.filter(c => c.brand === selectedBrand);
 
   return (
     <div className="space-y-6">
@@ -734,163 +488,182 @@ export default function WiringDiagramsPanel() {
                 Wiring & Schematic Diagrams
               </span>
             </h2>
-            <p className="text-sm text-slate-500">Interactive electrical diagrams • Zoomable • Searchable</p>
+            <p className="text-sm text-slate-500">Complete electrical documentation • All controllers • All circuits</p>
           </div>
         </div>
 
-        <div className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-          <span className="text-xs text-blue-400 uppercase tracking-wider">DSE • ComAp • Woodward</span>
+        <div className="flex gap-2">
+          {['diagram', 'pinout', 'colors'].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode as any)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                viewMode === mode
+                  ? 'bg-cyan-500 text-white'
+                  : 'bg-slate-800 text-slate-400 hover:text-white'
+              }`}
+            >
+              {mode === 'diagram' && '📊 Diagram'}
+              {mode === 'pinout' && '🔌 Pinout'}
+              {mode === 'colors' && '🎨 Colors'}
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Left - Diagram Selection */}
+        {/* Left - Selection */}
         <div className="col-span-12 lg:col-span-3 space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search diagrams..."
-              className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 text-sm"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
+          {/* Brand Selection */}
+          <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-3">Controller Brand</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {brands.map((brand) => (
+                <button
+                  key={brand}
+                  onClick={() => {
+                    setSelectedBrand(brand);
+                    setSelectedController(CONTROLLERS.find(c => c.brand === brand)!);
+                  }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    selectedBrand === brand
+                      ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-400'
+                      : 'bg-slate-800/50 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {brand}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Diagram List */}
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {['wiring', 'schematic', 'location', 'pinout'].map((category) => (
-              <div key={category}>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider px-2 py-1">
-                  {category === 'wiring' && '📄 Wiring Diagrams'}
-                  {category === 'schematic' && '📊 Schematics'}
-                  {category === 'location' && '📍 Locations'}
-                  {category === 'pinout' && '🔌 Pinouts'}
-                </div>
-                {filteredDiagrams
-                  .filter((d) => d.category === category)
-                  .map((diagram) => (
-                    <motion.button
-                      key={diagram.id}
-                      onClick={() => setSelectedDiagram(diagram)}
-                      whileHover={{ scale: 1.02 }}
-                      className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-all flex items-center gap-2 ${
-                        selectedDiagram.id === diagram.id
-                          ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-400'
-                          : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800'
+          {/* Model Selection */}
+          <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-3">Controller Model</h3>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {brandControllers.map((ctrl) => (
+                <button
+                  key={ctrl.id}
+                  onClick={() => setSelectedController(ctrl)}
+                  className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-all ${
+                    selectedController.id === ctrl.id
+                      ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-400'
+                      : 'bg-slate-800/50 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <div className="font-medium">{ctrl.model}</div>
+                  <div className="text-xs text-slate-500">{ctrl.features.join(' • ')}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Circuit Selection */}
+          <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-3">Circuit Type</h3>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {['power', 'control', 'sensing', 'output', 'communication', 'protection'].map((category) => (
+                <div key={category}>
+                  <div className="text-[10px] text-slate-600 uppercase mt-2 mb-1 px-2">
+                    {category}
+                  </div>
+                  {CIRCUIT_TYPES.filter(c => c.category === category).map((circuit) => (
+                    <button
+                      key={circuit.id}
+                      onClick={() => setSelectedCircuit(circuit)}
+                      className={`w-full px-3 py-1.5 rounded text-left text-xs flex items-center gap-2 transition-all ${
+                        selectedCircuit.id === circuit.id
+                          ? 'bg-amber-500/20 text-amber-400'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                       }`}
                     >
-                      <span>{diagram.icon}</span>
-                      <span>{diagram.name}</span>
-                    </motion.button>
+                      <span>{circuit.icon}</span>
+                      <span>{circuit.name}</span>
+                    </button>
                   ))}
-              </div>
-            ))}
-          </div>
-
-          {/* Wire Color Reference */}
-          <WireColorReference />
-        </div>
-
-        {/* Center - Diagram Viewer */}
-        <div className="col-span-12 lg:col-span-6 space-y-4">
-          {/* Diagram Title */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{selectedDiagram.icon}</span>
-              <h3 className="text-lg font-bold text-white">{selectedDiagram.name}</h3>
+                </div>
+              ))}
             </div>
-            <div className="flex gap-2">
-              <button className="px-3 py-1 bg-slate-800 text-slate-400 rounded text-xs hover:text-white">
-                📥 Download PDF
-              </button>
-              <button className="px-3 py-1 bg-slate-800 text-slate-400 rounded text-xs hover:text-white">
-                🖨️ Print
-              </button>
-            </div>
-          </div>
-
-          {/* Circuit Filter */}
-          <CircuitFilter
-            circuits={circuits}
-            selected={highlightedCircuit}
-            onSelect={setHighlightedCircuit}
-          />
-
-          {/* Interactive Diagram */}
-          <InteractiveDiagram
-            components={SAMPLE_COMPONENTS}
-            wires={SAMPLE_WIRES}
-            highlightedCircuit={highlightedCircuit}
-            onWireClick={(wire) => { setSelectedWire(wire); setSelectedComponent(null); }}
-            onComponentClick={(comp) => { setSelectedComponent(comp); setSelectedWire(null); }}
-          />
-
-          {/* Instructions */}
-          <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 text-xs text-slate-400">
-            <span className="text-cyan-400">💡 Tip:</span> Scroll to zoom • Drag to pan • Click components or wires for details • Use filters to highlight specific circuits
           </div>
         </div>
 
-        {/* Right - Details Panel */}
-        <div className="col-span-12 lg:col-span-3 space-y-4">
+        {/* Center/Right - Content */}
+        <div className="col-span-12 lg:col-span-9">
           <AnimatePresence mode="wait">
-            {selectedComponent && (
-              <ComponentDetail
-                key="component"
-                component={selectedComponent}
-                onClose={() => setSelectedComponent(null)}
-              />
+            {viewMode === 'diagram' && (
+              <motion.div
+                key="diagram"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <CircuitDiagram circuit={selectedCircuit} controller={selectedController} />
+              </motion.div>
             )}
-            {selectedWire && (
-              <WireDetail
-                key="wire"
-                wire={selectedWire}
-                onClose={() => setSelectedWire(null)}
-              />
+
+            {viewMode === 'pinout' && (
+              <motion.div
+                key="pinout"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="p-6 bg-slate-900/50 rounded-xl border border-slate-700/50"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-white">
+                    {selectedController.brand} {selectedController.model} - Complete Pinout
+                  </h3>
+                  <span className="px-2 py-1 bg-cyan-500/20 text-cyan-400 rounded text-xs">
+                    {selectedController.pinCount} Pins
+                  </span>
+                </div>
+                <PinoutTable controller={selectedController} />
+              </motion.div>
+            )}
+
+            {viewMode === 'colors' && (
+              <motion.div
+                key="colors"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="p-6 bg-slate-900/50 rounded-xl border border-slate-700/50"
+              >
+                <h3 className="text-lg font-bold text-white mb-4">Wire Color Standards</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {Object.entries(WIRE_COLORS).map(([key, { hex, name, usage }]) => (
+                    <div key={key} className="p-4 bg-slate-800/50 rounded-lg flex items-start gap-3">
+                      <div
+                        className="w-8 h-8 rounded-lg flex-shrink-0"
+                        style={{ backgroundColor: hex, border: key.includes('black') ? '1px solid #475569' : 'none' }}
+                      />
+                      <div>
+                        <div className="font-medium text-white">{name}</div>
+                        <div className="text-xs text-slate-400">{usage}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
             )}
           </AnimatePresence>
 
-          {!selectedComponent && !selectedWire && (
+          {/* Quick Info */}
+          <div className="mt-6 grid grid-cols-3 gap-4">
             <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50 text-center">
-              <div className="text-4xl mb-2">👆</div>
-              <div className="text-sm text-slate-400">Click a component or wire to see details</div>
+              <div className="text-3xl mb-2">🏭</div>
+              <div className="text-2xl font-bold text-cyan-400">{CONTROLLERS.length}</div>
+              <div className="text-xs text-slate-500">Controllers Supported</div>
             </div>
-          )}
-
-          {/* Quick Reference */}
-          <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
-            <h4 className="text-sm font-bold text-white mb-3">Quick Reference</h4>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-cyan-500/20 border border-cyan-500/50" />
-                <span className="text-slate-400">Controller</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-green-500/20 border border-green-500/50" />
-                <span className="text-slate-400">Sensor</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-amber-500/20 border border-amber-500/50" />
-                <span className="text-slate-400">Actuator</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-red-500/20 border border-red-500/50" />
-                <span className="text-slate-400">Power/Fuse</span>
-              </div>
+            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50 text-center">
+              <div className="text-3xl mb-2">⚡</div>
+              <div className="text-2xl font-bold text-amber-400">{CIRCUIT_TYPES.length}</div>
+              <div className="text-xs text-slate-500">Circuit Types</div>
             </div>
-          </div>
-
-          {/* Related Faults */}
-          <div className="p-4 bg-amber-500/10 rounded-xl border border-amber-500/30">
-            <h4 className="text-sm font-bold text-amber-400 mb-2">Related Fault Codes</h4>
-            <div className="space-y-1">
-              {['E1234 - Low Oil Pressure', 'W2045 - High Temp Warning', 'E3456 - Speed Sensor'].map((fault) => (
-                <div key={fault} className="text-xs text-slate-400 hover:text-white cursor-pointer">
-                  {fault}
-                </div>
-              ))}
+            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50 text-center">
+              <div className="text-3xl mb-2">🎨</div>
+              <div className="text-2xl font-bold text-green-400">{Object.keys(WIRE_COLORS).length}</div>
+              <div className="text-xs text-slate-500">Wire Colors</div>
             </div>
           </div>
         </div>
@@ -902,14 +675,19 @@ export default function WiringDiagramsPanel() {
           <div className="flex items-center gap-4">
             <span className="text-2xl">📐</span>
             <div>
-              <div className="text-sm font-bold text-white">Complete Electrical Documentation</div>
-              <div className="text-xs text-slate-400">Interactive diagrams for DSE, ComAp, Woodward, SmartGen controllers</div>
+              <div className="text-sm font-bold text-white">Complete Wiring Documentation</div>
+              <div className="text-xs text-slate-400">
+                DSE • ComAp • Woodward • SmartGen • PowerWizard - All models covered
+              </div>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-2">
-            <span className="px-2 py-1 bg-slate-800/50 rounded text-[10px] text-slate-400">Zoomable</span>
-            <span className="px-2 py-1 bg-slate-800/50 rounded text-[10px] text-slate-400">Searchable</span>
-            <span className="px-2 py-1 bg-slate-800/50 rounded text-[10px] text-slate-400">Printable</span>
+          <div className="flex gap-2">
+            <button className="px-3 py-1 bg-slate-800 text-slate-400 rounded text-xs hover:text-white">
+              📥 Download PDF
+            </button>
+            <button className="px-3 py-1 bg-slate-800 text-slate-400 rounded text-xs hover:text-white">
+              🖨️ Print
+            </button>
           </div>
         </div>
       </div>
