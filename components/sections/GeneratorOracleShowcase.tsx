@@ -8,6 +8,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import OracleDemoVideo from '@/components/generator-oracle/OracleDemoVideo';
 
 const ORACLE_FEATURES = [
   {
@@ -104,6 +105,25 @@ export default function GeneratorOracleShowcase() {
 
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
             Instant fault code lookup, step-by-step reset pathways, and parameter-based diagnosis for all major controller brands.
+          </p>
+        </motion.div>
+
+        {/* Cinematic Demo Video */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-16"
+        >
+          <div className="text-center mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-400 text-sm font-medium">
+              <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+              Watch Demo
+            </span>
+          </div>
+          <OracleDemoVideo autoPlay={true} />
+          <p className="text-center text-slate-500 text-sm mt-4">
+            Cinematic preview of Generator Oracle capabilities
           </p>
         </motion.div>
 
