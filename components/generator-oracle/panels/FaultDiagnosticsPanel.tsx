@@ -519,7 +519,9 @@ export default function FaultDiagnosticsPanel({
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-500">{fault.estimatedTime}</span>
+                      <span className="text-xs text-slate-500">
+                        {(fault as any).estimatedTime || (fault as any).solutions?.[0]?.timeEstimate || 'See details'}
+                      </span>
                       <span className="text-cyan-500">→</span>
                     </div>
                   </div>
