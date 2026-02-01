@@ -136,8 +136,10 @@ const NAV_ITEMS = [
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { href: '/generators/maintenance-companion', label: '🛠️ MAINTENANCE HUB', type: 'link', featured: true },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
+  { href: '/solutions', label: 'SOLUTIONS', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
   { key: 'diagnostics', label: 'DIAGNOSTICS', type: 'mega' },
+  { href: '/gallery', label: 'GALLERY', type: 'link' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
