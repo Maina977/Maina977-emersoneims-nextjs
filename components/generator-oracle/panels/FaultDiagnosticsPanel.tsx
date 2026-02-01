@@ -2,83 +2,21 @@
 
 /**
  * Fault Diagnostics Panel - Professional Error Management Interface
- * Technician-focused fault clearing guidance system
+ * Comprehensive technician-focused fault clearing guidance system
+ * Now with full detailed troubleshooting from the Oracle database
  */
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { ControllerFaultCode } from '@/lib/generator-oracle/controllerFaultCodes';
 
-interface FaultCode {
-  id: string;
-  code: string;
-  severity: 'info' | 'warning' | 'critical' | 'shutdown';
-  title: string;
-  description: string;
-  symptoms: string[];
-  possibleCauses: { cause: string; likelihood: 'high' | 'medium' | 'low'; verification: string }[];
-  resetSteps: ResetStep[];
-  safetyWarnings: string[];
-  estimatedTime: string;
+// Extended interface to include interactive questions
+interface ExtendedFaultCode extends ControllerFaultCode {
+  interactiveQuestions?: string[];
 }
-
-interface ResetStep {
-  step: number;
-  action: string;
-  keySequence?: string[];
-  menuPath?: string[];
-  expectedResult: string;
-  warning?: string;
-  image?: string;
-}
-
-// Sample fault data
-const SAMPLE_FAULTS: FaultCode[] = [
-  {
-    id: '1',
-    code: 'E1234',
-    severity: 'shutdown',
-    title: 'Over Speed Shutdown',
-    description: 'Engine speed exceeded maximum safe limit. Immediate shutdown initiated to protect engine.',
-    symptoms: ['Engine shut down unexpectedly', 'Alarm light flashing red', 'Speed indicator showing high reading before shutdown'],
-    possibleCauses: [
-      { cause: 'Faulty speed sensor', likelihood: 'high', verification: 'Check sensor resistance with multimeter' },
-      { cause: 'Governor malfunction', likelihood: 'medium', verification: 'Inspect governor linkage and calibration' },
-      { cause: 'Load dump (sudden load removal)', likelihood: 'medium', verification: 'Review load history before shutdown' },
-    ],
-    resetSteps: [
-      { step: 1, action: 'Ensure engine is completely stopped', expectedResult: 'Engine at rest, no rotation' },
-      { step: 2, action: 'Wait for 30 seconds cooldown period', expectedResult: 'Controller LED stops flashing' },
-      { step: 3, action: 'Press and hold STOP button', keySequence: ['STOP'], expectedResult: 'Alarm horn stops' },
-      { step: 4, action: 'Press RESET button once', keySequence: ['RESET'], expectedResult: 'Fault icon clears' },
-      { step: 5, action: 'Verify fault has cleared', menuPath: ['Menu', 'Alarms', 'Active'], expectedResult: 'No active alarms shown' },
-    ],
-    safetyWarnings: ['Do not attempt to reset while engine is running', 'Ensure area is clear of personnel'],
-    estimatedTime: '2-5 minutes',
-  },
-  {
-    id: '2',
-    code: 'W2045',
-    severity: 'warning',
-    title: 'Low Oil Pressure Warning',
-    description: 'Oil pressure has dropped below the warning threshold.',
-    symptoms: ['Yellow warning light illuminated', 'Oil pressure gauge reading low', 'Possible engine noise'],
-    possibleCauses: [
-      { cause: 'Low oil level', likelihood: 'high', verification: 'Check dipstick level' },
-      { cause: 'Oil leak', likelihood: 'medium', verification: 'Inspect for oil around engine' },
-      { cause: 'Faulty oil pressure sender', likelihood: 'low', verification: 'Verify with mechanical gauge' },
-    ],
-    resetSteps: [
-      { step: 1, action: 'Stop the generator', keySequence: ['STOP'], expectedResult: 'Engine stops' },
-      { step: 2, action: 'Check and top up oil level', expectedResult: 'Oil at proper level on dipstick' },
-      { step: 3, action: 'Press RESET to clear warning', keySequence: ['RESET'], expectedResult: 'Warning clears' },
-    ],
-    safetyWarnings: ['Hot oil can cause burns', 'Use proper PPE when checking oil'],
-    estimatedTime: '5-10 minutes',
-  },
-];
 
 // ==================== SEVERITY BADGE ====================
-function SeverityBadge({ severity }: { severity: FaultCode['severity'] }) {
+function SeverityBadge({ severity }: { severity: ControllerFaultCode['severity'] }) {
   const config = {
     info: { color: 'bg-blue-500', text: 'INFO', glow: 'rgba(59,130,246,0.5)' },
     warning: { color: 'bg-amber-500', text: 'WARNING', glow: 'rgba(245,158,11,0.5)' },
@@ -100,113 +38,56 @@ function SeverityBadge({ severity }: { severity: FaultCode['severity'] }) {
   );
 }
 
-// ==================== RESET STEP CARD ====================
-function ResetStepCard({ step, isActive, isCompleted }: { step: ResetStep; isActive: boolean; isCompleted: boolean }) {
+// ==================== LIKELIHOOD BADGE ====================
+function LikelihoodBadge({ likelihood }: { likelihood: 'high' | 'medium' | 'low' }) {
+  const config = {
+    high: { color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: '🔴' },
+    medium: { color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', icon: '🟡' },
+    low: { color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: '🔵' },
+  };
+
   return (
-    <motion.div
-      className={`relative p-4 rounded-xl border transition-all ${
-        isCompleted
-          ? 'bg-green-500/10 border-green-500/50'
-          : isActive
-          ? 'bg-cyan-500/10 border-cyan-500/50'
-          : 'bg-slate-900/50 border-slate-700/50'
-      }`}
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: step.step * 0.1 }}
-    >
-      {/* Step number */}
-      <div className="flex items-start gap-4">
-        <div
-          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
-            isCompleted
-              ? 'bg-green-500 text-white'
-              : isActive
-              ? 'bg-cyan-500 text-white'
-              : 'bg-slate-800 text-slate-400 border border-slate-600'
-          }`}
-          style={{
-            boxShadow: isActive ? '0 0 20px rgba(6,182,212,0.5)' : isCompleted ? '0 0 20px rgba(34,197,94,0.5)' : 'none',
-          }}
-        >
-          {isCompleted ? '✓' : step.step}
-        </div>
-
-        <div className="flex-1">
-          {/* Action */}
-          <p className={`text-base font-medium ${isCompleted ? 'text-green-400' : isActive ? 'text-cyan-300' : 'text-slate-300'}`}>
-            {step.action}
-          </p>
-
-          {/* Key sequence */}
-          {step.keySequence && step.keySequence.length > 0 && (
-            <div className="flex items-center gap-2 mt-3">
-              <span className="text-xs text-slate-500">Keys:</span>
-              {step.keySequence.map((key, idx) => (
-                <span key={idx} className="flex items-center gap-1">
-                  {idx > 0 && <span className="text-slate-600">+</span>}
-                  <motion.span
-                    className="px-3 py-1.5 bg-slate-800 border border-cyan-500/50 rounded-lg font-mono text-cyan-300 text-sm"
-                    whileHover={{ scale: 1.05 }}
-                    style={{ boxShadow: isActive ? '0 0 10px rgba(6,182,212,0.3)' : 'none' }}
-                  >
-                    {key}
-                  </motion.span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Menu path */}
-          {step.menuPath && step.menuPath.length > 0 && (
-            <div className="flex items-center gap-2 mt-3 flex-wrap">
-              <span className="text-xs text-slate-500">Navigate:</span>
-              {step.menuPath.map((menu, idx) => (
-                <span key={idx} className="flex items-center gap-1">
-                  {idx > 0 && <span className="text-cyan-500">→</span>}
-                  <span className="px-2 py-1 bg-slate-800 rounded text-cyan-300 text-sm">{menu}</span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Expected result */}
-          <div className="mt-3 flex items-center gap-2">
-            <span className="text-green-500">✓</span>
-            <span className="text-sm text-green-400">{step.expectedResult}</span>
-          </div>
-
-          {/* Warning */}
-          {step.warning && (
-            <div className="mt-3 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-              <span className="text-amber-400 text-sm">⚠️ {step.warning}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </motion.div>
+    <span className={`px-2 py-0.5 rounded text-xs font-bold border ${config[likelihood].color}`}>
+      {config[likelihood].icon} {likelihood.toUpperCase()}
+    </span>
   );
 }
 
-// ==================== FAULT DETAIL MODAL ====================
+// ==================== COMPREHENSIVE FAULT DETAIL MODAL ====================
 function FaultDetailModal({
   fault,
   onClose,
 }: {
-  fault: FaultCode;
+  fault: ExtendedFaultCode;
   onClose: () => void;
 }) {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [activeTab, setActiveTab] = useState<'overview' | 'diagnostics' | 'reset' | 'solution'>('overview');
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [completedDiagnostics, setCompletedDiagnostics] = useState<number[]>([]);
 
-  const handleStepComplete = (stepNum: number) => {
+  // Get the first reset pathway and solution
+  const resetPathway = fault.resetPathways?.[0];
+  const solution = fault.solutions?.[0];
+  const timeEstimate = solution?.timeEstimate || '15-60 minutes';
+
+  const handleResetStepComplete = (stepNum: number) => {
     if (!completedSteps.includes(stepNum)) {
       setCompletedSteps([...completedSteps, stepNum]);
-      if (stepNum < fault.resetSteps.length) {
-        setCurrentStep(stepNum);
-      }
     }
   };
+
+  const handleDiagnosticComplete = (stepNum: number) => {
+    if (!completedDiagnostics.includes(stepNum)) {
+      setCompletedDiagnostics([...completedDiagnostics, stepNum]);
+    }
+  };
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: '📋' },
+    { id: 'diagnostics', label: 'Diagnostics', icon: '🔍' },
+    { id: 'reset', label: 'Reset Steps', icon: '🔄' },
+    { id: 'solution', label: 'Solution', icon: '🔧' },
+  ];
 
   return (
     <motion.div
@@ -217,7 +98,7 @@ function FaultDetailModal({
       onClick={onClose}
     >
       <motion.div
-        className="w-full max-w-4xl max-h-[90vh] bg-slate-950 rounded-2xl border border-cyan-500/30 overflow-hidden"
+        className="w-full max-w-5xl max-h-[95vh] bg-slate-950 rounded-2xl border border-cyan-500/30 overflow-hidden flex flex-col"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
@@ -225,21 +106,26 @@ function FaultDetailModal({
         style={{ boxShadow: '0 0 60px rgba(6,182,212,0.2)' }}
       >
         {/* Header */}
-        <div className="p-6 bg-slate-900/50 border-b border-slate-700/50">
+        <div className="flex-shrink-0 p-6 bg-slate-900/50 border-b border-slate-700/50">
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-4">
               <div
                 className="px-4 py-2 bg-slate-800 rounded-lg border border-cyan-500/30 font-mono text-2xl text-cyan-400"
                 style={{ textShadow: '0 0 20px rgba(6,182,212,0.5)' }}
               >
                 {fault.code}
               </div>
-              <div>
-                <div className="flex items-center gap-3 mb-1">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
                   <h2 className="text-xl font-bold text-white">{fault.title}</h2>
                   <SeverityBadge severity={fault.severity} />
                 </div>
-                <p className="text-sm text-slate-400">{fault.description}</p>
+                <div className="flex items-center gap-4 text-sm text-slate-400">
+                  <span>📦 {fault.brand}</span>
+                  <span>📱 {fault.model}</span>
+                  <span>📂 {fault.category}</span>
+                  <span>⏱️ {timeEstimate}</span>
+                </div>
               </div>
             </div>
 
@@ -253,133 +139,438 @@ function FaultDetailModal({
             </button>
           </div>
 
-          {/* Quick info */}
-          <div className="flex gap-4 mt-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-slate-800/50 rounded">
-              <span className="text-slate-500">⏱️</span>
-              <span className="text-sm text-slate-300">{fault.estimatedTime}</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-slate-800/50 rounded">
-              <span className="text-slate-500">📋</span>
-              <span className="text-sm text-slate-300">{fault.resetSteps.length} steps to clear</span>
-            </div>
+          {/* Tabs */}
+          <div className="flex gap-2 mt-4">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
+                    : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-700/50'
+                }`}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-          <div className="grid grid-cols-2 gap-6">
-            {/* Left - Information */}
-            <div className="space-y-6">
-              {/* Safety Warnings */}
-              {fault.safetyWarnings.length > 0 && (
-                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-                  <h3 className="text-sm font-bold text-red-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <span>⚠️</span> Safety Warnings
+        <div className="flex-1 overflow-y-auto p-6">
+          <AnimatePresence mode="wait">
+            {/* OVERVIEW TAB */}
+            {activeTab === 'overview' && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+              >
+                {/* Description */}
+                <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                  <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>📖</span> What This Means
                   </h3>
-                  <ul className="space-y-2">
-                    {fault.safetyWarnings.map((warning, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-red-300">
-                        <span className="text-red-500">•</span>
-                        {warning}
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="text-slate-300 leading-relaxed">{fault.description}</p>
                 </div>
-              )}
 
-              {/* Symptoms */}
-              <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl">
-                <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">Symptoms</h3>
-                <ul className="space-y-2">
-                  {fault.symptoms.map((symptom, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-slate-300">
-                      <span className="text-cyan-500">▸</span>
-                      {symptom}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                {/* Safety Warnings - Show prominently if shutdown/critical */}
+                {fault.safetyWarnings && fault.safetyWarnings.length > 0 && (
+                  <div className="p-5 bg-red-500/10 border border-red-500/30 rounded-xl">
+                    <h3 className="text-sm font-bold text-red-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span>⚠️</span> Safety Warnings - READ FIRST
+                    </h3>
+                    <ul className="space-y-2">
+                      {fault.safetyWarnings.map((warning, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-red-300">
+                          <span className="text-red-500 mt-0.5">•</span>
+                          <span>{warning}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-              {/* Possible Causes */}
-              <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl">
-                <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3">Possible Causes</h3>
-                <div className="space-y-3">
-                  {fault.possibleCauses.map((cause, idx) => (
-                    <div key={idx} className="p-3 bg-slate-800/50 rounded-lg">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-white font-medium">{cause.cause}</span>
-                        <span
-                          className={`px-2 py-0.5 rounded text-xs font-bold ${
-                            cause.likelihood === 'high'
-                              ? 'bg-red-500/20 text-red-400'
-                              : cause.likelihood === 'medium'
-                              ? 'bg-amber-500/20 text-amber-400'
-                              : 'bg-blue-500/20 text-blue-400'
-                          }`}
-                        >
-                          {cause.likelihood.toUpperCase()}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500">
-                        <span className="text-slate-400">Verify:</span> {cause.verification}
-                      </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Symptoms */}
+                  <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                    <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span>👁️</span> Symptoms to Look For
+                    </h3>
+                    <ul className="space-y-2">
+                      {fault.symptoms?.map((symptom, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-slate-300">
+                          <span className="text-amber-500 mt-0.5">▸</span>
+                          <span>{symptom}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Possible Causes */}
+                  <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                    <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span>🎯</span> Possible Causes
+                    </h3>
+                    <div className="space-y-3">
+                      {fault.possibleCauses?.map((cause, idx) => (
+                        <div key={idx} className="p-3 bg-slate-800/50 rounded-lg">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <span className="text-sm text-white font-medium">{cause.cause}</span>
+                            <LikelihoodBadge likelihood={cause.likelihood} />
+                          </div>
+                          <p className="text-xs text-slate-400">
+                            <span className="text-cyan-400">How to verify:</span> {cause.verification}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Right - Reset Steps */}
-            <div>
-              <div className="sticky top-0">
-                <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <span>🔄</span> Reset Procedure
-                  <span className="ml-auto text-xs text-slate-500">
-                    {completedSteps.length}/{fault.resetSteps.length} completed
+                {/* Interactive Questions */}
+                {fault.interactiveQuestions && fault.interactiveQuestions.length > 0 && (
+                  <div className="p-5 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/30 rounded-xl">
+                    <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span>💬</span> Technician Guidance - Answer These Questions
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {fault.interactiveQuestions.map((question, idx) => (
+                        <div key={idx} className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                          <p className="text-sm text-slate-300">{question}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* DIAGNOSTICS TAB */}
+            {activeTab === 'diagnostics' && (
+              <motion.div
+                key="diagnostics"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-cyan-400">Step-by-Step Diagnostics</h3>
+                  <span className="text-sm text-slate-400">
+                    {completedDiagnostics.length}/{fault.diagnosticSteps?.length || 0} completed
                   </span>
-                </h3>
+                </div>
 
                 {/* Progress bar */}
-                <div className="h-2 bg-slate-800 rounded-full mb-6 overflow-hidden">
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-cyan-500 to-green-500"
                     initial={{ width: 0 }}
-                    animate={{ width: `${(completedSteps.length / fault.resetSteps.length) * 100}%` }}
-                    style={{ boxShadow: '0 0 10px rgba(34,197,94,0.5)' }}
+                    animate={{ width: `${(completedDiagnostics.length / (fault.diagnosticSteps?.length || 1)) * 100}%` }}
                   />
                 </div>
 
-                {/* Steps */}
-                <div className="space-y-4">
-                  {fault.resetSteps.map((step) => (
-                    <div
-                      key={step.step}
-                      onClick={() => handleStepComplete(step.step)}
-                      className="cursor-pointer"
+                <div className="space-y-4 mt-6">
+                  {fault.diagnosticSteps?.map((step, idx) => (
+                    <motion.div
+                      key={idx}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                        completedDiagnostics.includes(step.step)
+                          ? 'bg-green-500/10 border-green-500/50'
+                          : 'bg-slate-900/50 border-slate-700/50 hover:border-cyan-500/50'
+                      }`}
+                      onClick={() => handleDiagnosticComplete(step.step)}
+                      whileHover={{ scale: 1.01 }}
                     >
-                      <ResetStepCard
-                        step={step}
-                        isActive={currentStep === step.step - 1}
-                        isCompleted={completedSteps.includes(step.step)}
-                      />
+                      <div className="flex items-start gap-4">
+                        <div
+                          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                            completedDiagnostics.includes(step.step)
+                              ? 'bg-green-500 text-white'
+                              : 'bg-slate-800 text-cyan-400 border border-cyan-500/50'
+                          }`}
+                        >
+                          {completedDiagnostics.includes(step.step) ? '✓' : step.step}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-medium ${completedDiagnostics.includes(step.step) ? 'text-green-400' : 'text-white'}`}>
+                            {step.action}
+                          </p>
+                          <p className="text-sm text-green-400 mt-2 flex items-center gap-2">
+                            <span>✓</span> Expected: {step.expectedResult}
+                          </p>
+                          {step.tools && step.tools.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {step.tools.map((tool, toolIdx) => (
+                                <span key={toolIdx} className="px-2 py-1 bg-slate-800 rounded text-xs text-slate-400">
+                                  🔧 {tool}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* RESET TAB */}
+            {activeTab === 'reset' && (
+              <motion.div
+                key="reset"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-green-400">How to Reset/Clear This Alarm</h3>
+                  <span className="text-sm text-slate-400">
+                    {completedSteps.length}/{resetPathway?.steps?.length || 0} completed
+                  </span>
+                </div>
+
+                {/* Reset method info */}
+                {resetPathway && (
+                  <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl mb-4">
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <span className="text-slate-400">
+                        Method: <span className="text-cyan-400 font-medium">{resetPathway.method?.toUpperCase()}</span>
+                      </span>
+                      {resetPathway.requiresCondition && (
+                        <span className="text-slate-400">
+                          Requires: <span className="text-amber-400">{resetPathway.requiresCondition.join(', ')}</span>
+                        </span>
+                      )}
                     </div>
+                  </div>
+                )}
+
+                {/* Progress bar */}
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(completedSteps.length / (resetPathway?.steps?.length || 1)) * 100}%` }}
+                  />
+                </div>
+
+                <div className="space-y-4 mt-6">
+                  {resetPathway?.steps?.map((step, idx) => (
+                    <motion.div
+                      key={idx}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                        completedSteps.includes(step.stepNumber)
+                          ? 'bg-green-500/10 border-green-500/50'
+                          : 'bg-slate-900/50 border-slate-700/50 hover:border-green-500/50'
+                      }`}
+                      onClick={() => handleResetStepComplete(step.stepNumber)}
+                      whileHover={{ scale: 1.01 }}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div
+                          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                            completedSteps.includes(step.stepNumber)
+                              ? 'bg-green-500 text-white'
+                              : 'bg-slate-800 text-green-400 border border-green-500/50'
+                          }`}
+                        >
+                          {completedSteps.includes(step.stepNumber) ? '✓' : step.stepNumber}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-medium ${completedSteps.includes(step.stepNumber) ? 'text-green-400' : 'text-white'}`}>
+                            {step.action}
+                          </p>
+
+                          {/* Key sequence */}
+                          {step.keySequence && step.keySequence.length > 0 && (
+                            <div className="flex items-center gap-2 mt-3">
+                              <span className="text-xs text-slate-500">Press:</span>
+                              {step.keySequence.map((key, keyIdx) => (
+                                <span key={keyIdx} className="flex items-center gap-1">
+                                  {keyIdx > 0 && <span className="text-slate-600">→</span>}
+                                  <span className="px-3 py-1.5 bg-slate-800 border border-cyan-500/50 rounded-lg font-mono text-cyan-300 text-sm">
+                                    {key}
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Menu path */}
+                          {step.menuPath && step.menuPath.length > 0 && (
+                            <div className="flex items-center gap-2 mt-3 flex-wrap">
+                              <span className="text-xs text-slate-500">Navigate:</span>
+                              {step.menuPath.map((menu, menuIdx) => (
+                                <span key={menuIdx} className="flex items-center gap-1">
+                                  {menuIdx > 0 && <span className="text-cyan-500">→</span>}
+                                  <span className="px-2 py-1 bg-slate-800 rounded text-cyan-300 text-sm">{menu}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          <p className="text-sm text-green-400 mt-3 flex items-center gap-2">
+                            <span>✓</span> Expected: {step.expectedResponse}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
 
                 {/* Success message */}
-                {completedSteps.length === fault.resetSteps.length && (
+                {completedSteps.length === (resetPathway?.steps?.length || 0) && (resetPathway?.steps?.length || 0) > 0 && (
                   <motion.div
-                    className="mt-6 p-4 bg-green-500/20 border border-green-500/50 rounded-xl text-center"
+                    className="mt-6 p-6 bg-green-500/20 border border-green-500/50 rounded-xl text-center"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                   >
-                    <div className="text-4xl mb-2">✅</div>
-                    <div className="text-lg font-bold text-green-400">Reset Complete!</div>
-                    <div className="text-sm text-slate-400 mt-1">Fault should now be cleared from the system</div>
+                    <div className="text-5xl mb-3">✅</div>
+                    <div className="text-xl font-bold text-green-400">Reset Procedure Complete!</div>
+                    <div className="text-slate-400 mt-2">
+                      {resetPathway?.successIndicator || 'The fault should now be cleared from the system'}
+                    </div>
                   </motion.div>
                 )}
-              </div>
+              </motion.div>
+            )}
+
+            {/* SOLUTION TAB */}
+            {activeTab === 'solution' && (
+              <motion.div
+                key="solution"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+              >
+                {solution && (
+                  <>
+                    {/* Solution overview */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
+                        <div className="text-2xl mb-2">⚙️</div>
+                        <div className="text-xs text-slate-500 uppercase">Difficulty</div>
+                        <div className="text-lg font-bold text-cyan-400">{solution.difficulty}</div>
+                      </div>
+                      <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
+                        <div className="text-2xl mb-2">⏱️</div>
+                        <div className="text-xs text-slate-500 uppercase">Time Estimate</div>
+                        <div className="text-lg font-bold text-cyan-400">{solution.timeEstimate}</div>
+                      </div>
+                      <div className="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl text-center">
+                        <div className="text-2xl mb-2">💰</div>
+                        <div className="text-xs text-slate-500 uppercase">Estimated Cost</div>
+                        <div className="text-lg font-bold text-green-400">
+                          ${solution.estimatedCost?.min || 0} - ${solution.estimatedCost?.max || 500}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Procedure steps */}
+                    <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                      <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span>📝</span> Repair Procedure
+                      </h3>
+                      <div className="space-y-3">
+                        {solution.procedureSteps?.map((step, idx) => (
+                          <div key={idx} className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">
+                              {idx + 1}
+                            </span>
+                            <p className="text-slate-300">{step}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tools and Parts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Tools */}
+                      <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                        <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <span>🔧</span> Tools Required
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {solution.tools?.map((tool, idx) => (
+                            <span key={idx} className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg text-sm text-amber-300">
+                              {tool}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Parts */}
+                      <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                        <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <span>📦</span> Parts That May Be Needed
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {solution.parts && solution.parts.length > 0 ? (
+                            solution.parts.map((part, idx) => (
+                              <span key={idx} className="px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-lg text-sm text-green-300">
+                                {part}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-slate-500 text-sm">Parts depend on specific fault found during diagnosis</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preventive Measures */}
+                    {fault.preventiveMeasures && fault.preventiveMeasures.length > 0 && (
+                      <div className="p-5 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl">
+                        <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <span>🛡️</span> Preventive Measures - Avoid This Problem
+                        </h3>
+                        <ul className="space-y-2">
+                          {fault.preventiveMeasures.map((measure, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-slate-300">
+                              <span className="text-blue-400 mt-0.5">✓</span>
+                              <span>{measure}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Footer */}
+        <div className="flex-shrink-0 p-4 bg-slate-900/50 border-t border-slate-700/50">
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-slate-500">
+              Last updated: {fault.lastUpdated} | {fault.verified ? '✓ Verified' : 'Unverified'}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
+              >
+                Close
+              </button>
+              <a
+                href="https://wa.me/254768860665"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-green-500/20 text-green-400 border border-green-500/30 rounded-lg hover:bg-green-500/30 transition-colors"
+              >
+                💬 Need Help?
+              </a>
             </div>
           </div>
         </div>
@@ -395,39 +586,30 @@ export default function FaultDiagnosticsPanel({
   isSearching,
 }: {
   onSearch: (query: string) => void;
-  searchResults: FaultCode[];
+  searchResults: ExtendedFaultCode[];
   isSearching: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFault, setSelectedFault] = useState<FaultCode | null>(null);
-  const [activeAlarms] = useState<FaultCode[]>(SAMPLE_FAULTS.slice(0, 2));
+  const [selectedFault, setSelectedFault] = useState<ExtendedFaultCode | null>(null);
 
   const handleSearch = () => {
     onSearch(searchQuery);
   };
+
+  // Sample codes for when there are no search results
+  const displayResults = searchResults.length > 0 ? searchResults : [];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">🔧</span>
+          <span className="text-3xl">🔮</span>
           <div>
-            <h2 className="text-xl font-bold text-purple-400 uppercase tracking-wider">Fault Diagnostics</h2>
-            <p className="text-sm text-slate-500">Search faults, view solutions, and clear errors</p>
+            <h2 className="text-xl font-bold text-purple-400 uppercase tracking-wider">Generator Oracle</h2>
+            <p className="text-sm text-slate-500">90,000+ fault codes with detailed troubleshooting</p>
           </div>
         </div>
-
-        {activeAlarms.length > 0 && (
-          <motion.div
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-lg"
-            animate={{ opacity: [1, 0.7, 1] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            <span className="text-red-500">🔴</span>
-            <span className="text-red-400 font-medium">{activeAlarms.length} Active Alarm{activeAlarms.length > 1 ? 's' : ''}</span>
-          </motion.div>
-        )}
       </div>
 
       <div className="grid grid-cols-12 gap-6">
@@ -445,17 +627,18 @@ export default function FaultDiagnosticsPanel({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    placeholder="Enter fault code, keyword, or description..."
-                    className="w-full px-4 py-3 bg-slate-950/80 border border-purple-500/30 rounded-xl text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-purple-500/50"
+                    placeholder="Enter fault code (e.g., 1100), keyword, or description..."
+                    className="w-full px-4 py-3 pl-8 bg-slate-950/80 border border-purple-500/30 rounded-xl text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-purple-500/50"
                     style={{ boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.3)' }}
                   />
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-500 pointer-events-none opacity-50">{'>'}</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-500">🔍</span>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSearch}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-purple-500/25"
+                  disabled={isSearching}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-purple-500/25 disabled:opacity-50"
                 >
                   {isSearching ? (
                     <motion.div
@@ -471,7 +654,7 @@ export default function FaultDiagnosticsPanel({
 
               {/* Quick search tags */}
               <div className="flex flex-wrap gap-2 mt-4">
-                {['Low Oil', 'Over Speed', 'High Temperature', 'Battery', 'Alternator', 'Fuel'].map((tag) => (
+                {['1100', 'Oil Pressure', 'Coolant', 'Overspeed', 'Battery', 'Fuel', 'Voltage', 'Starting'].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => {
@@ -490,139 +673,116 @@ export default function FaultDiagnosticsPanel({
           {/* Search Results */}
           <div className="p-6 bg-slate-900/50 rounded-xl border border-slate-700/50">
             <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">
-              {searchResults.length > 0 ? `Results (${searchResults.length} found)` : 'Recent Faults'}
+              {displayResults.length > 0 ? `Results (${displayResults.length} found)` : 'Search for a fault code to see detailed troubleshooting'}
             </h3>
 
+            {displayResults.length === 0 && !isSearching && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🔮</div>
+                <div className="text-xl font-bold text-cyan-400 mb-2">Generator Oracle Ready</div>
+                <div className="text-slate-500 max-w-md mx-auto">
+                  Enter a fault code like <span className="text-cyan-400 font-mono">1100</span> or search for keywords like{' '}
+                  <span className="text-cyan-400">"oil pressure"</span> to get detailed troubleshooting guidance.
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
-              {(searchResults.length > 0 ? searchResults : SAMPLE_FAULTS).map((fault) => (
+              {displayResults.slice(0, 20).map((fault) => (
                 <motion.div
                   key={fault.id}
                   className="p-4 bg-slate-950/50 rounded-xl border border-slate-700/50 hover:border-cyan-500/50 cursor-pointer transition-all"
                   whileHover={{ scale: 1.01 }}
                   onClick={() => setSelectedFault(fault)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4 flex-1">
                       <span
-                        className="px-3 py-1 bg-slate-800 rounded-lg font-mono text-lg text-cyan-400 border border-cyan-500/30"
+                        className="flex-shrink-0 px-3 py-1 bg-slate-800 rounded-lg font-mono text-lg text-cyan-400 border border-cyan-500/30"
                         style={{ textShadow: '0 0 10px rgba(6,182,212,0.3)' }}
                       >
                         {fault.code}
                       </span>
-                      <div>
-                        <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-white font-medium">{fault.title}</span>
                           <SeverityBadge severity={fault.severity} />
                         </div>
-                        <p className="text-sm text-slate-500 mt-1 line-clamp-1">{fault.description}</p>
+                        <p className="text-sm text-slate-500 mt-1 line-clamp-2">{fault.description}</p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-slate-600">
+                          <span>{fault.brand}</span>
+                          <span>•</span>
+                          <span>{fault.model}</span>
+                          <span>•</span>
+                          <span>{fault.category}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-xs text-slate-500">
-                        {(fault as any).estimatedTime || (fault as any).solutions?.[0]?.timeEstimate || 'See details'}
+                        {fault.solutions?.[0]?.timeEstimate || 'View details'}
                       </span>
                       <span className="text-cyan-500">→</span>
                     </div>
                   </div>
                 </motion.div>
               ))}
+
+              {displayResults.length > 20 && (
+                <div className="text-center text-slate-500 text-sm py-4">
+                  Showing 20 of {displayResults.length} results. Refine your search for more specific results.
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Right - Active Alarms & Quick Actions */}
+        {/* Right - Help & Support */}
         <div className="col-span-12 lg:col-span-4 space-y-6">
-          {/* Active Alarms */}
-          <div className="p-6 bg-slate-900/50 rounded-xl border border-red-500/30">
-            <h3 className="text-xs text-red-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <motion.span
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              >
-                🔴
-              </motion.span>
-              Active Alarms
-            </h3>
-
-            {activeAlarms.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-4xl mb-2">✅</div>
-                <div className="text-green-400 font-medium">No Active Alarms</div>
-                <div className="text-xs text-slate-500 mt-1">System operating normally</div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {activeAlarms.map((alarm) => (
-                  <motion.div
-                    key={alarm.id}
-                    className="p-3 bg-red-500/10 rounded-lg border border-red-500/30 cursor-pointer"
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => setSelectedFault(alarm)}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-mono text-red-400">{alarm.code}</span>
-                      <SeverityBadge severity={alarm.severity} />
-                    </div>
-                    <div className="text-sm text-white">{alarm.title}</div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+          {/* Features */}
+          <div className="p-6 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 rounded-xl border border-cyan-500/30">
+            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-4">What You Get</h3>
+            <ul className="space-y-3">
+              {[
+                { icon: '📖', text: 'Detailed fault descriptions' },
+                { icon: '👁️', text: 'Symptoms to look for' },
+                { icon: '🎯', text: 'Ranked possible causes' },
+                { icon: '🔍', text: 'Step-by-step diagnostics' },
+                { icon: '🔄', text: 'Reset procedures with key sequences' },
+                { icon: '🔧', text: 'Complete repair solutions' },
+                { icon: '💬', text: 'Interactive guidance questions' },
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-center gap-3 text-sm text-slate-300">
+                  <span>{item.icon}</span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Quick Actions */}
+          {/* Controllers Supported */}
           <div className="p-6 bg-slate-900/50 rounded-xl border border-slate-700/50">
-            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">Quick Actions</h3>
-
-            <div className="space-y-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-left hover:bg-cyan-500/20 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">🔄</span>
-                  <div>
-                    <div className="text-sm font-medium text-cyan-400">Reset All Faults</div>
-                    <div className="text-xs text-slate-500">Clear non-critical alarms</div>
-                  </div>
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">Controllers Supported</h3>
+            <div className="space-y-2">
+              {[
+                { name: 'DeepSea Electronics', models: 'DSE 4510, 5210, 7320, 8660+' },
+                { name: 'ComAp', models: 'InteliLite, InteliGen, InteliSys' },
+                { name: 'Woodward', models: 'EasyGen 3000/3500, LS-5, GCP-30' },
+                { name: 'SmartGen', models: 'HGM6100, HGM9500, HGM420' },
+                { name: 'CAT PowerWizard', models: '1.0, 2.0, 4.1' },
+              ].map((ctrl, idx) => (
+                <div key={idx} className="p-3 bg-slate-800/50 rounded-lg">
+                  <div className="text-sm font-medium text-white">{ctrl.name}</div>
+                  <div className="text-xs text-slate-500">{ctrl.models}</div>
                 </div>
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-left hover:bg-amber-500/20 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">📋</span>
-                  <div>
-                    <div className="text-sm font-medium text-amber-400">View Fault History</div>
-                    <div className="text-xs text-slate-500">Last 30 days of faults</div>
-                  </div>
-                </div>
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-left hover:bg-green-500/20 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">📊</span>
-                  <div>
-                    <div className="text-sm font-medium text-green-400">Export Diagnostics</div>
-                    <div className="text-xs text-slate-500">Download fault report</div>
-                  </div>
-                </div>
-              </motion.button>
+              ))}
             </div>
           </div>
 
           {/* Support */}
           <div className="p-6 bg-slate-900/50 rounded-xl border border-purple-500/30">
-            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">Need Help?</h3>
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">Need Expert Help?</h3>
 
             <div className="space-y-3">
               <a
