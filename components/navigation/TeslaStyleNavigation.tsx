@@ -40,6 +40,7 @@ const MEGA_MENUS = {
       {
         title: 'Support',
         items: [
+          { href: '/generators/maintenance-companion', label: 'Maintenance Hub', icon: '🤖', desc: 'AI repair guides, parts & diagnostics' },
           { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'Genuine & OEM parts' },
           { href: '/fault-code-lookup', label: 'Fault Codes', icon: '🔍', desc: 'Troubleshooting guide' },
           { href: '/generators/case-studies', label: 'Case Studies', icon: '📋', desc: 'Success stories' },
@@ -133,12 +134,10 @@ const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
+  { href: '/generators/maintenance-companion', label: '🛠️ MAINTENANCE HUB', type: 'link', featured: true },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
-  { href: '/solutions', label: 'SOLUTIONS', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
-  { href: '/brands', label: 'BRANDS', type: 'link' },
-  { key: 'diagnostics', label: '🔬 DIAGNOSTICS', type: 'mega', highlight: true },
-  { href: '/gallery', label: 'GALLERY', type: 'link' },
+  { key: 'diagnostics', label: 'DIAGNOSTICS', type: 'mega' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
@@ -259,7 +258,9 @@ export default function TeslaStyleNavigation({
                     key={item.href}
                     href={item.href!}
                     className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 whitespace-nowrap rounded-lg border ${
-                      item.highlight
+                      (item as { featured?: boolean }).featured
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-400/50 hover:from-cyan-400 hover:to-blue-400 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 animate-pulse hover:animate-none'
+                        : item.highlight
                         ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border-amber-500/30 hover:border-amber-400/50'
                         : 'text-white/80 hover:text-white hover:bg-white/5 border-transparent hover:border-white/10'
                     }`}
@@ -478,7 +479,9 @@ export default function TeslaStyleNavigation({
                         href={item.href!}
                         onClick={() => setIsMenuOpen(false)}
                         className={`block px-4 py-3 rounded-xl transition-all ${
-                          item.highlight
+                          (item as { featured?: boolean }).featured
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold border border-cyan-400/50 shadow-lg shadow-cyan-500/30'
+                            : item.highlight
                             ? 'text-amber-400 bg-amber-500/10 border border-amber-500/30 font-semibold'
                             : 'text-white/80 hover:text-white hover:bg-white/5'
                         }`}
