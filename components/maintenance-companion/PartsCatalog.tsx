@@ -224,8 +224,17 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
           Find genuine and aftermarket parts with pricing and availability
         </p>
         <p className="text-cyan-400 text-sm">
-          {partsDatabase.length} parts in database • Prices in Kenya Shillings (KES)
+          <span className="text-amber-400 font-bold">1,247+ parts</span> in database • Prices in Kenya Shillings (KES)
         </p>
+        <a
+          href="/generators/spare-parts"
+          className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg text-sm transition-colors border border-cyan-500/30"
+        >
+          <span>Open Full Parts Catalog</span>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
       </div>
 
       {/* Popular Searches */}
@@ -387,16 +396,19 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
           <svg className="w-16 h-16 mx-auto text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
-          <p className="text-slate-400 mb-4">No parts found matching &quot;{searchQuery}&quot;</p>
+          <p className="text-slate-400 mb-4">No quick-search results for &quot;{searchQuery}&quot;</p>
           <p className="text-slate-500 text-sm mb-4">
-            Try searching for: oil filter, fuel filter, water pump, thermostat, starter, AVR, injector
+            Try: oil filter, fuel filter, water pump, thermostat, starter, AVR, injector
+          </p>
+          <p className="text-amber-400 text-sm mb-4">
+            Our full catalog has <span className="font-bold">1,247+ parts</span> - search there for more options!
           </p>
           <a
             href="/generators/spare-parts"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white rounded-xl font-medium transition-all shadow-lg shadow-cyan-500/20"
           >
-            <span>Browse Full Spare Parts Catalog</span>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span>Search Full 1,247+ Parts Catalog</span>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </a>
@@ -407,19 +419,19 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
       {filteredParts.length > 0 && (
         <div className="text-center pt-6 border-t border-slate-700/50">
           <p className="text-slate-400 text-sm mb-3">
-            Showing {filteredParts.length} parts • Need something specific?
+            Quick search showing {filteredParts.length} common parts • <span className="text-amber-400">Full catalog: 1,247+ parts</span>
           </p>
           <a
             href="/generators/spare-parts"
-            className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white rounded-xl font-medium transition-all shadow-lg shadow-cyan-500/20"
           >
-            <span>View Full Spare Parts Catalog</span>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span>Browse Complete 1,247+ Parts Catalog</span>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </a>
-          <p className="text-slate-500 text-xs mt-2">
-            Or call us: <a href="tel:+254768860665" className="text-amber-400 hover:text-amber-300">+254 768 860 665</a>
+          <p className="text-slate-500 text-xs mt-3">
+            Or call for parts: <a href="tel:+254768860665" className="text-amber-400 hover:text-amber-300 font-medium">+254 768 860 665</a>
           </p>
         </div>
       )}
