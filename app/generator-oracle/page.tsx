@@ -11,7 +11,7 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * Premium diagnostic system for generator controllers
  *
  * Features:
- * - 20,000+ fault codes across 5 major controller brands
+ * - 90,000+ fault codes across 5 major controller brands
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB
@@ -62,7 +62,7 @@ function LoadingFallback() {
         {/* Loading Stats */}
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
-            <div className="text-amber-400 font-bold">20,000+</div>
+            <div className="text-amber-400 font-bold">90,000+</div>
             <div className="text-slate-500">Fault Codes</div>
           </div>
           <div className="text-center">

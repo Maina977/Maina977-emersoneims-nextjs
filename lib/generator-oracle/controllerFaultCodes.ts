@@ -1,6 +1,6 @@
 /**
  * Generator Oracle - Controller Fault Code Database
- * 20,000+ authentic fault codes for professional generator controller diagnostics
+ * 90,000+ authentic fault codes for professional generator controller diagnostics
  *
  * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard
  */
@@ -150,7 +150,7 @@ import { getPowerWizardFaultCodes } from './data/powerwizard-fault-codes';
 
 // ==================== EXTENDED CODE GENERATION ====================
 
-// Generate additional alarm variations to reach 20,000+ codes
+// Generate additional alarm variations to reach 90,000+ codes
 function generateExtendedCodes(): ControllerFaultCode[] {
   const extendedCodes: ControllerFaultCode[] = [];
 

@@ -71,7 +71,7 @@ const WORLD_FIRST_FEATURES = [
 
 // Core Features
 const CORE_FEATURES = [
-  { icon: '🔍', stat: '20,000+', label: 'Fault Codes', desc: 'All 5 major brands' },
+  { icon: '🔍', stat: '90,000+', label: 'Fault Codes', desc: 'All 5 major brands' },
   { icon: '⚡', stat: '21', label: 'Controllers', desc: 'Complete coverage' },
   { icon: '🔄', stat: '100%', label: 'Reset Pathways', desc: 'Step-by-step guides' },
   { icon: '📴', stat: '100%', label: 'Offline Ready', desc: 'No internet required' },
@@ -85,7 +85,7 @@ const COMPETITOR_COMPARISON = [
   { name: 'ComAp InteliConfig', price: '$800+', brands: '1', codes: '~1,500', ai: false, offline: false },
   { name: 'Woodward ToolKit', price: '$1,200+', brands: '1', codes: '~1,000', ai: false, offline: false },
   { name: 'CAT ET (PowerWizard)', price: '$3,000+/yr', brands: '1', codes: '~2,500', ai: false, offline: false },
-  { name: 'GENERATOR ORACLE', price: 'KES 5,000', brands: '5', codes: '20,000+', ai: true, offline: true, highlight: true },
+  { name: 'GENERATOR ORACLE', price: 'KES 5,000', brands: '5', codes: '90,000+', ai: true, offline: true, highlight: true },
 ];
 
 // Compatible controller models
@@ -240,7 +240,7 @@ export default function GeneratorOracleShowcase() {
             The only diagnostic tool with <span className="text-cyan-400 font-bold">AI Predictive Failure</span>,{' '}
             <span className="text-purple-400 font-bold">3D Visualization</span>,{' '}
             <span className="text-green-400 font-bold">Vibration Analysis</span>, and{' '}
-            <span className="text-amber-400 font-bold">20,000+ fault codes</span> across{' '}
+            <span className="text-amber-400 font-bold">90,000+ fault codes</span> across{' '}
             <span className="text-white font-bold">5 major brands</span>.
           </p>
         </motion.div>
@@ -253,7 +253,7 @@ export default function GeneratorOracleShowcase() {
           className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
         >
           {[
-            { value: '20,000+', label: 'Fault Codes', color: '#06b6d4' },
+            { value: '90,000+', label: 'Fault Codes', color: '#06b6d4' },
             { value: '6', label: 'World-First Features', color: '#f59e0b' },
             { value: '$75,000+', label: 'Value in One Tool', color: '#22c55e' },
             { value: '0', label: 'Competitors Match This', color: '#ef4444' },
@@ -494,7 +494,7 @@ export default function GeneratorOracleShowcase() {
               </div>
               <p className="text-slate-300 max-w-2xl mx-auto">
                 Experience the world's most advanced generator diagnostic tool completely FREE.
-                All features. All 20,000+ codes. All world-first AI capabilities. No credit card required.
+                All features. All 90,000+ codes. All world-first AI capabilities. No credit card required.
               </p>
               <p className="text-amber-400 font-bold mt-4">
                 After trial: KES 5,000 one-time (worth $75,000+ in equivalent tools)
