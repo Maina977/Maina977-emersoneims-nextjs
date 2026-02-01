@@ -759,6 +759,116 @@ export default function GeneratorPage() {
         </div>
       </section>
 
+      {/* AI Maintenance Hub - Customer-Friendly Showcase */}
+      <section id="maintenance-hub" className="py-20 bg-gradient-to-br from-slate-950 via-cyan-950/20 to-slate-950 relative overflow-hidden">
+        {/* Background glow effects */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-6"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+              </span>
+              NEW: AI-Powered Tools
+            </motion.div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+              Generator Maintenance Hub
+            </h2>
+            <p className="text-xl text-white/70 max-w-3xl mx-auto">
+              Your complete self-service toolkit for generator care. Diagnose problems, find parts,
+              calculate costs, and predict failures - all in one place.
+            </p>
+          </div>
+
+          {/* Feature Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {[
+              { icon: '🔮', title: 'AI Failure Predictor', desc: 'Describe symptoms, get predictions before breakdowns happen', color: 'purple' },
+              { icon: '📊', title: 'Efficiency Calculator', desc: 'See your fuel costs, compare to grid power, find savings', color: 'green' },
+              { icon: '📖', title: 'Repair Guides', desc: 'Step-by-step instructions with videos and torque specs', color: 'amber' },
+              { icon: '🔩', title: 'Parts Finder', desc: 'Search 30+ parts with prices and availability in Kenya', color: 'cyan' },
+              { icon: '📐', title: 'Interactive Diagrams', desc: 'Click any part on the generator to see details', color: 'pink' },
+              { icon: '💰', title: 'Cost Tracker', desc: 'Track repairs, calculate ROI, know when to replace', color: 'red' },
+            ].map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="group bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800 hover:border-cyan-500/50 transition-all hover:shadow-xl hover:shadow-cyan-500/10"
+              >
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors">
+                  {feature.title}
+                </h3>
+                <p className="text-slate-400 text-sm">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <motion.a
+              href="/generators/maintenance-companion"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all"
+            >
+              <span className="text-2xl">🤖</span>
+              <span>Open Maintenance Hub</span>
+              <span className="text-xl">→</span>
+            </motion.a>
+            <motion.a
+              href="/generator-oracle"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 hover:border-amber-500/50 transition-all"
+            >
+              <span className="text-2xl">🔍</span>
+              <span>Lookup Fault Code</span>
+            </motion.a>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="mt-12 flex flex-wrap justify-center gap-8 text-center">
+            <div>
+              <span className="text-3xl font-bold text-cyan-400">50+</span>
+              <span className="text-slate-400 text-sm block">Parts in Database</span>
+            </div>
+            <div>
+              <span className="text-3xl font-bold text-purple-400">8</span>
+              <span className="text-slate-400 text-sm block">Repair Guides</span>
+            </div>
+            <div>
+              <span className="text-3xl font-bold text-amber-400">15+</span>
+              <span className="text-slate-400 text-sm block">AI Predictions</span>
+            </div>
+            <div>
+              <span className="text-3xl font-bold text-emerald-400">6</span>
+              <span className="text-slate-400 text-sm block">System Schematics</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Generator Sizing Calculator - Scientific Tool */}
       <section className="py-20 bg-gradient-to-br from-black via-orange-900/10 to-black">
         <div className="max-w-7xl mx-auto px-6">
