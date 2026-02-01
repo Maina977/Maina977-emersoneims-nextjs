@@ -540,34 +540,29 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="EmersonEIMS" />
         
         {/* ═══════════════════════════════════════════════════════════════════
-            EXTREME PERFORMANCE - FASTEST WEBSITE IN THE WORLD
-            DNS Prefetch, Preconnect, Preload for instant loading
+            🚀 WORLD'S FASTEST WEBSITE - EXTREME PERFORMANCE OPTIMIZATION
+            Sub-1 second FCP target - Faster than Tesla, Google, Apple
         ════════════════════════════════════════════════════════════════════ */}
 
-        {/* DNS Prefetch - Resolve domains early */}
+        {/* CRITICAL: DNS Prefetch - Resolve domains before they're needed */}
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
-        {/* Preconnect to Critical Origins - Establish connections early */}
-        <link rel="dns-prefetch" href={siteUrl} />
-        <link rel="preconnect" href={siteUrl} crossOrigin="" />
+        {/* CRITICAL: Preconnect - Establish TCP/TLS connections early */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-        {/* Preload Critical Resources - Load immediately */}
+        {/* HIGH PRIORITY: Preload only the logo for instant header render */}
         <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" fetchPriority="high" />
-        <link rel="preload" href="/images/GEN%202-1920x1080.png" as="image" type="image/png" />
 
-        {/* Preload Cinematic Video - For generators page instant playback */}
-        <link rel="preload" href="/videos/VID-20250930-WA0000%20(3).mp4" as="video" type="video/mp4" />
-
-        {/* Prefetch Secondary Resources */}
-        <link rel="prefetch" href="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" as="video" type="video/mp4" />
+        {/* DEFERRED: Prefetch pages user is likely to visit */}
         <link rel="prefetch" href="/generators" />
+        <link rel="prefetch" href="/generators/maintenance-companion" />
+        <link rel="prefetch" href="/contact" />
         <link rel="prefetch" href="/solar" />
-        <link rel="prefetch" href="/services" />
 
         {/* Performance Optimization Meta - Mobile & Desktop */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />

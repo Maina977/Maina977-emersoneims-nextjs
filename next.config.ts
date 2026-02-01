@@ -10,20 +10,24 @@ const bundleAnalyzer = withBundleAnalyzer({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  
+
   // ═══════════════════════════════════════════════════════════════════
-  // PERFORMANCE OPTIMIZATIONS - Tesla-Level Speed
+  // 🚀 WORLD'S FASTEST WEBSITE - EXTREME PERFORMANCE
+  // Target: Sub-1 second First Contentful Paint (FCP)
   // ═══════════════════════════════════════════════════════════════════
   compress: true,
-  poweredByHeader: false, // Hide Next.js version (security)
+  poweredByHeader: false,
   generateEtags: true,
-  
-  // Image optimization with security - HIGHLY OPTIMIZED
+
+  // TURBO MODE - Use Turbopack for fastest builds
+  // turbopack: true, // Enable in dev for faster builds
+
+  // Image optimization - MAXIMUM COMPRESSION
   images: {
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
-    minimumCacheTTL: 31536000, // Cache images for 1 year
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 31536000, // 1 year cache
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -46,9 +50,12 @@ const nextConfig: NextConfig = {
     ],
     unoptimized: false,
   },
-  
-  // Experimental features for MAXIMUM performance
+
+  // ═══════════════════════════════════════════════════════════════════
+  // EXPERIMENTAL - BLEEDING EDGE PERFORMANCE
+  // ═══════════════════════════════════════════════════════════════════
   experimental: {
+    // Tree-shake these packages for smaller bundles
     optimizePackageImports: [
       'framer-motion',
       'gsap',
@@ -58,7 +65,28 @@ const nextConfig: NextConfig = {
       'chart.js',
       'echarts',
       'echarts-for-react',
+      'lodash',
+      'date-fns',
+      'lucide-react',
+      '@heroicons/react',
     ],
+    // Partial Prerendering - Instant static shell with streaming dynamic content
+    // ppr: true,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // BUNDLE OPTIMIZATION - Smaller JS = Faster Load
+  // ═══════════════════════════════════════════════════════════════════
+  modularizeImports: {
+    'lodash': {
+      transform: 'lodash/{{member}}',
+    },
+    '@heroicons/react/24/outline': {
+      transform: '@heroicons/react/24/outline/{{member}}',
+    },
+    '@heroicons/react/24/solid': {
+      transform: '@heroicons/react/24/solid/{{member}}',
+    },
   },
   
   // TypeScript
