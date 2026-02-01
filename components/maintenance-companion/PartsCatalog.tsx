@@ -220,10 +220,31 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
         <h2 className="text-2xl font-bold text-white mb-2">
           Parts Catalog
         </h2>
-        <p className="text-slate-400">
+        <p className="text-slate-400 mb-2">
           Find genuine and aftermarket parts with pricing and availability
         </p>
+        <p className="text-cyan-400 text-sm">
+          {partsDatabase.length} parts in database • Prices in Kenya Shillings (KES)
+        </p>
       </div>
+
+      {/* Popular Searches */}
+      {!searchQuery && !selectedSystem && (
+        <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/50">
+          <p className="text-slate-400 text-sm mb-3">Popular searches:</p>
+          <div className="flex flex-wrap gap-2">
+            {['oil filter', 'fuel filter', 'water pump', 'starter motor', 'AVR', 'injector', 'thermostat', 'belts'].map((term) => (
+              <button
+                key={term}
+                onClick={() => setSearchQuery(term)}
+                className="px-3 py-1.5 bg-slate-700/50 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-400 rounded-lg text-sm transition-colors"
+              >
+                {term}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Shopping List Summary */}
       {shoppingList.length > 0 && (
@@ -366,7 +387,40 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
           <svg className="w-16 h-16 mx-auto text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
-          <p className="text-slate-400">No parts found matching your search.</p>
+          <p className="text-slate-400 mb-4">No parts found matching &quot;{searchQuery}&quot;</p>
+          <p className="text-slate-500 text-sm mb-4">
+            Try searching for: oil filter, fuel filter, water pump, thermostat, starter, AVR, injector
+          </p>
+          <a
+            href="/generators/spare-parts"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
+          >
+            <span>Browse Full Spare Parts Catalog</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      )}
+
+      {/* Link to Full Catalog */}
+      {filteredParts.length > 0 && (
+        <div className="text-center pt-6 border-t border-slate-700/50">
+          <p className="text-slate-400 text-sm mb-3">
+            Showing {filteredParts.length} parts • Need something specific?
+          </p>
+          <a
+            href="/generators/spare-parts"
+            className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
+          >
+            <span>View Full Spare Parts Catalog</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+          <p className="text-slate-500 text-xs mt-2">
+            Or call us: <a href="tel:+254768860665" className="text-amber-400 hover:text-amber-300">+254 768 860 665</a>
+          </p>
         </div>
       )}
 
