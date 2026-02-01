@@ -16,7 +16,7 @@ interface TeslaStyleNavigationProps {
   activeSection?: string;
 }
 
-// Mega Menu Data
+// Mega Menu Data - Professional Structure
 const MEGA_MENUS = {
   generators: {
     title: 'Generator Solutions',
@@ -25,8 +25,9 @@ const MEGA_MENUS = {
       {
         title: 'Products',
         items: [
-          { href: '/generators', label: 'All Generators', icon: '⚡', desc: 'Browse our range' },
-          { href: '/generators/used', label: 'Used Generators', icon: '♻️', desc: 'Quality pre-owned' },
+          { href: '/generators', label: 'All Generators', icon: '⚡', desc: 'Browse our full range' },
+          { href: '/generators/used', label: 'Used Generators', icon: '♻️', desc: 'Quality pre-owned units' },
+          { href: '/brands', label: 'Generator Brands', icon: '🏷️', desc: 'Cummins, Perkins, CAT & more' },
         ],
       },
       {
@@ -40,10 +41,9 @@ const MEGA_MENUS = {
       {
         title: 'Support',
         items: [
-          { href: '/generators/maintenance-companion', label: 'Maintenance Hub', icon: '🤖', desc: 'AI repair guides, parts & diagnostics' },
+          { href: '/generators/maintenance-companion', label: 'Maintenance Hub', icon: '🤖', desc: 'AI repair guides & diagnostics' },
           { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'Genuine & OEM parts' },
           { href: '/fault-code-lookup', label: 'Fault Codes', icon: '🔍', desc: 'Troubleshooting guide' },
-          { href: '/generators/case-studies', label: 'Case Studies', icon: '📋', desc: 'Success stories' },
         ],
       },
     ],
@@ -101,8 +101,9 @@ const MEGA_MENUS = {
     description: 'Complete power and electrical solutions',
     sections: [
       {
-        title: 'Power Solutions',
+        title: 'Solutions',
         items: [
+          { href: '/solutions', label: 'All Solutions', icon: '💡', desc: 'View all our solutions' },
           { href: '/solutions/generators', label: 'Generator Services', icon: '⚡', desc: 'Sales & maintenance' },
           { href: '/solutions/ups', label: 'UPS Systems', icon: '🔋', desc: 'Backup power' },
           { href: '/solutions/controls', label: 'Control Systems', icon: '🎛️', desc: 'Automation & controls' },
@@ -117,11 +118,11 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Customer Support',
+        title: 'Company',
         items: [
-          { href: '/booking', label: 'Book a Service', icon: '📅', desc: 'Schedule appointment' },
           { href: '/gallery', label: 'Project Gallery', icon: '🖼️', desc: 'Our completed work' },
           { href: '/case-studies', label: 'Case Studies', icon: '📋', desc: 'Success stories' },
+          { href: '/booking', label: 'Book a Service', icon: '📅', desc: 'Schedule appointment' },
         ],
       },
     ],
@@ -129,17 +130,22 @@ const MEGA_MENUS = {
   },
 };
 
-// Complete Navigation - Enhanced with Mega Menus - ALL PAGES VISIBLE
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROFESSIONAL NAVBAR - 8 Items (Industry Standard)
+// All pages accessible via mega menus or direct links
+// ═══════════════════════════════════════════════════════════════════════════════
+// BRANDS → Inside GENERATORS mega menu > Products
+// SOLUTIONS → Inside SERVICES mega menu > Solutions (+ direct link)
+// GALLERY → Inside SERVICES mega menu > Company
+// ═══════════════════════════════════════════════════════════════════════════════
 const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
-  { href: '/about-us', label: 'ABOUT', type: 'link' },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { href: '/generators/maintenance-companion', label: '🛠️ MAINTENANCE HUB', type: 'link', featured: true },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
-  { href: '/solutions', label: 'SOLUTIONS', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
   { key: 'diagnostics', label: 'DIAGNOSTICS', type: 'mega' },
-  { href: '/gallery', label: 'GALLERY', type: 'link' },
+  { href: '/about-us', label: 'ABOUT', type: 'link' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
