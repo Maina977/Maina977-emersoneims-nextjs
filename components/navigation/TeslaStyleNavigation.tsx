@@ -233,13 +233,9 @@ export default function TeslaStyleNavigation({
                   >
                     <button
                       className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 rounded-lg flex items-center gap-1.5 whitespace-nowrap ${
-                        item.highlight
-                          ? activeMega === item.key
-                            ? 'text-amber-300 bg-amber-500/20 border border-amber-400/50 shadow-lg shadow-amber-500/10'
-                            : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50'
-                          : activeMega === item.key
-                            ? 'text-white bg-white/10 border border-white/20'
-                            : 'text-white/80 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
+                        activeMega === item.key
+                          ? 'text-white bg-white/10 border border-white/20'
+                          : 'text-white/80 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
                       }`}
                     >
                       {item.label}
@@ -260,8 +256,6 @@ export default function TeslaStyleNavigation({
                     className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 whitespace-nowrap rounded-lg border ${
                       (item as { featured?: boolean }).featured
                         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-400/50 hover:from-cyan-400 hover:to-blue-400 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 animate-pulse hover:animate-none'
-                        : item.highlight
-                        ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 border-amber-500/30 hover:border-amber-400/50'
                         : 'text-white/80 hover:text-white hover:bg-white/5 border-transparent hover:border-white/10'
                     }`}
                   >
@@ -481,8 +475,6 @@ export default function TeslaStyleNavigation({
                         className={`block px-4 py-3 rounded-xl transition-all ${
                           (item as { featured?: boolean }).featured
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold border border-cyan-400/50 shadow-lg shadow-cyan-500/30'
-                            : item.highlight
-                            ? 'text-amber-400 bg-amber-500/10 border border-amber-500/30 font-semibold'
                             : 'text-white/80 hover:text-white hover:bg-white/5'
                         }`}
                       >
