@@ -60,20 +60,30 @@ const FEATURES = [
   },
 ];
 
+// Business Details
+const BUSINESS_INFO = {
+  company: 'Emerson Industrial Maintenance Services Limited',
+  phone: '0782914717',
+  whatsapp: '+254782914717',
+};
+
 const PAYMENT_METHODS = {
   mpesa: {
     name: 'M-Pesa',
     icon: '📱',
-    paybill: '247247',
-    account: 'ORACLE',
-    instructions: 'Go to M-Pesa > Lipa na M-Pesa > Pay Bill',
+    // For M-Pesa, customer can send to Till or Paybill
+    // Using direct send to number for simplicity
+    sendTo: '0782914717',
+    instructions: 'Go to M-Pesa > Send Money > Enter Number > Amount: 20,000',
+    note: 'Or use Buy Goods Till if available',
   },
   bank: {
     name: 'Bank Transfer',
     icon: '🏦',
     bank: 'Equity Bank',
-    account: '1234567890',
-    branch: 'Nairobi',
+    branch: 'Embakasi Branch',
+    accountName: 'Emerson Industrial Maintenance Services Limited',
+    accountNumber: '1320285133753',
   },
 };
 
@@ -303,12 +313,8 @@ export default function PurchaseOverlay({
                   {selectedPayment === 'mpesa' ? (
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Paybill Number:</span>
-                        <span className="text-white font-mono font-bold">{PAYMENT_METHODS.mpesa.paybill}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Account Number:</span>
-                        <span className="text-white font-mono font-bold">{PAYMENT_METHODS.mpesa.account}</span>
+                        <span className="text-slate-400">Send to:</span>
+                        <span className="text-white font-mono font-bold">{PAYMENT_METHODS.mpesa.sendTo}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Amount:</span>
@@ -316,6 +322,9 @@ export default function PurchaseOverlay({
                       </div>
                       <div className="pt-2 border-t border-slate-700 text-sm text-slate-400">
                         {PAYMENT_METHODS.mpesa.instructions}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        Save your M-Pesa confirmation code (e.g., QJK4XXXXX)
                       </div>
                     </div>
                   ) : (
@@ -325,12 +334,16 @@ export default function PurchaseOverlay({
                         <span className="text-white font-bold">{PAYMENT_METHODS.bank.bank}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Account:</span>
-                        <span className="text-white font-mono font-bold">{PAYMENT_METHODS.bank.account}</span>
-                      </div>
-                      <div className="flex justify-between">
                         <span className="text-slate-400">Branch:</span>
                         <span className="text-white">{PAYMENT_METHODS.bank.branch}</span>
+                      </div>
+                      <div className="flex justify-between flex-wrap">
+                        <span className="text-slate-400">Account Name:</span>
+                        <span className="text-white text-sm">{PAYMENT_METHODS.bank.accountName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Account No:</span>
+                        <span className="text-white font-mono font-bold">{PAYMENT_METHODS.bank.accountNumber}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Amount:</span>
@@ -378,7 +391,7 @@ export default function PurchaseOverlay({
               <p className="text-slate-400 text-sm mb-2">Questions? Contact us:</p>
               <div className="flex justify-center gap-4">
                 <a
-                  href="https://wa.me/254768860665"
+                  href={`https://wa.me/${BUSINESS_INFO.whatsapp.replace('+', '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-green-400 hover:text-green-300"
@@ -386,10 +399,10 @@ export default function PurchaseOverlay({
                   WhatsApp
                 </a>
                 <a
-                  href="tel:+254782914717"
+                  href={`tel:+254${BUSINESS_INFO.phone.substring(1)}`}
                   className="text-blue-400 hover:text-blue-300"
                 >
-                  Call
+                  {BUSINESS_INFO.phone}
                 </a>
                 <a
                   href="mailto:support@emersoneims.com"

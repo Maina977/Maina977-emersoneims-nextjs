@@ -21,18 +21,25 @@ const FREE_TRIAL_END = new Date('2026-03-02T00:00:00');
 const isFreeTrial = () => new Date() < FREE_TRIAL_END;
 const getDaysRemaining = () => Math.max(0, Math.ceil((FREE_TRIAL_END.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
 
+// Business Details
+const BUSINESS = {
+  company: 'Emerson Industrial Maintenance Services Limited',
+  phone: '0782914717',
+  whatsapp: '254782914717',
+};
+
 const PAYMENT_INFO = {
   mpesa: {
-    paybill: '247247',
-    account: 'ORACLE',
-    name: 'M-Pesa Paybill',
+    sendTo: '0782914717',
+    name: 'M-Pesa Send Money',
+    instructions: 'M-Pesa > Send Money > Enter 0782914717 > Amount 20,000',
   },
   bank: {
     bank: 'Equity Bank',
-    accountName: 'Emerson EIMS Ltd',
-    accountNumber: '1234567890',
-    branch: 'Nairobi CBD',
-    swiftCode: 'EABORBI',
+    accountName: 'Emerson Industrial Maintenance Services Limited',
+    accountNumber: '1320285133753',
+    branch: 'Embakasi Branch',
+    swiftCode: 'EQBLKENA',
   },
 };
 
@@ -219,35 +226,29 @@ export default function PurchasePage() {
                       </li>
                       <li className="flex gap-3">
                         <span className="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm font-bold flex-shrink-0">2</span>
-                        <span>Select <strong>Lipa na M-Pesa</strong> → <strong>Pay Bill</strong></span>
+                        <span>Select <strong>Send Money</strong></span>
                       </li>
                       <li className="flex gap-3">
                         <span className="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm font-bold flex-shrink-0">3</span>
                         <div>
-                          Enter Business Number: <span className="font-mono font-bold text-white bg-slate-800 px-2 py-1 rounded">{PAYMENT_INFO.mpesa.paybill}</span>
+                          Enter Phone Number: <span className="font-mono font-bold text-white bg-slate-800 px-2 py-1 rounded">{PAYMENT_INFO.mpesa.sendTo}</span>
                         </div>
                       </li>
                       <li className="flex gap-3">
                         <span className="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm font-bold flex-shrink-0">4</span>
                         <div>
-                          Enter Account Number: <span className="font-mono font-bold text-white bg-slate-800 px-2 py-1 rounded">{PAYMENT_INFO.mpesa.account}</span>
+                          Enter Amount: <span className="font-mono font-bold text-amber-400 bg-slate-800 px-2 py-1 rounded">20,000</span>
                         </div>
                       </li>
                       <li className="flex gap-3">
                         <span className="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm font-bold flex-shrink-0">5</span>
-                        <div>
-                          Enter Amount: <span className="font-mono font-bold text-amber-400 bg-slate-800 px-2 py-1 rounded">20000</span>
-                        </div>
-                      </li>
-                      <li className="flex gap-3">
-                        <span className="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm font-bold flex-shrink-0">6</span>
                         <span>Enter your M-Pesa PIN and confirm</span>
                       </li>
                     </ol>
 
                     <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                       <p className="text-sm text-green-400">
-                        ✓ You will receive an M-Pesa confirmation SMS with a transaction code starting with letters (e.g., <span className="font-mono">QJK4XXXXX</span>)
+                        ✓ You will receive an M-Pesa confirmation SMS with a transaction code (e.g., <span className="font-mono">QJK4XXXXX</span>)
                       </p>
                     </div>
                   </div>
@@ -481,7 +482,7 @@ export default function PurchasePage() {
                   Return to Generator Oracle
                 </Link>
                 <a
-                  href="https://wa.me/254768860665?text=Hi,%20I%20just%20submitted%20a%20payment%20verification%20for%20Generator%20Oracle.%20Transaction:%20"
+                  href={`https://wa.me/${BUSINESS.whatsapp}?text=Hi,%20I%20just%20submitted%20a%20payment%20verification%20for%20Generator%20Oracle.%20Transaction:%20${formData.transactionCode}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 py-3 bg-green-500/20 text-green-400 font-medium rounded-xl hover:bg-green-500/30 transition-all border border-green-500/30 flex items-center justify-center gap-2"
@@ -492,6 +493,10 @@ export default function PurchasePage() {
 
               <p className="text-slate-500 text-sm mt-6">
                 Questions? Contact us at{' '}
+                <a href={`https://wa.me/${BUSINESS.whatsapp}`} className="text-green-400">
+                  WhatsApp ({BUSINESS.phone})
+                </a>
+                {' or '}
                 <a href="mailto:support@emersoneims.com" className="text-cyan-400">
                   support@emersoneims.com
                 </a>
