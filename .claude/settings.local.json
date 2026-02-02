@@ -23,7 +23,12 @@
       "Bash(npx vercel --prod --yes)",
       "Bash(curl:*)",
       "Bash(npx tsc:*)",
-      "Bash(dir /s /b *20200904*)"
+      "Bash(dir /s /b *20200904*)",
+      "Bash(dir \"C:\\\\Users\\\\PC\\\\my-app\")",
+      "Bash(dir \"C:\\\\Users\\\\PC\\\\my-app\\\\app\")",
+      "Bash(dir \"C:\\\\Users\\\\PC\\\\my-app\\\\src\")",
+      "Bash(dir \"C:\\\\Users\\\\PC\\\\my-app\\\\app\\\\solar\")",
+      "Bash(dir \"C:\\\\Users\\\\PC\\\\my-app\\\\app\\\\diagnostics\")"
     ]
   }
 }

@@ -463,7 +463,7 @@ export default async function RootLayout({
           "itemOffered": {
             "@type": "Service",
             "name": "Generator & Solar Spare Parts Supply",
-            "description": "Comprehensive spare parts catalog with 1,247 genuine parts for generators (Cummins, Perkins, CAT), solar systems, motors, and switchgear. Fast delivery across Kenya.",
+            "description": "Comprehensive spare parts catalog with 1,560+ genuine parts for generators (Cummins, Perkins, CAT), solar systems, motors, and switchgear. Fast delivery across Kenya.",
             "provider": {
               "@type": "LocalBusiness",
               "name": "EmersonEIMS"

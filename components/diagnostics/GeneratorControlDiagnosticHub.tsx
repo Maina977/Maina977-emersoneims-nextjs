@@ -14,7 +14,7 @@ export default function GeneratorControlDiagnosticHub() {
       frequency: '60Hz',
       load: '75%',
       fuelLevel: '85%',
-      runtime: '1247 hours',
+      runtime: '1560 hours',
       lastMaintenance: '2024-01-15',
     });
   };

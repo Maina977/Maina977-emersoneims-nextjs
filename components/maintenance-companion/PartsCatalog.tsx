@@ -224,7 +224,7 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
           Find genuine and aftermarket parts with pricing and availability
         </p>
         <p className="text-cyan-400 text-sm">
-          <span className="text-amber-400 font-bold">1,247+ parts</span> in database • Prices in Kenya Shillings (KES)
+          <span className="text-amber-400 font-bold">1,560+ parts</span> in database • Prices in Kenya Shillings (KES)
         </p>
         <a
           href="/generators/spare-parts"
@@ -401,13 +401,13 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
             Try: oil filter, fuel filter, water pump, thermostat, starter, AVR, injector
           </p>
           <p className="text-amber-400 text-sm mb-4">
-            Our full catalog has <span className="font-bold">1,247+ parts</span> - search there for more options!
+            Our full catalog has <span className="font-bold">1,560+ parts</span> - search there for more options!
           </p>
           <a
             href="/generators/spare-parts"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white rounded-xl font-medium transition-all shadow-lg shadow-cyan-500/20"
           >
-            <span>Search Full 1,247+ Parts Catalog</span>
+            <span>Search Full 1,560+ Parts Catalog</span>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -419,13 +419,13 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
       {filteredParts.length > 0 && (
         <div className="text-center pt-6 border-t border-slate-700/50">
           <p className="text-slate-400 text-sm mb-3">
-            Quick search showing {filteredParts.length} common parts • <span className="text-amber-400">Full catalog: 1,247+ parts</span>
+            Quick search showing {filteredParts.length} common parts • <span className="text-amber-400">Full catalog: 1,560+ parts</span>
           </p>
           <a
             href="/generators/spare-parts"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white rounded-xl font-medium transition-all shadow-lg shadow-cyan-500/20"
           >
-            <span>Browse Complete 1,247+ Parts Catalog</span>
+            <span>Browse Complete 1,560+ Parts Catalog</span>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

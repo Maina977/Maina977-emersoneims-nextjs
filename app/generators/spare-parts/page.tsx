@@ -3,7 +3,7 @@
  *
  * THE FEATURE THAT CHANGES WEBSITE HISTORY
  *
- * - 1,247 parts with complete specifications
+ * - 1,560+ parts with complete specifications
  * - Sci-fi holographic interface
  * - Real-time inventory tracking
  * - Instant WhatsApp quotations
@@ -108,7 +108,7 @@ export default function SparePartsPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
             >
               <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">1,247+ Parts in Stock</span>
+              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">1,560+ Parts in Stock</span>
             </motion.div>
 
             {/* Main Title with Cinematic Typography */}

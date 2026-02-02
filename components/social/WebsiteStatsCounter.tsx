@@ -17,7 +17,7 @@ const VERIFIED_STATS = {
   generatorBrands: 12,         // Brands we service
   certifiedTechnicians: 15,    // Team members
   errorCodesDatabase: 13500,   // Diagnostic database size
-  sparePartsInStock: 1247,     // Parts in catalog
+  sparePartsInStock: 1560,     // Parts in catalog
   customerSatisfaction: 96,    // Based on feedback surveys
 };
 

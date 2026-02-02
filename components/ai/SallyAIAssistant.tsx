@@ -12,7 +12,7 @@ import Image from 'next/image';
  * Provides accurate, helpful information about:
  * - 9 Core Services
  * - 13,500+ Error Codes Database
- * - 1,247 Spare Parts Catalog
+ * - 1,560+ Spare Parts Catalog
  * - Pricing Guidance
  * - Technical Support
  *
@@ -100,7 +100,7 @@ const SERVICE_KNOWLEDGE = {
   'spare-parts': {
     name: 'Genuine Spare Parts',
     description: 'Comprehensive inventory of genuine and OEM-quality spare parts for all major generator brands.',
-    partsCount: '1,247+ parts in our catalog',
+    partsCount: '1,560+ parts in our catalog',
     categories: [
       'Filters (oil, fuel, air)',
       'Belts & hoses',
@@ -218,7 +218,7 @@ export default function SallyAIAssistant() {
       const timer = setTimeout(() => {
         setIsOpen(true);
         sendSallyMessage(
-          "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,247 spare parts.\n\nWhat's your name?",
+          "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,560+ spare parts.\n\nWhat's your name?",
           []
         );
         localStorage.setItem('sally_seen', 'true');
@@ -434,7 +434,7 @@ export default function SallyAIAssistant() {
       );
     } else if (lowerQuestion.includes('parts') || lowerQuestion.includes('spare')) {
       sendSallyMessage(
-        `${name}, we stock 1,247+ genuine spare parts!\n\n` +
+        `${name}, we stock 1,560+ genuine spare parts!\n\n` +
         `**Parts Categories:**\n` +
         `- Filters (oil, fuel, air, water)\n` +
         `- Belts, hoses & gaskets\n` +
@@ -547,7 +547,7 @@ export default function SallyAIAssistant() {
                   setConversationStep(1);
                 } else {
                   sendSallyMessage(
-                    "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,247 spare parts.\n\nWhat's your name?",
+                    "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,560+ spare parts.\n\nWhat's your name?",
                     []
                   );
                 }

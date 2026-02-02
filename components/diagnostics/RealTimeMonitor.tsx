@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 export default function RealTimeMonitor() {
   const [metrics] = useState({
-    activeSystems: 1247,
+    activeSystems: 1560,
     avgUptime: 98.7,
     totalPower: 125,
     alerts: 3,

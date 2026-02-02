@@ -43,7 +43,7 @@ export default function DiagnosticSummary() {
         duration: 2,
         onUpdate: function() {
           setStats({
-            totalSystems: 1247,
+            totalSystems: 1560,
             activeAlerts: 3,
             avgUptime: 98.7,
             resolvedIssues: 184,
