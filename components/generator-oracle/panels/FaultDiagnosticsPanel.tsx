@@ -4,11 +4,15 @@
  * Fault Diagnostics Panel - Professional Error Management Interface
  * Comprehensive technician-focused fault clearing guidance system
  * Now with full detailed troubleshooting from the Oracle database
+ *
+ * ENHANCED: Now includes 4+ paragraph detailed descriptions per fault
+ * with AI insights, case studies, and predictive maintenance indicators
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ControllerFaultCode } from '@/lib/generator-oracle/controllerFaultCodes';
+import { getFaultByCode, type EnhancedFaultCode } from '@/lib/generator-oracle/enhanced-fault-database';
 
 // Extended interface to include interactive questions
 interface ExtendedFaultCode extends ControllerFaultCode {
@@ -61,9 +65,12 @@ function FaultDetailModal({
   fault: ExtendedFaultCode;
   onClose: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'diagnostics' | 'reset' | 'solution'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'diagnostics' | 'reset' | 'solution' | 'ai-insights'>('overview');
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [completedDiagnostics, setCompletedDiagnostics] = useState<number[]>([]);
+
+  // Get enhanced fault data if available (4+ paragraph detailed descriptions)
+  const enhancedFault = useMemo(() => getFaultByCode(fault.code), [fault.code]);
 
   // Get the first reset pathway and solution
   const resetPathway = fault.resetPathways?.[0];
@@ -87,6 +94,7 @@ function FaultDetailModal({
     { id: 'diagnostics', label: 'Diagnostics', icon: '🔍' },
     { id: 'reset', label: 'Reset Steps', icon: '🔄' },
     { id: 'solution', label: 'Solution', icon: '🔧' },
+    ...(enhancedFault ? [{ id: 'ai-insights', label: 'AI Insights', icon: '🤖' }] : []),
   ];
 
   return (
@@ -170,13 +178,82 @@ function FaultDetailModal({
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-6"
               >
-                {/* Description */}
-                <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
-                  <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <span>📖</span> What This Means
-                  </h3>
-                  <p className="text-slate-300 leading-relaxed">{fault.description}</p>
-                </div>
+                {/* Enhanced Description - 4+ Paragraphs when available */}
+                {enhancedFault ? (
+                  <div className="space-y-4">
+                    {/* Technical Overview */}
+                    <div className="p-5 bg-slate-900/50 border border-cyan-500/30 rounded-xl">
+                      <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span>📖</span> Technical Overview
+                      </h3>
+                      <div className="text-slate-300 leading-relaxed whitespace-pre-line">
+                        {enhancedFault.technicalOverview}
+                      </div>
+                    </div>
+
+                    {/* System Impact */}
+                    <div className="p-5 bg-slate-900/50 border border-orange-500/30 rounded-xl">
+                      <h3 className="text-sm font-bold text-orange-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span>⚡</span> System Impact
+                      </h3>
+                      <div className="text-slate-300 leading-relaxed whitespace-pre-line">
+                        {enhancedFault.systemImpact}
+                      </div>
+                    </div>
+
+                    {/* Safety Considerations */}
+                    <div className="p-5 bg-red-500/10 border border-red-500/30 rounded-xl">
+                      <h3 className="text-sm font-bold text-red-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span>🛡️</span> Safety Considerations
+                      </h3>
+                      <div className="text-slate-300 leading-relaxed whitespace-pre-line">
+                        {enhancedFault.safetyConsiderations}
+                      </div>
+                    </div>
+
+                    {/* Historical Context */}
+                    <div className="p-5 bg-slate-900/50 border border-purple-500/30 rounded-xl">
+                      <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span>📚</span> Historical Context
+                      </h3>
+                      <div className="text-slate-300 leading-relaxed whitespace-pre-line">
+                        {enhancedFault.historicalContext}
+                      </div>
+                    </div>
+
+                    {/* Case Studies from Kenya */}
+                    {enhancedFault.caseStudies && enhancedFault.caseStudies.length > 0 && (
+                      <div className="p-5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl">
+                        <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <span>🇰🇪</span> Real Case Studies from Kenya
+                        </h3>
+                        <div className="space-y-4">
+                          {enhancedFault.caseStudies.map((cs, idx) => (
+                            <div key={idx} className="p-4 bg-slate-900/50 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-green-400 font-bold">{cs.location}</span>
+                                <span className="text-slate-500">•</span>
+                                <span className="text-slate-400 text-sm">{cs.generatorModel}</span>
+                              </div>
+                              <p className="text-slate-300 text-sm mb-2"><strong>Symptom:</strong> {cs.symptom}</p>
+                              <p className="text-slate-300 text-sm mb-2"><strong>Diagnosis:</strong> {cs.diagnosis}</p>
+                              <p className="text-slate-300 text-sm mb-2"><strong>Solution:</strong> {cs.solution}</p>
+                              <p className="text-amber-400 text-sm"><strong>Lesson:</strong> {cs.lessonsLearned}</p>
+                              <p className="text-slate-500 text-xs mt-2">Time to resolve: {cs.timeToResolve}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                    <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span>📖</span> What This Means
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed">{fault.description}</p>
+                  </div>
+                )}
 
                 {/* Safety Warnings - Show prominently if shutdown/critical */}
                 {fault.safetyWarnings && fault.safetyWarnings.length > 0 && (
@@ -544,6 +621,135 @@ function FaultDetailModal({
                       </div>
                     )}
                   </>
+                )}
+              </motion.div>
+            )}
+
+            {/* AI INSIGHTS TAB - Unique Feature */}
+            {activeTab === 'ai-insights' && enhancedFault && (
+              <motion.div
+                key="ai-insights"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+              >
+                {/* AI Pattern Analysis */}
+                <div className="p-5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl">
+                  <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>🧠</span> AI Pattern Analysis
+                  </h3>
+                  <p className="text-slate-300 leading-relaxed">{enhancedFault.aiInsights.patternAnalysis}</p>
+                </div>
+
+                {/* Predictive Indicators */}
+                <div className="p-5 bg-slate-900/50 border border-cyan-500/30 rounded-xl">
+                  <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>🔮</span> Predictive Indicators - Early Warning Signs
+                  </h3>
+                  <ul className="space-y-2">
+                    {enhancedFault.aiInsights.predictiveIndicators.map((indicator, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-slate-300">
+                        <span className="text-cyan-400 mt-0.5">▸</span>
+                        <span>{indicator}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Correlated Faults */}
+                <div className="p-5 bg-slate-900/50 border border-amber-500/30 rounded-xl">
+                  <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>🔗</span> Correlated Faults - Check These Too
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {enhancedFault.aiInsights.correlatedFaults.map((fault, idx) => (
+                      <span key={idx} className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg text-sm text-amber-300">
+                        {fault}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Environmental Factors */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-5 bg-slate-900/50 border border-blue-500/30 rounded-xl">
+                    <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span>📅</span> Seasonal Factors (Kenya)
+                    </h3>
+                    <p className="text-slate-300 text-sm">{enhancedFault.aiInsights.seasonalFactors}</p>
+                  </div>
+                  <div className="p-5 bg-slate-900/50 border border-green-500/30 rounded-xl">
+                    <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span>🌍</span> Environmental Factors
+                    </h3>
+                    <p className="text-slate-300 text-sm">{enhancedFault.aiInsights.environmentalFactors}</p>
+                  </div>
+                </div>
+
+                {/* AI Recommendations */}
+                <div className="p-5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl">
+                  <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>💡</span> AI Recommendations
+                  </h3>
+                  <ul className="space-y-2">
+                    {enhancedFault.aiInsights.recommendations.map((rec, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-slate-300">
+                        <span className="text-green-400 mt-0.5">✓</span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Wiring Information */}
+                <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>🔌</span> Wiring & Sensor Information
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-slate-500">Location:</span>
+                      <p className="text-slate-300">{enhancedFault.wiringDiagram.sensorLocation}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Wire Colors:</span>
+                      <p className="text-slate-300">{enhancedFault.wiringDiagram.wireColors.join(', ')}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Signal Type:</span>
+                      <p className="text-slate-300">{enhancedFault.wiringDiagram.signalType}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Voltage Range:</span>
+                      <p className="text-slate-300">{enhancedFault.wiringDiagram.voltageRange}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Resistance:</span>
+                      <p className="text-slate-300">{enhancedFault.wiringDiagram.resistance}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Pin Config:</span>
+                      <p className="text-slate-300">{enhancedFault.wiringDiagram.pinConfiguration}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* FAQs */}
+                {enhancedFault.frequentlyAskedQuestions && enhancedFault.frequentlyAskedQuestions.length > 0 && (
+                  <div className="p-5 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+                    <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span>❓</span> Frequently Asked Questions
+                    </h3>
+                    <div className="space-y-4">
+                      {enhancedFault.frequentlyAskedQuestions.map((faq, idx) => (
+                        <div key={idx} className="p-3 bg-slate-800/50 rounded-lg">
+                          <p className="text-white font-medium mb-2">Q: {faq.question}</p>
+                          <p className="text-slate-400 text-sm">A: {faq.answer}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </motion.div>
             )}
