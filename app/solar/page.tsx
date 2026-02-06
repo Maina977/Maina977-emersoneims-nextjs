@@ -1,1639 +1,615 @@
 'use client';
 
-// EmersonEIMS Solar Platform - PREMIUM EDITION
-// Complete 10/10 implementation with all requested features
-import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+/**
+ * Solar Maintenance Hub
+ * Complete solar system maintenance with weather integration
+ */
+
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import Head from 'next/head';
-import SolarSystemCalculator from '@/components/calculators/SolarSystemCalculator';
+import { AnalogClock, AnalogCalendar, WeatherWidget, WidgetBar } from '@/components/ui/AnalogWidgets';
 
-// ==================== PREMIUM ENHANCEMENTS ====================
-// These components ADD to your existing code without modifying it
+// Kenya locations for weather
+const KENYA_LOCATIONS = [
+  'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret',
+  'Malindi', 'Kilifi', 'Karen', 'Embakasi', 'Thika',
+  'Nyeri', 'Machakos', 'Garissa', 'Meru', 'Kakamega'
+];
 
-// 1. CINEMATIC NARRATIVE VIDEO COMPONENT
-const CinematicNarrative = () => {
-  const [scene, setScene] = useState(0);
-  const scenes = [
-    { title: "The Challenge", text: "Kenya faces energy reliability challenges", color: "from-red-900/40 to-black" },
-    { title: "The Solution", text: "Solar power provides consistent, clean energy", color: "from-blue-900/40 to-black" },
-    { title: "The Future", text: "A sustainable energy future for all Kenyans", color: "from-green-900/40 to-black" },
-  ];
+// Solar System Types
+const SOLAR_SYSTEMS = [
+  {
+    id: 'residential',
+    name: 'Residential Solar',
+    icon: '🏠',
+    capacity: '1-10 kW',
+    description: 'Home solar systems with battery backup for reliable power supply.',
+    components: ['Solar Panels', 'Inverter', 'Battery Bank', 'Charge Controller', 'Distribution Board'],
+    maintenanceTasks: [
+      'Panel cleaning and inspection',
+      'Battery water level check',
+      'Connection tightening',
+      'Inverter ventilation check',
+      'Performance monitoring'
+    ]
+  },
+  {
+    id: 'commercial',
+    name: 'Commercial Solar',
+    icon: '🏢',
+    capacity: '10-100 kW',
+    description: 'Medium-scale solar installations for businesses and institutions.',
+    components: ['Solar Array', 'String Inverters', 'Battery Storage', 'Monitoring System', 'Grid Tie'],
+    maintenanceTasks: [
+      'Array inspection and cleaning',
+      'String voltage verification',
+      'Inverter performance check',
+      'Battery state of health',
+      'Grid synchronization test'
+    ]
+  },
+  {
+    id: 'industrial',
+    name: 'Industrial Solar',
+    icon: '🏭',
+    capacity: '100+ kW',
+    description: 'Large-scale solar farms and industrial installations.',
+    components: ['Solar Farm', 'Central Inverters', 'SCADA System', 'Transformers', 'Substation'],
+    maintenanceTasks: [
+      'Thermal imaging inspection',
+      'IV curve tracing',
+      'Transformer oil analysis',
+      'SCADA calibration',
+      'Grid compliance testing'
+    ]
+  },
+  {
+    id: 'hybrid',
+    name: 'Hybrid Systems',
+    icon: '⚡',
+    capacity: '5-500 kW',
+    description: 'Solar-generator-battery hybrid systems for maximum reliability.',
+    components: ['Solar Array', 'Generator', 'Hybrid Inverter', 'Battery Bank', 'ATS Panel'],
+    maintenanceTasks: [
+      'Solar-generator synchronization',
+      'Battery cycling test',
+      'ATS operation check',
+      'Fuel optimization review',
+      'System efficiency audit'
+    ]
+  },
+  {
+    id: 'offgrid',
+    name: 'Off-Grid Systems',
+    icon: '🏕️',
+    capacity: '0.5-50 kW',
+    description: 'Standalone systems for remote locations without grid access.',
+    components: ['Solar Panels', 'MPPT Controller', 'Battery Bank', 'Off-Grid Inverter', 'Load Controller'],
+    maintenanceTasks: [
+      'Battery equalization',
+      'Charge controller calibration',
+      'Load priority configuration',
+      'System autonomy test',
+      'Backup assessment'
+    ]
+  },
+  {
+    id: 'solar-pump',
+    name: 'Solar Water Pumps',
+    icon: '💧',
+    capacity: '0.5-50 HP',
+    description: 'Solar-powered water pumping for irrigation and domestic use.',
+    components: ['Solar Array', 'VFD/Controller', 'Submersible Pump', 'Water Tank', 'Level Sensors'],
+    maintenanceTasks: [
+      'Pump efficiency test',
+      'VFD parameter check',
+      'Water quality analysis',
+      'Tank inspection',
+      'Irrigation schedule optimization'
+    ]
+  }
+];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setScene((prev) => (prev + 1) % scenes.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+// Common Solar Faults
+const SOLAR_FAULTS = [
+  {
+    code: 'SOL-001',
+    title: 'Low Solar Production',
+    severity: 'warning',
+    description: 'Solar panels producing below expected output. This could indicate soiling, shading, degradation, or equipment malfunction. Check panel surface for dirt, bird droppings, or debris. Verify no new shading sources (trees, buildings). Inspect connections and wiring for damage or corrosion.',
+    causes: ['Panel soiling', 'Partial shading', 'Panel degradation', 'Faulty connections', 'Inverter issues'],
+    solutions: ['Clean panels with soft brush and water', 'Remove shading obstacles', 'Check all DC connections', 'Verify inverter operation', 'Test individual string voltages']
+  },
+  {
+    code: 'SOL-002',
+    title: 'Battery Overcharge',
+    severity: 'critical',
+    description: 'Battery voltage exceeding safe limits. This dangerous condition can cause battery damage, reduced lifespan, or in extreme cases, thermal runaway. Immediately reduce charging current and verify charge controller settings. Check battery temperature and ventilation.',
+    causes: ['Charge controller malfunction', 'Wrong voltage settings', 'Temperature sensor failure', 'Oversized solar array'],
+    solutions: ['Reduce charging current', 'Verify charge controller settings', 'Check temperature sensors', 'Inspect battery ventilation', 'Consider load diversion']
+  },
+  {
+    code: 'SOL-003',
+    title: 'Grid Sync Failure',
+    severity: 'critical',
+    description: 'Inverter unable to synchronize with utility grid. System cannot export power or provide grid-tied operation. Check grid voltage and frequency at connection point. Verify inverter grid parameters match utility requirements. Inspect anti-islanding protection settings.',
+    causes: ['Grid voltage out of range', 'Frequency deviation', 'Ground fault detected', 'Anti-islanding trip', 'Communication failure'],
+    solutions: ['Check utility supply quality', 'Verify grid parameters', 'Clear ground faults', 'Reset anti-islanding', 'Update inverter firmware']
+  },
+  {
+    code: 'SOL-004',
+    title: 'MPPT Tracking Error',
+    severity: 'warning',
+    description: 'Maximum Power Point Tracker not optimizing panel output. System losing potential energy harvest. The MPPT algorithm should continuously adjust to find optimal voltage/current combination. Erratic tracking suggests hardware or software issues.',
+    causes: ['Rapid irradiance changes', 'Partial shading', 'Controller malfunction', 'Wiring issues', 'Panel mismatch'],
+    solutions: ['Check for shading patterns', 'Verify string configuration', 'Update controller firmware', 'Inspect DC wiring', 'Test individual panels']
+  },
+  {
+    code: 'SOL-005',
+    title: 'Battery Low State of Charge',
+    severity: 'warning',
+    description: 'Battery bank below minimum recommended charge level. Continued discharge may damage batteries and reduce lifespan. System should enter low-voltage disconnect mode to protect batteries. Review load consumption and solar production balance.',
+    causes: ['Insufficient solar input', 'Excessive load demand', 'Battery degradation', 'Charge controller fault', 'Weather conditions'],
+    solutions: ['Reduce non-essential loads', 'Check solar production', 'Verify charge controller', 'Test battery capacity', 'Consider backup charging']
+  },
+  {
+    code: 'SOL-006',
+    title: 'Inverter Overtemperature',
+    severity: 'critical',
+    description: 'Inverter temperature exceeding safe operating limits. Unit will derate or shut down to prevent damage. Check cooling system, ambient temperature, and ventilation. Ensure inverter is not enclosed in unventilated space. Clean any dust from heat sinks and fans.',
+    causes: ['Blocked ventilation', 'Fan failure', 'High ambient temperature', 'Overloading', 'Dust accumulation'],
+    solutions: ['Improve ventilation', 'Clean heat sinks', 'Replace cooling fans', 'Reduce load', 'Relocate if needed']
+  }
+];
 
-  return (
-    <div className="relative h-[70vh] w-full overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-900/20 to-black z-0" />
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="none"
-        poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
-        className="absolute inset-0 w-full h-full object-cover opacity-50"
-        src="https://assets.mixkit.co/videos/preview/mixkit-solar-panels-on-the-roof-of-a-house-41506-large.mp4"
-      />
-      
-      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
-        <div className="max-w-4xl">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-300 bg-clip-text text-transparent">
-            Powering Kenya's Future
-          </h1>
-          
-          <div className="h-48 overflow-hidden relative">
-            {scenes.map((s, i) => (
-              <div
-                key={i}
-                className={`absolute top-0 left-0 w-full transition-all duration-1000 transform ${
-                  i === scene ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-                }`}
-              >
-                <div className={`p-8 rounded-2xl bg-gradient-to-br ${s.color} backdrop-blur-sm border border-white/10`}>
-                  <h2 className="text-3xl font-bold text-white mb-4">{s.title}</h2>
-                  <p className="text-xl text-white/90">{s.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+// Maintenance Schedule
+const MAINTENANCE_SCHEDULE = [
+  { task: 'Visual inspection', frequency: 'Weekly', duration: '15 min', priority: 'routine' },
+  { task: 'Panel cleaning', frequency: 'Monthly', duration: '1-2 hours', priority: 'routine' },
+  { task: 'Battery water check', frequency: 'Monthly', duration: '30 min', priority: 'important' },
+  { task: 'Connection tightening', frequency: 'Quarterly', duration: '1 hour', priority: 'important' },
+  { task: 'Performance audit', frequency: 'Quarterly', duration: '2-3 hours', priority: 'important' },
+  { task: 'Inverter service', frequency: 'Annually', duration: '4-6 hours', priority: 'critical' },
+  { task: 'Battery load test', frequency: 'Annually', duration: '4 hours', priority: 'critical' },
+  { task: 'Full system inspection', frequency: 'Annually', duration: '1 day', priority: 'critical' },
+];
 
-          <div className="flex justify-center space-x-4 mt-8">
-            {scenes.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setScene(i)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  i === scene ? 'bg-yellow-300 w-8' : 'bg-white/30'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+export default function SolarMaintenanceHub() {
+  const [selectedSystem, setSelectedSystem] = useState(SOLAR_SYSTEMS[0]);
+  const [selectedLocation, setSelectedLocation] = useState('nairobi');
+  const [activeTab, setActiveTab] = useState<'overview' | 'faults' | 'maintenance' | 'calculator'>('overview');
+  const [solarInput, setSolarInput] = useState({
+    panelWatts: 550,
+    panelCount: 10,
+    batteryAh: 200,
+    batteryCount: 4,
+    batteryVoltage: 12,
+    dailyLoad: 15,
+  });
 
-      {/* Animated floating elements */}
-      <div className="absolute top-10 left-10 w-20 h-20 rounded-full bg-yellow-300/10 animate-pulse" />
-      <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-blue-300/10 animate-pulse" style={{ animationDelay: '1s' }} />
-      <div className="absolute top-1/2 left-1/4 w-16 h-16 rounded-full bg-green-300/10 animate-pulse" style={{ animationDelay: '2s' }} />
-    </div>
-  );
-};
+  // Calculate solar system metrics
+  const calculateMetrics = () => {
+    const totalPanelWatts = solarInput.panelWatts * solarInput.panelCount;
+    const totalBatteryWh = solarInput.batteryAh * solarInput.batteryCount * solarInput.batteryVoltage;
+    const dailyLoadWh = solarInput.dailyLoad * 1000;
+    const autonomyDays = totalBatteryWh / dailyLoadWh;
+    const avgSunHours = 5; // Kenya average
+    const dailyProduction = totalPanelWatts * avgSunHours * 0.8; // 80% efficiency
+    const productionRatio = dailyProduction / dailyLoadWh;
 
-// 2. ADVANCED VISUAL SYSTEM CALCULATOR
-const AdvancedSystemCalculator = () => {
-  const [step, setStep] = useState(1);
-  const [consumption, setConsumption] = useState(500);
-  const [rooftopSize, setRooftopSize] = useState(100);
-  const [county, setCounty] = useState("Nairobi");
-  const [systemSize, setSystemSize] = useState(5);
-  const [batterySize, setBatterySize] = useState(10);
-  const [savings, setSavings] = useState(0);
-
-  const counties = [
-    { name: "Nairobi", irradiance: 5.8, color: "bg-green-500" },
-    { name: "Mombasa", irradiance: 5.9, color: "bg-blue-500" },
-    { name: "Kisumu", irradiance: 5.7, color: "bg-purple-500" },
-    { name: "Nakuru", irradiance: 5.6, color: "bg-yellow-500" },
-    { name: "Eldoret", irradiance: 5.5, color: "bg-red-500" },
-  ];
-
-  const calculateSystem = () => {
-    const selected = counties.find(c => c.name === county);
-    const baseOutput = systemSize * selected?.irradiance! * 365 * 0.75;
-    const batteryBackup = batterySize * 0.9 * 365;
-    const annualSavings = (consumption * 365 * 25) - (systemSize * 150000);
-    setSavings(Math.max(0, annualSavings));
-  };
-
-  useEffect(() => {
-    calculateSystem();
-  }, [consumption, rooftopSize, county, systemSize, batterySize]);
-
-  const steps = [
-    { number: 1, title: "Energy Usage", icon: "⚡" },
-    { number: 2, title: "Location", icon: "📍" },
-    { number: 3, title: "System Size", icon: "☀️" },
-    { number: 4, title: "Results", icon: "📊" },
-  ];
-
-  return (
-    <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-white/10 shadow-2xl shadow-yellow-500/10">
-      <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-yellow-300 to-yellow-100 bg-clip-text text-transparent">
-        Advanced System Designer
-      </h2>
-      <p className="text-white/70 mb-8">Design your perfect solar system in 4 simple steps</p>
-
-      {/* Progress Steps */}
-      <div className="flex justify-between mb-10 relative">
-        <div className="absolute top-5 left-0 right-0 h-1 bg-white/10 -z-10" />
-        <div 
-          className="absolute top-5 left-0 h-1 bg-gradient-to-r from-yellow-300 to-yellow-500 -z-10 transition-all duration-500"
-          style={{ width: `${(step - 1) * 33.33}%` }}
-        />
-        {steps.map((s) => (
-          <div key={s.number} className="flex flex-col items-center">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all duration-300 ${
-              step >= s.number 
-                ? 'bg-gradient-to-br from-yellow-300 to-yellow-500 text-black transform scale-110 shadow-lg shadow-yellow-500/30' 
-                : 'bg-white/10 text-white/50'
-            }`}>
-              {s.icon}
-            </div>
-            <span className={`mt-2 text-sm font-medium ${step >= s.number ? 'text-yellow-300' : 'text-white/50'}`}>
-              {s.title}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Step Content */}
-      <div className="min-h-[400px]">
-        {step === 1 && (
-          <div className="space-y-6 animate-fadeIn">
-            <div>
-              <label className="block text-white/80 mb-2">Monthly Energy Consumption (kWh)</label>
-              <div className="flex items-center space-x-4">
-                <input
-                  type="range"
-                  min="100"
-                  max="5000"
-                  step="100"
-                  value={consumption}
-                  onChange={(e) => setConsumption(parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-yellow-300 [&::-webkit-slider-thumb]:to-yellow-500"
-                />
-                <span className="text-2xl font-bold text-yellow-300 w-32 text-right">
-                  {consumption.toLocaleString()} kWh
-                </span>
-              </div>
-              <div className="flex justify-between text-sm text-white/60 mt-2">
-                <span>Small Home</span>
-                <span>Large Factory</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-white/80 mb-2">Available Rooftop Space (m²)</label>
-              <div className="flex items-center space-x-4">
-                <input
-                  type="range"
-                  min="10"
-                  max="1000"
-                  step="10"
-                  value={rooftopSize}
-                  onChange={(e) => setRooftopSize(parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-yellow-300 [&::-webkit-slider-thumb]:to-yellow-500"
-                />
-                <span className="text-2xl font-bold text-yellow-300 w-32 text-right">
-                  {rooftopSize} m²
-                </span>
-              </div>
-            </div>
-
-            {/* Visual Rooftop Preview */}
-            <div className="mt-8 p-4 bg-black/30 rounded-xl">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-white/70">Rooftop Coverage</span>
-                <span className="text-yellow-300 font-bold">{Math.min(100, (systemSize * 100 / rooftopSize)).toFixed(1)}%</span>
-              </div>
-              <div className="h-4 bg-white/10 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, (systemSize * 100 / rooftopSize))}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-6 animate-fadeIn">
-            <h3 className="text-xl font-bold text-white mb-4">Select Your County for Solar Analysis</h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {counties.map((c) => (
-                <button
-                  key={c.name}
-                  onClick={() => setCounty(c.name)}
-                  className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
-                    county === c.name
-                      ? 'border-yellow-300 bg-yellow-300/10 shadow-lg shadow-yellow-300/20'
-                      : 'border-white/10 bg-white/5 hover:border-white/30'
-                  }`}
-                >
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full ${c.color} mb-2`} />
-                    <span className="font-semibold text-white">{c.name}</span>
-                    <span className="text-sm text-white/70">{c.irradiance} kWh/m²/day</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-            
-            <div className="mt-8 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-white">Selected: {county}</h4>
-                  <p className="text-white/70 text-sm">High solar potential with {counties.find(c => c.name === county)?.irradiance} average daily irradiance</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-yellow-300">
-                    {counties.find(c => c.name === county)?.irradiance}
-                  </div>
-                  <div className="text-white/70 text-sm">kWh/m²/day</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-8 animate-fadeIn">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <label className="block text-white/80 mb-4">
-                  <span className="text-xl font-bold">Solar System Size</span>
-                  <br />
-                  <span className="text-white/60">Recommended based on your usage</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="range"
-                    min="1"
-                    max="20"
-                    step="0.5"
-                    value={systemSize}
-                    onChange={(e) => setSystemSize(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-yellow-300 [&::-webkit-slider-thumb]:to-yellow-500"
-                  />
-                  <div className="flex justify-between text-sm text-white/60 mt-2">
-                    <span>1 kW</span>
-                    <span>10 kW</span>
-                    <span>20 kW</span>
-                  </div>
-                </div>
-                <div className="mt-4 p-4 bg-black/30 rounded-xl">
-                  <div className="text-4xl font-bold text-yellow-300 text-center">
-                    {systemSize.toFixed(1)} kW
-                  </div>
-                  <div className="text-center text-white/70 mt-1">
-                    {systemSize * 4} solar panels
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-white/80 mb-4">
-                  <span className="text-xl font-bold">Battery Storage</span>
-                  <br />
-                  <span className="text-white/60">Backup power capacity</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="2.5"
-                    value={batterySize}
-                    onChange={(e) => setBatterySize(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-blue-400 [&::-webkit-slider-thumb]:to-blue-600"
-                  />
-                  <div className="flex justify-between text-sm text-white/60 mt-2">
-                    <span>0 kWh</span>
-                    <span>25 kWh</span>
-                    <span>50 kWh</span>
-                  </div>
-                </div>
-                <div className="mt-4 p-4 bg-black/30 rounded-xl">
-                  <div className="text-4xl font-bold text-blue-300 text-center">
-                    {batterySize} kWh
-                  </div>
-                  <div className="text-center text-white/70 mt-1">
-                    {batterySize > 0 ? `${Math.round(batterySize * 1000 / 500)} battery units` : 'No storage'}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3D System Visualization */}
-            <div className="mt-8 p-6 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl border border-white/10">
-              <h4 className="font-bold text-white mb-4 text-center">System Preview</h4>
-              <div className="flex items-center justify-center h-48">
-                <div className="relative w-64 h-32 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg shadow-2xl">
-                  {/* Rooftop */}
-                  <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-r from-gray-700 to-gray-800 rounded-t-lg">
-                    {/* Solar Panels */}
-                    {Array.from({ length: Math.min(8, Math.floor(systemSize)) }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute top-2 w-8 h-10 bg-gradient-to-b from-yellow-300 to-yellow-500 rounded animate-pulse"
-                        style={{
-                          left: `${10 + i * 30}px`,
-                          animationDelay: `${i * 0.1}s`,
-                          boxShadow: '0 0 20px rgba(255, 215, 0, 0.3)'
-                        }}
-                      />
-                    ))}
-                  </div>
-                  
-                  {/* Battery Storage */}
-                  {batterySize > 0 && (
-                    <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
-                      <div className="w-16 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                        <div className="text-xs font-bold text-white">Battery</div>
-                      </div>
-                      <div className="text-center text-xs text-blue-300 mt-1">
-                        {batterySize}kWh
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-6 animate-fadeIn">
-            <div className="text-center mb-8">
-              <div className="text-5xl mb-2">🎉</div>
-              <h3 className="text-2xl font-bold text-white">Your Custom Solar System is Ready!</h3>
-              <p className="text-white/70">Here's your personalized solar solution</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="p-6 bg-gradient-to-br from-yellow-500/10 to-yellow-300/5 rounded-2xl border border-yellow-500/20">
-                <div className="text-3xl font-bold text-yellow-300 mb-2">{systemSize.toFixed(1)} kW</div>
-                <div className="text-white/90 font-semibold">Solar Array</div>
-                <div className="text-white/60 text-sm mt-1">{Math.round(systemSize * 1000 / 550)} premium panels</div>
-              </div>
-              
-              <div className="p-6 bg-gradient-to-br from-blue-500/10 to-blue-300/5 rounded-2xl border border-blue-500/20">
-                <div className="text-3xl font-bold text-blue-300 mb-2">{batterySize} kWh</div>
-                <div className="text-white/90 font-semibold">Storage Capacity</div>
-                <div className="text-white/60 text-sm mt-1">{batterySize > 0 ? `${Math.round(batterySize / 10)} days backup` : 'Grid-tied only'}</div>
-              </div>
-              
-              <div className="p-6 bg-gradient-to-br from-green-500/10 to-green-300/5 rounded-2xl border border-green-500/20">
-                <div className="text-3xl font-bold text-green-300 mb-2">KSh {savings.toLocaleString()}</div>
-                <div className="text-white/90 font-semibold">Annual Savings</div>
-                <div className="text-white/60 text-sm mt-1">Year 1 • 25-year warranty</div>
-              </div>
-            </div>
-
-            {/* ROI Timeline */}
-            <div className="mt-8 p-6 bg-black/30 rounded-2xl">
-              <h4 className="font-bold text-white mb-4">Investment Timeline</h4>
-              <div className="space-y-4">
-                {[1, 3, 5, 7, 10].map(year => (
-                  <div key={year} className="flex items-center">
-                    <div className="w-16 text-white/70">Year {year}</div>
-                    <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-1000"
-                        style={{ width: `${Math.min(100, (year * 100) / 3)}%` }}
-                      />
-                    </div>
-                    <div className="w-24 text-right">
-                      <div className="font-bold text-green-300">
-                        KSh {(savings * year).toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="text-center mt-4 text-white/60 text-sm">
-                Payback period: {systemSize > 10 ? '4-5' : '3-4'} years
-              </div>
-            </div>
-
-            <a
-              href={`/contact?type=solar-proposal&size=${systemSize}&consumption=${consumption}`}
-              className="block w-full py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-yellow-500/30 text-center"
-            >
-              📄 Get Detailed Proposal PDF
-            </a>
-          </div>
-        )}
-      </div>
-
-      {/* Navigation */}
-      <div className="flex justify-between mt-10 pt-6 border-t border-white/10">
-        <button
-          onClick={() => setStep(s => Math.max(1, s - 1))}
-          disabled={step === 1}
-          className={`px-6 py-3 rounded-xl font-medium transition-all ${
-            step === 1
-              ? 'opacity-50 cursor-not-allowed bg-white/5 text-white/50'
-              : 'bg-white/10 text-white hover:bg-white/20'
-          }`}
-        >
-          ← Back
-        </button>
-        
-        <div className="flex items-center space-x-4">
-          <button className="px-6 py-3 rounded-xl font-medium bg-white/10 text-white hover:bg-white/20 transition-all">
-            Save Design
-          </button>
-          
-          {step < 4 ? (
-            <button
-              onClick={() => setStep(s => Math.min(4, s + 1))}
-              className="px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-500 text-black hover:from-yellow-400 hover:to-yellow-600 transition-all transform hover:scale-105"
-            >
-              Continue →
-            </button>
-          ) : (
-            <button className="px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-green-400 to-green-600 text-white hover:from-green-500 hover:to-green-700 transition-all transform hover:scale-105">
-              Contact Our Engineers
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// 3. INTERACTIVE COUNTY MAP
-const InteractiveCountyMap = () => {
-  type CountyName = "Nairobi" | "Mombasa" | "Kisumu" | "Nakuru" | "Eldoret" | "Kisii" | "Machakos" | "Kiambu";
-  
-  const [selectedCounty, setSelectedCounty] = useState<CountyName>("Nairobi");
-  
-  const countyData: Record<CountyName, { solar: number; projects: number; savings: number; color: string }> = {
-    "Nairobi": { solar: 5.8, projects: 142, savings: 45, color: "#10B981" },
-    "Mombasa": { solar: 5.9, projects: 89, savings: 52, color: "#3B82F6" },
-    "Kisumu": { solar: 5.7, projects: 67, savings: 48, color: "#8B5CF6" },
-    "Nakuru": { solar: 5.6, projects: 112, savings: 43, color: "#F59E0B" },
-    "Eldoret": { solar: 5.5, projects: 78, savings: 41, color: "#EF4444" },
-    "Kisii": { solar: 5.4, projects: 45, savings: 39, color: "#EC4899" },
-    "Machakos": { solar: 5.8, projects: 56, savings: 44, color: "#14B8A6" },
-    "Kiambu": { solar: 5.7, projects: 134, savings: 46, color: "#84CC16" },
-  };
-
-  const counties = Object.keys(countyData) as CountyName[];
-
-  const getPosition = (county: CountyName) => {
-    const positions: Record<CountyName, { top: string; left: string }> = {
-      "Nairobi": { top: "35%", left: "50%" },
-      "Mombasa": { top: "65%", left: "60%" },
-      "Kisumu": { top: "45%", left: "40%" },
-      "Nakuru": { top: "30%", left: "45%" },
-      "Eldoret": { top: "25%", left: "48%" },
-      "Kisii": { top: "50%", left: "45%" },
-      "Machakos": { top: "55%", left: "52%" },
-      "Kiambu": { top: "40%", left: "52%" },
+    return {
+      totalPanelWatts,
+      totalBatteryWh: totalBatteryWh / 1000, // kWh
+      dailyLoadWh: dailyLoadWh / 1000, // kWh
+      autonomyDays: autonomyDays.toFixed(1),
+      dailyProduction: dailyProduction / 1000, // kWh
+      productionRatio: (productionRatio * 100).toFixed(0),
+      systemStatus: productionRatio >= 1.2 ? 'optimal' : productionRatio >= 1 ? 'adequate' : 'undersized'
     };
-    return positions[county] || { top: "50%", left: "50%" };
   };
 
+  const metrics = calculateMetrics();
+
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-white/10">
-      <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-300 to-blue-100 bg-clip-text text-transparent">
-        Interactive County Solar Map
-      </h2>
-      <p className="text-white/70 mb-8">Explore solar potential across Kenya's counties</p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      {/* Header with Widgets */}
+      <header className="bg-slate-900/80 border-b border-slate-700 sticky top-0 z-50 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="text-amber-500 hover:text-amber-400 transition-colors">
+                ← Home
+              </Link>
+              <div>
+                <h1 className="text-xl font-bold text-white flex items-center gap-2">
+                  ☀️ Solar Maintenance Hub
+                </h1>
+                <p className="text-slate-400 text-sm">Complete solar system diagnostics & maintenance</p>
+              </div>
+            </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Map Visualization */}
-        <div className="lg:w-2/3">
-          <div className="relative h-[500px] bg-gradient-to-br from-blue-900/20 to-green-900/20 rounded-2xl border border-white/10 overflow-hidden">
-            {/* Simplified Kenya Outline */}
-            <div className="absolute inset-8 bg-gradient-to-br from-green-900/10 to-blue-900/10 rounded-xl" />
-            
-            {/* County Dots */}
-            {counties.map(county => {
-              const pos = getPosition(county);
-              const data = countyData[county];
-              const isSelected = selectedCounty === county;
-              
-              return (
-                <button
-                  key={county}
-                  onClick={() => setSelectedCounty(county)}
-                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 hover:scale-125 ${
-                    isSelected ? 'z-20 scale-125' : 'z-10'
-                  }`}
-                  style={{
-                    top: pos.top,
-                    left: pos.left,
-                  }}
-                >
-                  <div className="relative">
-                    <div
-                      className={`w-8 h-8 rounded-full border-2 transition-all duration-300 ${
-                        isSelected ? 'border-white animate-pulse' : 'border-white/50'
-                      }`}
-                      style={{ backgroundColor: data.color }}
-                    />
-                    {isSelected && (
-                      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 whitespace-nowrap bg-black/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/20">
-                        <div className="font-bold text-white">{county}</div>
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-
-            {/* Legend */}
-            <div className="absolute bottom-4 left-4 bg-black/80 backdrop-blur-sm p-4 rounded-xl border border-white/10">
-              <div className="text-white font-bold mb-2">Solar Potential</div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded-full bg-green-500" />
-                <span className="text-white/70 text-sm">High (5.8+ kWh/m²/day)</span>
-              </div>
-              <div className="flex items-center space-x-2 mt-1">
-                <div className="w-4 h-4 rounded-full bg-yellow-500" />
-                <span className="text-white/70 text-sm">Medium (5.5-5.7)</span>
-              </div>
-              <div className="flex items-center space-x-2 mt-1">
-                <div className="w-4 h-4 rounded-full bg-red-500" />
-                <span className="text-white/70 text-sm">Good (5.0-5.4)</span>
-              </div>
+            {/* Widgets */}
+            <div className="hidden lg:flex items-center gap-3">
+              <AnalogClock size={60} />
+              <AnalogCalendar />
+              <WeatherWidget location={selectedLocation} />
             </div>
           </div>
         </div>
+      </header>
 
-        {/* County Details Panel */}
-        <div className="lg:w-1/3">
-          <div className="bg-black/40 backdrop-blur-sm rounded-2xl border border-white/10 p-6 h-full">
-            <h3 className="text-2xl font-bold text-white mb-6">
-              {selectedCounty} County
-            </h3>
-            
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white/70">Solar Irradiance</span>
-                  <span className="text-2xl font-bold text-yellow-300">
-                    {countyData[selectedCounty].solar} kWh/m²/day
-                  </span>
-                </div>
-                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-full"
-                    style={{ width: `${(countyData[selectedCounty].solar / 6.5) * 100}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-sm text-white/60 mt-1">
-                  <span>Low</span>
-                  <span>Excellent</span>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white/70">Completed Projects</span>
-                  <span className="text-2xl font-bold text-blue-300">
-                    {countyData[selectedCounty].projects}
-                  </span>
-                </div>
-                <div className="text-white/60 text-sm">
-                  Solar installations deployed
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white/70">Average Savings</span>
-                  <span className="text-2xl font-bold text-green-300">
-                    {countyData[selectedCounty].savings}%
-                  </span>
-                </div>
-                <div className="text-white/60 text-sm">
-                  Reduction in energy costs
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-white/10">
-                <h4 className="font-bold text-white mb-3">Top Projects in {selectedCounty}</h4>
-                <div className="space-y-3">
-                  {[
-                    { name: "County Hospital", size: "250 kW", savings: "KSh 8.2M/year" },
-                    { name: "Agricultural Co-op", size: "180 kW", savings: "KSh 5.6M/year" },
-                    { name: "Shopping Complex", size: "420 kW", savings: "KSh 12.1M/year" },
-                  ].map((project, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                      <div>
-                        <div className="font-medium text-white">{project.name}</div>
-                        <div className="text-sm text-white/60">{project.size} system</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-green-300">{project.savings}</div>
-                        <div className="text-sm text-white/60">Annual savings</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold rounded-xl hover:from-blue-600 hover:to-blue-800 transition-all duration-300">
-                View All Projects in {selectedCounty}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// 4. MICRO-INTERACTIONS & VISUAL ENHANCEMENTS
-const MicroInteractions = () => {
-  const [hovered, setHovered] = useState(false);
-  
-  return (
-    <div className="space-y-6">
-      {/* Animated Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { value: "98.7%", label: "System Uptime", icon: "⚡", color: "from-green-400 to-emerald-600" },
-          { value: "2,450+", label: "Projects", icon: "🏗️", color: "from-blue-400 to-blue-600" },
-          { value: "KSh 4.2B", label: "Client Savings", icon: "💰", color: "from-yellow-400 to-yellow-600" },
-          { value: "47", label: "Counties Covered", icon: "📍", color: "from-purple-400 to-purple-600" },
-        ].map((stat, i) => (
-          <div
-            key={i}
-            className="group p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 border border-white/10 hover:border-white/30 transition-all duration-500 hover:scale-105 cursor-pointer"
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Location Selector */}
+        <div className="mb-6 flex items-center gap-4 flex-wrap">
+          <span className="text-slate-400 text-sm">Your Location:</span>
+          <select
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+            className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className={`text-3xl ${hovered ? 'animate-bounce' : ''}`}>
-                {stat.icon}
-              </div>
-              <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-            </div>
-            <div className="text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent bg-white">
-              {stat.value}
-            </div>
-            <div className="text-white/70 text-sm mt-1">{stat.label}</div>
-            <div className="h-1 w-0 group-hover:w-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-700 mt-3" />
-          </div>
-        ))}
-      </div>
-
-      {/* Glowing CTA */}
-      <div className="relative p-8 rounded-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-yellow-300/5 to-yellow-500/10 animate-gradient-x" />
-        <div className="relative z-10 text-center">
-          <h3 className="text-2xl font-bold text-white mb-4">
-            Ready for Your Energy Transformation?
-          </h3>
-          <p className="text-white/70 mb-6 max-w-2xl mx-auto">
-            Join 2,450+ satisfied clients who have switched to sustainable solar power
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/contact?type=solar-consultation" className="group px-8 py-4 bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold rounded-xl text-lg hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50">
-              <span className="flex items-center justify-center space-x-2">
-                <span>Schedule Free Consultation</span>
-                <span className="transform group-hover:translate-x-1 transition-transform">→</span>
-              </span>
-            </a>
-            <a href="/contact?type=brochure&service=solar" className="px-8 py-4 border-2 border-yellow-300 text-yellow-300 font-bold rounded-xl text-lg hover:bg-yellow-300/10 transition-all duration-300 transform hover:scale-105 text-center">
-              📥 Download Brochure
-            </a>
-          </div>
+            {KENYA_LOCATIONS.map(loc => (
+              <option key={loc} value={loc.toLowerCase().replace(/[^a-z]/g, '')}>{loc}</option>
+            ))}
+          </select>
+          <span className="text-green-400 text-sm">
+            ☀️ Weather affects solar production - select your location for accurate recommendations
+          </span>
         </div>
-        
-        {/* Floating Elements */}
-        <div className="absolute top-4 left-4 w-4 h-4 rounded-full bg-yellow-300/20 animate-pulse" />
-        <div className="absolute bottom-4 right-4 w-6 h-6 rounded-full bg-yellow-300/20 animate-pulse" style={{ animationDelay: '0.5s' }} />
-        <div className="absolute top-1/2 left-1/4 w-3 h-3 rounded-full bg-yellow-300/20 animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
-    </div>
-  );
-};
 
-// ==================== ORIGINAL CODE (PRESERVED) ====================
-// All your original functional code remains exactly as provided
-
-export const company = {
-  name: "EMERSONEIMS",
-  phones: ["+254768860665", "+254782914717"],
-  emails: ["info@emersoneims.com", "emersoneimservices@gmail.com"],
-  address: "P.O. Box 387-00521, Old North Airport Road, Nairobi, Kenya",
-};
-
-export const heroImages = [
-  {
-    src: "/images/solar power for farms.png",
-    alt: "Solar installation for farms - professional solar power systems",
-    width: 1920, height: 1080, priority: true,
-  },
-];
-
-export const galleryImages = [
-  { src: "/images/solar changeover control.png", alt: "Solar changeover control panel - Crafted Details", width: 1920, height: 1080 },
-  { src: "/images/solar hotel heaters.png", alt: "Solar hotel water heaters - Premium Materials", width: 1920, height: 1080 },
-  { src: "/images/solar for flower farms.png", alt: "Solar power for flower farms - Robust Engineering", width: 1920, height: 1080 },
-  { src: "/images/solar-water-pumping.png", alt: "Solar water pumping systems - Cinematic Visual", width: 1920, height: 1080 },
-];
-
-export type Panel = {
-  model: string;
-  wattage: number;
-  efficiencyPct: number;
-  warrantyYears: number;
-  tempCoefPctPerC: number;
-  tier: "Tier-1" | "Tier-2";
-};
-
-export const panels: Panel[] = [
-  { model: "Aurora 550M", wattage: 550, efficiencyPct: 21.3, warrantyYears: 25, tempCoefPctPerC: -0.35, tier: "Tier-1" },
-  { model: "Helios 600M", wattage: 600, efficiencyPct: 22.0, warrantyYears: 25, tempCoefPctPerC: -0.32, tier: "Tier-1" },
-];
-
-export type Battery = {
-  model: string;
-  capacityKWh: number;
-  chemistry: "LFP" | "NMC" | "LTO";
-  cycles: number;
-  dodPct: number;
-  warrantyYears: number;
-};
-
-export const batteries: Battery[] = [
-  { model: "VoltSafe 5", capacityKWh: 5, chemistry: "LFP", cycles: 6000, dodPct: 80, warrantyYears: 10 },
-  { model: "VoltSafe 10", capacityKWh: 10, chemistry: "LFP", cycles: 6000, dodPct: 80, warrantyYears: 10 },
-];
-
-export type Inverter = {
-  model: string;
-  powerKW: number;
-  efficiencyPct: number;
-  surgePct: number;
-  mpptCount: number;
-  warrantyYears: number;
-};
-
-export const inverters: Inverter[] = [
-  { model: "PowerMind 6", powerKW: 6, efficiencyPct: 96, surgePct: 200, mpptCount: 2, warrantyYears: 5 },
-  { model: "PowerMind 10", powerKW: 10, efficiencyPct: 97, surgePct: 200, mpptCount: 3, warrantyYears: 5 },
-];
-
-export const testimonials = [
-  { name: "St. Mercy Hospital", quote: "We achieved 99.9% uptime and cut diesel spend by 62% in year one.", sector: "Hospital" },
-  { name: "Kifaru Data Center", quote: "Solar hybrid reduced cooling costs and stabilized power quality.", sector: "Data Center" },
-  { name: "Maji Farm Co.", quote: "Irrigation on solar saved 38% annually vs grid tariffs.", sector: "Farm" },
-];
-
-export const caseStudies = [
-  {
-    title: "Hospital uptime on hybrid solar + LFP",
-    impact: "Saved KSh 18M over 3 years; 99.9% uptime with 6-hour autonomy.",
-    details: "550W panels × 280, LFP storage 500kWh, hybrid inverter 150kW, smart switchover.",
-  },
-  {
-    title: "Factory peak-shaving with solar",
-    impact: "Cut demand charges by 34%; payback in 3.8 years.",
-    details: "1MW array, 1MWh storage, hybrid grid-tie architecture.",
-  },
-];
-
-export const warranties = {
-  panels: { performanceYears: 25, productYears: 12, conditions: "≥80% output at year 25; IEC certified." },
-  batteries: { productYears: 10, cyclesMin: 6000, conditions: "LFP chemistry, DoD ≤80%, proper ambient temp." },
-  inverters: { productYears: 5, conditions: "Manufacturer defects; firmware updates included." },
-  guarantees: [
-    "Design accuracy guarantee: we re‑model if real loads deviate >10%.",
-    "Timeline guarantee: installation milestones or we discount service fees.",
-    "Support guarantee: 24/7 hotline for mission‑critical clients.",
-  ],
-};
-
-export function Skeleton({ className = "" }: { className?: string }) {
-  return <div role="status" aria-live="polite" className={`animate-pulse bg-white/10 rounded ${className}`} />;
-}
-
-export function AccessibleImage({
-  src, alt, width, height, className, priority,
-}: {
-  src: string; alt: string; width: number; height: number; className?: string; priority?: boolean;
-}) {
-  return (
-    <figure>
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 1200px"
-        quality={100}
-        priority={priority}
-        className={className || "object-cover w-full h-auto cinematic"}
-      />
-      <figcaption className="sr-only">{alt}</figcaption>
-    </figure>
-  );
-}
-
-export function AccessibleVideo({
-  src, poster, title, autoPlay = true,
-}: {
-  src: string; poster?: string; title: string; autoPlay?: boolean;
-}) {
-  return (
-    <section aria-label={title} className="relative w-full overflow-hidden bg-black">
-      <video
-        className="w-full h-auto opacity-90"
-        src={src}
-        poster={poster}
-        loop
-        muted
-        playsInline
-        autoPlay={autoPlay}
-        aria-describedby="video-desc"
-      />
-      <p id="video-desc" className="sr-only">{title}</p>
-    </section>
-  );
-}
-
-export function WarrantyBadge({
-  label, detail,
-}: { label: string; detail: string; }) {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-yellow-300/60 px-3 py-1">
-      <span className="text-yellow-300 font-semibold">{label}</span>
-      <span className="text-white/80 text-sm">{detail}</span>
-    </div>
-  );
-}
-
-export function TestimonialList() {
-  return (
-    <section aria-labelledby="testimonials-heading" className="mx-auto max-w-7xl px-6 py-12">
-      <h2 id="testimonials-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">What our clients say</h2>
-      <ul className="mt-6 grid md:grid-cols-3 gap-6">
-        {testimonials.map((t) => (
-          <li key={t.name} className="p-6 rounded-lg border border-white/10 bg-black/60">
-            <blockquote>
-              <p className="text-white/90">"{t.quote}"</p>
-              <footer className="mt-3 text-sm text-white/60">— {t.name}, {t.sector}</footer>
-            </blockquote>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-export function CaseStudyList() {
-  return (
-    <section aria-labelledby="case-studies-heading" className="mx-auto max-w-7xl px-6 py-12">
-      <h2 id="case-studies-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">Case studies</h2>
-      <div className="mt-6 grid md:grid-cols-2 gap-6">
-        {caseStudies.map((c) => (
-          <article key={c.title} className="p-6 rounded-lg border border-white/10 bg-black/60">
-            <h3 className="text-xl font-semibold">{c.title}</h3>
-            <p className="mt-2 text-yellow-300">{c.impact}</p>
-            <p className="mt-2 text-white/80">{c.details}</p>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export function SolarInstallationGallery() {
-  const installations = [
-    {
-      title: "Complete Solar Installation Process",
-      videoSrc: "/videos/SOLAR%20INSTALLATION%206%20(1).mp4",
-      poster: "/images/solar%20power%20farms.png",
-      description: "Watch our expert team install a complete solar system from start to finish"
-    },
-    {
-      title: "Solar System Commissioning",
-      videoSrc: "/videos/SOLAR%20INSTALLATION%207.mp4",
-      poster: "/images/solar%20for%20flower%20farms.png",
-      description: "Final testing and commissioning of solar installation"
-    }
-  ];
-
-  return (
-    <section aria-labelledby="installation-gallery" className="mx-auto max-w-7xl px-6 py-16">
-      <h2 id="installation-gallery" className="text-3xl md:text-4xl font-bold text-yellow-300 mb-4">
-        Solar Installation Gallery
-      </h2>
-      <p className="text-white/80 text-lg mb-10">
-        See our professional solar installations in action across Kenya
-      </p>
-      
-      <div className="grid md:grid-cols-2 gap-8">
-        {installations.map((install, index) => (
-          <div key={index} className="group">
-            <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl shadow-yellow-500/10 transition-all duration-500 hover:shadow-yellow-500/20 hover:scale-[1.02]">
-              <video
-                controls
-                loop
-                muted
-                playsInline
-                preload="none"
-                poster={install.poster}
-                className="w-full h-auto"
-              >
-                <source src={install.videoSrc} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-2">{install.title}</h3>
-                  <p className="text-white/80">{install.description}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Additional Images Gallery */}
-      <div className="mt-16">
-        <h3 className="text-2xl font-bold text-yellow-300 mb-6">Our Solar Projects</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
-            <AccessibleImage
-              src="/images/solar%20power%20farms.png"
-              alt="Solar power farm installation in Kenya"
-              width={600}
-              height={400}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-              <p className="text-white font-semibold">Solar Farms</p>
-            </div>
-          </div>
-          
-          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
-            <AccessibleImage
-              src="/images/solar%20for%20flower%20farms.png"
-              alt="Solar installation for flower farms"
-              width={600}
-              height={400}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-              <p className="text-white font-semibold">Agricultural Solar</p>
-            </div>
-          </div>
-          
-          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
-            <AccessibleImage
-              src="/images/solar%20power%20for%20farms.png"
-              alt="Solar power systems for farms in Kenya"
-              width={600}
-              height={400}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-              <p className="text-white font-semibold">Farm Power</p>
-            </div>
-          </div>
-          
-          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
-            <AccessibleImage
-              src="/images/solar%20hotel%20heaters.png"
-              alt="Solar hotel water heating systems"
-              width={600}
-              height={400}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-              <p className="text-white font-semibold">Hotel Solar</p>
-            </div>
-          </div>
-          
-          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
-            <AccessibleImage
-              src="/images/solar%20changeover%20control.png"
-              alt="Solar changeover control systems"
-              width={600}
-              height={400}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-              <p className="text-white font-semibold">Control Systems</p>
-            </div>
-          </div>
-          
-          <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer bg-gradient-to-br from-yellow-900/20 to-black border border-yellow-500/20 flex items-center justify-center">
-            <div className="text-center p-6">
-              <p className="text-yellow-300 text-4xl font-bold mb-2">500+</p>
-              <p className="text-white/80">Projects Completed</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function Team() {
-  const team = [
-    { name: "Lead Engineer", bio: "10+ years in hybrid solar systems and power electronics." },
-    { name: "Energy Analyst", bio: "ROI modeling, tariff analysis, and load profiling." },
-    { name: "Project Manager", bio: "Mission-critical deployments across hospitals and factories." },
-  ];
-  return (
-    <section aria-labelledby="team-heading" className="mx-auto max-w-7xl px-6 py-12">
-      <h2 id="team-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">The experts behind EmersonEIMS</h2>
-      <div className="mt-6 grid md:grid-cols-3 gap-6">
-        {team.map((m) => (
-          <div key={m.name} className="p-6 rounded-lg border border-white/10 bg-black/60">
-            <p className="font-semibold">{m.name}</p>
-            <p className="text-sm text-white/80 mt-2">{m.bio}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export function ROIChart() {
-  return (
-    <div className="p-6 rounded-lg border border-white/10 bg-black/60">
-      <h2 className="text-xl font-semibold mb-4">5-Year Cost Comparison (KSh '000)</h2>
-      <p className="text-white/80">Chart showing 5-year cost trajectories for solar vs diesel vs grid.</p>
-    </div>
-  );
-}
-
-// ==================== MAIN APPLICATION ====================
-export default function PremiumApp() {
-  const [currentPage, setCurrentPage] = useState("home");
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case "panels": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar panels</h1><p className="mt-3 text-white/80">Tier‑1 modules optimized for Kenya's irradiance and temperatures.</p></header>
-        <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{panels.map((p) => (<li key={p.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{p.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Power:</dt> <dd className="inline">{p.wattage}W</dd></div><div><dt className="inline">Efficiency:</dt> <dd className="inline">{p.efficiencyPct}%</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{p.warrantyYears}y</dd></div><div><dt className="inline">Temp Coef:</dt> <dd className="inline">{p.tempCoefPctPerC}%/°C</dd></div><div><dt className="inline">Tier:</dt> <dd className="inline">{p.tier}</dd></div></dl></li>))}</ul>
-        <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your array</button></div>
-      </div>;
-      case "batteries": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar batteries</h1><p className="mt-3 text-white/80">Safe, long‑life storage with smart BMS.</p></header>
-        <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{batteries.map((b) => (<li key={b.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{b.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Capacity:</dt> <dd className="inline">{b.capacityKWh}kWh</dd></div><div><dt className="inline">Chemistry:</dt> <dd className="inline">{b.chemistry}</dd></div><div><dt className="inline">Cycles:</dt> <dd className="inline">{b.cycles}+</dd></div><div><dt className="inline">DoD:</dt> <dd className="inline">{b.dodPct}%</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{b.warrantyYears}y</dd></div></dl></li>))}</ul>
-        <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your storage</button></div>
-      </div>;
-      case "inverters": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <header><h1 className="text-4xl font-bold text-yellow-300">Solar inverters</h1><p className="mt-3 text-white/80">High‑efficiency hybrid, off‑grid, and grid‑tie power conversion.</p></header>
-        <ul className="mt-8 grid md:grid-cols-3 gap-6" role="list">{inverters.map((inv) => (<li key={inv.model} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{inv.model}</h2><dl className="mt-2 text-sm text-white/80 space-y-1"><div><dt className="inline">Power:</dt> <dd className="inline">{inv.powerKW}kW</dd></div><div><dt className="inline">Efficiency:</dt> <dd className="inline">{inv.efficiencyPct}%</dd></div><div><dt className="inline">Surge:</dt> <dd className="inline">{inv.surgePct}%</dd></div><div><dt className="inline">MPPT:</dt> <dd className="inline">{inv.mpptCount}</dd></div><div><dt className="inline">Warranty:</dt> <dd className="inline">{inv.warrantyYears}y</dd></div></dl></li>))}</ul>
-        <div className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Size your inverter</button></div>
-      </div>;
-      case "comparison": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="text-4xl font-bold text-yellow-300">Energy comparison</h1><p className="mt-3 text-white/80">Compare 5‑year cost trajectories for solar vs diesel generators vs national grid.</p>
-        <div className="mt-8"><ROIChart /></div>
-        <section className="mt-8 grid md:grid-cols-3 gap-6"><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">Solar</h2><p className="text-sm text-white/80 mt-2">Higher upfront, lower operating; stable costs and environmental benefits.</p></article><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">Diesel generators</h2><p className="text-sm text-white/80 mt-2">Lower upfront, escalating fuel/maintenance costs, emissions exposure.</p></article><article className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">National grid</h2><p className="text-sm text-white/80 mt-2">Variable tariffs and reliability; solar hybrid improves resilience.</p></article></section>
-        <section className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Get your ROI proposal</button></section>
-      </div>;
-      case "industries": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="text-4xl font-bold text-yellow-300">Industry solutions</h1><p className="mt-3 text-white/80">Tailored designs per sector for resilience, savings, and performance.</p>
-        <ul className="grid md:grid-cols-3 gap-6 mt-8">{["Hospitals","Schools","Hotels","Homes","Residentials","Factories","Banks","Data Centers","Farms"].map((s) => (<li key={s} className="p-6 rounded-lg border border-white/10 bg-black/60"><h2 className="font-semibold">{s}</h2><p className="text-sm text-white/80 mt-2">Custom load profiling and hybrid architectures for {s.toLowerCase()}.</p></li>))}</ul>
-        <section className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Start with your sector</button></section>
-      </div>;
-      case "counties": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="text-4xl font-bold text-yellow-300">Kenya County Insights</h1><p className="mt-3 text-white/80">Verified data per county: irradiance, demand, target customers, and benefits.</p>
-        <ul className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">{[
-          { name: "Baringo", irradiance: "5.8 kWh/m²/day", demand: "Growing agricultural & tourism", customers: "Farms, lodges, schools", benefits: "Reduce diesel dependency, power irrigation" },
-          { name: "Bomet", irradiance: "5.5 kWh/m²/day", demand: "Tea processing & dairy", customers: "Tea factories, dairy farms, clinics", benefits: "Cut processing costs, reliable cold storage" },
-          { name: "Bungoma", irradiance: "5.4 kWh/m²/day", demand: "Sugar mills & agriculture", customers: "Sugar factories, maize mills, hospitals", benefits: "Industrial backup, reduce grid dependence" },
-          { name: "Busia", irradiance: "5.6 kWh/m²/day", demand: "Cross-border trade & fishing", customers: "Markets, fish processors, border facilities", benefits: "24/7 trading power, cold chain for fish" },
-          { name: "Elgeyo-Marakwet", irradiance: "5.7 kWh/m²/day", demand: "Athletics camps & agriculture", customers: "Training centers, schools, farms", benefits: "Altitude training facilities, irrigation" },
-          { name: "Embu", irradiance: "5.5 kWh/m²/day", demand: "Coffee & tea processing", customers: "Coffee mills, tea factories, hospitals", benefits: "Processing reliability, reduce outage losses" },
-          { name: "Garissa", irradiance: "6.5 kWh/m²/day", demand: "Highest solar potential in Kenya", customers: "Government offices, hospitals, markets", benefits: "Eliminate diesel costs, grid independence" },
-          { name: "Homa Bay", irradiance: "5.8 kWh/m²/day", demand: "Fishing & agriculture", customers: "Fish processors, ice plants, clinics", benefits: "Cold storage for fish, water pumping" },
-          { name: "Isiolo", irradiance: "6.3 kWh/m²/day", demand: "LAPSSET corridor growth", customers: "Hotels, logistics, government", benefits: "Infrastructure development, tourism power" },
-          { name: "Kajiado", irradiance: "6.0 kWh/m²/day", demand: "Rapid urbanization & industry", customers: "Factories, malls, greenhouses", benefits: "Industrial expansion, export processing" },
-          { name: "Kakamega", irradiance: "5.3 kWh/m²/day", demand: "Sugar & forest products", customers: "Sugar mills, timber, schools", benefits: "Factory backup, sustainable processing" },
-          { name: "Kericho", irradiance: "5.2 kWh/m²/day", demand: "Tea capital of Kenya", customers: "Tea multinationals, hotels, hospitals", benefits: "Processing continuity, ESG compliance" },
-          { name: "Kiambu", irradiance: "5.4 kWh/m²/day", demand: "Industrial hub near Nairobi", customers: "Factories, malls, data centers, homes", benefits: "Industrial backup, real estate value" },
-          { name: "Kilifi", irradiance: "5.9 kWh/m²/day", demand: "Tourism & coastal trade", customers: "Resorts, hotels, fish processors", benefits: "Tourism reliability, eco-resort branding" },
-          { name: "Kirinyaga", irradiance: "5.5 kWh/m²/day", demand: "Rice & horticulture", customers: "Rice mills, greenhouses, clinics", benefits: "Irrigation pumping, post-harvest processing" },
-          { name: "Kisii", irradiance: "5.3 kWh/m²/day", demand: "Banana & soapstone industry", customers: "Markets, processing plants, schools", benefits: "Market lighting, artisan workshops" },
-          { name: "Kisumu", irradiance: "5.7 kWh/m²/day", demand: "Lake region commercial hub", customers: "Port facilities, factories, hospitals", benefits: "Industrial growth, fish processing" },
-          { name: "Kitui", irradiance: "6.1 kWh/m²/day", demand: "Mining & basket weaving", customers: "Mines, markets, water projects", benefits: "Mining operations, community water" },
-          { name: "Kwale", irradiance: "5.8 kWh/m²/day", demand: "Mining & beach tourism", customers: "Base Titanium, resorts, farms", benefits: "Mining backup, eco-tourism appeal" },
-          { name: "Laikipia", irradiance: "6.0 kWh/m²/day", demand: "Ranching & conservation", customers: "Conservancies, lodges, ranches", benefits: "Eco-lodge power, electric fencing" },
-          { name: "Lamu", irradiance: "6.2 kWh/m²/day", demand: "Port development & tourism", customers: "LAPSSET, heritage hotels, dhow builders", benefits: "Port infrastructure, heritage preservation" },
-          { name: "Machakos", irradiance: "5.8 kWh/m²/day", demand: "Machakos City growth", customers: "Industries, malls, tech parks", benefits: "Smart city infrastructure, industrial parks" },
-          { name: "Makueni", irradiance: "6.0 kWh/m²/day", demand: "Fruit processing hub", customers: "Mango processors, markets, clinics", benefits: "Cold storage, value addition facilities" },
-          { name: "Mandera", irradiance: "6.6 kWh/m²/day", demand: "Highest irradiance in Kenya", customers: "Government, hospitals, markets", benefits: "Complete diesel replacement, water pumping" },
-          { name: "Marsabit", irradiance: "6.4 kWh/m²/day", demand: "Wind-solar hybrid potential", customers: "Institutions, markets, water projects", benefits: "Hybrid systems, community power" },
-          { name: "Meru", irradiance: "5.6 kWh/m²/day", demand: "Miraa & agriculture", customers: "Cold storage, hospitals, schools", benefits: "Miraa preservation, agricultural processing" },
-          { name: "Migori", irradiance: "5.7 kWh/m²/day", demand: "Gold mining & tobacco", customers: "Mining operations, factories, markets", benefits: "Mining power, tobacco curing" },
-          { name: "Mombasa", irradiance: "5.8 kWh/m²/day", demand: "Port city & tourism", customers: "Port, hotels, industries, malls", benefits: "Port operations, tourism reliability" },
-          { name: "Murang'a", irradiance: "5.4 kWh/m²/day", demand: "Coffee & tea belt", customers: "Coffee mills, tea factories, hospitals", benefits: "Processing efficiency, reliable healthcare" },
-          { name: "Nairobi", irradiance: "5.5 kWh/m²/day", demand: "Capital city - highest demand", customers: "Corporates, malls, hospitals, homes", benefits: "Peak shaving, UPS backup, ESG goals" },
-          { name: "Nakuru", irradiance: "5.6 kWh/m²/day", demand: "Industrial & agricultural hub", customers: "Factories, flower farms, hotels", benefits: "Industrial backup, horticulture export" },
-          { name: "Narok", irradiance: "5.9 kWh/m²/day", demand: "Maasai Mara tourism", customers: "Safari lodges, camps, conservancies", benefits: "Eco-tourism power, conservation support" },
-          { name: "Nyamira", irradiance: "5.2 kWh/m²/day", demand: "Tea & banana farming", customers: "Tea factories, markets, clinics", benefits: "Processing reliability, rural electrification" },
-          { name: "Nyandarua", irradiance: "5.3 kWh/m²/day", demand: "Potato & dairy belt", customers: "Cold storage, dairy coops, schools", benefits: "Potato storage, milk cooling" },
-          { name: "Nyeri", irradiance: "5.4 kWh/m²/day", demand: "Coffee & Mt. Kenya tourism", customers: "Coffee mills, lodges, hospitals", benefits: "Tourism power, coffee processing" },
-          { name: "Samburu", irradiance: "6.2 kWh/m²/day", demand: "Conservation & tourism", customers: "Conservancies, lodges, clinics", benefits: "Remote lodge power, community health" },
-          { name: "Siaya", irradiance: "5.6 kWh/m²/day", demand: "Fishing & agriculture", customers: "Fish markets, schools, clinics", benefits: "Fish preservation, education facilities" },
-          { name: "Taita-Taveta", irradiance: "5.9 kWh/m²/day", demand: "Mining & wildlife tourism", customers: "Gemstone mines, safari lodges, sisal", benefits: "Mining operations, Tsavo tourism" },
-          { name: "Tana River", irradiance: "6.3 kWh/m²/day", demand: "Irrigation & livestock", customers: "Irrigation schemes, markets, clinics", benefits: "Water pumping, community facilities" },
-          { name: "Tharaka-Nithi", irradiance: "5.7 kWh/m²/day", demand: "Tea & miraa", customers: "Tea factories, markets, hospitals", benefits: "Processing continuity, cold storage" },
-          { name: "Trans Nzoia", irradiance: "5.5 kWh/m²/day", demand: "Bread basket - maize & wheat", customers: "Grain mills, silos, farms", benefits: "Grain drying, storage facilities" },
-          { name: "Turkana", irradiance: "6.5 kWh/m²/day", demand: "Oil & wind-solar potential", customers: "Oil operations, fish, markets", benefits: "Oil sector backup, Lake Turkana fish" },
-          { name: "Uasin Gishu", irradiance: "5.6 kWh/m²/day", demand: "Eldoret industrial growth", customers: "Factories, universities, hospitals", benefits: "Industrial backup, institutional power" },
-          { name: "Vihiga", irradiance: "5.3 kWh/m²/day", demand: "Dense population, tea farming", customers: "Tea factories, schools, clinics", benefits: "Community power, education facilities" },
-          { name: "Wajir", irradiance: "6.5 kWh/m²/day", demand: "Livestock & trade hub", customers: "Livestock markets, hospitals, water", benefits: "Market facilities, water pumping" },
-          { name: "West Pokot", irradiance: "5.9 kWh/m²/day", demand: "Livestock & irrigation", customers: "Irrigation projects, markets, clinics", benefits: "Agricultural development, health facilities" }
-        ].map((county) => (
-          <li key={county.name} className="p-6 rounded-xl border border-yellow-500/20 bg-gradient-to-br from-black/80 to-yellow-900/10 hover:border-yellow-500/40 transition-all duration-300">
-            <h2 className="font-bold text-xl text-yellow-300">{county.name}</h2>
-            <div className="mt-4 space-y-3">
-              <div className="flex items-start gap-2">
-                <span className="text-yellow-500 text-lg">☀️</span>
-                <div><span className="text-white/60 text-xs uppercase tracking-wider">Irradiance</span><p className="text-white font-semibold">{county.irradiance}</p></div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-blue-400 text-lg">📊</span>
-                <div><span className="text-white/60 text-xs uppercase tracking-wider">Demand Profile</span><p className="text-white/90 text-sm">{county.demand}</p></div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-green-400 text-lg">🎯</span>
-                <div><span className="text-white/60 text-xs uppercase tracking-wider">Target Customers</span><p className="text-white/90 text-sm">{county.customers}</p></div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-purple-400 text-lg">✨</span>
-                <div><span className="text-white/60 text-xs uppercase tracking-wider">Key Benefits</span><p className="text-white/90 text-sm">{county.benefits}</p></div>
-              </div>
-            </div>
-          </li>
-        ))}</ul>
-        <section className="mt-10 text-center"><button onClick={() => setCurrentPage("home")} className="rounded-lg bg-yellow-300 text-black px-8 py-4 font-bold hover:bg-yellow-400 transition-all duration-300 shadow-lg shadow-yellow-500/20">Get County-Specific Quote</button></section>
-      </div>;
-      case "about": return <div className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="text-4xl font-bold text-yellow-300">About EmersonEIMS</h1><p className="mt-3 text-white/80">Verified insights, technical depth, and design that inspires.</p>
-        <Team />
-        <section className="mt-10"><button onClick={() => setCurrentPage("home")} className="rounded bg-yellow-300 text-black px-5 py-3 font-medium hover:bg-yellow-400 transition">Talk to our engineers</button></section>
-      </div>;
-      default: return (
-        <main>
-          {/* CINEMATIC NARRATIVE HERO - Added on top of existing */}
-          <CinematicNarrative />
-          
-          {/* PREMIUM CALCULATOR - Added as main feature */}
-          <section className="mx-auto max-w-7xl px-6 py-12">
-            <AdvancedSystemCalculator />
-          </section>
-
-          {/* INTERACTIVE COUNTY MAP - Added as premium feature */}
-          <section className="mx-auto max-w-7xl px-6 py-12">
-            <InteractiveCountyMap />
-          </section>
-
-          {/* MICRO-INTERACTIONS & ENHANCEMENTS */}
-          <section className="mx-auto max-w-7xl px-6 py-12">
-            <MicroInteractions />
-          </section>
-
-          {/* ORIGINAL SECTIONS - Preserved exactly */}
-          <section className="mx-auto max-w-7xl px-6 py-12" aria-labelledby="gallery-heading">
-            <h2 id="gallery-heading" className="text-2xl md:text-3xl font-bold text-yellow-300">Crafted details</h2>
-            <p className="mt-3 text-white/80">Premium materials, robust engineering, cinematic visuals.</p>
-            <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {galleryImages.map((img) => (
-                <AccessibleImage key={img.src} {...img} />
-              ))}
-            </div>
-          </section>
-
-          {/* ═══════════════════════════════════════════════════════════════════
-              REVOLUTIONARY WARRANTY SECTION - Industry-Leading Solar Coverage
-          ════════════════════════════════════════════════════════════════ */}
-          <section className="py-24 bg-gradient-to-b from-black via-gray-900/50 to-black" aria-labelledby="warranty-heading">
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="text-center mb-16">
-                <h2 id="warranty-heading" className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  Industry-Leading Solar Warranties
-                </h2>
-                <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-                  Every solar system backed by comprehensive coverage - panels, batteries, inverters, and installation
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-8">
-                {/* 25-Year Panel Warranty */}
-                <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-8 rounded-2xl border border-amber-500/30 backdrop-blur-sm hover:scale-105 transition-transform">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30">
-                      <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">25 Years</h3>
-                      <p className="text-sm text-gray-400">Solar Panel Performance</p>
-                    </div>
-                  </div>
-                  <ul className="space-y-3 text-sm text-gray-300">
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Performance guarantee - 80% efficiency after 25 years</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Minimum 90% efficiency after 10 years</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Manufacturer defects coverage</span>
-                    </li>
-                  </ul>
-                  <div className="mt-6 pt-6 border-t border-white/10">
-                    <p className="text-xs text-gray-400 text-center">✓ Tier 1 Panel Manufacturers Only</p>
-                  </div>
-                </div>
-
-                {/* 10-Year Electronics Warranty */}
-                <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-8 rounded-2xl border border-blue-500/30 backdrop-blur-sm hover:scale-105 transition-transform">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
-                      <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">10 Years</h3>
-                      <p className="text-sm text-gray-400">System Electronics</p>
-                    </div>
-                  </div>
-                  <ul className="space-y-3 text-sm text-gray-300">
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Inverter replacement if defective</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>MPPT charge controller coverage</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>System monitoring equipment</span>
-                    </li>
-                  </ul>
-                  <div className="mt-6 pt-6 border-t border-white/10">
-                    <p className="text-xs text-gray-400 text-center">✓ Premium Brand Electronics</p>
-                  </div>
-                </div>
-
-                {/* 5-Year Installation & Battery */}
-                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-8 rounded-2xl border border-green-500/30 backdrop-blur-sm hover:scale-105 transition-transform">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
-                      <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">5 Years</h3>
-                      <p className="text-sm text-gray-400">Installation & Battery</p>
-                    </div>
-                  </div>
-                  <ul className="space-y-3 text-sm text-gray-300">
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Battery capacity guarantee (lithium-ion)</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Installation workmanship</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Mounting structure integrity</span>
-                    </li>
-                  </ul>
-                  <div className="mt-6 pt-6 border-t border-white/10">
-                    <p className="text-xs text-gray-400 text-center">✓ EmersonEIMS Quality Guarantee</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Support Contact */}
-              <div className="mt-12 text-center">
-                <p className="text-gray-400">
-                  24/7 Support: <a href="tel:+254768860665" className="text-amber-500 hover:text-amber-400 font-semibold">+254 768 860 665</a> | <a href="tel:+254782914717" className="text-amber-500 hover:text-amber-400 font-semibold">+254 782 914 717</a>
-                </p>
-              </div>
-            </div>
-          </section>
-          <SolarInstallationGallery />
-          <TestimonialList />
-          <CaseStudyList />
-        </main>
-      );
-    }
-  };
-
-  const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <button
-      onClick={() => setCurrentPage(href.replace('/', ''))}
-      className={`text-sm transition-all duration-300 relative overflow-hidden group ${
-        currentPage === href.replace('/', '') 
-          ? 'text-yellow-300 font-bold' 
-          : 'text-white/80 hover:text-yellow-300'
-      }`}
-    >
-      <span className="relative z-10">{children}</span>
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-yellow-300 to-yellow-500 group-hover:w-full transition-all duration-300" />
-    </button>
-  );
-
-  return (
-    <>
-      {/* VideoObject Schema for SEO - Solar Installation Videos */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify([
-            {
-              '@context': 'https://schema.org',
-              '@type': 'VideoObject',
-              name: 'Complete Solar Installation Process - Emerson EiMS Kenya',
-              description: 'Watch our expert team install a complete solar system from start to finish. Professional solar panel installation, wiring, and inverter setup for homes and businesses in Kenya.',
-              thumbnailUrl: 'https://www.emersoneims.com/images/solar%20power%20farms.png',
-              uploadDate: '2024-01-01',
-              contentUrl: 'https://www.emersoneims.com/videos/SOLAR%20INSTALLATION%206%20(1).mp4',
-              embedUrl: 'https://www.emersoneims.com/solar',
-              duration: 'PT120S',
-              publisher: {
-                '@type': 'Organization',
-                name: 'Emerson EiMS',
-                logo: {
-                  '@type': 'ImageObject',
-                  url: 'https://www.emersoneims.com/images/Emerson%20EIMS%20Logo%20and%20Tagline%20PNG-Picsart-BackgroundRemover.png',
-                  width: 400,
-                  height: 200
-                }
-              },
-              potentialAction: {
-                '@type': 'WatchAction',
-                target: 'https://www.emersoneims.com/solar'
-              }
-            },
-            {
-              '@context': 'https://schema.org',
-              '@type': 'VideoObject',
-              name: 'Solar System Commissioning - Emerson EiMS Kenya',
-              description: 'Final testing and commissioning of solar installation. Quality assurance, system verification, and handover for residential and commercial solar systems in Kenya.',
-              thumbnailUrl: 'https://www.emersoneims.com/images/solar%20for%20flower%20farms.png',
-              uploadDate: '2024-01-01',
-              contentUrl: 'https://www.emersoneims.com/videos/SOLAR%20INSTALLATION%207.mp4',
-              embedUrl: 'https://www.emersoneims.com/solar',
-              duration: 'PT90S',
-              publisher: {
-                '@type': 'Organization',
-                name: 'Emerson EiMS',
-                logo: {
-                  '@type': 'ImageObject',
-                  url: 'https://www.emersoneims.com/images/Emerson%20EIMS%20Logo%20and%20Tagline%20PNG-Picsart-BackgroundRemover.png',
-                  width: 400,
-                  height: 200
-                }
-              },
-              potentialAction: {
-                '@type': 'WatchAction',
-                target: 'https://www.emersoneims.com/solar'
-              }
-            }
-          ])
-        }}
-      />
-
-      <Head>
-        <title>EMERSONEIMS Premium | Elite Solar Solutions for Kenya</title>
-        <meta name="description" content="World-class solar solutions with cinematic experience, advanced calculators, and interactive county data. Premium solar for Kenya." />
-        <style>{`
-          @keyframes gradient-x {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-          }
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-          }
-          html, body { 
-            background: #000; 
-            color: white;
-            font-family: system-ui, -apple-system, sans-serif;
-            overflow-x: hidden;
-          }
-          .animate-gradient-x { 
-            animation: gradient-x 15s ease infinite; 
-            background-size: 200% 200%;
-          }
-          .animate-fadeIn { animation: fadeIn 0.6s ease-out; }
-          .animate-float { animation: float 6s ease-in-out infinite; }
-          .cinematic { 
-            filter: contrast(1.15) saturate(1.25) brightness(0.95);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-          .cinematic:hover {
-            filter: contrast(1.2) saturate(1.3) brightness(1.05);
-            transform: scale(1.02);
-          }
-          .hr-glow {
-            height: 1px;
-            background: linear-gradient(90deg, 
-              rgba(255,209,102,0) 0%, 
-              rgba(255,209,102,0.9) 50%, 
-              rgba(255,209,102,0) 100%);
-            box-shadow: 0 0 20px rgba(255,209,102,0.4);
-          }
-          /* Custom scrollbar */
-          ::-webkit-scrollbar {
-            width: 10px;
-          }
-          ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-          }
-          ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #fbbf24, #f59e0b);
-            border-radius: 5px;
-          }
-          ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #fcd34d, #fbbf24);
-          }
-          /* Smooth transitions */
-          * {
-            transition: background-color 0.3s ease, 
-                        border-color 0.3s ease,
-                        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-        `}</style>
-      </Head>
-      
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
-        {/* Enhanced Premium Header */}
-        <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/50" role="banner">
-          <nav aria-label="Primary" className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
-            <button 
-              onClick={() => setCurrentPage("home")}
-              className="text-3xl font-bold relative group"
+        {/* System Type Selector */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+          {SOLAR_SYSTEMS.map(system => (
+            <motion.button
+              key={system.id}
+              onClick={() => setSelectedSystem(system)}
+              className={`p-4 rounded-xl border transition-all text-left ${
+                selectedSystem.id === system.id
+                  ? 'bg-amber-500/20 border-amber-500 text-white'
+                  : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-500'
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <span className="bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-300 bg-clip-text text-transparent">
-                EMERSONEIMS
-              </span>
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-yellow-300 to-yellow-500 group-hover:w-full transition-all duration-500" />
+              <div className="text-2xl mb-2">{system.icon}</div>
+              <div className="font-medium text-sm">{system.name}</div>
+              <div className="text-xs text-slate-500">{system.capacity}</div>
+            </motion.button>
+          ))}
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {[
+            { id: 'overview', label: 'System Overview', icon: '📊' },
+            { id: 'faults', label: 'Fault Diagnostics', icon: '⚠️' },
+            { id: 'maintenance', label: 'Maintenance Schedule', icon: '🔧' },
+            { id: 'calculator', label: 'System Calculator', icon: '🧮' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
+                activeTab === tab.id
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              {tab.icon} {tab.label}
             </button>
-            
-            <ul className="hidden md:flex gap-8 text-sm">
-              <li><NavLink href="/panels">Panels</NavLink></li>
-              <li><NavLink href="/batteries">Batteries</NavLink></li>
-              <li><NavLink href="/inverters">Inverters</NavLink></li>
-              <li><NavLink href="/comparison">Comparison</NavLink></li>
-              <li><NavLink href="/industries">Industries</NavLink></li>
-              <li><NavLink href="/counties">Counties</NavLink></li>
-              <li><NavLink href="/about">About</NavLink></li>
-            </ul>
-            
-            <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30">
-              Free Consultation
-            </button>
-          </nav>
-          <div className="hr-glow" />
-        </header>
+          ))}
+        </div>
 
-        <main id="content" className="relative">
-          {/* Animated background elements */}
-          <div className="fixed inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-300/5 rounded-full blur-3xl animate-float" />
-            <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-300/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-            <div className="absolute top-3/4 left-3/4 w-80 h-80 bg-green-300/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }} />
-          </div>
-          
-          <div className="relative z-10">
-            {renderPage()}
-          </div>
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'overview' && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              {/* Selected System Details */}
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="text-5xl">{selectedSystem.icon}</div>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-white mb-2">{selectedSystem.name}</h2>
+                    <p className="text-slate-400 mb-4">{selectedSystem.description}</p>
+                    <div className="text-amber-400 font-medium">Typical Capacity: {selectedSystem.capacity}</div>
+                  </div>
+                </div>
+              </div>
 
-          {/* Solar System Calculator - Scientific Tool */}
-          <div className="relative z-10 py-20 bg-gradient-to-br from-black via-purple-900/10 to-black">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-300 bg-clip-text text-transparent">
-                  Solar System Designer
-                </h2>
-                <p className="text-xl text-white/70">
-                  Calculate your perfect solar solution with our scientific calculator
-                </p>
-              </div>
-              <SolarSystemCalculator />
-            </div>
-          </div>
-        </main>
+              {/* Components & Tasks */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-white mb-4">📦 System Components</h3>
+                  <ul className="space-y-2">
+                    {selectedSystem.components.map((comp, i) => (
+                      <li key={i} className="flex items-center gap-2 text-slate-300">
+                        <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                        {comp}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-        {/* Enhanced Premium Footer */}
-        <footer role="contentinfo" className="relative border-t border-white/10 mt-32 bg-gradient-to-t from-black via-gray-900 to-black">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-300/50 to-transparent" />
-          
-          <div className="mx-auto max-w-7xl px-6 py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            <section aria-labelledby="footer-brand">
-              <h2 id="footer-brand" className="text-2xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-100 bg-clip-text text-transparent mb-4">
-                {company.name}
-              </h2>
-              <p className="text-white/80 mb-3 flex items-center">
-                <span className="w-5 h-5 mr-2">📍</span>
-                {company.address}
-              </p>
-              <p className="text-white/80 mb-3 flex items-center">
-                <span className="w-5 h-5 mr-2">📞</span>
-                {company.phones.join(" / ")}
-              </p>
-              <p className="text-white/80 flex items-center">
-                <span className="w-5 h-5 mr-2">✉️</span>
-                {company.emails.join(" / ")}
-              </p>
-            </section>
-            
-            <section aria-labelledby="footer-explore">
-              <h2 id="footer-explore" className="text-xl font-bold text-white mb-6">Explore</h2>
-              <ul className="space-y-3">
-                {["Master Calculator", "ROI & Energy Comparison", "Industry Solutions", "County Insights"].map((item) => (
-                  <li key={item}>
-                    <button className="text-white/70 hover:text-yellow-300 transition-all duration-300 flex items-center group">
-                      <span className="mr-2 transform group-hover:translate-x-1 transition-transform">→</span>
-                      {item}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            
-            <section aria-labelledby="footer-cta">
-              <h2 id="footer-cta" className="text-xl font-bold text-white mb-6">Get started</h2>
-              <button
-                onClick={() => setCurrentPage("comparison")}
-                className="group w-full px-6 py-4 rounded-xl bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-yellow-500/30 mb-4"
-              >
-                <span className="flex items-center justify-center">
-                  Get your tailored solar system
-                  <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
-                </span>
-              </button>
-              <p className="text-white/60 text-sm">
-                Average 4.2 year ROI • 25-year warranty • 98.7% uptime
-              </p>
-            </section>
-            
-            <section aria-labelledby="footer-legal">
-              <h2 id="footer-legal" className="text-xl font-bold text-white mb-6">Warranties & guarantees</h2>
-              <p className="text-white/70 mb-4">
-                Panel 25y performance, Battery 10y, Inverter 5y, plus our design, timeline, and support guarantees.
-              </p>
-              <div className="flex space-x-2">
-                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-white mb-4">🔧 Maintenance Tasks</h3>
+                  <ul className="space-y-2">
+                    {selectedSystem.maintenanceTasks.map((task, i) => (
+                      <li key={i} className="flex items-center gap-2 text-slate-300">
+                        <span className="text-green-400">✓</span>
+                        {task}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </section>
-          </div>
-          
-          <div className="border-t border-white/10 py-6">
-            <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row justify-between items-center">
-              <p className="text-white/50 text-sm">
-                © {new Date().getFullYear()} EmersonEIMS. Premium Solar Solutions for Kenya.
-              </p>
-              <div className="flex space-x-6 mt-4 md:mt-0">
-                <a href="/privacy" className="text-white/50 hover:text-yellow-300 transition-colors">Privacy</a>
-                <a href="/terms" className="text-white/50 hover:text-yellow-300 transition-colors">Terms</a>
-                <a href="/sitemap.xml" className="text-white/50 hover:text-yellow-300 transition-colors">Sitemap</a>
+
+              {/* Quick Links */}
+              <div className="grid md:grid-cols-3 gap-4">
+                <Link href="/generator-oracle" className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-4 hover:from-blue-500 hover:to-blue-600 transition-all">
+                  <div className="text-2xl mb-2">🔌</div>
+                  <div className="font-bold text-white">Generator Oracle</div>
+                  <div className="text-blue-200 text-sm">Backup generator diagnostics</div>
+                </Link>
+                <Link href="/services" className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-4 hover:from-green-500 hover:to-green-600 transition-all">
+                  <div className="text-2xl mb-2">🔧</div>
+                  <div className="font-bold text-white">General Services</div>
+                  <div className="text-green-200 text-sm">Pumps, motors, AC & more</div>
+                </Link>
+                <Link href="/spare-parts" className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl p-4 hover:from-purple-500 hover:to-purple-600 transition-all">
+                  <div className="text-2xl mb-2">🛒</div>
+                  <div className="font-bold text-white">Spare Parts</div>
+                  <div className="text-purple-200 text-sm">Solar components & accessories</div>
+                </Link>
               </div>
-            </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'faults' && (
+            <motion.div
+              key="faults"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-4"
+            >
+              <h2 className="text-xl font-bold text-white mb-4">⚠️ Common Solar System Faults</h2>
+              {SOLAR_FAULTS.map(fault => (
+                <div key={fault.code} className={`bg-slate-800/50 border rounded-xl p-6 ${
+                  fault.severity === 'critical' ? 'border-red-500/50' : 'border-yellow-500/50'
+                }`}>
+                  <div className="flex items-start gap-4">
+                    <div className={`px-3 py-1 rounded-lg text-sm font-mono ${
+                      fault.severity === 'critical' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {fault.code}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white mb-2">{fault.title}</h3>
+                      <p className="text-slate-400 mb-4">{fault.description}</p>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-slate-300 mb-2">Possible Causes:</h4>
+                          <ul className="space-y-1">
+                            {fault.causes.map((cause, i) => (
+                              <li key={i} className="text-sm text-slate-400 flex items-center gap-2">
+                                <span className="text-red-400">•</span> {cause}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-slate-300 mb-2">Solutions:</h4>
+                          <ul className="space-y-1">
+                            {fault.solutions.map((sol, i) => (
+                              <li key={i} className="text-sm text-slate-400 flex items-center gap-2">
+                                <span className="text-green-400">✓</span> {sol}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          )}
+
+          {activeTab === 'maintenance' && (
+            <motion.div
+              key="maintenance"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <h2 className="text-xl font-bold text-white mb-4">📅 Maintenance Schedule</h2>
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-slate-700/50">
+                    <tr>
+                      <th className="text-left p-4 text-slate-300">Task</th>
+                      <th className="text-left p-4 text-slate-300">Frequency</th>
+                      <th className="text-left p-4 text-slate-300">Duration</th>
+                      <th className="text-left p-4 text-slate-300">Priority</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {MAINTENANCE_SCHEDULE.map((item, i) => (
+                      <tr key={i} className="border-t border-slate-700">
+                        <td className="p-4 text-white">{item.task}</td>
+                        <td className="p-4 text-slate-400">{item.frequency}</td>
+                        <td className="p-4 text-slate-400">{item.duration}</td>
+                        <td className="p-4">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            item.priority === 'critical' ? 'bg-red-500/20 text-red-400' :
+                            item.priority === 'important' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-green-500/20 text-green-400'
+                          }`}>
+                            {item.priority}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'calculator' && (
+            <motion.div
+              key="calculator"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-xl font-bold text-white mb-4">🧮 Solar System Calculator</h2>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Input Form */}
+                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-4">
+                  <h3 className="font-bold text-white mb-4">Enter Your System Details</h3>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-slate-400 mb-1">Panel Watts</label>
+                      <input
+                        type="number"
+                        value={solarInput.panelWatts}
+                        onChange={(e) => setSolarInput({...solarInput, panelWatts: +e.target.value})}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-400 mb-1">Panel Count</label>
+                      <input
+                        type="number"
+                        value={solarInput.panelCount}
+                        onChange={(e) => setSolarInput({...solarInput, panelCount: +e.target.value})}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-400 mb-1">Battery Ah</label>
+                      <input
+                        type="number"
+                        value={solarInput.batteryAh}
+                        onChange={(e) => setSolarInput({...solarInput, batteryAh: +e.target.value})}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-400 mb-1">Battery Count</label>
+                      <input
+                        type="number"
+                        value={solarInput.batteryCount}
+                        onChange={(e) => setSolarInput({...solarInput, batteryCount: +e.target.value})}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-400 mb-1">Battery Voltage</label>
+                      <select
+                        value={solarInput.batteryVoltage}
+                        onChange={(e) => setSolarInput({...solarInput, batteryVoltage: +e.target.value})}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      >
+                        <option value={12}>12V</option>
+                        <option value={24}>24V</option>
+                        <option value={48}>48V</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-400 mb-1">Daily Load (kWh)</label>
+                      <input
+                        type="number"
+                        value={solarInput.dailyLoad}
+                        onChange={(e) => setSolarInput({...solarInput, dailyLoad: +e.target.value})}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Results */}
+                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                  <h3 className="font-bold text-white mb-4">System Analysis</h3>
+
+                  <div className={`mb-4 p-4 rounded-lg ${
+                    metrics.systemStatus === 'optimal' ? 'bg-green-500/20 border border-green-500/50' :
+                    metrics.systemStatus === 'adequate' ? 'bg-yellow-500/20 border border-yellow-500/50' :
+                    'bg-red-500/20 border border-red-500/50'
+                  }`}>
+                    <div className="text-lg font-bold text-white">
+                      System Status: {metrics.systemStatus === 'optimal' ? '✅ Optimal' :
+                                      metrics.systemStatus === 'adequate' ? '⚠️ Adequate' : '❌ Undersized'}
+                    </div>
+                    <div className="text-sm text-slate-300">
+                      Production covers {metrics.productionRatio}% of daily load
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-700/50 rounded-lg p-3">
+                      <div className="text-slate-400 text-xs">Total Panel Capacity</div>
+                      <div className="text-xl font-bold text-amber-400">{(metrics.totalPanelWatts / 1000).toFixed(1)} kW</div>
+                    </div>
+                    <div className="bg-slate-700/50 rounded-lg p-3">
+                      <div className="text-slate-400 text-xs">Battery Storage</div>
+                      <div className="text-xl font-bold text-blue-400">{metrics.totalBatteryWh.toFixed(1)} kWh</div>
+                    </div>
+                    <div className="bg-slate-700/50 rounded-lg p-3">
+                      <div className="text-slate-400 text-xs">Daily Production</div>
+                      <div className="text-xl font-bold text-green-400">{metrics.dailyProduction.toFixed(1)} kWh</div>
+                    </div>
+                    <div className="bg-slate-700/50 rounded-lg p-3">
+                      <div className="text-slate-400 text-xs">Battery Autonomy</div>
+                      <div className="text-xl font-bold text-purple-400">{metrics.autonomyDays} days</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Contact CTA */}
+        <div className="mt-8 bg-gradient-to-r from-amber-600 to-orange-600 rounded-xl p-6 text-center">
+          <h3 className="text-xl font-bold text-white mb-2">Need Professional Solar Maintenance?</h3>
+          <p className="text-amber-100 mb-4">Our certified technicians are available across Kenya</p>
+          <div className="flex justify-center gap-4 flex-wrap">
+            <a href="tel:+254782914717" className="bg-white/20 hover:bg-white/30 px-6 py-2 rounded-lg text-white font-medium transition-colors">
+              📞 0782 914 717
+            </a>
+            <a href="https://wa.me/254782914717" className="bg-green-500 hover:bg-green-600 px-6 py-2 rounded-lg text-white font-medium transition-colors">
+              💬 WhatsApp
+            </a>
           </div>
-        </footer>
-      </div>
-    </>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 border-t border-slate-800 mt-12 py-8">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-slate-500 text-sm">
+            © 2026 Emerson Industrial Maintenance Services Limited. All rights reserved.
+          </p>
+          <div className="flex justify-center gap-6 mt-4 text-sm">
+            <Link href="/generator-oracle" className="text-slate-400 hover:text-amber-400">Generator Oracle</Link>
+            <Link href="/services" className="text-slate-400 hover:text-amber-400">General Services</Link>
+            <Link href="/spare-parts" className="text-slate-400 hover:text-amber-400">Spare Parts</Link>
+            <Link href="/contact" className="text-slate-400 hover:text-amber-400">Contact</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }

@@ -1,107 +1,62 @@
-import type { Metadata } from 'next';
+import { Metadata } from 'next';
+import Script from 'next/script';
+
+/**
+ * Solar Maintenance Hub - SEO Metadata
+ * Complete solar system maintenance for Kenya and East Africa
+ */
 
 export const metadata: Metadata = {
-  title: 'Solar Power Solutions Kenya | Commercial & Residential Solar Installation | EmersonEIMS',
-  description: 'Leading solar installation company in Kenya. Complete solar solutions: panels, batteries, inverters for homes, businesses, industries. 47 counties coverage. 25-year warranty. Free consultation. Calculate your savings today.',
+  title: 'Solar Maintenance Hub | Solar System Diagnostics & Repair Kenya',
+  description: 'Professional solar maintenance services in Kenya. Complete diagnostics for residential, commercial & industrial solar systems. Panel cleaning, battery maintenance, inverter repair. Weather-based recommendations for optimal performance.',
   keywords: [
-    // Primary Keywords
-    'solar installation Kenya',
-    'solar panels Kenya',
-    'solar power systems Nairobi',
-    'commercial solar Kenya',
-    'residential solar Kenya',
-    'solar company Kenya',
-    // Products
-    'solar panels for sale Kenya',
-    'solar batteries Kenya',
-    'solar inverters Kenya',
-    'lithium batteries solar',
-    'LFP batteries Kenya',
-    'hybrid solar system',
-    // Services
-    'solar installation services',
-    'solar system design Kenya',
+    // Solar maintenance keywords
     'solar maintenance Kenya',
-    'solar repair Kenya',
+    'solar panel cleaning Kenya',
+    'solar system repair Nairobi',
+    'solar inverter repair Kenya',
+    'solar battery maintenance',
+    'solar system diagnostics',
+
+    // System types
+    'residential solar Kenya',
+    'commercial solar Kenya',
+    'industrial solar Kenya',
     'off-grid solar Kenya',
-    'grid-tied solar Kenya',
-    // Applications
-    'solar for homes Kenya',
-    'solar for businesses Kenya',
-    'solar for hospitals Kenya',
-    'solar for hotels Kenya',
-    'solar for factories Kenya',
-    'solar for schools Kenya',
-    'solar for farms Kenya',
-    'solar irrigation Kenya',
-    'solar water pumping',
-    // County Coverage
-    'solar Nairobi',
-    'solar Mombasa',
-    'solar Kisumu',
-    'solar Nakuru',
-    'solar Eldoret',
-    'solar Kiambu',
-    'solar Machakos',
-    'solar Kajiado',
-    'solar Garissa',
-    'solar Turkana',
-    // Benefits
-    'solar savings Kenya',
-    'reduce electricity bills Kenya',
-    'solar ROI calculator',
-    'solar payback period',
-    'solar financing Kenya',
-    // Technical
-    'solar system sizing Kenya',
-    'solar irradiance Kenya',
-    'peak sun hours Kenya',
-    'solar calculator Kenya',
-    'kWh solar production',
+    'hybrid solar system Kenya',
+    'solar water pump Kenya',
+
+    // Locations
+    'solar maintenance Nairobi',
+    'solar repair Mombasa',
+    'solar technician Kisumu',
+    'solar installation Nakuru',
+    'solar service Eldoret',
+
+    // Components
+    'solar panel maintenance',
+    'MPPT controller service',
+    'solar battery replacement',
+    'inverter troubleshooting',
+    'charge controller repair',
+
     // Brands
-    'tier 1 solar panels Kenya',
-    'monocrystalline panels Kenya',
-    'premium solar panels',
-    // Long-tail
-    'how much does solar cost in Kenya',
-    'best solar company in Kenya',
-    'solar installation cost Kenya',
-    'solar power for home Nairobi',
-    'commercial solar installation Kenya',
-    'industrial solar solutions Kenya',
-    'solar backup power Kenya',
-    'solar vs generator Kenya',
-    'solar energy Kenya 2024',
-    'clean energy Kenya',
-    'renewable energy Kenya',
-    'sustainable power Kenya',
-    'green energy solutions Kenya',
-    'ESG solar Kenya',
+    'Victron solar Kenya',
+    'Growatt inverter Kenya',
+    'Felicity solar Kenya',
+    'Must inverter Kenya',
+    'Luminous solar Kenya',
+    'Sunking solar Kenya',
+
+    // East Africa
+    'solar maintenance East Africa',
+    'solar repair Tanzania',
+    'solar service Uganda',
+    'solar technician Rwanda',
   ],
-  openGraph: {
-    title: 'Solar Power Solutions Kenya | 47 Counties Coverage | EmersonEIMS',
-    description: 'Transform your energy with premium solar solutions. 2,450+ projects completed. 98.7% system uptime. 25-year warranty. Interactive calculator for instant quotes.',
-    type: 'website',
-    url: 'https://emersoneims.com/solar',
-    siteName: 'EmersonEIMS',
-    images: [
-      {
-        url: 'https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png',
-        width: 1200,
-        height: 630,
-        alt: 'EmersonEIMS Premium Solar Installation Kenya',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Solar Power Solutions Kenya | EmersonEIMS',
-    description: 'Premium solar installations across 47 counties. Calculate your savings instantly. 25-year warranty.',
-    images: ['https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png'],
-  },
-  alternates: {
-    canonical: 'https://emersoneims.com/solar',
-  },
+  authors: [{ name: 'Emerson Industrial Maintenance Services' }],
+  creator: 'Emerson EiMS',
+  publisher: 'Emerson Industrial Maintenance Services Limited',
   robots: {
     index: true,
     follow: true,
@@ -113,112 +68,128 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://www.emersoneims.com/solar',
+    siteName: 'Emerson EiMS',
+    title: 'Solar Maintenance Hub | Complete Solar System Diagnostics',
+    description: 'Professional solar maintenance for Kenya. Diagnostics, repair, and optimization for all solar system types. Weather-integrated recommendations.',
+    images: [
+      {
+        url: '/images/solar-maintenance-hub-og.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Solar Maintenance Hub - Professional Solar Diagnostics',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Solar Maintenance Hub | Solar System Diagnostics Kenya',
+    description: 'Complete solar maintenance services. Panel cleaning, battery service, inverter repair.',
+    images: ['/images/solar-maintenance-hub-og.jpg'],
+    creator: '@EmersonEiMS',
+  },
+  alternates: {
+    canonical: 'https://www.emersoneims.com/solar',
+  },
+  category: 'Technology',
 };
 
-// JSON-LD Structured Data for Solar
-const jsonLd = {
+// Structured Data
+const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
     {
       '@type': 'Service',
-      '@id': 'https://emersoneims.com/solar/#service',
-      name: 'Solar Installation Services',
-      serviceType: 'Solar Panel Installation',
+      name: 'Solar System Maintenance',
+      serviceType: 'Solar Panel Maintenance and Repair',
+      description: 'Complete solar system maintenance including panel cleaning, battery service, inverter repair, and system optimization for residential, commercial, and industrial installations.',
       provider: {
         '@type': 'Organization',
-        name: 'EmersonEIMS',
-        '@id': 'https://emersoneims.com/#organization',
+        name: 'Emerson Industrial Maintenance Services',
+        telephone: '+254782914717',
+        email: 'info@emersoneims.com',
       },
-      areaServed: {
-        '@type': 'Country',
-        name: 'Kenya',
-      },
-      description: 'Complete solar solutions for homes, businesses, and industries across all 47 Kenya counties. 25-year warranty on panels.',
+      areaServed: [
+        { '@type': 'Country', name: 'Kenya' },
+        { '@type': 'Country', name: 'Tanzania' },
+        { '@type': 'Country', name: 'Uganda' },
+        { '@type': 'Country', name: 'Rwanda' },
+      ],
       hasOfferCatalog: {
         '@type': 'OfferCatalog',
-        name: 'Solar Products & Services',
+        name: 'Solar Maintenance Services',
         itemListElement: [
           {
             '@type': 'Offer',
             itemOffered: {
               '@type': 'Service',
-              name: 'Residential Solar Installation',
-              description: 'Complete home solar systems from 3kW to 20kW with professional installation',
-              provider: { '@id': 'https://emersoneims.com/#organization' },
+              name: 'Solar Panel Cleaning',
+              description: 'Professional cleaning of solar panels to maximize energy output',
             },
           },
           {
             '@type': 'Offer',
             itemOffered: {
               '@type': 'Service',
-              name: 'Commercial Solar Installation',
-              description: 'Business and industrial solar from 20kW to 1MW+ with turnkey solutions',
-              provider: { '@id': 'https://emersoneims.com/#organization' },
+              name: 'Battery Maintenance',
+              description: 'Solar battery testing, water level checks, and replacement',
             },
           },
           {
             '@type': 'Offer',
             itemOffered: {
               '@type': 'Service',
-              name: 'Solar Battery Storage Solutions',
-              description: 'LFP lithium batteries for energy storage with installation and warranty',
-              provider: { '@id': 'https://emersoneims.com/#organization' },
+              name: 'Inverter Repair',
+              description: 'Solar inverter diagnostics, repair, and replacement',
+            },
+          },
+          {
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Service',
+              name: 'System Optimization',
+              description: 'Full solar system audit and performance optimization',
             },
           },
         ],
       },
     },
     {
-      '@type': 'Product',
-      '@id': 'https://emersoneims.com/solar/#product',
-      name: 'Solar Panel Systems Kenya',
-      image: 'https://www.emersoneims.com/wp-content/uploads/2025/11/SOLAR-IMAGE-KADENCE.png',
-      brand: {
-        '@type': 'Brand',
-        name: 'EmersonEIMS Solar',
-      },
-      description: 'Premium tier-1 solar panels with 25-year performance warranty',
-      offers: {
-        '@type': 'AggregateOffer',
-        priceCurrency: 'KES',
-        lowPrice: '150000',
-        highPrice: '15000000',
-        availability: 'https://schema.org/InStock',
-        seller: { '@id': 'https://emersoneims.com/#organization' },
-        offerCount: '100',
-      },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.9',
-        reviewCount: '2450',
-      },
-    },
-    {
       '@type': 'FAQPage',
-      '@id': 'https://emersoneims.com/solar/#faq',
       mainEntity: [
         {
           '@type': 'Question',
-          name: 'How much does solar cost in Kenya?',
+          name: 'How often should solar panels be cleaned in Kenya?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Solar system costs in Kenya range from KSh 150,000 for a basic home system (3kW) to KSh 15,000,000+ for large commercial installations. The cost depends on system size, battery storage, and installation complexity. Our calculator provides instant estimates.',
+            text: 'In Kenya, solar panels should be cleaned monthly during the dry season and every 2-3 months during rainy periods. Areas with high dust (like near roads or construction sites) may need weekly cleaning for optimal performance.',
           },
         },
         {
           '@type': 'Question',
-          name: 'How long does solar take to pay back?',
+          name: 'What is the lifespan of solar batteries in Kenya?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Typical solar payback period in Kenya is 3-5 years depending on your electricity costs and system size. After payback, you enjoy virtually free electricity for the remaining 20+ years of panel life.',
+            text: 'Lead-acid batteries typically last 3-5 years, while lithium batteries can last 10-15 years. Proper maintenance including regular water checks, avoiding deep discharge, and temperature control can extend battery life significantly.',
           },
         },
         {
           '@type': 'Question',
-          name: 'Does solar work in all Kenya counties?',
+          name: 'Why is my solar system producing less power?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes! Kenya has excellent solar potential with 5.0-6.5 kWh/m²/day solar irradiance across all 47 counties. Northern counties like Turkana, Garissa, and Marsabit have the highest solar potential.',
+            text: 'Common causes include dirty panels, shading from new obstacles, battery degradation, inverter issues, or wiring problems. Weather conditions also affect output - cloudy days produce 25-50% less power than sunny days.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Do you service all brands of solar equipment?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes, we service all major brands including Victron, Growatt, Felicity, Must, Luminous, Sunking, and others. Our technicians are trained on various inverter and charge controller systems.',
           },
         },
       ],
@@ -226,8 +197,24 @@ const jsonLd = {
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://emersoneims.com' },
-        { '@type': 'ListItem', position: 2, name: 'Solar', item: 'https://emersoneims.com/solar' },
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: 'https://www.emersoneims.com',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Maintenance Hub',
+          item: 'https://www.emersoneims.com/maintenance-hub',
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: 'Solar',
+          item: 'https://www.emersoneims.com/solar',
+        },
       ],
     },
   ],
@@ -240,9 +227,10 @@ export default function SolarLayout({
 }) {
   return (
     <>
-      <script
+      <Script
+        id="solar-structured-data"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       {children}
     </>
