@@ -62,8 +62,9 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Coverage',
+        title: 'Maintenance & Support',
         items: [
+          { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🔆', desc: 'Complete solar diagnostics & repair' },
           { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Nationwide coverage' },
           { href: '/solar#calculator', label: 'ROI Calculator', icon: '💰', desc: 'See your savings' },
         ],
@@ -76,11 +77,17 @@ const MEGA_MENUS = {
     description: 'Advanced diagnostic systems for power equipment',
     sections: [
       {
-        title: 'Diagnostic Tools',
+        title: 'Generator Oracle Suite',
         items: [
-          { href: '/generator-oracle', label: 'Generator Oracle', icon: '🔮', desc: '90,000+ fault codes - PRO' },
-          { href: '/diagnostics', label: '9-Service Diagnostic', icon: '🔬', desc: 'Comprehensive service check' },
+          { href: '/generator-oracle', label: 'Generator Oracle', icon: '🔮', desc: '90,000+ codes, simulator, wiring diagrams' },
+          { href: '/generator-oracle/africa', label: 'Africa Edition', icon: '🌍', desc: 'Optimized for African technicians' },
           { href: '/diagnostic-suite', label: 'Generator Diagnostic', icon: '⚡', desc: 'Real-time monitoring' },
+        ],
+      },
+      {
+        title: 'Other Tools',
+        items: [
+          { href: '/diagnostics', label: '9-Service Diagnostic', icon: '🔬', desc: 'Comprehensive service check' },
           { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive problem solver' },
           { href: '/diagnostic-cockpit', label: 'Diagnostic Cockpit', icon: '🎛️', desc: 'Advanced control panel' },
         ],
@@ -101,9 +108,16 @@ const MEGA_MENUS = {
     description: 'Complete power and electrical solutions',
     sections: [
       {
-        title: 'Solutions',
+        title: 'Maintenance Hubs',
         items: [
+          { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🛠️', desc: 'All equipment maintenance center' },
+          { href: '/maintenance-hub/general', label: 'General Services', icon: '🔧', desc: 'Pumps, motors, AC, electrical' },
           { href: '/solutions', label: 'All Solutions', icon: '💡', desc: 'View all our solutions' },
+        ],
+      },
+      {
+        title: 'Power Solutions',
+        items: [
           { href: '/solutions/generators', label: 'Generator Services', icon: '⚡', desc: 'Sales & maintenance' },
           { href: '/solutions/ups', label: 'UPS Systems', icon: '🔋', desc: 'Backup power' },
           { href: '/solutions/controls', label: 'Control Systems', icon: '🎛️', desc: 'Automation & controls' },
@@ -115,14 +129,6 @@ const MEGA_MENUS = {
           { href: '/solutions/motor-rewinding', label: 'Motor Rewinding', icon: '🔄', desc: 'Motor repair' },
           { href: '/solutions/borehole-pumps', label: 'Borehole Pumps', icon: '💧', desc: 'Water solutions' },
           { href: '/fabrication', label: 'Fabrication', icon: '🏭', desc: 'Custom builds' },
-        ],
-      },
-      {
-        title: 'Company',
-        items: [
-          { href: '/gallery', label: 'Project Gallery', icon: '🖼️', desc: 'Our completed work' },
-          { href: '/case-studies', label: 'Case Studies', icon: '📋', desc: 'Success stories' },
-          { href: '/booking', label: 'Book a Service', icon: '📅', desc: 'Schedule appointment' },
         ],
       },
     ],
