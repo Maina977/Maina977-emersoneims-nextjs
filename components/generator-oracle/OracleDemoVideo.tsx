@@ -4,6 +4,9 @@
  * Oracle Demo Video - Cinematic Animated Preview
  * Hollywood-style color grading with teal/orange cinema look
  * Showcases Generator Oracle features in an engaging way
+ *
+ * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
+ * NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -37,9 +40,9 @@ const DEMO_SCENES = [
   },
   {
     id: 'brands',
-    title: '5 CONTROLLER BRANDS',
-    subtitle: 'DSE • ComAp • Woodward • SmartGen • PowerWizard',
-    duration: 3500,
+    title: 'COMPATIBLE WITH 9 CONTROLLER TYPES',
+    subtitle: 'Works with DSE • ComAp • Woodward • SmartGen • PowerWizard • Datakom • Lovato • Siemens • ENKO',
+    duration: 4000,
   },
   {
     id: 'offline',

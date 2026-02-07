@@ -8,10 +8,14 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
 
 /**
  * Generator Oracle
- * Premium diagnostic system for generator controllers
+ * Premium diagnostic system compatible with generator controllers
+ *
+ * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
+ * It is NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
+ * All brand names are trademarks of their respective owners.
  *
  * Features:
- * - 90,000+ fault codes across 5 major controller brands
+ * - 90,000+ fault codes compatible with 9 controller types
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB
@@ -66,8 +70,8 @@ function LoadingFallback() {
             <div className="text-slate-500">Fault Codes</div>
           </div>
           <div className="text-center">
-            <div className="text-amber-400 font-bold">5</div>
-            <div className="text-slate-500">Controller Brands</div>
+            <div className="text-amber-400 font-bold">9</div>
+            <div className="text-slate-500">Compatible Types</div>
           </div>
           <div className="text-center">
             <div className="text-amber-400 font-bold">100%</div>

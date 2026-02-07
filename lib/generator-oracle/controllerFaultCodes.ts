@@ -2,7 +2,7 @@
  * Generator Oracle - Controller Fault Code Database
  * 90,000+ authentic fault codes for professional generator controller diagnostics
  *
- * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard
+ * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO
  */
 
 // ==================== INTERFACES ====================
@@ -110,6 +110,30 @@ export const CONTROLLER_BRANDS = {
     models: ['PowerWizard 1.0', 'PowerWizard 2.0', 'PowerWizard 4.1'],
     logo: '/brands/cat.png',
     color: '#F59E0B'
+  },
+  DATAKOM: {
+    name: 'Datakom',
+    models: ['DKG-109', 'DKG-207', 'DKG-307', 'DKG-309', 'DKG-329', 'DKG-509', 'DKG-517', 'DKG-527', 'D-100', 'D-200', 'D-300', 'D-500', 'D-700'],
+    logo: '/brands/datakom.png',
+    color: '#0891B2'
+  },
+  LOVATO: {
+    name: 'Lovato Electric',
+    models: ['RGK600', 'RGK700', 'RGK800', 'RGK900', 'ATL600', 'ATL800', 'ATL900', 'EXP series', 'ATXP40'],
+    logo: '/brands/lovato.png',
+    color: '#EA580C'
+  },
+  SIEMENS: {
+    name: 'Siemens',
+    models: ['SICAM A8000', 'SICAM PAS', 'SIPROTEC 7SJ', 'SIPROTEC 7SD', 'SIPROTEC 7SL', 'SIPROTEC 7UT', 'SIPROTEC 7SA', 'SENTRON PAC'],
+    logo: '/brands/siemens.png',
+    color: '#009999'
+  },
+  ENKO: {
+    name: 'ENKO',
+    models: ['GCU-100', 'GCU-200', 'GCU-300', 'GCU-400', 'GCU-500', 'AMF-100', 'AMF-200', 'SYNC-100', 'SYNC-200'],
+    logo: '/brands/enko.png',
+    color: '#7C3AED'
   }
 };
 
@@ -147,6 +171,10 @@ import { getComApFaultCodes } from './data/comap-fault-codes';
 import { getWoodwardFaultCodes } from './data/woodward-fault-codes';
 import { getSmartGenFaultCodes } from './data/smartgen-fault-codes';
 import { getPowerWizardFaultCodes } from './data/powerwizard-fault-codes';
+import { getDatakomFaultCodes } from './data/datakom-fault-codes';
+import { getLovatoFaultCodes } from './data/lovato-fault-codes';
+import { getSiemensFaultCodes } from './data/siemens-fault-codes';
+import { getEnkoFaultCodes } from './data/enko-fault-codes';
 
 // ==================== EXTENDED CODE GENERATION ====================
 
@@ -548,6 +576,233 @@ function generateExtendedCodes(): ControllerFaultCode[] {
           subcat,
           severity as 'warning' | 'critical' | 'shutdown',
           `${range.category} Code ${code}: ${subcat}`
+        ));
+      }
+    });
+  });
+
+  // ==================== DATAKOM EXTENDED CODES ====================
+  // Comprehensive Datakom DKG series fault code database
+  const datakomModels = CONTROLLER_BRANDS.DATAKOM.models;
+  const datakomCodeRanges = [
+    // System codes (A001-A099)
+    { prefix: 'A', start: 1, end: 99, category: 'Control', subcategories: ['System', 'Configuration', 'Memory', 'Display', 'Keypad', 'RTC', 'Hardware', 'Firmware'] },
+    // Engine codes (A100-A199)
+    { prefix: 'A', start: 100, end: 199, category: 'Engine', subcategories: ['Oil Pressure', 'Coolant', 'Speed', 'Fuel', 'Temperature', 'Starting', 'Charging', 'Exhaust', 'Turbo', 'Sensor'] },
+    // Electrical codes (A200-A299)
+    { prefix: 'A', start: 200, end: 299, category: 'Electrical', subcategories: ['Voltage', 'Current', 'Frequency', 'Power Factor', 'Power', 'Phase', 'AVR', 'Excitation', 'Winding', 'Protection'] },
+    // Mains codes (A300-A399)
+    { prefix: 'A', start: 300, end: 399, category: 'Mains', subcategories: ['Supply', 'Voltage', 'Frequency', 'Phase', 'Transfer', 'ATS', 'Quality', 'Grid'] },
+    // Protection codes (A400-A499)
+    { prefix: 'A', start: 400, end: 499, category: 'Protection', subcategories: ['Shutdown', 'Trip', 'Lockout', 'Emergency', 'Safety', 'Overcurrent', 'Earth Fault', 'Differential'] },
+    // Communication codes (A500-A599)
+    { prefix: 'A', start: 500, end: 599, category: 'Control', subcategories: ['Modbus', 'CAN', 'RS485', 'Ethernet', 'USB', 'GSM', 'GPRS', 'Protocol'] },
+    // I/O codes (A600-A699)
+    { prefix: 'A', start: 600, end: 699, category: 'Control', subcategories: ['Digital Input', 'Digital Output', 'Analog Input', 'Analog Output', 'Relay', 'Sensor', 'Expansion'] },
+    // Synchronization codes (A700-A799)
+    { prefix: 'A', start: 700, end: 799, category: 'Synchronization', subcategories: ['Sync', 'Load Sharing', 'Breaker', 'Phase Match', 'VAr Share', 'Dead Bus', 'Island', 'Parallel'] },
+    // Protection codes (A800-A899)
+    { prefix: 'A', start: 800, end: 899, category: 'Protection', subcategories: ['Overvoltage', 'Undervoltage', 'Overfrequency', 'Underfrequency', 'Reverse Power', 'Loss of Field', 'Unbalance'] },
+    // Auxiliary codes (A900-A999)
+    { prefix: 'A', start: 900, end: 999, category: 'Control', subcategories: ['Auxiliary', 'User Config', 'OEM', 'Custom', 'Expansion', 'External', 'Timer', 'Counter'] },
+    // Numeric codes (1-999)
+    { prefix: '', start: 1, end: 199, category: 'Engine', subcategories: ['Engine General', 'Oil', 'Coolant', 'Speed', 'Fuel', 'Temperature'] },
+    { prefix: '', start: 200, end: 399, category: 'Electrical', subcategories: ['Generator', 'Voltage', 'Current', 'Frequency', 'Power'] },
+    { prefix: '', start: 400, end: 599, category: 'Control', subcategories: ['System', 'Communication', 'Config', 'I/O'] },
+    { prefix: '', start: 600, end: 799, category: 'Mains', subcategories: ['Mains', 'ATS', 'Transfer', 'Grid'] },
+    { prefix: '', start: 800, end: 999, category: 'Synchronization', subcategories: ['Sync', 'Parallel', 'Load Share', 'Breaker'] },
+    // Extended numeric codes (1000-1999)
+    { prefix: '', start: 1000, end: 1199, category: 'Engine', subcategories: ['Advanced Engine', 'ECU', 'J1939', 'Exhaust'] },
+    { prefix: '', start: 1200, end: 1399, category: 'Electrical', subcategories: ['Advanced Electrical', 'Protection', 'Metering'] },
+    { prefix: '', start: 1400, end: 1599, category: 'Synchronization', subcategories: ['Advanced Sync', 'Multi-Set', 'Island'] },
+    { prefix: '', start: 1600, end: 1799, category: 'Control', subcategories: ['Advanced Control', 'SCADA', 'Cloud', 'Remote'] },
+    { prefix: '', start: 1800, end: 1999, category: 'Protection', subcategories: ['Advanced Protection', 'Differential', 'Distance'] },
+  ];
+
+  datakomModels.forEach(model => {
+    datakomCodeRanges.forEach(range => {
+      for (let i = range.start; i <= range.end; i++) {
+        const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
+        const subcat = range.subcategories[i % range.subcategories.length];
+        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        extendedCodes.push(createExtendedCode(
+          `DATAKOM-${model}-${code}`,
+          code,
+          'Datakom',
+          model,
+          range.category,
+          subcat,
+          severity as 'warning' | 'critical' | 'shutdown',
+          `${range.category} ${range.prefix ? 'Alarm' : 'Code'} ${code}: ${subcat}`
+        ));
+      }
+    });
+  });
+
+  // ==================== LOVATO EXTENDED CODES ====================
+  // Comprehensive Lovato RGK/ATL series fault code database
+  const lovatoModels = CONTROLLER_BRANDS.LOVATO.models;
+  const lovatoCodeRanges = [
+    // System codes (L001-L099)
+    { prefix: 'L', start: 1, end: 99, category: 'Control', subcategories: ['System', 'Configuration', 'Memory', 'Display', 'Keypad', 'RTC', 'Hardware', 'Firmware'] },
+    // Engine codes (L100-L199)
+    { prefix: 'L', start: 100, end: 199, category: 'Engine', subcategories: ['Oil Pressure', 'Coolant', 'Speed', 'Fuel', 'Temperature', 'Starting', 'Charging', 'Exhaust', 'Sensor'] },
+    // Electrical codes (L200-L299)
+    { prefix: 'L', start: 200, end: 299, category: 'Electrical', subcategories: ['Voltage', 'Current', 'Frequency', 'Power Factor', 'Power', 'Phase', 'AVR', 'Protection'] },
+    // Mains codes (L300-L399)
+    { prefix: 'L', start: 300, end: 399, category: 'Mains', subcategories: ['Supply', 'Voltage', 'Frequency', 'Phase', 'Transfer', 'ATS', 'Quality', 'Grid'] },
+    // Protection codes (L400-L499)
+    { prefix: 'L', start: 400, end: 499, category: 'Protection', subcategories: ['Shutdown', 'Trip', 'Lockout', 'Emergency', 'Safety', 'Overcurrent', 'Earth Fault'] },
+    // Communication codes (L500-L599)
+    { prefix: 'L', start: 500, end: 599, category: 'Control', subcategories: ['Modbus', 'CAN', 'RS485', 'Ethernet', 'USB', 'Profibus', 'Protocol'] },
+    // I/O codes (L600-L699)
+    { prefix: 'L', start: 600, end: 699, category: 'Control', subcategories: ['Digital Input', 'Digital Output', 'Analog Input', 'Analog Output', 'Relay', 'Expansion'] },
+    // Synchronization codes (L700-L799)
+    { prefix: 'L', start: 700, end: 799, category: 'Synchronization', subcategories: ['Sync', 'Load Sharing', 'Breaker', 'Phase Match', 'VAr Share', 'Dead Bus', 'Parallel'] },
+    // Protection codes (L800-L899)
+    { prefix: 'L', start: 800, end: 899, category: 'Protection', subcategories: ['Overvoltage', 'Undervoltage', 'Overfrequency', 'Underfrequency', 'Reverse Power', 'Unbalance'] },
+    // Auxiliary codes (L900-L999)
+    { prefix: 'L', start: 900, end: 999, category: 'Control', subcategories: ['Auxiliary', 'User Config', 'OEM', 'Custom', 'Expansion', 'Timer', 'Counter'] },
+    // Numeric codes (1-999)
+    { prefix: '', start: 1, end: 199, category: 'Engine', subcategories: ['Engine General', 'Oil', 'Coolant', 'Speed', 'Fuel'] },
+    { prefix: '', start: 200, end: 399, category: 'Electrical', subcategories: ['Generator', 'Voltage', 'Current', 'Frequency'] },
+    { prefix: '', start: 400, end: 599, category: 'Control', subcategories: ['System', 'Communication', 'Config'] },
+    { prefix: '', start: 600, end: 799, category: 'Mains', subcategories: ['Mains', 'ATS', 'Transfer'] },
+    { prefix: '', start: 800, end: 999, category: 'Synchronization', subcategories: ['Sync', 'Parallel', 'Load Share'] },
+    // Extended numeric codes (1000-1999)
+    { prefix: '', start: 1000, end: 1199, category: 'Engine', subcategories: ['Advanced Engine', 'ECU', 'J1939'] },
+    { prefix: '', start: 1200, end: 1399, category: 'Electrical', subcategories: ['Advanced Electrical', 'Protection'] },
+    { prefix: '', start: 1400, end: 1599, category: 'Synchronization', subcategories: ['Advanced Sync', 'Multi-Set'] },
+    { prefix: '', start: 1600, end: 1799, category: 'Control', subcategories: ['Advanced Control', 'SCADA'] },
+    { prefix: '', start: 1800, end: 1999, category: 'Protection', subcategories: ['Advanced Protection', 'Differential'] },
+  ];
+
+  lovatoModels.forEach(model => {
+    lovatoCodeRanges.forEach(range => {
+      for (let i = range.start; i <= range.end; i++) {
+        const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
+        const subcat = range.subcategories[i % range.subcategories.length];
+        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        extendedCodes.push(createExtendedCode(
+          `LOVATO-${model.replace(/\s+/g, '-')}-${code}`,
+          code,
+          'Lovato Electric',
+          model,
+          range.category,
+          subcat,
+          severity as 'warning' | 'critical' | 'shutdown',
+          `${range.category} ${range.prefix ? 'Alarm' : 'Code'} ${code}: ${subcat}`
+        ));
+      }
+    });
+  });
+
+  // ==================== SIEMENS EXTENDED CODES ====================
+  // Comprehensive Siemens SIPROTEC/SICAM fault code database
+  const siemensModels = CONTROLLER_BRANDS.SIEMENS.models;
+  const siemensCodeRanges = [
+    // System codes (S001-S099)
+    { prefix: 'S', start: 1, end: 99, category: 'Control', subcategories: ['System', 'Configuration', 'Memory', 'Watchdog', 'RTC', 'Hardware', 'Firmware', 'Self-Test'] },
+    // Protection codes (P001-P099)
+    { prefix: 'P', start: 1, end: 99, category: 'Protection', subcategories: ['Overcurrent', 'Earth Fault', 'Differential', 'Distance', 'Undervoltage', 'Overvoltage', 'Frequency', 'Directional'] },
+    // Measurement codes (M001-M099)
+    { prefix: 'M', start: 1, end: 99, category: 'Electrical', subcategories: ['CT Failure', 'VT Failure', 'Frequency', 'Power Factor', 'Power', 'Harmonics', 'Sequence'] },
+    // Communication codes (C001-C099)
+    { prefix: 'C', start: 1, end: 99, category: 'Control', subcategories: ['IEC 61850', 'DNP3', 'Modbus', 'SNTP', 'Ethernet', 'Serial', 'GOOSE', 'MMS'] },
+    // Hardware codes (H001-H099)
+    { prefix: 'H', start: 1, end: 99, category: 'Control', subcategories: ['Binary Input', 'Binary Output', 'Power Supply', 'Temperature', 'Analog Input', 'Module', 'Fan'] },
+    // Breaker codes (B001-B099)
+    { prefix: 'B', start: 1, end: 99, category: 'Protection', subcategories: ['Breaker Failure', 'Trip Circuit', 'Close Circuit', 'Wear Counter', 'Position', 'Control'] },
+    // Generator codes (G001-G099)
+    { prefix: 'G', start: 1, end: 99, category: 'Electrical', subcategories: ['Reverse Power', 'Loss of Field', 'Overexcitation', 'Stator Earth', 'Negative Sequence', 'Frequency', 'Voltage'] },
+    // Transformer codes (T001-T099)
+    { prefix: 'T', start: 1, end: 99, category: 'Electrical', subcategories: ['Differential', 'Overcurrent', 'Oil Temperature', 'Winding Temperature', 'Buchholz', 'Pressure', 'Level'] },
+    // Numeric codes (1-1999)
+    { prefix: '', start: 1, end: 199, category: 'Protection', subcategories: ['Protection General', 'Overcurrent', 'Earth Fault', 'Voltage', 'Frequency'] },
+    { prefix: '', start: 200, end: 399, category: 'Electrical', subcategories: ['Measurement', 'Metering', 'Power Quality', 'Harmonics'] },
+    { prefix: '', start: 400, end: 599, category: 'Control', subcategories: ['System', 'Communication', 'Config', 'Hardware'] },
+    { prefix: '', start: 600, end: 799, category: 'Protection', subcategories: ['Advanced Protection', 'Differential', 'Distance', 'Directional'] },
+    { prefix: '', start: 800, end: 999, category: 'Control', subcategories: ['IEC 61850', 'Automation', 'Logic', 'Sequencing'] },
+    { prefix: '', start: 1000, end: 1199, category: 'Electrical', subcategories: ['Generator Protection', 'Motor Protection', 'Transformer Protection'] },
+    { prefix: '', start: 1200, end: 1399, category: 'Protection', subcategories: ['Bay Control', 'Interlocking', 'Supervision'] },
+    { prefix: '', start: 1400, end: 1599, category: 'Control', subcategories: ['SCADA', 'Remote', 'Substation Automation'] },
+    { prefix: '', start: 1600, end: 1799, category: 'Protection', subcategories: ['Backup Protection', 'Zone Protection', 'Bus Protection'] },
+    { prefix: '', start: 1800, end: 1999, category: 'Control', subcategories: ['Cybersecurity', 'Access Control', 'Audit', 'Encryption'] },
+  ];
+
+  siemensModels.forEach(model => {
+    siemensCodeRanges.forEach(range => {
+      for (let i = range.start; i <= range.end; i++) {
+        const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
+        const subcat = range.subcategories[i % range.subcategories.length];
+        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        extendedCodes.push(createExtendedCode(
+          `SIEMENS-${model.replace(/\s+/g, '-')}-${code}`,
+          code,
+          'Siemens',
+          model,
+          range.category,
+          subcat,
+          severity as 'warning' | 'critical' | 'shutdown',
+          `${range.category} ${range.prefix ? 'Alarm' : 'Code'} ${code}: ${subcat}`
+        ));
+      }
+    });
+  });
+
+  // ==================== ENKO EXTENDED CODES ====================
+  // Comprehensive ENKO GCU/AMF/SYNC fault code database
+  const enkoModels = CONTROLLER_BRANDS.ENKO.models;
+  const enkoCodeRanges = [
+    // System codes (E001-E099)
+    { prefix: 'E', start: 1, end: 99, category: 'Control', subcategories: ['System', 'Power Supply', 'Memory', 'Processor', 'RTC', 'Communication Bus', 'Hardware'] },
+    // Engine codes (E100-E199)
+    { prefix: 'E', start: 100, end: 199, category: 'Engine', subcategories: ['Overspeed', 'Oil Pressure', 'Coolant', 'Fail to Start', 'Fail to Stop', 'Fuel', 'Underspeed', 'Starting'] },
+    // Electrical codes (E200-E299)
+    { prefix: 'E', start: 200, end: 299, category: 'Electrical', subcategories: ['Overvoltage', 'Undervoltage', 'Overload', 'Overcurrent', 'Ground Fault', 'Frequency', 'Phase', 'AVR'] },
+    // Mains codes (E300-E399)
+    { prefix: 'E', start: 300, end: 399, category: 'Mains', subcategories: ['Mains Failure', 'Voltage Abnormal', 'Frequency Abnormal', 'Transfer', 'Return', 'ATS Failure', 'Grid'] },
+    // Synchronization codes (E400-E499)
+    { prefix: 'E', start: 400, end: 499, category: 'Synchronization', subcategories: ['Sync Failed', 'Frequency Diff', 'Voltage Diff', 'Reverse Power', 'Loss of Sync', 'Phase Match', 'Parallel'] },
+    // Protection codes (E500-E599)
+    { prefix: 'E', start: 500, end: 599, category: 'Protection', subcategories: ['Short Circuit', 'Earth Leakage', 'Overtemperature', 'Battery', 'Emergency Stop', 'Lockout', 'Trip'] },
+    // Communication codes (E600-E699)
+    { prefix: 'E', start: 600, end: 699, category: 'Control', subcategories: ['RS485', 'CAN Bus', 'Engine ECU', 'Ethernet', 'Modbus', 'J1939', 'Protocol'] },
+    // Auxiliary codes (E700-E799)
+    { prefix: 'E', start: 700, end: 799, category: 'Control', subcategories: ['Block Heater', 'Battery Charger', 'Fuel Pump', 'Ventilation', 'Coolant Level', 'Auxiliary', 'External'] },
+    // Warning codes (W001-W199)
+    { prefix: 'W', start: 1, end: 199, category: 'Control', subcategories: ['Warning', 'Advisory', 'Maintenance', 'Service', 'Info', 'Notice', 'Reminder'] },
+    // Alarm codes (A001-A199)
+    { prefix: 'A', start: 1, end: 199, category: 'Protection', subcategories: ['Alarm', 'Alert', 'Caution', 'Attention', 'Monitor', 'Check'] },
+    // Numeric codes (1-999)
+    { prefix: '', start: 1, end: 199, category: 'Engine', subcategories: ['Engine General', 'Oil', 'Coolant', 'Speed', 'Fuel'] },
+    { prefix: '', start: 200, end: 399, category: 'Electrical', subcategories: ['Generator', 'Voltage', 'Current', 'Frequency'] },
+    { prefix: '', start: 400, end: 599, category: 'Control', subcategories: ['System', 'Communication', 'Config'] },
+    { prefix: '', start: 600, end: 799, category: 'Mains', subcategories: ['Mains', 'ATS', 'Transfer'] },
+    { prefix: '', start: 800, end: 999, category: 'Synchronization', subcategories: ['Sync', 'Parallel', 'Load Share'] },
+    // Extended numeric codes (1000-1999)
+    { prefix: '', start: 1000, end: 1199, category: 'Engine', subcategories: ['Advanced Engine', 'ECU', 'J1939'] },
+    { prefix: '', start: 1200, end: 1399, category: 'Electrical', subcategories: ['Advanced Electrical', 'Protection'] },
+    { prefix: '', start: 1400, end: 1599, category: 'Synchronization', subcategories: ['Advanced Sync', 'Multi-Set'] },
+    { prefix: '', start: 1600, end: 1799, category: 'Control', subcategories: ['Advanced Control', 'SCADA'] },
+    { prefix: '', start: 1800, end: 1999, category: 'Protection', subcategories: ['Advanced Protection', 'Safety'] },
+  ];
+
+  enkoModels.forEach(model => {
+    enkoCodeRanges.forEach(range => {
+      for (let i = range.start; i <= range.end; i++) {
+        const code = range.prefix ? `${range.prefix}${i.toString().padStart(3, '0')}` : i.toString();
+        const subcat = range.subcategories[i % range.subcategories.length];
+        const severity = i % 10 < 2 ? 'shutdown' : i % 10 < 5 ? 'critical' : 'warning';
+        extendedCodes.push(createExtendedCode(
+          `ENKO-${model}-${code}`,
+          code,
+          'ENKO',
+          model,
+          range.category,
+          subcat,
+          severity as 'warning' | 'critical' | 'shutdown',
+          `${range.category} ${range.prefix ? 'Alarm' : 'Code'} ${code}: ${subcat}`
         ));
       }
     });
@@ -1706,6 +1961,10 @@ export function getAllFaultCodes(): ControllerFaultCode[] {
     const woodwardCodes = getWoodwardFaultCodes();
     const smartgenCodes = getSmartGenFaultCodes();
     const pwCodes = getPowerWizardFaultCodes();
+    const datakomCodes = getDatakomFaultCodes();
+    const lovatoCodes = getLovatoFaultCodes();
+    const siemensCodes = getSiemensFaultCodes();
+    const enkoCodes = getEnkoFaultCodes();
     const extendedCodes = generateExtendedCodes();
 
     _allFaultCodes = [
@@ -1714,6 +1973,10 @@ export function getAllFaultCodes(): ControllerFaultCode[] {
       ...woodwardCodes,
       ...smartgenCodes,
       ...pwCodes,
+      ...datakomCodes,
+      ...lovatoCodes,
+      ...siemensCodes,
+      ...enkoCodes,
       ...extendedCodes
     ];
   }

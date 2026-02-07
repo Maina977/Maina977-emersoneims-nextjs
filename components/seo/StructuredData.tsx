@@ -110,8 +110,8 @@ export function LocalBusinessSchema({ county }: { county?: string }) {
     }],
     aggregateRating: {
       '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '847',
+      ratingValue: '4.8',
+      reviewCount: '247',
       bestRating: '5'
     }
   };
@@ -195,15 +195,15 @@ export function DiagnosticSuiteSchema() {
       bestRating: '5',
       worstRating: '1'
     },
-    description: 'Professional generator diagnostic tool with 9,500+ error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
+    description: 'Professional generator diagnostic tool with 90,000+ error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
     featureList: [
-      '9,500+ Error Codes Database',
+      '90,000+ Error Codes Database',
       'AI-Powered Diagnostics',
       'Multi-Brand Support (Cummins, CAT, Perkins, DeepSea, PowerWizard)',
       'Real-Time Telemetry',
       'Offline Capability',
       'Voice Control',
-      '47 Languages Supported',
+      '7+ Languages Supported',
       'WCAG 2.1 AAA Accessible'
     ],
     screenshot: 'https://www.emersoneims.com/images/diagnostic-suite-screenshot.jpg',
@@ -483,8 +483,8 @@ export function ProfessionalServiceSchema({
     },
     aggregateRating: {
       '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '847',
+      ratingValue: '4.8',
+      reviewCount: '247',
       bestRating: '5'
     }
   };
@@ -675,8 +675,8 @@ export function ComprehensiveLocalBusinessSchema({
     },
     aggregateRating: {
       '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '847',
+      ratingValue: '4.8',
+      reviewCount: '247',
       bestRating: '5',
       worstRating: '1'
     },

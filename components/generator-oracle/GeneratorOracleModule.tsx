@@ -41,6 +41,9 @@ import FaultDiagnosticsPanel from './panels/FaultDiagnosticsPanel';
 import TechnicianAssistantPanel from './panels/TechnicianAssistantPanel';
 import AdvancedDiagnosticsPanel from './panels/AdvancedDiagnosticsPanel';
 import WiringDiagramsPanel from './panels/WiringDiagramsPanel';
+import ControllerSimulator, { CONTROLLER_TYPES } from './ControllerSimulator';
+import DetailedFaultDisplay, { DETAILED_FAULT_CODES } from './DetailedFaultDisplay';
+import { AnalogClock, AnalogCalendar } from '@/components/ui/AnalogWidgets';
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -321,7 +324,11 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis'>('command');
+
+  // Controller type for simulator
+  type ControllerType = keyof typeof CONTROLLER_TYPES;
+  const [simulatorController, setSimulatorController] = useState<ControllerType>('DSE');
 
   // Controller selection
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
@@ -556,8 +563,10 @@ export default function GeneratorOracleModule() {
                   <NavTab icon="⚙️" label="Engine" active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
                   <NavTab icon="⚡" label="Electrical" active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
                   <NavTab icon="🔧" label="Faults" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
-                  <NavTab icon="🚀" label="Advanced" active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
+                  <NavTab icon="🖥️" label="Simulator" active={activeScreen === 'simulator'} onClick={() => setActiveScreen('simulator')} />
                   <NavTab icon="📐" label="Diagrams" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
+                  <NavTab icon="🔍" label="Analysis" active={activeScreen === 'faultanalysis'} onClick={() => setActiveScreen('faultanalysis')} />
+                  <NavTab icon="🚀" label="Advanced" active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
                   <NavTab icon="🛠️" label="Assistant" active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
                   <NavTab icon="📋" label="History" active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
                   <NavTab icon="⚙️" label="Settings" active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
@@ -574,8 +583,10 @@ export default function GeneratorOracleModule() {
                     <option value="engine">⚙️ Engine</option>
                     <option value="electrical">⚡ Electrical</option>
                     <option value="faults">🔧 Faults</option>
-                    <option value="advanced">🚀 Advanced AI</option>
+                    <option value="simulator">🖥️ Simulator</option>
                     <option value="wiring">📐 Diagrams</option>
+                    <option value="faultanalysis">🔍 Fault Analysis</option>
+                    <option value="advanced">🚀 Advanced AI</option>
                     <option value="assistant">🛠️ Assistant</option>
                     <option value="history">📋 History</option>
                     <option value="settings">⚙️ Settings</option>
@@ -907,6 +918,170 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                   >
                     <WiringDiagramsPanel />
+                  </motion.div>
+                )}
+
+                {/* CONTROLLER SIMULATOR */}
+                {activeScreen === 'simulator' && (
+                  <motion.div
+                    key="simulator"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-6"
+                  >
+                    {/* Widgets Bar */}
+                    <div className="flex items-center justify-between bg-slate-900/50 border border-slate-700 rounded-xl p-4">
+                      <div>
+                        <h2 className="text-xl font-bold text-white">Controller Simulator</h2>
+                        <p className="text-slate-400 text-sm">Interactive controller display simulation</p>
+                      </div>
+                      <div className="hidden lg:flex items-center gap-3">
+                        <AnalogClock size={60} />
+                        <AnalogCalendar />
+                      </div>
+                    </div>
+
+                    {/* Disclaimer */}
+                    <div className="bg-slate-800/50 border border-slate-600 rounded-lg p-3">
+                      <p className="text-slate-400 text-xs text-center">
+                        <strong className="text-slate-300">Disclaimer:</strong> Generator Oracle is an independently developed diagnostic tool.
+                        It is NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
+                        All brand names are trademarks of their respective owners and are used for compatibility reference only.
+                      </p>
+                    </div>
+
+                    {/* Controller Type Selector */}
+                    <GlassPanel title="Select Controller Type" icon="🎛️" accentColor="cyan">
+                      <div className="flex gap-2 flex-wrap">
+                        {(Object.keys(CONTROLLER_TYPES) as ControllerType[]).map(type => (
+                          <button
+                            key={type}
+                            onClick={() => setSimulatorController(type)}
+                            className={`px-4 py-2 rounded-lg transition-all ${
+                              simulatorController === type
+                                ? 'bg-cyan-500 text-white'
+                                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                            }`}
+                          >
+                            {CONTROLLER_TYPES[type].shortName || type}
+                          </button>
+                        ))}
+                      </div>
+                    </GlassPanel>
+
+                    {/* Simulator Instructions */}
+                    <GlassPanel title="How To Use" icon="💡" accentColor="amber">
+                      <p className="text-slate-400 mb-4">
+                        Enter your actual sensor readings below. The simulator will display them as they would appear on the controller,
+                        helping you understand the relationship between physical values and controller display.
+                      </p>
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                        <div className="flex items-start gap-2">
+                          <span className="text-amber-400">💡</span>
+                          <div className="text-sm text-slate-300">
+                            <strong className="text-amber-400">Pro Tip:</strong> Compare the simulated display with your actual controller.
+                            If values don&apos;t match, the sensor or wiring may be faulty.
+                          </div>
+                        </div>
+                      </div>
+                    </GlassPanel>
+
+                    {/* Controller Simulator Component */}
+                    <ControllerSimulator controllerType={simulatorController} />
+
+                    {/* Quick Links */}
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <button
+                        onClick={() => setActiveScreen('faults')}
+                        className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-4 hover:from-blue-500 hover:to-blue-600 transition-all text-left"
+                      >
+                        <div className="text-2xl mb-2">🔍</div>
+                        <div className="font-bold text-white">Fault Code Search</div>
+                        <div className="text-blue-200 text-sm">Search 90,000+ codes</div>
+                      </button>
+                      <button
+                        onClick={() => setActiveScreen('wiring')}
+                        className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl p-4 hover:from-purple-500 hover:to-purple-600 transition-all text-left"
+                      >
+                        <div className="text-2xl mb-2">📐</div>
+                        <div className="font-bold text-white">Wiring Diagrams</div>
+                        <div className="text-purple-200 text-sm">Controller wiring layouts</div>
+                      </button>
+                      <button
+                        onClick={() => setActiveScreen('faultanalysis')}
+                        className="bg-gradient-to-r from-amber-600 to-orange-600 rounded-xl p-4 hover:from-amber-500 hover:to-orange-500 transition-all text-left"
+                      >
+                        <div className="text-2xl mb-2">🔍</div>
+                        <div className="font-bold text-white">Fault Analysis</div>
+                        <div className="text-amber-200 text-sm">Detailed fault descriptions</div>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* DETAILED FAULT ANALYSIS */}
+                {activeScreen === 'faultanalysis' && (
+                  <motion.div
+                    key="faultanalysis"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-6"
+                  >
+                    <GlassPanel title="Detailed Fault Analysis" icon="🔍" accentColor="purple">
+                      <p className="text-slate-400 mb-4">
+                        Each fault code includes comprehensive 2+ paragraph descriptions, diagnostic procedures,
+                        step-by-step reset instructions, and repair solutions. This tool provides in-depth analysis
+                        to help technicians understand and resolve generator faults quickly.
+                      </p>
+                      <div className="grid md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                          <div className="text-2xl mb-2">📝</div>
+                          <div className="text-white font-medium">Detailed Descriptions</div>
+                          <div className="text-sm text-slate-400">2+ paragraph explanations for each fault</div>
+                        </div>
+                        <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                          <div className="text-2xl mb-2">🔧</div>
+                          <div className="text-white font-medium">Step-by-Step Fixes</div>
+                          <div className="text-sm text-slate-400">Clear repair procedures</div>
+                        </div>
+                        <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                          <div className="text-2xl mb-2">🔄</div>
+                          <div className="text-white font-medium">Reset Instructions</div>
+                          <div className="text-sm text-slate-400">How to clear fault codes</div>
+                        </div>
+                      </div>
+                    </GlassPanel>
+
+                    {/* Sample Detailed Fault Display */}
+                    <DetailedFaultDisplay faultCode={DETAILED_FAULT_CODES['190-0']} />
+
+                    {/* More Fault Codes */}
+                    <GlassPanel title="Browse More Faults" icon="📋" accentColor="cyan">
+                      <div className="grid md:grid-cols-2 gap-3">
+                        {Object.entries(DETAILED_FAULT_CODES).slice(0, 6).map(([code, fault]) => (
+                          <div
+                            key={code}
+                            className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 hover:border-cyan-500/50 cursor-pointer"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="px-2 py-1 bg-slate-800 rounded font-mono text-cyan-400 text-sm">{fault.code}</span>
+                              <span className="text-white text-sm">{fault.title}</span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-2 line-clamp-2">{fault.overview}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 text-center">
+                        <button
+                          onClick={() => setActiveScreen('faults')}
+                          className="px-6 py-2 bg-cyan-500/20 text-cyan-400 rounded-lg hover:bg-cyan-500/30 transition-colors"
+                        >
+                          Search All 90,000+ Fault Codes →
+                        </button>
+                      </div>
+                    </GlassPanel>
                   </motion.div>
                 )}
 

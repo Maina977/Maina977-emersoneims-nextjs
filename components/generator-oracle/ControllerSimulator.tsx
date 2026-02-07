@@ -1,85 +1,160 @@
 'use client';
 
 /**
- * Controller Simulator - Visual Replicas of All 5 Controller Types
- * Mimics exact button layouts and display styles without brand names
+ * Controller Simulator - Visual Replicas Compatible with 9 Controller Types
+ * Mimics exact button layouts and display styles
  * Supports manual input for sensor readings and AI analysis
  *
- * Controllers:
- * 1. Type A (Blue) - DSE-style controller
- * 2. Type B (Red) - ComAp-style controller
- * 3. Type C (Green) - Woodward-style controller
- * 4. Type D (Orange) - SmartGen-style controller
- * 5. Type E (Yellow) - PowerWizard-style controller
+ * DISCLAIMER: This is an independently developed tool.
+ * NOT affiliated with or endorsed by any controller manufacturer.
+ *
+ * Compatible Controller Types:
+ * 1. DSE Type - Compatible with DeepSea Electronics controllers
+ * 2. ComAp Type - Compatible with ComAp controllers
+ * 3. Woodward Type - Compatible with Woodward controllers
+ * 4. SmartGen Type - Compatible with SmartGen controllers
+ * 5. PowerWizard Type - Compatible with PowerWizard controllers
+ * 6. Datakom Type - Compatible with Datakom controllers
+ * 7. Lovato Type - Compatible with Lovato controllers
+ * 8. Siemens Type - Compatible with Siemens controllers
+ * 9. ENKO Type - Compatible with ENKO controllers
  */
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Controller Types Configuration
+/**
+ * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
+ * It is NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
+ * All brand names mentioned are trademarks of their respective owners.
+ * "Compatible with" indicates the tool works with these controller types.
+ */
+
+// Controller Types Configuration - Compatible with 9 Controller Brands
 export const CONTROLLER_TYPES = {
-  TYPE_A: {
-    id: 'TYPE_A',
-    name: 'Series A Controller',
+  DSE: {
+    id: 'DSE',
+    name: 'Compatible with DSE Controllers',
+    shortName: 'DSE Type',
     color: '#1E40AF', // Blue
     accentColor: '#3B82F6',
     displayColor: '#0f172a',
     textColor: '#22d3ee',
-    models: ['A-4510', 'A-4610', 'A-5110', 'A-7320', 'A-8610'],
+    compatibleWith: ['DSE 4510', 'DSE 4610', 'DSE 5110', 'DSE 7320', 'DSE 8610'],
     displayType: 'lcd',
     buttonLayout: 'standard',
     hasMenuWheel: true,
     hasLedIndicators: true,
   },
-  TYPE_B: {
-    id: 'TYPE_B',
-    name: 'Series B Controller',
+  COMAP: {
+    id: 'COMAP',
+    name: 'Compatible with ComAp Controllers',
+    shortName: 'ComAp Type',
     color: '#DC2626', // Red
     accentColor: '#EF4444',
     displayColor: '#1e1e1e',
     textColor: '#10b981',
-    models: ['B-NT AMF25', 'B-NTC Base', 'B-NTC Sys'],
+    compatibleWith: ['InteliLite NT', 'InteliGen NTC', 'InteliSys NT'],
     displayType: 'graphic',
     buttonLayout: 'horizontal',
     hasMenuWheel: false,
     hasLedIndicators: true,
   },
-  TYPE_C: {
-    id: 'TYPE_C',
-    name: 'Series C Controller',
+  WOODWARD: {
+    id: 'WOODWARD',
+    name: 'Compatible with Woodward Controllers',
+    shortName: 'Woodward Type',
     color: '#059669', // Green
     accentColor: '#10B981',
     displayColor: '#0a0a0a',
     textColor: '#fbbf24',
-    models: ['C-3000', 'C-3500', 'C-LS5', 'C-GCP30'],
+    compatibleWith: ['EasyGen 3000', 'EasyGen 3500', 'LS-5', 'GCP-30'],
     displayType: 'lcd',
     buttonLayout: 'vertical',
     hasMenuWheel: true,
     hasLedIndicators: true,
   },
-  TYPE_D: {
-    id: 'TYPE_D',
-    name: 'Series D Controller',
-    color: '#EA580C', // Orange
-    accentColor: '#F97316',
+  SMARTGEN: {
+    id: 'SMARTGEN',
+    name: 'Compatible with SmartGen Controllers',
+    shortName: 'SmartGen Type',
+    color: '#7C3AED', // Purple
+    accentColor: '#8B5CF6',
     displayColor: '#171717',
     textColor: '#84cc16',
-    models: ['D-6120', 'D-9320', 'D-9510', 'D-9520'],
+    compatibleWith: ['HGM6120', 'HGM9320', 'HGM9510', 'HGM9520'],
     displayType: 'graphic',
     buttonLayout: 'grid',
     hasMenuWheel: false,
     hasLedIndicators: true,
   },
-  TYPE_E: {
-    id: 'TYPE_E',
-    name: 'Series E Controller',
+  POWERWIZARD: {
+    id: 'POWERWIZARD',
+    name: 'Compatible with PowerWizard Controllers',
+    shortName: 'PowerWizard Type',
     color: '#CA8A04', // Yellow/Gold
     accentColor: '#EAB308',
     displayColor: '#1c1917',
     textColor: '#06b6d4',
-    models: ['E-PW1.0', 'E-PW1.1', 'E-PW2.0'],
+    compatibleWith: ['PowerWizard 1.0', 'PowerWizard 1.1', 'PowerWizard 2.0'],
     displayType: 'lcd',
     buttonLayout: 'caterpillar',
+    hasMenuWheel: false,
+    hasLedIndicators: true,
+  },
+  DATAKOM: {
+    id: 'DATAKOM',
+    name: 'Compatible with Datakom Controllers',
+    shortName: 'Datakom Type',
+    color: '#0891B2', // Cyan
+    accentColor: '#06B6D4',
+    displayColor: '#0c1821',
+    textColor: '#22d3ee',
+    compatibleWith: ['DKG-109', 'DKG-307', 'DKG-509', 'D-500', 'D-700'],
+    displayType: 'lcd',
+    buttonLayout: 'standard',
+    hasMenuWheel: true,
+    hasLedIndicators: true,
+  },
+  LOVATO: {
+    id: 'LOVATO',
+    name: 'Compatible with Lovato Controllers',
+    shortName: 'Lovato Type',
+    color: '#EA580C', // Orange
+    accentColor: '#F97316',
+    displayColor: '#1a1a1a',
+    textColor: '#fb923c',
+    compatibleWith: ['RGK600', 'RGK800', 'ATL600', 'ATL900'],
+    displayType: 'graphic',
+    buttonLayout: 'horizontal',
+    hasMenuWheel: false,
+    hasLedIndicators: true,
+  },
+  SIEMENS: {
+    id: 'SIEMENS',
+    name: 'Compatible with Siemens Controllers',
+    shortName: 'Siemens Type',
+    color: '#009999', // Teal
+    accentColor: '#14B8A6',
+    displayColor: '#0f1419',
+    textColor: '#5eead4',
+    compatibleWith: ['SICAM A8000', 'SIPROTEC 7SJ', 'SIPROTEC 7UT', 'SENTRON PAC'],
+    displayType: 'graphic',
+    buttonLayout: 'grid',
+    hasMenuWheel: true,
+    hasLedIndicators: true,
+  },
+  ENKO: {
+    id: 'ENKO',
+    name: 'Compatible with ENKO Controllers',
+    shortName: 'ENKO Type',
+    color: '#7C3AED', // Violet
+    accentColor: '#A78BFA',
+    displayColor: '#1e1b2e',
+    textColor: '#c4b5fd',
+    compatibleWith: ['GCU-100', 'GCU-300', 'GCU-500', 'AMF-100', 'SYNC-100'],
+    displayType: 'lcd',
+    buttonLayout: 'vertical',
     hasMenuWheel: false,
     hasLedIndicators: true,
   },

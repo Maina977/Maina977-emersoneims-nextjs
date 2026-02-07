@@ -2,9 +2,14 @@
 
 /**
  * Wiring Diagrams Component
- * Interactive, labeled wiring diagrams for all 5 controller types
+ * Interactive, labeled wiring diagrams compatible with 9 controller types
  * Shows numbered connections, fuses, breakers, relays, starters, chargers
  * Includes programming guidance without laptop
+ *
+ * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
+ * It is NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
+ * All brand names mentioned are trademarks of their respective owners.
+ * "Compatible with" indicates the tool works with these controller types.
  */
 
 import { useState } from 'react';
@@ -32,10 +37,10 @@ interface Component {
   troubleshooting: string[];
 }
 
-// Controller Wiring Configurations
+// Controller Wiring Configurations - Compatible with 9 Controller Types
 const WIRING_CONFIGS = {
-  TYPE_A: {
-    name: 'Series A Controller Wiring',
+  DSE: {
+    name: 'Compatible with DSE Controllers',
     color: '#1E40AF',
     components: [
       {
@@ -161,8 +166,8 @@ const WIRING_CONFIGS = {
       },
     ],
   },
-  TYPE_B: {
-    name: 'Series B Controller Wiring',
+  COMAP: {
+    name: 'Compatible with ComAp Controllers',
     color: '#DC2626',
     components: [
       {
@@ -204,8 +209,8 @@ const WIRING_CONFIGS = {
       },
     ],
   },
-  TYPE_C: {
-    name: 'Series C Controller Wiring',
+  WOODWARD: {
+    name: 'Compatible with Woodward Controllers',
     color: '#059669',
     components: [
       {
@@ -235,9 +240,9 @@ const WIRING_CONFIGS = {
       },
     ],
   },
-  TYPE_D: {
-    name: 'Series D Controller Wiring',
-    color: '#EA580C',
+  SMARTGEN: {
+    name: 'Compatible with SmartGen Controllers',
+    color: '#7C3AED',
     components: [
       {
         id: 'BATT',
@@ -266,8 +271,8 @@ const WIRING_CONFIGS = {
       },
     ],
   },
-  TYPE_E: {
-    name: 'Series E Controller Wiring',
+  POWERWIZARD: {
+    name: 'Compatible with PowerWizard Controllers',
     color: '#CA8A04',
     components: [
       {
@@ -296,12 +301,251 @@ const WIRING_CONFIGS = {
       },
     ],
   },
+  DATAKOM: {
+    name: 'Compatible with Datakom Controllers',
+    color: '#0891B2',
+    components: [
+      {
+        id: 'BATT',
+        name: 'DC Power Supply',
+        type: 'power' as const,
+        rating: '8-35V DC',
+        terminals: [
+          { id: 'V+', label: 'V+', description: 'Positive Supply', wireColor: 'RED', wireGauge: '12 AWG', maxCurrent: '20A', connectedTo: 'Battery positive', function: 'Main power input' },
+          { id: 'V-', label: 'V-', description: 'Negative/Ground', wireColor: 'BLACK', wireGauge: '12 AWG', maxCurrent: '20A', connectedTo: 'Battery negative', function: 'Ground reference' },
+        ],
+        location: 'Terminals 1-2',
+        troubleshooting: ['Operating range 8-35V DC', 'Check fuse F1 (10A) if no power', 'Verify polarity before connecting'],
+      },
+      {
+        id: 'ENGINE',
+        name: 'Engine Control',
+        type: 'actuator' as const,
+        rating: '12/24V DC, 10A',
+        terminals: [
+          { id: 'FUEL', label: 'FUEL', description: 'Fuel Solenoid', wireColor: 'ORANGE', wireGauge: '14 AWG', maxCurrent: '8A', connectedTo: 'Fuel solenoid', function: 'Fuel shutoff control' },
+          { id: 'START', label: 'START', description: 'Starter Output', wireColor: 'PURPLE', wireGauge: '12 AWG', maxCurrent: '10A', connectedTo: 'Starter relay', function: 'Cranking motor control' },
+          { id: 'PREHEAT', label: 'PREHEAT', description: 'Glow Plugs', wireColor: 'BROWN', wireGauge: '12 AWG', maxCurrent: '15A', connectedTo: 'Glow plug relay', function: 'Cold start assist' },
+        ],
+        location: 'Terminals 3-5',
+        troubleshooting: ['Check output voltage during operation', 'Verify relay coil resistance', 'Test with manual override if available'],
+      },
+      {
+        id: 'SENSORS',
+        name: 'Analog Sensors',
+        type: 'sensor' as const,
+        rating: 'Various',
+        terminals: [
+          { id: 'OIL_P', label: 'OIL-P', description: 'Oil Pressure', wireColor: 'BLUE', wireGauge: '18 AWG', connectedTo: 'Oil pressure sender', function: 'Oil pressure monitoring' },
+          { id: 'TEMP', label: 'TEMP', description: 'Coolant Temperature', wireColor: 'GREEN', wireGauge: '18 AWG', connectedTo: 'Temperature sender', function: 'Temperature monitoring' },
+          { id: 'FUEL_LVL', label: 'FUEL-L', description: 'Fuel Level', wireColor: 'YELLOW', wireGauge: '18 AWG', connectedTo: 'Fuel sender', function: 'Fuel level indication' },
+        ],
+        location: 'Terminals 6-8',
+        troubleshooting: ['Check sender resistance ranges', 'Verify ground connections', 'Test with known good sender'],
+      },
+      {
+        id: 'MODBUS',
+        name: 'Modbus RTU Communication',
+        type: 'signal' as const,
+        rating: '9600-38400 baud',
+        terminals: [
+          { id: 'RS485_A', label: 'A+', description: 'RS485 A', wireColor: 'GREEN', wireGauge: '22 AWG', connectedTo: 'Modbus network A', function: 'Data positive' },
+          { id: 'RS485_B', label: 'B-', description: 'RS485 B', wireColor: 'YELLOW', wireGauge: '22 AWG', connectedTo: 'Modbus network B', function: 'Data negative' },
+          { id: 'RS485_GND', label: 'GND', description: 'Signal Ground', wireColor: 'BLACK', wireGauge: '22 AWG', connectedTo: 'Shield ground', function: 'Reference ground' },
+        ],
+        location: 'Communication Port',
+        troubleshooting: ['Use shielded twisted pair cable', 'Check termination resistors (120Ω)', 'Verify address settings'],
+      },
+    ],
+  },
+  LOVATO: {
+    name: 'Compatible with Lovato Controllers',
+    color: '#DC2626',
+    components: [
+      {
+        id: 'BATT',
+        name: 'Power Supply',
+        type: 'power' as const,
+        rating: '12/24V DC',
+        terminals: [
+          { id: 'PWR+', label: '+Vdc', description: 'Positive Input', wireColor: 'RED', wireGauge: '12 AWG', maxCurrent: '15A', connectedTo: 'Battery positive via fuse', function: 'Controller power' },
+          { id: 'PWR-', label: '-Vdc', description: 'Negative Input', wireColor: 'BLACK', wireGauge: '12 AWG', maxCurrent: '15A', connectedTo: 'Battery negative', function: 'Power return' },
+        ],
+        location: 'Terminals X1-X2',
+        troubleshooting: ['Check 10A inline fuse', 'Measure voltage at terminals', 'Verify no voltage drop under load'],
+      },
+      {
+        id: 'GEN_SENSE',
+        name: 'Generator Voltage Sensing',
+        type: 'signal' as const,
+        rating: '0-500V AC',
+        terminals: [
+          { id: 'L1', label: 'L1', description: 'Phase 1', wireColor: 'RED', wireGauge: '16 AWG', connectedTo: 'Generator L1', function: 'Voltage sensing phase 1' },
+          { id: 'L2', label: 'L2', description: 'Phase 2', wireColor: 'YELLOW', wireGauge: '16 AWG', connectedTo: 'Generator L2', function: 'Voltage sensing phase 2' },
+          { id: 'L3', label: 'L3', description: 'Phase 3', wireColor: 'BLUE', wireGauge: '16 AWG', connectedTo: 'Generator L3', function: 'Voltage sensing phase 3' },
+          { id: 'N', label: 'N', description: 'Neutral', wireColor: 'BLACK', wireGauge: '16 AWG', connectedTo: 'Generator Neutral', function: 'Neutral reference' },
+        ],
+        location: 'Terminals Y1-Y4',
+        troubleshooting: ['Check PT connections if using transformers', 'Verify phase sequence', 'Measure phase-to-phase and phase-to-neutral'],
+      },
+      {
+        id: 'OUTPUTS',
+        name: 'Control Outputs',
+        type: 'relay' as const,
+        rating: '5A @ 250V AC',
+        terminals: [
+          { id: 'K1', label: 'K1', description: 'Fuel/Run', wireColor: 'ORANGE', wireGauge: '14 AWG', maxCurrent: '5A', connectedTo: 'Fuel solenoid', function: 'Engine run control' },
+          { id: 'K2', label: 'K2', description: 'Start', wireColor: 'PURPLE', wireGauge: '14 AWG', maxCurrent: '5A', connectedTo: 'Starter relay', function: 'Crank control' },
+          { id: 'K3', label: 'K3', description: 'Alarm', wireColor: 'WHITE', wireGauge: '14 AWG', maxCurrent: '5A', connectedTo: 'Alarm horn/beacon', function: 'Common alarm output' },
+        ],
+        location: 'Relay Block K1-K3',
+        troubleshooting: ['Check relay click during operation', 'Verify contact ratings', 'Test continuity when energized'],
+      },
+      {
+        id: 'USB',
+        name: 'USB Configuration Port',
+        type: 'signal' as const,
+        rating: 'USB 2.0',
+        terminals: [
+          { id: 'USB', label: 'USB', description: 'USB Port', wireColor: 'N/A', wireGauge: 'N/A', connectedTo: 'PC/Laptop', function: 'Configuration and monitoring' },
+        ],
+        location: 'Front Panel',
+        troubleshooting: ['Use Lovato software for configuration', 'Check USB driver installation', 'Try different USB cable if no connection'],
+      },
+    ],
+  },
+  SIEMENS: {
+    name: 'Compatible with Siemens Controllers',
+    color: '#0EA5E9',
+    components: [
+      {
+        id: 'BATT',
+        name: 'DC Power Supply',
+        type: 'power' as const,
+        rating: '18-32V DC',
+        terminals: [
+          { id: 'L+', label: 'L+', description: 'Power Positive', wireColor: 'RED', wireGauge: '10 AWG', maxCurrent: '25A', connectedTo: 'Battery positive', function: 'Main DC supply' },
+          { id: 'M', label: 'M', description: 'Power Ground', wireColor: 'BLACK', wireGauge: '10 AWG', maxCurrent: '25A', connectedTo: 'Battery negative', function: 'System ground' },
+          { id: 'PE', label: 'PE', description: 'Protective Earth', wireColor: 'GREEN/YELLOW', wireGauge: '10 AWG', connectedTo: 'Chassis ground', function: 'Safety earth' },
+        ],
+        location: 'Terminal Block X1',
+        troubleshooting: ['Operating voltage 18-32V DC nominal', 'Check PE connection for safety', 'Verify no ground faults'],
+      },
+      {
+        id: 'DIGITAL_IN',
+        name: 'Digital Inputs',
+        type: 'sensor' as const,
+        rating: '24V DC',
+        terminals: [
+          { id: 'DI1', label: 'DI1', description: 'Emergency Stop', wireColor: 'RED', wireGauge: '18 AWG', connectedTo: 'E-Stop circuit', function: 'Emergency shutdown input' },
+          { id: 'DI2', label: 'DI2', description: 'Remote Start', wireColor: 'WHITE', wireGauge: '18 AWG', connectedTo: 'Remote start contact', function: 'External start command' },
+          { id: 'DI3', label: 'DI3', description: 'Load Request', wireColor: 'BROWN', wireGauge: '18 AWG', connectedTo: 'ATS/Load signal', function: 'Load demand input' },
+          { id: 'DI4', label: 'DI4', description: 'Configurable', wireColor: 'GREY', wireGauge: '18 AWG', connectedTo: 'User defined', function: 'Programmable input' },
+        ],
+        location: 'Terminal Block X2',
+        troubleshooting: ['Inputs require 24V DC signal', 'Check for open circuit on NC inputs', 'Verify input LED indicators'],
+      },
+      {
+        id: 'PROFINET',
+        name: 'PROFINET Interface',
+        type: 'signal' as const,
+        rating: '100 Mbps',
+        terminals: [
+          { id: 'PN1', label: 'P1', description: 'PROFINET Port 1', wireColor: 'N/A', wireGauge: 'CAT5e', connectedTo: 'PLC/SCADA', function: 'Industrial Ethernet' },
+          { id: 'PN2', label: 'P2', description: 'PROFINET Port 2', wireColor: 'N/A', wireGauge: 'CAT5e', connectedTo: 'Network switch', function: 'Daisy chain connection' },
+        ],
+        location: 'RJ45 Ports',
+        troubleshooting: ['Use shielded CAT5e or better', 'Check link/activity LEDs', 'Verify IP address configuration'],
+      },
+      {
+        id: 'ANALOG_OUT',
+        name: 'Analog Outputs',
+        type: 'actuator' as const,
+        rating: '0-10V / 4-20mA',
+        terminals: [
+          { id: 'AO1', label: 'AO1', description: 'Speed Setpoint', wireColor: 'WHITE', wireGauge: '18 AWG', connectedTo: 'Governor', function: 'Speed control output' },
+          { id: 'AO2', label: 'AO2', description: 'Voltage Setpoint', wireColor: 'YELLOW', wireGauge: '18 AWG', connectedTo: 'AVR', function: 'Voltage control output' },
+        ],
+        location: 'Terminal Block X3',
+        troubleshooting: ['Configure for voltage or current mode', 'Check load impedance', 'Calibrate output range'],
+      },
+    ],
+  },
+  ENKO: {
+    name: 'Compatible with ENKO Controllers',
+    color: '#16A34A',
+    components: [
+      {
+        id: 'BATT',
+        name: 'Battery Power',
+        type: 'power' as const,
+        rating: '9-36V DC',
+        terminals: [
+          { id: 'BAT+', label: 'BAT+', description: 'Battery Positive', wireColor: 'RED', wireGauge: '12 AWG', maxCurrent: '20A', connectedTo: 'Battery +12/24V', function: 'Power supply input' },
+          { id: 'BAT-', label: 'BAT-', description: 'Battery Negative', wireColor: 'BLACK', wireGauge: '12 AWG', maxCurrent: '20A', connectedTo: 'Battery negative', function: 'Ground return' },
+        ],
+        location: 'Terminals 1-2',
+        troubleshooting: ['Wide input range 9-36V DC', 'Internal protection against reverse polarity', 'Check main fuse rating'],
+      },
+      {
+        id: 'ENGINE_CTRL',
+        name: 'Engine Control',
+        type: 'actuator' as const,
+        rating: '8A max per output',
+        terminals: [
+          { id: 'FUEL', label: 'FUEL', description: 'Fuel Solenoid', wireColor: 'ORANGE', wireGauge: '14 AWG', maxCurrent: '8A', connectedTo: 'Fuel shutoff valve', function: 'Engine run control' },
+          { id: 'CRANK', label: 'CRANK', description: 'Starter Motor', wireColor: 'PURPLE', wireGauge: '14 AWG', maxCurrent: '8A', connectedTo: 'Starter solenoid', function: 'Engine cranking' },
+          { id: 'GLOW', label: 'GLOW', description: 'Preheat', wireColor: 'BROWN', wireGauge: '14 AWG', maxCurrent: '8A', connectedTo: 'Glow plug relay', function: 'Cold start preheat' },
+        ],
+        location: 'Terminals 3-5',
+        troubleshooting: ['Outputs are high-side switches', 'Check for short circuits if fuse blows', 'Verify output timing in config'],
+      },
+      {
+        id: 'SENSORS',
+        name: 'Engine Sensors',
+        type: 'sensor' as const,
+        rating: '0-5V / Resistive',
+        terminals: [
+          { id: 'OIL', label: 'OIL', description: 'Oil Pressure', wireColor: 'BLUE', wireGauge: '18 AWG', connectedTo: 'Oil pressure sender', function: 'Oil pressure input' },
+          { id: 'COOL', label: 'COOL', description: 'Coolant Temp', wireColor: 'GREEN', wireGauge: '18 AWG', connectedTo: 'Temp sender', function: 'Temperature input' },
+          { id: 'RPM', label: 'RPM', description: 'Speed Pickup', wireColor: 'WHITE', wireGauge: '18 AWG', connectedTo: 'MPU/W terminal', function: 'Engine speed input' },
+          { id: 'SGND', label: 'SGND', description: 'Sensor Ground', wireColor: 'BLACK', wireGauge: '18 AWG', connectedTo: 'Common ground', function: 'Sensor reference' },
+        ],
+        location: 'Terminals 6-9',
+        troubleshooting: ['Configure sensor type in settings', 'Check sender resistance values', 'Verify clean ground connection'],
+      },
+      {
+        id: 'GEN_VOLT',
+        name: 'Generator Sensing',
+        type: 'signal' as const,
+        rating: '0-300V AC',
+        terminals: [
+          { id: 'GEN_L', label: 'GEN-L', description: 'Generator Line', wireColor: 'RED', wireGauge: '16 AWG', connectedTo: 'Generator output', function: 'AC voltage sensing' },
+          { id: 'GEN_N', label: 'GEN-N', description: 'Generator Neutral', wireColor: 'BLACK', wireGauge: '16 AWG', connectedTo: 'Generator neutral', function: 'Neutral reference' },
+        ],
+        location: 'Terminals 10-11',
+        troubleshooting: ['Connect after generator circuit breaker', 'Verify voltage matches controller rating', 'Check for voltage fluctuations'],
+      },
+      {
+        id: 'GSM',
+        name: 'GSM/GPRS Module',
+        type: 'signal' as const,
+        rating: '2G/3G',
+        terminals: [
+          { id: 'ANT', label: 'ANT', description: 'Antenna', wireColor: 'N/A', wireGauge: 'Coax', connectedTo: 'External antenna', function: 'Cellular connection' },
+          { id: 'SIM', label: 'SIM', description: 'SIM Card Slot', wireColor: 'N/A', wireGauge: 'N/A', connectedTo: 'SIM card', function: 'Network authentication' },
+        ],
+        location: 'Internal Module',
+        troubleshooting: ['Check SIM card is inserted correctly', 'Verify antenna connection', 'Check signal strength indicator'],
+      },
+    ],
+  },
 };
 
-// Programming Instructions
+// Programming Instructions - Compatible with 9 Controller Types
 const PROGRAMMING_INSTRUCTIONS = {
-  TYPE_A: {
-    title: 'Series A Controller Programming (Without Laptop)',
+  DSE: {
+    title: 'Programming Guide - Compatible with DSE Controllers',
     steps: [
       {
         step: 1,
@@ -346,8 +590,8 @@ const PROGRAMMING_INSTRUCTIONS = {
       { param: 'P031', name: 'Under Speed Trip', range: '1000-2000 RPM', default: '1350' },
     ],
   },
-  TYPE_B: {
-    title: 'Series B Controller Programming (Without Laptop)',
+  COMAP: {
+    title: 'Programming Guide - Compatible with ComAp Controllers',
     steps: [
       {
         step: 1,
@@ -389,8 +633,8 @@ const PROGRAMMING_INSTRUCTIONS = {
       { param: 'Prot.CoolTemp', name: 'Coolant Temp Limit', range: '0-150°C', default: '98' },
     ],
   },
-  TYPE_C: {
-    title: 'Series C Controller Programming (Without Laptop)',
+  WOODWARD: {
+    title: 'Programming Guide - Compatible with Woodward Controllers',
     steps: [
       {
         step: 1,
@@ -431,8 +675,8 @@ const PROGRAMMING_INSTRUCTIONS = {
       { param: '04.01', name: 'Nominal Frequency', range: '45-65 Hz', default: '50' },
     ],
   },
-  TYPE_D: {
-    title: 'Series D Controller Programming (Without Laptop)',
+  SMARTGEN: {
+    title: 'Programming Guide - Compatible with SmartGen Controllers',
     steps: [
       {
         step: 1,
@@ -467,8 +711,8 @@ const PROGRAMMING_INSTRUCTIONS = {
       { param: 'PRO-010', name: 'High Temperature', range: '50-150°C', default: '100' },
     ],
   },
-  TYPE_E: {
-    title: 'Series E Controller Programming (Without Laptop)',
+  POWERWIZARD: {
+    title: 'Programming Guide - Compatible with PowerWizard Controllers',
     steps: [
       {
         step: 1,
@@ -507,6 +751,152 @@ const PROGRAMMING_INSTRUCTIONS = {
       { param: 'ENG020', name: 'Cool Down Time', range: '0-900 sec', default: '120' },
       { param: 'PRO001', name: 'Low Oil Pressure', range: '0-150 PSI', default: '15' },
       { param: 'PRO010', name: 'High Coolant Temp', range: '100-250°F', default: '210' },
+    ],
+  },
+  DATAKOM: {
+    title: 'Programming Guide - Compatible with Datakom Controllers',
+    steps: [
+      {
+        step: 1,
+        title: 'Enter Settings Mode',
+        instructions: 'Press MENU button. Navigate to "Settings" and press ENTER. Default password: 0000.',
+        keySequence: ['MENU', 'Settings', '0000'],
+      },
+      {
+        step: 2,
+        title: 'Select Parameter Group',
+        instructions: 'Groups: Engine, Generator, Protection, Timers, Modbus, Display.',
+        keySequence: ['▲/▼', 'ENTER'],
+      },
+      {
+        step: 3,
+        title: 'Edit Parameter',
+        instructions: 'Navigate to parameter. Press ENTER to edit. Use +/- to change value.',
+        keySequence: ['▲/▼', 'ENTER', '+/-'],
+      },
+      {
+        step: 4,
+        title: 'Confirm and Save',
+        instructions: 'Press ENTER to confirm. Press ESC to return. Changes save automatically.',
+        keySequence: ['ENTER', 'ESC'],
+      },
+    ],
+    commonParameters: [
+      { param: 'E01', name: 'Crank Time', range: '1-30s', default: '10' },
+      { param: 'E02', name: 'Crank Rest', range: '5-60s', default: '10' },
+      { param: 'E03', name: 'Crank Attempts', range: '1-5', default: '3' },
+      { param: 'P01', name: 'Low Oil Pressure', range: '0-10 bar', default: '0.8' },
+      { param: 'P02', name: 'High Coolant Temp', range: '50-120°C', default: '98' },
+      { param: 'T01', name: 'Warm Up Time', range: '0-600s', default: '30' },
+    ],
+  },
+  LOVATO: {
+    title: 'Programming Guide - Compatible with Lovato Controllers',
+    steps: [
+      {
+        step: 1,
+        title: 'Access Programming Mode',
+        instructions: 'Press PROG button. Enter access code (default: 1111) using arrow keys.',
+        keySequence: ['PROG', '1111'],
+      },
+      {
+        step: 2,
+        title: 'Navigate Menu Structure',
+        instructions: 'Use UP/DOWN to navigate menus. Press OK to enter submenu.',
+        keySequence: ['▲/▼', 'OK'],
+      },
+      {
+        step: 3,
+        title: 'Modify Parameters',
+        instructions: 'Select parameter and press OK. Use LEFT/RIGHT to change digits. Press OK to confirm.',
+        keySequence: ['OK', '◄/►', 'OK'],
+      },
+      {
+        step: 4,
+        title: 'Exit and Save',
+        instructions: 'Press PROG to exit. Select "Save" when prompted. Controller stores settings.',
+        keySequence: ['PROG', 'Save'],
+      },
+    ],
+    commonParameters: [
+      { param: 'Par.01', name: 'Crank Duration', range: '1-60s', default: '12' },
+      { param: 'Par.02', name: 'Pause Between Cranks', range: '5-120s', default: '15' },
+      { param: 'Par.03', name: 'Max Crank Attempts', range: '1-10', default: '3' },
+      { param: 'Par.10', name: 'Oil Pressure Limit', range: '0-10 bar', default: '0.8' },
+      { param: 'Par.11', name: 'Temperature Limit', range: '50-120°C', default: '95' },
+    ],
+  },
+  SIEMENS: {
+    title: 'Programming Guide - Compatible with Siemens Controllers',
+    steps: [
+      {
+        step: 1,
+        title: 'Enter Service Mode',
+        instructions: 'Press and hold ESC + ENTER for 5 seconds. Enter service password (default: 9999).',
+        keySequence: ['ESC + ENTER', 'HOLD 5s', '9999'],
+      },
+      {
+        step: 2,
+        title: 'Navigate to Parameters',
+        instructions: 'Select "Parameters" from service menu. Navigate using F1-F4 soft keys.',
+        keySequence: ['Parameters', 'F1-F4'],
+      },
+      {
+        step: 3,
+        title: 'Select and Edit',
+        instructions: 'Navigate to parameter. Press F3 to edit. Use arrow keys to adjust value.',
+        keySequence: ['▲/▼', 'F3', '▲/▼'],
+      },
+      {
+        step: 4,
+        title: 'Confirm Changes',
+        instructions: 'Press F4 to confirm. Press ESC repeatedly to exit. Cycle power to apply.',
+        keySequence: ['F4', 'ESC', 'Power Cycle'],
+      },
+    ],
+    commonParameters: [
+      { param: 'r0010', name: 'Crank Time', range: '1-30s', default: '10' },
+      { param: 'r0011', name: 'Crank Pause', range: '5-60s', default: '15' },
+      { param: 'r0020', name: 'Oil Pressure Alarm', range: '0-1000 kPa', default: '80' },
+      { param: 'r0021', name: 'Temperature Alarm', range: '50-150°C', default: '98' },
+      { param: 'r0030', name: 'Overspeed Trip', range: '1500-2000 RPM', default: '1650' },
+    ],
+  },
+  ENKO: {
+    title: 'Programming Guide - Compatible with ENKO Controllers',
+    steps: [
+      {
+        step: 1,
+        title: 'Enter Setup Menu',
+        instructions: 'Press MENU for 3 seconds. Display shows "SETUP". Enter PIN (default: 1234).',
+        keySequence: ['MENU (HOLD 3s)', '1234'],
+      },
+      {
+        step: 2,
+        title: 'Browse Parameters',
+        instructions: 'Use arrow keys to navigate parameter groups. Press OK to enter group.',
+        keySequence: ['▲/▼', 'OK'],
+      },
+      {
+        step: 3,
+        title: 'Change Values',
+        instructions: 'Select parameter. Press OK to edit. Use +/- or arrows to change. Press OK to save.',
+        keySequence: ['OK', '+/-', 'OK'],
+      },
+      {
+        step: 4,
+        title: 'Exit Setup',
+        instructions: 'Press MENU to exit. Select "Save All" when prompted. Wait for confirmation.',
+        keySequence: ['MENU', 'Save All'],
+      },
+    ],
+    commonParameters: [
+      { param: 'CFG-01', name: 'Crank Duration', range: '1-30s', default: '10' },
+      { param: 'CFG-02', name: 'Crank Rest Period', range: '5-60s', default: '12' },
+      { param: 'CFG-03', name: 'Start Attempts', range: '1-5', default: '3' },
+      { param: 'PRT-01', name: 'Low Oil Pressure', range: '0-10 bar', default: '0.8' },
+      { param: 'PRT-02', name: 'High Temperature', range: '50-120°C', default: '95' },
+      { param: 'TMR-01', name: 'Warm Up Timer', range: '0-600s', default: '30' },
     ],
   },
 };

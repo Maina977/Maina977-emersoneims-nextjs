@@ -1,9 +1,13 @@
 'use client';
 
 /**
- * Generator Oracle Showcase Section - WORLD'S MOST ADVANCED
- * Premium promotional section highlighting market dominance
- * Showcases world-first features that NO competitor has
+ * Generator Oracle Showcase Section
+ * Premium promotional section highlighting key features
+ * Showcases advanced diagnostic capabilities
+ *
+ * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
+ * NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
+ * All brand names are trademarks of their respective owners.
  */
 
 import { useState, useEffect } from 'react';
@@ -11,16 +15,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import OracleDemoVideo from '@/components/generator-oracle/OracleDemoVideo';
 
-// WORLD-FIRST Features - No competitor has these
-const WORLD_FIRST_FEATURES = [
+// Advanced Features
+const ADVANCED_FEATURES = [
   {
     icon: '🤖',
     title: 'AI Predictive Failure',
-    description: 'Predicts component failures BEFORE they happen',
+    description: 'Predicts component failures before they happen',
     stats: 'Hours-to-failure prediction',
     color: '#06b6d4',
-    competitorStatus: 'DOES NOT EXIST in market',
-    priceEquivalent: '$50,000+ SCADA systems',
+    benefit: 'Reduce unexpected downtime',
   },
   {
     icon: '🎮',
@@ -28,8 +31,7 @@ const WORLD_FIRST_FEATURES = [
     description: 'Animated engine with Exterior/Cutaway/X-Ray views',
     stats: 'Real-time component tracking',
     color: '#8b5cf6',
-    competitorStatus: 'WORLD FIRST',
-    priceEquivalent: 'Never built before',
+    benefit: 'Visual troubleshooting made easy',
   },
   {
     icon: '🌡️',
@@ -37,26 +39,23 @@ const WORLD_FIRST_FEATURES = [
     description: 'Color-coded heat zones & temperature gradients',
     stats: 'Hotspot identification',
     color: '#ef4444',
-    competitorStatus: 'DOES NOT EXIST',
-    priceEquivalent: '$10,000+ thermal cameras',
+    benefit: 'Prevent overheating issues',
   },
   {
     icon: '📊',
-    title: '64-Band FFT Vibration',
+    title: 'Vibration Analysis',
     description: 'Real-time frequency spectrum analysis',
     stats: 'Bearing wear detection',
     color: '#22c55e',
-    competitorStatus: 'WORLD FIRST',
-    priceEquivalent: '$5,000-15,000 analyzers',
+    benefit: 'Early mechanical fault detection',
   },
   {
     icon: '🔮',
-    title: 'Smart Parts AI',
+    title: 'Smart Parts Finder',
     description: 'Intelligent parts recommendations with pricing',
     stats: 'Priority-based suggestions',
     color: '#f59e0b',
-    competitorStatus: 'DOES NOT EXIST',
-    priceEquivalent: 'Never built before',
+    benefit: 'Find the right part quickly',
   },
   {
     icon: '📐',
@@ -64,37 +63,49 @@ const WORLD_FIRST_FEATURES = [
     description: 'IEEE/IEC animated wiring diagrams',
     stats: '21 controllers, 7 circuit types',
     color: '#3b82f6',
-    competitorStatus: 'WORLD FIRST',
-    priceEquivalent: 'Static PDFs only elsewhere',
+    benefit: 'Clear electrical reference',
   },
 ];
 
 // Core Features
 const CORE_FEATURES = [
-  { icon: '🔍', stat: '90,000+', label: 'Fault Codes', desc: 'All 5 major brands' },
-  { icon: '⚡', stat: '21', label: 'Controllers', desc: 'Complete coverage' },
+  { icon: '🔍', stat: '90,000+', label: 'Fault Codes', desc: 'Comprehensive database' },
+  { icon: '⚡', stat: '9', label: 'Controller Types', desc: 'Wide compatibility' },
   { icon: '🔄', stat: '100%', label: 'Reset Pathways', desc: 'Step-by-step guides' },
   { icon: '📴', stat: '100%', label: 'Offline Ready', desc: 'No internet required' },
   { icon: '🌍', stat: '7+', label: 'Languages', desc: 'Including Arabic RTL' },
   { icon: '📱', stat: 'PWA', label: 'Install as App', desc: 'Phone, tablet, desktop' },
 ];
 
-// Competitor Comparison
-const COMPETITOR_COMPARISON = [
-  { name: 'DSE Config Suite', price: '$500+', brands: '1', codes: '~2,000', ai: false, offline: false },
-  { name: 'ComAp InteliConfig', price: '$800+', brands: '1', codes: '~1,500', ai: false, offline: false },
-  { name: 'Woodward ToolKit', price: '$1,200+', brands: '1', codes: '~1,000', ai: false, offline: false },
-  { name: 'CAT ET (PowerWizard)', price: '$3,000+/yr', brands: '1', codes: '~2,500', ai: false, offline: false },
-  { name: 'GENERATOR ORACLE', price: 'KES 5,000', brands: '5', codes: '90,000+', ai: true, offline: true, highlight: true },
+// Feature Highlights
+const FEATURE_HIGHLIGHTS = [
+  { feature: 'Multi-type compatibility', description: 'Compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens, ENKO type controllers' },
+  { feature: 'AI-powered diagnostics', description: 'Intelligent fault analysis and recommendations' },
+  { feature: 'Offline capability', description: 'Works without internet connection' },
+  { feature: 'Affordable pricing', description: 'One-time payment, no subscription fees' },
 ];
 
-// Compatible controller models
+// Compatible controller types (50+ models from 9 types)
+// DISCLAIMER: Not affiliated with any manufacturer
 const COMPATIBLE_CONTROLLERS = [
+  // Compatible with DSE type
   'DSE 7320 MKII', 'DSE 7310 MKII', 'DSE 6020 MKII', 'DSE 6120 MKII', 'DSE 4520', 'DSE 8610 MKII', 'DSE 8660 MKII',
+  // Compatible with ComAp type
   'InteliLite NT', 'InteliGen NT', 'InteliSys NT', 'InteliMains NT',
+  // Compatible with Woodward type
   'easYgen 3000', 'easYgen 2000', 'DTSC-200',
+  // Compatible with SmartGen type
   'HGM6120', 'HGM7220', 'HGM9320', 'HGM9510',
+  // Compatible with PowerWizard type
   'PowerWizard 1.0', 'PowerWizard 1.1', 'PowerWizard 2.0',
+  // Compatible with Datakom type
+  'DKG-109', 'DKG-307', 'DKG-509', 'D-500', 'D-700',
+  // Compatible with Lovato type
+  'RGK600', 'RGK800', 'ATL600', 'ATL900',
+  // Compatible with Siemens type
+  'SICAM A8000', 'SIPROTEC 7SJ', 'SIPROTEC 7UT', 'SENTRON PAC',
+  // Compatible with ENKO type
+  'GCU-100', 'GCU-300', 'GCU-500', 'AMF-100', 'SYNC-100',
 ];
 
 // Animated Counter Component
@@ -124,8 +135,8 @@ function AnimatedCounter({ value, suffix = '' }: { value: string; suffix?: strin
   return <span>{displayValue}</span>;
 }
 
-// World First Feature Card
-function WorldFirstCard({ feature, index }: { feature: typeof WORLD_FIRST_FEATURES[0]; index: number }) {
+// Feature Card
+function FeatureCard({ feature, index }: { feature: typeof ADVANCED_FEATURES[0]; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -143,13 +154,6 @@ function WorldFirstCard({ feature, index }: { feature: typeof WORLD_FIRST_FEATUR
       <div className="relative bg-slate-900/80 border border-slate-700 rounded-2xl p-6 hover:border-opacity-50 transition-all duration-300 h-full"
         style={{ borderColor: `${feature.color}50` }}
       >
-        {/* World First Badge */}
-        <div className="absolute -top-3 -right-3">
-          <span className="px-2 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-black text-[10px] font-black uppercase rounded-full shadow-lg">
-            World First
-          </span>
-        </div>
-
         {/* Icon */}
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4"
@@ -163,15 +167,11 @@ function WorldFirstCard({ feature, index }: { feature: typeof WORLD_FIRST_FEATUR
         <p className="text-slate-400 text-sm mb-3">{feature.description}</p>
         <p className="text-sm font-medium mb-4" style={{ color: feature.color }}>{feature.stats}</p>
 
-        {/* Competitor Status */}
+        {/* Benefit */}
         <div className="pt-4 border-t border-slate-800">
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-red-400">Competitors:</span>
-            <span className="text-slate-500">{feature.competitorStatus}</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs mt-1">
-            <span className="text-amber-400">Value:</span>
-            <span className="text-slate-500">{feature.priceEquivalent}</span>
+            <span className="text-green-400">Benefit:</span>
+            <span className="text-slate-400">{feature.benefit}</span>
           </div>
         </div>
       </div>
@@ -212,18 +212,17 @@ export default function GeneratorOracleShowcase() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          {/* Dominance Badge */}
+          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             className="inline-flex items-center gap-3 px-6 py-3 mb-8 rounded-full bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-amber-500/20 border border-amber-500/50"
           >
-            <span className="text-2xl">🏆</span>
+            <span className="text-2xl">🔮</span>
             <span className="text-amber-400 text-lg font-black uppercase tracking-wider">
-              World's Most Advanced
+              Professional Diagnostic Tool
             </span>
-            <span className="text-2xl">🏆</span>
           </motion.div>
 
           <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white mb-6">
@@ -233,11 +232,11 @@ export default function GeneratorOracleShowcase() {
           </h2>
 
           <p className="text-2xl sm:text-3xl text-slate-300 max-w-4xl mx-auto mb-6 font-light">
-            5-10 Years Ahead of Any Competitor
+            Complete Generator Diagnostic Suite
           </p>
 
           <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-            The only diagnostic tool with <span className="text-cyan-400 font-bold">AI Predictive Failure</span>,{' '}
+            A comprehensive diagnostic tool with <span className="text-cyan-400 font-bold">AI-Powered Analysis</span>,{' '}
             <span className="text-purple-400 font-bold">3D Visualization</span>,{' '}
             <span className="text-green-400 font-bold">Vibration Analysis</span>, and{' '}
             <span className="text-amber-400 font-bold">90,000+ fault codes</span> across{' '}
@@ -254,9 +253,9 @@ export default function GeneratorOracleShowcase() {
         >
           {[
             { value: '90,000+', label: 'Fault Codes', color: '#06b6d4' },
-            { value: '6', label: 'World-First Features', color: '#f59e0b' },
-            { value: '$75,000+', label: 'Value in One Tool', color: '#22c55e' },
-            { value: '0', label: 'Competitors Match This', color: '#ef4444' },
+            { value: '6', label: 'Advanced Features', color: '#f59e0b' },
+            { value: '21', label: 'Controllers Supported', color: '#22c55e' },
+            { value: '5', label: 'Major Brands', color: '#8b5cf6' },
           ].map((stat, idx) => (
             <motion.div
               key={stat.label}
@@ -298,8 +297,8 @@ export default function GeneratorOracleShowcase() {
         <div className="flex justify-center mb-12">
           <div className="inline-flex bg-slate-900/80 rounded-xl p-1 border border-slate-700">
             {[
-              { id: 'features', label: 'World-First Features', icon: '🚀' },
-              { id: 'comparison', label: 'vs Competitors', icon: '⚔️' },
+              { id: 'features', label: 'Key Features', icon: '🚀' },
+              { id: 'comparison', label: 'Why Choose Us', icon: '✓' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -317,7 +316,7 @@ export default function GeneratorOracleShowcase() {
           </div>
         </div>
 
-        {/* WORLD-FIRST FEATURES GRID */}
+        {/* FEATURES GRID */}
         <AnimatePresence mode="wait">
           {activeTab === 'features' && (
             <motion.div
@@ -327,8 +326,8 @@ export default function GeneratorOracleShowcase() {
               exit={{ opacity: 0, y: -20 }}
               className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
             >
-              {WORLD_FIRST_FEATURES.map((feature, idx) => (
-                <WorldFirstCard key={feature.title} feature={feature} index={idx} />
+              {ADVANCED_FEATURES.map((feature, idx) => (
+                <FeatureCard key={feature.title} feature={feature} index={idx} />
               ))}
             </motion.div>
           )}
@@ -341,66 +340,27 @@ export default function GeneratorOracleShowcase() {
               exit={{ opacity: 0, y: -20 }}
               className="mb-16"
             >
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left py-4 px-4 text-slate-400 font-medium">Tool</th>
-                      <th className="text-center py-4 px-4 text-slate-400 font-medium">Price</th>
-                      <th className="text-center py-4 px-4 text-slate-400 font-medium">Brands</th>
-                      <th className="text-center py-4 px-4 text-slate-400 font-medium">Codes</th>
-                      <th className="text-center py-4 px-4 text-slate-400 font-medium">AI Features</th>
-                      <th className="text-center py-4 px-4 text-slate-400 font-medium">Offline</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {COMPETITOR_COMPARISON.map((comp, idx) => (
-                      <motion.tr
-                        key={comp.name}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className={`border-b border-slate-800 ${
-                          comp.highlight
-                            ? 'bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-amber-500/10'
-                            : ''
-                        }`}
-                      >
-                        <td className={`py-4 px-4 font-bold ${comp.highlight ? 'text-cyan-400 text-lg' : 'text-white'}`}>
-                          {comp.highlight && <span className="mr-2">🏆</span>}
-                          {comp.name}
-                          {comp.highlight && <span className="ml-2 text-xs text-amber-400">(OURS)</span>}
-                        </td>
-                        <td className={`text-center py-4 px-4 ${comp.highlight ? 'text-green-400 font-bold' : 'text-slate-400'}`}>
-                          {comp.price}
-                        </td>
-                        <td className={`text-center py-4 px-4 ${comp.highlight ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}>
-                          {comp.brands}
-                        </td>
-                        <td className={`text-center py-4 px-4 ${comp.highlight ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
-                          {comp.codes}
-                        </td>
-                        <td className="text-center py-4 px-4">
-                          {comp.ai ? (
-                            <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded font-bold text-xs">FULL AI</span>
-                          ) : (
-                            <span className="text-red-400">None</span>
-                          )}
-                        </td>
-                        <td className="text-center py-4 px-4">
-                          {comp.offline ? (
-                            <span className="text-green-400 text-lg">✓</span>
-                          ) : (
-                            <span className="text-red-400 text-lg">✗</span>
-                          )}
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid md:grid-cols-2 gap-6">
+                {FEATURE_HIGHLIGHTS.map((item, idx) => (
+                  <motion.div
+                    key={item.feature}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="p-6 bg-slate-900/50 rounded-xl border border-slate-700"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-green-400 text-2xl">✓</span>
+                      <div>
+                        <h4 className="text-white font-bold mb-2">{item.feature}</h4>
+                        <p className="text-slate-400 text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
 
-              {/* Dominance Statement */}
+              {/* Value Statement */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -408,10 +368,10 @@ export default function GeneratorOracleShowcase() {
                 className="mt-8 p-6 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-amber-500/10 border border-cyan-500/30 rounded-2xl text-center"
               >
                 <p className="text-xl text-white font-bold mb-2">
-                  "You are not competing. You are DOMINATING."
+                  Built for Professional Technicians
                 </p>
                 <p className="text-slate-400">
-                  Generator Oracle is the Tesla of generator diagnostics - 5-10 years ahead of the industry.
+                  Generator Oracle combines comprehensive fault databases with AI-powered diagnostics to help you troubleshoot faster.
                 </p>
               </motion.div>
             </motion.div>
@@ -487,17 +447,17 @@ export default function GeneratorOracleShowcase() {
               <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
                 <span className="text-5xl">🎉</span>
                 <div>
-                  <div className="text-3xl sm:text-4xl font-black text-white">100% FREE ACCESS</div>
+                  <div className="text-3xl sm:text-4xl font-black text-white">FREE TRIAL ACCESS</div>
                   <div className="text-xl text-green-400 font-bold">Until March 1st, 2026</div>
                 </div>
                 <span className="text-5xl">🎉</span>
               </div>
               <p className="text-slate-300 max-w-2xl mx-auto">
-                Experience the world's most advanced generator diagnostic tool completely FREE.
-                All features. All 90,000+ codes. All world-first AI capabilities. No credit card required.
+                Try Generator Oracle completely free during our launch period.
+                Full access to all features. All 90,000+ fault codes. AI diagnostics included. No credit card required.
               </p>
               <p className="text-amber-400 font-bold mt-4">
-                After trial: KES 5,000 one-time (worth $75,000+ in equivalent tools)
+                After trial: KES 5,000 one-time purchase
               </p>
             </div>
           </div>
@@ -535,9 +495,9 @@ export default function GeneratorOracleShowcase() {
           </div>
 
           <p className="text-slate-500 text-sm mt-8 max-w-2xl mx-auto">
-            🏆 <span className="text-cyan-400">World's Only</span> diagnostic tool with AI Predictive Failure, 3D Visualization, Thermal Mapping, and Vibration Analysis.
+            🔮 <span className="text-cyan-400">Professional-grade</span> diagnostic tool with AI Analysis, 3D Visualization, Thermal Mapping, and Vibration Analysis.
             <br />
-            <span className="text-amber-400">No competitor comes close.</span>
+            <span className="text-amber-400">Built for generator technicians in Africa.</span>
           </p>
         </motion.div>
 
@@ -550,7 +510,7 @@ export default function GeneratorOracleShowcase() {
         >
           <p className="text-slate-600 text-xs text-center max-w-4xl mx-auto leading-relaxed">
             <strong>Disclaimer:</strong> Generator Oracle is an independent diagnostic assistant developed by Emerson EIMS.
-            Compatible with controllers from DSE (Deep Sea Electronics), ComAp, Woodward, SmartGen, and Caterpillar PowerWizard.
+            Compatible with controllers from DSE (Deep Sea Electronics), ComAp, Woodward, SmartGen, Caterpillar PowerWizard, Datakom, Lovato Electric, Siemens, and ENKO.
             These are trademarks of their respective owners. This tool is not affiliated with or endorsed by these companies.
             Feature comparisons based on publicly available product specifications as of 2024.
           </p>

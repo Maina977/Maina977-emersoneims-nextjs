@@ -4,6 +4,10 @@
  * Generator Oracle - Africa Landing Page
  * Marketing page targeting all African generator technicians
  * SEO-optimized for pan-African reach
+ *
+ * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
+ * NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
+ * All brand names are trademarks of their respective owners.
  */
 
 import { useState } from 'react';
@@ -52,7 +56,7 @@ const AFRICAN_REGIONS = {
 
 const STATISTICS = [
   { value: '90,000+', label: 'Fault Codes', icon: '🔍' },
-  { value: '5', label: 'Controller Brands', icon: '🎛️' },
+  { value: '9', label: 'Compatible Types', icon: '🎛️' },
   { value: '7', label: 'Languages', icon: '🌍' },
   { value: '100%', label: 'Offline Capable', icon: '📱' },
 ];
@@ -67,12 +71,17 @@ const LANGUAGES_SUPPORTED = [
   { code: 'zh', name: '中文', flag: '🇨🇳' },
 ];
 
-const CONTROLLER_BRANDS = [
-  { name: 'DeepSea Electronics', models: 'DSE 4520, 7320, 8610, 8660', color: '#0066cc' },
-  { name: 'ComAp', models: 'InteliLite, InteliGen, InteliSys', color: '#ff6600' },
-  { name: 'Woodward', models: 'EasyGen, LS Series, GCP', color: '#006633' },
-  { name: 'SmartGen', models: 'HGM6120, HGM9320, HGM9510', color: '#cc0000' },
-  { name: 'CAT PowerWizard', models: 'PW 1.0, 1.1, 2.0', color: '#ffcc00' },
+// Compatible controller types (not affiliated with manufacturers)
+const COMPATIBLE_CONTROLLERS = [
+  { name: 'Compatible with DSE', models: 'Works with DSE 4520, 7320, 8610 series', color: '#0066cc' },
+  { name: 'Compatible with ComAp', models: 'Works with InteliLite, InteliGen series', color: '#ff6600' },
+  { name: 'Compatible with Woodward', models: 'Works with EasyGen, LS, GCP series', color: '#006633' },
+  { name: 'Compatible with SmartGen', models: 'Works with HGM series controllers', color: '#cc0000' },
+  { name: 'Compatible with PowerWizard', models: 'Works with PW 1.0, 1.1, 2.0 series', color: '#ffcc00' },
+  { name: 'Compatible with Datakom', models: 'Works with DKG, D-500, D-700 series', color: '#0891B2' },
+  { name: 'Compatible with Lovato', models: 'Works with RGK, ATL series', color: '#EA580C' },
+  { name: 'Compatible with Siemens', models: 'Works with SICAM, SIPROTEC series', color: '#009999' },
+  { name: 'Compatible with ENKO', models: 'Works with GCU, AMF series', color: '#7C3AED' },
 ];
 
 const TESTIMONIALS = [
@@ -98,7 +107,7 @@ const TESTIMONIALS = [
     flag: "🇺🇬",
   },
   {
-    quote: "90,000 fault codes in one app! I've used it for DSE, ComAp, and Woodward controllers - all accurate.",
+    quote: "90,000+ fault codes in one app! I've used it for DSE, ComAp, and Woodward controllers - all accurate.",
     author: "Ahmed Hassan",
     role: "Power Systems Engineer",
     location: "Lagos, Nigeria",
@@ -154,7 +163,7 @@ export default function AfricaLandingPage() {
             transition={{ delay: 0.2 }}
             className="text-xl text-slate-400 max-w-3xl mx-auto mb-8"
           >
-            90,000+ fault codes, 5 controller brands, 7 languages including Swahili, Arabic & French.
+            90,000+ fault codes, compatible with 9 controller types, 7 languages including Swahili, Arabic & French.
             Works 100% offline - perfect for remote African locations.
           </motion.p>
 
@@ -225,17 +234,20 @@ export default function AfricaLandingPage() {
         </div>
       </section>
 
-      {/* Controller Brands */}
+      {/* Compatible Controller Types */}
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-white text-center mb-4">
-            All Major Controller Brands
+            Compatible with All Major Controller Types
           </h2>
           <p className="text-slate-400 text-center mb-8 max-w-2xl mx-auto">
-            Comprehensive fault code database covering every controller used in African generators.
+            Comprehensive fault code database compatible with every controller used in African generators.
+            <span className="block text-xs text-slate-500 mt-2">
+              *Generator Oracle is independently developed and not affiliated with any manufacturer.
+            </span>
           </p>
-          <div className="grid md:grid-cols-5 gap-4">
-            {CONTROLLER_BRANDS.map((brand) => (
+          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {COMPATIBLE_CONTROLLERS.map((brand) => (
               <div
                 key={brand.name}
                 className="p-4 bg-slate-900/50 border border-slate-700 rounded-xl text-center hover:border-cyan-500/50 transition-all"

@@ -540,8 +540,8 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="EmersonEIMS" />
         
         {/* ═══════════════════════════════════════════════════════════════════
-            🚀 WORLD'S FASTEST WEBSITE - EXTREME PERFORMANCE OPTIMIZATION
-            Sub-1 second FCP target - Faster than Tesla, Google, Apple
+            🚀 PERFORMANCE OPTIMIZATION
+            Target: Sub-1 second First Contentful Paint
         ════════════════════════════════════════════════════════════════════ */}
 
         {/* CRITICAL: DNS Prefetch - Resolve domains before they're needed */}

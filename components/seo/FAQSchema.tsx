@@ -88,7 +88,7 @@ export default function FAQSchema() {
         "name": "Can I get a quotation for spare parts online?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! Visit our revolutionary spare parts module at emersoneims.com/generators/spare-parts to browse 1,560+ parts with real-time pricing, stock availability, and instant quotation generation. Search by part number, generator model, or component type. Request quotes online 24/7 or call +254 768 860 665 for technical assistance."
+          "text": "Yes! Visit our spare parts catalog at emersoneims.com/generators/spare-parts to browse 1,560+ parts with pricing, stock availability, and instant quotation generation. Search by part number, generator model, or component type. Request quotes online 24/7 or call +254 768 860 665 for technical assistance."
         }
       }
     ]

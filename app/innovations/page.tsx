@@ -1,4 +1,5 @@
 // app/innovations/page.tsx - INNOVATION SHOWCASE (9.8/10 Target)
+// DISCLAIMER: Generator Oracle is independently developed and not affiliated with any manufacturer
 'use client';
 
 import { motion } from 'framer-motion';
@@ -59,18 +60,18 @@ const innovations: Innovation[] = [
   },
   {
     id: 'multi-brand',
-    title: 'Multi-Brand Correlation Engine™',
+    title: 'Multi-Type Correlation Engine™',
     category: 'AI',
     status: 'Live',
-    description: 'Unique to EmersonEIMS: Cross-references error codes across DeepSea, PowerCommand, Cummins, Perkins, and Caterpillar. Only platform globally with multi-OEM diagnostic correlation.',
+    description: 'Unique to EmersonEIMS: Cross-references error codes across multiple controller types. Our independently developed platform correlates diagnostics across 9 compatible controller types.',
     features: [
-      'Cross-brand fault correlation (85-95% similarity matching)',
+      'Cross-type fault correlation (85-95% similarity matching)',
       'Universal symptom database (200+ error codes)',
       'Shared solution recommendations',
       'Parts compatibility matrix',
       'Troubleshooting time reduction (avg 60% faster)',
       'Real-world similarity scoring based on field repairs',
-      'Automatic code translation between controller brands'
+      'Automatic code translation between compatible controller types'
     ],
     icon: '🔗',
     color: 'from-amber-500 to-orange-500',

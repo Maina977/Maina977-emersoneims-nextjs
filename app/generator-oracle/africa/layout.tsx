@@ -4,11 +4,15 @@ import Script from 'next/script';
 /**
  * Africa Landing Page - SEO Metadata
  * Targeting all African generator technicians and maintenance professionals
+ *
+ * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
+ * NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
+ * All brand names are trademarks of their respective owners.
  */
 
 export const metadata: Metadata = {
   title: 'Generator Oracle Africa | 90,000+ Fault Codes for African Technicians',
-  description: 'The #1 generator diagnostic tool for Africa. 90,000+ fault codes for DeepSea, ComAp, Woodward, SmartGen & CAT controllers. Works offline. Available in Swahili, Arabic, French. Used by technicians in Kenya, Nigeria, Tanzania, Uganda, South Africa & 50+ countries.',
+  description: 'The #1 generator diagnostic tool for Africa. 90,000+ fault codes compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard & more. Works offline. Available in Swahili, Arabic, French. Used by technicians in Kenya, Nigeria, Tanzania, Uganda, South Africa & 50+ countries.',
   keywords: [
     // Pan-African keywords
     'generator fault codes Africa',
@@ -98,7 +102,7 @@ export const metadata: Metadata = {
     url: 'https://www.emersoneims.com/generator-oracle/africa',
     siteName: 'Generator Oracle',
     title: 'Generator Oracle Africa | #1 Diagnostic Tool for African Technicians',
-    description: '90,000+ fault codes for all major controller brands. Works offline. Available in 7 languages including Swahili, Arabic & French. Trusted by technicians across Africa.',
+    description: '90,000+ fault codes compatible with all major controller types. Works offline. Available in 7 languages including Swahili, Arabic & French. Trusted by technicians across Africa.',
     images: [
       {
         url: '/images/generator-oracle-africa-og.jpg',
@@ -137,7 +141,7 @@ const structuredData = {
       name: 'Generator Oracle',
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web, iOS, Android',
-      description: 'Professional generator diagnostic tool with 90,000+ fault codes for DeepSea, ComAp, Woodward, SmartGen, and CAT PowerWizard controllers.',
+      description: 'Professional generator diagnostic tool with 90,000+ fault codes compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard and more controller types. Independently developed - not affiliated with any manufacturer.',
       offers: {
         '@type': 'Offer',
         price: '20000',
@@ -154,7 +158,7 @@ const structuredData = {
       },
       featureList: [
         '90,000+ fault codes',
-        '5 controller brands supported',
+        'Compatible with 9 controller types',
         '7 languages including Swahili, Arabic, French',
         '100% offline capability',
         'Step-by-step reset procedures',
@@ -233,10 +237,10 @@ const structuredData = {
         },
         {
           '@type': 'Question',
-          name: 'What controller brands does Generator Oracle cover?',
+          name: 'What controller types is Generator Oracle compatible with?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Generator Oracle covers all major controller brands used in Africa: DeepSea Electronics (DSE 4520, 7320, 8610), ComAp (InteliLite, InteliGen), Woodward (EasyGen), SmartGen (HGM series), and CAT PowerWizard.',
+            text: 'Generator Oracle is compatible with all major controller types used in Africa including DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens, and ENKO type controllers. Note: Generator Oracle is independently developed and not affiliated with any manufacturer.',
           },
         },
         {

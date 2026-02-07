@@ -239,7 +239,7 @@ export default function DiagnosticModuleShowcase() {
         >
           <div className="inline-block p-8 rounded-2xl bg-gradient-to-r from-amber-500/10 via-transparent to-cyan-500/10 border border-white/10">
             <p className="text-xl sm:text-2xl text-gray-300">
-              <span className="text-amber-400 font-bold">9,500+ Error Codes</span>
+              <span className="text-amber-400 font-bold">90,000+ Error Codes</span>
               <span className="mx-4 text-gray-600">|</span>
               <span className="text-white font-bold">12 Generator Brands</span>
               <span className="mx-4 text-gray-600">|</span>

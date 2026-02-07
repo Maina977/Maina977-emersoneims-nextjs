@@ -306,7 +306,7 @@ export function CTASection({
           <p className="text-sm text-gray-500 mb-4">Why choose EmersonEIMS?</p>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
             <span className="flex items-center gap-2">
-              <span className="text-amber-500">✓</span> 15+ Years Experience
+              <span className="text-amber-500">✓</span> 12+ Years Experience
             </span>
             <span className="flex items-center gap-2">
               <span className="text-amber-500">✓</span> 47 Counties Coverage

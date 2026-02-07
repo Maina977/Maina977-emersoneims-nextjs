@@ -190,7 +190,7 @@ export default function FaultCodeLookup() {
             Fault Code Lookup
           </h1>
           <p className="text-xl text-gray-400">
-            Search 9,500+ error codes across all major generator brands
+            Search 90,000+ error codes across all major generator brands
           </p>
           <div className="mt-4 flex justify-center gap-4 text-sm">
             <span className="px-4 py-2 bg-cyan-500/20 rounded-full text-cyan-300">

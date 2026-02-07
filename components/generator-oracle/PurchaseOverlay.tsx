@@ -4,6 +4,9 @@
  * PurchaseOverlay - Shown when user doesn't have a valid license
  * Displays product features, pricing, and payment instructions
  *
+ * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
+ * NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
+ *
  * PRICING: KES 20,000/year (from March 2nd, 2026)
  * FREE until March 1st, 2026
  */
@@ -35,8 +38,8 @@ const FEATURES = [
   },
   {
     icon: '⚡',
-    title: 'Compatible with 5 Brands',
-    desc: 'Works with DeepSea, ComAp, Woodward, SmartGen, PowerWizard controllers',
+    title: 'Compatible with 9 Controller Types',
+    desc: 'Works with DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens & ENKO type controllers',
   },
   {
     icon: '🔄',
