@@ -15,7 +15,7 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * All brand names are trademarks of their respective owners.
  *
  * Features:
- * - 90,000+ fault codes compatible with 9 controller types
+ * - 230,000+ fault codes compatible with 9 controller types
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB
@@ -26,7 +26,8 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
 export default function GeneratorOraclePage() {
   return (
     <>
-      <DMCAProtection />
+      {/* Disable DevTools protection - it causes false positives on Windows with display scaling */}
+      <DMCAProtection enableDevToolsProtection={false} />
       <Suspense fallback={<LoadingFallback />}>
         <GeneratorOracleModule />
       </Suspense>
@@ -66,7 +67,7 @@ function LoadingFallback() {
         {/* Loading Stats */}
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
-            <div className="text-amber-400 font-bold">90,000+</div>
+            <div className="text-amber-400 font-bold">230,000+</div>
             <div className="text-slate-500">Fault Codes</div>
           </div>
           <div className="text-center">
