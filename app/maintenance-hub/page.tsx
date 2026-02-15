@@ -1,291 +1,571 @@
 'use client';
 
 /**
- * Maintenance Hub - Main Landing Page
- * Central hub for all maintenance services
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * UNIVERSAL COMMAND BRIDGE - SCI-FI COCKPIT INTERFACE
+ * World's Most Comprehensive Maintenance Hub
+ * Central command center for all maintenance services
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { AnalogClock, AnalogCalendar, WeatherWidget, FloatingWidgetPanel } from '@/components/ui/AnalogWidgets';
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// SERVICE CATEGORIES
+// ═══════════════════════════════════════════════════════════════════════════════
 const SERVICES = [
   {
-    id: 'generator',
+    id: 'generators',
     name: 'Generator Oracle',
-    icon: '🔌',
-    description: '90,000+ fault codes for DeepSea, ComAp, Woodward, SmartGen & CAT controllers. Instant diagnostics with step-by-step repair guides.',
-    href: '/generator-oracle',
-    color: 'from-blue-600 to-indigo-700',
-    features: ['90,000+ Fault Codes', 'Controller Simulators', 'Wiring Diagrams', 'Offline Mode'],
-    stats: { value: '90K+', label: 'Fault Codes' }
+    icon: '⚡',
+    description: 'World\'s most comprehensive generator diagnostic platform with 230,000+ fault codes, AI-powered diagnostics, and expert repair guides for all major controller brands.',
+    href: '/maintenance-hub/generators',
+    stats: { value: '230K+', label: 'Fault Codes' },
+    color: 'amber',
+    glowColor: 'rgba(251, 191, 36, 0.5)',
+    features: ['DSE/ComAp/Woodward', '5-Tab Diagnosis System', 'Kenya Case Studies', 'Real Costs in KES'],
   },
   {
     id: 'solar',
-    name: 'Solar Maintenance',
+    name: 'Solar Bible',
     icon: '☀️',
-    description: 'Complete solar system diagnostics and maintenance. Panel cleaning, battery service, inverter repair with weather-integrated recommendations.',
-    href: '/solar',
-    color: 'from-amber-500 to-orange-600',
-    features: ['System Calculator', 'Weather Integration', 'Fault Diagnostics', 'Maintenance Schedule'],
-    stats: { value: '6', label: 'System Types' }
+    description: 'Kenya\'s most comprehensive solar energy guide with all 47 counties, advanced calculator, installation guides, and complete FAQ covering residential to industrial.',
+    href: '/maintenance-hub/solar',
+    stats: { value: '47', label: 'Counties' },
+    color: 'cyan',
+    glowColor: 'rgba(34, 211, 238, 0.5)',
+    features: ['Solar Calculator', '12 Property Types', '5-Phase Install Guide', '30+ FAQs'],
   },
   {
     id: 'general',
-    name: 'General Services',
+    name: 'Services Bible',
     icon: '🔧',
-    description: 'Borehole pumps, motor rewinding, AC installation, electrical services, welding, and plumbing. 24/7 professional support.',
-    href: '/services',
-    color: 'from-green-500 to-emerald-600',
-    features: ['Pump Repair', 'Motor Rewinding', 'AC Service', 'Electrical Work'],
-    stats: { value: '6', label: 'Service Categories' }
+    description: 'Complete maintenance services guide covering borehole drilling, motor rewinding, AC installation, electrical work, welding, and plumbing across all 47 counties.',
+    href: '/maintenance-hub/general',
+    stats: { value: '6', label: 'Categories' },
+    color: 'green',
+    glowColor: 'rgba(34, 197, 94, 0.5)',
+    features: ['Borehole & Pumps', 'Motor Rewinding', 'AC & Refrigeration', 'Electrical & Welding'],
   },
   {
-    id: 'parts',
-    name: 'Spare Parts',
-    icon: '🛒',
-    description: 'Over 1,560+ genuine spare parts for generators, solar systems, pumps, and electrical equipment. Fast delivery across Kenya.',
-    href: '/spare-parts',
-    color: 'from-purple-500 to-violet-600',
-    features: ['1,560+ Parts', 'Genuine Quality', 'Fast Delivery', 'All Brands'],
-    stats: { value: '1,560+', label: 'Parts Available' }
-  }
+    id: 'motors',
+    name: 'Motor Control',
+    icon: '⚙️',
+    description: 'Professional electric motor rewinding, VFD installation, bearing replacement, and shaft repair for motors from 0.25 HP to 500 HP.',
+    href: '/maintenance-hub/general?cat=motors',
+    stats: { value: '500HP', label: 'Max Capacity' },
+    color: 'purple',
+    glowColor: 'rgba(168, 85, 247, 0.5)',
+    features: ['Rewinding', 'VFD/Inverters', 'Bearing Analysis', 'Shaft Repair'],
+  },
+  {
+    id: 'hvac',
+    name: 'AC & Refrigeration',
+    icon: '❄️',
+    description: 'Complete AC installation, repair, and cold room services. Split ACs, ducted systems, VRF/VRV, chillers, and walk-in freezers.',
+    href: '/maintenance-hub/general?cat=ac',
+    stats: { value: '3,500+', label: 'Installations' },
+    color: 'blue',
+    glowColor: 'rgba(59, 130, 246, 0.5)',
+    features: ['Split AC', 'Ducted Systems', 'VRF/VRV', 'Cold Rooms'],
+  },
+  {
+    id: 'electrical',
+    name: 'Electrical Systems',
+    icon: '⚡',
+    description: 'Industrial electrical installations, power factor correction, earthing systems, lightning protection, and solar power installations.',
+    href: '/maintenance-hub/general?cat=electrical',
+    stats: { value: '11kV', label: 'Max Capacity' },
+    color: 'yellow',
+    glowColor: 'rgba(234, 179, 8, 0.5)',
+    features: ['Power Distribution', 'PFC', 'Earthing', 'Lightning Protection'],
+  },
+  {
+    id: 'pumps',
+    name: 'Borehole & Pumps',
+    icon: '💧',
+    description: 'Complete borehole drilling up to 500m, submersible pump installation, solar-powered pumping systems, and pump repairs.',
+    href: '/maintenance-hub/general?cat=borehole',
+    stats: { value: '500m', label: 'Max Depth' },
+    color: 'teal',
+    glowColor: 'rgba(20, 184, 166, 0.5)',
+    features: ['Borehole Drilling', 'Submersible Pumps', 'Solar Pumping', 'Repairs'],
+  },
+  {
+    id: 'welding',
+    name: 'Welding & Fabrication',
+    icon: '🔥',
+    description: 'Professional welding and metal fabrication - structural steel, gates, grills, tanks, and custom fabrication projects.',
+    href: '/maintenance-hub/general?cat=welding',
+    stats: { value: '50mm', label: 'Max Steel' },
+    color: 'red',
+    glowColor: 'rgba(239, 68, 68, 0.5)',
+    features: ['Structural Steel', 'Gates & Grills', 'Tank Fabrication', 'On-site Welding'],
+  },
+  {
+    id: 'plumbing',
+    name: 'Plumbing Systems',
+    icon: '🚿',
+    description: 'Complete plumbing solutions - water supply, drainage, hot water systems, and water treatment for residential to industrial.',
+    href: '/maintenance-hub/general?cat=plumbing',
+    stats: { value: '2,800+', label: 'Projects' },
+    color: 'indigo',
+    glowColor: 'rgba(99, 102, 241, 0.5)',
+    features: ['Water Supply', 'Drainage', 'Hot Water', 'Treatment'],
+  },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote: "Generator Oracle saved us 3 hours of troubleshooting. Found the exact fault code and fix in seconds!",
-    author: "James M.",
-    role: "Chief Engineer, Safari Lodge",
-    location: "Masai Mara"
-  },
-  {
-    quote: "The best motor rewinding service in Kenya. Our pump has been running perfectly for 2 years now.",
-    author: "Sarah K.",
-    role: "Farm Manager",
-    location: "Nakuru"
-  },
-  {
-    quote: "Their solar maintenance team optimized our system and increased production by 25%.",
-    author: "Peter O.",
-    role: "Factory Owner",
-    location: "Industrial Area, Nairobi"
-  }
-];
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANIMATED ORBITAL RINGS
+// ═══════════════════════════════════════════════════════════════════════════════
+const OrbitalRings = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-20">
+    {[300, 450, 600].map((size, i) => (
+      <motion.div
+        key={size}
+        className="absolute rounded-full border border-cyan-500/30"
+        style={{ width: size, height: size }}
+        animate={{ rotate: i % 2 === 0 ? 360 : -360 }}
+        transition={{ duration: 60 + i * 20, repeat: Infinity, ease: "linear" }}
+      >
+        {/* Orbital markers */}
+        {[...Array(4)].map((_, j) => (
+          <div
+            key={j}
+            className="absolute w-2 h-2 bg-cyan-400 rounded-full"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: `rotate(${j * 90}deg) translateY(-${size/2}px) translateX(-50%)`,
+            }}
+          />
+        ))}
+      </motion.div>
+    ))}
+  </div>
+);
 
-export default function MaintenanceHubPage() {
-  const [selectedLocation, setSelectedLocation] = useState('nairobi');
+// ═══════════════════════════════════════════════════════════════════════════════
+// HOLOGRAPHIC GRID BACKGROUND
+// ═══════════════════════════════════════════════════════════════════════════════
+const HolographicGrid = () => (
+  <div className="absolute inset-0 overflow-hidden">
+    {/* Perspective grid */}
+    <div
+      className="absolute inset-0 opacity-10"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(34, 211, 238, 0.3) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34, 211, 238, 0.3) 1px, transparent 1px)
+        `,
+        backgroundSize: '60px 60px',
+        transform: 'perspective(500px) rotateX(60deg)',
+        transformOrigin: 'center top',
+      }}
+    />
+    {/* Radial glow */}
+    <div className="absolute inset-0 bg-gradient-radial from-cyan-500/10 via-transparent to-transparent" />
+  </div>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANIMATED SCANLINE EFFECT
+// ═══════════════════════════════════════════════════════════════════════════════
+const ScanlineEffect = () => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <motion.div
+      className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"
+      animate={{ top: ['0%', '100%'] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+      style={{ boxShadow: '0 0 30px 10px rgba(34, 211, 238, 0.3)' }}
+    />
+  </div>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SYSTEM STATUS PANEL
+// ═══════════════════════════════════════════════════════════════════════════════
+const SystemStatusPanel = () => {
+  const [systemStats, setSystemStats] = useState({
+    uptime: '99.97%',
+    activeServices: 9,
+    faultCodes: 230000,
+    lastUpdate: new Date(),
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSystemStats(prev => ({
+        ...prev,
+        lastUpdate: new Date(),
+      }));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      {/* Floating Widget Panel */}
-      <FloatingWidgetPanel location={selectedLocation} position="top-right" />
-
-      {/* Header */}
-      <header className="bg-slate-900/80 border-b border-slate-700 sticky top-0 z-40 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="text-amber-500 hover:text-amber-400 transition-colors">
-                ← Home
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-white">Maintenance Hub</h1>
-                <p className="text-slate-400 text-sm">Professional maintenance services across Kenya</p>
-              </div>
-            </div>
-
-            {/* Location Selector */}
-            <div className="hidden md:flex items-center gap-3">
-              <span className="text-slate-400 text-sm">📍</span>
-              <select
-                value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
-                className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-1 text-white text-sm"
-              >
-                {['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Malindi'].map(loc => (
-                  <option key={loc} value={loc.toLowerCase()}>{loc}</option>
-                ))}
-              </select>
-            </div>
+    <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/30">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+        <span className="text-cyan-400 text-sm font-bold">SYSTEM STATUS: ONLINE</span>
+      </div>
+      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span className="text-slate-400">Uptime</span>
+          <div className="text-white font-mono text-lg">{systemStats.uptime}</div>
+        </div>
+        <div>
+          <span className="text-slate-400">Active Services</span>
+          <div className="text-white font-mono text-lg">{systemStats.activeServices}</div>
+        </div>
+        <div>
+          <span className="text-slate-400">Fault Database</span>
+          <div className="text-white font-mono text-lg">{systemStats.faultCodes.toLocaleString()}</div>
+        </div>
+        <div>
+          <span className="text-slate-400">Last Sync</span>
+          <div className="text-white font-mono text-lg">
+            {systemStats.lastUpdate.toLocaleTimeString('en-US', { hour12: false })}
           </div>
         </div>
-      </header>
+      </div>
+    </div>
+  );
+};
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold text-white mb-4"
-          >
-            Complete Maintenance Solutions
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-xl text-slate-400 max-w-2xl mx-auto"
-          >
-            From generators to solar systems, pumps to electrical work - everything your facility needs in one place.
-          </motion.p>
-        </div>
+// ═══════════════════════════════════════════════════════════════════════════════
+// HEXAGON SERVICE CARD
+// ═══════════════════════════════════════════════════════════════════════════════
+const ServiceCard = ({ service, index }: { service: typeof SERVICES[0]; index: number }) => {
+  const [isHovered, setIsHovered] = useState(false);
 
-        {/* Time & Weather Display (Mobile) */}
-        <div className="lg:hidden flex justify-center gap-3 mb-8 flex-wrap">
-          <AnalogClock size={80} />
-          <AnalogCalendar />
-          <WeatherWidget location={selectedLocation} />
-        </div>
+  const colorMap: Record<string, { bg: string; border: string; text: string; glow: string }> = {
+    amber: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', glow: 'shadow-amber-500/20' },
+    cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', glow: 'shadow-cyan-500/20' },
+    green: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', glow: 'shadow-green-500/20' },
+    purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', glow: 'shadow-purple-500/20' },
+    blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', glow: 'shadow-blue-500/20' },
+    red: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', glow: 'shadow-red-500/20' },
+    teal: { bg: 'bg-teal-500/10', border: 'border-teal-500/30', text: 'text-teal-400', glow: 'shadow-teal-500/20' },
+    indigo: { bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', text: 'text-indigo-400', glow: 'shadow-indigo-500/20' },
+    orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400', glow: 'shadow-orange-500/20' },
+  };
 
-        {/* Services Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
-          {SERVICES.map((service, i) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <Link href={service.href}>
-                <div className={`bg-gradient-to-br ${service.color} rounded-2xl p-6 hover:scale-[1.02] transition-transform cursor-pointer h-full`}>
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="text-4xl mb-2">{service.icon}</div>
-                      <h3 className="text-2xl font-bold text-white">{service.name}</h3>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold text-white/90">{service.stats.value}</div>
-                      <div className="text-white/70 text-sm">{service.stats.label}</div>
-                    </div>
-                  </div>
-                  <p className="text-white/80 mb-4">{service.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {service.features.map((feature, j) => (
-                      <span key={j} className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+  const colors = colorMap[service.color] || colorMap.cyan;
 
-        {/* Why Choose Us */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-12">
-          <h3 className="text-2xl font-bold text-white text-center mb-8">Why Choose Emerson EiMS?</h3>
-          <div className="grid md:grid-cols-4 gap-6">
-            {[
-              { icon: '⚡', title: '24/7 Support', desc: 'Emergency services available round the clock' },
-              { icon: '🎯', title: 'Expert Technicians', desc: 'Certified professionals with years of experience' },
-              { icon: '🛡️', title: 'Quality Guaranteed', desc: 'All work backed by our service warranty' },
-              { icon: '📍', title: 'Kenya-Wide', desc: 'Service coverage across all major towns' },
-            ].map((item, i) => (
-              <div key={i} className="text-center">
-                <div className="text-4xl mb-3">{item.icon}</div>
-                <div className="font-bold text-white mb-1">{item.title}</div>
-                <div className="text-slate-400 text-sm">{item.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Link href={service.href}>
+        <motion.div
+          className={`relative ${colors.bg} ${colors.border} border-2 rounded-2xl p-6 cursor-pointer transition-all duration-300 overflow-hidden`}
+          whileHover={{ scale: 1.02, y: -5 }}
+          style={{
+            boxShadow: isHovered ? `0 20px 40px ${service.glowColor}` : 'none',
+          }}
+        >
+          {/* Corner decorations */}
+          <div className={`absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 ${colors.border} rounded-tl-xl`} />
+          <div className={`absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 ${colors.border} rounded-tr-xl`} />
+          <div className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 ${colors.border} rounded-bl-xl`} />
+          <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 ${colors.border} rounded-br-xl`} />
 
-        {/* Testimonials */}
-        <div className="mb-12">
-          <h3 className="text-2xl font-bold text-white text-center mb-8">What Our Clients Say</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((testimonial, i) => (
+          {/* Hover glow effect */}
+          <AnimatePresence>
+            {isHovered && (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.1 }}
-                className="bg-slate-800/50 border border-slate-700 rounded-xl p-6"
-              >
-                <div className="text-amber-400 text-2xl mb-3">"</div>
-                <p className="text-slate-300 mb-4">{testimonial.quote}</p>
-                <div className="border-t border-slate-700 pt-4">
-                  <div className="font-medium text-white">{testimonial.author}</div>
-                  <div className="text-slate-400 text-sm">{testimonial.role}</div>
-                  <div className="text-slate-500 text-sm">📍 {testimonial.location}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"
+              />
+            )}
+          </AnimatePresence>
 
-        {/* Contact CTA */}
-        <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-2">Ready to Get Started?</h3>
-          <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-            Contact us today for a free consultation. Our experts are ready to help with all your maintenance needs.
-          </p>
-          <div className="flex justify-center gap-4 flex-wrap">
-            <a
-              href="tel:+254782914717"
-              className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-3 rounded-xl font-bold transition-colors"
-            >
-              📞 Call: 0782 914 717
-            </a>
-            <a
-              href="https://wa.me/254782914717"
-              className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-xl font-bold transition-colors"
-            >
-              💬 WhatsApp
-            </a>
-          </div>
-        </div>
-      </main>
+          {/* Content */}
+          <div className="relative z-10">
+            {/* Icon and stats */}
+            <div className="flex items-start justify-between mb-4">
+              <div className={`text-5xl ${isHovered ? 'animate-bounce' : ''}`}>
+                {service.icon}
+              </div>
+              <div className="text-right">
+                <div className={`text-2xl font-bold ${colors.text}`}>{service.stats.value}</div>
+                <div className="text-slate-400 text-xs">{service.stats.label}</div>
+              </div>
+            </div>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 mt-12 py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="font-bold text-white mb-4">Emerson EiMS</h4>
-              <p className="text-slate-400 text-sm">
-                Professional industrial maintenance services across Kenya and East Africa.
-              </p>
+            {/* Title and description */}
+            <h3 className="text-xl font-bold text-white mb-2">{service.name}</h3>
+            <p className="text-slate-400 text-sm mb-4 line-clamp-2">{service.description}</p>
+
+            {/* Features */}
+            <div className="flex flex-wrap gap-2">
+              {service.features.map((feature, i) => (
+                <span
+                  key={i}
+                  className={`px-2 py-1 ${colors.bg} ${colors.border} border rounded-md text-xs ${colors.text}`}
+                >
+                  {feature}
+                </span>
+              ))}
             </div>
-            <div>
-              <h4 className="font-bold text-white mb-4">Services</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/generator-oracle" className="text-slate-400 hover:text-amber-400">Generator Oracle</Link></li>
-                <li><Link href="/maintenance-hub/solar" className="text-slate-400 hover:text-amber-400">Solar Maintenance</Link></li>
-                <li><Link href="/maintenance-hub/general" className="text-slate-400 hover:text-amber-400">General Services</Link></li>
-                <li><Link href="/spare-parts" className="text-slate-400 hover:text-amber-400">Spare Parts</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-white mb-4">Contact</h4>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>📞 0782 914 717</li>
-                <li>📞 0768 860 665</li>
-                <li>📧 info@emersoneims.com</li>
-                <li>📍 Nairobi, Kenya</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-white mb-4">Banking</h4>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>Equity Bank</li>
-                <li>Embakasi Branch</li>
-                <li>A/C: 1320285133753</li>
-                <li>Emerson Industrial Maintenance Services Ltd</li>
-              </ul>
-            </div>
+
+            {/* Arrow indicator */}
+            <motion.div
+              className={`absolute bottom-4 right-4 ${colors.text}`}
+              animate={{ x: isHovered ? 5 : 0 }}
+            >
+              →
+            </motion.div>
           </div>
-          <div className="border-t border-slate-800 pt-6 text-center">
-            <p className="text-slate-500 text-sm">
-              © 2026 Emerson Industrial Maintenance Services Limited. All rights reserved.
+        </motion.div>
+      </Link>
+    </motion.div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUICK ACCESS TERMINAL
+// ═══════════════════════════════════════════════════════════════════════════════
+const QuickAccessTerminal = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/30">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-cyan-400">⌘</span>
+        <span className="text-cyan-400 text-sm font-bold">QUICK ACCESS TERMINAL</span>
+      </div>
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Search fault codes, services, procedures..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => setIsExpanded(true)}
+          onBlur={() => setTimeout(() => setIsExpanded(false), 200)}
+          className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
+        />
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">
+          Press /
+        </span>
+      </div>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4 space-y-2"
+          >
+            <div className="text-xs text-slate-400 mb-2">QUICK COMMANDS</div>
+            <div className="flex flex-wrap gap-2">
+              {['fault:F01', 'brand:growatt', 'service:solar', 'status:critical'].map((cmd) => (
+                <button
+                  key={cmd}
+                  className="px-3 py-1 bg-slate-800/50 border border-slate-700 rounded-md text-xs text-cyan-400 hover:border-cyan-500 transition-colors font-mono"
+                >
+                  {cmd}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LIVE ACTIVITY FEED
+// ═══════════════════════════════════════════════════════════════════════════════
+const LiveActivityFeed = () => {
+  const activities = [
+    { time: '12:45:32', type: 'lookup', message: 'Fault F03 lookup - Growatt SPF5000ES', color: 'cyan' },
+    { time: '12:44:18', type: 'alert', message: 'Critical alert cleared - Site #247', color: 'green' },
+    { time: '12:43:55', type: 'service', message: 'Solar system commissioned - Nakuru', color: 'amber' },
+    { time: '12:42:01', type: 'lookup', message: 'Battery fault E05 - Pylontech US3000C', color: 'cyan' },
+    { time: '12:41:22', type: 'alert', message: 'Generator maintenance due - Site #189', color: 'amber' },
+  ];
+
+  return (
+    <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/30">
+      <div className="flex items-center gap-2 mb-4">
+        <motion.div
+          className="w-2 h-2 bg-red-500 rounded-full"
+          animate={{ opacity: [1, 0.5, 1] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
+        <span className="text-cyan-400 text-sm font-bold">LIVE ACTIVITY FEED</span>
+      </div>
+      <div className="space-y-3 max-h-48 overflow-auto">
+        {activities.map((activity, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="flex items-start gap-3 text-sm"
+          >
+            <span className="text-slate-500 font-mono text-xs whitespace-nowrap">{activity.time}</span>
+            <span className={`text-${activity.color}-400`}>●</span>
+            <span className="text-slate-300">{activity.message}</span>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN COMMAND BRIDGE COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+export default function UniversalCommandBridge() {
+  const [systemTime, setSystemTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setSystemTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 relative overflow-hidden">
+      {/* Background effects */}
+      <HolographicGrid />
+      <OrbitalRings />
+      <ScanlineEffect />
+
+      {/* Main content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12"
+        >
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <motion.div
+                className="w-3 h-3 bg-cyan-400 rounded-full"
+                animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <span className="text-cyan-400 text-sm font-bold tracking-wider">EMERSON EIMS</span>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold mb-2">
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                UNIVERSAL
+              </span>
+              <br />
+              <span className="text-white">COMMAND BRIDGE</span>
+            </h1>
+            <p className="text-slate-400 text-lg">
+              World's Most Comprehensive Maintenance Hub • 230,000+ Fault Codes • All 47 Kenya Counties
             </p>
           </div>
+
+          {/* System clock */}
+          <div className="mt-6 md:mt-0 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/30 rounded-xl p-6">
+            <div className="text-center">
+              <div className="text-cyan-400 text-xs tracking-wider mb-1">SYSTEM TIME</div>
+              <div className="text-4xl font-mono text-white font-bold">
+                {systemTime.toLocaleTimeString('en-US', { hour12: false })}
+              </div>
+              <div className="text-slate-400 text-sm mt-1">
+                {systemTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Stats overview */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+        >
+          {[
+            { value: '230,000+', label: 'Fault Codes Database', color: 'cyan' },
+            { value: '47', label: 'Counties Covered', color: 'green' },
+            { value: '15,000+', label: 'Projects Completed', color: 'amber' },
+            { value: '24/7', label: 'Emergency Support', color: 'purple' },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 text-center"
+            >
+              <div className={`text-3xl font-bold text-${stat.color}-400`}>{stat.value}</div>
+              <div className="text-slate-400 text-sm">{stat.label}</div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Main grid */}
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Left sidebar */}
+          <div className="space-y-6">
+            <SystemStatusPanel />
+            <QuickAccessTerminal />
+            <LiveActivityFeed />
+          </div>
+
+          {/* Service cards */}
+          <div className="lg:col-span-3">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <span className="text-cyan-400">◆</span>
+                SERVICE COMMAND CENTERS
+              </h2>
+              <span className="text-slate-400 text-sm">{SERVICES.length} Active</span>
+            </div>
+
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {SERVICES.map((service, index) => (
+                <ServiceCard key={service.id} service={service} index={index} />
+              ))}
+            </div>
+          </div>
         </div>
-      </footer>
+
+        {/* Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-16 text-center"
+        >
+          <div className="inline-flex items-center gap-4 bg-slate-900/80 backdrop-blur-sm border border-cyan-500/20 rounded-full px-6 py-3">
+            <motion.div
+              className="w-2 h-2 bg-green-400 rounded-full"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+            <span className="text-slate-400 text-sm">All systems operational</span>
+            <span className="text-slate-600">|</span>
+            <span className="text-cyan-400 text-sm">COMMAND BRIDGE v3.0</span>
+          </div>
+          <p className="text-slate-500 text-xs mt-4">
+            © 2024 Emerson EIMS • World's Most Comprehensive Maintenance Platform
+          </p>
+        </motion.div>
+      </div>
+
+      {/* CSS for radial gradient */}
+      <style jsx>{`
+        .bg-gradient-radial {
+          background: radial-gradient(circle at center, var(--tw-gradient-from) 0%, var(--tw-gradient-via) 50%, var(--tw-gradient-to) 100%);
+        }
+      `}</style>
     </div>
   );
 }
