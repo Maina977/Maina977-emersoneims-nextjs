@@ -11,6 +11,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { WIRING_DIAGRAMS, REPAIR_MANUALS, PARTS_CATALOGUE, MAINTENANCE_SCHEDULES, KENYA_SUPPLIERS } from '@/lib/maintenance-hub/electrical-bible';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ELECTRICAL SYSTEM TYPES
@@ -610,9 +611,9 @@ const COMMON_APPLIANCES = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WIRING DIAGRAMS DATA
+// LOCAL WIRING DIAGRAMS DATA (Quick Reference)
 // ═══════════════════════════════════════════════════════════════════════════════
-const WIRING_DIAGRAMS = [
+const LOCAL_WIRING_DIAGRAMS = [
   {
     id: 'single-light',
     name: 'Single Light Switch',
@@ -805,11 +806,14 @@ const EARTHING_SYSTEMS = [
 // COMPONENT STATE AND HOOKS
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function ElectricalMaintenanceHub() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'faults' | 'calculator' | 'wiring' | 'earthing' | 'standards'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'faults' | 'calculator' | 'wiring' | 'earthing' | 'standards' | 'repair' | 'parts' | 'maintenance'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedFault, setSelectedFault] = useState<typeof ELECTRICAL_FAULT_CODES[0] | null>(null);
-  const [selectedDiagram, setSelectedDiagram] = useState<typeof WIRING_DIAGRAMS[0] | null>(null);
+  const [selectedDiagram, setSelectedDiagram] = useState<typeof LOCAL_WIRING_DIAGRAMS[0] | null>(null);
+  const [selectedRepairManual, setSelectedRepairManual] = useState<typeof REPAIR_MANUALS[0] | null>(null);
+  const [selectedPartsCategory, setSelectedPartsCategory] = useState<string>('mcbs');
+  const [selectedMaintenanceType, setSelectedMaintenanceType] = useState<'residential' | 'commercial' | 'industrial'>('residential');
 
   // Load Calculator State
   const [selectedAppliances, setSelectedAppliances] = useState<{name: string; watts: number; qty: number; hours: number}[]>([]);
@@ -873,6 +877,9 @@ export default function ElectricalMaintenanceHub() {
     { id: 'wiring', label: 'Wiring Diagrams', icon: '📐' },
     { id: 'earthing', label: 'Earthing Systems', icon: '⚡' },
     { id: 'standards', label: 'KPLC Standards', icon: '📋' },
+    { id: 'repair', label: 'Repair Manuals', icon: '🔧' },
+    { id: 'parts', label: 'Parts Catalogue', icon: '🛒' },
+    { id: 'maintenance', label: 'Maintenance', icon: '📅' },
   ];
 
   return (
@@ -1268,23 +1275,105 @@ export default function ElectricalMaintenanceHub() {
               className="space-y-6"
             >
               <h2 className="text-2xl font-bold text-white mb-6">Wiring Diagrams & Schematics</h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {WIRING_DIAGRAMS.map(diagram => (
-                  <div
-                    key={diagram.id}
-                    onClick={() => setSelectedDiagram(diagram)}
-                    className="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-yellow-500 cursor-pointer transition-all"
-                  >
-                    <span className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded">{diagram.category}</span>
-                    <h3 className="text-xl font-bold text-white mt-3 mb-2">{diagram.name}</h3>
-                    <p className="text-slate-400 text-sm mb-4">{diagram.description}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {diagram.components.slice(0, 3).map(c => (
-                        <span key={c} className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">{c}</span>
-                      ))}
+
+              {/* Quick Reference Diagrams */}
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-yellow-400 mb-4">Quick Reference Diagrams</h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {LOCAL_WIRING_DIAGRAMS.map(diagram => (
+                    <div
+                      key={diagram.id}
+                      onClick={() => setSelectedDiagram(diagram)}
+                      className="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-yellow-500 cursor-pointer transition-all"
+                    >
+                      <span className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded">{diagram.category}</span>
+                      <h3 className="text-xl font-bold text-white mt-3 mb-2">{diagram.name}</h3>
+                      <p className="text-slate-400 text-sm mb-4">{diagram.description}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {diagram.components.slice(0, 3).map(c => (
+                          <span key={c} className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">{c}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* Comprehensive Wiring Diagrams from Bible */}
+              <div>
+                <h3 className="text-xl font-bold text-green-400 mb-4">📚 Comprehensive Wiring Diagrams (Professional Reference)</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {WIRING_DIAGRAMS.map(diagram => (
+                    <div
+                      key={diagram.id}
+                      className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden"
+                    >
+                      <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4">
+                        <span className="text-xs text-white bg-white/20 px-2 py-1 rounded">{diagram.category}</span>
+                        <h3 className="text-xl font-bold text-white mt-2">{diagram.name}</h3>
+                        <p className="text-white/80 text-sm">{diagram.description}</p>
+                      </div>
+                      <div className="p-4">
+                        <div className="mb-4">
+                          <h4 className="text-yellow-400 font-bold mb-2">Components Required:</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {diagram.components.map((c: string) => (
+                              <span key={c} className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">{c}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <details className="group">
+                          <summary className="cursor-pointer text-green-400 font-medium hover:text-green-300 flex items-center gap-2">
+                            <span>View Full Wiring Diagram</span>
+                            <span className="transform transition-transform group-open:rotate-90">→</span>
+                          </summary>
+                          <div className="mt-4">
+                            <pre className="bg-slate-900 p-4 rounded-lg text-green-400 font-mono text-xs overflow-x-auto whitespace-pre">
+                              {diagram.diagram}
+                            </pre>
+                            {diagram.cableSchedule && (
+                              <div className="mt-4">
+                                <h5 className="text-yellow-400 font-bold mb-2">Cable Schedule:</h5>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-sm">
+                                    <thead>
+                                      <tr className="text-slate-400">
+                                        <th className="text-left p-2">Circuit</th>
+                                        <th className="text-left p-2">Cable</th>
+                                        <th className="text-left p-2">Length</th>
+                                        <th className="text-left p-2">Protection</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {diagram.cableSchedule.map((item: { circuit: string; cable: string; length: string; protection: string }, idx: number) => (
+                                        <tr key={idx} className="border-t border-slate-700">
+                                          <td className="p-2 text-white">{item.circuit}</td>
+                                          <td className="p-2 text-green-400">{item.cable}</td>
+                                          <td className="p-2 text-slate-300">{item.length}</td>
+                                          <td className="p-2 text-yellow-400">{item.protection}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+                            {diagram.notes && (
+                              <div className="mt-4">
+                                <h5 className="text-yellow-400 font-bold mb-2">Important Notes:</h5>
+                                <ul className="text-slate-300 text-sm space-y-1">
+                                  {diagram.notes.map((note: string, idx: number) => (
+                                    <li key={idx}>• {note}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </details>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
@@ -1366,12 +1455,12 @@ export default function ElectricalMaintenanceHub() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="text-white font-semibold mb-2">Three Phase Connection (>15 kVA)</h4>
+                    <h4 className="text-white font-semibold mb-2">Three Phase Connection (&gt;15 kVA)</h4>
                     <ul className="text-slate-300 text-sm space-y-2">
                       <li>• Application fee: KES 4,200 - KES 15,000</li>
                       <li>• Transformer may be required (customer cost)</li>
                       <li>• Main cable: Based on demand calculation</li>
-                      <li>• CT metering for >100A</li>
+                      <li>• CT metering for &gt;100A</li>
                       <li>• Power factor: ≥0.9 or penalty charges</li>
                       <li>• Phase balance: ≤20% imbalance</li>
                     </ul>
@@ -1432,6 +1521,207 @@ export default function ElectricalMaintenanceHub() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* REPAIR MANUALS TAB */}
+          {activeTab === 'repair' && (
+            <motion.div
+              key="repair"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold text-white mb-6">🔧 Step-by-Step Repair Manuals</h2>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {REPAIR_MANUALS.map(manual => (
+                  <div
+                    key={manual.id}
+                    className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden cursor-pointer hover:border-yellow-500 transition-all"
+                    onClick={() => setSelectedRepairManual(manual)}
+                  >
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+                      <span className="text-xs text-white bg-white/20 px-2 py-1 rounded">{manual.category}</span>
+                      <h3 className="text-xl font-bold text-white mt-2">{manual.title}</h3>
+                      <div className="flex gap-4 mt-2 text-white/80 text-sm">
+                        <span>⏱️ {manual.timeRequired}</span>
+                        <span>📊 {manual.difficulty}</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="mb-3">
+                        <h4 className="text-yellow-400 font-bold text-sm mb-2">Tools Required:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {manual.tools.map(tool => (
+                            <span key={tool} className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">{tool}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-red-400 text-sm">
+                        ⚠️ {manual.safetyWarnings.length} safety warnings
+                      </div>
+                      <div className="text-green-400 text-sm mt-2">
+                        Click to view {manual.steps.length} detailed steps →
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* PARTS CATALOGUE TAB */}
+          {activeTab === 'parts' && (
+            <motion.div
+              key="parts"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold text-white mb-6">🛒 Parts Catalogue with Kenya Prices</h2>
+
+              {/* Category Selector */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {Object.keys(PARTS_CATALOGUE).map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedPartsCategory(category)}
+                    className={`px-4 py-2 rounded-lg transition-all ${
+                      selectedPartsCategory === category
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    {category.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+
+              {/* Parts Table */}
+              <div className="bg-slate-800 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-700">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-yellow-400">Part Number</th>
+                        <th className="px-4 py-3 text-left text-yellow-400">Description</th>
+                        <th className="px-4 py-3 text-left text-yellow-400">Brand</th>
+                        <th className="px-4 py-3 text-left text-yellow-400">Price (KES)</th>
+                        <th className="px-4 py-3 text-left text-yellow-400">Suppliers</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(PARTS_CATALOGUE[selectedPartsCategory as keyof typeof PARTS_CATALOGUE] || []).map((part: { partNumber: string; description: string; brand: string; priceKES: number; suppliers: string[] }) => (
+                        <tr key={part.partNumber} className="border-t border-slate-700 hover:bg-slate-700/50">
+                          <td className="px-4 py-3 text-green-400 font-mono text-sm">{part.partNumber}</td>
+                          <td className="px-4 py-3 text-white">{part.description}</td>
+                          <td className="px-4 py-3 text-slate-300">{part.brand}</td>
+                          <td className="px-4 py-3 text-yellow-400 font-bold">KES {part.priceKES.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-slate-400 text-sm">{part.suppliers.join(', ')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Kenya Suppliers */}
+              <div className="mt-8">
+                <h3 className="text-xl font-bold text-yellow-400 mb-4">📍 Kenya Electrical Suppliers</h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {KENYA_SUPPLIERS.map(supplier => (
+                    <div key={supplier.name} className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                      <h4 className="text-white font-bold">{supplier.name}</h4>
+                      <p className="text-slate-400 text-sm">{supplier.location}</p>
+                      <p className="text-yellow-400 text-sm mt-2">{supplier.specialization}</p>
+                      <div className="mt-3 space-y-1 text-xs text-slate-500">
+                        <p>📞 {supplier.phone}</p>
+                        <p>📧 {supplier.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* MAINTENANCE TAB */}
+          {activeTab === 'maintenance' && (
+            <motion.div
+              key="maintenance"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold text-white mb-6">📅 Maintenance Schedules</h2>
+
+              {/* Type Selector */}
+              <div className="flex gap-4 mb-6">
+                {(['residential', 'commercial', 'industrial'] as const).map(type => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedMaintenanceType(type)}
+                    className={`px-6 py-3 rounded-lg transition-all flex items-center gap-2 ${
+                      selectedMaintenanceType === type
+                        ? 'bg-green-600 text-white'
+                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    <span>{type === 'residential' ? '🏠' : type === 'commercial' ? '🏢' : '🏭'}</span>
+                    <span className="capitalize">{type}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Schedule Display */}
+              <div className="space-y-6">
+                {Object.entries(MAINTENANCE_SCHEDULES[selectedMaintenanceType]).map(([frequency, tasks]) => (
+                  tasks.length > 0 && (
+                    <div key={frequency} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                      <div className={`p-4 ${
+                        frequency === 'daily' ? 'bg-green-600' :
+                        frequency === 'weekly' ? 'bg-blue-600' :
+                        frequency === 'monthly' ? 'bg-purple-600' :
+                        frequency === 'quarterly' ? 'bg-orange-600' :
+                        frequency === 'annually' ? 'bg-red-600' :
+                        'bg-slate-600'
+                      }`}>
+                        <h3 className="text-xl font-bold text-white capitalize">{frequency} Maintenance</h3>
+                      </div>
+                      <div className="p-4">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="text-slate-400 text-sm">
+                              <th className="text-left p-2">Task</th>
+                              <th className="text-left p-2">Procedure</th>
+                              <th className="text-left p-2">Tools Required</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(tasks as { task: string; procedure: string; tools: string[] }[]).map((item, idx) => (
+                              <tr key={idx} className="border-t border-slate-700">
+                                <td className="p-2 text-yellow-400 font-medium">{item.task}</td>
+                                <td className="p-2 text-slate-300 text-sm">{item.procedure}</td>
+                                <td className="p-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.tools.map(tool => (
+                                      <span key={tool} className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-400">{tool}</span>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )
+                ))}
               </div>
             </motion.div>
           )}
@@ -1578,6 +1868,108 @@ export default function ElectricalMaintenanceHub() {
                     <h3 className="text-yellow-400 font-bold mb-2">Important Notes</h3>
                     <ul className="text-slate-300 space-y-1">
                       {selectedDiagram.notes.map(n => <li key={n}>• {n}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Repair Manual Modal */}
+      <AnimatePresence>
+        {selectedRepairManual && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto"
+            onClick={() => setSelectedRepairManual(null)}
+          >
+            <div className="min-h-screen py-8 px-4">
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                className="max-w-4xl mx-auto bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="px-3 py-1 bg-white/20 rounded-full text-white text-sm">{selectedRepairManual.category}</span>
+                      <h2 className="text-2xl font-bold text-white mt-2">{selectedRepairManual.title}</h2>
+                      <div className="flex gap-4 mt-2 text-white/80">
+                        <span>⏱️ {selectedRepairManual.timeRequired}</span>
+                        <span>📊 {selectedRepairManual.difficulty}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => setSelectedRepairManual(null)} className="text-white/80 hover:text-white text-2xl">✕</button>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-6">
+                  {/* Safety Warnings */}
+                  <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
+                    <h3 className="text-red-400 font-bold mb-3">⚠️ Safety Warnings</h3>
+                    <ul className="space-y-2">
+                      {selectedRepairManual.safetyWarnings.map((warning, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-red-300">
+                          <span className="text-red-500">⚠️</span>
+                          <span>{warning}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Tools Required */}
+                  <div>
+                    <h3 className="text-yellow-400 font-bold mb-3">🔧 Tools Required</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRepairManual.tools.map(tool => (
+                        <span key={tool} className="px-3 py-2 bg-slate-700 rounded-lg text-slate-300">{tool}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Step by Step Instructions */}
+                  <div>
+                    <h3 className="text-green-400 font-bold mb-4">📋 Step-by-Step Procedure</h3>
+                    <div className="space-y-4">
+                      {selectedRepairManual.steps.map(step => (
+                        <div key={step.step} className="bg-slate-700/50 rounded-xl p-4">
+                          <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                              {step.step}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-white font-bold text-lg">{step.title}</h4>
+                              <p className="text-slate-300 mt-1">{step.description}</p>
+                              {step.details && (
+                                <p className="text-slate-400 text-sm mt-2 italic">{step.details}</p>
+                              )}
+                              {step.caution && (
+                                <div className="mt-3 bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-2">
+                                  <span className="text-yellow-400 text-sm">⚠️ {step.caution}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Verification */}
+                  <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4">
+                    <h3 className="text-green-400 font-bold mb-3">✅ Verification Checklist</h3>
+                    <ul className="space-y-2">
+                      {selectedRepairManual.verification.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-green-300">
+                          <span className="text-green-500">☐</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </div>

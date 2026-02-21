@@ -11,6 +11,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { HVAC_FAULT_CODES as BIBLE_FAULT_CODES, HVAC_REPAIR_MANUALS, HVAC_PARTS_CATALOGUE, HVAC_MAINTENANCE_SCHEDULES, HVAC_KENYA_SUPPLIERS } from '@/lib/maintenance-hub/hvac-bible';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HVAC SYSTEM TYPES
@@ -342,24 +343,30 @@ const KENYA_SUPPLIERS = [
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function HVACBible() {
-  const [activeSection, setActiveSection] = useState<'overview' | 'systems' | 'faultcodes' | 'refrigerants' | 'suppliers' | 'faq'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'systems' | 'faultcodes' | 'refrigerants' | 'suppliers' | 'faq' | 'repair' | 'parts' | 'maintenance'>('overview');
   const [selectedSystem, setSelectedSystem] = useState<typeof HVAC_SYSTEMS[0] | null>(null);
   const [faultSearch, setFaultSearch] = useState('');
   const [faultCategoryFilter, setFaultCategoryFilter] = useState('All');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [expandedFault, setExpandedFault] = useState<string | null>(null);
+  const [selectedRepairManual, setSelectedRepairManual] = useState<typeof HVAC_REPAIR_MANUALS[0] | null>(null);
+  const [selectedPartsCategory, setSelectedPartsCategory] = useState<string>('compressors');
+  const [selectedMaintenanceType, setSelectedMaintenanceType] = useState<'residential' | 'commercial' | 'coldRoom'>('residential');
+
+  // Combine local and bible fault codes
+  const ALL_FAULT_CODES = useMemo(() => [...HVAC_FAULT_CODES, ...BIBLE_FAULT_CODES], []);
 
   const filteredFaults = useMemo(() => {
-    return HVAC_FAULT_CODES.filter(fault => {
+    return ALL_FAULT_CODES.filter(fault => {
       const matchesSearch = faultSearch === '' ||
         fault.code.toLowerCase().includes(faultSearch.toLowerCase()) ||
         fault.name.toLowerCase().includes(faultSearch.toLowerCase());
       const matchesCategory = faultCategoryFilter === 'All' || fault.category === faultCategoryFilter;
       return matchesSearch && matchesCategory;
     });
-  }, [faultSearch, faultCategoryFilter]);
+  }, [faultSearch, faultCategoryFilter, ALL_FAULT_CODES]);
 
-  const faultCategories = ['All', ...new Set(HVAC_FAULT_CODES.map(f => f.category))];
+  const faultCategories = ['All', ...new Set(ALL_FAULT_CODES.map(f => f.category))];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900 text-white">
@@ -400,8 +407,11 @@ export default function HVACBible() {
             {[
               { id: 'overview', label: '📊 Overview' },
               { id: 'systems', label: '❄️ System Types' },
-              { id: 'faultcodes', label: '🔧 Fault Codes' },
+              { id: 'faultcodes', label: '🔧 Fault Codes (200+)' },
               { id: 'refrigerants', label: '🧊 Refrigerants' },
+              { id: 'repair', label: '📋 Repair Manuals' },
+              { id: 'parts', label: '🛒 Parts Catalogue' },
+              { id: 'maintenance', label: '📅 Maintenance' },
               { id: 'suppliers', label: '🏭 Suppliers' },
               { id: 'faq', label: '❓ FAQ' },
             ].map(tab => (
@@ -608,7 +618,7 @@ export default function HVACBible() {
                         </span>
                         <div>
                           <div className="font-semibold">{fault.name}</div>
-                          <div className="text-sm text-gray-400">{fault.category} • {fault.system_type}</div>
+                          <div className="text-sm text-gray-400">{fault.category} • {(fault as { system_type?: string; system?: string }).system_type || (fault as { system_type?: string; system?: string }).system}</div>
                         </div>
                       </div>
                       <span className="text-2xl">{expandedFault === fault.code ? '−' : '+'}</span>
@@ -643,21 +653,21 @@ export default function HVACBible() {
                         <div>
                           <h4 className="font-semibold text-green-400 mb-2">Repair Steps</h4>
                           <ol className="list-decimal list-inside text-sm text-gray-300 space-y-1">
-                            {fault.repair_steps.map((r, j) => <li key={j}>{r}</li>)}
+                            {((fault as { repair_steps?: string[]; repair?: string[] }).repair_steps || (fault as { repair_steps?: string[]; repair?: string[] }).repair || []).map((r, j) => <li key={j}>{r}</li>)}
                           </ol>
                         </div>
                         <div className="grid md:grid-cols-3 gap-4 pt-2">
                           <div className="bg-white/5 rounded-lg p-3">
                             <div className="text-xs text-gray-400">Parts Needed</div>
-                            <div className="text-sm">{fault.parts_needed.join(', ')}</div>
+                            <div className="text-sm">{((fault as { parts_needed?: string[]; parts?: string[] }).parts_needed || (fault as { parts_needed?: string[]; parts?: string[] }).parts || []).join(', ')}</div>
                           </div>
                           <div className="bg-white/5 rounded-lg p-3">
                             <div className="text-xs text-gray-400">Est. Cost</div>
-                            <div className="text-sm font-semibold text-green-400">{fault.estimated_cost}</div>
+                            <div className="text-sm font-semibold text-green-400">{(fault as { estimated_cost?: string; costKES?: string }).estimated_cost || (fault as { estimated_cost?: string; costKES?: string }).costKES}</div>
                           </div>
                           <div className="bg-white/5 rounded-lg p-3">
                             <div className="text-xs text-gray-400">Repair Time</div>
-                            <div className="text-sm font-semibold text-cyan-400">{fault.repair_time}</div>
+                            <div className="text-sm font-semibold text-cyan-400">{(fault as { repair_time?: string; time?: string }).repair_time || (fault as { repair_time?: string; time?: string }).time}</div>
                           </div>
                         </div>
                       </motion.div>
@@ -771,8 +781,288 @@ export default function HVACBible() {
               ))}
             </motion.div>
           )}
+
+          {/* REPAIR MANUALS SECTION */}
+          {activeSection === 'repair' && (
+            <motion.div
+              key="repair"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold">📋 Step-by-Step Repair Manuals</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {HVAC_REPAIR_MANUALS.map(manual => (
+                  <div
+                    key={manual.id}
+                    onClick={() => setSelectedRepairManual(manual)}
+                    className="bg-white/5 rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-cyan-500 transition-all"
+                  >
+                    <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-4">
+                      <span className="text-xs text-white bg-white/20 px-2 py-1 rounded">{manual.category}</span>
+                      <h3 className="text-lg font-bold text-white mt-2">{manual.title}</h3>
+                      <div className="flex gap-4 mt-2 text-white/80 text-sm">
+                        <span>⏱️ {manual.timeRequired}</span>
+                        <span>📊 {manual.difficulty}</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="mb-3">
+                        <h4 className="text-cyan-400 font-bold text-sm mb-2">Tools Required:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {manual.tools.slice(0, 4).map(tool => (
+                            <span key={tool} className="px-2 py-1 bg-white/10 rounded text-xs text-gray-300">{tool}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-red-400 text-sm">⚠️ {manual.safetyWarnings.length} safety warnings</div>
+                      <div className="text-cyan-400 text-sm mt-2">Click to view {manual.steps.length} steps →</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* PARTS CATALOGUE SECTION */}
+          {activeSection === 'parts' && (
+            <motion.div
+              key="parts"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold">🛒 Parts Catalogue with Kenya Prices</h2>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {Object.keys(HVAC_PARTS_CATALOGUE).map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedPartsCategory(category)}
+                    className={`px-4 py-2 rounded-lg transition-all ${
+                      selectedPartsCategory === category
+                        ? 'bg-cyan-600 text-white'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    }`}
+                  >
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <div className="bg-white/5 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-white/10">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-cyan-400">Part Number</th>
+                        <th className="px-4 py-3 text-left text-cyan-400">Description</th>
+                        <th className="px-4 py-3 text-left text-cyan-400">Brand</th>
+                        <th className="px-4 py-3 text-left text-cyan-400">Price (KES)</th>
+                        <th className="px-4 py-3 text-left text-cyan-400">Suppliers</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(HVAC_PARTS_CATALOGUE[selectedPartsCategory as keyof typeof HVAC_PARTS_CATALOGUE] || []).map((part) => (
+                        <tr key={part.partNumber} className="border-t border-white/10 hover:bg-white/5">
+                          <td className="px-4 py-3 text-cyan-300 font-mono text-sm">{part.partNumber}</td>
+                          <td className="px-4 py-3 text-white">{part.description}</td>
+                          <td className="px-4 py-3 text-gray-300">{part.brand}</td>
+                          <td className="px-4 py-3 text-amber-400 font-bold">KES {part.priceKES.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-gray-400 text-sm">{part.suppliers.join(', ')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-xl font-bold text-cyan-400 mb-4">📍 Kenya HVAC Suppliers</h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {HVAC_KENYA_SUPPLIERS.map(supplier => (
+                    <div key={supplier.name} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                      <h4 className="text-white font-bold">{supplier.name}</h4>
+                      <p className="text-gray-400 text-sm">{supplier.location}</p>
+                      <p className="text-cyan-400 text-sm mt-2">{supplier.specialization}</p>
+                      <div className="mt-3 space-y-1 text-xs text-gray-500">
+                        <p>📞 {supplier.phone}</p>
+                        <p>📧 {supplier.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* MAINTENANCE SCHEDULES SECTION */}
+          {activeSection === 'maintenance' && (
+            <motion.div
+              key="maintenance"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold">📅 Maintenance Schedules</h2>
+              <div className="flex gap-4 mb-6">
+                {([{ key: 'residential', label: '🏠 Residential', icon: '🏠' },
+                   { key: 'commercial', label: '🏢 Commercial', icon: '🏢' },
+                   { key: 'coldRoom', label: '🧊 Cold Room', icon: '🧊' }] as const).map(type => (
+                  <button
+                    key={type.key}
+                    onClick={() => setSelectedMaintenanceType(type.key)}
+                    className={`px-6 py-3 rounded-lg transition-all flex items-center gap-2 ${
+                      selectedMaintenanceType === type.key
+                        ? 'bg-cyan-600 text-white'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    }`}
+                  >
+                    <span>{type.icon}</span>
+                    <span>{type.label.split(' ')[1]}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-6">
+                {Object.entries(HVAC_MAINTENANCE_SCHEDULES[selectedMaintenanceType]).map(([frequency, tasks]) => (
+                  tasks.length > 0 && (
+                    <div key={frequency} className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+                      <div className={`p-4 ${
+                        frequency === 'daily' ? 'bg-green-600/50' :
+                        frequency === 'weekly' ? 'bg-blue-600/50' :
+                        frequency === 'monthly' ? 'bg-purple-600/50' :
+                        frequency === 'quarterly' ? 'bg-orange-600/50' :
+                        'bg-red-600/50'
+                      }`}>
+                        <h3 className="text-xl font-bold text-white capitalize">{frequency} Maintenance</h3>
+                      </div>
+                      <div className="p-4">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="text-gray-400 text-sm">
+                              <th className="text-left p-2">Task</th>
+                              <th className="text-left p-2">Procedure</th>
+                              <th className="text-left p-2">Tools</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tasks.map((item, idx) => (
+                              <tr key={idx} className="border-t border-white/10">
+                                <td className="p-2 text-cyan-400 font-medium">{item.task}</td>
+                                <td className="p-2 text-gray-300 text-sm">{item.procedure}</td>
+                                <td className="p-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.tools.map(tool => (
+                                      <span key={tool} className="px-2 py-1 bg-white/10 rounded text-xs text-gray-400">{tool}</span>
+                                    ))}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )
+                ))}
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
+
+      {/* Repair Manual Modal */}
+      <AnimatePresence>
+        {selectedRepairManual && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto"
+            onClick={() => setSelectedRepairManual(null)}
+          >
+            <div className="min-h-screen py-8 px-4">
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                className="max-w-4xl mx-auto bg-slate-800 rounded-2xl border border-cyan-500/30 overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="px-3 py-1 bg-white/20 rounded-full text-white text-sm">{selectedRepairManual.category}</span>
+                      <h2 className="text-2xl font-bold text-white mt-2">{selectedRepairManual.title}</h2>
+                      <div className="flex gap-4 mt-2 text-white/80">
+                        <span>⏱️ {selectedRepairManual.timeRequired}</span>
+                        <span>📊 {selectedRepairManual.difficulty}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => setSelectedRepairManual(null)} className="text-white/80 hover:text-white text-2xl">✕</button>
+                  </div>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
+                    <h3 className="text-red-400 font-bold mb-3">⚠️ Safety Warnings</h3>
+                    <ul className="space-y-2">
+                      {selectedRepairManual.safetyWarnings.map((warning, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-red-300">
+                          <span className="text-red-500">⚠️</span>
+                          <span>{warning}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-cyan-400 font-bold mb-3">🔧 Tools Required</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRepairManual.tools.map(tool => (
+                        <span key={tool} className="px-3 py-2 bg-white/10 rounded-lg text-gray-300">{tool}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-green-400 font-bold mb-4">📋 Step-by-Step Procedure</h3>
+                    <div className="space-y-4">
+                      {selectedRepairManual.steps.map(step => (
+                        <div key={step.step} className="bg-white/5 rounded-xl p-4">
+                          <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                              {step.step}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-white font-bold text-lg">{step.title}</h4>
+                              <p className="text-gray-300 mt-1">{step.description}</p>
+                              {step.details && <p className="text-gray-400 text-sm mt-2 italic">{step.details}</p>}
+                              {step.caution && (
+                                <div className="mt-3 bg-amber-500/20 border border-amber-500/50 rounded-lg p-2">
+                                  <span className="text-amber-400 text-sm">⚠️ {step.caution}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4">
+                    <h3 className="text-green-400 font-bold mb-3">✅ Verification Checklist</h3>
+                    <ul className="space-y-2">
+                      {selectedRepairManual.verification.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-green-300">
+                          <span className="text-green-500">☐</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 px-4 mt-12">

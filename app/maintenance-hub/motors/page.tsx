@@ -11,6 +11,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { MOTOR_FAULT_CODES as BIBLE_FAULT_CODES, MOTOR_REPAIR_MANUALS, MOTOR_PARTS_CATALOGUE, MOTOR_KENYA_SUPPLIERS } from '@/lib/maintenance-hub/motors-bible';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MOTOR TYPES DATABASE
@@ -414,16 +415,21 @@ const KENYA_SUPPLIERS = [
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function MotorsBible() {
-  const [activeSection, setActiveSection] = useState<'overview' | 'types' | 'faultcodes' | 'maintenance' | 'suppliers' | 'faq'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'types' | 'faultcodes' | 'maintenance' | 'repair' | 'parts' | 'suppliers' | 'faq'>('overview');
   const [selectedMotorType, setSelectedMotorType] = useState<typeof MOTOR_TYPES[0] | null>(null);
   const [faultSearch, setFaultSearch] = useState('');
   const [faultCategoryFilter, setFaultCategoryFilter] = useState('All');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [expandedFault, setExpandedFault] = useState<string | null>(null);
+  const [selectedRepairManual, setSelectedRepairManual] = useState<typeof MOTOR_REPAIR_MANUALS[0] | null>(null);
+  const [selectedPartsCategory, setSelectedPartsCategory] = useState<string>('bearings');
+
+  // Combine local and bible fault codes
+  const ALL_FAULT_CODES = useMemo(() => [...MOTOR_FAULT_CODES, ...BIBLE_FAULT_CODES], []);
 
   // Filter fault codes
   const filteredFaults = useMemo(() => {
-    return MOTOR_FAULT_CODES.filter(fault => {
+    return ALL_FAULT_CODES.filter(fault => {
       const matchesSearch = faultSearch === '' ||
         fault.code.toLowerCase().includes(faultSearch.toLowerCase()) ||
         fault.name.toLowerCase().includes(faultSearch.toLowerCase()) ||
@@ -431,9 +437,9 @@ export default function MotorsBible() {
       const matchesCategory = faultCategoryFilter === 'All' || fault.category === faultCategoryFilter;
       return matchesSearch && matchesCategory;
     });
-  }, [faultSearch, faultCategoryFilter]);
+  }, [faultSearch, faultCategoryFilter, ALL_FAULT_CODES]);
 
-  const faultCategories = ['All', ...new Set(MOTOR_FAULT_CODES.map(f => f.category))];
+  const faultCategories = ['All', ...new Set(ALL_FAULT_CODES.map(f => f.category))];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
@@ -474,8 +480,10 @@ export default function MotorsBible() {
             {[
               { id: 'overview', label: '📊 Overview', icon: '📊' },
               { id: 'types', label: '⚡ Motor Types', icon: '⚡' },
-              { id: 'faultcodes', label: '🔧 Fault Codes', icon: '🔧' },
+              { id: 'faultcodes', label: '🔧 Fault Codes (200+)', icon: '🔧' },
               { id: 'maintenance', label: '📋 Maintenance', icon: '📋' },
+              { id: 'repair', label: '🔩 Repair Manuals', icon: '🔩' },
+              { id: 'parts', label: '🛒 Parts Catalogue', icon: '🛒' },
               { id: 'suppliers', label: '🏭 Suppliers', icon: '🏭' },
               { id: 'faq', label: '❓ FAQ', icon: '❓' },
             ].map(tab => (
@@ -759,11 +767,11 @@ export default function MotorsBible() {
                 <div key={i} className="bg-white/5 rounded-xl p-6 border border-white/10">
                   <h3 className="text-xl font-bold mb-4 text-blue-400">{schedule.motor_type}</h3>
                   <div className="grid md:grid-cols-5 gap-4">
-                    {['daily', 'weekly', 'monthly', 'quarterly', 'annually'].map((period) => (
+                    {(['daily', 'weekly', 'monthly', 'quarterly', 'annually'] as const).map((period) => (
                       <div key={period} className="bg-white/5 rounded-lg p-4">
                         <h4 className="font-semibold capitalize text-amber-400 mb-2">{period}</h4>
                         <ul className="text-sm text-gray-300 space-y-1">
-                          {(schedule as Record<string, string[]>)[period].map((task: string, j: number) => (
+                          {(schedule[period as keyof typeof schedule] as string[]).map((task: string, j: number) => (
                             <li key={j} className="flex items-start gap-2">
                               <span className="text-green-400">•</span>
                               {task}
@@ -775,6 +783,120 @@ export default function MotorsBible() {
                   </div>
                 </div>
               ))}
+            </motion.div>
+          )}
+
+          {/* REPAIR MANUALS SECTION */}
+          {activeSection === 'repair' && (
+            <motion.div
+              key="repair"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold">🔩 Step-by-Step Repair Manuals</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {MOTOR_REPAIR_MANUALS.map(manual => (
+                  <div
+                    key={manual.id}
+                    onClick={() => setSelectedRepairManual(manual)}
+                    className="bg-white/5 rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-blue-500 transition-all"
+                  >
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+                      <span className="text-xs text-white bg-white/20 px-2 py-1 rounded">{manual.category}</span>
+                      <h3 className="text-lg font-bold text-white mt-2">{manual.title}</h3>
+                      <div className="flex gap-4 mt-2 text-white/80 text-sm">
+                        <span>⏱️ {manual.timeRequired}</span>
+                        <span>📊 {manual.difficulty}</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="mb-3">
+                        <h4 className="text-blue-400 font-bold text-sm mb-2">Tools Required:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {manual.tools.slice(0, 4).map(tool => (
+                            <span key={tool} className="px-2 py-1 bg-white/10 rounded text-xs text-gray-300">{tool}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-red-400 text-sm">⚠️ {manual.safetyWarnings.length} safety warnings</div>
+                      <div className="text-blue-400 text-sm mt-2">Click to view {manual.steps.length} steps →</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* PARTS CATALOGUE SECTION */}
+          {activeSection === 'parts' && (
+            <motion.div
+              key="parts"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <h2 className="text-2xl font-bold">🛒 Parts Catalogue with Kenya Prices</h2>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {Object.keys(MOTOR_PARTS_CATALOGUE).map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedPartsCategory(category)}
+                    className={`px-4 py-2 rounded-lg transition-all ${
+                      selectedPartsCategory === category
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    }`}
+                  >
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <div className="bg-white/5 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-white/10">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-blue-400">Part Number</th>
+                        <th className="px-4 py-3 text-left text-blue-400">Description</th>
+                        <th className="px-4 py-3 text-left text-blue-400">Brand</th>
+                        <th className="px-4 py-3 text-left text-blue-400">Price (KES)</th>
+                        <th className="px-4 py-3 text-left text-blue-400">Suppliers</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(MOTOR_PARTS_CATALOGUE[selectedPartsCategory as keyof typeof MOTOR_PARTS_CATALOGUE] || []).map((part) => (
+                        <tr key={part.partNumber} className="border-t border-white/10 hover:bg-white/5">
+                          <td className="px-4 py-3 text-blue-300 font-mono text-sm">{part.partNumber}</td>
+                          <td className="px-4 py-3 text-white">{part.description}</td>
+                          <td className="px-4 py-3 text-gray-300">{part.brand}</td>
+                          <td className="px-4 py-3 text-amber-400 font-bold">KES {part.priceKES.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-gray-400 text-sm">{part.suppliers.join(', ')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-xl font-bold text-blue-400 mb-4">📍 Kenya Motor Suppliers</h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {MOTOR_KENYA_SUPPLIERS.map(supplier => (
+                    <div key={supplier.name} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                      <h4 className="text-white font-bold">{supplier.name}</h4>
+                      <p className="text-gray-400 text-sm">{supplier.location}</p>
+                      <p className="text-blue-400 text-sm mt-2">{supplier.specialization}</p>
+                      <div className="mt-3 space-y-1 text-xs text-gray-500">
+                        <p>📞 {supplier.phone}</p>
+                        <p>📧 {supplier.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -840,6 +962,98 @@ export default function MotorsBible() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Repair Manual Modal */}
+      <AnimatePresence>
+        {selectedRepairManual && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto"
+            onClick={() => setSelectedRepairManual(null)}
+          >
+            <div className="min-h-screen py-8 px-4">
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                className="max-w-4xl mx-auto bg-slate-800 rounded-2xl border border-blue-500/30 overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="px-3 py-1 bg-white/20 rounded-full text-white text-sm">{selectedRepairManual.category}</span>
+                      <h2 className="text-2xl font-bold text-white mt-2">{selectedRepairManual.title}</h2>
+                      <div className="flex gap-4 mt-2 text-white/80">
+                        <span>⏱️ {selectedRepairManual.timeRequired}</span>
+                        <span>📊 {selectedRepairManual.difficulty}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => setSelectedRepairManual(null)} className="text-white/80 hover:text-white text-2xl">✕</button>
+                  </div>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
+                    <h3 className="text-red-400 font-bold mb-3">⚠️ Safety Warnings</h3>
+                    <ul className="space-y-2">
+                      {selectedRepairManual.safetyWarnings.map((warning, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-red-300">
+                          <span className="text-red-500">⚠️</span>
+                          <span>{warning}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-blue-400 font-bold mb-3">🔧 Tools Required</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRepairManual.tools.map(tool => (
+                        <span key={tool} className="px-3 py-2 bg-white/10 rounded-lg text-gray-300">{tool}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-green-400 font-bold mb-4">📋 Step-by-Step Procedure</h3>
+                    <div className="space-y-4">
+                      {selectedRepairManual.steps.map(step => (
+                        <div key={step.step} className="bg-white/5 rounded-xl p-4">
+                          <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                              {step.step}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-white font-bold text-lg">{step.title}</h4>
+                              <p className="text-gray-300 mt-1">{step.description}</p>
+                              {step.details && <p className="text-gray-400 text-sm mt-2 italic">{step.details}</p>}
+                              {step.caution && (
+                                <div className="mt-3 bg-amber-500/20 border border-amber-500/50 rounded-lg p-2">
+                                  <span className="text-amber-400 text-sm">⚠️ {step.caution}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4">
+                    <h3 className="text-green-400 font-bold mb-3">✅ Verification Checklist</h3>
+                    <ul className="space-y-2">
+                      {selectedRepairManual.verification.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-green-300">
+                          <span className="text-green-500">☐</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 px-4 mt-12">
