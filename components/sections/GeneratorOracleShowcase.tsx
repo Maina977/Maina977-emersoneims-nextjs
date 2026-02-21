@@ -69,7 +69,7 @@ const ADVANCED_FEATURES = [
 
 // Core Features
 const CORE_FEATURES = [
-  { icon: '🔍', stat: '90,000+', label: 'Fault Codes', desc: 'Comprehensive database' },
+  { icon: '🔍', stat: '230,000+', label: 'Fault Codes', desc: 'Comprehensive database' },
   { icon: '⚡', stat: '9', label: 'Controller Types', desc: 'Wide compatibility' },
   { icon: '🔄', stat: '100%', label: 'Reset Pathways', desc: 'Step-by-step guides' },
   { icon: '📴', stat: '100%', label: 'Offline Ready', desc: 'No internet required' },
@@ -239,7 +239,7 @@ export default function GeneratorOracleShowcase() {
             A comprehensive diagnostic tool with <span className="text-cyan-400 font-bold">AI-Powered Analysis</span>,{' '}
             <span className="text-purple-400 font-bold">3D Visualization</span>,{' '}
             <span className="text-green-400 font-bold">Vibration Analysis</span>, and{' '}
-            <span className="text-amber-400 font-bold">90,000+ fault codes</span> across{' '}
+            <span className="text-amber-400 font-bold">230,000+ fault codes</span> across{' '}
             <span className="text-white font-bold">5 major brands</span>.
           </p>
         </motion.div>
@@ -252,7 +252,7 @@ export default function GeneratorOracleShowcase() {
           className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
         >
           {[
-            { value: '90,000+', label: 'Fault Codes', color: '#06b6d4' },
+            { value: '230,000+', label: 'Fault Codes', color: '#06b6d4' },
             { value: '6', label: 'Advanced Features', color: '#f59e0b' },
             { value: '21', label: 'Controllers Supported', color: '#22c55e' },
             { value: '5', label: 'Major Brands', color: '#8b5cf6' },
@@ -454,7 +454,7 @@ export default function GeneratorOracleShowcase() {
               </div>
               <p className="text-slate-300 max-w-2xl mx-auto">
                 Try Generator Oracle completely free during our launch period.
-                Full access to all features. All 90,000+ fault codes. AI diagnostics included. No credit card required.
+                Full access to all features. All 230,000+ fault codes. AI diagnostics included. No credit card required.
               </p>
               <p className="text-amber-400 font-bold mt-4">
                 After trial: KES 5,000 one-time purchase

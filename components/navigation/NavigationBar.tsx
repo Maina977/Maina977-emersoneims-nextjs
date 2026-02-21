@@ -81,7 +81,7 @@ export default function NavigationBar({
       id: 'generator-oracle',
       label: 'Generator Oracle',
       dropdown: [
-        { label: 'Generator Oracle', href: '/generator-oracle', description: 'Complete diagnostic suite with 90,000+ fault codes, simulator, wiring diagrams', icon: '🔮', badge: 'AI-POWERED' },
+        { label: 'Generator Oracle', href: '/generator-oracle', description: 'Complete diagnostic suite with 230,000+ fault codes, simulator, wiring diagrams', icon: '🔮', badge: 'AI-POWERED' },
         { label: 'Africa Landing', href: '/generator-oracle/africa', description: 'Optimized for African technicians', icon: '🌍' },
         { label: 'Fault Code Lookup', href: '/fault-code-lookup', description: 'Quick error code search', icon: '🔍' },
         { label: 'Diagnostic Suite', href: '/diagnostic-suite', description: 'Full diagnostic experience', icon: '📊' },

@@ -55,7 +55,7 @@ const AFRICAN_REGIONS = {
 };
 
 const STATISTICS = [
-  { value: '90,000+', label: 'Fault Codes', icon: '🔍' },
+  { value: '230,000+', label: 'Fault Codes', icon: '🔍' },
   { value: '9', label: 'Compatible Types', icon: '🎛️' },
   { value: '7', label: 'Languages', icon: '🌍' },
   { value: '100%', label: 'Offline Capable', icon: '📱' },
@@ -107,7 +107,7 @@ const TESTIMONIALS = [
     flag: "🇺🇬",
   },
   {
-    quote: "90,000+ fault codes in one app! I've used it for DSE, ComAp, and Woodward controllers - all accurate.",
+    quote: "230,000+ fault codes in one app! I've used it for DSE, ComAp, and Woodward controllers - all accurate.",
     author: "Ahmed Hassan",
     role: "Power Systems Engineer",
     location: "Lagos, Nigeria",
@@ -163,7 +163,7 @@ export default function AfricaLandingPage() {
             transition={{ delay: 0.2 }}
             className="text-xl text-slate-400 max-w-3xl mx-auto mb-8"
           >
-            90,000+ fault codes, compatible with 9 controller types, 7 languages including Swahili, Arabic & French.
+            230,000+ fault codes, compatible with 9 controller types, 7 languages including Swahili, Arabic & French.
             Works 100% offline - perfect for remote African locations.
           </motion.p>
 

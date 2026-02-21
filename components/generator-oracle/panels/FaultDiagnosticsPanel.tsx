@@ -813,7 +813,7 @@ export default function FaultDiagnosticsPanel({
           <span className="text-3xl">🔮</span>
           <div>
             <h2 className="text-xl font-bold text-purple-400 uppercase tracking-wider">Generator Oracle</h2>
-            <p className="text-sm text-slate-500">90,000+ fault codes with detailed troubleshooting</p>
+            <p className="text-sm text-slate-500">230,000+ fault codes with detailed troubleshooting</p>
           </div>
         </div>
       </div>

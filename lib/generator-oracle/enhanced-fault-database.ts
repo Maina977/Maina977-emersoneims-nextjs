@@ -1158,6 +1158,776 @@ Electronic temperature monitoring replaced mechanical gauges in most application
         summary: 'Guidelines for ensuring adequate cooling capacity when installing generators in high ambient temperature environments. Includes calculation methods and upgrade options.'
       }
     ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // C034 - GENERATOR OVER VOLTAGE
+  // ═══════════════════════════════════════════════════════════════════════════════
+  'C034': {
+    code: 'C034',
+    title: 'Generator Over Voltage Protection - Phase Voltage Exceeded Safe Limits',
+    alternativeCodes: ['OV', 'E034', 'F034', 'ALM-34', 'GEN-OV', 'OVERVOLT', 'HV'],
+    severity: 'shutdown',
+    category: 'Electrical Protection',
+    subcategory: 'Voltage Regulation',
+    affectedSystems: ['AVR', 'Exciter', 'Generator Windings', 'Connected Loads', 'Control Systems'],
+
+    technicalOverview: `Error code C034 indicates that the generator output voltage has exceeded the maximum safe operating threshold, triggering the over voltage protection system. This is a critical protection function designed to prevent damage to both the generator itself and all connected electrical loads. In a properly functioning generator, the Automatic Voltage Regulator (AVR) maintains output voltage within a tight tolerance band, typically ±5% of nominal voltage. When voltage exceeds this band significantly (usually 10-15% above nominal), the controller recognizes this as a dangerous condition and initiates protective shutdown. The over voltage condition can occur instantaneously during transient events or develop gradually due to component degradation.
+
+The physics of over voltage in a synchronous generator relates directly to the magnetic field strength in the rotor and the speed at which the rotor turns. According to Faraday's law of electromagnetic induction, the voltage generated is proportional to the rate of change of magnetic flux through the stator windings. This means voltage can increase due to either excessive field current (controlled by the AVR) or excessive speed (controlled by the governor). The AVR continuously samples the generator output voltage through sensing transformers or direct connections and adjusts the DC excitation current flowing through the rotor field winding to maintain constant output voltage regardless of load changes. When this feedback control loop fails or is overwhelmed, dangerous over voltage can result.
+
+The consequences of uncontrolled over voltage extend far beyond the generator itself. Electronic equipment connected to the generator, including computers, PLCs, variable frequency drives, and sensitive medical or communications equipment, can be permanently damaged by voltage spikes or sustained over voltage. Incandescent lamps will burn brighter and fail prematurely. Motors will draw excessive current and may overheat. Insulation in transformers, motors, and wiring can break down. The generator's own stator winding insulation is stressed beyond design limits during over voltage events, potentially leading to inter-turn shorts or ground faults that require expensive rewinding. This is why the protection system responds quickly and decisively to over voltage conditions.
+
+Understanding the root cause of C034 is essential for effective repair. The most common causes include AVR component failure (particularly semiconductor devices in the voltage sensing or power output circuits), loss of voltage sensing signals, speed regulation problems that allow the engine to run fast, and incorrect AVR settings or calibration drift. External factors such as loss of load rejection (sudden removal of large loads) can cause temporary over voltage that a healthy AVR should handle, but a marginal AVR may allow voltage to spike beyond limits. Careful systematic diagnosis is required to identify whether the problem lies with the AVR, the sensing circuits, the engine speed control, or the generator's electromagnetic characteristics.`,
+
+    systemImpact: `When a C034 over voltage fault occurs, the impact cascades through multiple systems in rapid succession. The primary impact is on connected loads, which may experience damaging voltage spikes before the protection system can respond and shut down the generator. Sensitive electronic equipment is particularly vulnerable during the brief interval between the voltage exceedance and the actual generator shutdown - this window, though typically less than one second, can be sufficient to damage semiconductor components in power supplies, computers, and control systems. After the generator shuts down, all loads lose power, which itself can cause disruption to critical processes.
+
+The generator itself suffers stress during over voltage events. The stator winding insulation, rated for a specific voltage with appropriate safety margins, is stressed beyond design intent. Repeated over voltage events cause cumulative insulation degradation through a mechanism called partial discharge, where tiny electrical discharges occur within microscopic voids in the insulation, gradually breaking down the material. This degradation is not immediately apparent but can lead to eventual insulation failure, typically at the worst possible time under load. The exciter and AVR components may also be damaged by the conditions that caused the over voltage, particularly if the failure mode involves semiconductor junction breakdown.
+
+Economic impact includes both the immediate cost of any damaged equipment and the indirect costs of downtime while the fault is diagnosed and repaired. In a hospital, data center, or manufacturing facility, the cost of unexpected shutdown can far exceed the repair costs of the generator itself. There is also reputation impact if backup power systems fail to perform their primary function of maintaining power continuity. Insurance implications may also arise if equipment damage results from generator malfunction that could have been prevented by proper maintenance.
+
+The long-term impact depends heavily on how quickly and effectively the root cause is identified and corrected. A simple AVR calibration issue, once corrected, leaves no lasting damage. However, if the same C034 fault recurs multiple times before being properly addressed, cumulative damage to insulation systems will reduce the generator's service life. Additionally, the connected load damage from repeated events can be substantial. Thorough root cause analysis and complete repair at the first occurrence is far more cost-effective than repeated superficial repairs that allow the underlying problem to persist.`,
+
+    safetyConsiderations: `Working with over voltage faults requires respect for electrical hazards that exceed normal generator maintenance scenarios. The fault itself indicates that abnormally high voltages have been present in the system, potentially exceeding 300V AC on nominal 230V systems or 500V AC on nominal 400V systems. Before beginning any diagnostic or repair work, verify that the generator is shut down, the engine cannot start, and the main circuit breaker is open and locked out. Remember that generator terminals can remain energized by backfeed from other sources even when the generator is stopped - always verify with a rated voltage tester before touching any connections.
+
+The AVR and excitation system components being investigated operate at potentially hazardous voltage levels. The exciter field may be supplied with 40-100V DC, and the AVR sensing circuits connect directly to generator output voltage. Some AVR designs use high-frequency switching circuits that can produce voltage spikes well above the DC supply level. Capacitors within the AVR may retain charge even after power is removed - always observe proper capacitor discharge procedures before handling circuit boards. Work on AVR components should be performed only by qualified personnel with appropriate electrical training and safety equipment.
+
+When testing generator response after repair, be aware that the fault may recur if the repair was not successful or if there are multiple contributing factors. Have appropriate load-side protection in place before test running the generator, and be prepared to shut down quickly if voltage begins to rise abnormally. If possible, test initially with no connected loads or only with robust resistive loads that can tolerate brief over voltage without damage. Monitor voltage continuously during testing and do not assume the problem is fixed until the generator has been operated through its full range of conditions including load acceptance and rejection tests.
+
+Personal protective equipment for this type of work includes safety glasses, insulated gloves rated for the voltages involved, and non-conductive footwear. Work should be performed in dry conditions, and the generator should be properly grounded. If the fault caused any damage to insulation or wiring, those components must be fully repaired or replaced before the generator is returned to service - operating with damaged insulation creates risk of ground faults or flash events that can cause serious injury.`,
+
+    historicalContext: `Over voltage protection in generator control systems has evolved significantly over the past several decades. Early generator installations, particularly those from the 1950s through 1970s, often relied on simple electromagnetic voltage regulators with limited response speed and accuracy. These systems were prone to transient over voltages during load changes, and the protection was often a simple thermal breaker that responded slowly. Sensitive equipment connected to these generators required additional voltage conditioning, or operators simply accepted that some voltage variation was normal.
+
+The introduction of solid-state AVRs in the 1980s dramatically improved voltage regulation precision and response speed. These AVRs, using silicon controlled rectifiers (SCRs) or later transistor-based designs, could maintain voltage within ±1% under steady-state conditions and respond to load changes in milliseconds rather than the seconds required by electromagnetic regulators. However, the semiconductor components introduced new failure modes - these regulators could fail in either low-output or high-output states, creating the need for more sophisticated over voltage protection in the generator controller.
+
+Modern digital controllers, beginning with DSE, ComAp, and similar microprocessor-based units in the 1990s and 2000s, incorporate multi-level voltage protection with programmable thresholds and time delays. These systems can distinguish between brief transients that the AVR will correct and sustained over voltage that indicates a genuine fault. The controllers log voltage excursion events, allowing trending analysis that can predict AVR degradation before actual failure occurs. Integration with building management systems and remote monitoring further enhances the ability to respond to developing voltage regulation problems.
+
+The C034 fault code specifically follows the SAE J1939 diagnostic trouble code convention adapted for generator applications, though exact code assignments vary by controller manufacturer. Understanding this historical context helps technicians recognize that different generation controllers may have different fault codes for the same underlying condition - hence the importance of the alternative codes list that includes OV, E034, F034, and manufacturer-specific variations. The underlying protection function remains the same regardless of the specific code used.`,
+
+    rootCauses: [
+      {
+        cause: 'AVR Failure - Output Stage',
+        probability: 35,
+        explanation: 'The most common cause of sustained over voltage is failure of the AVR power output stage in a "full-on" condition. This typically occurs when the SCRs or power transistors that control exciter field current fail shorted, allowing maximum excitation regardless of the sensing circuit feedback.',
+        testMethod: 'Measure exciter field resistance with AVR disconnected. Then measure AVR output with sensing disconnected - should be near zero if AVR is healthy and receiving no feedback.',
+        timeToTest: '15-30 minutes',
+        toolsRequired: ['Digital multimeter', 'Insulated test leads', 'AVR technical manual'],
+        symptomsIndicating: ['Voltage rose gradually over time', 'No response to AVR adjustment', 'AVR warm/hot to touch', 'Burning smell from AVR']
+      },
+      {
+        cause: 'Loss of Voltage Sensing',
+        probability: 25,
+        explanation: 'The AVR requires accurate voltage feedback to regulate properly. If the sensing wires are disconnected, broken, or have high-resistance connections, the AVR interprets the low feedback as under-voltage and increases excitation, causing actual over voltage.',
+        testMethod: 'Inspect sensing circuit wiring from generator terminals to AVR. Measure voltage at AVR sensing terminals with generator running at known output voltage.',
+        timeToTest: '20-45 minutes',
+        toolsRequired: ['Digital multimeter', 'Wiring diagrams', 'Inspection mirror', 'Test light'],
+        symptomsIndicating: ['Sudden voltage increase', 'Intermittent voltage fluctuation', 'Recent maintenance performed', 'Vibration or corrosion present']
+      },
+      {
+        cause: 'Engine Over Speed',
+        probability: 15,
+        explanation: 'Generator voltage is proportional to speed. If the engine governor allows speed to increase above rated RPM, voltage will increase proportionally even with a healthy AVR. A 10% overspeed causes approximately 10% over voltage.',
+        testMethod: 'Check engine RPM with calibrated tachometer while monitoring voltage. RPM should be within ±0.5% of rated speed (typically 1500 or 1800 RPM).',
+        timeToTest: '10-15 minutes',
+        toolsRequired: ['Optical or digital tachometer', 'Multimeter', 'Frequency meter'],
+        symptomsIndicating: ['Generator frequency also high', 'Governor hunting or instability', 'Recent governor adjustment', 'Speed varies with load']
+      },
+      {
+        cause: 'AVR Calibration Drift',
+        probability: 10,
+        explanation: 'AVR voltage setpoint can drift over time, particularly in analog designs with potentiometer adjustments. Temperature variations can also affect the reference circuitry, causing the AVR to regulate at an incorrect voltage level.',
+        testMethod: 'Measure actual output voltage and compare to AVR setpoint indication. Adjust AVR potentiometer and verify voltage responds correctly.',
+        timeToTest: '15-20 minutes',
+        toolsRequired: ['True RMS digital multimeter', 'Small screwdriver for AVR adjustment', 'Technical manual'],
+        symptomsIndicating: ['Gradual increase over weeks/months', 'Voltage varies with ambient temperature', 'AVR recently installed or serviced']
+      },
+      {
+        cause: 'Exciter Winding Fault',
+        probability: 10,
+        explanation: 'A short circuit within the exciter field winding reduces its resistance, causing higher than normal current flow for any given AVR output voltage. This increases magnetic field strength and generator output voltage.',
+        testMethod: 'Measure exciter field winding resistance and compare to specification. Look for hot spots on exciter with thermal imaging if available.',
+        timeToTest: '30-45 minutes',
+        toolsRequired: ['Low-resistance ohmmeter', 'Exciter specifications', 'Thermal camera optional'],
+        symptomsIndicating: ['Overheating at exciter', 'AVR output voltage lower than normal for given output', 'Burning smell from exciter']
+      },
+      {
+        cause: 'Load Rejection Transient',
+        probability: 5,
+        explanation: 'Sudden loss of large load causes temporary over voltage spike as the AVR responds to the new condition. Healthy AVRs recover within 0.5-2 seconds, but the spike may exceed protection thresholds.',
+        testMethod: 'Review event log for load changes before fault. Check protection time delay settings.',
+        timeToTest: '10-15 minutes',
+        toolsRequired: ['Controller with event logging', 'Technical manual'],
+        symptomsIndicating: ['Large load switched off just before fault', 'Voltage spike then normal', 'Fault cleared on reset']
+      }
+    ],
+
+    diagnosticProcedures: [
+      {
+        step: 1,
+        title: 'Initial Safety Verification',
+        instruction: 'Before beginning any diagnostic work, ensure the generator is completely shut down and cannot start unexpectedly. Open and lock out the main circuit breaker. Verify that the generator terminals are de-energized using a rated voltage tester - do not assume the generator is dead just because it is not running, as backfeed from other sources may be present. Confirm that the control panel shows no active alarms other than the C034 being investigated.',
+        safetyWarning: 'Generator terminals may be energized from external sources even when the generator is stopped. Always verify with a voltage tester rated for the expected voltage.',
+        toolsRequired: ['Voltage tester rated for 600V AC', 'Lock-out/tag-out equipment', 'Personal protective equipment'],
+        expectedResult: 'Zero voltage reading at all generator output terminals and at AVR input terminals',
+        ifPassed: 'Proceed to Step 2 for visual inspection',
+        ifFailed: 'Identify and isolate the backfeed source before proceeding. Do not work on energized equipment.',
+        technicalNote: 'The C034 fault indicates over voltage occurred, meaning insulation may have been stressed. Look for any signs of insulation damage (discoloration, burning smell) during initial inspection.',
+        estimatedTime: '10-15 minutes'
+      },
+      {
+        step: 2,
+        title: 'Visual Inspection of AVR and Wiring',
+        instruction: 'Conduct a thorough visual inspection of the AVR unit, its mounting, and all associated wiring. Look for signs of overheating (discoloration, melted plastic, burnt components), physical damage, loose connections, or corrosion. Inspect the voltage sensing wires from the generator terminals to the AVR - these are typically smaller gauge wires connected to the output side of the main circuit breaker. Check that all terminal connections are tight and show no signs of arcing or heating.',
+        toolsRequired: ['Flashlight', 'Inspection mirror', 'Small screwdriver for terminal checking'],
+        expectedResult: 'No visible damage, all connections secure, no signs of overheating',
+        ifPassed: 'Proceed to Step 3 for electrical measurements',
+        ifFailed: 'Document damage found. Damaged components will need replacement before generator can be returned to service.',
+        technicalNote: 'A burnt or discolored AVR typically indicates catastrophic failure requiring replacement. Do not attempt to repair failed AVR circuit boards - replacement is more reliable and often more cost-effective.',
+        estimatedTime: '15-20 minutes'
+      },
+      {
+        step: 3,
+        title: 'Measure Exciter Field Resistance',
+        instruction: 'Disconnect the AVR output leads from the exciter field terminals (typically labeled F+ and F- or similar). Using a digital multimeter on resistance mode, measure the resistance between these field terminals. Compare this reading to the manufacturer specification for the exciter field winding. A reading significantly lower than specification indicates shorted turns, while an open reading indicates broken wiring or connections.',
+        toolsRequired: ['Digital multimeter', 'Exciter field specifications', 'Wiring diagram'],
+        expectedResult: 'Exciter field resistance within manufacturer specification (typically 5-50 ohms depending on design)',
+        ifPassed: 'Exciter field winding is healthy. Proceed to Step 4.',
+        ifFailed: 'If resistance is low: exciter has shorted turns, requires repair/replacement. If open: check wiring, brushes, slip rings.',
+        technicalNote: 'Exciter field resistance may vary slightly with temperature. If significantly different from spec, recheck at ambient temperature after generator has cooled.',
+        estimatedTime: '15-20 minutes'
+      },
+      {
+        step: 4,
+        title: 'Test AVR Sensing Circuit',
+        instruction: 'With AVR disconnected from field (as left from Step 3), identify the voltage sensing input terminals on the AVR. Using the wiring diagram, trace these back to their source at the generator output terminals. Using an ohmmeter, verify continuity from each sensing input to its corresponding generator terminal. Check for proper grounding of any shielded sensing cables.',
+        toolsRequired: ['Digital multimeter', 'Wiring diagram', 'Electrical tape for marking wires'],
+        expectedResult: 'Low resistance (less than 1 ohm) from AVR sensing inputs to generator terminals with no shorts between phases or to ground',
+        ifPassed: 'Sensing circuit wiring is intact. Proceed to Step 5.',
+        ifFailed: 'Open sensing circuit found - repair wiring. Short to ground found - identify and clear the fault before proceeding.',
+        technicalNote: 'Some AVRs use sensing transformers rather than direct connection. Test the transformer secondary resistance and verify the primary is correctly connected to generator output.',
+        estimatedTime: '20-30 minutes'
+      },
+      {
+        step: 5,
+        title: 'Test AVR Operation - Bench Test',
+        instruction: 'If the AVR passes visual inspection and the sensing circuit is intact, the next step is to verify AVR operation. With the AVR disconnected from the generator, apply appropriate sensing voltage (use a variable AC source if available, or carefully use mains voltage through an isolation transformer). Monitor the AVR output terminals - on power-up with sensing voltage applied, output should be minimal. Reduce sensing voltage and observe if output increases - a healthy AVR will increase output as sensed voltage decreases.',
+        safetyWarning: 'This test involves potentially hazardous voltages. Use only isolated test equipment and observe all electrical safety precautions.',
+        toolsRequired: ['Variable AC source or isolation transformer', 'Digital multimeter', 'Dummy load resistor for AVR output'],
+        expectedResult: 'AVR output is inversely proportional to sensing voltage - low sensing voltage produces high output, high sensing voltage produces low output',
+        ifPassed: 'AVR is functioning correctly. Fault is likely in the engine speed or sensing circuit connections. Proceed to Step 6.',
+        ifFailed: 'AVR is faulty. Replace AVR with correct model for your exciter type.',
+        technicalNote: 'If proper test equipment is not available, the AVR can be tested on the generator by carefully monitoring voltage during run-up. However, this risks another over voltage event if AVR is faulty.',
+        estimatedTime: '30-45 minutes'
+      },
+      {
+        step: 6,
+        title: 'Verify Engine Speed',
+        instruction: 'If the AVR tests healthy, the over voltage may be caused by engine overspeed. Reconnect AVR and prepare generator for test run. Using a calibrated tachometer (optical or electronic), measure engine RPM with generator running at no load. Compare to rated speed specified on generator nameplate. Speed should be within ±0.5% of rated value. If speed is high, adjust governor to correct speed.',
+        safetyWarning: 'Prepare to shut down immediately if voltage rises abnormally during test. Have an observer watching the voltage display.',
+        toolsRequired: ['Calibrated tachometer', 'Frequency meter', 'Multimeter for voltage'],
+        expectedResult: 'Engine speed within ±0.5% of rated speed; frequency within 50.0 ±0.5 Hz (or 60.0 ±0.5 Hz)',
+        ifPassed: 'Speed is correct. If voltage is still high, recheck AVR calibration adjustment.',
+        ifFailed: 'Adjust governor to correct speed. If speed cannot be stabilized, investigate governor malfunction.',
+        technicalNote: 'Frequency and speed are directly related: Hz = (RPM × Poles) / 120. For a 4-pole generator at 50 Hz, correct speed is exactly 1500 RPM.',
+        estimatedTime: '15-20 minutes'
+      }
+    ],
+
+    resetSequences: {
+      TYPE_A: {
+        steps: [
+          'Verify fault condition has been corrected and voltage will be normal on restart',
+          'If generator is running, press STOP button and wait for complete shutdown',
+          'After engine stops, wait 30 seconds for controller to complete its shutdown sequence',
+          'Press and hold STOP button for 3 seconds to acknowledge shutdown faults',
+          'Press RESET button (or ALARM ACK button) to clear the alarm',
+          'Wait 5 seconds for controller to complete reset sequence',
+          'Verify alarm is cleared from display - if fault persists, root cause not corrected',
+          'Generator is now ready to restart in AUTO or MANUAL mode'
+        ],
+        keySequence: ['STOP (hold 3s)', 'RESET', 'Wait 5s', 'Verify clear'],
+        notes: 'On DSE controllers, some over voltage faults are classified as lockout alarms that require specific reset sequences. Check controller manual for model-specific procedures.'
+      },
+      TYPE_B: {
+        steps: [
+          'Verify fault condition is corrected',
+          'Press STOP to ensure generator is fully stopped',
+          'Navigate to ALARM or FAULT menu using arrow keys',
+          'Select the active C034 fault',
+          'Press RESET or ACK button',
+          'Some models require pressing RESET twice - once to acknowledge, once to clear',
+          'Return to main display and verify no active faults shown',
+          'Generator ready for restart'
+        ],
+        keySequence: ['STOP', 'MENU', '↓ to Alarms', 'SELECT', 'RESET', 'RESET'],
+        notes: 'ComAp InteliLite and InteliGen controllers may require password entry to reset certain faults. Default password is often 1000 or 0000.'
+      },
+      TYPE_C: {
+        steps: [
+          'Confirm fault condition is resolved',
+          'If generator running, press STOP button',
+          'Press MENU button to enter menu system',
+          'Navigate to ALARMS or FAULT LOG using scroll wheel',
+          'Select the over voltage fault',
+          'Press RESET or CLEAR soft key',
+          'Confirm reset when prompted',
+          'Exit menu and verify main display shows no active faults'
+        ],
+        keySequence: ['STOP', 'MENU', 'Scroll to ALARMS', 'ENTER', 'RESET', 'CONFIRM'],
+        notes: 'Woodward controllers with graphical displays provide detailed fault information. Review the logged data before clearing to assist root cause analysis.'
+      },
+      TYPE_D: {
+        steps: [
+          'Verify the over voltage condition is corrected',
+          'Ensure generator is stopped (if not, press STOP)',
+          'Press RESET button and hold for 2 seconds',
+          'If fault does not clear, access menu system',
+          'Navigate to SERVICE → CLEAR FAULTS',
+          'Select C034 or ALL FAULTS as appropriate',
+          'Confirm clear operation',
+          'Exit to main screen and verify cleared status'
+        ],
+        keySequence: ['STOP', 'RESET (hold 2s)', 'or MENU', 'SERVICE', 'CLEAR FAULTS'],
+        notes: 'SmartGen HGM series controllers have straightforward reset procedures. SG72 software provides additional reset capabilities for stubborn faults.'
+      },
+      TYPE_E: {
+        steps: [
+          'Confirm generator is stopped and fault cause corrected',
+          'Press STOP button to ensure clean shutdown state',
+          'Press ALARM CLEAR or RESET button on front panel',
+          'If using CAT ET software, connect laptop and navigate to Active Faults',
+          'Select the over voltage fault and choose Clear',
+          'Some faults require confirmation - follow screen prompts',
+          'Verify no remaining active faults before returning to service',
+          'Document fault occurrence in maintenance records'
+        ],
+        keySequence: ['STOP', 'ALARM CLEAR', 'Confirm', 'Verify'],
+        notes: 'CAT PowerWizard controllers integrate with engine ECM. Some faults may also set engine codes that need separate clearing through CAT ET software.'
+      }
+    },
+
+    repairProcedures: [
+      {
+        title: 'AVR Replacement',
+        difficulty: 'intermediate',
+        estimatedTime: '1-2 hours',
+        laborCost: { min: 5000, max: 15000, currency: 'KES' },
+        partsCost: { min: 25000, max: 85000, currency: 'KES' },
+        partsRequired: [
+          {
+            name: 'Automatic Voltage Regulator',
+            quantity: 1,
+            oemPartNumber: 'Varies by generator model',
+            alternativePartNumbers: ['Generic equivalents available for common types'],
+            estimatedCost: 45000
+          }
+        ],
+        toolsRequired: [
+          'Screwdriver set', 'Wire strippers', 'Crimping tool', 'Multimeter', 'Cable ties',
+          'Marker pen for wire identification', 'Camera for documentation'
+        ],
+        steps: [
+          { step: 1, instruction: 'Document all wire connections with photographs before disconnecting anything. Label each wire with masking tape and marker.', tip: 'A clear photo is worth many written notes when rewiring' },
+          { step: 2, instruction: 'Disconnect all wires from the AVR, one at a time, verifying labels against photographs.', warning: 'Ensure all power sources are isolated before disconnecting' },
+          { step: 3, instruction: 'Remove AVR mounting screws and remove the old AVR.', tip: 'Note mounting orientation for new AVR installation' },
+          { step: 4, instruction: 'Compare old and new AVR terminals and connections. Verify new AVR is correct replacement.', warning: 'Installing wrong AVR type can cause immediate damage' },
+          { step: 5, instruction: 'Mount new AVR in same location and orientation as old unit.', tip: 'Ensure good heat sink contact if AVR is heat-sink mounted' },
+          { step: 6, instruction: 'Connect wires to new AVR according to labels and photos. Double-check each connection against wiring diagram.', warning: 'Incorrect wiring will damage the new AVR immediately' },
+          { step: 7, instruction: 'Set voltage adjustment potentiometer to middle position before first start.' },
+          { step: 8, instruction: 'Verify all connections are secure and no loose wires remain.' },
+          { step: 9, instruction: 'Perform first start under close observation, monitoring voltage constantly. Adjust AVR to achieve correct voltage.', warning: 'Be ready to shut down immediately if voltage is abnormal' }
+        ],
+        verificationSteps: [
+          'Run generator at no load and verify voltage is within specification',
+          'Apply 50% load and verify voltage remains stable',
+          'Apply 100% load and verify voltage drop is within limits',
+          'Perform load rejection test (remove load suddenly) and verify voltage recovers without excessive overshoot',
+          'Run for 1 hour and verify no overheating of AVR'
+        ]
+      },
+      {
+        title: 'Repair Voltage Sensing Wiring',
+        difficulty: 'beginner',
+        estimatedTime: '30-60 minutes',
+        laborCost: { min: 2000, max: 5000, currency: 'KES' },
+        partsCost: { min: 500, max: 2000, currency: 'KES' },
+        partsRequired: [
+          {
+            name: 'Electrical wire (1.5mm²)',
+            quantity: 5,
+            oemPartNumber: 'N/A',
+            alternativePartNumbers: ['Standard electrical wire'],
+            estimatedCost: 500
+          },
+          {
+            name: 'Ring terminals',
+            quantity: 10,
+            oemPartNumber: 'N/A',
+            alternativePartNumbers: ['Standard crimp terminals'],
+            estimatedCost: 200
+          }
+        ],
+        toolsRequired: ['Wire strippers', 'Crimping tool', 'Multimeter', 'Screwdrivers', 'Electrical tape'],
+        steps: [
+          { step: 1, instruction: 'Identify the faulty section of sensing wiring using continuity tests.' },
+          { step: 2, instruction: 'If a single broken connection, clean and re-terminate the existing wire.' },
+          { step: 3, instruction: 'If wire is damaged along its length, replace the entire run from AVR to generator terminal.' },
+          { step: 4, instruction: 'Use appropriate size wire (typically 1.5mm² for sensing circuits).' },
+          { step: 5, instruction: 'Route new wire away from high-current cables and heat sources.' },
+          { step: 6, instruction: 'Crimp ring terminals on both ends and secure connections.' },
+          { step: 7, instruction: 'Verify continuity of repaired circuit with multimeter.' },
+          { step: 8, instruction: 'Secure wire with cable ties to prevent future damage.' }
+        ],
+        verificationSteps: [
+          'Verify continuity from generator terminal to AVR sensing input',
+          'Verify no shorts to ground or between phases',
+          'Run generator and verify stable voltage',
+          'Monitor for any signs of heating at repaired connections'
+        ]
+      }
+    ],
+
+    preventionStrategies: [
+      'Perform annual AVR inspection and calibration verification using true RMS voltmeter',
+      'Check voltage sensing circuit connections at each major service interval',
+      'Verify proper engine speed at each startup and after any governor adjustment',
+      'Install voltage recording equipment to detect gradual drift before fault occurs',
+      'Use quality OEM or approved equivalent AVR replacements only',
+      'Protect AVR from excessive heat - verify ventilation is adequate',
+      'Include voltage stability test in regular load bank testing procedures',
+      'Train operators to recognize early signs of voltage regulation problems'
+    ],
+
+    maintenanceSchedule: [
+      { interval: 'Weekly', task: 'Visual check of AVR for overheating signs', importance: 'recommended' },
+      { interval: 'Monthly', task: 'Verify output voltage is within ±5% of nominal', importance: 'important' },
+      { interval: '6 months', task: 'Check tightness of AVR connections', importance: 'important' },
+      { interval: 'Annually', task: 'Full AVR calibration check and adjustment if needed', importance: 'critical' },
+      { interval: 'Annually', task: 'Inspect voltage sensing wiring for damage', importance: 'important' },
+      { interval: '2 years', task: 'Consider preventive AVR replacement on critical installations', importance: 'recommended' }
+    ],
+
+    caseStudies: [
+      {
+        location: 'Office Building, Westlands, Nairobi',
+        generatorModel: 'Perkins 150kVA',
+        symptom: 'C034 over voltage fault during power outage, voltage reached 280V before shutdown',
+        diagnosis: 'AVR sensing wire had corroded connection at terminal block, causing intermittent high resistance. AVR was increasing excitation trying to compensate for low sensed voltage.',
+        solution: 'Cleaned and re-terminated all sensing circuit connections. Applied anti-corrosion compound to prevent recurrence.',
+        lessonsLearned: 'Tropical humidity and generator location near a kitchen exhaust contributed to accelerated corrosion. Recommend relocating sensing wire terminal block to sealed enclosure.',
+        timeToResolve: '1.5 hours'
+      },
+      {
+        location: 'Hotel, Mombasa',
+        generatorModel: 'Cummins 500kVA',
+        symptom: 'Repeated C034 faults when large air conditioning load disconnected',
+        diagnosis: 'AVR was functioning but was marginal in response speed. Load rejection caused voltage spike exceeding trip threshold before AVR could react.',
+        solution: 'Replaced aging AVR with new OEM unit. Also adjusted protection trip delay from 0.5s to 1.0s to allow time for AVR response while still providing adequate protection.',
+        lessonsLearned: 'AVR response degrades over time even if still nominally functioning. Preventive replacement of AVRs on critical systems after 10 years is recommended.',
+        timeToResolve: '3 hours'
+      }
+    ],
+
+    aiInsights: {
+      patternAnalysis: 'C034 faults show a strong correlation with high ambient temperature operation and age of AVR components. Failures peak during hot season (December-March in Kenya) and are 3x more likely on AVRs over 8 years old. Preventive replacement before failure is highly recommended for critical applications.',
+      predictiveIndicators: [
+        'Gradually increasing voltage trend (0.5-1V per month) suggests AVR calibration drift',
+        'Increasing voltage fluctuation (hunting) indicates potential AVR feedback instability',
+        'Any previous over voltage events, even if self-cleared, indicate developing problem',
+        'Temperature rise of AVR above ambient increasing over time'
+      ],
+      correlatedFaults: ['C033 (Under voltage)', 'C041 (Frequency high)', 'E005 (Excitation fault)', 'E012 (AVR communication fault)'],
+      seasonalFactors: 'Higher incidence during hot dry season when ambient temperatures stress AVR cooling. Also increased during rainy season when humidity can cause sensing circuit problems.',
+      environmentalFactors: 'Coastal installations show 40% higher AVR failure rate due to salt air corrosion. Dusty environments require more frequent cleaning of AVR heat sinks.',
+      recommendations: [
+        'Install voltage trend monitoring to detect drift before fault',
+        'Consider AVR with built-in diagnostics for critical installations',
+        'Implement scheduled AVR replacement at 8-10 years for reliable service',
+        'Ensure AVR enclosure has adequate ventilation and protection from humidity'
+      ]
+    },
+
+    wiringDiagram: {
+      sensorLocation: 'AVR sensing inputs connected to generator output terminals (downstream of main breaker for some designs, upstream for others - refer to specific AVR manual)',
+      wireColors: ['Brown - L1 sensing', 'Black - L2 sensing', 'Grey - L3 sensing', 'Blue - Neutral sensing', 'Green/Yellow - Ground'],
+      pinConfiguration: 'AVR sensing terminals typically marked as: AC1/AC2 for single phase sensing, or R-S-T-N for three phase sensing',
+      voltageRange: '190-260V AC (single phase) or 330-450V AC (three phase) for direct sensing AVRs. Some use sensing transformers for higher voltages.',
+      resistance: 'Sensing circuit should show near-zero ohms from generator terminal to AVR sensing input',
+      signalType: 'AC voltage, direct or through sensing transformer depending on AVR design'
+    },
+
+    relatedFaults: ['C033 (Under Voltage)', 'C041 (Over Frequency)', 'C042 (Under Frequency)', 'E005 (Excitation Fault)', 'E012 (AVR Fault)'],
+
+    frequentlyAskedQuestions: [
+      {
+        question: 'Can I bypass the over voltage protection to keep the generator running?',
+        answer: 'Absolutely not. Over voltage protection exists to prevent equipment damage and potential fire hazards. Operating with disabled protection will void warranties, damage connected loads, and create safety risks. Fix the root cause rather than bypassing protection.'
+      },
+      {
+        question: 'Why did the voltage go high when I disconnected a large load?',
+        answer: 'This is normal behavior called "load rejection transient." When large loads are suddenly disconnected, the generator produces momentary excess voltage until the AVR can reduce excitation. A healthy AVR should recover within 1-2 seconds. If the spike exceeded protection limits, the AVR may be slow or the protection may be set too sensitive.'
+      },
+      {
+        question: 'Can I use a different brand AVR as replacement?',
+        answer: 'Sometimes yes, but careful selection is required. The replacement AVR must match the exciter type (shunt, PMG, or auxiliary winding excited), voltage sensing method, and current/voltage ratings. Consult with the generator manufacturer or a qualified specialist before substituting AVR brands.'
+      },
+      {
+        question: 'How do I know if my AVR is going bad before it fails completely?',
+        answer: 'Watch for gradually increasing output voltage over time, increased voltage fluctuation or hunting, any previous over or under voltage events, visible overheating of the AVR, and slower response to load changes. Regular voltage monitoring and calibration checks will identify developing problems.'
+      }
+    ],
+
+    technicalBulletins: [
+      {
+        number: 'TB-2024-12',
+        title: 'AVR Replacement Guidelines for Tropical Installations',
+        summary: 'Recommendations for AVR selection, installation, and preventive replacement schedules for generator installations in high temperature and high humidity environments.'
+      },
+      {
+        number: 'TB-2023-08',
+        title: 'Voltage Sensing Circuit Best Practices',
+        summary: 'Guidelines for proper routing, termination, and protection of AVR voltage sensing circuits to prevent corrosion and interference-related problems.'
+      }
+    ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // E001 - EMERGENCY STOP ACTIVATED
+  // ═══════════════════════════════════════════════════════════════════════════════
+  'E001': {
+    code: 'E001',
+    title: 'Emergency Stop Activated - Manual E-Stop Button Pressed',
+    alternativeCodes: ['ESTOP', 'ES', 'EMG', 'F-ES', 'EMERGENCY', 'E-STOP'],
+    severity: 'shutdown',
+    category: 'Safety Systems',
+    subcategory: 'Emergency Controls',
+    affectedSystems: ['Engine', 'Fuel System', 'Electrical Output', 'All Connected Loads'],
+
+    technicalOverview: `Error code E001 indicates that the emergency stop system has been activated, causing an immediate and complete shutdown of the generator. The emergency stop (E-stop) function is a critical safety feature designed to allow rapid shutdown of the generator in hazardous situations. When activated, the E-stop system simultaneously cuts fuel supply to the engine, de-energizes the starter circuit to prevent restart, and in most installations, trips the main output breaker to isolate the generator from connected loads. This multi-layered approach ensures the generator cannot continue operating or accidentally restart while a potentially dangerous condition exists.
+
+The E-stop system is designed to be simple, reliable, and fail-safe. The physical E-stop button is typically a large, red, mushroom-head pushbutton prominently mounted on the generator control panel and potentially at additional remote locations around the facility. The button is designed to be easy to locate and operate even under stress, with the mushroom head allowing it to be struck with an open palm rather than requiring precise finger manipulation. Most E-stop buttons are "push to stop, twist to release" or "push to stop, pull to release" designs, ensuring the generator remains stopped until a deliberate action is taken to reset the button. The wiring is typically arranged in a "normally closed" configuration, meaning the safety circuit is complete when the button is not pressed - if a wire breaks or connection loosens, the generator will not start, providing fail-safe operation.
+
+From a control system perspective, the E-stop input is treated with highest priority by the generator controller. When the controller detects an open E-stop circuit, it immediately initiates shutdown regardless of any other commands or conditions. Most controllers will not allow starting or running whenever the E-stop circuit is open. The controller will display the E001 (or equivalent) fault code and activate any configured alarm outputs. Some installations include remote E-stop stations in multiple locations - common examples include the generator room door, the main electrical room, the building security desk, and near any equipment that the generator supplies. All E-stop stations are typically wired in series, so activating any single station stops the generator.
+
+It is important to understand that E001 is not a fault in the traditional sense - it indicates the safety system is working correctly by recognizing that an E-stop has been activated. The required response is not to troubleshoot a malfunction but to identify why the E-stop was pressed, verify that the hazardous condition has been resolved, reset the E-stop button, and then clear the fault from the controller. If no one admits to pressing the E-stop or if it appears to have activated without being physically pressed, then investigation is warranted to determine if there is a wiring problem, defective button, or unauthorized activation.`,
+
+    systemImpact: `Activation of the emergency stop results in complete and immediate cessation of generator operation. The engine stops as quickly as physics allows - typically within 2-5 seconds depending on engine size and momentum. All electrical output ceases, meaning connected loads lose power instantly without the normal warning or transfer sequence that would occur with a controlled shutdown. For facilities depending on the generator for critical power, this can have significant consequences.
+
+The sudden loss of power affects different loads differently. Computers and electronic equipment will shut down abruptly, potentially losing unsaved data. Motors will coast to a stop, which may be problematic for equipment in mid-cycle. Lighting will go dark, which can be a safety issue in itself. Life safety systems such as fire alarms, emergency lighting, and medical equipment should be on battery-backed UPS systems and thus continue operating, but the generator is no longer available to support extended operation. HVAC systems will stop, which in data centers or hospitals can lead to temperature excursions if not quickly restored.
+
+The economic impact of an E-stop activation depends entirely on the circumstances. If the E-stop was pressed in response to a genuine emergency such as a fuel leak, fire, or electrical fault, the rapid shutdown prevented greater damage and the impact was actually positive. If the E-stop was activated accidentally or maliciously, the impact includes the direct costs of the interruption plus any damage caused by the sudden power loss. Hospitals have documented patient safety events resulting from unexpected power loss. Data centers have experienced data corruption and extended recovery times. Manufacturing facilities have lost in-process production.
+
+Repeated or unnecessary E-stop activations can also have a psychological impact, reducing trust in the generator system's reliability. Operations staff may become hesitant to depend on the generator, potentially making poor decisions during actual power outages. Proper investigation of each E-stop event, clear documentation, and training help maintain appropriate confidence in the backup power system.`,
+
+    safetyConsiderations: `When responding to an E001 emergency stop alarm, safety is the paramount concern. The E-stop was activated for a reason, and that reason must be understood before the generator is restarted. Never simply reset the E-stop and restart without investigation. If you did not press the E-stop yourself, find out who did and why. If no one admits to pressing it, assume there may be a genuine hazard that was noticed by someone who then left the area.
+
+Before entering the generator room, observe from the doorway. Look for obvious signs of fire, smoke, fuel leaks, sparks, or other hazards. Listen for unusual sounds. Smell for fuel, burning, or overheating odors. If any hazard is apparent, do not enter - instead, alert emergency services as appropriate and evacuate the area. Only when you are confident there is no immediate danger should you proceed to investigate.
+
+Once inside, approach the generator carefully. Check the immediate area around the generator for any signs of the emergency that prompted the E-stop activation. Look for fuel on the floor, oil leaks, smoke or burn marks, damaged wiring, or unusual conditions. Check the control panel for any additional fault codes that might indicate what triggered the emergency. If another fault is displayed alongside E001, that provides a clue about the sequence of events.
+
+If an actual emergency occurred (fire, serious leak, electrical flash), do not attempt to restart the generator until the hazard has been fully resolved and the generator has been inspected by a qualified technician to ensure it is safe to operate. Document the incident thoroughly for insurance and maintenance records. If the E-stop activation appears to have been accidental (someone bumped the button, unfamiliar person pressed it without understanding its purpose), verify the generator itself is operating normally before reset and restart. Consider adding protective covers to E-stop buttons in areas where accidental activation is a recurring problem.`,
+
+    historicalContext: `The requirement for emergency stop systems on engine-driven equipment dates back to early industrial safety regulations. As engines became more powerful and facilities more complex, the need for rapid shutdown capability in emergencies became apparent through painful experience. Early generators often had only a manual fuel cutoff that required the operator to physically close a valve near the engine - not practical in a fire or electrical emergency. The development of electrically-actuated fuel solenoids allowed remote shutdown capability, and dedicated emergency stop circuits became standard practice.
+
+Modern generator control standards including ISO 8528 and various national electrical codes mandate emergency stop provisions for generators above certain sizes or in specific applications. The requirements specify not only the functionality (immediate engine stop, prevention of restart) but also the physical characteristics of E-stop buttons (color, size, mounting location) to ensure they can be found and operated quickly in an emergency. The phrase "emergency stop" must be clearly marked, and the button must be easily accessible without tools or keys.
+
+The fail-safe wiring approach - where an open circuit causes shutdown - became standard practice after incidents where damaged wiring allowed generators to continue running despite pressed E-stop buttons. This "normally closed" logic means any failure of the E-stop circuit results in a safe condition (generator stopped) rather than an unsafe condition (generator running despite emergency). Some critical installations use dual-circuit E-stop systems where both circuits must be intact for operation, providing additional reliability.
+
+Electronic controllers have added sophistication to E-stop systems. Modern controllers log E-stop events with timestamps, allowing review of when activations occurred. Some systems can distinguish between multiple E-stop stations, recording which specific button was pressed. Integration with building management and security systems can trigger additional responses such as CCTV recording when an E-stop is activated. Despite these advances, the fundamental principle remains unchanged: a simple, reliable, immediately accessible means of stopping the generator in an emergency.`,
+
+    rootCauses: [
+      {
+        cause: 'Deliberate Manual Activation - Emergency Response',
+        probability: 40,
+        explanation: 'Someone observed a genuine emergency such as fire, fuel leak, electrical fault, or personal injury and correctly used the E-stop to shut down the generator.',
+        testMethod: 'Interview personnel. Review security camera footage if available. Inspect for evidence of emergency condition.',
+        timeToTest: '15-30 minutes',
+        toolsRequired: ['Flashlight', 'Notepad for documentation', 'Camera for evidence'],
+        symptomsIndicating: ['Obvious hazard present', 'Personnel aware of activation', 'Other alarms active', 'Damage visible']
+      },
+      {
+        cause: 'Accidental Button Press',
+        probability: 30,
+        explanation: 'Someone accidentally pressed the E-stop button, either not understanding its purpose or physically bumping it while walking past or working near the panel.',
+        testMethod: 'Interview personnel in the area. Check for obstacles or traffic patterns that bring people close to the button.',
+        timeToTest: '10-20 minutes',
+        toolsRequired: ['Notepad'],
+        symptomsIndicating: ['No hazard present', 'Button in high-traffic area', 'Personnel unfamiliar with generator', 'No other faults logged']
+      },
+      {
+        cause: 'E-Stop Button Mechanical Failure',
+        probability: 15,
+        explanation: 'The E-stop button itself has failed, either releasing from its latched position or developing an internal open circuit due to wear or contamination.',
+        testMethod: 'Inspect button mechanism. Test button operation with meter on circuit. Check for contamination or damage.',
+        timeToTest: '20-30 minutes',
+        toolsRequired: ['Multimeter', 'Screwdriver to open button housing', 'Flashlight'],
+        symptomsIndicating: ['Recurring E001 faults', 'Button feels loose or sticky', 'Visible contamination', 'Button difficult to reset']
+      },
+      {
+        cause: 'Wiring Fault in E-Stop Circuit',
+        probability: 10,
+        explanation: 'The wiring connecting the E-stop button(s) to the controller has developed a fault - broken wire, loose connection, or corrosion causing open circuit.',
+        testMethod: 'Trace E-stop circuit wiring. Check continuity with button reset. Inspect terminations for corrosion or looseness.',
+        timeToTest: '30-60 minutes',
+        toolsRequired: ['Multimeter', 'Wiring diagram', 'Screwdrivers', 'Flashlight'],
+        symptomsIndicating: ['Intermittent faults', 'Fault clears temporarily then returns', 'Visible wire damage', 'Recent work near E-stop wiring']
+      },
+      {
+        cause: 'Malicious Activation',
+        probability: 5,
+        explanation: 'Someone deliberately pressed the E-stop without an emergency, either as vandalism, sabotage, or misguided testing.',
+        testMethod: 'Review security footage. Interview personnel. Check access control logs.',
+        timeToTest: '30-60 minutes',
+        toolsRequired: ['Access to security systems', 'Notepad'],
+        symptomsIndicating: ['No legitimate reason identified', 'Pattern of unexplained stoppages', 'Security concerns at facility']
+      }
+    ],
+
+    diagnosticProcedures: [
+      {
+        step: 1,
+        title: 'Safety Assessment',
+        instruction: 'Before doing anything else, assess whether an actual emergency exists. From outside the generator room, look for smoke, fire, or other obvious hazards. Listen for unusual sounds. Smell for fuel, burning, or chemical odors. Do NOT enter if any hazard is apparent - alert emergency services instead.',
+        safetyWarning: 'Never assume an E-stop activation was accidental or malicious. Always verify safety first.',
+        toolsRequired: ['Flashlight', 'Radio or phone to call for assistance if needed'],
+        expectedResult: 'No immediate hazards observed',
+        ifPassed: 'Proceed to Step 2',
+        ifFailed: 'Do not enter. Call emergency services if warranted. Wait for hazard to be resolved.',
+        technicalNote: 'Document any observations at this stage. If an emergency did occur, this information is valuable for incident reports and insurance claims.',
+        estimatedTime: '2-5 minutes'
+      },
+      {
+        step: 2,
+        title: 'Identify Who Activated E-Stop',
+        instruction: 'Attempt to determine who pressed the E-stop button and why. Ask personnel in the area. Check security camera footage if available. Review building access logs to see who was in the area.',
+        toolsRequired: ['Access to security systems', 'Notepad'],
+        expectedResult: 'Identify person and reason for E-stop activation',
+        ifPassed: 'If legitimate emergency: proceed to resolve the emergency. If accidental: proceed to Step 3.',
+        ifFailed: 'If no one admits activation and no reason is apparent, assume possible malfunction. Proceed to Step 4.',
+        technicalNote: 'Document who activated the E-stop and why. This is important for maintenance records and identifying training needs.',
+        estimatedTime: '10-30 minutes'
+      },
+      {
+        step: 3,
+        title: 'Visual Inspection of Generator',
+        instruction: 'With the generator stopped, perform a thorough visual inspection. Look for any signs of the emergency that might have prompted the E-stop: fuel leaks, oil leaks, electrical damage, overheating, unusual wear. Check all fluid levels and look for contamination.',
+        toolsRequired: ['Flashlight', 'Inspection mirror', 'Notepad for findings'],
+        expectedResult: 'No abnormalities found, generator appears ready to restart',
+        ifPassed: 'Proceed to Step 5 to reset and restart',
+        ifFailed: 'Repair any defects found before attempting restart',
+        technicalNote: 'Even if the E-stop was clearly accidental, use this opportunity for a quick visual check. It adds only minutes and could identify developing problems.',
+        estimatedTime: '15-20 minutes'
+      },
+      {
+        step: 4,
+        title: 'E-Stop Circuit Verification',
+        instruction: 'If the cause of E-stop activation is unclear, test the E-stop circuit. Locate all E-stop buttons (there may be multiple). Verify each button is in the reset (released) position. Using a multimeter, verify continuity through the complete E-stop circuit from controller through all buttons and back.',
+        toolsRequired: ['Multimeter', 'Wiring diagram', 'Screwdrivers'],
+        expectedResult: 'All buttons reset, continuous circuit, stable contact',
+        ifPassed: 'E-stop circuit is healthy. Proceed to Step 5.',
+        ifFailed: 'Repair wiring fault or replace defective button before proceeding.',
+        technicalNote: 'Intermittent E-stop faults are often caused by marginal connections that make/break with vibration. Wiggle wires during continuity test to check for intermittents.',
+        estimatedTime: '20-40 minutes'
+      },
+      {
+        step: 5,
+        title: 'Reset E-Stop and Clear Fault',
+        instruction: 'Reset the E-stop button by twisting (for twist-release type) or pulling (for pull-release type). Verify the button is fully reset. Then clear the E001 fault from the controller using the appropriate reset procedure.',
+        toolsRequired: ['None usually required'],
+        expectedResult: 'E-stop button reset, controller fault cleared, generator ready to start',
+        ifPassed: 'Generator can now be started normally',
+        ifFailed: 'If button won\'t reset or fault won\'t clear, investigate button mechanism or controller input.',
+        technicalNote: 'Some controllers require power cycle to clear latched E-stop faults. Try turning controller power off for 10 seconds then back on.',
+        estimatedTime: '2-5 minutes'
+      }
+    ],
+
+    resetSequences: {
+      TYPE_A: {
+        steps: [
+          'Verify the emergency condition is resolved',
+          'Locate the E-stop button that was pressed',
+          'Reset the button by twisting clockwise until it pops out (twist-release type)',
+          'Or pull the button straight out until it clicks (pull-release type)',
+          'At the controller, press the STOP button to acknowledge',
+          'Press the RESET button to clear the E001 fault',
+          'Verify the fault has cleared from the display',
+          'Generator is now ready to start in AUTO or MANUAL mode'
+        ],
+        keySequence: ['Reset E-Stop Button', 'STOP', 'RESET'],
+        notes: 'If multiple E-stop stations exist, ensure ALL are reset before attempting to clear the controller fault.'
+      },
+      TYPE_B: {
+        steps: [
+          'Verify safety and resolve any emergency',
+          'Reset all E-stop buttons (twist or pull to release)',
+          'At controller, navigate to ALARMS menu',
+          'Select the E001 Emergency Stop fault',
+          'Press RESET or ACK button',
+          'Exit to main screen and verify fault is cleared',
+          'Generator ready for restart'
+        ],
+        keySequence: ['Reset E-Stop Button', 'MENU', 'ALARMS', 'SELECT', 'RESET'],
+        notes: 'ComAp controllers may display additional information about which E-stop station was activated if multiple stations are configured.'
+      },
+      TYPE_C: {
+        steps: [
+          'Confirm emergency is resolved',
+          'Reset E-stop button at the activated station',
+          'Press controller MENU button',
+          'Navigate to FAULT LOG using scroll wheel',
+          'Select E001 fault',
+          'Press CLEAR or RESET',
+          'Confirm when prompted',
+          'Return to main display'
+        ],
+        keySequence: ['Reset E-Stop Button', 'MENU', 'FAULT LOG', 'CLEAR', 'CONFIRM'],
+        notes: 'Woodward controllers may require password entry for fault clearing depending on configuration.'
+      },
+      TYPE_D: {
+        steps: [
+          'Resolve emergency condition',
+          'Reset physical E-stop button',
+          'Press and hold RESET on controller for 2 seconds',
+          'If fault remains, access SERVICE menu',
+          'Navigate to CLEAR FAULTS',
+          'Select E001 and confirm clear',
+          'Verify cleared on main display'
+        ],
+        keySequence: ['Reset E-Stop Button', 'RESET (hold 2s)', 'or SERVICE', 'CLEAR FAULTS'],
+        notes: 'SmartGen controllers typically reset easily once E-stop button is physically reset.'
+      },
+      TYPE_E: {
+        steps: [
+          'Ensure all E-stop stations are reset',
+          'Press ALARM CLEAR button on controller',
+          'If using CAT ET software, navigate to Active Faults',
+          'Clear the Emergency Stop fault',
+          'Verify controller shows no active E-stop fault',
+          'Generator is ready to restart'
+        ],
+        keySequence: ['Reset E-Stop Button', 'ALARM CLEAR'],
+        notes: 'CAT PowerWizard may display which E-stop station was activated, aiding in identification of what triggered the fault.'
+      }
+    },
+
+    repairProcedures: [
+      {
+        title: 'Replace Defective E-Stop Button',
+        difficulty: 'beginner',
+        estimatedTime: '30-60 minutes',
+        laborCost: { min: 2000, max: 5000, currency: 'KES' },
+        partsCost: { min: 1500, max: 5000, currency: 'KES' },
+        partsRequired: [
+          {
+            name: 'Emergency Stop Button, Twist-Release, NC Contact',
+            quantity: 1,
+            oemPartNumber: 'Various - match existing',
+            alternativePartNumbers: ['Generic equivalent'],
+            estimatedCost: 2500
+          }
+        ],
+        toolsRequired: ['Screwdriver set', 'Wire strippers', 'Multimeter', 'Label maker or masking tape'],
+        steps: [
+          { step: 1, instruction: 'Turn off control power to the generator panel.', warning: 'Verify power is off before proceeding' },
+          { step: 2, instruction: 'Document and photograph the wiring connections to the existing E-stop button.' },
+          { step: 3, instruction: 'Label each wire with its terminal designation before disconnecting.' },
+          { step: 4, instruction: 'Remove the mounting nut or screws holding the old button in place.' },
+          { step: 5, instruction: 'Remove old button and compare to new button - verify same contact configuration (normally closed).' },
+          { step: 6, instruction: 'Mount new button in the same location.' },
+          { step: 7, instruction: 'Connect wires to same terminals as on old button, following labels and photos.' },
+          { step: 8, instruction: 'Verify connections are secure and no bare wire is exposed.' },
+          { step: 9, instruction: 'Restore control power and test E-stop function - pressing should show fault, releasing and resetting should clear it.' }
+        ],
+        verificationSteps: [
+          'Press button and verify generator will not start',
+          'Release button and verify fault can be cleared',
+          'With fault cleared, verify generator starts and runs normally',
+          'Press button while running and verify immediate shutdown'
+        ]
+      }
+    ],
+
+    preventionStrategies: [
+      'Install protective covers over E-stop buttons in areas where accidental activation is likely',
+      'Train all personnel about E-stop location, purpose, and proper use',
+      'Post signage explaining that E-stop is for emergencies only',
+      'Regularly test E-stop function during maintenance to ensure it works when needed',
+      'Include E-stop circuit in routine inspection - check wiring, button mechanism, labeling',
+      'Consider keyed E-stop reset for high-security applications',
+      'Document all E-stop activations to identify patterns'
+    ],
+
+    maintenanceSchedule: [
+      { interval: 'Monthly', task: 'Verify E-stop button is functional (press and verify fault, then reset)', importance: 'critical' },
+      { interval: '6 months', task: 'Inspect E-stop wiring for damage or corrosion', importance: 'important' },
+      { interval: 'Annually', task: 'Clean E-stop button contacts and mechanism', importance: 'recommended' },
+      { interval: 'Annually', task: 'Test complete E-stop circuit with generator running under load', importance: 'critical' }
+    ],
+
+    caseStudies: [
+      {
+        location: 'Hospital, Nairobi',
+        generatorModel: 'Various',
+        symptom: 'Recurring E001 faults during rain',
+        diagnosis: 'Remote E-stop station at external generator compound was allowing water ingress, causing intermittent contact.',
+        solution: 'Replaced E-stop with weatherproof rated version and added protective cover. Sealed conduit entries.',
+        lessonsLearned: 'Outdoor E-stop stations need IP65 or better rating for reliability in tropical climates.',
+        timeToResolve: '2 hours'
+      }
+    ],
+
+    aiInsights: {
+      patternAnalysis: 'E001 faults show clustering around shift changes and maintenance periods, suggesting many are either accidental or result of confusion during handover. Training initiatives significantly reduce accidental activations.',
+      predictiveIndicators: [
+        'Increasing frequency of E-stop activations may indicate staff training needs',
+        'Intermittent E001 faults suggest button or wiring degradation',
+        'Activations correlating with vibration or temperature may indicate marginal connections'
+      ],
+      correlatedFaults: ['None typically - E001 is usually an isolated event unless there was a genuine emergency'],
+      seasonalFactors: 'Slight increase during rainy season for outdoor E-stop stations due to moisture ingress.',
+      environmentalFactors: 'Dusty environments can contaminate E-stop button contacts. Humid environments can cause corrosion of terminals.',
+      recommendations: [
+        'Install protective covers in high-traffic areas',
+        'Use weatherproof buttons for outdoor stations',
+        'Implement operator training on E-stop proper use',
+        'Consider color-coded covers for different priority levels'
+      ]
+    },
+
+    wiringDiagram: {
+      sensorLocation: 'E-stop buttons mounted on generator control panel and at remote locations as required',
+      wireColors: ['Red - E-stop circuit', 'Black or Blue - Common/return'],
+      pinConfiguration: 'Normally closed (NC) contact wired in series with all E-stop stations',
+      voltageRange: 'Control voltage - typically 12V DC, 24V DC, or 110V DC depending on controller',
+      resistance: 'Should be near-zero ohms when all buttons are reset (closed circuit)',
+      signalType: 'DC voltage - controller monitors for open circuit indicating E-stop activated'
+    },
+
+    relatedFaults: ['None typically - E001 is an operator/external input, not an equipment fault'],
+
+    frequentlyAskedQuestions: [
+      {
+        question: 'Can I disable the E-stop so it doesn\'t keep shutting down my generator?',
+        answer: 'Absolutely not. Disabling the emergency stop is illegal under most electrical codes, voids insurance coverage, and creates serious safety risks. If you are experiencing unwanted E-stop activations, identify and fix the root cause - faulty button, marginal wiring, or training issue.'
+      },
+      {
+        question: 'Why does my generator have so many E-stop buttons?',
+        answer: 'Multiple E-stop stations provide emergency shutdown capability from various locations, allowing rapid response regardless of where the emergency is observed or where personnel are located. Common locations include the generator control panel, generator room door, main electrical room, and building security desk.'
+      },
+      {
+        question: 'The E-stop button is stuck and won\'t reset - what should I do?',
+        answer: 'If the button mechanism has failed, do not force it as this may damage it further. Call maintenance to replace the button. In the meantime, if there is no emergency, you can temporarily jumper the E-stop circuit for testing purposes only - but this must be removed before returning the generator to service, and a proper button installed.'
+      }
+    ],
+
+    technicalBulletins: [
+      {
+        number: 'TB-2024-03',
+        title: 'E-Stop System Inspection and Testing Procedures',
+        summary: 'Comprehensive guide to periodic testing of emergency stop systems to ensure reliability without causing unwanted shutdowns.'
+      }
+    ]
   }
 };
 

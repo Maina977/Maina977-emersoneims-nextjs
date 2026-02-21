@@ -187,7 +187,7 @@ export default function AerospaceFaultCodeLookup() {
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl text-cyan-400 font-bold mb-2">READY FOR DIAGNOSTIC SCAN</h3>
                 <p className="text-gray-400 text-sm">
-                  Enter a fault code or symptom to search 90,000+ error codes
+                  Enter a fault code or symptom to search 230,000+ error codes
                 </p>
                 <div className="mt-8 grid grid-cols-2 gap-4 max-w-md mx-auto">
                   <div className="border border-cyan-500/30 bg-cyan-500/5 p-4">

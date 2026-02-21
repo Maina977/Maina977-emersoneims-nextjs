@@ -1,7 +1,7 @@
 {
   "name": "Generator Oracle - Emerson EIMS",
   "short_name": "Gen Oracle",
-  "description": "Professional generator diagnostic tool with 90,000+ fault codes for DSE, ComAp, Woodward, SmartGen & PowerWizard controllers",
+  "description": "Professional generator diagnostic tool with 230,000+ fault codes for DSE, ComAp, Woodward, SmartGen & PowerWizard controllers",
   "start_url": "/generator-oracle",
   "scope": "/generator-oracle",
   "display": "standalone",
@@ -55,7 +55,7 @@
     {
       "name": "Search Fault Codes",
       "short_name": "Search",
-      "description": "Search 90,000+ fault codes",
+      "description": "Search 230,000+ fault codes",
       "url": "/generator-oracle?tab=search",
       "icons": [{ "src": "/icons/search-96.png", "sizes": "96x96" }]
     },

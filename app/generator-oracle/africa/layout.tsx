@@ -11,8 +11,8 @@ import Script from 'next/script';
  */
 
 export const metadata: Metadata = {
-  title: 'Generator Oracle Africa | 90,000+ Fault Codes for African Technicians',
-  description: 'The #1 generator diagnostic tool for Africa. 90,000+ fault codes compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard & more. Works offline. Available in Swahili, Arabic, French. Used by technicians in Kenya, Nigeria, Tanzania, Uganda, South Africa & 50+ countries.',
+  title: 'Generator Oracle Africa | 230,000+ Fault Codes for African Technicians',
+  description: 'The #1 generator diagnostic tool for Africa. 230,000+ fault codes compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard & more. Works offline. Available in Swahili, Arabic, French. Used by technicians in Kenya, Nigeria, Tanzania, Uganda, South Africa & 50+ countries.',
   keywords: [
     // Pan-African keywords
     'generator fault codes Africa',
@@ -102,7 +102,7 @@ export const metadata: Metadata = {
     url: 'https://www.emersoneims.com/generator-oracle/africa',
     siteName: 'Generator Oracle',
     title: 'Generator Oracle Africa | #1 Diagnostic Tool for African Technicians',
-    description: '90,000+ fault codes compatible with all major controller types. Works offline. Available in 7 languages including Swahili, Arabic & French. Trusted by technicians across Africa.',
+    description: '230,000+ fault codes compatible with all major controller types. Works offline. Available in 7 languages including Swahili, Arabic & French. Trusted by technicians across Africa.',
     images: [
       {
         url: '/images/generator-oracle-africa-og.jpg',
@@ -114,7 +114,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Generator Oracle Africa | 90,000+ Fault Codes',
+    title: 'Generator Oracle Africa | 230,000+ Fault Codes',
     description: 'The #1 generator diagnostic tool for African technicians. Works offline, supports 7 languages.',
     images: ['/images/generator-oracle-africa-og.jpg'],
     creator: '@EmersonEiMS',
@@ -141,7 +141,7 @@ const structuredData = {
       name: 'Generator Oracle',
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web, iOS, Android',
-      description: 'Professional generator diagnostic tool with 90,000+ fault codes compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard and more controller types. Independently developed - not affiliated with any manufacturer.',
+      description: 'Professional generator diagnostic tool with 230,000+ fault codes compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard and more controller types. Independently developed - not affiliated with any manufacturer.',
       offers: {
         '@type': 'Offer',
         price: '20000',
@@ -157,7 +157,7 @@ const structuredData = {
         worstRating: '1',
       },
       featureList: [
-        '90,000+ fault codes',
+        '230,000+ fault codes',
         'Compatible with 9 controller types',
         '7 languages including Swahili, Arabic, French',
         '100% offline capability',
@@ -248,7 +248,7 @@ const structuredData = {
           name: 'How much does Generator Oracle cost in Africa?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Generator Oracle costs KES 20,000 per year (approximately $154 USD). This includes full access to 90,000+ fault codes, all languages, offline capability, and all updates. Free trial available until March 2026.',
+            text: 'Generator Oracle costs KES 20,000 per year (approximately $154 USD). This includes full access to 230,000+ fault codes, all languages, offline capability, and all updates. Free trial available until March 2026.',
           },
         },
         {

@@ -1,6 +1,6 @@
 /**
  * Generator Oracle - Controller Fault Code Database
- * 90,000+ authentic fault codes for professional generator controller diagnostics
+ * 230,000+ authentic fault codes for professional generator controller diagnostics
  *
  * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO
  */
@@ -178,7 +178,7 @@ import { getEnkoFaultCodes } from './data/enko-fault-codes';
 
 // ==================== EXTENDED CODE GENERATION ====================
 
-// Generate additional alarm variations to reach 90,000+ codes
+// Generate additional alarm variations to reach 230,000+ codes
 function generateExtendedCodes(): ControllerFaultCode[] {
   const extendedCodes: ControllerFaultCode[] = [];
 

@@ -79,7 +79,7 @@ const MEGA_MENUS = {
       {
         title: 'Generator Oracle Suite',
         items: [
-          { href: '/generator-oracle', label: 'Generator Oracle', icon: '🔮', desc: '90,000+ codes, simulator, wiring diagrams' },
+          { href: '/generator-oracle', label: 'Generator Oracle', icon: '🔮', desc: '230,000+ codes, simulator, wiring diagrams' },
           { href: '/generator-oracle/africa', label: 'Africa Edition', icon: '🌍', desc: 'Optimized for African technicians' },
           { href: '/diagnostic-suite', label: 'Generator Diagnostic', icon: '⚡', desc: 'Real-time monitoring' },
         ],
