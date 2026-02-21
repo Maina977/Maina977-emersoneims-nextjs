@@ -399,16 +399,10 @@ const MOTOR_FAQ = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// KENYA-SPECIFIC MOTOR SUPPLIERS
+// EMERSONEIMS - YOUR TRUSTED MOTOR PARTNER
 // ═══════════════════════════════════════════════════════════════════════════════
 const KENYA_SUPPLIERS = [
-  { name: 'Davis & Shirtliff', location: 'Multiple branches', specialty: 'Pumps, motors, generators', contact: '+254 20 696 8000' },
-  { name: 'Kenwest Cables', location: 'Industrial Area, Nairobi', specialty: 'Motors, cables, electrical', contact: '+254 20 650 3444' },
-  { name: 'Electrotech', location: 'Mombasa Road, Nairobi', specialty: 'Industrial motors, VFDs', contact: '+254 20 822 7455' },
-  { name: 'ACME Engineering', location: 'Industrial Area, Nairobi', specialty: 'Generators, motors', contact: '+254 20 532 5000' },
-  { name: 'Hotpoint Appliances', location: 'Multiple branches', specialty: 'Domestic motors', contact: '+254 20 232 6000' },
-  { name: 'Mantrac Kenya', location: 'Mombasa Road, Nairobi', specialty: 'CAT generators, engines', contact: '+254 20 495 0000' },
-  { name: 'CMC Motors', location: 'Multiple branches', specialty: 'Commercial vehicles, engines', contact: '+254 20 697 5000' },
+  { name: 'EmersonEIMS', location: 'Nairobi, Kenya (Serving All Counties)', specialty: 'Complete Motor Solutions - Rewinding, Repairs, VFDs, Pumps, Generators & Parts', contact: '+254 768 860 665' },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════

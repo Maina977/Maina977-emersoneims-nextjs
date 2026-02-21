@@ -395,57 +395,57 @@ export const HVAC_REPAIR_MANUALS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 export const HVAC_PARTS_CATALOGUE = {
   compressors: [
-    { partNumber: 'COPELAND-ZR34K3', description: 'Scroll Compressor 3HP R410A', brand: 'Copeland', priceKES: 45000, application: 'Split AC 24000 BTU', suppliers: ['Hotpoint', 'Refrigeration Kenya'] },
-    { partNumber: 'COPELAND-ZR57K3', description: 'Scroll Compressor 5HP R410A', brand: 'Copeland', priceKES: 75000, application: 'Split AC 48000 BTU', suppliers: ['Refrigeration Kenya', 'Polar Refrigeration'] },
-    { partNumber: 'DAIKIN-JT160', description: 'Inverter Scroll Compressor', brand: 'Daikin', priceKES: 85000, application: 'VRV Systems', suppliers: ['Daikin Kenya'] },
-    { partNumber: 'DANFOSS-MT36', description: 'Reciprocating Compressor 3HP', brand: 'Danfoss', priceKES: 38000, application: 'Refrigeration', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'BITZER-2CES', description: 'Semi-Hermetic 2HP R404A', brand: 'Bitzer', priceKES: 95000, application: 'Cold Room', suppliers: ['Cold Chain Kenya'] },
+    { partNumber: 'COPELAND-ZR34K3', description: 'Scroll Compressor 3HP R410A', brand: 'Copeland', priceKES: 45000, application: 'Split AC 24000 BTU', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'COPELAND-ZR57K3', description: 'Scroll Compressor 5HP R410A', brand: 'Copeland', priceKES: 75000, application: 'Split AC 48000 BTU', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'DAIKIN-JT160', description: 'Inverter Scroll Compressor', brand: 'Daikin', priceKES: 85000, application: 'VRV Systems', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'DANFOSS-MT36', description: 'Reciprocating Compressor 3HP', brand: 'Danfoss', priceKES: 38000, application: 'Refrigeration', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'BITZER-2CES', description: 'Semi-Hermetic 2HP R404A', brand: 'Bitzer', priceKES: 95000, application: 'Cold Room', suppliers: ['EmersonEIMS'] },
   ],
   capacitors: [
-    { partNumber: 'CAP-RUN-35-440', description: 'Run Capacitor 35uF 440V', brand: 'Generic', priceKES: 1500, application: 'Compressor/Fan', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'CAP-RUN-45-440', description: 'Run Capacitor 45uF 440V', brand: 'Generic', priceKES: 1800, application: 'Large Compressor', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'CAP-RUN-25-440', description: 'Run Capacitor 25uF 440V', brand: 'Generic', priceKES: 1200, application: 'Fan Motor', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'CAP-START-88-108', description: 'Start Capacitor 88-108uF', brand: 'Generic', priceKES: 2000, application: 'Hard Start Kit', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'CAP-DUAL-35-5', description: 'Dual Capacitor 35+5uF 440V', brand: 'Generic', priceKES: 2200, application: 'Compressor + Fan', suppliers: ['Electrical wholesalers'] },
+    { partNumber: 'CAP-RUN-35-440', description: 'Run Capacitor 35uF 440V', brand: 'Generic', priceKES: 1500, application: 'Compressor/Fan', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CAP-RUN-45-440', description: 'Run Capacitor 45uF 440V', brand: 'Generic', priceKES: 1800, application: 'Large Compressor', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CAP-RUN-25-440', description: 'Run Capacitor 25uF 440V', brand: 'Generic', priceKES: 1200, application: 'Fan Motor', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CAP-START-88-108', description: 'Start Capacitor 88-108uF', brand: 'Generic', priceKES: 2000, application: 'Hard Start Kit', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CAP-DUAL-35-5', description: 'Dual Capacitor 35+5uF 440V', brand: 'Generic', priceKES: 2200, application: 'Compressor + Fan', suppliers: ['EmersonEIMS'] },
   ],
   fanMotors: [
     { partNumber: 'FM-INDOOR-1/8', description: 'Indoor Fan Motor 1/8HP', brand: 'YS', priceKES: 8500, application: 'Wall Mount AC', suppliers: ['Refrigeration Kenya', 'Hotpoint'] },
-    { partNumber: 'FM-OUTDOOR-1/4', description: 'Outdoor Fan Motor 1/4HP', brand: 'YS', priceKES: 12000, application: 'Condenser Unit', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'FM-OUTDOOR-1/2', description: 'Outdoor Fan Motor 1/2HP', brand: 'YS', priceKES: 18000, application: 'Large Condenser', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'FM-INDOOR-1/4', description: 'Indoor Fan Motor 1/4HP', brand: 'YS', priceKES: 12000, application: 'Ceiling Cassette', suppliers: ['Refrigeration Kenya'] },
+    { partNumber: 'FM-OUTDOOR-1/4', description: 'Outdoor Fan Motor 1/4HP', brand: 'YS', priceKES: 12000, application: 'Condenser Unit', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FM-OUTDOOR-1/2', description: 'Outdoor Fan Motor 1/2HP', brand: 'YS', priceKES: 18000, application: 'Large Condenser', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FM-INDOOR-1/4', description: 'Indoor Fan Motor 1/4HP', brand: 'YS', priceKES: 12000, application: 'Ceiling Cassette', suppliers: ['EmersonEIMS'] },
   ],
   refrigerants: [
-    { partNumber: 'R410A-11.3KG', description: 'R410A Refrigerant 11.3kg', brand: 'Honeywell', priceKES: 18000, application: 'Modern AC Systems', suppliers: ['BOC Kenya', 'Refrigeration Kenya'] },
-    { partNumber: 'R32-10KG', description: 'R32 Refrigerant 10kg', brand: 'Honeywell', priceKES: 16000, application: 'New AC Systems', suppliers: ['BOC Kenya'] },
-    { partNumber: 'R134A-13.6KG', description: 'R134a Refrigerant 13.6kg', brand: 'Honeywell', priceKES: 22000, application: 'Chillers, Auto AC', suppliers: ['BOC Kenya', 'Refrigeration Kenya'] },
-    { partNumber: 'R404A-10.9KG', description: 'R404A Refrigerant 10.9kg', brand: 'Honeywell', priceKES: 28000, application: 'Refrigeration', suppliers: ['BOC Kenya', 'Cold Chain Kenya'] },
-    { partNumber: 'R22-13.6KG', description: 'R22 Refrigerant 13.6kg', brand: 'Various', priceKES: 35000, application: 'Legacy Systems', suppliers: ['Limited availability'] },
+    { partNumber: 'R410A-11.3KG', description: 'R410A Refrigerant 11.3kg', brand: 'Honeywell', priceKES: 18000, application: 'Modern AC Systems', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'R32-10KG', description: 'R32 Refrigerant 10kg', brand: 'Honeywell', priceKES: 16000, application: 'New AC Systems', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'R134A-13.6KG', description: 'R134a Refrigerant 13.6kg', brand: 'Honeywell', priceKES: 22000, application: 'Chillers, Auto AC', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'R404A-10.9KG', description: 'R404A Refrigerant 10.9kg', brand: 'Honeywell', priceKES: 28000, application: 'Refrigeration', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'R22-13.6KG', description: 'R22 Refrigerant 13.6kg', brand: 'Various', priceKES: 35000, application: 'Legacy Systems', suppliers: ['EmersonEIMS'] },
   ],
   controls: [
-    { partNumber: 'TSTAT-DIGITAL', description: 'Digital Thermostat', brand: 'Honeywell', priceKES: 8500, application: 'Split AC', suppliers: ['Hotpoint', 'Refrigeration Kenya'] },
-    { partNumber: 'TSTAT-WIFI', description: 'WiFi Smart Thermostat', brand: 'Honeywell', priceKES: 25000, application: 'Smart HVAC', suppliers: ['Hotpoint'] },
-    { partNumber: 'CTRL-COLDROOM', description: 'Cold Room Controller', brand: 'Eliwell', priceKES: 15000, application: 'Walk-in Cooler', suppliers: ['Cold Chain Kenya'] },
-    { partNumber: 'RELAY-DEFROST', description: 'Defrost Timer/Relay', brand: 'Various', priceKES: 3500, application: 'Refrigeration', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'PSWITCH-HP', description: 'High Pressure Switch', brand: 'Danfoss', priceKES: 5500, application: 'All Systems', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'PSWITCH-LP', description: 'Low Pressure Switch', brand: 'Danfoss', priceKES: 4500, application: 'All Systems', suppliers: ['Refrigeration Kenya'] },
+    { partNumber: 'TSTAT-DIGITAL', description: 'Digital Thermostat', brand: 'Honeywell', priceKES: 8500, application: 'Split AC', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TSTAT-WIFI', description: 'WiFi Smart Thermostat', brand: 'Honeywell', priceKES: 25000, application: 'Smart HVAC', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CTRL-COLDROOM', description: 'Cold Room Controller', brand: 'Eliwell', priceKES: 15000, application: 'Walk-in Cooler', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'RELAY-DEFROST', description: 'Defrost Timer/Relay', brand: 'Various', priceKES: 3500, application: 'Refrigeration', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PSWITCH-HP', description: 'High Pressure Switch', brand: 'Danfoss', priceKES: 5500, application: 'All Systems', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PSWITCH-LP', description: 'Low Pressure Switch', brand: 'Danfoss', priceKES: 4500, application: 'All Systems', suppliers: ['EmersonEIMS'] },
   ],
   filterDriers: [
-    { partNumber: 'DRIER-083', description: 'Filter Drier 3/8" Flare', brand: 'Danfoss', priceKES: 1800, application: 'Small AC', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'DRIER-163', description: 'Filter Drier 3/8" Solder', brand: 'Danfoss', priceKES: 2200, application: 'Medium AC', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'DRIER-165', description: 'Filter Drier 5/8" Solder', brand: 'Danfoss', priceKES: 3500, application: 'Large AC', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'DRIER-CORE', description: 'Replaceable Core 48-DC', brand: 'Sporlan', priceKES: 4500, application: 'Shell & Core', suppliers: ['Refrigeration Kenya'] },
+    { partNumber: 'DRIER-083', description: 'Filter Drier 3/8" Flare', brand: 'Danfoss', priceKES: 1800, application: 'Small AC', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'DRIER-163', description: 'Filter Drier 3/8" Solder', brand: 'Danfoss', priceKES: 2200, application: 'Medium AC', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'DRIER-165', description: 'Filter Drier 5/8" Solder', brand: 'Danfoss', priceKES: 3500, application: 'Large AC', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'DRIER-CORE', description: 'Replaceable Core 48-DC', brand: 'Sporlan', priceKES: 4500, application: 'Shell & Core', suppliers: ['EmersonEIMS'] },
   ],
   txv: [
-    { partNumber: 'TXV-R410A-3T', description: 'TXV 3 Ton R410A', brand: 'Danfoss', priceKES: 12000, application: '3 Ton AC', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'TXV-R410A-5T', description: 'TXV 5 Ton R410A', brand: 'Danfoss', priceKES: 15000, application: '5 Ton AC', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'TXV-R404A-3T', description: 'TXV 3 Ton R404A', brand: 'Danfoss', priceKES: 13500, application: 'Refrigeration', suppliers: ['Cold Chain Kenya'] },
-    { partNumber: 'EXV-R410A', description: 'Electronic Expansion Valve', brand: 'Danfoss', priceKES: 35000, application: 'VRV Systems', suppliers: ['Daikin Kenya'] },
+    { partNumber: 'TXV-R410A-3T', description: 'TXV 3 Ton R410A', brand: 'Danfoss', priceKES: 12000, application: '3 Ton AC', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TXV-R410A-5T', description: 'TXV 5 Ton R410A', brand: 'Danfoss', priceKES: 15000, application: '5 Ton AC', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TXV-R404A-3T', description: 'TXV 3 Ton R404A', brand: 'Danfoss', priceKES: 13500, application: 'Refrigeration', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EXV-R410A', description: 'Electronic Expansion Valve', brand: 'Danfoss', priceKES: 35000, application: 'VRV Systems', suppliers: ['EmersonEIMS'] },
   ],
   coils: [
-    { partNumber: 'COIL-EVAP-12K', description: 'Evaporator Coil 12000 BTU', brand: 'Various', priceKES: 18000, application: '1 Ton Split', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'COIL-EVAP-24K', description: 'Evaporator Coil 24000 BTU', brand: 'Various', priceKES: 28000, application: '2 Ton Split', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'COIL-COND-24K', description: 'Condenser Coil 24000 BTU', brand: 'Various', priceKES: 32000, application: '2 Ton Split', suppliers: ['Refrigeration Kenya'] },
-    { partNumber: 'COIL-COLDROOM', description: 'Cold Room Evaporator', brand: 'Bohn', priceKES: 85000, application: 'Walk-in Cooler', suppliers: ['Cold Chain Kenya'] },
+    { partNumber: 'COIL-EVAP-12K', description: 'Evaporator Coil 12000 BTU', brand: 'Various', priceKES: 18000, application: '1 Ton Split', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'COIL-EVAP-24K', description: 'Evaporator Coil 24000 BTU', brand: 'Various', priceKES: 28000, application: '2 Ton Split', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'COIL-COND-24K', description: 'Condenser Coil 24000 BTU', brand: 'Various', priceKES: 32000, application: '2 Ton Split', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'COIL-COLDROOM', description: 'Cold Room Evaporator', brand: 'Bohn', priceKES: 85000, application: 'Walk-in Cooler', suppliers: ['EmersonEIMS'] },
   ],
 };
 
@@ -523,17 +523,10 @@ export const HVAC_MAINTENANCE_SCHEDULES = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// KENYA SUPPLIERS DATABASE
+// EMERSONEIMS PARTS & SERVICES - YOUR TRUSTED PARTNER
 // ═══════════════════════════════════════════════════════════════════════════════
 export const HVAC_KENYA_SUPPLIERS = [
-  { name: 'Refrigeration Kenya Ltd', location: 'Nairobi Industrial Area', specialization: 'HVAC parts, compressors, refrigerants', phone: '+254 20 xxx xxxx', email: 'sales@refkenya.co.ke' },
-  { name: 'Hotpoint Appliances', location: 'Nationwide', specialization: 'AC units, spare parts', phone: '+254 20 xxx xxxx', email: 'service@hotpoint.co.ke' },
-  { name: 'Cold Chain Kenya', location: 'Nairobi', specialization: 'Refrigeration, cold rooms', phone: '+254 20 xxx xxxx', email: 'info@coldchain.co.ke' },
-  { name: 'BOC Kenya', location: 'Nairobi', specialization: 'Refrigerants, gases', phone: '+254 20 xxx xxxx', email: 'gases@boc.co.ke' },
-  { name: 'Daikin Kenya', location: 'Nairobi', specialization: 'Daikin VRV systems, parts', phone: '+254 20 xxx xxxx', email: 'service@daikin.co.ke' },
-  { name: 'Polar Refrigeration', location: 'Nairobi', specialization: 'Compressors, cold room equipment', phone: '+254 20 xxx xxxx', email: 'sales@polar.co.ke' },
-  { name: 'Davis & Shirtliff', location: 'Nationwide', specialization: 'Pumps, water treatment, HVAC', phone: '+254 20 xxx xxxx', email: 'sales@dayliff.com' },
-  { name: 'Ramco Plexus', location: 'Nairobi', specialization: 'Building HVAC systems', phone: '+254 20 xxx xxxx', email: 'info@ramcoplexus.com' },
+  { name: 'EmersonEIMS', location: 'Nairobi, Kenya (Serving All Counties)', specialization: 'Complete HVAC Solutions - Installation, Maintenance, Repairs & Parts', phone: '+254 768 860 665', email: 'info@emersoneims.com' },
 ];
 
 // Export all

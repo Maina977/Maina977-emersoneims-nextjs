@@ -286,42 +286,42 @@ export const MOTOR_REPAIR_MANUALS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 export const MOTOR_PARTS_CATALOGUE = {
   bearings: [
-    { partNumber: '6205-2RS', description: 'Deep Groove Ball Bearing 25x52x15', brand: 'SKF', priceKES: 1200, application: 'Small motors 0.5-2HP', suppliers: ['SKF Kenya', 'Bearing distributors'] },
-    { partNumber: '6206-2RS', description: 'Deep Groove Ball Bearing 30x62x16', brand: 'SKF', priceKES: 1500, application: 'Motors 2-5HP', suppliers: ['SKF Kenya', 'Bearing distributors'] },
-    { partNumber: '6207-2RS', description: 'Deep Groove Ball Bearing 35x72x17', brand: 'SKF', priceKES: 1800, application: 'Motors 5-10HP', suppliers: ['SKF Kenya', 'Bearing distributors'] },
-    { partNumber: '6208-2RS', description: 'Deep Groove Ball Bearing 40x80x18', brand: 'SKF', priceKES: 2200, application: 'Motors 10-15HP', suppliers: ['SKF Kenya'] },
-    { partNumber: '6209-2RS', description: 'Deep Groove Ball Bearing 45x85x19', brand: 'SKF', priceKES: 2800, application: 'Motors 15-25HP', suppliers: ['SKF Kenya'] },
-    { partNumber: '6210-2RS', description: 'Deep Groove Ball Bearing 50x90x20', brand: 'SKF', priceKES: 3500, application: 'Motors 25-40HP', suppliers: ['SKF Kenya'] },
-    { partNumber: '6310-2RS', description: 'Deep Groove Ball Bearing 50x110x27', brand: 'SKF', priceKES: 5500, application: 'Large motors', suppliers: ['SKF Kenya'] },
-    { partNumber: 'NU206', description: 'Cylindrical Roller Bearing', brand: 'SKF', priceKES: 4500, application: 'High load DE', suppliers: ['SKF Kenya'] },
+    { partNumber: '6205-2RS', description: 'Deep Groove Ball Bearing 25x52x15', brand: 'SKF', priceKES: 1200, application: 'Small motors 0.5-2HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: '6206-2RS', description: 'Deep Groove Ball Bearing 30x62x16', brand: 'SKF', priceKES: 1500, application: 'Motors 2-5HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: '6207-2RS', description: 'Deep Groove Ball Bearing 35x72x17', brand: 'SKF', priceKES: 1800, application: 'Motors 5-10HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: '6208-2RS', description: 'Deep Groove Ball Bearing 40x80x18', brand: 'SKF', priceKES: 2200, application: 'Motors 10-15HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: '6209-2RS', description: 'Deep Groove Ball Bearing 45x85x19', brand: 'SKF', priceKES: 2800, application: 'Motors 15-25HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: '6210-2RS', description: 'Deep Groove Ball Bearing 50x90x20', brand: 'SKF', priceKES: 3500, application: 'Motors 25-40HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: '6310-2RS', description: 'Deep Groove Ball Bearing 50x110x27', brand: 'SKF', priceKES: 5500, application: 'Large motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'NU206', description: 'Cylindrical Roller Bearing', brand: 'SKF', priceKES: 4500, application: 'High load DE', suppliers: ['EmersonEIMS'] },
   ],
   magnetWire: [
-    { partNumber: 'MW-0.5-CLASS-F', description: 'Magnet Wire 0.5mm Class F', brand: 'Essex', priceKES: 2500, application: 'Small motors', suppliers: ['Wire suppliers', 'Motor shops'] },
-    { partNumber: 'MW-0.8-CLASS-F', description: 'Magnet Wire 0.8mm Class F', brand: 'Essex', priceKES: 2800, application: 'Medium motors', suppliers: ['Wire suppliers', 'Motor shops'] },
-    { partNumber: 'MW-1.0-CLASS-F', description: 'Magnet Wire 1.0mm Class F', brand: 'Essex', priceKES: 3200, application: 'Medium motors', suppliers: ['Wire suppliers', 'Motor shops'] },
-    { partNumber: 'MW-1.2-CLASS-H', description: 'Magnet Wire 1.2mm Class H', brand: 'Essex', priceKES: 4000, application: 'High temp motors', suppliers: ['Wire suppliers'] },
-    { partNumber: 'MW-1.5-CLASS-F', description: 'Magnet Wire 1.5mm Class F', brand: 'Essex', priceKES: 4500, application: 'Large motors', suppliers: ['Wire suppliers'] },
+    { partNumber: 'MW-0.5-CLASS-F', description: 'Magnet Wire 0.5mm Class F', brand: 'Essex', priceKES: 2500, application: 'Small motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MW-0.8-CLASS-F', description: 'Magnet Wire 0.8mm Class F', brand: 'Essex', priceKES: 2800, application: 'Medium motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MW-1.0-CLASS-F', description: 'Magnet Wire 1.0mm Class F', brand: 'Essex', priceKES: 3200, application: 'Medium motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MW-1.2-CLASS-H', description: 'Magnet Wire 1.2mm Class H', brand: 'Essex', priceKES: 4000, application: 'High temp motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MW-1.5-CLASS-F', description: 'Magnet Wire 1.5mm Class F', brand: 'Essex', priceKES: 4500, application: 'Large motors', suppliers: ['EmersonEIMS'] },
   ],
   insulation: [
-    { partNumber: 'SLOT-LINER-0.3', description: 'Slot Liner 0.3mm Class F', brand: 'DuPont', priceKES: 150, application: 'Per meter', suppliers: ['Insulation suppliers'] },
-    { partNumber: 'PHASE-PAPER-0.2', description: 'Phase Separator Paper', brand: 'DuPont', priceKES: 120, application: 'Per meter', suppliers: ['Insulation suppliers'] },
-    { partNumber: 'WEDGE-STRIP', description: 'Slot Wedge Strip', brand: 'Generic', priceKES: 80, application: 'Per meter', suppliers: ['Motor shops'] },
-    { partNumber: 'VARNISH-5L', description: 'Insulating Varnish 5L', brand: 'Dolphin', priceKES: 5500, application: 'Dip varnish', suppliers: ['Chemical suppliers'] },
-    { partNumber: 'SLEEVE-1.5', description: 'Insulating Sleeve 1.5mm', brand: 'Generic', priceKES: 50, application: 'Per meter', suppliers: ['Electrical shops'] },
+    { partNumber: 'SLOT-LINER-0.3', description: 'Slot Liner 0.3mm Class F', brand: 'DuPont', priceKES: 150, application: 'Per meter', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PHASE-PAPER-0.2', description: 'Phase Separator Paper', brand: 'DuPont', priceKES: 120, application: 'Per meter', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'WEDGE-STRIP', description: 'Slot Wedge Strip', brand: 'Generic', priceKES: 80, application: 'Per meter', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'VARNISH-5L', description: 'Insulating Varnish 5L', brand: 'Dolphin', priceKES: 5500, application: 'Dip varnish', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SLEEVE-1.5', description: 'Insulating Sleeve 1.5mm', brand: 'Generic', priceKES: 50, application: 'Per meter', suppliers: ['EmersonEIMS'] },
   ],
   capacitors: [
-    { partNumber: 'START-CAP-100UF', description: 'Start Capacitor 100uF 250V', brand: 'Ducati', priceKES: 1800, application: 'Single phase 0.5-1HP', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'START-CAP-200UF', description: 'Start Capacitor 200uF 250V', brand: 'Ducati', priceKES: 2500, application: 'Single phase 1-2HP', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'START-CAP-300UF', description: 'Start Capacitor 300uF 250V', brand: 'Ducati', priceKES: 3200, application: 'Single phase 2-3HP', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'RUN-CAP-25UF', description: 'Run Capacitor 25uF 450V', brand: 'Ducati', priceKES: 1200, application: 'Single phase', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'RUN-CAP-40UF', description: 'Run Capacitor 40uF 450V', brand: 'Ducati', priceKES: 1500, application: 'Single phase', suppliers: ['Electrical wholesalers'] },
+    { partNumber: 'START-CAP-100UF', description: 'Start Capacitor 100uF 250V', brand: 'Ducati', priceKES: 1800, application: 'Single phase 0.5-1HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'START-CAP-200UF', description: 'Start Capacitor 200uF 250V', brand: 'Ducati', priceKES: 2500, application: 'Single phase 1-2HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'START-CAP-300UF', description: 'Start Capacitor 300uF 250V', brand: 'Ducati', priceKES: 3200, application: 'Single phase 2-3HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'RUN-CAP-25UF', description: 'Run Capacitor 25uF 450V', brand: 'Ducati', priceKES: 1200, application: 'Single phase', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'RUN-CAP-40UF', description: 'Run Capacitor 40uF 450V', brand: 'Ducati', priceKES: 1500, application: 'Single phase', suppliers: ['EmersonEIMS'] },
   ],
   fans: [
-    { partNumber: 'FAN-100MM', description: 'Cooling Fan 100mm', brand: 'Generic', priceKES: 800, application: 'Small motors', suppliers: ['Motor shops'] },
-    { partNumber: 'FAN-120MM', description: 'Cooling Fan 120mm', brand: 'Generic', priceKES: 1000, application: 'Medium motors', suppliers: ['Motor shops'] },
-    { partNumber: 'FAN-150MM', description: 'Cooling Fan 150mm', brand: 'Generic', priceKES: 1500, application: 'Large motors', suppliers: ['Motor shops'] },
-    { partNumber: 'FAN-COVER-100', description: 'Fan Cover 100mm', brand: 'Generic', priceKES: 600, application: 'Small motors', suppliers: ['Motor shops'] },
-    { partNumber: 'FAN-COVER-150', description: 'Fan Cover 150mm', brand: 'Generic', priceKES: 1200, application: 'Large motors', suppliers: ['Motor shops'] },
+    { partNumber: 'FAN-100MM', description: 'Cooling Fan 100mm', brand: 'Generic', priceKES: 800, application: 'Small motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FAN-120MM', description: 'Cooling Fan 120mm', brand: 'Generic', priceKES: 1000, application: 'Medium motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FAN-150MM', description: 'Cooling Fan 150mm', brand: 'Generic', priceKES: 1500, application: 'Large motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FAN-COVER-100', description: 'Fan Cover 100mm', brand: 'Generic', priceKES: 600, application: 'Small motors', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FAN-COVER-150', description: 'Fan Cover 150mm', brand: 'Generic', priceKES: 1200, application: 'Large motors', suppliers: ['EmersonEIMS'] },
   ],
 };
 
@@ -379,15 +379,10 @@ export const MOTOR_MAINTENANCE_SCHEDULES = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// KENYA SUPPLIERS DATABASE
+// EMERSONEIMS PARTS & SERVICES - YOUR TRUSTED PARTNER
 // ═══════════════════════════════════════════════════════════════════════════════
 export const MOTOR_KENYA_SUPPLIERS = [
-  { name: 'Kenya Motor Rewinders', location: 'Nairobi Industrial Area', specialization: 'Motor rewinding, repairs', phone: '+254 20 xxx xxxx', email: 'info@kenyamotors.co.ke' },
-  { name: 'SKF Kenya', location: 'Nairobi', specialization: 'Bearings, seals, lubrication', phone: '+254 20 xxx xxxx', email: 'kenya@skf.com' },
-  { name: 'Davis & Shirtliff', location: 'Nationwide', specialization: 'Pumps, motors, electrical', phone: '+254 20 xxx xxxx', email: 'sales@dayliff.com' },
-  { name: 'Holman Brothers', location: 'Nairobi', specialization: 'Motors, generators, electrical', phone: '+254 20 xxx xxxx', email: 'sales@holman.co.ke' },
-  { name: 'Electric Motor Services', location: 'Mombasa', specialization: 'Motor repairs, rewinding', phone: '+254 41 xxx xxxx', email: 'info@ems.co.ke' },
-  { name: 'Kenya Electrical Industries', location: 'Nairobi', specialization: 'Motor manufacturing, repairs', phone: '+254 20 xxx xxxx', email: 'sales@kei.co.ke' },
+  { name: 'EmersonEIMS', location: 'Nairobi, Kenya (Serving All Counties)', specialization: 'Complete Motor Solutions - Rewinding, Repairs, Installation & Maintenance', phone: '+254 768 860 665', email: 'info@emersoneims.com' },
 ];
 
 // Export all

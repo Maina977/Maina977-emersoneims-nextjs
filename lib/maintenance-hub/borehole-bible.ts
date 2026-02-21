@@ -80,42 +80,42 @@ export const BOREHOLE_REPAIR_MANUALS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 export const BOREHOLE_PARTS_CATALOGUE = {
   submersiblePumps: [
-    { partNumber: 'DAYLIFF-D3-4-8', description: 'Submersible Pump 3" 4-Stage 0.75HP', brand: 'Davis & Shirtliff', priceKES: 45000, application: '50m depth, 2m³/hr', suppliers: ['Davis & Shirtliff'] },
-    { partNumber: 'DAYLIFF-D4-6-11', description: 'Submersible Pump 4" 6-Stage 1.5HP', brand: 'Davis & Shirtliff', priceKES: 65000, application: '80m depth, 4m³/hr', suppliers: ['Davis & Shirtliff'] },
-    { partNumber: 'GRUNDFOS-SP5A-8', description: 'Submersible Pump SP5A-8', brand: 'Grundfos', priceKES: 95000, application: '100m depth, 5m³/hr', suppliers: ['Grundfos Kenya'] },
-    { partNumber: 'GRUNDFOS-SP8A-12', description: 'Submersible Pump SP8A-12', brand: 'Grundfos', priceKES: 145000, application: '120m depth, 8m³/hr', suppliers: ['Grundfos Kenya'] },
-    { partNumber: 'PEDROLLO-4SR4-12', description: 'Submersible Pump 4" 12-Stage 1.5HP', brand: 'Pedrollo', priceKES: 55000, application: '100m depth, 4m³/hr', suppliers: ['Water Equipment Ltd'] },
+    { partNumber: 'DAYLIFF-D3-4-8', description: 'Submersible Pump 3" 4-Stage 0.75HP', brand: 'Davis & Shirtliff', priceKES: 45000, application: '50m depth, 2m³/hr', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'DAYLIFF-D4-6-11', description: 'Submersible Pump 4" 6-Stage 1.5HP', brand: 'Davis & Shirtliff', priceKES: 65000, application: '80m depth, 4m³/hr', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'GRUNDFOS-SP5A-8', description: 'Submersible Pump SP5A-8', brand: 'Grundfos', priceKES: 95000, application: '100m depth, 5m³/hr', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'GRUNDFOS-SP8A-12', description: 'Submersible Pump SP8A-12', brand: 'Grundfos', priceKES: 145000, application: '120m depth, 8m³/hr', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PEDROLLO-4SR4-12', description: 'Submersible Pump 4" 12-Stage 1.5HP', brand: 'Pedrollo', priceKES: 55000, application: '100m depth, 4m³/hr', suppliers: ['EmersonEIMS'] },
   ],
   submersibleMotors: [
-    { partNumber: 'MOTOR-4-0.75KW', description: 'Submersible Motor 4" 0.75kW', brand: 'Franklin', priceKES: 28000, application: '0.75HP pumps', suppliers: ['Davis & Shirtliff'] },
-    { partNumber: 'MOTOR-4-1.5KW', description: 'Submersible Motor 4" 1.5kW', brand: 'Franklin', priceKES: 38000, application: '2HP pumps', suppliers: ['Davis & Shirtliff'] },
-    { partNumber: 'MOTOR-4-2.2KW', description: 'Submersible Motor 4" 2.2kW', brand: 'Franklin', priceKES: 52000, application: '3HP pumps', suppliers: ['Davis & Shirtliff'] },
-    { partNumber: 'MOTOR-4-3.0KW', description: 'Submersible Motor 4" 3.0kW', brand: 'Grundfos', priceKES: 68000, application: '4HP pumps', suppliers: ['Grundfos Kenya'] },
+    { partNumber: 'MOTOR-4-0.75KW', description: 'Submersible Motor 4" 0.75kW', brand: 'Franklin', priceKES: 28000, application: '0.75HP pumps', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MOTOR-4-1.5KW', description: 'Submersible Motor 4" 1.5kW', brand: 'Franklin', priceKES: 38000, application: '2HP pumps', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MOTOR-4-2.2KW', description: 'Submersible Motor 4" 2.2kW', brand: 'Franklin', priceKES: 52000, application: '3HP pumps', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MOTOR-4-3.0KW', description: 'Submersible Motor 4" 3.0kW', brand: 'Grundfos', priceKES: 68000, application: '4HP pumps', suppliers: ['EmersonEIMS'] },
   ],
   cables: [
-    { partNumber: 'CABLE-SUB-3X2.5', description: 'Submersible Cable 3x2.5mm²', brand: 'Various', priceKES: 350, application: 'Per meter, up to 1.5HP', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'CABLE-SUB-3X4', description: 'Submersible Cable 3x4mm²', brand: 'Various', priceKES: 550, application: 'Per meter, up to 3HP', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'CABLE-SUB-3X6', description: 'Submersible Cable 3x6mm²', brand: 'Various', priceKES: 850, application: 'Per meter, up to 5HP', suppliers: ['Electrical wholesalers'] },
-    { partNumber: 'CABLE-SUB-3X10', description: 'Submersible Cable 3x10mm²', brand: 'Various', priceKES: 1400, application: 'Per meter, up to 10HP', suppliers: ['Electrical wholesalers'] },
+    { partNumber: 'CABLE-SUB-3X2.5', description: 'Submersible Cable 3x2.5mm²', brand: 'Various', priceKES: 350, application: 'Per meter, up to 1.5HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CABLE-SUB-3X4', description: 'Submersible Cable 3x4mm²', brand: 'Various', priceKES: 550, application: 'Per meter, up to 3HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CABLE-SUB-3X6', description: 'Submersible Cable 3x6mm²', brand: 'Various', priceKES: 850, application: 'Per meter, up to 5HP', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CABLE-SUB-3X10', description: 'Submersible Cable 3x10mm²', brand: 'Various', priceKES: 1400, application: 'Per meter, up to 10HP', suppliers: ['EmersonEIMS'] },
   ],
   risePipes: [
-    { partNumber: 'PIPE-HDPE-50', description: 'HDPE Pipe 50mm PN10', brand: 'Local', priceKES: 180, application: 'Per meter', suppliers: ['Pipe suppliers'] },
-    { partNumber: 'PIPE-HDPE-63', description: 'HDPE Pipe 63mm PN10', brand: 'Local', priceKES: 280, application: 'Per meter', suppliers: ['Pipe suppliers'] },
-    { partNumber: 'PIPE-GI-2', description: 'Galvanized Pipe 2" Class B', brand: 'Local', priceKES: 650, application: 'Per meter', suppliers: ['Hardware suppliers'] },
-    { partNumber: 'PIPE-GI-3', description: 'Galvanized Pipe 3" Class B', brand: 'Local', priceKES: 1200, application: 'Per meter', suppliers: ['Hardware suppliers'] },
+    { partNumber: 'PIPE-HDPE-50', description: 'HDPE Pipe 50mm PN10', brand: 'Local', priceKES: 180, application: 'Per meter', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PIPE-HDPE-63', description: 'HDPE Pipe 63mm PN10', brand: 'Local', priceKES: 280, application: 'Per meter', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PIPE-GI-2', description: 'Galvanized Pipe 2" Class B', brand: 'Local', priceKES: 650, application: 'Per meter', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PIPE-GI-3', description: 'Galvanized Pipe 3" Class B', brand: 'Local', priceKES: 1200, application: 'Per meter', suppliers: ['EmersonEIMS'] },
   ],
   controls: [
-    { partNumber: 'PANEL-DOL-1.5', description: 'DOL Starter Panel 1.5HP', brand: 'Local', priceKES: 18000, application: 'Small pumps', suppliers: ['Electrical suppliers'] },
-    { partNumber: 'PANEL-DOL-3', description: 'DOL Starter Panel 3HP', brand: 'Local', priceKES: 25000, application: 'Medium pumps', suppliers: ['Electrical suppliers'] },
-    { partNumber: 'PANEL-SD-7.5', description: 'Star-Delta Panel 7.5HP', brand: 'Local', priceKES: 45000, application: 'Large pumps', suppliers: ['Electrical suppliers'] },
-    { partNumber: 'VFD-1.5KW', description: 'VFD Drive 1.5kW', brand: 'ABB/Schneider', priceKES: 35000, application: 'Variable speed', suppliers: ['Electrical suppliers'] },
-    { partNumber: 'LEVEL-SWITCH', description: 'Float Level Switch', brand: 'Various', priceKES: 2500, application: 'Tank level', suppliers: ['Electrical suppliers'] },
+    { partNumber: 'PANEL-DOL-1.5', description: 'DOL Starter Panel 1.5HP', brand: 'Local', priceKES: 18000, application: 'Small pumps', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PANEL-DOL-3', description: 'DOL Starter Panel 3HP', brand: 'Local', priceKES: 25000, application: 'Medium pumps', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PANEL-SD-7.5', description: 'Star-Delta Panel 7.5HP', brand: 'Local', priceKES: 45000, application: 'Large pumps', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'VFD-1.5KW', description: 'VFD Drive 1.5kW', brand: 'ABB/Schneider', priceKES: 35000, application: 'Variable speed', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'LEVEL-SWITCH', description: 'Float Level Switch', brand: 'Various', priceKES: 2500, application: 'Tank level', suppliers: ['EmersonEIMS'] },
   ],
   accessories: [
-    { partNumber: 'TANK-PRESSURE-100', description: 'Pressure Tank 100L', brand: 'Zilmet', priceKES: 28000, application: 'Pressure boosting', suppliers: ['Davis & Shirtliff'] },
-    { partNumber: 'TANK-PRESSURE-200', description: 'Pressure Tank 200L', brand: 'Zilmet', priceKES: 45000, application: 'Large systems', suppliers: ['Davis & Shirtliff'] },
-    { partNumber: 'GAUGE-PRESSURE', description: 'Pressure Gauge 0-10 bar', brand: 'Various', priceKES: 1500, application: 'Monitoring', suppliers: ['Instrumentation suppliers'] },
-    { partNumber: 'CHECK-VALVE-2', description: 'Check Valve 2" Brass', brand: 'Various', priceKES: 3500, application: 'Backflow prevention', suppliers: ['Plumbing suppliers'] },
+    { partNumber: 'TANK-PRESSURE-100', description: 'Pressure Tank 100L', brand: 'Zilmet', priceKES: 28000, application: 'Pressure boosting', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TANK-PRESSURE-200', description: 'Pressure Tank 200L', brand: 'Zilmet', priceKES: 45000, application: 'Large systems', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'GAUGE-PRESSURE', description: 'Pressure Gauge 0-10 bar', brand: 'Various', priceKES: 1500, application: 'Monitoring', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CHECK-VALVE-2', description: 'Check Valve 2" Brass', brand: 'Various', priceKES: 3500, application: 'Backflow prevention', suppliers: ['EmersonEIMS'] },
   ],
 };
 
@@ -159,14 +159,10 @@ export const BOREHOLE_MAINTENANCE_SCHEDULES = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// KENYA SUPPLIERS DATABASE
+// EMERSONEIMS PARTS & SERVICES - YOUR TRUSTED PARTNER
 // ═══════════════════════════════════════════════════════════════════════════════
 export const BOREHOLE_KENYA_SUPPLIERS = [
-  { name: 'Davis & Shirtliff', location: 'Nationwide (30+ branches)', specialization: 'Pumps, motors, tanks, water treatment', phone: '+254 20 696 8000', email: 'sales@dayliff.com' },
-  { name: 'Grundfos Kenya', location: 'Nairobi', specialization: 'Premium submersible pumps', phone: '+254 20 xxx xxxx', email: 'kenya@grundfos.com' },
-  { name: 'Water Equipment Ltd', location: 'Nairobi', specialization: 'Pumps, drilling equipment', phone: '+254 20 xxx xxxx', email: 'info@waterequip.co.ke' },
-  { name: 'Aqua Well Drillers', location: 'Nairobi', specialization: 'Borehole drilling, rehabilitation', phone: '+254 722 xxx xxx', email: 'info@aquawell.co.ke' },
-  { name: 'Kenya Drilling Co.', location: 'Multiple locations', specialization: 'Drilling, pump installation', phone: '+254 20 xxx xxxx', email: 'info@kenydrilling.co.ke' },
+  { name: 'EmersonEIMS', location: 'Nairobi, Kenya (Serving All Counties)', specialization: 'Complete Borehole Solutions - Pumps, Installation, Maintenance & Repairs', phone: '+254 768 860 665', email: 'info@emersoneims.com' },
 ];
 
 // Export all

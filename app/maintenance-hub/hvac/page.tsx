@@ -326,17 +326,10 @@ const HVAC_FAQ = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// KENYA HVAC SUPPLIERS
+// EMERSONEIMS - YOUR TRUSTED HVAC PARTNER
 // ═══════════════════════════════════════════════════════════════════════════════
 const KENYA_SUPPLIERS = [
-  { name: 'Hotpoint Appliances', location: 'Multiple branches', specialty: 'LG, Samsung split AC', contact: '+254 20 232 6000' },
-  { name: 'Climate Centre', location: 'Westlands, Nairobi', specialty: 'Daikin, Carrier, VRF systems', contact: '+254 20 444 1234' },
-  { name: 'Ramco Group', location: 'Industrial Area, Nairobi', specialty: 'Commercial HVAC, chillers', contact: '+254 20 556 7890' },
-  { name: 'Davis & Shirtliff', location: 'Multiple branches', specialty: 'Cold rooms, refrigeration', contact: '+254 20 696 8000' },
-  { name: 'SKF Kenya', location: 'Mombasa Road, Nairobi', specialty: 'Bearings, industrial parts', contact: '+254 20 822 7455' },
-  { name: 'Electrotech', location: 'Industrial Area', specialty: 'Compressors, refrigerants', contact: '+254 20 532 5000' },
-  { name: 'Haco Industries', location: 'Industrial Area', specialty: 'AHUs, ductwork', contact: '+254 20 650 3444' },
-  { name: 'Specialized Power', location: 'Multiple branches', specialty: 'CRAC units, data center cooling', contact: '+254 20 495 0000' },
+  { name: 'EmersonEIMS', location: 'Nairobi, Kenya (Serving All Counties)', specialty: 'Complete HVAC Solutions - AC Installation, Maintenance, Cold Rooms, Refrigeration & Parts', contact: '+254 768 860 665' },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════

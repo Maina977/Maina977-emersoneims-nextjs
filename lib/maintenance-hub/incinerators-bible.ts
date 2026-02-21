@@ -78,36 +78,36 @@ export const INCINERATOR_REPAIR_MANUALS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 export const INCINERATOR_PARTS_CATALOGUE = {
   burners: [
-    { partNumber: 'BURNER-DIESEL-50', description: 'Diesel Burner 50kW', brand: 'Riello', priceKES: 85000, application: 'Small incinerator', suppliers: ['Burner suppliers'] },
-    { partNumber: 'BURNER-DIESEL-150', description: 'Diesel Burner 150kW', brand: 'Riello', priceKES: 165000, application: 'Medium incinerator', suppliers: ['Burner suppliers'] },
-    { partNumber: 'BURNER-DIESEL-300', description: 'Diesel Burner 300kW', brand: 'Baltur', priceKES: 285000, application: 'Large incinerator', suppliers: ['Burner suppliers'] },
-    { partNumber: 'BURNER-GAS-100', description: 'Gas Burner 100kW', brand: 'Weishaupt', priceKES: 125000, application: 'Gas-fired units', suppliers: ['Burner suppliers'] },
+    { partNumber: 'BURNER-DIESEL-50', description: 'Diesel Burner 50kW', brand: 'Riello', priceKES: 85000, application: 'Small incinerator', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'BURNER-DIESEL-150', description: 'Diesel Burner 150kW', brand: 'Riello', priceKES: 165000, application: 'Medium incinerator', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'BURNER-DIESEL-300', description: 'Diesel Burner 300kW', brand: 'Baltur', priceKES: 285000, application: 'Large incinerator', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'BURNER-GAS-100', description: 'Gas Burner 100kW', brand: 'Weishaupt', priceKES: 125000, application: 'Gas-fired units', suppliers: ['EmersonEIMS'] },
   ],
   ignition: [
-    { partNumber: 'IGNITION-TRANS', description: 'Ignition Transformer 2x5kV', brand: 'Danfoss', priceKES: 12000, application: 'Spark ignition', suppliers: ['Burner suppliers'] },
-    { partNumber: 'ELECTRODE-IGN', description: 'Ignition Electrode', brand: 'Various', priceKES: 2500, application: 'Spark generation', suppliers: ['Burner suppliers'] },
-    { partNumber: 'FLAME-SENSOR', description: 'Flame Sensor/Photocell', brand: 'Honeywell', priceKES: 8500, application: 'Flame detection', suppliers: ['Controls suppliers'] },
-    { partNumber: 'FLAME-RELAY', description: 'Flame Safety Relay', brand: 'Honeywell', priceKES: 15000, application: 'Burner control', suppliers: ['Controls suppliers'] },
+    { partNumber: 'IGNITION-TRANS', description: 'Ignition Transformer 2x5kV', brand: 'Danfoss', priceKES: 12000, application: 'Spark ignition', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ELECTRODE-IGN', description: 'Ignition Electrode', brand: 'Various', priceKES: 2500, application: 'Spark generation', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FLAME-SENSOR', description: 'Flame Sensor/Photocell', brand: 'Honeywell', priceKES: 8500, application: 'Flame detection', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FLAME-RELAY', description: 'Flame Safety Relay', brand: 'Honeywell', priceKES: 15000, application: 'Burner control', suppliers: ['EmersonEIMS'] },
   ],
   fuel: [
-    { partNumber: 'NOZZLE-0.6', description: 'Burner Nozzle 0.6 GPH', brand: 'Danfoss', priceKES: 1500, application: 'Small burners', suppliers: ['Burner suppliers'] },
-    { partNumber: 'NOZZLE-1.0', description: 'Burner Nozzle 1.0 GPH', brand: 'Danfoss', priceKES: 1500, application: 'Medium burners', suppliers: ['Burner suppliers'] },
-    { partNumber: 'FUEL-PUMP', description: 'Fuel Pump', brand: 'Danfoss', priceKES: 18000, application: 'Fuel delivery', suppliers: ['Burner suppliers'] },
-    { partNumber: 'SOLENOID-FUEL', description: 'Fuel Solenoid Valve', brand: 'Various', priceKES: 8500, application: 'Fuel control', suppliers: ['Valve suppliers'] },
-    { partNumber: 'FILTER-FUEL', description: 'Fuel Filter Element', brand: 'Various', priceKES: 1200, application: 'Fuel filtration', suppliers: ['General suppliers'] },
+    { partNumber: 'NOZZLE-0.6', description: 'Burner Nozzle 0.6 GPH', brand: 'Danfoss', priceKES: 1500, application: 'Small burners', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'NOZZLE-1.0', description: 'Burner Nozzle 1.0 GPH', brand: 'Danfoss', priceKES: 1500, application: 'Medium burners', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FUEL-PUMP', description: 'Fuel Pump', brand: 'Danfoss', priceKES: 18000, application: 'Fuel delivery', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SOLENOID-FUEL', description: 'Fuel Solenoid Valve', brand: 'Various', priceKES: 8500, application: 'Fuel control', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FILTER-FUEL', description: 'Fuel Filter Element', brand: 'Various', priceKES: 1200, application: 'Fuel filtration', suppliers: ['EmersonEIMS'] },
   ],
   refractory: [
-    { partNumber: 'CASTABLE-1500', description: 'Castable Refractory 1500°C 25kg', brand: 'Morgan', priceKES: 8500, application: 'Chamber lining', suppliers: ['Refractory suppliers'] },
-    { partNumber: 'CASTABLE-1800', description: 'Castable Refractory 1800°C 25kg', brand: 'Morgan', priceKES: 12500, application: 'High-temp zones', suppliers: ['Refractory suppliers'] },
-    { partNumber: 'FIBER-BLANKET', description: 'Ceramic Fiber Blanket 25mm', brand: 'Morgan', priceKES: 5500, application: 'Per sqm', suppliers: ['Refractory suppliers'] },
-    { partNumber: 'MORTAR-REF', description: 'Refractory Mortar 25kg', brand: 'Morgan', priceKES: 4500, application: 'Brick laying', suppliers: ['Refractory suppliers'] },
-    { partNumber: 'ANCHOR-SS', description: 'SS Refractory Anchor', brand: 'Various', priceKES: 150, application: 'Each', suppliers: ['Steel suppliers'] },
+    { partNumber: 'CASTABLE-1500', description: 'Castable Refractory 1500°C 25kg', brand: 'Morgan', priceKES: 8500, application: 'Chamber lining', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CASTABLE-1800', description: 'Castable Refractory 1800°C 25kg', brand: 'Morgan', priceKES: 12500, application: 'High-temp zones', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'FIBER-BLANKET', description: 'Ceramic Fiber Blanket 25mm', brand: 'Morgan', priceKES: 5500, application: 'Per sqm', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MORTAR-REF', description: 'Refractory Mortar 25kg', brand: 'Morgan', priceKES: 4500, application: 'Brick laying', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ANCHOR-SS', description: 'SS Refractory Anchor', brand: 'Various', priceKES: 150, application: 'Each', suppliers: ['EmersonEIMS'] },
   ],
   controls: [
-    { partNumber: 'TEMP-CONTROLLER', description: 'Temperature Controller PID', brand: 'Honeywell', priceKES: 25000, application: 'Chamber control', suppliers: ['Controls suppliers'] },
-    { partNumber: 'THERMOCOUPLE-K', description: 'Thermocouple Type K 1200°C', brand: 'Various', priceKES: 8500, application: 'Temperature sensing', suppliers: ['Instrumentation'] },
-    { partNumber: 'PRESSURE-SW', description: 'Air Pressure Switch', brand: 'Honeywell', priceKES: 5500, application: 'Air proving', suppliers: ['Controls suppliers'] },
-    { partNumber: 'TIMER-PROG', description: 'Programmable Timer', brand: 'Various', priceKES: 12000, application: 'Cycle control', suppliers: ['Electrical suppliers'] },
+    { partNumber: 'TEMP-CONTROLLER', description: 'Temperature Controller PID', brand: 'Honeywell', priceKES: 25000, application: 'Chamber control', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'THERMOCOUPLE-K', description: 'Thermocouple Type K 1200°C', brand: 'Various', priceKES: 8500, application: 'Temperature sensing', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'PRESSURE-SW', description: 'Air Pressure Switch', brand: 'Honeywell', priceKES: 5500, application: 'Air proving', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TIMER-PROG', description: 'Programmable Timer', brand: 'Various', priceKES: 12000, application: 'Cycle control', suppliers: ['EmersonEIMS'] },
   ],
 };
 
@@ -159,13 +159,10 @@ export const INCINERATOR_MAINTENANCE_SCHEDULES = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// KENYA SUPPLIERS DATABASE
+// EMERSONEIMS PARTS & SERVICES - YOUR TRUSTED PARTNER
 // ═══════════════════════════════════════════════════════════════════════════════
 export const INCINERATOR_KENYA_SUPPLIERS = [
-  { name: 'Incinerator Technologies Kenya', location: 'Nairobi', specialization: 'Incinerator manufacturing, service', phone: '+254 20 xxx xxxx', email: 'info@incineratorskenya.co.ke' },
-  { name: 'Environmental Equipment Ltd', location: 'Nairobi', specialization: 'Waste management equipment', phone: '+254 20 xxx xxxx', email: 'sales@envequip.co.ke' },
-  { name: 'Morgan Thermal Ceramics', location: 'Nairobi (Dealer)', specialization: 'Refractory materials', phone: '+254 20 xxx xxxx', email: 'kenya@morganthermal.com' },
-  { name: 'Burner Service Kenya', location: 'Nairobi Industrial Area', specialization: 'Burner sales and service', phone: '+254 20 xxx xxxx', email: 'service@burnerkenya.co.ke' },
+  { name: 'EmersonEIMS', location: 'Nairobi, Kenya (Serving All Counties)', specialization: 'Complete Incinerator Solutions - Installation, Parts, Maintenance & Repairs', phone: '+254 768 860 665', email: 'info@emersoneims.com' },
 ];
 
 // Export all

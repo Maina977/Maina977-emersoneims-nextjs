@@ -75,44 +75,44 @@ export const WELDING_REPAIR_MANUALS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 export const WELDING_PARTS_CATALOGUE = {
   electrodes: [
-    { partNumber: 'E6013-2.5', description: 'Mild Steel Electrode 6013 2.5mm', brand: 'Bohler', priceKES: 2500, application: 'General purpose', suppliers: ['Welding supplies'] },
-    { partNumber: 'E6013-3.2', description: 'Mild Steel Electrode 6013 3.2mm', brand: 'Bohler', priceKES: 2800, application: 'General purpose', suppliers: ['Welding supplies'] },
-    { partNumber: 'E7018-3.2', description: 'Low Hydrogen Electrode 7018 3.2mm', brand: 'Bohler', priceKES: 4500, application: 'Structural', suppliers: ['Welding supplies'] },
-    { partNumber: 'E308L-2.5', description: 'Stainless Steel Electrode 308L 2.5mm', brand: 'Bohler', priceKES: 8500, application: 'Stainless', suppliers: ['Welding supplies'] },
-    { partNumber: 'E312-3.2', description: 'Dissimilar Metals Electrode 312 3.2mm', brand: 'Bohler', priceKES: 9500, application: 'Dissimilar metals', suppliers: ['Welding supplies'] },
+    { partNumber: 'E6013-2.5', description: 'Mild Steel Electrode 6013 2.5mm', brand: 'Bohler', priceKES: 2500, application: 'General purpose', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'E6013-3.2', description: 'Mild Steel Electrode 6013 3.2mm', brand: 'Bohler', priceKES: 2800, application: 'General purpose', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'E7018-3.2', description: 'Low Hydrogen Electrode 7018 3.2mm', brand: 'Bohler', priceKES: 4500, application: 'Structural', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'E308L-2.5', description: 'Stainless Steel Electrode 308L 2.5mm', brand: 'Bohler', priceKES: 8500, application: 'Stainless', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'E312-3.2', description: 'Dissimilar Metals Electrode 312 3.2mm', brand: 'Bohler', priceKES: 9500, application: 'Dissimilar metals', suppliers: ['EmersonEIMS'] },
   ],
   migWire: [
-    { partNumber: 'MIG-ER70S-0.8', description: 'MIG Wire ER70S-6 0.8mm 15kg', brand: 'ESAB', priceKES: 6500, application: 'Mild steel', suppliers: ['Welding supplies'] },
-    { partNumber: 'MIG-ER70S-1.0', description: 'MIG Wire ER70S-6 1.0mm 15kg', brand: 'ESAB', priceKES: 6500, application: 'Mild steel', suppliers: ['Welding supplies'] },
-    { partNumber: 'MIG-ER308L-0.8', description: 'MIG Wire ER308L 0.8mm 5kg', brand: 'ESAB', priceKES: 12000, application: 'Stainless', suppliers: ['Welding supplies'] },
-    { partNumber: 'MIG-FLUX-1.2', description: 'Flux Cored Wire E71T-1 1.2mm', brand: 'Lincoln', priceKES: 15000, application: 'High deposition', suppliers: ['Welding supplies'] },
+    { partNumber: 'MIG-ER70S-0.8', description: 'MIG Wire ER70S-6 0.8mm 15kg', brand: 'ESAB', priceKES: 6500, application: 'Mild steel', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MIG-ER70S-1.0', description: 'MIG Wire ER70S-6 1.0mm 15kg', brand: 'ESAB', priceKES: 6500, application: 'Mild steel', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MIG-ER308L-0.8', description: 'MIG Wire ER308L 0.8mm 5kg', brand: 'ESAB', priceKES: 12000, application: 'Stainless', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MIG-FLUX-1.2', description: 'Flux Cored Wire E71T-1 1.2mm', brand: 'Lincoln', priceKES: 15000, application: 'High deposition', suppliers: ['EmersonEIMS'] },
   ],
   tigFillers: [
-    { partNumber: 'TIG-ER70S-1.6', description: 'TIG Filler ER70S-2 1.6mm', brand: 'ESAB', priceKES: 3500, application: 'Mild steel', suppliers: ['Welding supplies'] },
-    { partNumber: 'TIG-ER308L-1.6', description: 'TIG Filler ER308L 1.6mm', brand: 'ESAB', priceKES: 8500, application: 'Stainless', suppliers: ['Welding supplies'] },
-    { partNumber: 'TIG-ER4043-2.4', description: 'TIG Filler ER4043 2.4mm', brand: 'ESAB', priceKES: 5500, application: 'Aluminum', suppliers: ['Welding supplies'] },
-    { partNumber: 'TIG-ERCU-2.4', description: 'TIG Filler Silicon Bronze 2.4mm', brand: 'ESAB', priceKES: 6500, application: 'Bronze/Copper', suppliers: ['Welding supplies'] },
+    { partNumber: 'TIG-ER70S-1.6', description: 'TIG Filler ER70S-2 1.6mm', brand: 'ESAB', priceKES: 3500, application: 'Mild steel', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TIG-ER308L-1.6', description: 'TIG Filler ER308L 1.6mm', brand: 'ESAB', priceKES: 8500, application: 'Stainless', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TIG-ER4043-2.4', description: 'TIG Filler ER4043 2.4mm', brand: 'ESAB', priceKES: 5500, application: 'Aluminum', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TIG-ERCU-2.4', description: 'TIG Filler Silicon Bronze 2.4mm', brand: 'ESAB', priceKES: 6500, application: 'Bronze/Copper', suppliers: ['EmersonEIMS'] },
   ],
   consumables: [
-    { partNumber: 'TIP-M6-0.8', description: 'Contact Tip M6 0.8mm (10pc)', brand: 'Various', priceKES: 500, application: 'MIG torch', suppliers: ['Welding supplies'] },
-    { partNumber: 'TIP-M6-1.0', description: 'Contact Tip M6 1.0mm (10pc)', brand: 'Various', priceKES: 500, application: 'MIG torch', suppliers: ['Welding supplies'] },
-    { partNumber: 'NOZZLE-MIG-16', description: 'Gas Nozzle 16mm', brand: 'Various', priceKES: 350, application: 'MIG torch', suppliers: ['Welding supplies'] },
-    { partNumber: 'LINER-STEEL-4M', description: 'Steel Liner 0.8-1.0mm 4m', brand: 'Various', priceKES: 800, application: 'MIG torch', suppliers: ['Welding supplies'] },
-    { partNumber: 'TUNGSTEN-2.4', description: 'Tungsten Electrode 2% Thoriated 2.4mm', brand: 'Various', priceKES: 450, application: 'TIG welding', suppliers: ['Welding supplies'] },
-    { partNumber: 'CUP-CERAMIC-8', description: 'Ceramic Cup #8', brand: 'Various', priceKES: 150, application: 'TIG torch', suppliers: ['Welding supplies'] },
+    { partNumber: 'TIP-M6-0.8', description: 'Contact Tip M6 0.8mm (10pc)', brand: 'Various', priceKES: 500, application: 'MIG torch', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TIP-M6-1.0', description: 'Contact Tip M6 1.0mm (10pc)', brand: 'Various', priceKES: 500, application: 'MIG torch', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'NOZZLE-MIG-16', description: 'Gas Nozzle 16mm', brand: 'Various', priceKES: 350, application: 'MIG torch', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'LINER-STEEL-4M', description: 'Steel Liner 0.8-1.0mm 4m', brand: 'Various', priceKES: 800, application: 'MIG torch', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'TUNGSTEN-2.4', description: 'Tungsten Electrode 2% Thoriated 2.4mm', brand: 'Various', priceKES: 450, application: 'TIG welding', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CUP-CERAMIC-8', description: 'Ceramic Cup #8', brand: 'Various', priceKES: 150, application: 'TIG torch', suppliers: ['EmersonEIMS'] },
   ],
   gases: [
-    { partNumber: 'CO2-CYLINDER', description: 'CO2 Cylinder 50kg (refill)', brand: 'BOC', priceKES: 3500, application: 'MIG welding', suppliers: ['BOC Kenya'] },
-    { partNumber: 'ARGON-CYLINDER', description: 'Argon Cylinder (refill)', brand: 'BOC', priceKES: 4500, application: 'TIG/MIG welding', suppliers: ['BOC Kenya'] },
-    { partNumber: 'MIXGAS-C25', description: 'Argon/CO2 Mix 75/25 (refill)', brand: 'BOC', priceKES: 5500, application: 'MIG spray', suppliers: ['BOC Kenya'] },
-    { partNumber: 'OXY-CYLINDER', description: 'Oxygen Cylinder (refill)', brand: 'BOC', priceKES: 2500, application: 'Oxy-Acetylene', suppliers: ['BOC Kenya'] },
-    { partNumber: 'ACET-CYLINDER', description: 'Acetylene Cylinder (refill)', brand: 'BOC', priceKES: 3500, application: 'Oxy-Acetylene', suppliers: ['BOC Kenya'] },
+    { partNumber: 'CO2-CYLINDER', description: 'CO2 Cylinder 50kg (refill)', brand: 'BOC', priceKES: 3500, application: 'MIG welding', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ARGON-CYLINDER', description: 'Argon Cylinder (refill)', brand: 'BOC', priceKES: 4500, application: 'TIG/MIG welding', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MIXGAS-C25', description: 'Argon/CO2 Mix 75/25 (refill)', brand: 'BOC', priceKES: 5500, application: 'MIG spray', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'OXY-CYLINDER', description: 'Oxygen Cylinder (refill)', brand: 'BOC', priceKES: 2500, application: 'Oxy-Acetylene', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ACET-CYLINDER', description: 'Acetylene Cylinder (refill)', brand: 'BOC', priceKES: 3500, application: 'Oxy-Acetylene', suppliers: ['EmersonEIMS'] },
   ],
   ppe: [
-    { partNumber: 'HELMET-AUTO', description: 'Auto-darkening Welding Helmet', brand: '3M', priceKES: 8500, application: 'Eye protection', suppliers: ['Safety suppliers'] },
-    { partNumber: 'GLOVES-MIG', description: 'MIG Welding Gloves', brand: 'Various', priceKES: 1200, application: 'Hand protection', suppliers: ['Safety suppliers'] },
-    { partNumber: 'APRON-LEATHER', description: 'Leather Welding Apron', brand: 'Various', priceKES: 2500, application: 'Body protection', suppliers: ['Safety suppliers'] },
-    { partNumber: 'JACKET-WELDING', description: 'Flame Resistant Jacket', brand: 'Various', priceKES: 3500, application: 'Body protection', suppliers: ['Safety suppliers'] },
+    { partNumber: 'HELMET-AUTO', description: 'Auto-darkening Welding Helmet', brand: '3M', priceKES: 8500, application: 'Eye protection', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'GLOVES-MIG', description: 'MIG Welding Gloves', brand: 'Various', priceKES: 1200, application: 'Hand protection', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'APRON-LEATHER', description: 'Leather Welding Apron', brand: 'Various', priceKES: 2500, application: 'Body protection', suppliers: ['EmersonEIMS'] },
+    { partNumber: 'JACKET-WELDING', description: 'Flame Resistant Jacket', brand: 'Various', priceKES: 3500, application: 'Body protection', suppliers: ['EmersonEIMS'] },
   ],
 };
 
@@ -160,14 +160,10 @@ export const WELDING_MAINTENANCE_SCHEDULES = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// KENYA SUPPLIERS DATABASE
+// EMERSONEIMS PARTS & SERVICES - YOUR TRUSTED PARTNER
 // ═══════════════════════════════════════════════════════════════════════════════
 export const WELDING_KENYA_SUPPLIERS = [
-  { name: 'BOC Kenya', location: 'Nairobi, Mombasa', specialization: 'Welding gases, equipment', phone: '+254 20 xxx xxxx', email: 'kenya@boc.com' },
-  { name: 'Weld Tech Kenya', location: 'Nairobi Industrial Area', specialization: 'Welding machines, consumables', phone: '+254 20 xxx xxxx', email: 'sales@weldtech.co.ke' },
-  { name: 'Impala Welding Supplies', location: 'Nairobi', specialization: 'All welding supplies', phone: '+254 20 xxx xxxx', email: 'info@impalawelding.co.ke' },
-  { name: 'ESAB Kenya', location: 'Nairobi', specialization: 'ESAB equipment and consumables', phone: '+254 20 xxx xxxx', email: 'kenya@esab.com' },
-  { name: 'Lincoln Electric Dealer', location: 'Nairobi', specialization: 'Lincoln welding equipment', phone: '+254 20 xxx xxxx', email: 'kenya@lincolnelectric.com' },
+  { name: 'EmersonEIMS', location: 'Nairobi, Kenya (Serving All Counties)', specialization: 'Complete Welding Solutions - Equipment, Consumables, Maintenance & Repairs', phone: '+254 768 860 665', email: 'info@emersoneims.com' },
 ];
 
 // Export all
