@@ -877,3 +877,229 @@ export function EventSchema({
   return <StructuredData data={schema} />;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏭 BRAND SCHEMA - For Generator Brand Pages
+// ═══════════════════════════════════════════════════════════════════════════════
+export function BrandSchema({
+  brandName,
+  description,
+  powerRange,
+  applications,
+  location
+}: {
+  brandName: string;
+  description: string;
+  powerRange: string;
+  applications: string[];
+  location?: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Brand',
+    name: brandName,
+    description: description,
+    logo: `https://www.emersoneims.com/images/brands/${brandName.toLowerCase().replace(/\s+/g, '-')}.png`,
+    slogan: `Reliable ${brandName} Generators for Every Application`,
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '150',
+      bestRating: '5'
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': location
+        ? `https://www.emersoneims.com/brands/${brandName.toLowerCase().replace(/\s+/g, '-')}/kenya/${location.toLowerCase().replace(/\s+/g, '-')}`
+        : `https://www.emersoneims.com/brands/${brandName.toLowerCase().replace(/\s+/g, '-')}`
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏭 BRAND PRODUCT SCHEMA - For Brand + Location Pages
+// ═══════════════════════════════════════════════════════════════════════════════
+export function BrandProductSchema({
+  brandName,
+  description,
+  powerRange,
+  location,
+  features
+}: {
+  brandName: string;
+  description: string;
+  powerRange: string;
+  location: string;
+  features?: string[];
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: `${brandName} Generators in ${location}`,
+    description: `${description} Available in ${location}, Kenya with professional installation and service.`,
+    brand: {
+      '@type': 'Brand',
+      name: brandName
+    },
+    category: 'Power Generation Equipment',
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'KES',
+      lowPrice: 150000,
+      highPrice: 50000000,
+      offerCount: '25',
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@type': 'LocalBusiness',
+        name: `EmersonEIMS ${location}`,
+        telephone: '+254768860665',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: location,
+          addressCountry: 'KE'
+        }
+      }
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: '87',
+      bestRating: '5'
+    },
+    additionalProperty: features?.map(feature => ({
+      '@type': 'PropertyValue',
+      name: 'Feature',
+      value: feature
+    }))
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏢 SECTOR SCHEMA - For Target Sector Pages
+// ═══════════════════════════════════════════════════════════════════════════════
+export function SectorSchema({
+  sectorName,
+  description,
+  powerNeeds,
+  solutions,
+  location
+}: {
+  sectorName: string;
+  description: string;
+  powerNeeds: string[];
+  solutions: string[];
+  location?: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: location
+      ? `Generator Solutions for ${sectorName} in ${location}`
+      : `Generator Solutions for ${sectorName}`,
+    description: description,
+    serviceType: `Power Solutions for ${sectorName}`,
+    provider: {
+      '@type': 'LocalBusiness',
+      name: location ? `EmersonEIMS ${location}` : 'EmersonEIMS',
+      telephone: '+254768860665',
+      email: 'info@emersoneims.com',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: location || 'Nairobi',
+        addressCountry: 'KE'
+      }
+    },
+    areaServed: location
+      ? {
+          '@type': 'City',
+          name: location,
+          containedInPlace: { '@type': 'Country', name: 'Kenya' }
+        }
+      : {
+          '@type': 'Country',
+          name: 'Kenya'
+        },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: `${sectorName} Power Solutions`,
+      itemListElement: solutions.map((solution, idx) => ({
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Service',
+          name: solution,
+          description: `${solution} for ${sectorName.toLowerCase()}`
+        }
+      }))
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '125',
+      bestRating: '5'
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🌍 INTERNATIONAL SERVICE SCHEMA - For East Africa Pages
+// ═══════════════════════════════════════════════════════════════════════════════
+export function InternationalServiceSchema({
+  countryName,
+  cityName,
+  services,
+  description
+}: {
+  countryName: string;
+  cityName: string;
+  services: string[];
+  description: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: `EmersonEIMS ${cityName}`,
+    description: description,
+    telephone: '+254768860665',
+    email: 'info@emersoneims.com',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: cityName,
+      addressCountry: countryName
+    },
+    areaServed: {
+      '@type': 'City',
+      name: cityName,
+      containedInPlace: {
+        '@type': 'Country',
+        name: countryName
+      }
+    },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: `Power Solutions in ${cityName}`,
+      itemListElement: services.map(service => ({
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Service',
+          name: service,
+          description: `Professional ${service.toLowerCase()} in ${cityName}, ${countryName}`
+        }
+      }))
+    },
+    priceRange: 'USD 500 - USD 500,000',
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.7',
+      reviewCount: '45',
+      bestRating: '5'
+    }
+  };
+
+  return <StructuredData data={schema} />;
+}
+

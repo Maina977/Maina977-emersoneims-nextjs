@@ -257,6 +257,302 @@ export const SEO_SERVICES: SEOService[] = [
       }
     ]
   },
+  {
+    id: 'generator-maintenance-companies',
+    slug: 'generator-maintenance-companies',
+    name: 'Generator Maintenance Companies',
+    shortName: 'Maintenance Companies',
+    keywords: ['generator maintenance companies', 'generator service companies', 'generator AMC companies', 'generator maintenance providers', 'genset maintenance company', 'preventive maintenance companies', 'generator service providers near me'],
+    description: 'Leading generator maintenance companies',
+    icon: 'Building2',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Generator Maintenance Companies in {location} | Best Service Providers Kenya',
+      description: 'Top generator maintenance companies in {location}. Professional preventive maintenance, AMC contracts, 24/7 service. Certified technicians. Call +254768860665',
+      h1: 'Generator Maintenance Companies in {location}'
+    },
+    features: [
+      'Certified maintenance teams',
+      'Preventive maintenance programs',
+      'Annual maintenance contracts',
+      '24/7 emergency response',
+      'Genuine spare parts',
+      'Detailed service reports'
+    ],
+    faqs: [
+      {
+        question: 'What are the best generator maintenance companies in {location}?',
+        answer: 'Emerson EIMS is a leading generator maintenance company in {location}, offering comprehensive preventive maintenance and AMC contracts for all generator brands.'
+      },
+      {
+        question: 'Do generator maintenance companies in {location} offer AMC?',
+        answer: 'Yes, we offer Annual Maintenance Contracts including scheduled visits, priority emergency response, and discounted parts in {location}.'
+      },
+      {
+        question: 'How often should generators be serviced by maintenance companies?',
+        answer: 'We recommend servicing every 250-500 running hours or every 6 months. Our maintenance programs ensure your generator runs optimally.'
+      }
+    ]
+  },
+  {
+    id: 'generator-engine-overhaul',
+    slug: 'generator-engine-overhaul',
+    name: 'Generator Engine Overhaul',
+    shortName: 'Engine Overhaul',
+    keywords: ['generator engine overhaul', 'generator overhaul', 'engine rebuild', 'generator rebuild', 'major overhaul', 'top overhaul', 'engine reconditioning', 'generator engine repair', 'genset overhaul'],
+    description: 'Complete generator engine overhaul services',
+    icon: 'Wrench',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Generator Engine Overhaul in {location} | Engine Rebuild Services Kenya',
+      description: 'Professional generator engine overhaul in {location}. Complete engine rebuild, top overhaul, reconditioning. Extend generator life. Call +254768860665',
+      h1: 'Generator Engine Overhaul in {location}'
+    },
+    features: [
+      'Complete engine overhaul',
+      'Top overhaul service',
+      'Piston & ring replacement',
+      'Crankshaft reconditioning',
+      'Cylinder head rebuild',
+      'Performance testing'
+    ],
+    faqs: [
+      {
+        question: 'When does a generator need engine overhaul in {location}?',
+        answer: 'Generators typically need overhaul after 15,000-20,000 running hours or when experiencing low power, excessive oil consumption, or smoke.'
+      },
+      {
+        question: 'How long does generator engine overhaul take in {location}?',
+        answer: 'Complete engine overhaul in {location} typically takes 2-4 weeks depending on parts availability and engine size.'
+      },
+      {
+        question: 'Is generator overhaul worth it vs buying new?',
+        answer: 'Overhaul costs 30-50% of a new generator and restores original performance. Highly recommended for quality generators.'
+      }
+    ]
+  },
+  {
+    id: 'generator-canopies',
+    slug: 'generator-canopies',
+    name: 'Generator Canopies',
+    shortName: 'Generator Canopies',
+    keywords: ['generator canopies', 'generator canopy', 'generator enclosure', 'soundproof canopy', 'generator housing', 'genset canopy', 'acoustic enclosure', 'silent canopy', 'generator shelter'],
+    description: 'Soundproof generator canopies and enclosures',
+    icon: 'Box',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Generator Canopies in {location} | Soundproof Enclosures Kenya',
+      description: 'Generator canopies in {location}. Soundproof enclosures, acoustic canopies, weather protection. Custom sizes. Quality steel construction. Call +254768860665',
+      h1: 'Generator Canopies in {location}'
+    },
+    features: [
+      'Soundproof design',
+      'Weather protection',
+      'Ventilation system',
+      'Easy maintenance access',
+      'Custom sizes available',
+      'Powder coated finish'
+    ],
+    faqs: [
+      {
+        question: 'What is a generator canopy?',
+        answer: 'A generator canopy is an enclosure that reduces noise, protects from weather, and provides security for your generator in {location}.'
+      },
+      {
+        question: 'How much do generator canopies cost in {location}?',
+        answer: 'Generator canopy prices in {location} range from KES 100,000-500,000 depending on size, noise reduction level, and features.'
+      },
+      {
+        question: 'Do you make custom generator canopies in {location}?',
+        answer: 'Yes, we fabricate custom generator canopies to fit any generator size. Site measurement and installation included.'
+      }
+    ]
+  },
+  {
+    id: 'generator-changeover',
+    slug: 'generator-changeover',
+    name: 'Generator Changeover',
+    shortName: 'Changeover',
+    keywords: ['generator changeover', 'changeover switch', 'manual changeover', 'automatic changeover', 'power changeover', 'changeover panel', 'transfer switch', 'changeover installation', 'mains changeover'],
+    description: 'Generator changeover switch installation',
+    icon: 'ToggleRight',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Generator Changeover in {location} | Changeover Switch Installation Kenya',
+      description: 'Generator changeover installation in {location}. Manual & automatic changeover switches. Safe power transfer. Professional installation. Call +254768860665',
+      h1: 'Generator Changeover in {location}'
+    },
+    features: [
+      'Manual changeover switches',
+      'Automatic changeover (ATS)',
+      'All capacities available',
+      'Safety interlocking',
+      'Professional installation',
+      'KPLC compliant'
+    ],
+    faqs: [
+      {
+        question: 'What is the difference between manual and automatic changeover?',
+        answer: 'Manual changeover requires physical switching; automatic changeover (ATS) switches automatically when power fails or returns.'
+      },
+      {
+        question: 'How much does changeover switch installation cost in {location}?',
+        answer: 'Changeover switch installation in {location} ranges from KES 20,000 for manual to KES 150,000+ for automatic depending on capacity.'
+      },
+      {
+        question: 'Is changeover switch required for generators in {location}?',
+        answer: 'Yes, a changeover switch is essential for safe switching between mains and generator power, preventing back-feeding.'
+      }
+    ]
+  },
+  {
+    id: 'generator-power-factor',
+    slug: 'generator-power-factor',
+    name: 'Generator Power Factor Correction',
+    shortName: 'Power Factor',
+    keywords: ['generator power factor', 'power factor correction', 'PFC', 'capacitor bank', 'power factor improvement', 'reactive power', 'power quality', 'kVAR compensation', 'power factor panels'],
+    description: 'Generator power factor correction services',
+    icon: 'Activity',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Generator Power Factor Correction in {location} | PFC Systems Kenya',
+      description: 'Generator power factor correction in {location}. Capacitor banks, PFC panels, power quality improvement. Reduce electricity costs. Call +254768860665',
+      h1: 'Generator Power Factor Correction in {location}'
+    },
+    features: [
+      'Power factor analysis',
+      'Capacitor bank installation',
+      'Automatic PFC panels',
+      'Harmonic filtering',
+      'Energy savings',
+      'KPLC penalty avoidance'
+    ],
+    faqs: [
+      {
+        question: 'What is power factor correction for generators?',
+        answer: 'Power factor correction improves the efficiency of your electrical system, reducing wasted energy and maximizing generator capacity in {location}.'
+      },
+      {
+        question: 'Why is power factor important for generators in {location}?',
+        answer: 'Poor power factor means your generator works harder to deliver the same power, reducing efficiency and increasing fuel consumption.'
+      },
+      {
+        question: 'How much can power factor correction save in {location}?',
+        answer: 'Proper PFC can reduce electricity bills by 10-20% and improve generator efficiency. It also avoids KPLC power factor penalties.'
+      }
+    ]
+  },
+  {
+    id: 'repairs',
+    slug: 'repairs',
+    name: 'Repairs',
+    shortName: 'Repairs',
+    keywords: ['repairs', 'repair services', 'equipment repair', 'electrical repairs', 'mechanical repairs', 'generator repair', 'motor repair', 'repair company', 'repair near me', 'fix equipment'],
+    description: 'Professional repair services for all equipment',
+    icon: 'Wrench',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Repairs in {location} | Professional Equipment Repair Services Kenya',
+      description: 'Professional repairs in {location}. Generator, motor, pump, electrical equipment repairs. Fast turnaround. All brands serviced. Call +254768860665',
+      h1: 'Repairs in {location}'
+    },
+    features: [
+      'Generator repairs',
+      'Motor repairs',
+      'Pump repairs',
+      'Electrical repairs',
+      'Fast turnaround',
+      'All brands serviced'
+    ],
+    faqs: [
+      {
+        question: 'What equipment do you repair in {location}?',
+        answer: 'We repair generators, motors, pumps, UPS systems, inverters, control panels, and all power equipment in {location}.'
+      },
+      {
+        question: 'How fast can you repair equipment in {location}?',
+        answer: 'Standard repairs take 3-7 days. Emergency repairs available with faster turnaround in {location}.'
+      },
+      {
+        question: 'Do you offer on-site repairs in {location}?',
+        answer: 'Yes, we provide on-site repairs for large equipment. Mobile teams available throughout {location}.'
+      }
+    ]
+  },
+  {
+    id: 'maintenance',
+    slug: 'maintenance',
+    name: 'Maintenance',
+    shortName: 'Maintenance',
+    keywords: ['maintenance', 'maintenance services', 'preventive maintenance', 'equipment maintenance', 'maintenance company', 'AMC', 'maintenance contract', 'scheduled maintenance', 'maintenance near me'],
+    description: 'Comprehensive maintenance services',
+    icon: 'Settings',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Maintenance in {location} | Professional Maintenance Services Kenya',
+      description: 'Professional maintenance in {location}. Generator, motor, pump maintenance. Preventive maintenance, AMC contracts. Keep equipment running. Call +254768860665',
+      h1: 'Maintenance in {location}'
+    },
+    features: [
+      'Preventive maintenance',
+      'Scheduled servicing',
+      'Annual contracts (AMC)',
+      'All equipment types',
+      'Detailed reports',
+      '24/7 support'
+    ],
+    faqs: [
+      {
+        question: 'What maintenance services do you offer in {location}?',
+        answer: 'We offer maintenance for generators, motors, pumps, UPS systems, AC, and all power equipment in {location}.'
+      },
+      {
+        question: 'Do you offer maintenance contracts in {location}?',
+        answer: 'Yes, our Annual Maintenance Contracts include scheduled visits, priority response, and discounted parts in {location}.'
+      },
+      {
+        question: 'How often should equipment be maintained in {location}?',
+        answer: 'Maintenance frequency depends on equipment type and usage. We create customized schedules for your needs.'
+      }
+    ]
+  },
+  {
+    id: 'spareparts',
+    slug: 'spareparts',
+    name: 'Spare Parts',
+    shortName: 'Spare Parts',
+    keywords: ['spare parts', 'spares', 'parts', 'equipment parts', 'generator parts', 'motor parts', 'pump parts', 'electrical parts', 'spare parts near me', 'buy spare parts'],
+    description: 'Genuine spare parts for all equipment',
+    icon: 'Package',
+    category: 'generators',
+    metaTemplate: {
+      title: 'Spare Parts in {location} | Genuine Equipment Parts Kenya',
+      description: 'Genuine spare parts in {location}. Generator, motor, pump parts. All major brands. Fast delivery. Competitive prices. Call +254768860665',
+      h1: 'Spare Parts in {location}'
+    },
+    features: [
+      'Genuine OEM parts',
+      'All major brands',
+      'Fast delivery',
+      'Competitive prices',
+      'Technical support',
+      'Warranty included'
+    ],
+    faqs: [
+      {
+        question: 'What spare parts do you stock in {location}?',
+        answer: 'We stock parts for generators, motors, pumps, UPS, inverters, and control equipment from all major brands in {location}.'
+      },
+      {
+        question: 'Do you sell genuine parts in {location}?',
+        answer: 'Yes, we supply genuine OEM parts with warranty. Quality aftermarket alternatives also available.'
+      },
+      {
+        question: 'How fast can you deliver parts in {location}?',
+        answer: 'Stock items ship same-day within {location}. Special orders typically arrive within 1-2 weeks.'
+      }
+    ]
+  },
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // ☀️ SOLAR ENERGY SOLUTIONS - COMPLETE COVERAGE

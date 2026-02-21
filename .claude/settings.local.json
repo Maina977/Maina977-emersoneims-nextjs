@@ -33,7 +33,9 @@
       "WebFetch(domain:www.emersoneims.com)",
       "Bash(dir:*)",
       "Bash(grep:*)",
-      "WebFetch(domain:emersoneims.com)"
+      "WebFetch(domain:emersoneims.com)",
+      "Bash(ls:*)",
+      "Bash(head:*)"
     ]
   }
 }
