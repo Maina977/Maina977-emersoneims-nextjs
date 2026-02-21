@@ -11,6 +11,13 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import {
+  FABRICATION_FAULT_CODES as BIBLE_FAULT_CODES,
+  FABRICATION_REPAIR_MANUALS,
+  FABRICATION_PARTS_CATALOGUE,
+  FABRICATION_MAINTENANCE_SCHEDULES,
+  FABRICATION_KENYA_SUPPLIERS,
+} from '@/lib/maintenance-hub/fabrication-bible';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // FABRICATION CATEGORIES
@@ -294,8 +301,10 @@ const MATERIALS = {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function FabricationMaintenanceHub() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'exhausts' | 'canopies' | 'tanks' | 'mdb' | 'faults'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'exhausts' | 'canopies' | 'tanks' | 'mdb' | 'faults' | 'repair' | 'parts' | 'maintenance'>('overview');
   const [selectedFault, setSelectedFault] = useState<typeof FABRICATION_FAULTS[0] | null>(null);
+  const [selectedRepairManual, setSelectedRepairManual] = useState<typeof FABRICATION_REPAIR_MANUALS[0] | null>(null);
+  const [selectedPartsCategory, setSelectedPartsCategory] = useState<string>('plasma');
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '🏭' },
@@ -304,6 +313,9 @@ export default function FabricationMaintenanceHub() {
     { id: 'tanks', label: 'Fuel Tanks', icon: '⛽' },
     { id: 'mdb', label: 'Distribution Boards', icon: '⚡' },
     { id: 'faults', label: 'Fault Codes', icon: '⚠️' },
+    { id: 'repair', label: 'Repair Manuals', icon: '📖' },
+    { id: 'parts', label: 'Parts Catalogue', icon: '🔩' },
+    { id: 'maintenance', label: 'Maintenance', icon: '🗓️' },
   ];
 
   return (
@@ -714,8 +726,209 @@ export default function FabricationMaintenanceHub() {
               </div>
             </motion.div>
           )}
+
+          {/* REPAIR MANUALS */}
+          {activeTab === 'repair' && (
+            <motion.div key="repair" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <h2 className="text-2xl font-bold text-white mb-4">Repair Manuals</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {FABRICATION_REPAIR_MANUALS.map(manual => (
+                  <div
+                    key={manual.id}
+                    className="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-blue-500 cursor-pointer transition-all"
+                    onClick={() => setSelectedRepairManual(manual)}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <span className="text-xs font-mono text-blue-400">{manual.id}</span>
+                        <h3 className="text-xl font-bold text-white">{manual.title}</h3>
+                        <span className="text-sm text-slate-400">{manual.category}</span>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs ${
+                        manual.difficulty === 'Advanced' ? 'bg-red-500/20 text-red-400' :
+                        manual.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-green-500/20 text-green-400'
+                      }`}>{manual.difficulty}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="text-sm text-slate-400">Time: {manual.timeRequired}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {manual.tools.slice(0, 4).map(tool => (
+                        <span key={tool} className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">{tool}</span>
+                      ))}
+                      {manual.tools.length > 4 && <span className="text-xs text-slate-400">+{manual.tools.length - 4} more</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* PARTS CATALOGUE */}
+          {activeTab === 'parts' && (
+            <motion.div key="parts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <h2 className="text-2xl font-bold text-white mb-4">Parts Catalogue with Kenya Suppliers</h2>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {Object.keys(FABRICATION_PARTS_CATALOGUE).map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedPartsCategory(cat)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      selectedPartsCategory === cat ? 'bg-blue-500 text-white' : 'bg-slate-700 text-white hover:bg-slate-600'
+                    }`}
+                  >
+                    {cat.replace(/([A-Z])/g, ' $1').trim()}
+                  </button>
+                ))}
+              </div>
+              <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
+                <table className="w-full">
+                  <thead className="bg-slate-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-white">Part Number</th>
+                      <th className="px-4 py-3 text-left text-white">Description</th>
+                      <th className="px-4 py-3 text-left text-white">Brand</th>
+                      <th className="px-4 py-3 text-left text-white">Price (KES)</th>
+                      <th className="px-4 py-3 text-left text-white">Application</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(FABRICATION_PARTS_CATALOGUE[selectedPartsCategory as keyof typeof FABRICATION_PARTS_CATALOGUE] || []).map((part: { partNumber: string; description: string; brand: string; priceKES: number; application: string }) => (
+                      <tr key={part.partNumber} className="border-t border-slate-700 hover:bg-slate-700/50">
+                        <td className="px-4 py-3 font-mono text-blue-400">{part.partNumber}</td>
+                        <td className="px-4 py-3 text-white">{part.description}</td>
+                        <td className="px-4 py-3 text-slate-300">{part.brand}</td>
+                        <td className="px-4 py-3 text-green-400 font-bold">KES {part.priceKES.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-slate-400">{part.application}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-8">
+                <h3 className="text-xl font-bold text-white mb-4">Kenya Suppliers</h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {FABRICATION_KENYA_SUPPLIERS.map(supplier => (
+                    <div key={supplier.name} className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                      <h4 className="font-bold text-white">{supplier.name}</h4>
+                      <p className="text-slate-400 text-sm">{supplier.location}</p>
+                      <p className="text-blue-400 text-sm">{supplier.specialization}</p>
+                      <p className="text-slate-500 text-xs mt-2">{supplier.phone}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* MAINTENANCE SCHEDULES */}
+          {activeTab === 'maintenance' && (
+            <motion.div key="maintenance" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <h2 className="text-2xl font-bold text-white mb-4">Maintenance Schedules</h2>
+              {Object.entries(FABRICATION_MAINTENANCE_SCHEDULES).map(([areaType, schedule]) => (
+                <div key={areaType} className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                  <h3 className="text-xl font-bold text-blue-400 mb-4 capitalize">{areaType.replace(/([A-Z])/g, ' $1').trim()}</h3>
+                  {Object.entries(schedule).map(([period, tasks]) => (
+                    <div key={period} className="mb-4">
+                      <h4 className={`font-semibold mb-2 ${
+                        period === 'daily' ? 'text-green-400' :
+                        period === 'weekly' ? 'text-yellow-400' :
+                        period === 'monthly' ? 'text-orange-400' :
+                        'text-red-400'
+                      }`}>{period.charAt(0).toUpperCase() + period.slice(1)}</h4>
+                      <div className="grid md:grid-cols-2 gap-2">
+                        {(tasks as Array<{task: string; procedure: string; tools: string[]}>).map((item, idx) => (
+                          <div key={idx} className="bg-slate-700/50 rounded-lg p-3">
+                            <p className="text-white font-medium">{item.task}</p>
+                            <p className="text-slate-400 text-sm">{item.procedure}</p>
+                            <p className="text-blue-400 text-xs">Tools: {item.tools.join(', ')}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
+
+      {/* Repair Manual Modal */}
+      <AnimatePresence>
+        {selectedRepairManual && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto"
+            onClick={() => setSelectedRepairManual(null)}
+          >
+            <div className="min-h-screen py-8 px-4">
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                className="max-w-4xl mx-auto bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-xs font-mono text-white/70">{selectedRepairManual.id}</span>
+                      <h2 className="text-2xl font-bold text-white">{selectedRepairManual.title}</h2>
+                      <p className="text-white/80">{selectedRepairManual.category} | {selectedRepairManual.difficulty} | {selectedRepairManual.timeRequired}</p>
+                    </div>
+                    <button onClick={() => setSelectedRepairManual(null)} className="text-white/80 hover:text-white text-2xl">&times;</button>
+                  </div>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                    <h3 className="font-bold text-red-400 mb-2">Safety Warnings</h3>
+                    <ul className="list-disc list-inside text-red-300 space-y-1">
+                      {selectedRepairManual.safetyWarnings.map((w, i) => <li key={i}>{w}</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white mb-2">Tools Required</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRepairManual.tools.map(t => <span key={t} className="px-3 py-1 bg-slate-700 rounded-full text-sm text-slate-300">{t}</span>)}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white mb-4">Step-by-Step Procedure</h3>
+                    <div className="space-y-4">
+                      {selectedRepairManual.steps.map(step => (
+                        <div key={step.step} className="bg-slate-700/50 rounded-lg p-4">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">{step.step}</span>
+                            <h4 className="font-bold text-white">{step.title}</h4>
+                          </div>
+                          <p className="text-slate-300 ml-11">{step.description}</p>
+                          <p className="text-slate-400 text-sm ml-11 mt-1">{step.details}</p>
+                          {step.caution && <p className="text-yellow-400 text-sm ml-11 mt-1">Caution: {step.caution}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white mb-2">Verification Checklist</h3>
+                    <div className="grid md:grid-cols-2 gap-2">
+                      {selectedRepairManual.verification.map((v, i) => (
+                        <div key={i} className="flex items-center gap-2 bg-green-500/10 rounded-lg p-2">
+                          <span className="text-green-400">✓</span>
+                          <span className="text-green-300">{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Fault Modal */}
       <AnimatePresence>
