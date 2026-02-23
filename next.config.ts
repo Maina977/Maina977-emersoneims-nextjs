@@ -112,7 +112,7 @@ const nextConfig: NextConfig = {
       base-uri 'self';
       form-action 'self';
       frame-ancestors 'self';
-      frame-src 'self' https://www.google.com https://www.youtube.com https://player.vimeo.com;
+      frame-src 'self' https://www.google.com https://maps.google.com https://*.google.com https://www.youtube.com https://player.vimeo.com;
       upgrade-insecure-requests;
     `.replace(/\s{2,}/g, ' ').trim();
 
