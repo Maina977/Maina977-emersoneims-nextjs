@@ -298,7 +298,7 @@ export default function HolographicMap() {
                 className="absolute inset-0"
               >
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8!2d36.89!3d-1.32!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f139bef8b8e9d%3A0x8c8f69e4e7f7d8c8!2sKEMSA!5e0!3m2!1sen!2ske!4v1709049600000"
+                  src="https://maps.google.com/maps?q=-1.3200,36.8900&t=k&z=16&output=embed"
                   width="100%"
                   height="100%"
                   style={{
@@ -308,7 +308,6 @@ export default function HolographicMap() {
                   }}
                   allowFullScreen
                   loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
                 />
               </motion.div>
             )}
