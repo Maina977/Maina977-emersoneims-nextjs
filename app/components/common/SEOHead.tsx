@@ -65,7 +65,7 @@ export default function SEOHead({ title, description, keywords, canonical, openG
     ],
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Old North Airport Road",
+      "streetAddress": "Embakasi, off Airport North Road",
       "postalCode": "00521",
       "addressLocality": "Nairobi",
       "addressCountry": "KE"

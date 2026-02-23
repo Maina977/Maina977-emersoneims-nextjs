@@ -298,7 +298,7 @@ export default function HolographicMap() {
                 className="absolute inset-0"
               >
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8191803668074!2d36.8977!3d-1.2864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f177c98900001%3A0x1!2sEmbakasi%2C%20Nairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1234567890"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8!2d36.89!3d-1.32!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f139bef8b8e9d%3A0x8c8f69e4e7f7d8c8!2sKEMSA!5e0!3m2!1sen!2ske!4v1709049600000"
                   width="100%"
                   height="100%"
                   style={{
@@ -394,8 +394,8 @@ export default function HolographicMap() {
                     className="absolute bottom-8 left-8 bg-black/80 backdrop-blur-xl border border-amber-500/50 rounded-2xl p-6 font-mono"
                   >
                     <div className="text-amber-400 text-xs uppercase tracking-widest mb-2">// COORDINATES</div>
-                    <div className="text-white text-2xl font-bold">-1.2864°, 36.8977°</div>
-                    <div className="text-gray-400 text-sm mt-2">Embakasi, Nairobi</div>
+                    <div className="text-white text-2xl font-bold">-1.3200°, 36.8900°</div>
+                    <div className="text-gray-400 text-sm mt-2">Embakasi, off Airport North Road, Nairobi</div>
                     <div className="flex items-center gap-2 mt-3">
                       <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                       <span className="text-green-400 text-xs">LOCATION ACTIVE</span>
@@ -532,7 +532,7 @@ export default function HolographicMap() {
             <div className="space-y-3">
               <div>
                 <div className="text-gray-400 text-xs">HQ Address</div>
-                <div className="text-white font-semibold">Embakasi, Old North Airport Road</div>
+                <div className="text-white font-semibold">Embakasi, off Airport North Road (Near KEMSA)</div>
               </div>
               <div>
                 <div className="text-gray-400 text-xs">Service Radius</div>
@@ -548,7 +548,7 @@ export default function HolographicMap() {
             </div>
 
             <motion.a
-              href="https://maps.google.com/?q=-1.2864,36.8977"
+              href="https://maps.google.com/?q=-1.3200,36.8900"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.02 }}

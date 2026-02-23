@@ -330,8 +330,8 @@ export default async function RootLayout({
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": -1.286389,
-      "longitude": 36.817223
+      "latitude": -1.3200,
+      "longitude": 36.8900
     },
     "openingHoursSpecification": [
       {
@@ -515,17 +515,17 @@ export default async function RootLayout({
         <meta name="audience" content="all" />
         <meta name="page-topic" content="Power Engineering, Energy Solutions, Generators, Solar Energy" />
         <meta name="geo.region" content="KE" />
-        <meta name="geo.placename" content="Nairobi, Kenya" />
-        <meta name="geo.position" content="-1.286389;36.817223" />
-        <meta name="ICBM" content="-1.286389, 36.817223" />
+        <meta name="geo.placename" content="Embakasi, Nairobi, Kenya" />
+        <meta name="geo.position" content="-1.3200;36.8900" />
+        <meta name="ICBM" content="-1.3200, 36.8900" />
 
         {/* Additional Open Graph for WhatsApp/Telegram sharing */}
         <meta property="og:phone_number" content="+254768860665" />
         <meta property="og:email" content="info@emersoneims.com" />
-        <meta property="og:latitude" content="-1.286389" />
-        <meta property="og:longitude" content="36.817223" />
-        <meta property="og:street-address" content="Nairobi" />
-        <meta property="og:locality" content="Nairobi" />
+        <meta property="og:latitude" content="-1.3200" />
+        <meta property="og:longitude" content="36.8900" />
+        <meta property="og:street-address" content="Embakasi, off Airport North Road" />
+        <meta property="og:locality" content="Embakasi, Nairobi" />
         <meta property="og:region" content="Nairobi County" />
         <meta property="og:postal-code" content="" />
         <meta property="og:country-name" content="Kenya" />

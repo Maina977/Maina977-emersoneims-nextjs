@@ -34,7 +34,7 @@ export function OrganizationSchema() {
     foundingDate: '2010',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'P.O. Box 387-00521, Old North Airport Road',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
       postalCode: '00521',
@@ -71,8 +71,8 @@ export function OrganizationSchema() {
     ],
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: -1.2921,
-      longitude: 36.8219
+      latitude: -1.3200,
+      longitude: 36.8900
     },
     areaServed: [
       { '@type': 'Country', name: 'Kenya' },
@@ -95,7 +95,7 @@ export function LocalBusinessSchema({ county }: { county?: string }) {
     priceRange: 'KES 50,000 - KES 10,000,000',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'P.O. Box 387-00521',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: county || 'Nairobi',
       addressRegion: county ? `${county} County` : 'Nairobi County',
       addressCountry: 'KE'
@@ -455,15 +455,15 @@ export function ProfessionalServiceSchema({
     priceRange: priceRange || 'KES 5,000 - KES 10,000,000',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'P.O. Box 387-00521, Old North Airport Road',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
       addressCountry: 'KE'
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: -1.2921,
-      longitude: 36.8219
+      latitude: -1.3200,
+      longitude: 36.8900
     },
     areaServed: areaServed || [
       'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Malindi', 'Kitale',
@@ -626,15 +626,15 @@ export function ComprehensiveLocalBusinessSchema({
     paymentAccepted: 'Cash, M-Pesa, Bank Transfer, Credit Card, Cheque',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'P.O. Box 387-00521',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: county,
       addressRegion: `${county} County`,
       addressCountry: 'KE'
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: -1.2921,
-      longitude: 36.8219
+      latitude: -1.3200,
+      longitude: 36.8900
     },
     areaServed: {
       '@type': 'AdministrativeArea',

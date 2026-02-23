@@ -194,9 +194,9 @@ export default function SciFiFooter() {
               <li className="text-gray-400">
                 <span className="text-cyan-400">ADDRESS:</span>
                 <div className="mt-1 text-xs leading-relaxed">
-                  P.O. Box 387-00521<br />
-                  Old North Airport Road<br />
-                  Nairobi, Kenya
+                  Embakasi, off Airport North Road<br />
+                  Nairobi, Kenya<br />
+                  (Near KEMSA Head Office)
                 </div>
               </li>
             </ul>

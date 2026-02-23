@@ -155,7 +155,8 @@ export default function PremiumFooter() {
               <ul className="space-y-4 text-sm text-gray-400">
                 <li>
                   <span className="block text-white mb-1">Nairobi HQ</span>
-                  P.O. Box 387-00521, Old North Airport Road
+                  Embakasi, off Airport North Road, Nairobi<br />
+                  (Near KEMSA Head Office)
                 </li>
                 <li>
                   <span className="block text-white mb-1">Email</span>

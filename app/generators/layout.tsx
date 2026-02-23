@@ -118,7 +118,7 @@ const jsonLd = {
       ],
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'Old North Airport Road',
+        streetAddress: 'Embakasi, off Airport North Road',
         addressLocality: 'Nairobi',
         postalCode: '00521',
         addressCountry: 'KE',
@@ -172,15 +172,15 @@ const jsonLd = {
       email: 'info@emersoneims.com',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'Old North Airport Road',
+        streetAddress: 'Embakasi, off Airport North Road',
         addressLocality: 'Nairobi',
         postalCode: '00521',
         addressCountry: 'KE',
       },
       geo: {
         '@type': 'GeoCoordinates',
-        latitude: -1.2921,
-        longitude: 36.8219,
+        latitude: -1.3200,
+        longitude: 36.8900,
       },
       url: 'https://emersoneims.com',
       priceRange: '$$',

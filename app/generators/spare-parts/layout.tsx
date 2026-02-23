@@ -63,7 +63,7 @@ const jsonLd = {
       telephone: '+254768860665',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'Old North Airport Road',
+        streetAddress: 'Embakasi, off Airport North Road',
         addressLocality: 'Nairobi',
         addressCountry: 'KE',
       },

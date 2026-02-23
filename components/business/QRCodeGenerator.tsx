@@ -43,7 +43,7 @@ const COMPANY_INFO = {
   phone: '+254782914717',
   whatsapp: '+254768860665', // Primary WhatsApp number
   email: 'info@emersoneims.com',
-  address: 'P.O. Box 387-00521, Old North Airport Road, Nairobi, Kenya',
+  address: 'Embakasi, off Airport North Road, Nairobi, Kenya (Near KEMSA Head Office)',
   tagline: 'Reliable Power. Without Limits.',
 };
 

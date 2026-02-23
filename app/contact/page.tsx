@@ -596,8 +596,8 @@ function LocationSection() {
               </div>
               <p className="text-xs text-amber-400 uppercase tracking-wider font-mono mb-2">{'// ADDRESS'}</p>
               <p className="text-white font-semibold text-lg mb-1">Embakasi, Nairobi</p>
-              <p className="text-gray-400 text-sm">Old North Airport Road</p>
-              <p className="text-gray-400 text-sm">P.O. Box 387-00521</p>
+              <p className="text-gray-400 text-sm">Off Airport North Road</p>
+              <p className="text-gray-400 text-sm">(Near KEMSA Head Office)</p>
             </div>
           </HoloCard>
 

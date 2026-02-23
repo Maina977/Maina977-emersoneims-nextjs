@@ -38,7 +38,7 @@ export function LocationServiceSchema({
     image: 'https://www.emersoneims.com/images/emerson-eims-logo.png',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'P.O. Box 387-00521, Old North Airport Road',
+      streetAddress: 'Embakasi, off Airport North Road',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
       postalCode: '00521',
@@ -46,8 +46,8 @@ export function LocationServiceSchema({
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: -1.2921,
-      longitude: 36.8219
+      latitude: -1.3200,
+      longitude: 36.8900
     },
     areaServed: {
       '@type': locationType === 'county' ? 'AdministrativeArea' : 'Place',

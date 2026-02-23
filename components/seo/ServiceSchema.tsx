@@ -31,8 +31,8 @@ export function ServiceSchema({
       },
       "geo": {
         "@type": "GeoCoordinates",
-        "latitude": "-1.2921",
-        "longitude": "36.8219"
+        "latitude": "-1.3200",
+        "longitude": "36.8900"
       }
     },
     "areaServed": Array.isArray(areaServed)

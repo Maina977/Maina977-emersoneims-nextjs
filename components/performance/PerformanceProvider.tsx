@@ -253,7 +253,7 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
               description: 'Professional energy infrastructure management solutions',
               address: {
                 '@type': 'PostalAddress',
-                streetAddress: 'Old North Airport Road',
+                streetAddress: 'Embakasi, off Airport North Road',
                 addressLocality: 'Nairobi',
                 addressCountry: 'KE',
               },
