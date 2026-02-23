@@ -37,6 +37,12 @@ const kenyaCounties = [
 ];
 
 export default function IntelligentPersonalization() {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DISABLED: Orange welcome popup removed per user request
+  // The popup was showing "Welcome to [County]" on every page load
+  // ═══════════════════════════════════════════════════════════════════════════
+  return null;
+
   const [userProfile, setUserProfile] = useState<UserProfile>({
     timeOfDay: 'morning',
     visitCount: 1,
