@@ -35,7 +35,8 @@
       "Bash(grep:*)",
       "WebFetch(domain:emersoneims.com)",
       "Bash(ls:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(vercel:*)"
     ]
   }
 }

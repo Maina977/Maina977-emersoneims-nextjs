@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Controller Simulator - Visual Replicas Compatible with 9 Controller Types
+ * Controller Simulator - Visual Replicas Compatible with 10 Controller Types
  * Mimics exact button layouts and display styles
  * Supports manual input for sensor readings and AI analysis
  *
@@ -18,6 +18,7 @@
  * 7. Lovato Type - Compatible with Lovato controllers
  * 8. Siemens Type - Compatible with Siemens controllers
  * 9. ENKO Type - Compatible with ENKO controllers
+ * 10. VODIA Type - Compatible with Volvo Penta VODIA diagnostic system
  */
 
 import { useState, useEffect } from 'react';
@@ -30,7 +31,7 @@ import { motion, AnimatePresence } from 'framer-motion';
  * "Compatible with" indicates the tool works with these controller types.
  */
 
-// Controller Types Configuration - Compatible with 9 Controller Brands
+// Controller Types Configuration - Compatible with 10 Controller Brands
 export const CONTROLLER_TYPES = {
   DSE: {
     id: 'DSE',
@@ -155,6 +156,20 @@ export const CONTROLLER_TYPES = {
     compatibleWith: ['GCU-100', 'GCU-300', 'GCU-500', 'AMF-100', 'SYNC-100'],
     displayType: 'lcd',
     buttonLayout: 'vertical',
+    hasMenuWheel: false,
+    hasLedIndicators: true,
+  },
+  VODIA: {
+    id: 'VODIA',
+    name: 'Compatible with Volvo Penta VODIA',
+    shortName: 'VODIA Type',
+    color: '#003057', // Volvo Blue
+    accentColor: '#0066B3',
+    displayColor: '#001a2e',
+    textColor: '#4fc3f7',
+    compatibleWith: ['VODIA5', 'VODIA6', 'D5', 'D7', 'D11', 'D13', 'D16', 'TAD Series', 'TWD Series'],
+    displayType: 'graphic',
+    buttonLayout: 'horizontal',
     hasMenuWheel: false,
     hasLedIndicators: true,
   },

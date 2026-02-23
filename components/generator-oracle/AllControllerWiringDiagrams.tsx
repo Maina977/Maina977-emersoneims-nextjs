@@ -1,10 +1,10 @@
 'use client';
 
 /**
- * ALL 9 CONTROLLER WIRING DIAGRAMS
+ * ALL 10 CONTROLLER WIRING DIAGRAMS
  * Complete professional wiring diagrams with color codes and terminal markings
  *
- * Controllers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO
+ * Controllers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO, Volvo Penta VODIA
  */
 
 import { useState } from 'react';
@@ -565,6 +565,63 @@ export const CONTROLLER_WIRING_DATA: ControllerWiring[] = [
       'Event logging with date/time stamp',
     ]
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // 10. VOLVO PENTA VODIA
+  // ═══════════════════════════════════════════════════════════════
+  {
+    id: 'vodia-d13',
+    brand: 'Volvo Penta VODIA',
+    model: 'D13 / TAD Series',
+    description: 'Volvo Penta Engine with EMS 2 Electronic Control',
+    color: '#003057',
+    terminals: [
+      { name: 'J1939+', number: 'A1', function: 'CAN High J1939', wireColor: 'Yellow', notes: 'Diagnostic bus' },
+      { name: 'J1939-', number: 'A2', function: 'CAN Low J1939', wireColor: 'Green', notes: 'Diagnostic bus' },
+      { name: 'CAN GND', number: 'A3', function: 'CAN Shield/Ground', wireColor: 'Black', notes: 'Shield drain' },
+      { name: 'BATT+', number: 'B1', function: 'Battery +24V', wireColor: 'Red', notes: 'Main power' },
+      { name: 'BATT-', number: 'B2', function: 'Battery Ground', wireColor: 'Black', notes: 'Main ground' },
+      { name: 'KEY SW', number: 'B3', function: 'Key Switch Input', wireColor: 'Orange', notes: 'Ignition signal' },
+      { name: 'START', number: 'C1', function: 'Start Signal', wireColor: 'Green', notes: 'From key switch' },
+      { name: 'STOP', number: 'C2', function: 'Stop Request', wireColor: 'Red', notes: 'Engine stop input' },
+      { name: 'OIL P', number: 'D1', function: 'Oil Pressure Sensor', wireColor: 'Orange', notes: '0.5-4.5V' },
+      { name: 'COOL T', number: 'D2', function: 'Coolant Temperature', wireColor: 'Orange', notes: 'NTC sensor' },
+      { name: 'FUEL T', number: 'D3', function: 'Fuel Temperature', wireColor: 'Orange', notes: 'NTC sensor' },
+      { name: 'BOOST', number: 'D4', function: 'Boost Pressure', wireColor: 'Orange', notes: '0.5-4.5V' },
+      { name: 'RPM+', number: 'E1', function: 'Speed Sensor +', wireColor: 'White', notes: 'Crankshaft' },
+      { name: 'RPM-', number: 'E2', function: 'Speed Sensor -', wireColor: 'White/Black', notes: 'Crankshaft' },
+      { name: 'CAM+', number: 'E3', function: 'Camshaft Sensor +', wireColor: 'Grey', notes: 'Position' },
+      { name: 'CAM-', number: 'E4', function: 'Camshaft Sensor -', wireColor: 'Grey/Black', notes: 'Position' },
+      { name: 'INJ 1', number: 'F1', function: 'Injector 1', wireColor: 'Brown', notes: 'Cyl 1' },
+      { name: 'INJ 2', number: 'F2', function: 'Injector 2', wireColor: 'Brown', notes: 'Cyl 2' },
+      { name: 'INJ 3', number: 'F3', function: 'Injector 3', wireColor: 'Brown', notes: 'Cyl 3' },
+      { name: 'INJ 4', number: 'F4', function: 'Injector 4', wireColor: 'Brown', notes: 'Cyl 4' },
+      { name: 'INJ 5', number: 'F5', function: 'Injector 5', wireColor: 'Brown', notes: 'Cyl 5' },
+      { name: 'INJ 6', number: 'F6', function: 'Injector 6', wireColor: 'Brown', notes: 'Cyl 6' },
+      { name: 'DIAG', number: 'G1', function: 'VODIA Diagnostic', wireColor: 'White', notes: '9-pin connector' },
+      { name: 'ALT W', number: 'H1', function: 'Alternator Warning', wireColor: 'Yellow', notes: 'Charge lamp' },
+      { name: 'ALT D+', number: 'H2', function: 'Alternator D+', wireColor: 'Brown', notes: 'Charge sense' },
+      { name: 'EGR', number: 'J1', function: 'EGR Valve', wireColor: 'Purple', notes: 'Control' },
+      { name: 'VGT', number: 'J2', function: 'VGT Actuator', wireColor: 'Purple', notes: 'Turbo control' },
+    ],
+    connections: [
+      { from: 'Battery +24V', to: 'Terminal B1', wire: '6mm²', color: '#EF4444', description: 'Main ECU power' },
+      { from: 'Battery Ground', to: 'Terminal B2', wire: '6mm²', color: '#1E293B', description: 'ECU ground' },
+      { from: 'VODIA Tool', to: 'Connector G1', wire: 'J1939 Cable', color: '#4FC3F7', description: 'Diagnostic connection' },
+      { from: 'Key Switch', to: 'Terminal B3', wire: '2.5mm²', color: '#F97316', description: 'Ignition signal' },
+      { from: 'Crankshaft Sensor', to: 'Terminals E1-E2', wire: 'Shielded', color: '#F5F5F5', description: 'Speed signal' },
+      { from: 'Oil Pressure', to: 'Terminal D1', wire: 'Shielded', color: '#F97316', description: '0.5-4.5V sensor' },
+      { from: 'Coolant Temp', to: 'Terminal D2', wire: '1.0mm²', color: '#F97316', description: 'NTC sensor' },
+    ],
+    notes: [
+      'VODIA 5/6 diagnostic software required for full access',
+      'J1939 protocol for engine communication',
+      'EMS 2 (Engine Management System) electronic control',
+      'Genuine Volvo Penta 9-pin diagnostic cable required',
+      'Software license tied to VODIA diagnostic tool',
+      'Supports D5, D7, D11, D13, D16, TAD, TWD series engines',
+    ]
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -586,10 +643,10 @@ export default function AllControllerWiringDiagrams({ className = '' }: AllContr
       {/* Header */}
       <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-4">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <span>📐</span> All 9 Controller Wiring Diagrams
+          <span>📐</span> All 10 Controller Wiring Diagrams
         </h2>
         <p className="text-cyan-100 text-sm mt-1">
-          Complete terminal pinouts with IEC color codes for DSE, ComAp, Woodward, SmartGen, CAT, Datakom, Lovato, Siemens, ENKO
+          Complete terminal pinouts with IEC color codes for DSE, ComAp, Woodward, SmartGen, CAT, Datakom, Lovato, Siemens, ENKO, VODIA
         </p>
       </div>
 

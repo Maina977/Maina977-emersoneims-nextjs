@@ -1466,7 +1466,7 @@ export default function GeneratorOracleModule() {
                     <option value="faults">🔧 Fault Codes</option>
                     <option value="simulator">🖥️ Simulator</option>
                     <option value="wiring">📐 Wiring Diagrams</option>
-                    <option value="allwiring">🔌 All 9 Controllers Wiring</option>
+                    <option value="allwiring">🔌 All 10 Controllers Wiring</option>
                     <option value="techinput">📊 Technician Input Analysis</option>
                     <option value="faultanalysis">🔍 Fault Analysis</option>
                     <option value="advanced">🧠 AI Diagnostics</option>
@@ -1886,8 +1886,8 @@ export default function GeneratorOracleModule() {
                     className="space-y-6"
                   >
                     <HolographicGlassPanel
-                      title="All 9 Controllers - Complete Wiring Reference"
-                      subtitle="DSE • ComAp • Woodward • SmartGen • CAT PowerWizard • Datakom • Lovato • Siemens • ENKO"
+                      title="All 10 Controllers - Complete Wiring Reference"
+                      subtitle="DSE • ComAp • Woodward • SmartGen • CAT PowerWizard • Datakom • Lovato • Siemens • ENKO • VODIA"
                       icon="🔌"
                       accentColor="cyan"
                       variant="glow"

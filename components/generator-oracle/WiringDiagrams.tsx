@@ -2,7 +2,7 @@
 
 /**
  * Wiring Diagrams Component
- * Interactive, labeled wiring diagrams compatible with 9 controller types
+ * Interactive, labeled wiring diagrams compatible with 10 controller types
  * Shows numbered connections, fuses, breakers, relays, starters, chargers
  * Includes programming guidance without laptop
  *
@@ -37,7 +37,7 @@ interface Component {
   troubleshooting: string[];
 }
 
-// Controller Wiring Configurations - Compatible with 9 Controller Types
+// Controller Wiring Configurations - Compatible with 10 Controller Types
 const WIRING_CONFIGS = {
   DSE: {
     name: 'Compatible with DSE Controllers',
@@ -540,9 +540,85 @@ const WIRING_CONFIGS = {
       },
     ],
   },
+  VODIA: {
+    name: 'Compatible with Volvo Penta VODIA',
+    color: '#003057',
+    components: [
+      {
+        id: 'DIAG',
+        name: 'Diagnostic Connection',
+        type: 'signal' as const,
+        rating: 'J1939 CAN Bus',
+        terminals: [
+          { id: 'CAN_H', label: 'CAN-H', description: 'J1939 CAN High', wireColor: 'YELLOW', wireGauge: '18 AWG', connectedTo: 'ECU J1939 port', function: 'Diagnostic communication' },
+          { id: 'CAN_L', label: 'CAN-L', description: 'J1939 CAN Low', wireColor: 'GREEN', wireGauge: '18 AWG', connectedTo: 'ECU J1939 port', function: 'Diagnostic communication' },
+          { id: 'CAN_GND', label: 'SHIELD', description: 'CAN Shield', wireColor: 'BLACK', wireGauge: '18 AWG', connectedTo: 'ECU ground', function: 'Shield drain' },
+        ],
+        location: '9-Pin Diagnostic Connector',
+        troubleshooting: ['Use genuine Volvo Penta diagnostic cable', 'Check CAN bus termination (60 ohms)', 'Verify ECU power before connecting'],
+      },
+      {
+        id: 'POWER',
+        name: 'ECU Power Supply',
+        type: 'power' as const,
+        rating: '24V DC',
+        terminals: [
+          { id: 'BATT+', label: 'BATT+', description: 'Battery Positive', wireColor: 'RED', wireGauge: '6 AWG', maxCurrent: '50A', connectedTo: 'Battery +24V', function: 'ECU main power' },
+          { id: 'BATT-', label: 'BATT-', description: 'Battery Negative', wireColor: 'BLACK', wireGauge: '6 AWG', maxCurrent: '50A', connectedTo: 'Battery ground', function: 'ECU ground' },
+          { id: 'KEY', label: 'KEY', description: 'Key Switch', wireColor: 'ORANGE', wireGauge: '14 AWG', connectedTo: 'Ignition switch', function: 'ECU wake signal' },
+        ],
+        location: 'ECU Main Connector',
+        troubleshooting: ['Check battery voltage (24-28V)', 'Verify key switch signal when ON', 'Check main fuses 50A and 10A'],
+      },
+      {
+        id: 'SENSORS',
+        name: 'Engine Sensors',
+        type: 'sensor' as const,
+        rating: '0.5-4.5V / NTC',
+        terminals: [
+          { id: 'OIL_P', label: 'OIL-P', description: 'Oil Pressure', wireColor: 'ORANGE', wireGauge: '18 AWG', connectedTo: 'Oil pressure sensor', function: 'Pressure monitoring' },
+          { id: 'COOL_T', label: 'COOL-T', description: 'Coolant Temp', wireColor: 'ORANGE', wireGauge: '18 AWG', connectedTo: 'Coolant sensor', function: 'Temperature monitoring' },
+          { id: 'BOOST', label: 'BOOST', description: 'Boost Pressure', wireColor: 'ORANGE', wireGauge: '18 AWG', connectedTo: 'Boost sensor', function: 'Turbo monitoring' },
+          { id: 'FUEL_T', label: 'FUEL-T', description: 'Fuel Temperature', wireColor: 'ORANGE', wireGauge: '18 AWG', connectedTo: 'Fuel temp sensor', function: 'Fuel monitoring' },
+        ],
+        location: 'ECU Sensor Connector',
+        troubleshooting: ['Sensors are 0.5-4.5V ratiometric', 'NTC sensors for temperature', 'Check sensor grounds'],
+      },
+      {
+        id: 'SPEED',
+        name: 'Speed Sensors',
+        type: 'sensor' as const,
+        rating: 'Inductive/Hall',
+        terminals: [
+          { id: 'RPM+', label: 'RPM+', description: 'Crankshaft +', wireColor: 'WHITE', wireGauge: '18 AWG', connectedTo: 'Crank sensor +', function: 'Engine speed' },
+          { id: 'RPM-', label: 'RPM-', description: 'Crankshaft -', wireColor: 'WHITE/BLACK', wireGauge: '18 AWG', connectedTo: 'Crank sensor -', function: 'Speed reference' },
+          { id: 'CAM+', label: 'CAM+', description: 'Camshaft +', wireColor: 'GREY', wireGauge: '18 AWG', connectedTo: 'Cam sensor +', function: 'Position signal' },
+          { id: 'CAM-', label: 'CAM-', description: 'Camshaft -', wireColor: 'GREY/BLACK', wireGauge: '18 AWG', connectedTo: 'Cam sensor -', function: 'Position reference' },
+        ],
+        location: 'ECU Sensor Connector',
+        troubleshooting: ['Use shielded cable for speed sensors', 'Check air gap (0.5-1.5mm)', 'Verify sensor resistance'],
+      },
+      {
+        id: 'INJECTORS',
+        name: 'Fuel Injectors',
+        type: 'actuator' as const,
+        rating: '24V High Pressure',
+        terminals: [
+          { id: 'INJ1', label: 'INJ1', description: 'Injector Cyl 1', wireColor: 'BROWN', wireGauge: '14 AWG', connectedTo: 'Injector 1', function: 'Fuel injection' },
+          { id: 'INJ2', label: 'INJ2', description: 'Injector Cyl 2', wireColor: 'BROWN', wireGauge: '14 AWG', connectedTo: 'Injector 2', function: 'Fuel injection' },
+          { id: 'INJ3', label: 'INJ3', description: 'Injector Cyl 3', wireColor: 'BROWN', wireGauge: '14 AWG', connectedTo: 'Injector 3', function: 'Fuel injection' },
+          { id: 'INJ4', label: 'INJ4', description: 'Injector Cyl 4', wireColor: 'BROWN', wireGauge: '14 AWG', connectedTo: 'Injector 4', function: 'Fuel injection' },
+          { id: 'INJ5', label: 'INJ5', description: 'Injector Cyl 5', wireColor: 'BROWN', wireGauge: '14 AWG', connectedTo: 'Injector 5', function: 'Fuel injection' },
+          { id: 'INJ6', label: 'INJ6', description: 'Injector Cyl 6', wireColor: 'BROWN', wireGauge: '14 AWG', connectedTo: 'Injector 6', function: 'Fuel injection' },
+        ],
+        location: 'ECU Injector Connector',
+        troubleshooting: ['Injector resistance 0.3-0.5 ohms', 'Check IQA codes programmed in VODIA', 'Verify rail pressure'],
+      },
+    ],
+  },
 };
 
-// Programming Instructions - Compatible with 9 Controller Types
+// Programming Instructions - Compatible with 10 Controller Types
 const PROGRAMMING_INSTRUCTIONS = {
   DSE: {
     title: 'Programming Guide - Compatible with DSE Controllers',
@@ -897,6 +973,49 @@ const PROGRAMMING_INSTRUCTIONS = {
       { param: 'PRT-01', name: 'Low Oil Pressure', range: '0-10 bar', default: '0.8' },
       { param: 'PRT-02', name: 'High Temperature', range: '50-120°C', default: '95' },
       { param: 'TMR-01', name: 'Warm Up Timer', range: '0-600s', default: '30' },
+    ],
+  },
+  VODIA: {
+    title: 'Programming Guide - Compatible with Volvo Penta VODIA',
+    steps: [
+      {
+        step: 1,
+        title: 'Connect VODIA Tool',
+        instructions: 'Connect VODIA diagnostic adapter to engine 9-pin diagnostic port. Launch VODIA software on laptop.',
+        keySequence: ['Connect Cable', 'Open VODIA'],
+      },
+      {
+        step: 2,
+        title: 'Establish Communication',
+        instructions: 'Click "Connect" in VODIA. Software will detect ECU type. Wait for full communication.',
+        keySequence: ['Connect', 'Wait for ECU'],
+      },
+      {
+        step: 3,
+        title: 'Read Current Parameters',
+        instructions: 'Navigate to Parameters menu. Read all current values before making changes.',
+        keySequence: ['Parameters', 'Read All'],
+      },
+      {
+        step: 4,
+        title: 'Modify Parameters',
+        instructions: 'Select parameter to change. Enter new value. Changes are stored temporarily.',
+        keySequence: ['Select', 'Edit', 'Enter Value'],
+      },
+      {
+        step: 5,
+        title: 'Write to ECU',
+        instructions: 'Click "Write" to program changes to ECU. Key must be ON. Wait for confirmation.',
+        keySequence: ['Write', 'Confirm'],
+      },
+    ],
+    commonParameters: [
+      { param: 'EMS-001', name: 'Idle Speed', range: '600-900 RPM', default: '750' },
+      { param: 'EMS-010', name: 'High Idle Speed', range: '1500-1800 RPM', default: '1500' },
+      { param: 'EMS-020', name: 'Low Oil Pressure Alarm', range: '50-200 kPa', default: '100' },
+      { param: 'EMS-021', name: 'High Coolant Temp Alarm', range: '90-110°C', default: '102' },
+      { param: 'EMS-030', name: 'Overspeed Limit', range: '1800-2200 RPM', default: '1950' },
+      { param: 'EMS-040', name: 'Start Motor Timeout', range: '5-30s', default: '15' },
     ],
   },
 };

@@ -33,13 +33,13 @@ interface PurchaseOverlayProps {
 const FEATURES = [
   {
     icon: '🔍',
-    title: '230,000+ Fault Codes',
+    title: '250,000+ Fault Codes',
     desc: 'Comprehensive database covering all major error codes',
   },
   {
     icon: '⚡',
-    title: 'Compatible with 9 Controller Types',
-    desc: 'Works with DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens & ENKO type controllers',
+    title: 'Compatible with 10 Controller Types',
+    desc: 'Works with DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens, ENKO & Volvo Penta VODIA controllers',
   },
   {
     icon: '🔄',

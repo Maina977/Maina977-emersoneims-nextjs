@@ -40,8 +40,8 @@ const DEMO_SCENES = [
   },
   {
     id: 'brands',
-    title: 'COMPATIBLE WITH 9 CONTROLLER TYPES',
-    subtitle: 'Works with DSE • ComAp • Woodward • SmartGen • PowerWizard • Datakom • Lovato • Siemens • ENKO',
+    title: 'COMPATIBLE WITH 10 CONTROLLER TYPES',
+    subtitle: 'Works with DSE • ComAp • Woodward • SmartGen • PowerWizard • Datakom • Lovato • Siemens • ENKO • VODIA',
     duration: 4000,
   },
   {
