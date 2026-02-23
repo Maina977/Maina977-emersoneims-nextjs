@@ -298,12 +298,12 @@ export default function HolographicMap() {
                 className="absolute inset-0"
               >
                 <iframe
-                  src="https://maps.google.com/maps?q=-1.3200,36.8900&t=k&z=16&output=embed"
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=36.8800%2C-1.3300%2C36.9000%2C-1.3100&layer=hot&marker=-1.3200%2C36.8900"
                   width="100%"
                   height="100%"
                   style={{
                     border: 0,
-                    filter: 'saturate(1.3) contrast(1.2)',
+                    filter: 'saturate(1.2) contrast(1.1)',
                     borderRadius: '24px',
                   }}
                   allowFullScreen
