@@ -1,68 +1,112 @@
 /**
- * ADVANCED SERVICE WORKER FOR MAXIMUM PERFORMANCE
- * Tesla-level caching and offline support
- * 
- * ⚠️ IMPORTANT: Version updated to force cache clear
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 🚀 WORLD'S #1 FASTEST SERVICE WORKER
+ * EmersonEIMS - Ultra Performance Caching System
+ *
+ * Target: Sub-100ms repeat loads
+ * Strategy: Aggressive cache-first with intelligent revalidation
+ * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const CACHE_VERSION = 'v4-20260119-ultrafast';
-const STATIC_CACHE = `static-cache-${CACHE_VERSION}`;
-const IMAGES_CACHE = `images-cache-${CACHE_VERSION}`;
-const PAGES_CACHE = `pages-cache-${CACHE_VERSION}`;
-const API_CACHE = `api-cache-${CACHE_VERSION}`;
-const VIDEO_CACHE = `video-cache-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v5-20260223-ultrafast';
+const STATIC_CACHE = `static-${CACHE_VERSION}`;
+const IMAGES_CACHE = `images-${CACHE_VERSION}`;
+const PAGES_CACHE = `pages-${CACHE_VERSION}`;
+const API_CACHE = `api-${CACHE_VERSION}`;
+const VIDEO_CACHE = `video-${CACHE_VERSION}`;
+const FONTS_CACHE = `fonts-${CACHE_VERSION}`;
 
-// Static assets to precache - Critical for instant loading
+// ═══════════════════════════════════════════════════════════════════════════════
+// CRITICAL ASSETS - Precache for INSTANT loading
+// ═══════════════════════════════════════════════════════════════════════════════
 const PRECACHE_ASSETS = [
+  '/',
   '/manifest.webmanifest',
   '/favicon.ico',
   '/images/logo-tagline.png',
+  '/generators',
+  '/solar',
+  '/contact',
 ];
 
-// Install event - SKIP WAITING IMMEDIATELY
+// Performance tracking
+const perfMetrics = {
+  cacheHits: 0,
+  cacheMisses: 0,
+  networkRequests: 0,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INSTALL - Aggressive precaching
+// ═══════════════════════════════════════════════════════════════════════════════
 self.addEventListener('install', (event) => {
-  console.log('🔄 SW: Installing new version:', CACHE_VERSION);
-  // Skip waiting immediately to take control
+  console.log('🚀 SW: Installing ULTRA-FAST version:', CACHE_VERSION);
   self.skipWaiting();
-  
+
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then((cache) => {
-        console.log('✅ SW: Precaching minimal assets');
+    Promise.all([
+      caches.open(STATIC_CACHE).then((cache) => {
         return cache.addAll(PRECACHE_ASSETS).catch((err) => {
           console.warn('⚠️ SW: Some assets failed to precache:', err);
           return Promise.resolve();
+        });
+      }),
+      // Pre-warm DNS and connections
+      warmupConnections(),
+    ])
+  );
+});
+
+// Warm up external connections
+async function warmupConnections() {
+  const urls = [
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com',
+    'https://www.google-analytics.com',
+  ];
+
+  for (const url of urls) {
+    try {
+      await fetch(url, { mode: 'no-cors', cache: 'no-store' });
+    } catch (e) {
+      // Silent fail - just warming up
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACTIVATE - Aggressive cache cleanup
+// ═══════════════════════════════════════════════════════════════════════════════
+self.addEventListener('activate', (event) => {
+  console.log('✅ SW: Activating ULTRA-FAST version:', CACHE_VERSION);
+
+  event.waitUntil(
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((cacheName) => !cacheName.includes(CACHE_VERSION))
+            .map((cacheName) => {
+              console.log('🗑️ SW: Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            })
+        );
+      })
+      .then(() => self.clients.claim())
+      .then(() => {
+        // Notify all clients about the update
+        self.clients.matchAll().then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
+          });
         });
       })
   );
 });
 
-// Activate event - AGGRESSIVELY clean up old caches
-self.addEventListener('activate', (event) => {
-  console.log('✅ SW: Activating new version:', CACHE_VERSION);
-  
-  event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        console.log('🗑️ SW: Clearing ALL old caches');
-        return Promise.all(
-          cacheNames
-            .filter((cacheName) => !cacheName.includes(CACHE_VERSION))
-            .map((cacheName) => {
-              console.log('🗑️ SW: Deleting cache:', cacheName);
-              return caches.delete(cacheName);
-            })
-        );
-      })
-      .then(() => {
-        console.log('✅ SW: Taking control of all clients');
-        return self.clients.claim();
-      })
-  );
-});
-
-// Fetch event - handle caching strategies
-// CRITICAL FIX: Using network-first for JS/CSS to prevent hydration mismatches
+// ═══════════════════════════════════════════════════════════════════════════════
+// FETCH - Intelligent caching strategies
+// ═══════════════════════════════════════════════════════════════════════════════
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -70,77 +114,96 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // Skip chrome-extension and other non-http(s) requests
+  // Skip non-http(s) requests
   if (!url.protocol.startsWith('http')) return;
 
-  // Skip Next.js internal requests - USE NETWORK FIRST for bundles
-  if (url.pathname.startsWith('/_next/')) {
-    // CHANGED: Network-first for _next/static to prevent stale JS
-    if (url.pathname.includes('/_next/static/')) {
-      event.respondWith(networkFirst(request, STATIC_CACHE, 60 * 60));
-    }
+  // Route to appropriate caching strategy
+  if (url.pathname.startsWith('/_next/static/')) {
+    // Static assets - CACHE FIRST (immutable)
+    event.respondWith(cacheFirstImmutable(request, STATIC_CACHE));
     return;
   }
 
-  // Handle API requests with network-first
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request, API_CACHE, 5 * 60));
+    // API requests - Network first with short cache
+    event.respondWith(networkFirst(request, API_CACHE, 60));
     return;
   }
 
-  // Handle videos with cache-first for INSTANT playback
-  if (
-    request.destination === 'video' ||
-    /\.(mp4|webm|ogg|mov)$/i.test(url.pathname)
-  ) {
-    event.respondWith(cacheFirst(request, VIDEO_CACHE, 365 * 24 * 60 * 60));
+  if (isVideoRequest(request, url)) {
+    // Videos - Cache first for instant playback
+    event.respondWith(cacheFirstWithRange(request, VIDEO_CACHE));
     return;
   }
 
-  // Handle images with cache-first (these don't cause hydration issues)
-  if (
-    request.destination === 'image' ||
-    /\.(png|jpg|jpeg|gif|webp|avif|svg|ico)$/i.test(url.pathname)
-  ) {
-    event.respondWith(cacheFirst(request, IMAGES_CACHE, 30 * 24 * 60 * 60));
+  if (isImageRequest(request, url)) {
+    // Images - Cache first with long TTL
+    event.respondWith(cacheFirst(request, IMAGES_CACHE));
     return;
   }
 
-  // Handle fonts with cache-first (these don't cause hydration issues)
-  if (
-    request.destination === 'font' ||
-    /\.(woff2?|ttf|eot|otf)$/i.test(url.pathname)
-  ) {
-    event.respondWith(cacheFirst(request, STATIC_CACHE, 365 * 24 * 60 * 60));
+  if (isFontRequest(request, url)) {
+    // Fonts - Cache first (immutable)
+    event.respondWith(cacheFirstImmutable(request, FONTS_CACHE));
     return;
   }
 
-  // Handle navigation requests with network-first
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirst(request, PAGES_CACHE, 60 * 60));
+    // Page navigations - Stale while revalidate for instant loads
+    event.respondWith(staleWhileRevalidate(request, PAGES_CACHE));
     return;
   }
 
-  // CHANGED: Network-first for JS/CSS to prevent hydration issues
-  if (
-    request.destination === 'style' ||
-    request.destination === 'script' ||
-    /\.(css|js)$/i.test(url.pathname)
-  ) {
-    event.respondWith(networkFirst(request, STATIC_CACHE, 60 * 60));
+  // Scripts & styles - Network first to prevent hydration issues
+  if (isScriptOrStyle(request, url)) {
+    event.respondWith(networkFirst(request, STATIC_CACHE, 3600));
     return;
   }
 });
 
-// Cache-first strategy helper
-async function cacheFirst(request, cacheName, maxAge) {
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS - Request type detection
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function isVideoRequest(request, url) {
+  return request.destination === 'video' ||
+    /\.(mp4|webm|ogg|mov)$/i.test(url.pathname);
+}
+
+function isImageRequest(request, url) {
+  return request.destination === 'image' ||
+    /\.(png|jpg|jpeg|gif|webp|avif|svg|ico)$/i.test(url.pathname);
+}
+
+function isFontRequest(request, url) {
+  return request.destination === 'font' ||
+    /\.(woff2?|ttf|eot|otf)$/i.test(url.pathname);
+}
+
+function isScriptOrStyle(request, url) {
+  return request.destination === 'style' ||
+    request.destination === 'script' ||
+    /\.(css|js)$/i.test(url.pathname);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CACHING STRATEGIES - Optimized for speed
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Cache First (Immutable) - For static assets that never change
+ * FASTEST strategy - always from cache
+ */
+async function cacheFirstImmutable(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cachedResponse = await cache.match(request);
-  
+
   if (cachedResponse) {
+    perfMetrics.cacheHits++;
     return cachedResponse;
   }
-  
+
+  perfMetrics.cacheMisses++;
   try {
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
@@ -148,16 +211,76 @@ async function cacheFirst(request, cacheName, maxAge) {
     }
     return networkResponse;
   } catch (error) {
-    console.warn('⚠️ SW: Network request failed:', request.url);
     return new Response('Offline', { status: 503 });
   }
 }
 
-// Network-first strategy helper
+/**
+ * Cache First - Return cached, update in background
+ */
+async function cacheFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(request);
+
+  if (cachedResponse) {
+    perfMetrics.cacheHits++;
+    // Update cache in background
+    fetch(request).then((response) => {
+      if (response.ok) {
+        cache.put(request, response);
+      }
+    }).catch(() => {});
+    return cachedResponse;
+  }
+
+  perfMetrics.cacheMisses++;
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    return new Response('Offline', { status: 503 });
+  }
+}
+
+/**
+ * Stale While Revalidate - Instant load, update in background
+ * BEST for navigation - users see content immediately
+ */
+async function staleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(request);
+
+  // Always fetch in background to update cache
+  const fetchPromise = fetch(request).then((response) => {
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => null);
+
+  // Return cached response immediately if available
+  if (cachedResponse) {
+    perfMetrics.cacheHits++;
+    return cachedResponse;
+  }
+
+  perfMetrics.cacheMisses++;
+  // Wait for network if no cache
+  const networkResponse = await fetchPromise;
+  return networkResponse || new Response('Offline', { status: 503 });
+}
+
+/**
+ * Network First - For dynamic content
+ */
 async function networkFirst(request, cacheName, maxAge) {
   const cache = await caches.open(cacheName);
-  
+
   try {
+    perfMetrics.networkRequests++;
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
       cache.put(request, networkResponse.clone());
@@ -166,14 +289,63 @@ async function networkFirst(request, cacheName, maxAge) {
   } catch (error) {
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
+      perfMetrics.cacheHits++;
       return cachedResponse;
     }
-    console.warn('⚠️ SW: Network and cache failed:', request.url);
     return new Response('Offline', { status: 503 });
   }
 }
 
-// Background sync for offline actions
+/**
+ * Cache First with Range Support - For video streaming
+ */
+async function cacheFirstWithRange(request, cacheName) {
+  const cache = await caches.open(cacheName);
+
+  // Check for range request
+  const rangeHeader = request.headers.get('range');
+
+  if (!rangeHeader) {
+    return cacheFirst(request, cacheName);
+  }
+
+  // For range requests, try to serve from network for streaming
+  try {
+    const networkResponse = await fetch(request);
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await cache.match(request);
+    return cachedResponse || new Response('Offline', { status: 503 });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MESSAGE HANDLING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+
+  if (event.data && event.data.type === 'GET_METRICS') {
+    event.ports[0].postMessage(perfMetrics);
+  }
+
+  if (event.data && event.data.type === 'PREFETCH') {
+    const urls = event.data.urls || [];
+    caches.open(PAGES_CACHE).then((cache) => {
+      urls.forEach((url) => {
+        cache.add(url).catch(() => {});
+      });
+    });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BACKGROUND SYNC
+// ═══════════════════════════════════════════════════════════════════════════════
+
 self.addEventListener('sync', (event) => {
   if (event.tag === 'background-sync') {
     event.waitUntil(syncData());
@@ -181,27 +353,25 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncData() {
-  console.log('🔄 Syncing data in background');
-  // Handle offline form submissions, analytics, etc.
+  console.log('🔄 SW: Background sync');
 }
 
-// Push notifications
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUSH NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
 self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const data = event.data.json();
-      const options = {
-        body: data.body,
-        icon: '/icon-192x192.png',
-        badge: '/icon-192x192.png',
-        vibrate: [100, 50, 100],
-        data: {
-          url: data.url || '/',
-        },
-      };
-
       event.waitUntil(
-        self.registration.showNotification(data.title, options)
+        self.registration.showNotification(data.title, {
+          body: data.body,
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+          vibrate: [100, 50, 100],
+          data: { url: data.url || '/' },
+        })
       );
     } catch (error) {
       console.error('Push notification error:', error);
@@ -209,19 +379,9 @@ self.addEventListener('push', (event) => {
   }
 });
 
-// Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url)
-  );
+  event.waitUntil(clients.openWindow(event.notification.data.url));
 });
 
-// Handle messages from the app
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-console.log('✅ SW: Service Worker loaded successfully');
+console.log('⚡ SW: ULTRA-FAST Service Worker loaded - Version:', CACHE_VERSION);

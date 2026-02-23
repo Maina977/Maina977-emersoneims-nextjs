@@ -3,6 +3,81 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   🚀 WORLD'S #1 FASTEST WEBSITE - PERFORMANCE CRITICAL CSS
+   Target: Sub-500ms FCP, Zero Layout Shift, 100/100 Lighthouse
+   © 2026 EmersonEIMS. All Rights Reserved.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* GPU Acceleration for smooth animations */
+.gpu-accelerate {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Prevent layout shifts - Reserve space for images */
+img, video {
+  height: auto;
+  max-width: 100%;
+  aspect-ratio: attr(width) / attr(height);
+}
+
+/* Optimize font rendering */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Reduce paint operations */
+* {
+  box-sizing: border-box;
+}
+
+/* Instant interactions - Remove 300ms tap delay on mobile */
+a, button, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Lazy loading placeholder */
+.lazy-placeholder {
+  background: linear-gradient(90deg, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Fade in for lazy loaded content */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Content visibility optimization for long pages */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    CONTENT PROTECTION - Prevent Easy Copying
    © 2026 EmersonEIMS. All Rights Reserved.
    ═══════════════════════════════════════════════════════════════════════════════ */

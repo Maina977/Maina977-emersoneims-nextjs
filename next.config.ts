@@ -12,17 +12,16 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   // ═══════════════════════════════════════════════════════════════════
-  // 🚀 WORLD'S FASTEST WEBSITE - EXTREME PERFORMANCE
-  // Target: Sub-1 second First Contentful Paint (FCP)
+  // 🚀 WORLD'S #1 FASTEST WEBSITE - ULTRA PERFORMANCE
+  // Target: Sub-500ms First Contentful Paint (FCP)
+  // Target: Sub-100ms Time to First Byte (TTFB)
+  // Target: 100/100 Lighthouse Score
   // ═══════════════════════════════════════════════════════════════════
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
 
-  // TURBO MODE - Use Turbopack for fastest builds
-  // turbopack: true, // Enable in dev for faster builds
-
-  // Image optimization - MAXIMUM COMPRESSION
+  // Image optimization - MAXIMUM COMPRESSION + QUALITY
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
@@ -52,10 +51,11 @@ const nextConfig: NextConfig = {
   },
 
   // ═══════════════════════════════════════════════════════════════════
-  // EXPERIMENTAL - BLEEDING EDGE PERFORMANCE
+  // 🔥 EXPERIMENTAL - BLEEDING EDGE PERFORMANCE
+  // Every millisecond counts!
   // ═══════════════════════════════════════════════════════════════════
   experimental: {
-    // Tree-shake these packages for smaller bundles
+    // Tree-shake these packages for MUCH smaller bundles
     optimizePackageImports: [
       'framer-motion',
       'gsap',
@@ -69,6 +69,9 @@ const nextConfig: NextConfig = {
       'date-fns',
       'lucide-react',
       '@heroicons/react',
+      'react-hook-form',
+      'mapbox-gl',
+      'web-vitals',
     ],
     // Partial Prerendering - Instant static shell with streaming dynamic content
     // ppr: true,
