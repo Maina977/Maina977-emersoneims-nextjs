@@ -15,13 +15,14 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * All brand names are trademarks of their respective owners.
  *
  * Features:
- * - 230,000+ fault codes compatible with 9 controller types
+ * - 250,000+ fault codes compatible with 10 controller types
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB
  * - 7-language support including RTL Arabic
  * - Technician feedback loop
  * - Licensed product with M-Pesa/Bank payment verification
+ * - Volvo Penta VODIA diagnostic integration
  */
 export default function GeneratorOraclePage() {
   return (
@@ -67,11 +68,11 @@ function LoadingFallback() {
         {/* Loading Stats */}
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
-            <div className="text-amber-400 font-bold">230,000+</div>
+            <div className="text-amber-400 font-bold">250,000+</div>
             <div className="text-slate-500">Fault Codes</div>
           </div>
           <div className="text-center">
-            <div className="text-amber-400 font-bold">9</div>
+            <div className="text-amber-400 font-bold">10</div>
             <div className="text-slate-500">Compatible Types</div>
           </div>
           <div className="text-center">

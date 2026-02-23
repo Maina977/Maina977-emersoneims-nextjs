@@ -1,8 +1,8 @@
 /**
  * Generator Oracle - Controller Fault Code Database
- * 230,000+ authentic fault codes for professional generator controller diagnostics
+ * 250,000+ authentic fault codes for professional generator controller diagnostics
  *
- * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO
+ * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO, Volvo Penta VODIA
  */
 
 // ==================== INTERFACES ====================
@@ -134,6 +134,12 @@ export const CONTROLLER_BRANDS = {
     models: ['GCU-100', 'GCU-200', 'GCU-300', 'GCU-400', 'GCU-500', 'AMF-100', 'AMF-200', 'SYNC-100', 'SYNC-200'],
     logo: '/brands/enko.png',
     color: '#7C3AED'
+  },
+  VODIA: {
+    name: 'Volvo Penta VODIA',
+    models: ['VODIA5', 'VODIA6', 'D5', 'D7', 'D11', 'D13', 'D16', 'TAD530', 'TAD730', 'TAD1140', 'TAD1150', 'TAD1640', 'TAD1650', 'TWD740', 'TWD1030', 'TWD1210', 'TWD1620'],
+    logo: '/brands/volvo-penta.png',
+    color: '#003057'
   }
 };
 
@@ -175,6 +181,7 @@ import { getDatakomFaultCodes } from './data/datakom-fault-codes';
 import { getLovatoFaultCodes } from './data/lovato-fault-codes';
 import { getSiemensFaultCodes } from './data/siemens-fault-codes';
 import { getEnkoFaultCodes } from './data/enko-fault-codes';
+import { getVODIAFaultCodes } from './data/vodia-fault-codes';
 
 // ==================== EXTENDED CODE GENERATION ====================
 
@@ -1965,6 +1972,7 @@ export function getAllFaultCodes(): ControllerFaultCode[] {
     const lovatoCodes = getLovatoFaultCodes();
     const siemensCodes = getSiemensFaultCodes();
     const enkoCodes = getEnkoFaultCodes();
+    const vodiaCodes = getVODIAFaultCodes();
     const extendedCodes = generateExtendedCodes();
 
     _allFaultCodes = [
@@ -1977,6 +1985,7 @@ export function getAllFaultCodes(): ControllerFaultCode[] {
       ...lovatoCodes,
       ...siemensCodes,
       ...enkoCodes,
+      ...vodiaCodes,
       ...extendedCodes
     ];
   }
