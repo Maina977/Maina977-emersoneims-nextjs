@@ -58,7 +58,13 @@ export default function CaseStudies({ onProjectSelect }: CaseStudiesProps) {
               {project.description && (
                 <p className="text-gray-300 mb-4">{project.description}</p>
               )}
-              <button className="text-amber-400 hover:text-amber-300 font-semibold">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleProjectClick(project);
+                }}
+                className="text-amber-400 hover:text-amber-300 font-semibold"
+              >
                 View Details →
               </button>
             </div>

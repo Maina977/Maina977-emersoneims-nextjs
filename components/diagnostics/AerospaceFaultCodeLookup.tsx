@@ -246,7 +246,13 @@ export default function AerospaceFaultCodeLookup() {
                       <div className="text-sm text-white font-bold mb-2">{fault.issue}</div>
                       <div className="text-xs text-gray-400 line-clamp-2">{fault.symptoms}</div>
 
-                      <button className="mt-3 text-xs text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFault(fault);
+                        }}
+                        className="mt-3 text-xs text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-2"
+                      >
                         VIEW FULL DIAGNOSTIC →
                       </button>
                     </div>
@@ -328,12 +334,22 @@ export default function AerospaceFaultCodeLookup() {
                 </div>
 
                 <div className="flex gap-4">
-                  <button className="flex-1 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500 py-3 text-cyan-400 font-bold transition-all">
+                  <a
+                    href="https://wa.me/254768860665?text=Hi!%20I%20need%20a%20technician%20dispatched%20for%20generator%20fault%20repair"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500 py-3 text-cyan-400 font-bold transition-all text-center"
+                  >
                     DISPATCH TECHNICIAN
-                  </button>
-                  <button className="flex-1 bg-green-500/20 hover:bg-green-500/30 border border-green-500 py-3 text-green-400 font-bold transition-all">
+                  </a>
+                  <a
+                    href="https://wa.me/254768860665?text=Hi!%20I%20need%20to%20order%20spare%20parts%20for%20my%20generator"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-green-500/20 hover:bg-green-500/30 border border-green-500 py-3 text-green-400 font-bold transition-all text-center"
+                  >
                     ORDER PARTS
-                  </button>
+                  </a>
                 </div>
               </div>
             </motion.div>

@@ -126,15 +126,26 @@ export default function DiagnosticSummary() {
 
       {/* Quick Actions */}
       <div className="mt-8 grid md:grid-cols-3 gap-4">
-        <button className="px-4 py-3 bg-blue-500/20 border border-blue-500/30 rounded-lg text-blue-400 hover:bg-blue-500/30 transition-all text-sm font-semibold">
+        <a
+          href="/contact?type=diagnostic-report"
+          className="px-4 py-3 bg-blue-500/20 border border-blue-500/30 rounded-lg text-blue-400 hover:bg-blue-500/30 transition-all text-sm font-semibold text-center"
+        >
           Export Report
-        </button>
-        <button className="px-4 py-3 bg-green-500/20 border border-green-500/30 rounded-lg text-green-400 hover:bg-green-500/30 transition-all text-sm font-semibold">
+        </a>
+        <a
+          href="https://wa.me/254768860665?text=Hi!%20I%20need%20to%20schedule%20generator%20maintenance"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 py-3 bg-green-500/20 border border-green-500/30 rounded-lg text-green-400 hover:bg-green-500/30 transition-all text-sm font-semibold text-center"
+        >
           Schedule Maintenance
-        </button>
-        <button className="px-4 py-3 bg-amber-500/20 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/30 transition-all text-sm font-semibold">
+        </a>
+        <a
+          href="/generator-oracle"
+          className="px-4 py-3 bg-amber-500/20 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-500/30 transition-all text-sm font-semibold text-center"
+        >
           View Details
-        </button>
+        </a>
       </div>
     </motion.div>
   );

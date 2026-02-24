@@ -609,9 +609,14 @@ export default function SolarSystemCalculator() {
                           <div><strong>Contact:</strong> +254768860665 | +254782914717</div>
                           <div><strong>Status:</strong> <span className="text-green-400">{panel.availability}</span></div>
                         </div>
-                        <button className="w-full py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg font-semibold transition-all">
+                        <a
+                          href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I'm interested in ${panel.brand} ${panel.model} (${panel.power}W) solar panels priced at KES ${panel.priceKES?.toLocaleString() || 'TBD'}. Can you provide more details?`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg font-semibold transition-all block text-center"
+                        >
                           Select This Panel
-                        </button>
+                        </a>
                       </div>
                     ))}
                   </div>
@@ -665,9 +670,14 @@ export default function SolarSystemCalculator() {
                           <div className="mt-1"><strong>Available from:</strong> EmersonEIMS | +254768860665</div>
                           <div><strong>Status:</strong> <span className="text-green-400">{inverter.availability}</span></div>
                         </div>
-                        <button className="w-full py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg font-semibold transition-all">
+                        <a
+                          href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I'm interested in ${inverter.brand} ${inverter.model} (${inverter.power}) inverter priced at KES ${inverter.priceKES.toLocaleString()}. Can you provide more details?`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg font-semibold transition-all block text-center"
+                        >
                           Select This Inverter
-                        </button>
+                        </a>
                       </div>
                     ))}
                   </div>
@@ -721,9 +731,14 @@ export default function SolarSystemCalculator() {
                           <div className="mt-1"><strong>Available from:</strong> EmersonEIMS | +254768860665</div>
                           <div><strong>Status:</strong> <span className="text-green-400">{battery.availability}</span></div>
                         </div>
-                        <button className="w-full py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg font-semibold transition-all">
+                        <a
+                          href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I'm interested in ${battery.brand} ${battery.model} (${battery.capacity}) battery priced at KES ${battery.priceKES.toLocaleString()}. Can you provide more details?`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg font-semibold transition-all block text-center"
+                        >
                           Select This Battery
-                        </button>
+                        </a>
                       </div>
                     ))}
                   </div>

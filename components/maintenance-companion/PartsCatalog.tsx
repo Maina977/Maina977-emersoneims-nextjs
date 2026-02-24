@@ -205,9 +205,14 @@ export default function PartsCatalog({ initialPartNumber }: PartsCatalogProps) {
               </>
             )}
           </button>
-          <button className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+          <a
+            href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I need a quote for part: ${part.name} (${part.partNumber}). Compatible with: ${part.compatibleModels.join(', ')}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-3 rounded-lg font-medium transition-colors text-center"
+          >
             Request Quote
-          </button>
+          </a>
         </div>
       </motion.div>
     </motion.div>

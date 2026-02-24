@@ -682,9 +682,14 @@ export default function GeneratorSizingCalculator() {
                           <div><strong>Status:</strong> <span className="text-green-400">{gen.availability}</span></div>
                           <div><strong>Lead Time:</strong> {gen.leadTime}</div>
                         </div>
-                        <button className="w-full py-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg font-semibold transition-all">
+                        <a
+                          href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I'm interested in the ${gen.model} (${gen.power}KVA) generator priced at ${gen.priceKES ? 'KES ' + gen.priceKES.toLocaleString() : 'TBD'}. Can you provide more details?`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg font-semibold transition-all block text-center"
+                        >
                           Select This Generator
-                        </button>
+                        </a>
                       </div>
                     ))}
                   </div>
@@ -723,15 +728,26 @@ export default function GeneratorSizingCalculator() {
               <GlassmorphicCard intensity="heavy" className="p-8">
                 <h3 className="text-2xl font-bold mb-6 text-center text-white">Get Your Generator Installed</h3>
                 <div className="grid md:grid-cols-3 gap-4">
-                  <button className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-green-500/50">
+                  <a
+                    href="https://wa.me/254768860665?text=Hi!%20I%20need%20a%20quote%20for%20a%20generator%20installation"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-green-500/50 text-center"
+                  >
                     📞 Request Quote
-                  </button>
-                  <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-orange-500/50">
+                  </a>
+                  <a
+                    href="/contact?type=site-survey&service=generator"
+                    className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-orange-500/50 text-center"
+                  >
                     📅 Schedule Site Survey
-                  </button>
-                  <button className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-purple-500/50">
+                  </a>
+                  <a
+                    href="/contact?type=pdf-report&service=generator"
+                    className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-purple-500/50 text-center"
+                  >
                     📄 Download Full Report
-                  </button>
+                  </a>
                 </div>
                 <div className="mt-6 text-center text-gray-400 text-sm">
                   <p>⚡ Installation within 5-10 days | 🛡️ 2-year warranty | 🔧 24/7 emergency support | 📱 Free load bank testing</p>

@@ -248,15 +248,29 @@ export default function AerospaceCockpit() {
                 <h2 className="text-sm font-bold tracking-wider text-purple-400">QUICK ACTIONS</h2>
               </div>
               <div className="p-4 space-y-2" role="group" aria-label="Quick diagnostic actions">
-                <button className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 py-2 px-3 text-xs text-cyan-400 font-bold transition-all focus-visible-enhanced" aria-label="Run full system diagnostics">
+                <a
+                  href="/generator-oracle"
+                  className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 py-2 px-3 text-xs text-cyan-400 font-bold transition-all focus-visible-enhanced block text-center"
+                  aria-label="Run full system diagnostics"
+                >
                   RUN DIAGNOSTICS
-                </button>
-                <button className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 py-2 px-3 text-xs text-green-400 font-bold transition-all focus-visible-enhanced" aria-label="Generate diagnostic report">
+                </a>
+                <a
+                  href="/contact?type=diagnostic-report"
+                  className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 py-2 px-3 text-xs text-green-400 font-bold transition-all focus-visible-enhanced block text-center"
+                  aria-label="Generate diagnostic report"
+                >
                   GENERATE REPORT
-                </button>
-                <button className="w-full bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/50 py-2 px-3 text-xs text-orange-400 font-bold transition-all focus-visible-enhanced" aria-label="Dispatch maintenance technician">
+                </a>
+                <a
+                  href="https://wa.me/254768860665?text=Hi!%20I%20need%20to%20dispatch%20a%20technician%20for%20generator%20maintenance"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/50 py-2 px-3 text-xs text-orange-400 font-bold transition-all focus-visible-enhanced block text-center"
+                  aria-label="Dispatch maintenance technician"
+                >
                   DISPATCH TECHNICIAN
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -602,9 +616,12 @@ export default function AerospaceCockpit() {
                     </div>
                   </div>
                   <p className="text-xs text-gray-400 mb-3">Senior Diesel Engineer • 12 yrs exp • DeepSea Certified</p>
-                  <button className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 py-2 text-xs text-green-400 font-bold rounded transition-all">
+                  <a
+                    href="tel:+254768860665"
+                    className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 py-2 text-xs text-green-400 font-bold rounded transition-all block text-center"
+                  >
                     📞 CALL NOW
-                  </button>
+                  </a>
                 </div>
                 
                 <div className="bg-cyan-500/10 border border-cyan-500/30 p-4 rounded">
@@ -618,9 +635,14 @@ export default function AerospaceCockpit() {
                     </div>
                   </div>
                   <p className="text-xs text-gray-400 mb-3">Controls Specialist • PowerWizard Expert • Remote Support</p>
-                  <button className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 py-2 text-xs text-cyan-400 font-bold rounded transition-all">
+                  <a
+                    href="https://wa.me/254768860665?text=Hi!%20I%20need%20remote%20support%20for%20my%20generator%20controller"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 py-2 text-xs text-cyan-400 font-bold rounded transition-all block text-center"
+                  >
                     💬 START CHAT
-                  </button>
+                  </a>
                 </div>
                 
                 <div className="border-t border-gray-800 pt-4">

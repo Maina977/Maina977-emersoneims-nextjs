@@ -2627,15 +2627,26 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
                     >
                       🔍 Search with AI
                     </button>
-                    <button className="px-4 py-2 bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 rounded text-sm hover:bg-cyan-500/30 transition-all">
+                    <a
+                      href="https://wa.me/254768860665?text=Hi!%20I%20have%20an%20error%20photo%20from%20my%20generator%20I'd%20like%20to%20share"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 rounded text-sm hover:bg-cyan-500/30 transition-all text-center"
+                    >
                       📸 Upload Error Photo
-                    </button>
-                    <button className="px-4 py-2 bg-green-500/20 border border-green-500/50 text-green-400 rounded text-sm hover:bg-green-500/30 transition-all">
+                    </a>
+                    <a
+                      href="tel:+254768860665"
+                      className="px-4 py-2 bg-green-500/20 border border-green-500/50 text-green-400 rounded text-sm hover:bg-green-500/30 transition-all text-center"
+                    >
                       🎤 Voice Describe Problem
-                    </button>
-                    <button className="px-4 py-2 bg-amber-500/20 border border-amber-500/50 text-amber-400 rounded text-sm hover:bg-amber-500/30 transition-all">
+                    </a>
+                    <a
+                      href="/contact?type=diagnostic-report"
+                      className="px-4 py-2 bg-amber-500/20 border border-amber-500/50 text-amber-400 rounded text-sm hover:bg-amber-500/30 transition-all text-center"
+                    >
                       📊 Generate Report
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -2723,9 +2734,12 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
                 <div className="p-12 text-center text-gray-500">
                   <div className="text-4xl mb-4">📡</div>
                   <p className="text-sm">Connect your generator to view live telemetry data</p>
-                  <button className="mt-4 px-4 py-2 bg-green-500/20 border border-green-500 text-green-400 rounded text-sm">
+                  <a
+                    href="/generator-oracle"
+                    className="mt-4 px-4 py-2 bg-green-500/20 border border-green-500 text-green-400 rounded text-sm inline-block"
+                  >
                     Connect Generator
-                  </button>
+                  </a>
                 </div>
               )}
             </div>

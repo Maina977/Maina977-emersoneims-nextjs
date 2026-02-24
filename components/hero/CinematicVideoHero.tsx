@@ -193,14 +193,14 @@ export default function CinematicVideoHero({
           ref={ctaRef}
           className="flex gap-4 mt-12 flex-wrap justify-center"
         >
-          <button className="cta-button cta-primary">
+          <a href="/solutions" className="cta-button cta-primary">
             <span>Explore Solutions</span>
             <span className="cta-shine" />
-          </button>
-          <button className="cta-button cta-secondary">
+          </a>
+          <a href="/about#story" className="cta-button cta-secondary">
             <span>Watch Story</span>
             <span className="cta-icon">▶</span>
-          </button>
+          </a>
         </div>
 
         {/* Scroll Indicator */}

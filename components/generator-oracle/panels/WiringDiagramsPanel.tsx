@@ -1668,13 +1668,16 @@ function PinoutTable({ controller }: { controller: ControllerModel }) {
 // ==================== DETAILED SCHEMATIC VIEW ====================
 function DetailedSchematicView({
   circuitId,
-  controller
+  controller,
+  onExport
 }: {
   circuitId: string;
   controller: ControllerModel;
+  onExport: () => void;
 }) {
   const schematic = DETAILED_SCHEMATICS[circuitId];
   const [showNotes, setShowNotes] = useState(true);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   if (!schematic) {
     return (
@@ -1718,10 +1721,16 @@ function DetailedSchematicView({
             >
               Notes
             </button>
-            <button className="px-3 py-1 bg-slate-800 text-slate-400 rounded text-xs hover:text-white">
-              🔍 Zoom
+            <button
+              onClick={() => setIsZoomed(!isZoomed)}
+              className={`px-3 py-1 rounded text-xs hover:text-white ${isZoomed ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-800 text-slate-400'}`}
+            >
+              🔍 {isZoomed ? 'Reset' : 'Zoom'}
             </button>
-            <button className="px-3 py-1 bg-slate-800 text-slate-400 rounded text-xs hover:text-white">
+            <button
+              onClick={onExport}
+              className="px-3 py-1 bg-slate-800 text-slate-400 rounded text-xs hover:text-white"
+            >
               📥 Export
             </button>
           </div>
@@ -1730,8 +1739,8 @@ function DetailedSchematicView({
         {/* SVG Canvas */}
         <svg
           viewBox="0 0 700 450"
-          className="w-full h-[500px] pt-12"
-          style={{ minHeight: '500px' }}
+          className={`w-full pt-12 transition-all duration-300 ${isZoomed ? 'h-[800px] scale-110' : 'h-[500px]'}`}
+          style={{ minHeight: isZoomed ? '800px' : '500px' }}
         >
           {schematic.svgContent(controller)}
         </svg>
@@ -2067,7 +2076,7 @@ export default function WiringDiagramsPanel() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <DetailedSchematicView circuitId={selectedCircuit} controller={selectedController} />
+                <DetailedSchematicView circuitId={selectedCircuit} controller={selectedController} onExport={exportToPDF} />
               </motion.div>
             )}
 

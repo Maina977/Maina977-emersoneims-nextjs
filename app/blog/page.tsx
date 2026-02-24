@@ -294,14 +294,20 @@ export default function BlogPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-6 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:border-amber-500 focus:outline-none transition-colors"
-            />
-            <button className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg font-semibold hover:opacity-90 transition-opacity text-black">
-              Subscribe Free
-            </button>
+            <a
+              href="https://wa.me/254768860665?text=Hi!%20I'd%20like%20to%20subscribe%20to%20your%20power%20tips%20newsletter"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg font-semibold hover:opacity-90 transition-opacity text-black text-center"
+            >
+              Subscribe via WhatsApp
+            </a>
+            <a
+              href="mailto:info@emersoneims.com?subject=Newsletter%20Subscription&body=Hi!%20I'd%20like%20to%20subscribe%20to%20your%20power%20tips%20newsletter."
+              className="flex-1 px-8 py-3 bg-gray-800 border border-gray-600 rounded-lg font-semibold hover:bg-gray-700 transition-colors text-center"
+            >
+              Subscribe via Email
+            </a>
           </div>
 
           <p className="text-xs text-gray-500 mt-4">

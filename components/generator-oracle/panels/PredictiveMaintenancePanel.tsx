@@ -247,7 +247,14 @@ function BatteryHealthMonitor({ battery }: { battery: BatteryHealth }) {
 
       <div className="mt-4 text-xs text-slate-500 flex items-center justify-between">
         <span>Last Test: {battery.lastTest}</span>
-        <button className="text-amber-400 hover:text-amber-300">Run Battery Test →</button>
+        <a
+          href="https://wa.me/254768860665?text=Hi!%20I%20need%20to%20schedule%20a%20battery%20test%20for%20my%20generator"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-amber-400 hover:text-amber-300"
+        >
+          Run Battery Test →
+        </a>
       </div>
     </div>
   );

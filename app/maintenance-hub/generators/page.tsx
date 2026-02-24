@@ -797,6 +797,7 @@ export default function GeneratorOracle() {
   const [simulatedRPM, setSimulatedRPM] = useState(1500);
   const [simulatedPower, setSimulatedPower] = useState(450);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [displayLimit, setDisplayLimit] = useState(12);
 
   const stats = useMemo(() => getDatabaseStats(), []);
   const categories = useMemo(() => getCategories(), []);
@@ -936,7 +937,7 @@ export default function GeneratorOracle() {
 
         {/* Fault codes grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredFaults.slice(0, 12).map((fault) => (
+          {filteredFaults.slice(0, displayLimit).map((fault) => (
             <motion.div
               key={fault.code}
               whileHover={{ scale: 1.02 }}
@@ -969,10 +970,13 @@ export default function GeneratorOracle() {
           ))}
         </div>
 
-        {filteredFaults.length > 12 && (
+        {filteredFaults.length > displayLimit && (
           <div className="mt-6 text-center">
-            <button className="px-6 py-3 bg-amber-500/20 text-amber-400 rounded-lg font-bold hover:bg-amber-500/30 transition-colors border border-amber-500/50">
-              Load More Fault Codes ({filteredFaults.length - 12} more)
+            <button
+              onClick={() => setDisplayLimit(prev => prev + 12)}
+              className="px-6 py-3 bg-amber-500/20 text-amber-400 rounded-lg font-bold hover:bg-amber-500/30 transition-colors border border-amber-500/50"
+            >
+              Load More Fault Codes ({filteredFaults.length - displayLimit} more)
             </button>
           </div>
         )}

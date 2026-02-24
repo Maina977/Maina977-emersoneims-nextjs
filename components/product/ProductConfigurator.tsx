@@ -164,12 +164,20 @@ export default function ProductConfigurator({
 
           {/* CTA Buttons */}
           <div className="flex gap-4">
-            <button className="flex-1 cta-button-primary">
+            <a
+              href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I'd like a quote for ${productName}:\n${Object.entries(config).map(([key, value]) => `- ${key}: ${value}`).join('\n')}\n- Estimated Price: KES ${totalPrice.toLocaleString()}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 cta-button-primary text-center"
+            >
               Request Quote
-            </button>
-            <button className="flex-1 cta-button-secondary">
+            </a>
+            <a
+              href="/contact?type=specs-request&product=generator"
+              className="flex-1 cta-button-secondary text-center"
+            >
               Download Specs
-            </button>
+            </a>
           </div>
         </div>
       </div>
