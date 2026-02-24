@@ -1799,6 +1799,139 @@ export default function WiringDiagramsPanel() {
   const brands = [...new Set(CONTROLLERS.map(c => c.brand))];
   const brandControllers = CONTROLLERS.filter(c => c.brand === selectedBrand);
 
+  // Get current pin configuration
+  const currentPins = CONTROLLER_PINS[selectedController.id] || CONTROLLER_PINS['dse-7320'];
+
+  // Export to PDF function
+  const exportToPDF = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow popups to download PDF');
+      return;
+    }
+
+    const pinRows = currentPins.map(pin => `
+      <tr>
+        <td style="padding: 8px; border: 1px solid #334155; font-weight: bold;">${pin.pin}</td>
+        <td style="padding: 8px; border: 1px solid #334155;">${pin.name}</td>
+        <td style="padding: 8px; border: 1px solid #334155;">${pin.function}</td>
+        <td style="padding: 8px; border: 1px solid #334155;">${pin.wireColor}</td>
+        <td style="padding: 8px; border: 1px solid #334155;">${pin.wireGauge}</td>
+        <td style="padding: 8px; border: 1px solid #334155;">${pin.circuit}</td>
+      </tr>
+    `).join('');
+
+    const wireColorRows = Object.entries(WIRE_COLORS).map(([code, info]) => `
+      <tr>
+        <td style="padding: 8px; border: 1px solid #334155; background: ${info.hex}; color: ${info.hex === '#000000' || info.hex === '#1e3a8a' ? '#fff' : '#000'}; font-weight: bold;">${code}</td>
+        <td style="padding: 8px; border: 1px solid #334155;">${info.name}</td>
+        <td style="padding: 8px; border: 1px solid #334155;">${info.usage}</td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Wiring Diagram - ${selectedController.model}</title>
+        <style>
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; background: #0f172a; color: #e2e8f0; margin: 0; }
+          .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #0ea5e9; }
+          .header h1 { color: #0ea5e9; margin: 0 0 10px 0; font-size: 28px; }
+          .header h2 { color: #94a3b8; margin: 0; font-size: 18px; font-weight: normal; }
+          .section { margin-bottom: 30px; }
+          .section h3 { color: #22d3ee; margin-bottom: 15px; font-size: 18px; border-left: 4px solid #0ea5e9; padding-left: 12px; }
+          table { width: 100%; border-collapse: collapse; background: #1e293b; font-size: 12px; }
+          th { background: #334155; color: #0ea5e9; padding: 12px 8px; text-align: left; font-weight: bold; border: 1px solid #475569; }
+          td { color: #cbd5e1; }
+          .specs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+          .spec-box { background: #1e293b; padding: 15px; border-radius: 8px; border: 1px solid #334155; }
+          .spec-label { color: #64748b; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; }
+          .spec-value { color: #0ea5e9; font-size: 16px; font-weight: bold; }
+          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #334155; text-align: center; color: #64748b; font-size: 11px; }
+          .logo { font-size: 24px; margin-bottom: 10px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">📐 Generator Oracle</div>
+          <h1>Wiring Diagram Documentation</h1>
+          <h2>${selectedController.brand} ${selectedController.model}</h2>
+        </div>
+
+        <div class="section">
+          <h3>Controller Specifications</h3>
+          <div class="specs-grid">
+            <div class="spec-box">
+              <div class="spec-label">Model</div>
+              <div class="spec-value">${selectedController.model}</div>
+            </div>
+            <div class="spec-box">
+              <div class="spec-label">Brand</div>
+              <div class="spec-value">${selectedController.brand}</div>
+            </div>
+            <div class="spec-box">
+              <div class="spec-label">Total Pins</div>
+              <div class="spec-value">${currentPins.length}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Pin Configuration</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Pin</th>
+                <th>Name</th>
+                <th>Function</th>
+                <th>Wire Color</th>
+                <th>Gauge</th>
+                <th>Circuit</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pinRows}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section" style="page-break-before: always;">
+          <h3>Wire Color Standards (IEC 60446)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Color Code</th>
+                <th>Color Name</th>
+                <th>Standard Usage</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${wireColorRows}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="footer">
+          <p>Generated by Generator Oracle - Ajira Power Solutions Ltd</p>
+          <p>Professional Electrical Documentation • IEEE/IEC Standards</p>
+          <p>Generated on: ${new Date().toLocaleString()}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  };
+
+  // Print function
+  const handlePrint = () => {
+    exportToPDF();
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -2024,10 +2157,16 @@ export default function WiringDiagramsPanel() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm hover:bg-slate-700 transition-colors flex items-center gap-2">
+            <button
+              onClick={exportToPDF}
+              className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm hover:bg-slate-700 transition-colors flex items-center gap-2"
+            >
               <span>📥</span> Export PDF
             </button>
-            <button className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm hover:bg-slate-700 transition-colors flex items-center gap-2">
+            <button
+              onClick={handlePrint}
+              className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm hover:bg-slate-700 transition-colors flex items-center gap-2"
+            >
               <span>🖨️</span> Print
             </button>
           </div>

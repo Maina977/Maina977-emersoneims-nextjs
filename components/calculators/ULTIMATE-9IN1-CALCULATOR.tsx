@@ -1685,7 +1685,123 @@ export default function Ultimate9In1Calculator() {
   };
 
   const exportToPDF = () => {
-    alert('PDF export feature - Would integrate with jsPDF library');
+    if (!result) {
+      alert('Please complete a calculation first before exporting');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow popups to download PDF');
+      return;
+    }
+
+    const calcNames: Record<string, string> = {
+      generator: 'Generator Sizing',
+      solar: 'Solar System',
+      battery: 'Battery Bank',
+      transformer: 'Transformer',
+      hvac: 'HVAC Load',
+      pump: 'Pump System',
+      cable: 'Cable Sizing',
+      motor: 'Motor Starter',
+      ups: 'UPS Sizing'
+    };
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emerson EIMS - ${calcNames[activeCalc]} Calculator Report</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; color: #1a1a2e; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
+    .logo { font-size: 28px; font-weight: bold; color: #2563eb; }
+    .logo span { color: #f97316; }
+    h1 { color: #1e40af; margin-bottom: 20px; font-size: 24px; }
+    h2 { color: #2563eb; margin: 25px 0 15px; font-size: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
+    .result-box { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 25px; border-radius: 12px; margin: 25px 0; text-align: center; }
+    .result-box .value { font-size: 36px; font-weight: bold; }
+    .result-box .unit { font-size: 18px; opacity: 0.9; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background: #f3f4f6; font-weight: 600; }
+    .recommendations { background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e; }
+    .recommendations li { margin: 8px 0; }
+    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #666; text-align: center; }
+    @media print { body { padding: 20px; } .no-print { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Emerson<span>EIMS</span></div>
+    <div style="text-align: right; color: #666; font-size: 14px;">
+      <div>Report Generated: ${new Date().toLocaleDateString()}</div>
+      <div>Reference: ${Date.now().toString(36).toUpperCase()}</div>
+    </div>
+  </div>
+
+  <h1>📊 ${calcNames[activeCalc]} Calculator Report</h1>
+
+  <div class="result-box">
+    <div class="value">${result.value.toLocaleString()} ${result.unit}</div>
+    <div class="unit">Recommended Size</div>
+  </div>
+
+  <h2>📋 Calculation Details</h2>
+  <table>
+    ${Object.entries(result.details).map(([key, value]) => `
+      <tr><td>${key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</td><td><strong>${value}</strong></td></tr>
+    `).join('')}
+  </table>
+
+  ${result.costBreakdown.length > 0 ? `
+  <h2>💰 Cost Breakdown</h2>
+  <table>
+    <thead><tr><th>Item</th><th>Cost (KES)</th></tr></thead>
+    <tbody>
+      ${result.costBreakdown.map(item => `<tr><td>${item.name}</td><td>KES ${item.cost.toLocaleString()}</td></tr>`).join('')}
+      <tr style="font-weight: bold; background: #f3f4f6;"><td>Total</td><td>KES ${result.costBreakdown.reduce((sum, item) => sum + item.cost, 0).toLocaleString()}</td></tr>
+    </tbody>
+  </table>
+  ` : ''}
+
+  ${result.recommendations.length > 0 ? `
+  <h2>✅ Recommendations</h2>
+  <div class="recommendations">
+    <ul>
+      ${result.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+    </ul>
+  </div>
+  ` : ''}
+
+  <h2>📞 Get Professional Quote</h2>
+  <p>Contact Emerson EIMS for a detailed quote and professional installation:</p>
+  <table>
+    <tr><td>Phone</td><td><strong>+254 722 274 914</strong></td></tr>
+    <tr><td>WhatsApp</td><td><strong>+254 722 274 914</strong></td></tr>
+    <tr><td>Email</td><td><strong>info@emersoneims.com</strong></td></tr>
+  </table>
+
+  <div class="footer">
+    <p><strong>Emerson Industrial Maintenance Services (EIMS)</strong></p>
+    <p>Nairobi, Kenya | www.emersoneims.com</p>
+    <p style="margin-top: 10px;">This report is for estimation purposes only. Actual requirements may vary based on site assessment.</p>
+  </div>
+
+  <div class="no-print" style="text-align: center; margin-top: 30px;">
+    <button onclick="window.print()" style="background: #2563eb; color: white; border: none; padding: 15px 40px; font-size: 16px; border-radius: 8px; cursor: pointer;">
+      📄 Save as PDF
+    </button>
+    <p style="margin-top: 10px; color: #666; font-size: 14px;">Click the button, then choose "Save as PDF" in the print dialog</p>
+  </div>
+</body>
+</html>`;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   const renderInputs = () => {
