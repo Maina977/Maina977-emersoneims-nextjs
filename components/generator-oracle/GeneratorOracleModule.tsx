@@ -1279,7 +1279,7 @@ export default function GeneratorOracleModule() {
 
   return (
     <LicenseGate>
-      <div className={`min-h-screen text-white overflow-x-hidden overflow-y-auto ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`text-white ${isRTL ? 'rtl' : 'ltr'}`} style={{ minHeight: '100vh' }}>
         <UltraCockpitBackground />
         <InstallPrompt />
 
@@ -1287,9 +1287,10 @@ export default function GeneratorOracleModule() {
         <style jsx global>{`
           .protected-content { user-select: none; -webkit-user-select: none; }
           input, button, textarea, a { user-select: auto !important; -webkit-user-select: auto !important; }
+          html, body { overflow-x: hidden; }
         `}</style>
 
-        <div className="relative z-10 flex flex-col min-h-screen pb-20">
+        <div className="relative z-10 pb-32">
           {/* ==================== ULTRA-PREMIUM COMMAND HEADER ==================== */}
           <header className="flex-shrink-0 bg-slate-950/90 backdrop-blur-2xl border-b border-cyan-500/20">
             <div className="max-w-[1920px] mx-auto px-4 lg:px-6">
