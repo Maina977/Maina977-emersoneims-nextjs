@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
   title: 'Generator Oracle | Professional Controller Diagnostic System',
-  description: 'Advanced diagnostic tool for DeepSea, ComAp, Woodward, SmartGen, and CAT PowerWizard controllers. 230,000+ fault codes, step-by-step reset pathways, and offline capability.',
+  description: 'Advanced diagnostic tool for DeepSea, ComAp, Woodward, SmartGen, and CAT PowerWizard controllers. 400,000+ fault codes, step-by-step reset pathways, and offline capability.',
   keywords: [
     'generator controller diagnostics',
     'DeepSea DSE fault codes',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   applicationName: 'Generator Oracle',
   openGraph: {
     title: 'Generator Oracle - Professional Controller Diagnostic System',
-    description: '230,000+ fault codes for DSE, ComAp, Woodward, SmartGen & PowerWizard controllers. Works offline.',
+    description: '400,000+ fault codes for DSE, ComAp, Woodward, SmartGen & PowerWizard controllers. Works offline.',
     type: 'website',
     locale: 'en_US',
     siteName: 'EmersonEIMS Generator Oracle',

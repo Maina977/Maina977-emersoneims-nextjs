@@ -7,7 +7,7 @@ import Link from 'next/link';
 /**
  * 🏆 AWWWARDS SOTD WEAPON: INTERACTIVE DIAGNOSTIC JOURNEY
  *
- * What Apple Doesn't Have: 230,000+ real error codes with interactive storytelling
+ * What Apple Doesn't Have: 400,000+ real error codes with interactive storytelling
  * This is our unfair advantage - transform data into an immersive experience
  *
  * Features:
@@ -27,7 +27,7 @@ interface ErrorCode {
   affectedSystems: string[];
 }
 
-// Sample from actual 230,000+ error codes
+// Sample from actual 400,000+ error codes
 const featuredCodes: ErrorCode[] = [
   {
     code: '1234',

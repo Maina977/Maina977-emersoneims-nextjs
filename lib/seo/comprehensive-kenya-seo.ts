@@ -34,7 +34,7 @@ export const EMERSON_SERVICES = [
     id: 'generators',
     name: 'Generator Services',
     fullName: 'Generator Sales, Installation, Maintenance & Repairs',
-    description: '3-Year Warranty on all generator installations. Cummins, Perkins, FG Wilson, Caterpillar authorized dealer. 230,000+ fault codes database.',
+    description: '3-Year Warranty on all generator installations. Cummins, Perkins, FG Wilson, Caterpillar authorized dealer. 400,000+ fault codes database.',
     warranty: '3 YEARS',
     keywords: ['generator sales Kenya', 'generator installation', 'generator maintenance', 'generator repair', 'Cummins Kenya', 'Perkins Kenya', 'FG Wilson Kenya', 'diesel generator', 'industrial generator', 'commercial generator', 'standby generator', 'prime power generator', 'generator warranty Kenya', '3 year generator warranty'],
     targetAudience: ['hospitals', 'hotels', 'factories', 'schools', 'banks', 'supermarkets', 'malls', 'telecom towers', 'data centers', 'residential estates'],
@@ -471,8 +471,8 @@ export const PAGE_META = {
     description: "Best solar company in Kenya. Grid-tie, off-grid, hybrid systems. 25-year panel warranty. Serving all 47 counties, 16,245+ hotels, 93,988+ schools. Free site assessment. Call +254768860665"
   },
   maintenanceHub: {
-    title: "Maintenance Hub | 230,000+ Fault Codes | 47 Counties | EmersonEIMS",
-    description: "Kenya's most comprehensive maintenance guide. 230,000+ fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 3-year warranty."
+    title: "Maintenance Hub | 400,000+ Fault Codes | 47 Counties | EmersonEIMS",
+    description: "Kenya's most comprehensive maintenance guide. 400,000+ fault codes, 9 service categories, all 47 counties. Generator, solar, motor, AC, borehole, electrical services. 3-year warranty."
   },
   services: {
     title: "9 Power Solutions Services | 3-Year Warranty | 47 Counties | EmersonEIMS",

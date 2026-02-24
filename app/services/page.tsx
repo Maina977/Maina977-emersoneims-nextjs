@@ -429,7 +429,7 @@ export default function GeneralMaintenanceHub() {
           <Link href="/generator-oracle" className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-4 hover:from-blue-500 hover:to-blue-600 transition-all">
             <div className="text-2xl mb-2">🔌</div>
             <div className="font-bold text-white">Generator Oracle</div>
-            <div className="text-blue-200 text-sm">230,000+ fault codes</div>
+            <div className="text-blue-200 text-sm">400,000+ fault codes</div>
           </Link>
           <Link href="/solar" className="bg-gradient-to-r from-amber-600 to-orange-600 rounded-xl p-4 hover:from-amber-500 hover:to-orange-500 transition-all">
             <div className="text-2xl mb-2">☀️</div>

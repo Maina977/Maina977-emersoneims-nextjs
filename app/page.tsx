@@ -255,7 +255,7 @@ export default function AwwwardsHomepage() {
                   <span className="text-amber-500">✓</span> 24/7 Support
                 </div>
                 <Link href="/generator-oracle" className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
-                  <span className="text-cyan-500">🔮</span> 230,000+ Fault Codes
+                  <span className="text-cyan-500">🔮</span> 400,000+ Fault Codes
                 </Link>
               </motion.div>
             </motion.div>

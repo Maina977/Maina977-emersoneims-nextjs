@@ -76,7 +76,7 @@ export const ENHANCED_SERVICE_CATEGORIES: EnhancedServiceCategory[] = [
 
 Our generator service division maintains partnerships with all major generator manufacturers including Caterpillar, Cummins, Perkins, FG Wilson, SDMO, Kohler, and local assemblers. This enables us to access genuine spare parts, technical documentation, and manufacturer support for even the most complex repairs. We understand that generator downtime can cost businesses millions of shillings in lost productivity, spoiled inventory, and missed opportunities, which is why we maintain a rapid response team available 24 hours a day, 7 days a week.
 
-The cornerstone of our generator services is the Generator Oracle diagnostic system, which provides access to over 230,000 fault codes across 9 major controller brands including DeepSea Electronics, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, and ENKO. This proprietary database allows our technicians to quickly identify and resolve issues that would otherwise require hours of manual troubleshooting or expensive factory support calls.
+The cornerstone of our generator services is the Generator Oracle diagnostic system, which provides access to over 400,000 fault codes across 9 major controller brands including DeepSea Electronics, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, and ENKO. This proprietary database allows our technicians to quickly identify and resolve issues that would otherwise require hours of manual troubleshooting or expensive factory support calls.
 
 Beyond repairs, we offer comprehensive preventive maintenance programs designed to maximize generator lifespan and minimize unexpected failures. Our maintenance contracts include regular oil and filter changes, coolant system inspections, fuel system cleaning, battery testing, load bank testing, and complete electrical system inspections. Clients on our maintenance programs report 60% fewer emergency callouts and 40% longer intervals between major overhauls.`,
 
@@ -115,7 +115,7 @@ Manufacturing and industrial facilities often have complex power requirements wi
     href: '/generator-oracle',
     color: 'from-blue-600/20 to-indigo-700/20',
     glowColor: 'shadow-blue-500/20',
-    features: ['230,000+ Fault Codes', 'Controller Simulators', 'Wiring Diagrams', 'Offline Diagnostics', 'Load Bank Testing', 'Remote Monitoring', 'Preventive Maintenance', '24/7 Emergency Support'],
+    features: ['400,000+ Fault Codes', 'Controller Simulators', 'Wiring Diagrams', 'Offline Diagnostics', 'Load Bank Testing', 'Remote Monitoring', 'Preventive Maintenance', '24/7 Emergency Support'],
     stats: { value: '90K+', label: 'Fault Codes' },
     subServices: [
       {
@@ -126,7 +126,7 @@ Manufacturing and industrial facilities often have complex power requirements wi
       {
         name: 'Generator Repair',
         description: 'Expert repair services for all generator brands covering mechanical, electrical, and electronic faults.',
-        benefits: ['230,000+ fault code database', 'Same-day service available', 'Genuine spare parts', 'Warranty on repairs']
+        benefits: ['400,000+ fault code database', 'Same-day service available', 'Genuine spare parts', 'Warranty on repairs']
       },
       {
         name: 'Preventive Maintenance',

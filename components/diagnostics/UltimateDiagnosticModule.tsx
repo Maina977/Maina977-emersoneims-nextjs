@@ -571,7 +571,7 @@ export default function UltimateDiagnosticModule() {
     };
     const handleOffline = () => {
       setIsOffline(true);
-      announce('You are now offline. All 230,000+ error codes are still available from cache.', 'assertive');
+      announce('You are now offline. All 400,000+ error codes are still available from cache.', 'assertive');
       if (audioAlertsEnabled) playWarning();
     };
     
@@ -1590,7 +1590,7 @@ ${code.solutions.map((s, i) => `${i + 1}. (${s.difficulty}) ${s.solution}`).join
           {/* Navigation Tabs - Professional Feature Set */}
           <nav className="mt-3 flex flex-wrap gap-1" role="tablist" aria-label="Main navigation">
             {[
-              { id: 'search', label: 'ERROR CODES', icon: '◉', badge: '230,000+' },
+              { id: 'search', label: 'ERROR CODES', icon: '◉', badge: '400,000+' },
               { id: 'ai', label: 'AI DIAGNOSTICS', icon: '🧠', badge: null },
               { id: 'telemetry', label: 'LIVE TELEMETRY', icon: '📊', badge: 'LIVE' },
               { id: 'toolkit', label: 'TOOLKIT', icon: '🛠️', badge: 'NEW' },

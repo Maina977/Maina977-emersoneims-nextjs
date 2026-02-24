@@ -336,7 +336,7 @@ function FreeTrialBanner({ daysLeft }: { daysLeft: number }) {
                     <span className="text-2xl font-bold text-amber-400">KES 20,000</span>
                     <span className="text-slate-400">/year</span>
                   </div>
-                  <div className="text-slate-500 text-xs mt-1">Full access to 230,000+ fault codes</div>
+                  <div className="text-slate-500 text-xs mt-1">Full access to 400,000+ fault codes</div>
                 </div>
 
                 <Link

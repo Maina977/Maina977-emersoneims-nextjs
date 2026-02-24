@@ -195,9 +195,9 @@ export function DiagnosticSuiteSchema() {
       bestRating: '5',
       worstRating: '1'
     },
-    description: 'Professional generator diagnostic tool with 230,000+ error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
+    description: 'Professional generator diagnostic tool with 400,000+ error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
     featureList: [
-      '230,000+ Error Codes Database',
+      '400,000+ Error Codes Database',
       'AI-Powered Diagnostics',
       'Multi-Brand Support (Cummins, CAT, Perkins, DeepSea, PowerWizard)',
       'Real-Time Telemetry',
