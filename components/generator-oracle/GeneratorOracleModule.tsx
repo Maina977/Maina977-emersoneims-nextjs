@@ -1316,17 +1316,17 @@ export default function GeneratorOracleModule() {
                   {/* Stats */}
                   <div className="hidden lg:flex items-center gap-4 px-4 py-1.5 bg-slate-900/60 rounded-lg border border-slate-700/50">
                     <div className="text-center">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">Fault Codes</span>
+                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">{t.faultCodes}</span>
                       <div className="font-mono text-cyan-400 text-sm">{totalCodes.toLocaleString()}</div>
                     </div>
                     <div className="w-px h-8 bg-slate-700" />
                     <div className="text-center">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">Controller</span>
+                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">{t.controllers}</span>
                       <div className="font-mono text-cyan-400 text-sm">{selectedModel || 'All'}</div>
                     </div>
                     <div className="w-px h-8 bg-slate-700" />
                     <div className="text-center">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">Health</span>
+                      <span className="text-[9px] text-slate-500 uppercase tracking-wider">{t.severity}</span>
                       <div className="font-mono text-green-400 text-sm">{systemHealth}%</div>
                     </div>
                   </div>
@@ -1437,25 +1437,25 @@ export default function GeneratorOracleModule() {
 
                 {/* Navigation */}
                 <nav className="hidden xl:flex items-center gap-1 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex-wrap">
-                  <PremiumNavTab icon="🎛️" label="Command" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
-                  <PremiumNavTab icon="⚙️" label="Engine" active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
-                  <PremiumNavTab icon="⚡" label="Electrical" active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
-                  <PremiumNavTab icon="🔧" label="Faults" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
-                  <PremiumNavTab icon="🔍" label="Fault Analysis" active={activeScreen === 'faultanalysis'} onClick={() => setActiveScreen('faultanalysis')} />
-                  <PremiumNavTab icon="🖥️" label="Simulator" active={activeScreen === 'simulator'} onClick={() => setActiveScreen('simulator')} />
-                  <PremiumNavTab icon="📐" label="Diagrams" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
-                  <PremiumNavTab icon="🔌" label="All Wiring" active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
-                  <PremiumNavTab icon="📊" label="Input" active={activeScreen === 'techinput'} onClick={() => setActiveScreen('techinput')} />
-                  <PremiumNavTab icon="🧠" label="AI" active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
-                  <PremiumNavTab icon="🛠️" label="Assistant" active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
-                  <PremiumNavTab icon="📊" label="Live Monitor" active={activeScreen === 'realtime'} onClick={() => setActiveScreen('realtime')} />
-                  <PremiumNavTab icon="🔌" label="OBD/CAN" active={activeScreen === 'obd'} onClick={() => setActiveScreen('obd')} />
-                  <PremiumNavTab icon="🌐" label="Remote" active={activeScreen === 'remote'} onClick={() => setActiveScreen('remote')} />
-                  <PremiumNavTab icon="🔮" label="Predictive" active={activeScreen === 'predictive'} onClick={() => setActiveScreen('predictive')} />
-                  <PremiumNavTab icon="📈" label="Recording" active={activeScreen === 'recording'} onClick={() => setActiveScreen('recording')} />
-                  <PremiumNavTab icon="📚" label="Manuals" active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
-                  <PremiumNavTab icon="📋" label="History" active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
-                  <PremiumNavTab icon="⚙️" label="Settings" active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
+                  <PremiumNavTab icon="🎛️" label={t.navCommand} active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
+                  <PremiumNavTab icon="⚙️" label={t.navEngine} active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
+                  <PremiumNavTab icon="⚡" label={t.navElectrical} active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
+                  <PremiumNavTab icon="🔧" label={t.navFaults} active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
+                  <PremiumNavTab icon="🔍" label={t.navFaultAnalysis} active={activeScreen === 'faultanalysis'} onClick={() => setActiveScreen('faultanalysis')} />
+                  <PremiumNavTab icon="🖥️" label={t.navSimulator} active={activeScreen === 'simulator'} onClick={() => setActiveScreen('simulator')} />
+                  <PremiumNavTab icon="📐" label={t.navDiagrams} active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
+                  <PremiumNavTab icon="🔌" label={t.navAllWiring} active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
+                  <PremiumNavTab icon="📊" label={t.navInput} active={activeScreen === 'techinput'} onClick={() => setActiveScreen('techinput')} />
+                  <PremiumNavTab icon="🧠" label={t.navAI} active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
+                  <PremiumNavTab icon="🛠️" label={t.navAssistant} active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
+                  <PremiumNavTab icon="📊" label={t.navLiveMonitor} active={activeScreen === 'realtime'} onClick={() => setActiveScreen('realtime')} />
+                  <PremiumNavTab icon="🔌" label={t.navOBD} active={activeScreen === 'obd'} onClick={() => setActiveScreen('obd')} />
+                  <PremiumNavTab icon="🌐" label={t.navRemote} active={activeScreen === 'remote'} onClick={() => setActiveScreen('remote')} />
+                  <PremiumNavTab icon="🔮" label={t.navPredictive} active={activeScreen === 'predictive'} onClick={() => setActiveScreen('predictive')} />
+                  <PremiumNavTab icon="📈" label={t.navRecording} active={activeScreen === 'recording'} onClick={() => setActiveScreen('recording')} />
+                  <PremiumNavTab icon="📚" label={t.navManuals} active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
+                  <PremiumNavTab icon="📋" label={t.tabHistory} active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
+                  <PremiumNavTab icon="⚙️" label={t.tabSettings} active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
                 </nav>
 
                 {/* Mobile nav */}
@@ -1465,25 +1465,25 @@ export default function GeneratorOracleModule() {
                     onChange={(e) => setActiveScreen(e.target.value as typeof activeScreen)}
                     className="bg-slate-900/60 text-cyan-400 px-4 py-2.5 rounded-xl border border-cyan-500/30 font-medium"
                   >
-                    <option value="command">🎛️ Command Center</option>
-                    <option value="engine">⚙️ Engine Panel</option>
-                    <option value="electrical">⚡ Electrical</option>
-                    <option value="faults">🔧 Fault Codes</option>
-                    <option value="faultanalysis">🔍 Fault Analysis</option>
-                    <option value="simulator">🖥️ Simulator</option>
-                    <option value="wiring">📐 Wiring Diagrams</option>
-                    <option value="allwiring">🔌 All 10 Controllers Wiring</option>
-                    <option value="techinput">📊 Technician Input Analysis</option>
-                    <option value="advanced">🧠 AI Diagnostics</option>
-                    <option value="assistant">🛠️ Tech Assistant</option>
-                    <option value="realtime">📊 Live Monitor</option>
-                    <option value="obd">🔌 OBD/CAN Protocol</option>
-                    <option value="remote">🌐 Remote Connectivity</option>
-                    <option value="predictive">🔮 Predictive Maintenance</option>
-                    <option value="recording">📈 Data Recording</option>
-                    <option value="manuals">📚 Repair Manuals</option>
-                    <option value="history">📋 History</option>
-                    <option value="settings">⚙️ Settings</option>
+                    <option value="command">🎛️ {t.navCommand}</option>
+                    <option value="engine">⚙️ {t.navEngine}</option>
+                    <option value="electrical">⚡ {t.navElectrical}</option>
+                    <option value="faults">🔧 {t.navFaults}</option>
+                    <option value="faultanalysis">🔍 {t.navFaultAnalysis}</option>
+                    <option value="simulator">🖥️ {t.navSimulator}</option>
+                    <option value="wiring">📐 {t.navDiagrams}</option>
+                    <option value="allwiring">🔌 {t.navAllWiring}</option>
+                    <option value="techinput">📊 {t.navInput}</option>
+                    <option value="advanced">🧠 {t.navAI}</option>
+                    <option value="assistant">🛠️ {t.navAssistant}</option>
+                    <option value="realtime">📊 {t.navLiveMonitor}</option>
+                    <option value="obd">🔌 {t.navOBD}</option>
+                    <option value="remote">🌐 {t.navRemote}</option>
+                    <option value="predictive">🔮 {t.navPredictive}</option>
+                    <option value="recording">📈 {t.navRecording}</option>
+                    <option value="manuals">📚 {t.navManuals}</option>
+                    <option value="history">📋 {t.tabHistory}</option>
+                    <option value="settings">⚙️ {t.tabSettings}</option>
                   </select>
                 </div>
 
@@ -1682,14 +1682,14 @@ export default function GeneratorOracleModule() {
                         </HolographicGlassPanel>
 
                         {/* Quick Search */}
-                        <HolographicGlassPanel title="Fault Code Search" subtitle="230,000+ Codes Database" icon="🔍" accentColor="purple">
+                        <HolographicGlassPanel title={t.faultCode} subtitle={`${totalCodes.toLocaleString()}+ ${t.faultCodes}`} icon="🔍" accentColor="purple">
                           <div className="flex gap-3">
                             <input
                               type="text"
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
                               onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                              placeholder="Enter fault code or description..."
+                              placeholder={t.searchPlaceholder}
                               className="flex-1 px-4 py-3 bg-slate-950/80 border border-purple-500/30 rounded-xl text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-purple-500/60 transition-colors"
                             />
                             <motion.button
@@ -1698,7 +1698,7 @@ export default function GeneratorOracleModule() {
                               onClick={() => handleSearch(searchQuery)}
                               className="px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-medium rounded-xl"
                             >
-                              Search
+                              {t.searchButton}
                             </motion.button>
                           </div>
 
@@ -1759,7 +1759,7 @@ export default function GeneratorOracleModule() {
                         </HolographicGlassPanel>
 
                         {/* Support */}
-                        <HolographicGlassPanel title="24/7 Support" icon="💬" accentColor="green">
+                        <HolographicGlassPanel title={t.needHelp} icon="💬" accentColor="green">
                           <div className="space-y-3">
                             <a
                               href="tel:+254782914717"
@@ -1767,7 +1767,7 @@ export default function GeneratorOracleModule() {
                             >
                               <span className="text-xl">📞</span>
                               <div className="flex-1">
-                                <div className="text-sm text-blue-400 font-medium">Call Support</div>
+                                <div className="text-sm text-blue-400 font-medium">{t.callSupport}</div>
                                 <div className="text-xs text-slate-500">+254 782 914 717</div>
                               </div>
                             </a>
@@ -1779,8 +1779,8 @@ export default function GeneratorOracleModule() {
                             >
                               <span className="text-xl">💬</span>
                               <div className="flex-1">
-                                <div className="text-sm text-green-400 font-medium">WhatsApp</div>
-                                <div className="text-xs text-slate-500">Instant Response</div>
+                                <div className="text-sm text-green-400 font-medium">{t.whatsappSupport}</div>
+                                <div className="text-xs text-slate-500">24/7</div>
                               </div>
                             </a>
                           </div>
@@ -2096,7 +2096,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
-                    <HolographicGlassPanel title="Diagnosis History" subtitle="Recent Diagnostic Sessions" icon="📋" accentColor="purple" variant="glow">
+                    <HolographicGlassPanel title={t.tabHistory} subtitle={t.diagnosisResults} icon="📋" accentColor="purple" variant="glow">
                       {diagnosisHistory.length === 0 ? (
                         <div className="text-center py-12">
                           <motion.div
@@ -2106,8 +2106,8 @@ export default function GeneratorOracleModule() {
                           >
                             📋
                           </motion.div>
-                          <div className="text-slate-400 text-lg">No diagnosis history yet</div>
-                          <div className="text-sm text-slate-600 mt-2">Diagnosed faults will appear here</div>
+                          <div className="text-slate-400 text-lg">{t.noFaultsDetected}</div>
+                          <div className="text-sm text-slate-600 mt-2">{t.runDiagnosis}</div>
                         </div>
                       ) : (
                         <div className="space-y-3">
@@ -2144,10 +2144,10 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
-                    <HolographicGlassPanel title="System Settings" subtitle="Configuration & Preferences" icon="⚙️" accentColor="cyan" variant="glow">
+                    <HolographicGlassPanel title={t.tabSettings} subtitle={t.tabSettings} icon="⚙️" accentColor="cyan" variant="glow">
                       <div className="space-y-6">
                         <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
-                          <div className="text-sm text-slate-400 mb-3">Language / Lugha / Langue</div>
+                          <div className="text-sm text-slate-400 mb-3">🌐 Language / Lugha / Langue / لغة / भाषा / 语言</div>
                           <select
                             value={language}
                             onChange={(e) => handleLanguageChange(e.target.value)}
@@ -2163,9 +2163,9 @@ export default function GeneratorOracleModule() {
 
                         <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
                           <div className="flex items-center justify-between">
-                            <span className="text-slate-400">Offline Mode Status</span>
+                            <span className="text-slate-400">{t.offlineMode}</span>
                             <span className={offlineReady ? 'text-green-400 font-medium' : 'text-amber-400'}>
-                              {offlineReady ? `${totalCodes.toLocaleString()} codes cached` : 'Syncing...'}
+                              {offlineReady ? `${totalCodes.toLocaleString()} ${t.faultCodes}` : t.syncPending}
                             </span>
                           </div>
                         </div>

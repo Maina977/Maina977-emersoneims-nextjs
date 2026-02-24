@@ -135,6 +135,25 @@ export interface OracleTranslations {
   tabHistory: string;
   tabSettings: string;
 
+  // Navigation Panels
+  navCommand: string;
+  navEngine: string;
+  navElectrical: string;
+  navFaults: string;
+  navFaultAnalysis: string;
+  navSimulator: string;
+  navDiagrams: string;
+  navAllWiring: string;
+  navInput: string;
+  navAI: string;
+  navAssistant: string;
+  navLiveMonitor: string;
+  navOBD: string;
+  navRemote: string;
+  navPredictive: string;
+  navRecording: string;
+  navManuals: string;
+
   // Contact
   needHelp: string;
   callSupport: string;
@@ -261,6 +280,24 @@ export const ORACLE_TRANSLATIONS: Record<string, OracleTranslations> = {
     tabHistory: 'History',
     tabSettings: 'Settings',
 
+    navCommand: 'Command',
+    navEngine: 'Engine',
+    navElectrical: 'Electrical',
+    navFaults: 'Faults',
+    navFaultAnalysis: 'Fault Analysis',
+    navSimulator: 'Simulator',
+    navDiagrams: 'Diagrams',
+    navAllWiring: 'All Wiring',
+    navInput: 'Input',
+    navAI: 'AI',
+    navAssistant: 'Assistant',
+    navLiveMonitor: 'Live Monitor',
+    navOBD: 'OBD/CAN',
+    navRemote: 'Remote',
+    navPredictive: 'Predictive',
+    navRecording: 'Recording',
+    navManuals: 'Manuals',
+
     needHelp: 'Need Help?',
     callSupport: 'Call Support',
     whatsappSupport: 'WhatsApp',
@@ -384,6 +421,24 @@ export const ORACLE_TRANSLATIONS: Record<string, OracleTranslations> = {
     tabDiagnose: 'Chunguza',
     tabHistory: 'Historia',
     tabSettings: 'Mipangilio',
+
+    navCommand: 'Amri',
+    navEngine: 'Injini',
+    navElectrical: 'Umeme',
+    navFaults: 'Hitilafu',
+    navFaultAnalysis: 'Uchambuzi wa Hitilafu',
+    navSimulator: 'Kiigaji',
+    navDiagrams: 'Michoro',
+    navAllWiring: 'Waya Zote',
+    navInput: 'Ingizo',
+    navAI: 'AI',
+    navAssistant: 'Msaidizi',
+    navLiveMonitor: 'Ufuatiliaji',
+    navOBD: 'OBD/CAN',
+    navRemote: 'Mbali',
+    navPredictive: 'Utabiri',
+    navRecording: 'Kurekodi',
+    navManuals: 'Miongozo',
 
     needHelp: 'Unahitaji Msaada?',
     callSupport: 'Piga Simu',
@@ -509,6 +564,24 @@ export const ORACLE_TRANSLATIONS: Record<string, OracleTranslations> = {
     tabHistory: 'Historique',
     tabSettings: 'Paramètres',
 
+    navCommand: 'Commande',
+    navEngine: 'Moteur',
+    navElectrical: 'Électrique',
+    navFaults: 'Défauts',
+    navFaultAnalysis: 'Analyse des Défauts',
+    navSimulator: 'Simulateur',
+    navDiagrams: 'Schémas',
+    navAllWiring: 'Tous Câblages',
+    navInput: 'Entrée',
+    navAI: 'IA',
+    navAssistant: 'Assistant',
+    navLiveMonitor: 'Moniteur',
+    navOBD: 'OBD/CAN',
+    navRemote: 'À Distance',
+    navPredictive: 'Prédictif',
+    navRecording: 'Enregistrement',
+    navManuals: 'Manuels',
+
     needHelp: "Besoin d'Aide?",
     callSupport: 'Appeler le Support',
     whatsappSupport: 'WhatsApp',
@@ -632,6 +705,24 @@ export const ORACLE_TRANSLATIONS: Record<string, OracleTranslations> = {
     tabDiagnose: 'Diagnosticar',
     tabHistory: 'Historial',
     tabSettings: 'Configuración',
+
+    navCommand: 'Comando',
+    navEngine: 'Motor',
+    navElectrical: 'Eléctrico',
+    navFaults: 'Fallas',
+    navFaultAnalysis: 'Análisis de Fallas',
+    navSimulator: 'Simulador',
+    navDiagrams: 'Diagramas',
+    navAllWiring: 'Todo Cableado',
+    navInput: 'Entrada',
+    navAI: 'IA',
+    navAssistant: 'Asistente',
+    navLiveMonitor: 'Monitor',
+    navOBD: 'OBD/CAN',
+    navRemote: 'Remoto',
+    navPredictive: 'Predictivo',
+    navRecording: 'Grabación',
+    navManuals: 'Manuales',
 
     needHelp: '¿Necesita Ayuda?',
     callSupport: 'Llamar Soporte',
@@ -757,6 +848,24 @@ export const ORACLE_TRANSLATIONS: Record<string, OracleTranslations> = {
     tabHistory: 'السجل',
     tabSettings: 'الإعدادات',
 
+    navCommand: 'القيادة',
+    navEngine: 'المحرك',
+    navElectrical: 'الكهرباء',
+    navFaults: 'الأعطال',
+    navFaultAnalysis: 'تحليل الأعطال',
+    navSimulator: 'المحاكي',
+    navDiagrams: 'المخططات',
+    navAllWiring: 'جميع الأسلاك',
+    navInput: 'الإدخال',
+    navAI: 'الذكاء الاصطناعي',
+    navAssistant: 'المساعد',
+    navLiveMonitor: 'المراقبة',
+    navOBD: 'OBD/CAN',
+    navRemote: 'عن بعد',
+    navPredictive: 'التنبؤي',
+    navRecording: 'التسجيل',
+    navManuals: 'الأدلة',
+
     needHelp: 'تحتاج مساعدة؟',
     callSupport: 'اتصل بالدعم',
     whatsappSupport: 'واتساب',
@@ -881,6 +990,24 @@ export const ORACLE_TRANSLATIONS: Record<string, OracleTranslations> = {
     tabHistory: 'इतिहास',
     tabSettings: 'सेटिंग्स',
 
+    navCommand: 'कमांड',
+    navEngine: 'इंजन',
+    navElectrical: 'विद्युत',
+    navFaults: 'दोष',
+    navFaultAnalysis: 'दोष विश्लेषण',
+    navSimulator: 'सिम्युलेटर',
+    navDiagrams: 'आरेख',
+    navAllWiring: 'सभी वायरिंग',
+    navInput: 'इनपुट',
+    navAI: 'AI',
+    navAssistant: 'सहायक',
+    navLiveMonitor: 'लाइव मॉनिटर',
+    navOBD: 'OBD/CAN',
+    navRemote: 'रिमोट',
+    navPredictive: 'भविष्यसूचक',
+    navRecording: 'रिकॉर्डिंग',
+    navManuals: 'मैनुअल',
+
     needHelp: 'सहायता चाहिए?',
     callSupport: 'सहायता कॉल करें',
     whatsappSupport: 'WhatsApp',
@@ -1004,6 +1131,24 @@ export const ORACLE_TRANSLATIONS: Record<string, OracleTranslations> = {
     tabDiagnose: '诊断',
     tabHistory: '历史',
     tabSettings: '设置',
+
+    navCommand: '命令',
+    navEngine: '发动机',
+    navElectrical: '电气',
+    navFaults: '故障',
+    navFaultAnalysis: '故障分析',
+    navSimulator: '模拟器',
+    navDiagrams: '图表',
+    navAllWiring: '所有接线',
+    navInput: '输入',
+    navAI: '人工智能',
+    navAssistant: '助手',
+    navLiveMonitor: '实时监控',
+    navOBD: 'OBD/CAN',
+    navRemote: '远程',
+    navPredictive: '预测',
+    navRecording: '录制',
+    navManuals: '手册',
 
     needHelp: '需要帮助？',
     callSupport: '致电支持',
