@@ -2,11 +2,11 @@
 
 /**
  * LicenseGate - Wraps the Oracle module and checks for valid license
- * FREE ACCESS until March 1st, 2026
- * From March 2nd, 2026: KES 20,000/year for full access
+ * FREE ACCESS until April 1st, 2026
+ * From April 2nd, 2026: KES 20,000/year for full access
  *
  * Features:
- * - Free trial until March 2nd, 2026
+ * - Free trial until April 2nd, 2026
  * - Expiry enforcement with renewal warning 30 days before
  * - Server validation with heartbeat
  * - ONE device per license enforcement
@@ -33,8 +33,8 @@ interface LicenseGateProps {
   children: ReactNode;
 }
 
-// Free trial end date: March 2nd, 2026 at midnight (free until March 1st)
-const FREE_TRIAL_END_DATE = new Date('2026-03-02T00:00:00');
+// Free trial end date: April 2nd, 2026 at midnight (free until April 1st)
+const FREE_TRIAL_END_DATE = new Date('2026-04-02T00:00:00');
 
 // Check if we're in free trial period
 function isFreeTrial(): boolean {
@@ -267,7 +267,7 @@ function FreeTrialBanner({ daysLeft }: { daysLeft: number }) {
       >
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-2 text-sm sm:text-base">
           <span className="font-bold">🎉 FREE ACCESS!</span>
-          <span>Generator Oracle is FREE until March 1st, 2026</span>
+          <span>Generator Oracle is FREE until April 1st, 2026</span>
           <span className="hidden sm:inline">•</span>
           <span className="font-bold text-yellow-200">{daysLeft} days remaining</span>
           <span className="hidden sm:inline">•</span>
@@ -331,7 +331,7 @@ function FreeTrialBanner({ daysLeft }: { daysLeft: number }) {
                 </div>
 
                 <div className="border-t border-slate-700 pt-3">
-                  <div className="text-slate-400 text-xs mb-2">After March 1st, 2026:</div>
+                  <div className="text-slate-400 text-xs mb-2">After April 1st, 2026:</div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-amber-400">KES 20,000</span>
                     <span className="text-slate-400">/year</span>

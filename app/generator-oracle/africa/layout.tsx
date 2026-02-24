@@ -248,7 +248,7 @@ const structuredData = {
           name: 'How much does Generator Oracle cost in Africa?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Generator Oracle costs KES 20,000 per year (approximately $154 USD). This includes full access to 230,000+ fault codes, all languages, offline capability, and all updates. Free trial available until March 2026.',
+            text: 'Generator Oracle costs KES 20,000 per year (approximately $154 USD). This includes full access to 230,000+ fault codes, all languages, offline capability, and all updates. Free trial available until April 2026.',
           },
         },
         {
