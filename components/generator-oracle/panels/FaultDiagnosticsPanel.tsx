@@ -967,18 +967,23 @@ export default function FaultDiagnosticsPanel({
             </ul>
           </div>
 
-          {/* Controllers Supported */}
+          {/* Controllers Supported - ALL 10 CONTROLLERS */}
           <div className="p-6 bg-slate-900/50 rounded-xl border border-slate-700/50">
-            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">Controllers Supported</h3>
-            <div className="space-y-2">
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-4">10 Controllers Supported</h3>
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
               {[
-                { name: 'DeepSea Electronics', models: 'DSE 4510, 5210, 7320, 8660+' },
-                { name: 'ComAp', models: 'InteliLite, InteliGen, InteliSys' },
-                { name: 'Woodward', models: 'EasyGen 3000/3500, LS-5, GCP-30' },
-                { name: 'SmartGen', models: 'HGM6100, HGM9500, HGM420' },
-                { name: 'CAT PowerWizard', models: '1.0, 2.0, 4.1' },
+                { name: 'DeepSea Electronics (DSE)', models: 'DSE 4510, 4610, 5110, 5210, 7320, 7510, 7560, 8610, 8660', color: '#1E40AF' },
+                { name: 'ComAp', models: 'InteliLite IL-NT AMF25, InteliGen NTC, InteliSys NTC, InteliDrive', color: '#DC2626' },
+                { name: 'Woodward', models: 'EasyGen 3000, EasyGen 3500, LS-5, GCP-30', color: '#059669' },
+                { name: 'SmartGen', models: 'HGM6100, HGM9500, HGM420, HGM5310', color: '#7C3AED' },
+                { name: 'CAT PowerWizard', models: 'PowerWizard 1.0, 2.0, 4.1', color: '#F59E0B' },
+                { name: 'Datakom', models: 'DKG-109, DKG-207, DKG-307, DKG-509, D-100, D-200, D-500, D-700', color: '#0891B2' },
+                { name: 'Lovato Electric', models: 'RGK600, RGK700, RGK800, RGK900, ATL600, ATL800, ATXP40', color: '#EA580C' },
+                { name: 'Siemens', models: 'SICAM A8000, SIPROTEC 7SJ, 7SD, 7SL, 7UT, SENTRON PAC', color: '#009999' },
+                { name: 'ENKO', models: 'GCU-100, GCU-200, GCU-300, GCU-500, AMF-100, SYNC-100', color: '#7C3AED' },
+                { name: 'Volvo Penta VODIA', models: 'VODIA5, VODIA6, D5, D7, D11, D13, D16, TAD series', color: '#003057' },
               ].map((ctrl, idx) => (
-                <div key={idx} className="p-3 bg-slate-800/50 rounded-lg">
+                <div key={idx} className="p-3 bg-slate-800/50 rounded-lg border-l-4" style={{ borderLeftColor: ctrl.color }}>
                   <div className="text-sm font-medium text-white">{ctrl.name}</div>
                   <div className="text-xs text-slate-500">{ctrl.models}</div>
                 </div>

@@ -329,6 +329,27 @@ const CONTROLLERS: ControllerModel[] = [
   { id: 'powerwizard-10', brand: 'PowerWizard', model: '1.0', type: 'genset', features: ['Basic', 'CAT'], pinCount: 20, voltage: '9-32V DC' },
   { id: 'powerwizard-11', brand: 'PowerWizard', model: '1.1', type: 'genset', features: ['AMF', 'CAT'], pinCount: 24, voltage: '9-32V DC' },
   { id: 'powerwizard-20', brand: 'PowerWizard', model: '2.0', type: 'genset', features: ['Advanced', 'Load Share'], pinCount: 32, voltage: '9-32V DC' },
+  // Datakom Controllers
+  { id: 'datakom-d500', brand: 'Datakom', model: 'D-500', type: 'genset', features: ['AMF', 'Load Share', 'CAN'], pinCount: 36, voltage: '8-35V DC' },
+  { id: 'datakom-d700', brand: 'Datakom', model: 'D-700', type: 'load-share', features: ['Sync', 'PMS', 'Advanced'], pinCount: 44, voltage: '8-35V DC' },
+  { id: 'datakom-dkg309', brand: 'Datakom', model: 'DKG-309', type: 'genset', features: ['AMF', 'Basic'], pinCount: 24, voltage: '8-35V DC' },
+  { id: 'datakom-dkg517', brand: 'Datakom', model: 'DKG-517', type: 'genset', features: ['CAN', 'J1939'], pinCount: 32, voltage: '8-35V DC' },
+  // Lovato Electric Controllers
+  { id: 'lovato-rgk800', brand: 'Lovato', model: 'RGK800', type: 'genset', features: ['AMF', 'CAN'], pinCount: 32, voltage: '8-35V DC' },
+  { id: 'lovato-rgk900', brand: 'Lovato', model: 'RGK900', type: 'load-share', features: ['Sync', 'Load Share'], pinCount: 40, voltage: '8-35V DC' },
+  { id: 'lovato-atl800', brand: 'Lovato', model: 'ATL800', type: 'ats', features: ['ATS', 'Mains Monitor'], pinCount: 28, voltage: '8-35V DC' },
+  // Siemens Controllers
+  { id: 'siemens-sicam', brand: 'Siemens', model: 'SICAM A8000', type: 'genset', features: ['Advanced', 'SCADA'], pinCount: 48, voltage: '24-60V DC' },
+  { id: 'siemens-sentron', brand: 'Siemens', model: 'SENTRON PAC', type: 'genset', features: ['Power Metering', 'Modbus'], pinCount: 24, voltage: '24V DC' },
+  { id: 'siemens-siprotec', brand: 'Siemens', model: 'SIPROTEC 7SJ', type: 'genset', features: ['Protection', 'IEC 61850'], pinCount: 36, voltage: '24-250V DC' },
+  // ENKO Controllers
+  { id: 'enko-gcu300', brand: 'ENKO', model: 'GCU-300', type: 'genset', features: ['AMF', 'Basic'], pinCount: 24, voltage: '8-35V DC' },
+  { id: 'enko-gcu500', brand: 'ENKO', model: 'GCU-500', type: 'genset', features: ['AMF', 'Load Share'], pinCount: 32, voltage: '8-35V DC' },
+  { id: 'enko-sync200', brand: 'ENKO', model: 'SYNC-200', type: 'load-share', features: ['Sync', 'PMS'], pinCount: 40, voltage: '8-35V DC' },
+  // Volvo Penta VODIA Controllers
+  { id: 'vodia-vodia5', brand: 'VODIA', model: 'VODIA5', type: 'genset', features: ['Diagnostics', 'Engine'], pinCount: 16, voltage: '12-24V DC' },
+  { id: 'vodia-vodia6', brand: 'VODIA', model: 'VODIA6', type: 'genset', features: ['Advanced Diagnostics', 'Full Fleet'], pinCount: 16, voltage: '12-24V DC' },
+  { id: 'vodia-ecu', brand: 'VODIA', model: 'D13 ECU', type: 'genset', features: ['Engine Control', 'J1939'], pinCount: 96, voltage: '24V DC' },
 ];
 
 // ==================== CIRCUIT CATEGORIES ====================
