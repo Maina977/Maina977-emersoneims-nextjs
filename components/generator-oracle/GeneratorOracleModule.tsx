@@ -1436,22 +1436,26 @@ export default function GeneratorOracleModule() {
                 </div>
 
                 {/* Navigation */}
-                <nav className="hidden xl:flex items-center gap-1 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700/50">
+                <nav className="hidden xl:flex items-center gap-1 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex-wrap">
                   <PremiumNavTab icon="🎛️" label="Command" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
                   <PremiumNavTab icon="⚙️" label="Engine" active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
                   <PremiumNavTab icon="⚡" label="Electrical" active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
                   <PremiumNavTab icon="🔧" label="Faults" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
+                  <PremiumNavTab icon="🔍" label="Fault Analysis" active={activeScreen === 'faultanalysis'} onClick={() => setActiveScreen('faultanalysis')} />
                   <PremiumNavTab icon="🖥️" label="Simulator" active={activeScreen === 'simulator'} onClick={() => setActiveScreen('simulator')} />
                   <PremiumNavTab icon="📐" label="Diagrams" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
                   <PremiumNavTab icon="🔌" label="All Wiring" active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
                   <PremiumNavTab icon="📊" label="Input" active={activeScreen === 'techinput'} onClick={() => setActiveScreen('techinput')} />
                   <PremiumNavTab icon="🧠" label="AI" active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
+                  <PremiumNavTab icon="🛠️" label="Assistant" active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
                   <PremiumNavTab icon="📊" label="Live Monitor" active={activeScreen === 'realtime'} onClick={() => setActiveScreen('realtime')} />
                   <PremiumNavTab icon="🔌" label="OBD/CAN" active={activeScreen === 'obd'} onClick={() => setActiveScreen('obd')} />
                   <PremiumNavTab icon="🌐" label="Remote" active={activeScreen === 'remote'} onClick={() => setActiveScreen('remote')} />
                   <PremiumNavTab icon="🔮" label="Predictive" active={activeScreen === 'predictive'} onClick={() => setActiveScreen('predictive')} />
                   <PremiumNavTab icon="📈" label="Recording" active={activeScreen === 'recording'} onClick={() => setActiveScreen('recording')} />
-                  <PremiumNavTab icon="📚" label="Repair Manuals" active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
+                  <PremiumNavTab icon="📚" label="Manuals" active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
+                  <PremiumNavTab icon="📋" label="History" active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
+                  <PremiumNavTab icon="⚙️" label="Settings" active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
                 </nav>
 
                 {/* Mobile nav */}
@@ -1465,13 +1469,19 @@ export default function GeneratorOracleModule() {
                     <option value="engine">⚙️ Engine Panel</option>
                     <option value="electrical">⚡ Electrical</option>
                     <option value="faults">🔧 Fault Codes</option>
+                    <option value="faultanalysis">🔍 Fault Analysis</option>
                     <option value="simulator">🖥️ Simulator</option>
                     <option value="wiring">📐 Wiring Diagrams</option>
                     <option value="allwiring">🔌 All 10 Controllers Wiring</option>
                     <option value="techinput">📊 Technician Input Analysis</option>
-                    <option value="faultanalysis">🔍 Fault Analysis</option>
                     <option value="advanced">🧠 AI Diagnostics</option>
                     <option value="assistant">🛠️ Tech Assistant</option>
+                    <option value="realtime">📊 Live Monitor</option>
+                    <option value="obd">🔌 OBD/CAN Protocol</option>
+                    <option value="remote">🌐 Remote Connectivity</option>
+                    <option value="predictive">🔮 Predictive Maintenance</option>
+                    <option value="recording">📈 Data Recording</option>
+                    <option value="manuals">📚 Repair Manuals</option>
                     <option value="history">📋 History</option>
                     <option value="settings">⚙️ Settings</option>
                   </select>
