@@ -53,7 +53,7 @@ const DEMO_SCENES = [
   {
     id: 'cta',
     title: 'TRY FREE NOW',
-    subtitle: 'Full access until March 2026',
+    subtitle: 'Full access until April 2026',
     duration: 4000,
   },
 ];

@@ -1315,7 +1315,7 @@ export default function CockpitInterface({
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="text-xs text-slate-500">FREE until March 1, 2026</span>
+              <span className="text-xs text-slate-500">FREE until April 1, 2026</span>
               <span className="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs font-medium">TRIAL ACTIVE</span>
             </div>
           </div>

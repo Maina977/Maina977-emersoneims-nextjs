@@ -448,7 +448,7 @@ export default function GeneratorOracleShowcase() {
                 <span className="text-5xl">🎉</span>
                 <div>
                   <div className="text-3xl sm:text-4xl font-black text-white">FREE TRIAL ACCESS</div>
-                  <div className="text-xl text-green-400 font-bold">Until March 1st, 2026</div>
+                  <div className="text-xl text-green-400 font-bold">Until April 1st, 2026</div>
                 </div>
                 <span className="text-5xl">🎉</span>
               </div>

@@ -2181,7 +2181,7 @@ export default function GeneratorOracleModule() {
                             <span className="font-bold text-lg">FREE Access Period</span>
                           </div>
                           <div className="text-slate-300">
-                            Full premium access until <strong className="text-white">March 1st, 2026</strong>
+                            Full premium access until <strong className="text-white">April 1st, 2026</strong>
                           </div>
                           <div className="text-sm text-slate-500 mt-1">
                             After trial: KES 20,000/year for unlimited access
@@ -2210,7 +2210,7 @@ export default function GeneratorOracleModule() {
                 <span className="hidden sm:inline">DSE | ComAp | Woodward | SmartGen | PowerWizard Compatible</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-slate-400">FREE until March 1, 2026</span>
+                <span className="text-slate-400">FREE until April 1, 2026</span>
                 <motion.span
                   className="px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 rounded-full text-xs font-medium border border-green-500/30"
                   animate={{ boxShadow: ['0 0 0 rgba(34,197,94,0)', '0 0 15px rgba(34,197,94,0.3)', '0 0 0 rgba(34,197,94,0)'] }}

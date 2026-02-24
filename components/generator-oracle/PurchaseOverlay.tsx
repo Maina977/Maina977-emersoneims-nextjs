@@ -7,8 +7,8 @@
  * DISCLAIMER: Generator Oracle is an independently developed diagnostic tool.
  * NOT affiliated with, endorsed by, or sponsored by any controller manufacturer.
  *
- * PRICING: KES 20,000/year (from March 2nd, 2026)
- * FREE until March 1st, 2026
+ * PRICING: KES 20,000/year (from April 2nd, 2026)
+ * FREE until April 1st, 2026
  */
 
 import { useState } from 'react';

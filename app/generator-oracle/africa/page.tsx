@@ -434,7 +434,7 @@ export default function AfricaLandingPage() {
           </h2>
           <p className="text-xl text-slate-400 mb-8">
             Join thousands of African technicians using Generator Oracle.
-            Free trial available until March 2026!
+            Free trial available until April 2026!
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link

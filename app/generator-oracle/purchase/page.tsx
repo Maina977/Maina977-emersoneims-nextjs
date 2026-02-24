@@ -4,8 +4,8 @@
  * Generator Oracle Purchase Page
  * Complete purchase flow with payment verification
  *
- * PRICING: KES 20,000/year (from March 2nd, 2026)
- * FREE TRIAL: Until March 1st, 2026
+ * PRICING: KES 20,000/year (from April 2nd, 2026)
+ * FREE TRIAL: Until April 1st, 2026
  */
 
 import { useState, useEffect } from 'react';
@@ -17,7 +17,7 @@ type PaymentMethod = 'mpesa' | 'bank';
 type Step = 'info' | 'payment' | 'verification' | 'success';
 
 // Check if still in free trial
-const FREE_TRIAL_END = new Date('2026-03-02T00:00:00');
+const FREE_TRIAL_END = new Date('2026-04-02T00:00:00');
 const isFreeTrial = () => new Date() < FREE_TRIAL_END;
 const getDaysRemaining = () => Math.max(0, Math.ceil((FREE_TRIAL_END.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
 
