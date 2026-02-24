@@ -1279,7 +1279,7 @@ export default function GeneratorOracleModule() {
 
   return (
     <LicenseGate>
-      <div className={`min-h-screen text-white overflow-hidden ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen text-white overflow-x-hidden overflow-y-auto ${isRTL ? 'rtl' : 'ltr'}`}>
         <UltraCockpitBackground />
         <InstallPrompt />
 
@@ -1289,7 +1289,7 @@ export default function GeneratorOracleModule() {
           input, button, textarea, a { user-select: auto !important; -webkit-user-select: auto !important; }
         `}</style>
 
-        <div className="relative z-10 flex flex-col min-h-screen">
+        <div className="relative z-10 flex flex-col min-h-screen pb-20">
           {/* ==================== ULTRA-PREMIUM COMMAND HEADER ==================== */}
           <header className="flex-shrink-0 bg-slate-950/90 backdrop-blur-2xl border-b border-cyan-500/20">
             <div className="max-w-[1920px] mx-auto px-4 lg:px-6">
@@ -1498,8 +1498,8 @@ export default function GeneratorOracleModule() {
           </header>
 
           {/* ==================== MAIN CONTENT ==================== */}
-          <main className="flex-1 overflow-auto p-4 lg:p-6">
-            <div className="max-w-[1920px] mx-auto">
+          <main className="flex-1 p-4 lg:p-6">
+            <div className="max-w-[1920px] mx-auto pb-10">
               <AnimatePresence mode="wait">
                 {/* COMMAND CENTER */}
                 {activeScreen === 'command' && (
