@@ -1,8 +1,13 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * EMERSONEIMS MIDDLEWARE
- * Multi-language Support + Enterprise-Grade Security
+ * GENERATOR ORACLE / EMERSONEIMS MIDDLEWARE
+ * Multi-language Support + Enterprise-Grade Security + Anti-Copy Protection
  * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * COPYRIGHT NOTICE:
+ * Copyright (c) 2024-2026 Generator Oracle. All Rights Reserved.
+ * This software is protected by copyright law and international treaties.
+ * Unauthorized reproduction, distribution, or use is strictly prohibited.
  *
  * Features:
  * 1. Internationalization (11 Languages via Cookie)
@@ -11,8 +16,12 @@
  * 4. SQL Injection Prevention
  * 5. XSS Attack Prevention
  * 6. Path Traversal Prevention
+ * 7. Anti-Scraping Protection
+ * 8. Content Theft Prevention
+ * 9. Domain Authorization
+ * 10. Integrity Verification
  *
- * © 2026 EmersonEIMS. All Rights Reserved.
+ * © 2024-2026 Generator Oracle / EmersonEIMS. All Rights Reserved.
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -27,8 +36,9 @@ const defaultLocale = 'en';
 // SECURITY CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Known malicious bot user agents
+// Known malicious bot user agents and scrapers
 const BLOCKED_USER_AGENTS = [
+  // SEO/Analysis bots
   'semrushbot',
   'ahrefsbot',
   'mj12bot',
@@ -40,6 +50,8 @@ const BLOCKED_USER_AGENTS = [
   'sogou',
   'exabot',
   'gigabot',
+
+  // Web scrapers and crawlers
   'scrapy',
   'nutch',
   'archive.org_bot',
@@ -47,17 +59,57 @@ const BLOCKED_USER_AGENTS = [
   'wget',
   'curl',
   'python-requests',
+  'python-urllib',
   'go-http-client',
   'java/',
   'libwww',
   'lwp-trivial',
+
+  // Website copiers
   'sitesucker',
   'webzip',
+  'webcopy',
+  'httrack',
+  'teleport',
+  'offline explorer',
+  'website-copier',
+  'site-copier',
+  'webcopier',
+  'websitecopy',
+  'grabsite',
+  'getright',
+  'flashget',
+
+  // Security scanners (block unauthorized scanning)
   'nikto',
   'sqlmap',
   'nmap',
   'masscan',
   'zgrab',
+  'nuclei',
+  'wpscan',
+  'acunetix',
+  'netsparker',
+  'burpsuite',
+  'owasp',
+
+  // Headless browsers (often used for scraping)
+  'phantomjs',
+  'selenium',
+  'puppeteer',
+  'playwright',
+  'headless',
+  'headlesschrome',
+
+  // Generic scrapers
+  'scraperapi',
+  'scrapingant',
+  'scrapingbee',
+  'crawlerdetect',
+  'dataminr',
+  'harvest',
+  'collector',
+  'extractor',
 ];
 
 // Allowed bots (search engines, monitoring)
@@ -104,6 +156,23 @@ const MALICIOUS_PATTERNS = [
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 100; // Max requests per window
+
+// Anti-scraping: Track rapid page requests
+const pageAccessStore = new Map<string, { pages: Set<string>; timestamp: number }>();
+const SCRAPING_THRESHOLD = 50; // Max unique pages in 30 seconds
+const SCRAPING_WINDOW = 30000; // 30 seconds
+
+// Licensed domains - only these domains can run the application
+const LICENSED_DOMAINS = [
+  'localhost',
+  '127.0.0.1',
+  'generatororacle.com',
+  'www.generatororacle.com',
+  'app.generatororacle.com',
+  'generator-oracle.vercel.app',
+  'eaikirafiki-technologies.vercel.app',
+  // Add production domains here
+];
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECURITY FUNCTIONS
@@ -166,6 +235,65 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
+// Detect rapid page scraping behavior
+function detectScraping(ip: string, path: string): boolean {
+  const now = Date.now();
+  const record = pageAccessStore.get(ip);
+
+  if (!record || now - record.timestamp > SCRAPING_WINDOW) {
+    pageAccessStore.set(ip, { pages: new Set([path]), timestamp: now });
+    return false;
+  }
+
+  record.pages.add(path);
+
+  // If accessing too many unique pages too quickly, likely scraping
+  if (record.pages.size > SCRAPING_THRESHOLD) {
+    return true;
+  }
+
+  return false;
+}
+
+// Verify domain is authorized
+function isAuthorizedDomain(hostname: string): boolean {
+  // Allow in development
+  if (process.env.NODE_ENV === 'development') return true;
+
+  return LICENSED_DOMAINS.some(domain =>
+    hostname === domain || hostname.endsWith(`.${domain}`)
+  );
+}
+
+// Check for headless browser characteristics
+function isHeadlessBrowser(request: NextRequest): boolean {
+  const userAgent = request.headers.get('user-agent') || '';
+
+  // Check for headless browser indicators
+  const headlessIndicators = [
+    'headless',
+    'phantomjs',
+    'slimerjs',
+    'puppeteer',
+    'playwright',
+    'webdriver',
+  ];
+
+  for (const indicator of headlessIndicators) {
+    if (userAgent.toLowerCase().includes(indicator)) {
+      return true;
+    }
+  }
+
+  // Check if Accept-Language is missing (common in headless browsers)
+  const acceptLang = request.headers.get('accept-language');
+  if (!acceptLang && userAgent) {
+    return true;
+  }
+
+  return false;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // LOCALE DETECTION
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -211,12 +339,32 @@ export function middleware(request: NextRequest) {
   const url = pathname + request.nextUrl.search;
   const userAgent = request.headers.get('user-agent') || '';
   const clientIP = getClientIP(request);
+  const hostname = request.nextUrl.hostname;
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 0. DOMAIN AUTHORIZATION CHECK (Production only)
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (process.env.NODE_ENV === 'production' && !isAuthorizedDomain(hostname)) {
+    console.log(`🚫 BLOCKED: Unauthorized domain ${hostname} from ${clientIP}`);
+    return new NextResponse(
+      'This software is licensed only for authorized domains. Contact legal@generatororacle.com',
+      { status: 403 }
+    );
+  }
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 1. MALICIOUS BOT DETECTION
   // ─────────────────────────────────────────────────────────────────────────────
   if (isMaliciousBot(userAgent)) {
     console.log(`🚫 BLOCKED: Malicious bot from ${clientIP} - UA: ${userAgent.substring(0, 50)}`);
+    return new NextResponse('Access Denied', { status: 403 });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 1.5. HEADLESS BROWSER DETECTION
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (isHeadlessBrowser(request)) {
+    console.log(`🚫 BLOCKED: Headless browser from ${clientIP} - UA: ${userAgent.substring(0, 50)}`);
     return new NextResponse('Access Denied', { status: 403 });
   }
 
@@ -241,6 +389,17 @@ export function middleware(request: NextRequest) {
         'X-RateLimit-Remaining': '0',
       }
     });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 3.5. SCRAPING DETECTION
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (detectScraping(clientIP, pathname)) {
+    console.log(`🚫 BLOCKED: Scraping behavior detected from ${clientIP}`);
+    return new NextResponse(
+      'Access temporarily restricted. This content is protected by copyright.',
+      { status: 429 }
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -308,9 +467,15 @@ export function middleware(request: NextRequest) {
   const preferredLocale = getPreferredLocale(request);
 
   // Security headers
-  response.headers.set('X-Security-Verified', 'EmersonEIMS-Protected');
-  response.headers.set('X-Request-ID', `EIMS-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  response.headers.set('X-Security-Verified', 'GeneratorOracle-Protected');
+  response.headers.set('X-Request-ID', `GO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   response.headers.set('X-Locale', preferredLocale);
+
+  // Copyright & Anti-Copy Headers
+  response.headers.set('X-Copyright', 'Generator Oracle 2024-2026');
+  response.headers.set('X-Content-Protected', 'true');
+  response.headers.set('X-Robots-Tag', 'noarchive, noimageindex'); // Prevent caching by scrapers
+  response.headers.set('Cache-Control', 'private, no-store'); // Prevent proxy caching of sensitive content
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 🚀 WORLD'S #1 FASTEST - PERFORMANCE HEADERS

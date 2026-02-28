@@ -1,3 +1,12 @@
+/**
+ * Next.js Configuration
+ *
+ * COPYRIGHT NOTICE:
+ * Copyright (c) 2024-2026 Generator Oracle. All Rights Reserved.
+ * This software is protected by copyright law and international treaties.
+ * Unauthorized reproduction, distribution, or use is strictly prohibited.
+ */
+
 import type { NextConfig } from 'next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 import createNextIntlPlugin from 'next-intl/plugin';
@@ -172,6 +181,29 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=59'
+          },
+          // ═══════════════════════════════════════════════════════════
+          // COPYRIGHT & ANTI-COPY PROTECTION
+          // ═══════════════════════════════════════════════════════════
+          {
+            key: 'X-Copyright',
+            value: 'Generator Oracle 2024-2026. All Rights Reserved.'
+          },
+          {
+            key: 'X-Content-Protected',
+            value: 'true'
+          },
+          {
+            key: 'X-Robots-Tag',
+            value: 'noarchive, noimageindex, notranslate'
+          },
+          {
+            key: 'X-Download-Options',
+            value: 'noopen'
+          },
+          {
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none'
           }
         ],
       },

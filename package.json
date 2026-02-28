@@ -1,14 +1,23 @@
 {
-  "name": "emerson-eims",
-  "version": "2.0.0",
-  "description": "Emerson Energy Infrastructure Management System",
+  "name": "generator-oracle",
+  "version": "3.0.0",
+  "description": "Generator Oracle - Advanced Generator Diagnostic Reference System",
   "private": true,
+  "author": "Generator Oracle",
+  "license": "UNLICENSED",
+  "copyright": "Copyright (c) 2024-2026 Generator Oracle. All Rights Reserved.",
+  "repository": {
+    "type": "git",
+    "url": "private"
+  },
   "scripts": {
     "dev": "next dev",
     "dev:3010": "next dev -p 3010",
     "dev:3020": "next dev -p 3020",
     "dev:debug": "set NODE_OPTIONS=--inspect && next dev",
+    "prebuild": "node scripts/build-security.js",
     "build": "next build",
+    "build:secure": "node scripts/build-security.js && next build",
     "build:analyze": "set ANALYZE=true && next build",
     "build:debug": "next build --debug",
     "build:clean": "rimraf .next out && next build",
