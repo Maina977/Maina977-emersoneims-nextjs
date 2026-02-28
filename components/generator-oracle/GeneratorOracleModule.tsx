@@ -60,6 +60,10 @@ import RemoteConnectivityPanel from './panels/RemoteConnectivityPanel';
 import PredictiveMaintenancePanel from './panels/PredictiveMaintenancePanel';
 import DataRecordingPanel from './panels/DataRecordingPanel';
 import ControllerRepairManualsPanel from './panels/ControllerRepairManualsPanel';
+import SensorDiagnosticsPanel from './panels/SensorDiagnosticsPanel';
+import ECMDiagnosticsPanel from './panels/ECMDiagnosticsPanel';
+import AIAnalysisPanel from './panels/AIAnalysisPanel';
+import SpeechController from './SpeechController';
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -1103,7 +1107,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1446,7 +1450,8 @@ export default function GeneratorOracleModule() {
                   <PremiumNavTab icon="📐" label={t.navDiagrams} active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
                   <PremiumNavTab icon="🔌" label={t.navAllWiring} active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
                   <PremiumNavTab icon="📊" label={t.navInput} active={activeScreen === 'techinput'} onClick={() => setActiveScreen('techinput')} />
-                  <PremiumNavTab icon="🧠" label={t.navAI} active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
+                  <PremiumNavTab icon="🧠" label="AI Analyze" active={activeScreen === 'aianalysis'} onClick={() => setActiveScreen('aianalysis')} />
+                  <PremiumNavTab icon="🤖" label={t.navAI} active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
                   <PremiumNavTab icon="🛠️" label={t.navAssistant} active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
                   <PremiumNavTab icon="📊" label={t.navLiveMonitor} active={activeScreen === 'realtime'} onClick={() => setActiveScreen('realtime')} />
                   <PremiumNavTab icon="🔌" label={t.navOBD} active={activeScreen === 'obd'} onClick={() => setActiveScreen('obd')} />
@@ -1454,6 +1459,8 @@ export default function GeneratorOracleModule() {
                   <PremiumNavTab icon="🔮" label={t.navPredictive} active={activeScreen === 'predictive'} onClick={() => setActiveScreen('predictive')} />
                   <PremiumNavTab icon="📈" label={t.navRecording} active={activeScreen === 'recording'} onClick={() => setActiveScreen('recording')} />
                   <PremiumNavTab icon="📚" label={t.navManuals} active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
+                  <PremiumNavTab icon="🌡️" label="Sensors" active={activeScreen === 'sensors'} onClick={() => setActiveScreen('sensors')} />
+                  <PremiumNavTab icon="🧠" label="ECM" active={activeScreen === 'ecm'} onClick={() => setActiveScreen('ecm')} />
                   <PremiumNavTab icon="📋" label={t.tabHistory} active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
                   <PremiumNavTab icon="⚙️" label={t.tabSettings} active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
                 </nav>
@@ -1482,6 +1489,8 @@ export default function GeneratorOracleModule() {
                     <option value="predictive">🔮 {t.navPredictive}</option>
                     <option value="recording">📈 {t.navRecording}</option>
                     <option value="manuals">📚 {t.navManuals}</option>
+                    <option value="sensors">🌡️ Sensors</option>
+                    <option value="ecm">🧠 ECM</option>
                     <option value="history">📋 {t.tabHistory}</option>
                     <option value="settings">⚙️ {t.tabSettings}</option>
                   </select>
@@ -1938,6 +1947,18 @@ export default function GeneratorOracleModule() {
                   </motion.div>
                 )}
 
+                {/* AI ANALYSIS PANEL - 100% Detailed Diagnosis */}
+                {activeScreen === 'aianalysis' && (
+                  <motion.div
+                    key="aianalysis"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <AIAnalysisPanel />
+                  </motion.div>
+                )}
+
                 {/* REAL-TIME MONITORING PANEL */}
                 {activeScreen === 'realtime' && (
                   <motion.div
@@ -2007,6 +2028,30 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                   >
                     <ControllerRepairManualsPanel />
+                  </motion.div>
+                )}
+
+                {/* SENSOR DIAGNOSTICS */}
+                {activeScreen === 'sensors' && (
+                  <motion.div
+                    key="sensors"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <SensorDiagnosticsPanel />
+                  </motion.div>
+                )}
+
+                {/* ECM DIAGNOSTICS */}
+                {activeScreen === 'ecm' && (
+                  <motion.div
+                    key="ecm"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <ECMDiagnosticsPanel />
                   </motion.div>
                 )}
 
@@ -2222,6 +2267,9 @@ export default function GeneratorOracleModule() {
             </div>
           </footer>
         </div>
+
+        {/* Voice Assistant - Accessibility Feature */}
+        <SpeechController language={language} />
       </div>
     </LicenseGate>
   );

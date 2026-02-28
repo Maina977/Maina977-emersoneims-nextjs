@@ -36,7 +36,8 @@
       "WebFetch(domain:emersoneims.com)",
       "Bash(ls:*)",
       "Bash(head:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "WebSearch"
     ]
   }
 }
