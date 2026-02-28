@@ -15,7 +15,7 @@ import {
   detectScrapingAttempt,
   verifyDomain,
   SECURITY_METADATA,
-} from '@/lib/security';
+} from '../../lib/security/code-protection';
 
 interface SecurityContextType {
   isSecure: boolean;
