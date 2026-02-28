@@ -6,10 +6,11 @@
  * Provides 100% detailed, accurate analysis with predictive capabilities
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   performAIDiagnosis,
+  performHybridDiagnosis,
   getAllParameterSpecs,
   type GeneratorReadings,
   type AIAnalysisResult,
@@ -443,6 +444,9 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set());
+  const [useAI, setUseAI] = useState(true);
+  const [analysisSource, setAnalysisSource] = useState<'ai' | 'local' | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   const parameterSpecs = useMemo(() => getAllParameterSpecs(), []);
 
@@ -450,9 +454,11 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
     setInputs(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  const performAnalysis = useCallback(() => {
+  const performAnalysis = useCallback(async () => {
     setIsAnalyzing(true);
     setExpandedIssues(new Set());
+    setAnalysisError(null);
+    setAnalysisSource(null);
 
     // Convert string inputs to numbers for the readings
     const readings: GeneratorReadings = {};
@@ -463,23 +469,57 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
       }
     });
 
-    // Simulate a brief analysis time for UX
-    setTimeout(() => {
+    try {
+      if (useAI) {
+        // Use hybrid diagnosis (API call to AI with fallback)
+        const response = await performHybridDiagnosis({
+          readings,
+          useAI: true,
+        });
+
+        setAnalysisResult(response.result);
+        setAnalysisSource(response.source);
+        if (response.error) {
+          setAnalysisError(response.error);
+        }
+      } else {
+        // Local analysis only
+        await new Promise(resolve => setTimeout(resolve, 800)); // Brief delay for UX
+        const result = performAIDiagnosis(readings);
+        setAnalysisResult(result);
+        setAnalysisSource('local');
+      }
+    } catch (error) {
+      // Fallback to local on any error
+      console.error('Analysis error:', error);
       const result = performAIDiagnosis(readings);
       setAnalysisResult(result);
-      setIsAnalyzing(false);
+      setAnalysisSource('local');
+      setAnalysisError(error instanceof Error ? error.message : 'Analysis failed');
+    }
 
-      // Auto-expand first critical/warning issue
-      if (result.detailedAnalysis.length > 0) {
-        setExpandedIssues(new Set([result.detailedAnalysis[0].issue.id]));
+    setIsAnalyzing(false);
+
+    // Auto-expand first critical/warning issue (after state updates)
+  }, [inputs, useAI]);
+
+  // Auto-expand first issue when results change
+  const lastResultRef = useRef<AIAnalysisResult | null>(null);
+  useEffect(() => {
+    if (analysisResult && analysisResult !== lastResultRef.current) {
+      lastResultRef.current = analysisResult;
+      if (analysisResult.detailedAnalysis.length > 0) {
+        setExpandedIssues(new Set([analysisResult.detailedAnalysis[0].issue.id]));
       }
-    }, 1500);
-  }, [inputs]);
+    }
+  }, [analysisResult]);
 
   const clearAll = useCallback(() => {
     setInputs({});
     setAnalysisResult(null);
     setExpandedIssues(new Set());
+    setAnalysisSource(null);
+    setAnalysisError(null);
   }, []);
 
   const toggleIssue = useCallback((id: string) => {
@@ -579,14 +619,43 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
           ))}
         </div>
 
+        {/* AI Toggle */}
+        <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700/50 mt-6">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{useAI ? '🤖' : '⚙️'}</span>
+            <div>
+              <h4 className="text-white font-semibold">Analysis Mode</h4>
+              <p className="text-slate-400 text-sm">
+                {useAI ? 'Claude AI - Advanced reasoning with real-time insights' : 'Local Engine - Fast rule-based analysis'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setUseAI(!useAI)}
+            className={`relative w-14 h-7 rounded-full transition-colors ${
+              useAI ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-slate-600'
+            }`}
+          >
+            <motion.div
+              className="absolute top-1 w-5 h-5 bg-white rounded-full shadow"
+              animate={{ left: useAI ? '30px' : '4px' }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            />
+          </button>
+        </div>
+
         {/* Action Buttons */}
-        <div className="flex gap-3 mt-6">
+        <div className="flex gap-3 mt-4">
           <motion.button
             onClick={performAnalysis}
             disabled={isAnalyzing || Object.keys(inputs).length === 0}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex-1 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+            className={`flex-1 py-4 text-white font-bold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 ${
+              useAI
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/30'
+                : 'bg-gradient-to-r from-cyan-600 to-blue-600 shadow-cyan-500/30'
+            }`}
           >
             {isAnalyzing ? (
               <>
@@ -595,12 +664,12 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 />
-                <span>AI Analyzing...</span>
+                <span>{useAI ? 'AI Analyzing...' : 'Analyzing...'}</span>
               </>
             ) : (
               <>
-                <span className="text-xl">🧠</span>
-                <span>PERFORM AI ANALYSIS</span>
+                <span className="text-xl">{useAI ? '🧠' : '⚙️'}</span>
+                <span>{useAI ? 'PERFORM AI ANALYSIS' : 'PERFORM LOCAL ANALYSIS'}</span>
               </>
             )}
           </motion.button>
@@ -622,6 +691,27 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
+            {/* Analysis Source Badge */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                  analysisSource === 'ai'
+                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
+                    : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
+                }`}>
+                  {analysisSource === 'ai' ? '🤖 AI Analysis' : '⚙️ Local Analysis'}
+                </span>
+                {analysisError && (
+                  <span className="px-3 py-1 rounded-full text-xs bg-amber-500/20 text-amber-400 border border-amber-500/50">
+                    ⚠️ {analysisError}
+                  </span>
+                )}
+              </div>
+              <span className="text-slate-500 text-sm">
+                {new Date(analysisResult.timestamp).toLocaleTimeString()}
+              </span>
+            </div>
+
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Health Score */}

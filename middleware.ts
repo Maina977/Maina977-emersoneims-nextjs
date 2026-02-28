@@ -166,12 +166,8 @@ const SCRAPING_WINDOW = 30000; // 30 seconds
 const LICENSED_DOMAINS = [
   'localhost',
   '127.0.0.1',
-  'generatororacle.com',
-  'www.generatororacle.com',
-  'app.generatororacle.com',
-  'generator-oracle.vercel.app',
-  'eaikirafiki-technologies.vercel.app',
-  // Add production domains here
+  'emersoneims.com',
+  'www.emersoneims.com',
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -347,7 +343,7 @@ export function middleware(request: NextRequest) {
   if (process.env.NODE_ENV === 'production' && !isAuthorizedDomain(hostname)) {
     console.log(`🚫 BLOCKED: Unauthorized domain ${hostname} from ${clientIP}`);
     return new NextResponse(
-      'This software is licensed only for authorized domains. Contact legal@generatororacle.com',
+      'This software is licensed only for authorized domains. Contact legal@emersoneims.com',
       { status: 403 }
     );
   }

@@ -6,7 +6,7 @@
 import { ControllerFaultCode } from './controllerFaultCodes';
 
 const DB_NAME = 'GeneratorOracleDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Upgraded for sync support
 
 // Store names
 export const STORES = {
@@ -15,6 +15,7 @@ export const STORES = {
   DIAGNOSIS_HISTORY: 'diagnosisHistory',
   FEEDBACK_QUEUE: 'feedbackQueue',
   SETTINGS: 'settings',
+  FAULT_VERSIONS: 'faultVersions', // New store for version tracking
 } as const;
 
 // Database connection
@@ -75,6 +76,13 @@ export async function initDatabase(): Promise<IDBDatabase> {
       // Settings Store
       if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
         db.createObjectStore(STORES.SETTINGS, { keyPath: 'key' });
+      }
+
+      // Fault Versions Store (for sync tracking)
+      if (!db.objectStoreNames.contains(STORES.FAULT_VERSIONS)) {
+        const versionStore = db.createObjectStore(STORES.FAULT_VERSIONS, { keyPath: 'version' });
+        versionStore.createIndex('releasedAt', 'releasedAt', { unique: false });
+        versionStore.createIndex('isCurrent', 'isCurrent', { unique: false });
       }
     };
   });

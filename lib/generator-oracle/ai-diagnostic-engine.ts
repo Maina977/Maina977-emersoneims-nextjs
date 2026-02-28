@@ -1749,3 +1749,164 @@ export function getParameterSpec(param: string): ParameterSpec | undefined {
 export function getAllParameterSpecs(): Record<string, ParameterSpec> {
   return PARAMETER_SPECS;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HYBRID AI/LOCAL DIAGNOSIS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface HybridDiagnosisOptions {
+  readings: GeneratorReadings;
+  faultCodes?: string[];
+  symptoms?: string;
+  controllerBrand?: string;
+  generatorBrand?: string;
+  engineBrand?: string;
+  useAI?: boolean;
+}
+
+export interface HybridDiagnosisResult {
+  success: boolean;
+  result: AIAnalysisResult;
+  source: 'ai' | 'local';
+  error?: string;
+  processingTimeMs: number;
+}
+
+/**
+ * Perform hybrid diagnosis - uses AI if available and enabled, falls back to local
+ * This is the recommended function to use in the UI for best performance
+ */
+export async function performHybridDiagnosis(
+  options: HybridDiagnosisOptions
+): Promise<HybridDiagnosisResult> {
+  const startTime = Date.now();
+
+  // If useAI is explicitly false or undefined (browser-side), use local
+  if (options.useAI === false || typeof window !== 'undefined') {
+    return {
+      success: true,
+      result: performAIDiagnosis(options.readings),
+      source: 'local',
+      processingTimeMs: Date.now() - startTime,
+    };
+  }
+
+  // Try API call for AI diagnosis
+  try {
+    const response = await fetch('/api/generator-oracle/ai-diagnose', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        readings: options.readings,
+        faultCodes: options.faultCodes,
+        symptoms: options.symptoms,
+        controllerBrand: options.controllerBrand,
+        generatorBrand: options.generatorBrand,
+        engineBrand: options.engineBrand,
+        useAI: true,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.result) {
+      return {
+        success: true,
+        result: data.result,
+        source: data.source || 'ai',
+        processingTimeMs: Date.now() - startTime,
+      };
+    }
+
+    throw new Error(data.error || 'Invalid response');
+  } catch (error) {
+    // Fallback to local diagnosis
+    console.warn('AI diagnosis failed, using local:', error);
+    return {
+      success: true,
+      result: performAIDiagnosis(options.readings),
+      source: 'local',
+      error: error instanceof Error ? error.message : 'AI unavailable',
+      processingTimeMs: Date.now() - startTime,
+    };
+  }
+}
+
+/**
+ * Stream hybrid diagnosis for real-time UI updates
+ */
+export async function* streamHybridDiagnosis(
+  options: HybridDiagnosisOptions
+): AsyncGenerator<{
+  type: 'start' | 'delta' | 'complete' | 'error';
+  content?: string;
+  result?: AIAnalysisResult;
+  source?: 'ai' | 'local';
+  error?: string;
+}> {
+  // If not using AI, return local immediately
+  if (options.useAI === false) {
+    yield { type: 'start' };
+    const result = performAIDiagnosis(options.readings);
+    yield { type: 'complete', result, source: 'local' };
+    return;
+  }
+
+  try {
+    yield { type: 'start' };
+
+    const response = await fetch('/api/generator-oracle/ai-diagnose', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        readings: options.readings,
+        faultCodes: options.faultCodes,
+        symptoms: options.symptoms,
+        controllerBrand: options.controllerBrand,
+        generatorBrand: options.generatorBrand,
+        engineBrand: options.engineBrand,
+        useAI: true,
+        stream: true,
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      throw new Error('Streaming not available');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+
+      for (const line of lines) {
+        try {
+          const data = JSON.parse(line.slice(6));
+          yield data;
+        } catch {
+          // Skip malformed lines
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Streaming failed, using local:', error);
+    yield { type: 'error', error: error instanceof Error ? error.message : 'Stream failed' };
+
+    // Fallback to local
+    const result = performAIDiagnosis(options.readings);
+    yield { type: 'complete', result, source: 'local' };
+  }
+}
