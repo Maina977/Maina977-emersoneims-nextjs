@@ -1,7 +1,16 @@
 /**
- * ComAp Authentic Fault Codes
- * Comprehensive database covering InteliLite, InteliGen, InteliSys, InteliDrive
- * All descriptions are original and technically accurate
+ * INDEPENDENT REFERENCE DATABASE - ComAp-Compatible Controllers
+ * Community-sourced troubleshooting guide for controllers compatible with ComAp protocol
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with ComAp a.s. or any other manufacturer.
+ * All fault descriptions are independently compiled interpretations intended to
+ * assist technicians in the field. For official documentation, always refer to
+ * the manufacturer's service manuals.
+ *
+ * ComAp®, InteliLite®, InteliGen®, InteliSys®, and InteliDrive® are trademarks of ComAp a.s.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

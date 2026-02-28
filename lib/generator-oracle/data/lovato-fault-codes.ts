@@ -1,7 +1,16 @@
 /**
- * Lovato Electric Controller Fault Codes
- * Comprehensive database covering RGK600, RGK700, RGK800, RGK900, ATL600, ATL800, ATL900, EXP series, ATXP40
- * All descriptions are technically accurate based on official Lovato documentation
+ * INDEPENDENT REFERENCE DATABASE - Lovato-Compatible Controllers
+ * Community-sourced troubleshooting guide for RGK-series compatible controllers
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with Lovato Electric S.p.A. or any other
+ * manufacturer. All fault descriptions are independently compiled interpretations
+ * intended to assist technicians in the field. For official documentation, always
+ * refer to the manufacturer's service manuals.
+ *
+ * Lovato®, RGK®, and ATL® are trademarks of Lovato Electric S.p.A.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

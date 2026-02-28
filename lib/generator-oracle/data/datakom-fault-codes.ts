@@ -1,7 +1,16 @@
 /**
- * Datakom Controller Fault Codes
- * Comprehensive database covering DKG-109, DKG-207, DKG-307, DKG-309, DKG-329, DKG-509, DKG-517, DKG-527, D-100, D-200, D-300, D-500, D-700
- * All descriptions are technically accurate based on official Datakom documentation
+ * INDEPENDENT REFERENCE DATABASE - Datakom-Compatible Controllers
+ * Community-sourced troubleshooting guide for DKG-series compatible controllers
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with Datakom Elektronik Sanayi ve Ticaret A.S.
+ * or any other manufacturer. All fault descriptions are independently compiled
+ * interpretations intended to assist technicians in the field. For official
+ * documentation, always refer to the manufacturer's service manuals.
+ *
+ * Datakom® and DKG® are trademarks of Datakom Elektronik Sanayi ve Ticaret A.S.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

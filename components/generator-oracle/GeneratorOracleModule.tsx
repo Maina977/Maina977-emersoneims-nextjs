@@ -1,16 +1,26 @@
 'use client';
 
 /**
- * Generator Oracle - ULTRA-PREMIUM COCKPIT INTERFACE v3.0
- * The World's Most Advanced Generator Diagnostic System
+ * Generator Oracle - Advanced Generator Diagnostic Reference System v3.0
  *
- * Design Inspirations:
- * - Tesla Model S Plaid Dashboard
- * - Airbus A380 Flight Deck
- * - Mercedes-AMG EQS Hyperscreen
- * - Gulfstream G700 Symmetry Cockpit
- * - Sci-Fi Movie Interfaces (Iron Man, Tron, Avatar)
- * - SpaceX Dragon Crew Interface
+ * IMPORTANT DISCLAIMER:
+ * This is an INDEPENDENT reference tool created for educational and troubleshooting
+ * purposes. All brand names, model numbers, product names, and trademarks mentioned
+ * throughout this application are the property of their respective owners.
+ *
+ * Generator Oracle is NOT affiliated with, endorsed by, licensed by, or officially
+ * associated with any controller manufacturer, engine manufacturer, or generator
+ * manufacturer including but not limited to: Deep Sea Electronics, ComAp, Caterpillar,
+ * Woodward, SmartGen, Datakom, Lovato, Siemens, Volvo Penta, Cummins, Perkins, or
+ * any of their subsidiaries.
+ *
+ * All fault code descriptions, troubleshooting procedures, and technical information
+ * are independently compiled interpretations intended to assist field technicians.
+ * For official documentation, warranty service, or certified repairs, always consult
+ * the manufacturer's authorized service centers and official technical manuals.
+ *
+ * Use of this reference tool is at your own risk. The creators assume no liability
+ * for any damages or injuries resulting from the use of information provided.
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';

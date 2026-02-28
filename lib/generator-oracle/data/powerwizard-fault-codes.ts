@@ -1,8 +1,17 @@
 /**
- * CAT PowerWizard Authentic Fault Codes
- * Comprehensive database covering PowerWizard 1.0, 2.0, 4.1
- * Uses SPN-FMI format per J1939 standard
- * All descriptions are original and technically accurate
+ * INDEPENDENT REFERENCE DATABASE - PowerWizard-Compatible Controllers
+ * Community-sourced troubleshooting guide using industry-standard J1939 SPN-FMI format
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with Caterpillar Inc. or any other manufacturer.
+ * All fault descriptions are independently compiled interpretations based on public
+ * J1939 standards, intended to assist technicians in the field. For official
+ * documentation, always refer to the manufacturer's service manuals.
+ *
+ * CAT®, Caterpillar®, and PowerWizard® are registered trademarks of Caterpillar Inc.
+ * J1939 is a standard developed by SAE International.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

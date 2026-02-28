@@ -1,7 +1,16 @@
 /**
- * SmartGen Authentic Fault Codes
- * Comprehensive database covering HGM6100, HGM9500, HGM420, HGM5310
- * All descriptions are original and technically accurate
+ * INDEPENDENT REFERENCE DATABASE - SmartGen-Compatible Controllers
+ * Community-sourced troubleshooting guide for HGM-series compatible controllers
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with Zhengzhou SmartGen Technology Co., Ltd.
+ * or any other manufacturer. All fault descriptions are independently compiled
+ * interpretations intended to assist technicians in the field. For official
+ * documentation, always refer to the manufacturer's service manuals.
+ *
+ * SmartGen® and HGM® are trademarks of Zhengzhou SmartGen Technology Co., Ltd.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

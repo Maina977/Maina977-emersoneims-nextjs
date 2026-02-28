@@ -283,7 +283,7 @@ const generateSampleHistory = (): DiagnosisEntry[] => {
         partNumber: `PN-${Math.floor(Math.random() * 100000)}`,
         quantity: Math.floor(1 + Math.random() * 3),
         unitCost: Math.floor(1000 + Math.random() * 50000),
-        supplier: ['Kenya Auto Parts', 'Generator Spares EA', 'PowerGen Supplies', 'Cummins Kenya', 'Perkins East Africa'][Math.floor(Math.random() * 5)]
+        supplier: ['Local Parts Supplier', 'Generator Spares EA', 'PowerGen Supplies', 'OEM Distributor', 'Regional Parts Center'][Math.floor(Math.random() * 5)]
       }
     ] : [];
 
@@ -322,7 +322,7 @@ const generateSampleHistory = (): DiagnosisEntry[] => {
       rootCause: fault.rootCause,
       preventiveMeasures: isResolved ? preventiveMeasures[Math.floor(Math.random() * preventiveMeasures.length)] : undefined,
       generatorId: `GEN-${String(Math.floor(Math.random() * 500) + 1).padStart(4, '0')}`,
-      generatorName: `${['Cummins', 'Perkins', 'CAT', 'Volvo', 'SDMO'][Math.floor(Math.random() * 5)]} ${[100, 150, 200, 250, 350, 500, 750, 1000][Math.floor(Math.random() * 8)]}kVA`,
+      generatorName: `Generator Set ${[100, 150, 200, 250, 350, 500, 750, 1000][Math.floor(Math.random() * 8)]}kVA - Unit ${String(Math.floor(Math.random() * 500) + 1).padStart(3, '0')}`,
       customerName: customer,
       location: location.name,
       county: location.county,

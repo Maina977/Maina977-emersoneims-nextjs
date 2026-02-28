@@ -1,7 +1,23 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * COMPREHENSIVE CONTROLLER REPAIR MANUALS DATABASE
- * Complete Repair Guides for All 9 Generator Controller Brands
+ * INDEPENDENT CONTROLLER REFERENCE DATABASE
+ * Community-Sourced Troubleshooting Guides for Generator Controllers
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * DISCLAIMER: This is an INDEPENDENT reference database created for educational
+ * and troubleshooting purposes. All brand names, model numbers, product names,
+ * and trademarks are the property of their respective owners.
+ *
+ * This database is NOT affiliated with, endorsed by, or officially associated
+ * with any controller manufacturer. All information is independently compiled
+ * from publicly available sources and field experience.
+ *
+ * For official documentation, warranty service, or certified repairs, always
+ * consult the manufacturer's authorized service centers and official manuals.
+ *
+ * All trademarks mentioned are property of their respective owners including:
+ * Deep Sea Electronics®, ComAp®, Woodward®, SmartGen®, Datakom®, Lovato®,
+ * Siemens®, Caterpillar®, Volvo Penta®, and others.
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
@@ -3604,7 +3620,7 @@ const VODIA_MANUAL: ControllerManual = {
   id: 'vodia',
   brand: 'Volvo Penta VODIA',
   models: ['VODIA5', 'VODIA6', 'VODIA Tool', 'Volvo Penta EMS', 'Volvo Penta EDC', 'D5', 'D7', 'D11', 'D13', 'D16', 'TAD', 'TWD'],
-  description: 'Volvo Penta Official Diagnostic Tool for marine and industrial engines. Comprehensive engine diagnostics, parameter adjustment, and fault code reading for all Volvo Penta electronic engines.',
+  description: 'Volvo Penta Compatible Diagnostic Interface for marine and industrial engines. Comprehensive engine diagnostics, parameter adjustment, and fault code reading for all Volvo Penta electronic engines.',
   specifications: {
     powerSupply: '12-24V DC via diagnostic connector',
     operatingVoltage: '12V/24V DC engine systems',
@@ -4062,7 +4078,7 @@ const VODIA_MANUAL: ControllerManual = {
     'USB extension cable',
   ],
   softwareInfo: {
-    configSoftware: 'VODIA (Volvo Official Diagnostic Application)',
+    configSoftware: 'VODIA (Manufacturer Diagnostic Software)',
     version: 'VODIA 6.0.x (Latest)',
     downloadUrl: 'Volvo Penta dealer only',
     communicationPort: 'USB / Bluetooth',

@@ -1,7 +1,16 @@
 /**
- * Woodward Authentic Fault Codes
- * Comprehensive database covering EasyGen 3000/3500, LS-5, GCP-30
- * All descriptions are original and technically accurate
+ * INDEPENDENT REFERENCE DATABASE - Woodward-Compatible Controllers
+ * Community-sourced troubleshooting guide for EasyGen-compatible controllers
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with Woodward, Inc. or any other manufacturer.
+ * All fault descriptions are independently compiled interpretations intended to assist
+ * technicians in the field. For official documentation, always refer to the
+ * manufacturer's service manuals.
+ *
+ * Woodward®, EasyGen®, and GCP® are registered trademarks of Woodward, Inc.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

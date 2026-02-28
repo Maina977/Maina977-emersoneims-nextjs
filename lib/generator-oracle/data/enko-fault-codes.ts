@@ -1,7 +1,16 @@
 /**
- * ENKO Controller Fault Codes Database
- * Comprehensive fault codes for ENKO generator control units
- * Models: GCU-100, GCU-200, GCU-300, GCU-400, GCU-500, AMF-100, AMF-200, SYNC-100, SYNC-200
+ * INDEPENDENT REFERENCE DATABASE - ENKO-Compatible Controllers
+ * Community-sourced troubleshooting guide for GCU-series compatible controllers
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with ENKO or any other manufacturer.
+ * All fault descriptions are independently compiled interpretations intended to
+ * assist technicians in the field. For official documentation, always refer to
+ * the manufacturer's service manuals.
+ *
+ * ENKO® and GCU® are trademarks of their respective owners.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

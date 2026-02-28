@@ -1,7 +1,16 @@
 /**
- * DeepSea Electronics (DSE) Authentic Fault Codes
- * Comprehensive database covering DSE 4510, 4610, 4410, 5110, 5210, 7320, 7510, 7560, 8610, 8660
- * All descriptions are original and technically accurate
+ * INDEPENDENT REFERENCE DATABASE - DSE-Compatible Controllers
+ * Community-sourced troubleshooting guide for controllers compatible with DSE protocol
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with Deep Sea Electronics Ltd or any other
+ * manufacturer. All fault descriptions are independently compiled interpretations
+ * intended to assist technicians in the field. For official documentation, always
+ * refer to the manufacturer's service manuals.
+ *
+ * Deep Sea Electronics® and DSE® are registered trademarks of Deep Sea Electronics Ltd.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

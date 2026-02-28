@@ -1,11 +1,17 @@
 /**
- * Volvo Penta VODIA Fault Codes - COMPREHENSIVE DATABASE
- * 50,000+ fault codes for Volvo Penta marine and industrial engines
- * Compatible with VODIA5, VODIA6 diagnostic systems
- * Covers D5, D7, D11, D13, D16, TAD, TWD series engines
+ * INDEPENDENT REFERENCE DATABASE - Volvo Penta Engine Diagnostics
+ * Community-sourced troubleshooting guide using industry-standard J1939 MID/PID/FMI format
  *
- * Uses SAE J1939 MID/PID/FMI coding system (industry standard)
- * All descriptions are original - no copyrighted material
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with Volvo Penta, AB Volvo, or any other
+ * manufacturer. All fault descriptions are independently compiled interpretations
+ * based on public J1939 standards, intended to assist technicians in the field.
+ * For official documentation, always refer to the manufacturer's service manuals.
+ *
+ * Volvo®, Volvo Penta®, VODIA®, TAD®, and TWD® are registered trademarks of AB Volvo.
+ * J1939 is a standard developed by SAE International.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';

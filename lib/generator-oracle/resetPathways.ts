@@ -1,6 +1,11 @@
 /**
- * Generator Oracle - Reset Pathways Database
- * Detailed reset procedures for each controller brand and model
+ * Generator Oracle - Reset Pathways Reference Database
+ * Independent troubleshooting guide for controller reset procedures
+ *
+ * DISCLAIMER: This is an independent reference guide. All brand names and trademarks
+ * are property of their respective owners. This database is not affiliated with or
+ * endorsed by any controller manufacturer. Procedures are based on common field
+ * practices. For official procedures, consult manufacturer documentation.
  */
 
 export interface ResetProcedure {

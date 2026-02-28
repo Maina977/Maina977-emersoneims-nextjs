@@ -1,7 +1,16 @@
 /**
- * Siemens Controller Fault Codes Database
- * Comprehensive fault codes for Siemens generator and power management controllers
- * Models: SICAM A8000, SICAM PAS, SIPROTEC 7SJ, 7SD, 7SL, 7UT, 7SA, SENTRON PAC
+ * INDEPENDENT REFERENCE DATABASE - Siemens-Compatible Controllers
+ * Community-sourced troubleshooting guide for power management controllers
+ *
+ * DISCLAIMER: This is an independent reference guide created for educational and
+ * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
+ * are the property of their respective owners. This database is NOT affiliated with,
+ * endorsed by, or officially associated with Siemens AG or any other manufacturer.
+ * All fault descriptions are independently compiled interpretations intended to
+ * assist technicians in the field. For official documentation, always refer to
+ * the manufacturer's service manuals.
+ *
+ * Siemens®, SICAM®, SIPROTEC®, and SENTRON® are registered trademarks of Siemens AG.
  */
 
 import { ControllerFaultCode } from '../controllerFaultCodes';
