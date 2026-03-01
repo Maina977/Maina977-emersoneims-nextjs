@@ -28,7 +28,8 @@ import {
   type UserSubscription,
   type UsageRecord,
   SUBSCRIPTION_PLANS,
-} from '@/lib/generator-oracle/subscriptionService';
+  getPlanById,
+} from '@/lib/generator-oracle/subscriptionTypes';
 
 interface SubscriptionManagerProps {
   userId: number;

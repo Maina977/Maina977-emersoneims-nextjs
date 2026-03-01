@@ -19,7 +19,7 @@ import {
   CreditCard,
   Smartphone,
 } from 'lucide-react';
-import { type SubscriptionPlan } from '@/lib/generator-oracle/subscriptionService';
+import { type SubscriptionPlan } from '@/lib/generator-oracle/subscriptionTypes';
 
 interface PaymentModalProps {
   plan: SubscriptionPlan;

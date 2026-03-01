@@ -17,7 +17,7 @@ import {
   MessageCircle,
   Loader2,
 } from 'lucide-react';
-import { SUBSCRIPTION_PLANS, YEARLY_PLANS, type SubscriptionPlan } from '@/lib/generator-oracle/subscriptionService';
+import { SUBSCRIPTION_PLANS, YEARLY_PLANS, type SubscriptionPlan } from '@/lib/generator-oracle/subscriptionTypes';
 
 interface PricingPlansProps {
   currentPlanId?: string;

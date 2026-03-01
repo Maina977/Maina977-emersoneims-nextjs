@@ -75,6 +75,16 @@ import ECMDiagnosticsPanel from './panels/ECMDiagnosticsPanel';
 import AIAnalysisPanel from './panels/AIAnalysisPanel';
 import SpeechController from './SpeechController';
 import SubscriptionManager from './SubscriptionManager';
+// Phase 4: Professional PDF Reports
+import ReportBuilder from './ReportBuilder';
+// Phase 5: Photo/Video Capture
+import CameraCapture from './CameraCapture';
+// Phase 6: Parts Ordering
+import PartsOrderPanel from './PartsOrderPanel';
+// Phase 7: GPS/Location
+import LocationCapture from './LocationCapture';
+// Phase 8: Push Notifications
+import NotificationSettings from './NotificationSettings';
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -1118,7 +1128,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1475,6 +1485,12 @@ export default function GeneratorOracleModule() {
                   <PremiumNavTab icon="📚" label={t.navManuals} active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
                   <PremiumNavTab icon="🌡️" label="Sensors" active={activeScreen === 'sensors'} onClick={() => setActiveScreen('sensors')} />
                   <PremiumNavTab icon="🧠" label="ECM" active={activeScreen === 'ecm'} onClick={() => setActiveScreen('ecm')} />
+                  {/* Phase 4-8 Features */}
+                  <PremiumNavTab icon="📄" label="Reports" active={activeScreen === 'reports'} onClick={() => setActiveScreen('reports')} />
+                  <PremiumNavTab icon="📷" label="Camera" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
+                  <PremiumNavTab icon="🛒" label="Parts" active={activeScreen === 'parts'} onClick={() => setActiveScreen('parts')} />
+                  <PremiumNavTab icon="📍" label="Location" active={activeScreen === 'location'} onClick={() => setActiveScreen('location')} />
+                  <PremiumNavTab icon="🔔" label="Alerts" active={activeScreen === 'notifications'} onClick={() => setActiveScreen('notifications')} />
                   <PremiumNavTab icon="📋" label={t.tabHistory} active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
                   <PremiumNavTab icon="⚙️" label={t.tabSettings} active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
                 </nav>
@@ -1505,6 +1521,11 @@ export default function GeneratorOracleModule() {
                     <option value="manuals">📚 {t.navManuals}</option>
                     <option value="sensors">🌡️ Sensors</option>
                     <option value="ecm">🧠 ECM</option>
+                    <option value="reports">📄 Reports</option>
+                    <option value="camera">📷 Camera</option>
+                    <option value="parts">🛒 Parts</option>
+                    <option value="location">📍 Location</option>
+                    <option value="notifications">🔔 Alerts</option>
                     <option value="history">📋 {t.tabHistory}</option>
                     <option value="settings">⚙️ {t.tabSettings}</option>
                   </select>
@@ -2191,6 +2212,122 @@ export default function GeneratorOracleModule() {
                           ))}
                         </div>
                       )}
+                    </HolographicGlassPanel>
+                  </motion.div>
+                )}
+
+                {/* REPORTS - Phase 4 */}
+                {activeScreen === 'reports' && (
+                  <motion.div
+                    key="reports"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <HolographicGlassPanel title="Diagnostic Reports" subtitle="Generate Professional PDF Reports" icon="📄" accentColor="cyan" variant="glow">
+                      <div className="space-y-6">
+                        <div className="p-6 bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-xl border border-cyan-500/30">
+                          <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
+                            <span>📄</span> Professional Report Generator
+                          </h3>
+                          <p className="text-gray-300 mb-4">
+                            Generate comprehensive diagnostic reports with equipment details, fault analysis,
+                            recommended actions, parts quotes, and digital signatures.
+                          </p>
+                          <div className="grid md:grid-cols-3 gap-4 mb-6">
+                            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                              <div className="text-3xl mb-2">📋</div>
+                              <div className="text-white font-medium">Full Diagnosis</div>
+                              <div className="text-gray-400 text-sm">Complete fault analysis</div>
+                            </div>
+                            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                              <div className="text-3xl mb-2">✍️</div>
+                              <div className="text-white font-medium">Digital Signatures</div>
+                              <div className="text-gray-400 text-sm">Tech & customer sign-off</div>
+                            </div>
+                            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
+                              <div className="text-3xl mb-2">💰</div>
+                              <div className="text-white font-medium">Parts Quotes</div>
+                              <div className="text-gray-400 text-sm">Cost estimates included</div>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-400">
+                            <strong>How to use:</strong> Run a diagnosis in the Simulator or AI Analysis panel first,
+                            then click &quot;Generate Report&quot; to create a professional PDF document.
+                          </p>
+                        </div>
+                      </div>
+                    </HolographicGlassPanel>
+                  </motion.div>
+                )}
+
+                {/* CAMERA - Phase 5 */}
+                {activeScreen === 'camera' && (
+                  <motion.div
+                    key="camera"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <HolographicGlassPanel title="Photo & Video Capture" subtitle="Document Equipment Conditions" icon="📷" accentColor="green" variant="glow">
+                      <CameraCapture
+                        onCapture={(media) => {
+                          console.log('Captured media:', media.id, media.type);
+                        }}
+                        onClose={() => setActiveScreen('command')}
+                        mode="both"
+                        maxVideoDuration={60}
+                      />
+                    </HolographicGlassPanel>
+                  </motion.div>
+                )}
+
+                {/* PARTS - Phase 6 */}
+                {activeScreen === 'parts' && (
+                  <motion.div
+                    key="parts"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <HolographicGlassPanel title="Parts & Suppliers" subtitle="Order Parts & Contact Suppliers" icon="🛒" accentColor="amber" variant="glow">
+                      <PartsOrderPanel
+                        onClose={() => setActiveScreen('command')}
+                        brand={selectedBrand || undefined}
+                      />
+                    </HolographicGlassPanel>
+                  </motion.div>
+                )}
+
+                {/* LOCATION - Phase 7 */}
+                {activeScreen === 'location' && (
+                  <motion.div
+                    key="location"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <HolographicGlassPanel title="Service Location" subtitle="GPS & Site Information" icon="📍" accentColor="red" variant="glow">
+                      <LocationCapture
+                        onLocationCaptured={(location) => {
+                          console.log('Location captured:', location);
+                        }}
+                        showSavedLocations={true}
+                      />
+                    </HolographicGlassPanel>
+                  </motion.div>
+                )}
+
+                {/* NOTIFICATIONS - Phase 8 */}
+                {activeScreen === 'notifications' && (
+                  <motion.div
+                    key="notifications"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <HolographicGlassPanel title="Push Notifications" subtitle="Alert Settings & Preferences" icon="🔔" accentColor="purple" variant="glow">
+                      <NotificationSettings />
                     </HolographicGlassPanel>
                   </motion.div>
                 )}
