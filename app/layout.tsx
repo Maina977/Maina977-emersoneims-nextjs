@@ -34,6 +34,9 @@ import SallyAIAssistant from '@/components/ai/SallyAIAssistant';
 // CONVERSION BOOSTERS - Turn Every Click Into Business
 import FloatingActionBubbles from '@/components/conversion/FloatingActionBubbles';
 import UrgencyBar from '@/components/conversion/UrgencyBar';
+import ExitIntentPopup from '@/components/conversion/ExitIntentPopup';
+import StickyCallBar from '@/components/conversion/StickyCallBar';
+import WhatsAppButton from '@/components/conversion/WhatsAppButton';
 
 // AI PERSONALIZATION & SEO DOMINATION
 import IntelligentPersonalization from '@/components/ai/IntelligentPersonalization';
@@ -669,9 +672,13 @@ export default async function RootLayout({
 
         {/* ═══════════════════════════════════════════════════════════════════
             💰 CONVERSION MAXIMIZERS - Every Click = Business
+            AGGRESSIVE SALES MACHINE - Capture Every Visitor!
         ════════════════════════════════════════════════════════════════════ */}
+        <StickyCallBar />
         <UrgencyBar />
         <FloatingActionBubbles />
+        <WhatsAppButton />
+        <ExitIntentPopup />
 
         {/* ═══════════════════════════════════════════════════════════════════
             🧠 AI PERSONALIZATION - Website That Feels Alive
