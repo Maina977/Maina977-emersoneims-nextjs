@@ -16,26 +16,50 @@ export default function CTAForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        message: '',
-        service: 'general'
+    setError(null);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          source: 'cta_form',
+          location: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        }),
       });
-      
-      // Reset success state after 5 seconds
-      setTimeout(() => setSubmitted(false), 5000);
-    }, 1000);
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+          message: '',
+          service: 'general'
+        });
+
+        // Reset success state after 10 seconds
+        setTimeout(() => setSubmitted(false), 10000);
+      } else {
+        setError(data.error || 'Failed to submit form. Please try again.');
+      }
+    } catch (err) {
+      console.error('Form submission error:', err);
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -187,6 +211,17 @@ export default function CTAForm() {
           className={`${inputStyles} resize-none`}
         />
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-sm mb-4"
+        >
+          {error}
+        </motion.div>
+      )}
 
       <motion.button
         type="submit"

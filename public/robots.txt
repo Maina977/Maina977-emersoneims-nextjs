@@ -473,7 +473,7 @@ Disallow: /_next/
 Disallow: /private/
 Disallow: /scripts/
 Disallow: /*.json$
-Disallow: /*?*
+# NOTE: Removed "Disallow: /*?*" - Query strings are needed for pagination and filters
 Crawl-delay: 5
 
 # ═══════════════════════════════════════════════════════════════════════════════
