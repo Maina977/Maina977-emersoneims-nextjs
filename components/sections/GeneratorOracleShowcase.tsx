@@ -82,7 +82,7 @@ const FEATURE_HIGHLIGHTS = [
   { feature: 'Multi-type compatibility', description: 'Compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens, ENKO type controllers' },
   { feature: 'AI-powered diagnostics', description: 'Intelligent fault analysis and recommendations' },
   { feature: 'Offline capability', description: 'Works without internet connection' },
-  { feature: 'Affordable pricing', description: 'One-time payment, no subscription fees' },
+  { feature: 'Professional pricing', description: 'KES 20,000/year subscription with full support & updates' },
 ];
 
 // Compatible controller types (50+ models from 9 types)
@@ -457,7 +457,7 @@ export default function GeneratorOracleShowcase() {
                 Full access to all features. All 400,000+ fault codes. AI diagnostics included. No credit card required.
               </p>
               <p className="text-amber-400 font-bold mt-4">
-                After trial: KES 5,000 one-time purchase
+                After trial: KES 20,000/year subscription (includes updates & premium support)
               </p>
             </div>
           </div>

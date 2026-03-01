@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { AnalogClock, AnalogCalendar, WeatherWidget, WidgetBar } from '@/components/ui/AnalogWidgets';
+import SolarBibleEngine from '@/components/solar/SolarBibleEngine';
 
 // Kenya locations for weather
 const KENYA_LOCATIONS = [
@@ -471,112 +472,8 @@ export default function SolarMaintenanceHub() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <h2 className="text-xl font-bold text-white mb-4">🧮 Solar System Calculator</h2>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Input Form */}
-                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-4">
-                  <h3 className="font-bold text-white mb-4">Enter Your System Details</h3>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-slate-400 mb-1">Panel Watts</label>
-                      <input
-                        type="number"
-                        value={solarInput.panelWatts}
-                        onChange={(e) => setSolarInput({...solarInput, panelWatts: +e.target.value})}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-slate-400 mb-1">Panel Count</label>
-                      <input
-                        type="number"
-                        value={solarInput.panelCount}
-                        onChange={(e) => setSolarInput({...solarInput, panelCount: +e.target.value})}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-slate-400 mb-1">Battery Ah</label>
-                      <input
-                        type="number"
-                        value={solarInput.batteryAh}
-                        onChange={(e) => setSolarInput({...solarInput, batteryAh: +e.target.value})}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-slate-400 mb-1">Battery Count</label>
-                      <input
-                        type="number"
-                        value={solarInput.batteryCount}
-                        onChange={(e) => setSolarInput({...solarInput, batteryCount: +e.target.value})}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-slate-400 mb-1">Battery Voltage</label>
-                      <select
-                        value={solarInput.batteryVoltage}
-                        onChange={(e) => setSolarInput({...solarInput, batteryVoltage: +e.target.value})}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      >
-                        <option value={12}>12V</option>
-                        <option value={24}>24V</option>
-                        <option value={48}>48V</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-slate-400 mb-1">Daily Load (kWh)</label>
-                      <input
-                        type="number"
-                        value={solarInput.dailyLoad}
-                        onChange={(e) => setSolarInput({...solarInput, dailyLoad: +e.target.value})}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Results */}
-                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-                  <h3 className="font-bold text-white mb-4">System Analysis</h3>
-
-                  <div className={`mb-4 p-4 rounded-lg ${
-                    metrics.systemStatus === 'optimal' ? 'bg-green-500/20 border border-green-500/50' :
-                    metrics.systemStatus === 'adequate' ? 'bg-yellow-500/20 border border-yellow-500/50' :
-                    'bg-red-500/20 border border-red-500/50'
-                  }`}>
-                    <div className="text-lg font-bold text-white">
-                      System Status: {metrics.systemStatus === 'optimal' ? '✅ Optimal' :
-                                      metrics.systemStatus === 'adequate' ? '⚠️ Adequate' : '❌ Undersized'}
-                    </div>
-                    <div className="text-sm text-slate-300">
-                      Production covers {metrics.productionRatio}% of daily load
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-700/50 rounded-lg p-3">
-                      <div className="text-slate-400 text-xs">Total Panel Capacity</div>
-                      <div className="text-xl font-bold text-amber-400">{(metrics.totalPanelWatts / 1000).toFixed(1)} kW</div>
-                    </div>
-                    <div className="bg-slate-700/50 rounded-lg p-3">
-                      <div className="text-slate-400 text-xs">Battery Storage</div>
-                      <div className="text-xl font-bold text-blue-400">{metrics.totalBatteryWh.toFixed(1)} kWh</div>
-                    </div>
-                    <div className="bg-slate-700/50 rounded-lg p-3">
-                      <div className="text-slate-400 text-xs">Daily Production</div>
-                      <div className="text-xl font-bold text-green-400">{metrics.dailyProduction.toFixed(1)} kWh</div>
-                    </div>
-                    <div className="bg-slate-700/50 rounded-lg p-3">
-                      <div className="text-slate-400 text-xs">Battery Autonomy</div>
-                      <div className="text-xl font-bold text-purple-400">{metrics.autonomyDays} days</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Advanced Solar Bible Calculator */}
+              <SolarBibleEngine />
             </motion.div>
           )}
         </AnimatePresence>
