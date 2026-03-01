@@ -15,6 +15,11 @@ import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import GeneratorSizingCalculator from '@/components/calculators/GeneratorSizingCalculator';
 
+// SALES BOOSTING COMPONENTS - MAXIMIZE CONVERSIONS
+import GeneratorSalesBooster from '@/components/generators/GeneratorSalesBooster';
+import GeneratorPriceList from '@/components/generators/GeneratorPriceList';
+import SizingCalculatorNew from '@/components/generators/GeneratorSizingCalculator';
+
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
@@ -881,6 +886,42 @@ export default function GeneratorPage() {
             </p>
           </div>
           <GeneratorSizingCalculator />
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          💰 SALES BOOSTERS - MAXIMIZE GENERATOR CONVERSIONS
+          Flash deals, pricing, social proof, financing options
+      ════════════════════════════════════════════════════════════════════ */}
+      <section id="deals" className="py-20 bg-gradient-to-br from-black via-red-900/10 to-black">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-red-400 via-amber-400 to-red-400 bg-clip-text text-transparent">
+              Hot Generator Deals
+            </h2>
+            <p className="text-xl text-white/70">
+              Limited stock - Best prices in Kenya with 3-Year Warranty
+            </p>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-8">
+            <GeneratorSalesBooster />
+            <SizingCalculatorNew />
+          </div>
+        </div>
+      </section>
+
+      {/* Generator Price List - Transparent Pricing */}
+      <section id="prices" className="py-20 bg-gradient-to-br from-black via-amber-900/10 to-black">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
+              Generator Prices Kenya 2026
+            </h2>
+            <p className="text-xl text-white/70">
+              Transparent pricing - Cummins, Perkins, FG Wilson
+            </p>
+          </div>
+          <GeneratorPriceList />
         </div>
       </section>
 
