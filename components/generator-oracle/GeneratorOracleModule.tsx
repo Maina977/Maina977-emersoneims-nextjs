@@ -74,6 +74,7 @@ import SensorDiagnosticsPanel from './panels/SensorDiagnosticsPanel';
 import ECMDiagnosticsPanel from './panels/ECMDiagnosticsPanel';
 import AIAnalysisPanel from './panels/AIAnalysisPanel';
 import SpeechController from './SpeechController';
+import SubscriptionManager from './SubscriptionManager';
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -1130,6 +1131,9 @@ export default function GeneratorOracleModule() {
   // Parameters with demo values
   const [parameters, setParameters] = useState<GeneratorParameters>(DEFAULT_PARAMETERS);
   const [generatorStatus, setGeneratorStatus] = useState<'running' | 'standby' | 'fault' | 'off'>('running');
+
+  // User ID for subscription (default to 1 for demo, in production this would come from auth)
+  const [userId] = useState(1);
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -2241,6 +2245,14 @@ export default function GeneratorOracleModule() {
                           <div className="text-sm text-slate-500 mt-1">
                             After trial: KES 20,000/year for unlimited access
                           </div>
+                        </div>
+
+                        {/* Subscription Manager */}
+                        <div className="pt-4 border-t border-slate-700">
+                          <h3 className="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+                            <span>👑</span> Subscription & Billing
+                          </h3>
+                          <SubscriptionManager userId={userId} />
                         </div>
                       </div>
                     </HolographicGlassPanel>

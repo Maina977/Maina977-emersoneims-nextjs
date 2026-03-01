@@ -2086,6 +2086,138 @@ function analyzeParameters(sensorValues: Record<string, number>): DiagnosticResu
         estimatedRepairTime = '1-2 hours';
         partsRequired = ['Battery', 'Alternator belt'];
       }
+      else if (key === 'loadPercent' && value >= param.warningHigh) {
+        issue = 'WARNING: Generator load exceeding recommended continuous rating';
+        possibleCauses = [
+          'Additional loads connected beyond design capacity',
+          'Motor starting causing temporary overload',
+          'Load imbalance across phases',
+          'Power factor degradation increasing apparent power'
+        ];
+        recommendedActions = [
+          'Identify and shed non-critical loads immediately',
+          'Check for motor starting sequences causing peaks',
+          'Balance load across all three phases',
+          'Consider power factor correction if PF is low',
+          'Review generator sizing for installed loads'
+        ];
+        urgency = 'MODERATE - Sustained overload causes premature wear';
+        estimatedRepairTime = 'Load management - 1-2 hours';
+        partsRequired = ['None - operational adjustment'];
+      }
+      else if (key === 'powerFactor' && value <= param.warningLow) {
+        issue = 'WARNING: Power factor below acceptable level - increased losses';
+        possibleCauses = [
+          'Excessive inductive loads (motors, transformers)',
+          'Oversized motors running at light load',
+          'VFD drives without proper filtering',
+          'Missing or failed PF correction capacitors'
+        ];
+        recommendedActions = [
+          'Audit connected loads for inductive equipment',
+          'Verify motor sizing matches actual load requirements',
+          'Install or check power factor correction capacitors',
+          'Consider automatic PF correction system for variable loads'
+        ];
+        urgency = 'LOW - Efficiency impact, schedule correction';
+        estimatedRepairTime = '2-4 hours for capacitor installation';
+        partsRequired = ['PF correction capacitors', 'Contactor (for auto PFC)'];
+      }
+      else if ((key === 'voltageL1N' || key === 'voltageL2N' || key === 'voltageL3N') && (value <= param.warningLow || value >= param.warningHigh)) {
+        issue = value <= param.warningLow ?
+          'WARNING: Phase voltage below normal - check AVR system' :
+          'WARNING: Phase voltage above normal - AVR overvoltage condition';
+        possibleCauses = value <= param.warningLow ? [
+          'AVR (Automatic Voltage Regulator) output low',
+          'Excitation system weakness',
+          'Sensing circuit fuse blown',
+          'High load demanding reactive power',
+          'Loose connections in voltage sensing'
+        ] : [
+          'AVR set too high or malfunction',
+          'Sensing circuit error reading low voltage',
+          'Load suddenly disconnected',
+          'AVR gain adjustment needed'
+        ];
+        recommendedActions = value <= param.warningLow ? [
+          'Check AVR voltage adjustment potentiometer',
+          'Verify voltage sensing fuses are intact',
+          'Check exciter brushes and slip rings condition',
+          'Measure field voltage to exciter',
+          'Clean and tighten all AVR connections'
+        ] : [
+          'Reduce AVR voltage setting to nominal',
+          'Check voltage sensing circuit calibration',
+          'Inspect AVR for component failure',
+          'Verify PT (potential transformer) ratios'
+        ];
+        urgency = 'MODERATE - Voltage issues affect connected equipment';
+        estimatedRepairTime = '1-3 hours';
+        partsRequired = ['AVR (if failed)', 'Exciter brushes', 'Sensing fuses'];
+      }
+      else if (key === 'boostPressure' && value <= param.warningLow) {
+        issue = 'WARNING: Turbocharger boost pressure low - reduced engine performance';
+        possibleCauses = [
+          'Turbocharger bearing wear or damage',
+          'Boost leak in charge air system',
+          'Dirty or blocked air filter',
+          'Wastegate stuck open',
+          'Intercooler blockage or leak'
+        ];
+        recommendedActions = [
+          'Inspect air filter and replace if restricted',
+          'Check all charge air piping connections for leaks',
+          'Listen for abnormal turbo sounds (whine, rattle)',
+          'Inspect turbo for shaft play',
+          'Check intercooler for damage or blockage'
+        ];
+        urgency = 'MODERATE - Engine power output affected';
+        estimatedRepairTime = '2-8 hours depending on cause';
+        partsRequired = ['Air filter', 'Charge air hose clamps', 'Turbocharger (if failed)'];
+      }
+      else if (key === 'exhaustTemperature' && value >= param.warningHigh) {
+        issue = 'WARNING: Exhaust gas temperature elevated - combustion efficiency issue';
+        possibleCauses = [
+          'Injector timing retarded',
+          'Injector nozzle wear causing poor atomization',
+          'Intake air restriction',
+          'Turbocharger efficiency reduced',
+          'EGT probe calibration drift',
+          'Sustained heavy load operation'
+        ];
+        recommendedActions = [
+          'Reduce load if possible and monitor temperature drop',
+          'Check air filter condition',
+          'Verify turbo boost pressure is normal',
+          'Schedule injector inspection and service',
+          'Consider engine timing adjustment'
+        ];
+        urgency = 'MODERATE - High EGT accelerates component wear';
+        estimatedRepairTime = '4-8 hours for injector service';
+        partsRequired = ['Injector nozzles', 'Air filter', 'EGT sensor'];
+      }
+      else if (key === 'generatorFrequency' && (value <= param.warningLow || value >= param.warningHigh)) {
+        issue = value <= param.warningLow ?
+          'WARNING: Frequency below nominal - governor response needed' :
+          'WARNING: Frequency above nominal - governor adjustment needed';
+        possibleCauses = [
+          'Governor droop setting incorrect',
+          'Load change causing frequency deviation',
+          'Speed sensor signal quality degraded',
+          'Governor actuator response sluggish',
+          'Fuel system restriction'
+        ];
+        recommendedActions = [
+          'Check governor droop and stability settings',
+          'Verify actuator responds to step changes',
+          'Inspect speed sensor gap and condition',
+          'Check fuel filters and supply pressure',
+          'Monitor recovery time after load changes'
+        ];
+        urgency = 'MODERATE - Frequency stability affects load equipment';
+        estimatedRepairTime = '1-3 hours';
+        partsRequired = ['Speed sensor', 'Fuel filter', 'Governor actuator'];
+      }
     }
 
     if (severity !== 'normal') {
@@ -2139,6 +2271,8 @@ export default function ControllerSimulator({
   const [diagnosticResults, setDiagnosticResults] = useState<DiagnosticResult[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [showInputModal, setShowInputModal] = useState(false);
+  const [showInlineAnalysis, setShowInlineAnalysis] = useState(false);
+  const [analysisTimestamp, setAnalysisTimestamp] = useState<Date | null>(null);
 
   // Sensor values - technician inputs these from actual controller readings
   const [sensorValues, setSensorValues] = useState<Record<string, number>>({
@@ -2200,10 +2334,14 @@ export default function ControllerSimulator({
   }, []);
 
   // AI Analysis
-  const runAIDiagnosis = useCallback(() => {
+  const runAIDiagnosis = useCallback((showModal = true) => {
     const results = analyzeParameters(sensorValues);
     setDiagnosticResults(results);
-    setShowAnalysis(true);
+    setShowInlineAnalysis(true);
+    setAnalysisTimestamp(new Date());
+    if (showModal) {
+      setShowAnalysis(true);
+    }
   }, [sensorValues]);
 
   // Handle parameter input
@@ -2257,7 +2395,7 @@ export default function ControllerSimulator({
         </button>
 
         <button
-          onClick={runAIDiagnosis}
+          onClick={() => runAIDiagnosis()}
           className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-medium flex items-center gap-2"
         >
           <span>🤖</span> AI Diagnosis
@@ -2493,13 +2631,408 @@ export default function ControllerSimulator({
         />
       )}
 
+      {/* COMPREHENSIVE INLINE ANALYSIS PANEL */}
+      {showInlineAnalysis && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-gray-900 via-gray-850 to-gray-900 rounded-2xl border border-gray-700 overflow-hidden"
+        >
+          {/* Analysis Header */}
+          <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 p-6 border-b border-purple-700">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <span className="text-3xl">🔬</span>
+                  Generator Oracle - Comprehensive Diagnostic Analysis
+                </h2>
+                <p className="text-purple-200 mt-1">
+                  Analysis performed on {analysisTimestamp?.toLocaleString()} • {selectedModel.name}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowInlineAnalysis(false)}
+                className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-8">
+            {/* Quick Status Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className={`rounded-xl p-5 border ${diagnosticResults.filter(r => r.severity === 'critical').length > 0 ? 'bg-red-500/20 border-red-500' : 'bg-green-500/20 border-green-500'}`}>
+                <div className="text-3xl font-bold text-center">
+                  {diagnosticResults.filter(r => r.severity === 'critical').length > 0 ? (
+                    <span className="text-red-400">{diagnosticResults.filter(r => r.severity === 'critical').length}</span>
+                  ) : (
+                    <span className="text-green-400">0</span>
+                  )}
+                </div>
+                <div className="text-center text-sm mt-1 text-gray-300">Critical Issues</div>
+              </div>
+              <div className={`rounded-xl p-5 border ${diagnosticResults.filter(r => r.severity === 'warning').length > 0 ? 'bg-yellow-500/20 border-yellow-500' : 'bg-green-500/20 border-green-500'}`}>
+                <div className="text-3xl font-bold text-center">
+                  {diagnosticResults.filter(r => r.severity === 'warning').length > 0 ? (
+                    <span className="text-yellow-400">{diagnosticResults.filter(r => r.severity === 'warning').length}</span>
+                  ) : (
+                    <span className="text-green-400">0</span>
+                  )}
+                </div>
+                <div className="text-center text-sm mt-1 text-gray-300">Warnings</div>
+              </div>
+              <div className="rounded-xl p-5 border bg-blue-500/20 border-blue-500">
+                <div className="text-3xl font-bold text-center text-blue-400">
+                  {Object.keys(sensorValues).length - diagnosticResults.length}
+                </div>
+                <div className="text-center text-sm mt-1 text-gray-300">Normal Parameters</div>
+              </div>
+            </div>
+
+            {/* SECTION 1: Executive Summary */}
+            <section className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+              <h3 className="text-xl font-bold text-brand-gold mb-4 flex items-center gap-2">
+                <span>📊</span> Executive Summary
+              </h3>
+              <div className="text-gray-300 leading-relaxed space-y-4">
+                <p>
+                  <strong className="text-white">Overall System Status:</strong> {diagnosticResults.length === 0 ?
+                    'The generator system is operating within normal parameters. All monitored values are within their specified operating ranges, indicating proper engine function, electrical output stability, and adequate fuel and cooling conditions. Regular maintenance schedules should continue as planned.' :
+                    `The diagnostic analysis has identified ${diagnosticResults.length} parameter(s) requiring attention. ${diagnosticResults.filter(r => r.severity === 'critical').length > 0 ? 'CRITICAL ISSUES DETECTED - Immediate action required to prevent equipment damage or failure.' : 'Warning conditions detected that should be addressed during the next maintenance window.'}`
+                  }
+                </p>
+                <p>
+                  <strong className="text-white">Engine Performance Assessment:</strong> The engine RPM is currently at {sensorValues.engineRPM} RPM with
+                  {sensorValues.engineRPM >= 1480 && sensorValues.engineRPM <= 1520 ? ' optimal speed control indicating proper governor function. ' : ' speed deviation that may indicate governor adjustment needs. '}
+                  Oil pressure reads {sensorValues.engineOilPressure} bar {sensorValues.engineOilPressure >= 2.5 ? 'which is within acceptable limits for normal operation' : 'which is BELOW recommended minimum - immediate investigation required'}.
+                  Coolant temperature at {sensorValues.coolantTemperature}°C {sensorValues.coolantTemperature <= 95 ? 'demonstrates effective cooling system operation' : 'indicates potential cooling system issues'}.
+                </p>
+                <p>
+                  <strong className="text-white">Electrical Output Analysis:</strong> Generator output voltage across phases (L1-N: {sensorValues.voltageL1N}V, L2-N: {sensorValues.voltageL2N}V, L3-N: {sensorValues.voltageL3N}V)
+                  {Math.abs(sensorValues.voltageL1N - sensorValues.voltageL2N) < 5 && Math.abs(sensorValues.voltageL2N - sensorValues.voltageL3N) < 5 ?
+                    ' shows excellent phase balance with less than 2% imbalance, ensuring even load distribution and minimizing neutral current.' :
+                    ' indicates phase imbalance that may cause increased neutral current and potential overheating of neutral conductors.'
+                  } The frequency of {sensorValues.generatorFrequency}Hz {sensorValues.generatorFrequency >= 49.5 && sensorValues.generatorFrequency <= 50.5 ? 'is within the ±1% tolerance required for sensitive equipment' : 'requires governor adjustment to maintain equipment compatibility'}.
+                </p>
+                <p>
+                  <strong className="text-white">Load and Efficiency Status:</strong> Current load level of {sensorValues.loadPercent}%
+                  {sensorValues.loadPercent <= 80 ? ' is within the recommended continuous operating range, allowing for safe load fluctuations without risk of overload.' : ' exceeds the 80% recommended continuous rating - consider load shedding or additional generation capacity.'}
+                  Power factor of {sensorValues.powerFactor} {sensorValues.powerFactor >= 0.85 ? 'indicates good reactive power compensation' : 'suggests the need for power factor correction capacitors to improve efficiency'}.
+                </p>
+                <p>
+                  <strong className="text-white">Fuel System Health:</strong> Fuel level at {sensorValues.fuelLevel}%
+                  {sensorValues.fuelLevel >= 25 ? ' provides adequate reserve for extended operation.' : ' - LOW FUEL WARNING: Recommend immediate refueling to prevent engine shutdown.'}
+                  Fuel pressure of {sensorValues.fuelPressure} bar and boost pressure of {sensorValues.boostPressure} bar
+                  {sensorValues.fuelPressure >= 2.5 && sensorValues.boostPressure >= 0.8 ? ' confirm proper fuel delivery and turbocharger function.' : ' require investigation for potential fuel system or turbocharger issues.'}
+                </p>
+              </div>
+            </section>
+
+            {/* SECTION 2: Detailed Issues Analysis with Diagrams */}
+            {diagnosticResults.length > 0 && (
+              <section className="space-y-6">
+                <h3 className="text-xl font-bold text-brand-gold flex items-center gap-2">
+                  <span>🔧</span> Detailed Issue Analysis & Troubleshooting Guide
+                </h3>
+
+                {diagnosticResults.map((result, idx) => (
+                  <div key={idx} className={`rounded-xl border overflow-hidden ${
+                    result.severity === 'critical' ? 'bg-red-900/20 border-red-500' : 'bg-yellow-900/20 border-yellow-500'
+                  }`}>
+                    {/* Issue Header */}
+                    <div className={`p-4 ${result.severity === 'critical' ? 'bg-red-900/30' : 'bg-yellow-900/30'}`}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                            result.severity === 'critical' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-black'
+                          }`}>
+                            {result.severity}
+                          </span>
+                          <h4 className="text-xl font-bold text-white mt-2">{result.parameter}</h4>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-white">{result.currentValue} {result.unit}</div>
+                          <div className="text-sm text-gray-400">Expected: {result.expectedRange}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                      {/* Issue Description */}
+                      <div>
+                        <h5 className="font-bold text-purple-400 mb-2">Problem Description</h5>
+                        <p className="text-gray-300 leading-relaxed">{result.issue}</p>
+                      </div>
+
+                      {/* Visual Diagram Section */}
+                      <div className="bg-gray-800 rounded-lg p-4">
+                        <h5 className="font-bold text-cyan-400 mb-3">System Diagram</h5>
+                        <svg viewBox="0 0 600 200" className="w-full h-48 bg-gray-900 rounded-lg">
+                          {/* Engine block diagram */}
+                          <rect x="50" y="50" width="100" height="100" fill="#374151" stroke="#4B5563" strokeWidth="2" rx="5"/>
+                          <text x="100" y="105" textAnchor="middle" fill="#9CA3AF" fontSize="12">Engine</text>
+
+                          {/* Sensor location indicator */}
+                          <circle cx="150" cy="80" r="8" fill={result.severity === 'critical' ? '#EF4444' : '#F59E0B'} className="animate-pulse"/>
+                          <line x1="158" y1="80" x2="200" y2="60" stroke={result.severity === 'critical' ? '#EF4444' : '#F59E0B'} strokeWidth="2"/>
+                          <text x="205" y="55" fill={result.severity === 'critical' ? '#EF4444' : '#F59E0B'} fontSize="10" fontWeight="bold">{result.parameter}</text>
+                          <text x="205" y="70" fill="#9CA3AF" fontSize="10">{result.currentValue} {result.unit}</text>
+
+                          {/* Generator */}
+                          <circle cx="300" cy="100" r="45" fill="#374151" stroke="#4B5563" strokeWidth="2"/>
+                          <text x="300" y="105" textAnchor="middle" fill="#9CA3AF" fontSize="12">Generator</text>
+                          <text x="300" y="90" textAnchor="middle" fill="#60A5FA" fontSize="20">~</text>
+
+                          {/* Connection line */}
+                          <line x1="150" y1="100" x2="255" y2="100" stroke="#4B5563" strokeWidth="3"/>
+
+                          {/* Load panel */}
+                          <rect x="400" y="60" width="80" height="80" fill="#374151" stroke="#4B5563" strokeWidth="2" rx="5"/>
+                          <text x="440" y="105" textAnchor="middle" fill="#9CA3AF" fontSize="12">Load</text>
+                          <text x="440" y="90" textAnchor="middle" fill="#9CA3AF" fontSize="10">{sensorValues.loadPercent}%</text>
+
+                          {/* Power connection */}
+                          <line x1="345" y1="100" x2="400" y2="100" stroke="#22C55E" strokeWidth="3"/>
+
+                          {/* Flow arrows */}
+                          <polygon points="385,95 400,100 385,105" fill="#22C55E"/>
+                          <polygon points="235,95 250,100 235,105" fill="#4B5563"/>
+
+                          {/* Status indicators */}
+                          <circle cx="520" cy="80" r="6" fill={sensorValues.batteryVoltage >= 24 ? '#22C55E' : '#EF4444'}/>
+                          <text x="530" y="84" fill="#9CA3AF" fontSize="10">Battery</text>
+                          <circle cx="520" cy="100" r="6" fill={sensorValues.fuelLevel >= 25 ? '#22C55E' : '#F59E0B'}/>
+                          <text x="530" y="104" fill="#9CA3AF" fontSize="10">Fuel</text>
+                          <circle cx="520" cy="120" r="6" fill={sensorValues.coolantTemperature <= 95 ? '#22C55E' : '#EF4444'}/>
+                          <text x="530" y="124" fill="#9CA3AF" fontSize="10">Cooling</text>
+                        </svg>
+                      </div>
+
+                      {/* Root Cause Analysis */}
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <h5 className="font-bold text-purple-400 mb-3">Root Cause Analysis</h5>
+                          <ul className="space-y-2">
+                            {result.possibleCauses.map((cause, cIdx) => (
+                              <li key={cIdx} className="flex items-start gap-2 text-gray-300">
+                                <span className="text-purple-400 mt-1">•</span>
+                                <span>{cause}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h5 className="font-bold text-green-400 mb-3">Step-by-Step Repair Guide</h5>
+                          <ol className="space-y-2">
+                            {result.recommendedActions.map((action, aIdx) => (
+                              <li key={aIdx} className="flex items-start gap-2 text-gray-300">
+                                <span className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                                  {aIdx + 1}
+                                </span>
+                                <span>{action}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      </div>
+
+                      {/* Urgency and Parts */}
+                      <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-gray-700">
+                        <div className="bg-gray-800 rounded-lg p-4">
+                          <span className="text-gray-400 text-sm">Urgency Level</span>
+                          <p className={`font-bold text-lg ${result.urgency.includes('IMMEDIATE') ? 'text-red-400' : 'text-yellow-400'}`}>
+                            {result.urgency}
+                          </p>
+                        </div>
+                        <div className="bg-gray-800 rounded-lg p-4">
+                          <span className="text-gray-400 text-sm">Estimated Repair Time</span>
+                          <p className="font-bold text-lg text-white">{result.estimatedRepairTime}</p>
+                        </div>
+                        <div className="bg-gray-800 rounded-lg p-4">
+                          <span className="text-gray-400 text-sm">Parts Required</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {result.partsRequired.length > 0 ? result.partsRequired.map((part, pIdx) => (
+                              <span key={pIdx} className="px-2 py-0.5 bg-gray-700 rounded text-xs text-gray-300">{part}</span>
+                            )) : <span className="text-gray-500 text-sm">None identified</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </section>
+            )}
+
+            {/* SECTION 3: All Parameters Normal - Detailed Report */}
+            {diagnosticResults.length === 0 && (
+              <section className="bg-green-900/20 rounded-xl p-6 border border-green-500">
+                <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+                  <span>✅</span> All Systems Operating Normally
+                </h3>
+                <div className="text-gray-300 leading-relaxed space-y-4">
+                  <p>
+                    <strong className="text-white">Verification Complete:</strong> All {Object.keys(sensorValues).length} monitored parameters
+                    are within their specified operating ranges. The generator system is functioning correctly with no immediate maintenance
+                    requirements detected. This indicates proper equipment setup, adequate preventive maintenance, and correct operating procedures.
+                  </p>
+                  <p>
+                    <strong className="text-white">Engine Health Status:</strong> Oil pressure, coolant temperature, and fuel system readings
+                    confirm the engine is in good mechanical condition. The stable RPM reading indicates proper governor calibration and
+                    consistent fuel injection timing. Continue monitoring these parameters during regular operational checks.
+                  </p>
+                  <p>
+                    <strong className="text-white">Electrical System Verification:</strong> Output voltage and frequency stability across all
+                    three phases demonstrates proper AVR (Automatic Voltage Regulator) function and accurate governor speed control. The balanced
+                    phase currents indicate even load distribution across the electrical system.
+                  </p>
+                  <p>
+                    <strong className="text-white">Recommended Maintenance Schedule:</strong> Based on the current readings and {sensorValues.engineHours.toLocaleString()}
+                    engine hours, follow the manufacturer's recommended maintenance intervals. Next scheduled service items may include oil and filter change
+                    (every 250-500 hours), air filter inspection (every 100 hours), and fuel filter replacement (every 500 hours).
+                  </p>
+                  <p>
+                    <strong className="text-white">Operational Best Practices:</strong> To maintain optimal performance, continue exercising the
+                    generator weekly under load for 30+ minutes, keep fuel tanks above 25% capacity to prevent condensation, and perform regular
+                    visual inspections of belts, hoses, and electrical connections.
+                  </p>
+                </div>
+
+                {/* Health Status Diagram */}
+                <div className="mt-6 bg-gray-800 rounded-lg p-4">
+                  <h5 className="font-bold text-cyan-400 mb-3">System Health Overview</h5>
+                  <svg viewBox="0 0 600 180" className="w-full h-44 bg-gray-900 rounded-lg">
+                    {/* Engine block */}
+                    <rect x="30" y="40" width="90" height="80" fill="#374151" stroke="#22C55E" strokeWidth="2" rx="5"/>
+                    <text x="75" y="85" textAnchor="middle" fill="#22C55E" fontSize="12" fontWeight="bold">ENGINE</text>
+                    <circle cx="75" cy="25" r="8" fill="#22C55E"/>
+                    <text x="75" y="28" textAnchor="middle" fill="white" fontSize="8">✓</text>
+
+                    {/* Generator */}
+                    <circle cx="200" cy="80" r="40" fill="#374151" stroke="#22C55E" strokeWidth="2"/>
+                    <text x="200" y="75" textAnchor="middle" fill="#22C55E" fontSize="12" fontWeight="bold">GEN</text>
+                    <text x="200" y="90" textAnchor="middle" fill="#60A5FA" fontSize="16">~</text>
+                    <circle cx="200" cy="25" r="8" fill="#22C55E"/>
+                    <text x="200" y="28" textAnchor="middle" fill="white" fontSize="8">✓</text>
+
+                    {/* Transfer Switch */}
+                    <rect x="290" y="55" width="60" height="50" fill="#374151" stroke="#22C55E" strokeWidth="2" rx="5"/>
+                    <text x="320" y="85" textAnchor="middle" fill="#22C55E" fontSize="10" fontWeight="bold">ATS</text>
+                    <circle cx="320" cy="40" r="8" fill="#22C55E"/>
+                    <text x="320" y="43" textAnchor="middle" fill="white" fontSize="8">✓</text>
+
+                    {/* Load Panel */}
+                    <rect x="400" y="40" width="70" height="80" fill="#374151" stroke="#22C55E" strokeWidth="2" rx="5"/>
+                    <text x="435" y="85" textAnchor="middle" fill="#22C55E" fontSize="10" fontWeight="bold">LOAD</text>
+                    <text x="435" y="100" textAnchor="middle" fill="#9CA3AF" fontSize="10">{sensorValues.loadPercent}%</text>
+                    <circle cx="435" cy="25" r="8" fill="#22C55E"/>
+                    <text x="435" y="28" textAnchor="middle" fill="white" fontSize="8">✓</text>
+
+                    {/* Connections */}
+                    <line x1="120" y1="80" x2="160" y2="80" stroke="#22C55E" strokeWidth="3"/>
+                    <line x1="240" y1="80" x2="290" y2="80" stroke="#22C55E" strokeWidth="3"/>
+                    <line x1="350" y1="80" x2="400" y2="80" stroke="#22C55E" strokeWidth="3"/>
+
+                    {/* Status panel */}
+                    <rect x="500" y="30" width="90" height="120" fill="#1F2937" stroke="#374151" strokeWidth="1" rx="5"/>
+                    <text x="545" y="50" textAnchor="middle" fill="#9CA3AF" fontSize="10" fontWeight="bold">STATUS</text>
+
+                    <circle cx="520" cy="70" r="5" fill="#22C55E"/>
+                    <text x="528" y="73" fill="#9CA3AF" fontSize="9">Oil: OK</text>
+                    <circle cx="520" cy="90" r="5" fill="#22C55E"/>
+                    <text x="528" y="93" fill="#9CA3AF" fontSize="9">Temp: OK</text>
+                    <circle cx="520" cy="110" r="5" fill="#22C55E"/>
+                    <text x="528" y="113" fill="#9CA3AF" fontSize="9">Fuel: OK</text>
+                    <circle cx="520" cy="130" r="5" fill="#22C55E"/>
+                    <text x="528" y="133" fill="#9CA3AF" fontSize="9">Volts: OK</text>
+                  </svg>
+                </div>
+              </section>
+            )}
+
+            {/* SECTION 4: Parameter Data Table */}
+            <section className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+              <h3 className="text-xl font-bold text-brand-gold mb-4 flex items-center gap-2">
+                <span>📈</span> Complete Parameter Readings
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="text-left py-3 px-4 text-gray-400">Parameter</th>
+                      <th className="text-center py-3 px-4 text-gray-400">Value</th>
+                      <th className="text-center py-3 px-4 text-gray-400">Unit</th>
+                      <th className="text-center py-3 px-4 text-gray-400">Normal Range</th>
+                      <th className="text-center py-3 px-4 text-gray-400">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(sensorValues).map(([key, value]) => {
+                      const param = SENSOR_PARAMETERS[key as keyof typeof SENSOR_PARAMETERS];
+                      if (!param) return null;
+                      const status = getParameterStatus(key, value);
+                      return (
+                        <tr key={key} className="border-b border-gray-700/50 hover:bg-gray-700/30">
+                          <td className="py-2 px-4 text-white">{param.name}</td>
+                          <td className="py-2 px-4 text-center font-mono text-white">{typeof value === 'number' ? value.toFixed(1) : value}</td>
+                          <td className="py-2 px-4 text-center text-gray-400">{param.unit}</td>
+                          <td className="py-2 px-4 text-center text-gray-400">{param.normalMin} - {param.normalMax}</td>
+                          <td className="py-2 px-4 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                              status === 'normal' ? 'bg-green-500/20 text-green-400' :
+                              status === 'warning' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-red-500/20 text-red-400'
+                            }`}>
+                              {status.toUpperCase()}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* SECTION 5: Action Buttons */}
+            <div className="flex flex-wrap gap-4 justify-center pt-4">
+              <button
+                onClick={() => setShowAnalysis(true)}
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-medium flex items-center gap-2"
+              >
+                <span>🤖</span> View Full AI Analysis
+              </button>
+              <a
+                href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I need generator diagnostic support.\n\nController: ${selectedModel.name}\nEngine Hours: ${sensorValues.engineHours}\nIssues: ${diagnosticResults.length > 0 ? diagnosticResults.map(r => r.parameter + ': ' + r.issue).join(', ') : 'None - routine check'}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-medium flex items-center gap-2"
+              >
+                <span>📞</span> Contact Technician via WhatsApp
+              </a>
+              <button
+                onClick={() => setShowWiringDiagram(true)}
+                className="px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-medium flex items-center gap-2"
+              >
+                <span>📐</span> View Wiring Diagram
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Input Modal */}
       <AnimatePresence>
         {showInputModal && (
           <InputModal
             sensorValues={sensorValues}
             onValueChange={handleParameterChange}
-            onClose={() => setShowInputModal(false)}
+            onClose={() => {
+              setShowInputModal(false);
+              // Auto-run analysis when modal closes
+              runAIDiagnosis(false);
+            }}
           />
         )}
       </AnimatePresence>
