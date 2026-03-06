@@ -20,9 +20,10 @@ import {
   Heart, Brain, FileDown, Printer, AlertCircle, HelpCircle
 } from 'lucide-react';
 import {
-  SOLAR_PANELS, BATTERIES, INVERTERS, KENYA_CLIMATE, ELECTRICITY_TARIFFS,
-  type SolarPanel, type BatteryUnit, type Inverter
-} from './SolarBibleCalculator';
+  SOLAR_PANELS, BATTERIES, INVERTERS, ACCESSORIES, KENYA_CLIMATE, ELECTRICITY_TARIFFS,
+  findOptimalSystem, calculateElectricityCost,
+  type SolarPanel, type BatteryUnit, type Inverter, type Accessory, type OptimizationResult
+} from './SolarEquipmentDatabase';
 import {
   INVERTER_FAULT_CODES, BATTERY_FAULT_CODES, PANEL_FAULT_CODES,
   analyzeSystemHealth, type FaultCode, type HealthMetrics, type HealthReport
@@ -274,96 +275,71 @@ export default function SolarBibleEngine() {
     return KENYA_CLIMATE[location] || KENYA_CLIMATE['Default'];
   }, [location]);
 
-  // Calculate required system size
+  // Calculate required system size using advanced optimization algorithm
   const calculateSystemSize = useCallback(() => {
     setIsCalculating(true);
 
     setTimeout(() => {
-      // Required panel wattage (accounting for losses)
-      const efficiencyLoss = 0.8; // 20% system losses
-      const tempDerate = 1 - ((climateData.avgTemp - 25) * 0.004); // Temperature derating
-      const requiredPanelWattage = (dailyConsumption / (climateData.avgSunHours * efficiencyLoss * tempDerate)) * 1000;
+      // Use the advanced optimization algorithm from SolarEquipmentDatabase
+      const optimizedSystems = findOptimalSystem(
+        dailyConsumption,
+        peakLoad,
+        backupHours,
+        location,
+        budget,
+        gridConnected
+      );
 
-      // Select best panel based on budget
-      let panelPool = SOLAR_PANELS;
-      if (budget === 'economy') panelPool = SOLAR_PANELS.filter(p => p.priceKES < 22000);
-      else if (budget === 'premium') panelPool = SOLAR_PANELS.filter(p => p.efficiency > 21);
+      if (optimizedSystems.length === 0) {
+        setIsCalculating(false);
+        alert('No suitable system found. Please adjust your requirements.');
+        return;
+      }
 
-      const bestPanel = panelPool.sort((a, b) => (b.efficiency / b.priceKES) - (a.efficiency / a.priceKES))[0] || SOLAR_PANELS[0];
-      const panelCount = Math.ceil(requiredPanelWattage / bestPanel.wattage);
+      // Select the cheapest optimal system
+      const bestSystem = optimizedSystems[0];
 
-      // Required battery capacity
-      const requiredBatteryKwh = dailyConsumption * (backupHours / 24) / 0.8; // 80% DoD
+      // Calculate accurate electricity costs
+      const monthlyConsumption = dailyConsumption * 30;
+      const monthlyGridCost = calculateElectricityCost(monthlyConsumption);
+      const monthlyGeneratorCost = dailyConsumption * 30 * (160 / 3); // Diesel at KES 160/L, 3kWh/L
 
-      // Select best battery
-      let batteryPool = BATTERIES;
-      if (budget === 'economy') batteryPool = BATTERIES.filter(b => b.type !== 'LiFePO4');
-      else if (budget === 'premium') batteryPool = BATTERIES.filter(b => b.type === 'LiFePO4');
-
-      const bestBattery = batteryPool.sort((a, b) => (b.cycles / b.priceKES) - (a.cycles / a.priceKES))[0] || BATTERIES[0];
-      const batteryKwh = (bestBattery.capacity * bestBattery.voltage) / 1000;
-      const batteryCount = Math.ceil(requiredBatteryKwh / batteryKwh);
-
-      // System voltage
-      const systemVoltage: 12 | 24 | 48 = requiredPanelWattage > 3000 ? 48 : requiredPanelWattage > 1500 ? 24 : 12;
-
-      // Select inverter
-      const requiredInverterKw = peakLoad / 1000 * 1.25; // 25% headroom
-      let inverterPool = INVERTERS.filter(inv => inv.ratedPower >= requiredInverterKw);
-      if (budget === 'economy') inverterPool = inverterPool.filter(i => i.type === 'Off-Grid');
-      else if (budget === 'premium') inverterPool = inverterPool.filter(i => i.type === 'Hybrid');
-
-      const bestInverter = inverterPool.sort((a, b) => a.priceKES - b.priceKES)[0] || INVERTERS.find(i => i.ratedPower >= requiredInverterKw) || INVERTERS[0];
-
-      // Calculate costs
-      const panelCost = bestPanel.priceKES * panelCount;
-      const batteryCost = bestBattery.priceKES * batteryCount;
-      const inverterCost = bestInverter.priceKES;
-      const accessoriesCost = (panelCost + batteryCost + inverterCost) * 0.15; // 15% for cables, mounting, etc.
-      const installationCost = (panelCost + batteryCost + inverterCost) * 0.20; // 20% installation
-
-      const totalCost = panelCost + batteryCost + inverterCost + accessoriesCost + installationCost;
-
-      // Calculate savings
-      const monthlyGridCost = dailyConsumption * 30 * 20; // Average KES 20/kWh
-      const monthlySavings = monthlyGridCost * (gridConnected ? 0.7 : 1); // 70% savings if grid-tied
-      const paybackYears = totalCost / (monthlySavings * 12);
-
-      // Generator comparison (diesel at KES 150/L, 3kWh/L)
-      const monthlyGeneratorCost = dailyConsumption * 30 * (150 / 3);
+      const systemVoltage: 12 | 24 | 48 = bestSystem.systemSpecs.systemVoltage >= 48 ? 48 :
+                                          bestSystem.systemSpecs.systemVoltage >= 24 ? 24 : 12;
 
       setSystemDesign({
-        panels: [{ panel: bestPanel, quantity: panelCount }],
-        batteries: [{ battery: bestBattery, quantity: batteryCount }],
-        inverter: bestInverter,
-        totalPanelWattage: bestPanel.wattage * panelCount,
-        totalBatteryCapacity: batteryKwh * batteryCount,
+        panels: bestSystem.panels,
+        batteries: bestSystem.batteries,
+        inverter: bestSystem.inverter,
+        totalPanelWattage: bestSystem.systemSpecs.totalWattage,
+        totalBatteryCapacity: bestSystem.systemSpecs.totalBatteryKwh,
         systemVoltage,
-        estimatedDailyProduction: (bestPanel.wattage * panelCount * climateData.avgSunHours * efficiencyLoss) / 1000,
-        autonomyDays: (batteryKwh * batteryCount) / dailyConsumption,
+        estimatedDailyProduction: bestSystem.systemSpecs.dailyProduction,
+        autonomyDays: bestSystem.systemSpecs.autonomyDays,
       });
 
       setCostAnalysis({
-        equipmentCost: panelCost + batteryCost + inverterCost + accessoriesCost,
-        installationCost,
-        totalCost,
-        monthlySavings,
-        annualSavings: monthlySavings * 12,
-        paybackPeriod: paybackYears,
-        roi25Years: (monthlySavings * 12 * 25) - totalCost,
+        equipmentCost: bestSystem.costBreakdown.panels + bestSystem.costBreakdown.batteries +
+                       bestSystem.costBreakdown.inverter + bestSystem.costBreakdown.accessories,
+        installationCost: bestSystem.costBreakdown.installation,
+        totalCost: bestSystem.totalCost,
+        monthlySavings: bestSystem.roi.monthlySavings,
+        annualSavings: bestSystem.roi.monthlySavings * 12,
+        paybackPeriod: bestSystem.roi.paybackYears,
+        roi25Years: bestSystem.roi.twentyFiveYearSavings,
         gridCostPerMonth: monthlyGridCost,
         generatorCostPerMonth: monthlyGeneratorCost,
-        solarCostPerMonth: totalCost / (25 * 12), // Amortized over 25 years
+        solarCostPerMonth: bestSystem.totalCost / (25 * 12),
       });
 
-      setSelectedPanel(bestPanel);
-      setSelectedBattery(bestBattery);
-      setSelectedInverter(bestInverter);
+      if (bestSystem.panels[0]) setSelectedPanel(bestSystem.panels[0].panel);
+      if (bestSystem.batteries[0]) setSelectedBattery(bestSystem.batteries[0].battery);
+      setSelectedInverter(bestSystem.inverter);
 
       setIsCalculating(false);
       setStep(5);
     }, 1500);
-  }, [dailyConsumption, peakLoad, climateData, backupHours, budget, gridConnected]);
+  }, [dailyConsumption, peakLoad, location, backupHours, budget, gridConnected]);
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // PDF GENERATION
