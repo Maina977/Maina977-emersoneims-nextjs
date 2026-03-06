@@ -73,6 +73,7 @@ import ControllerRepairManualsPanel from './panels/ControllerRepairManualsPanel'
 import SensorDiagnosticsPanel from './panels/SensorDiagnosticsPanel';
 import ECMDiagnosticsPanel from './panels/ECMDiagnosticsPanel';
 import AIAnalysisPanel from './panels/AIAnalysisPanel';
+import UnifiedDiagnosticsPanel from './panels/UnifiedDiagnosticsPanel';
 import SpeechController from './SpeechController';
 import SubscriptionManager from './SubscriptionManager';
 // Phase 4: Professional PDF Reports
@@ -1128,7 +1129,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1485,6 +1486,7 @@ export default function GeneratorOracleModule() {
                   <PremiumNavTab icon="📚" label={t.navManuals} active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
                   <PremiumNavTab icon="🌡️" label="Sensors" active={activeScreen === 'sensors'} onClick={() => setActiveScreen('sensors')} />
                   <PremiumNavTab icon="🧠" label="ECM" active={activeScreen === 'ecm'} onClick={() => setActiveScreen('ecm')} />
+                  <PremiumNavTab icon="🔬" label="Unified Diag" active={activeScreen === 'unified'} onClick={() => setActiveScreen('unified')} />
                   {/* Phase 4-8 Features */}
                   <PremiumNavTab icon="📄" label="Reports" active={activeScreen === 'reports'} onClick={() => setActiveScreen('reports')} />
                   <PremiumNavTab icon="📷" label="Camera" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
@@ -1521,6 +1523,7 @@ export default function GeneratorOracleModule() {
                     <option value="manuals">📚 {t.navManuals}</option>
                     <option value="sensors">🌡️ Sensors</option>
                     <option value="ecm">🧠 ECM</option>
+                    <option value="unified">🔬 Unified Diagnostics</option>
                     <option value="reports">📄 Reports</option>
                     <option value="camera">📷 Camera</option>
                     <option value="parts">🛒 Parts</option>
@@ -2087,6 +2090,18 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                   >
                     <ECMDiagnosticsPanel />
+                  </motion.div>
+                )}
+
+                {/* UNIFIED DIAGNOSTICS - Integrated ECM + Controllers + Fault Codes + AI */}
+                {activeScreen === 'unified' && (
+                  <motion.div
+                    key="unified"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <UnifiedDiagnosticsPanel />
                   </motion.div>
                 )}
 
