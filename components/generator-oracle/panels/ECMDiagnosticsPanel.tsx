@@ -1171,6 +1171,894 @@ const ecmDatabase: ECMEntry[] = [
       '8V4000G23', '8V4000G63', '12V4000G23', '12V4000G63',
       '16V4000G23', '16V4000G63', '20V4000G23', '20V4000G63'
     ]
+  },
+  {
+    id: 'detroit-ddec',
+    name: 'Detroit Diesel DDEC VI ECM',
+    manufacturer: 'Detroit Diesel',
+    category: 'diesel',
+    description: [
+      'The Detroit Diesel Electronic Control VI (DDEC VI) represents the sixth generation of Detroit\'s revolutionary electronic engine management system, deployed across the Series 60, DD13, DD15, and DD16 engines powering generators from 300 kW to 600 kW. This advanced ECM features a 400MHz 32-bit processor with 4MB flash memory and 1MB RAM, capable of executing over 10,000 calculations per second. The DDEC VI integrates fuel injection control, turbocharger management, exhaust aftertreatment, and comprehensive engine protection into a single weatherproof unit.',
+      'Distinguished by its proprietary Amplified Common Rail System (ACRS) control, the DDEC VI manages injection pressures exceeding 2,200 bar for exceptional fuel atomization and combustion efficiency. The system implements multiple injection events per cycle including pilot, main, and post injections that minimize noise, reduce emissions, and optimize transient response. Integration with the variable geometry turbocharger and EGR system provides seamless coordination of air and fuel management.',
+      'The DDEC VI housing features military-grade aluminum construction with IP69K sealing, operating reliably from -40°C to +121°C ambient temperature. Triple-redundant power management ensures operation through severe voltage transients, while integrated surge protection safeguards against electrical system faults. The ECM stores up to 200 fault events with comprehensive freeze-frame data and supports remote diagnostics via Detroit Connect telematics platform.'
+    ],
+    workingPrinciple: [
+      'The DDEC VI operates on a model-predictive control strategy that anticipates engine behavior based on current operating conditions and commanded inputs. The ECM continuously updates its internal engine model using real-time feedback from over 30 sensors, enabling proactive adjustment of fuel delivery, boost pressure, and EGR rate before deviations become significant. This predictive approach results in faster load acceptance and superior transient response compared to purely reactive control systems.',
+      'Fuel injection timing and quantity are calculated using proprietary combustion optimization algorithms that process inputs including crankshaft position, camshaft phase, fuel temperature, fuel rail pressure, intake manifold conditions, and exhaust feedback. Individual cylinder trim capability allows compensation for manufacturing variations and wear-related changes, maintaining optimal balance across all cylinders. The DDEC VI supports up to seven separate injection pulses per combustion event.',
+      'Engine protection utilizes a three-tier response hierarchy with graduated severity levels. Tier 1 faults generate warning alerts while maintaining full engine capability. Tier 2 conditions initiate power deration following defined curves to reduce thermal and mechanical stress. Tier 3 protection commands immediate shutdown with injector cutoff completing within 50 milliseconds. All protection events include detailed diagnostic codes and operational snapshots for post-incident analysis.'
+    ],
+    installation: [
+      'DDEC VI installation requires mounting in a protected location with adequate cooling airflow. The ECM dissipates approximately 15W during operation, necessitating ambient air circulation of at least 0.3 m³/min around the enclosure. When mounted in engine compartments, use vibration-isolated brackets rated for the specific frequency spectrum present. Maximum surface temperature at the mounting pad must not exceed 85°C.',
+      'All wiring connections utilize genuine Detroit Diesel harnesses with environmental sealing rated for continuous immersion. The main 120-pin Deutsch HD30 connector requires sequential installation of cavity seals followed by connector position assurance (CPA) engagement. Apply Detroit-approved dielectric compound to all contacts. Secondary connectors for injectors, sensors, and communication require similar attention to sealing and proper termination.',
+      'System commissioning requires DiagnosticLink (DDDL) software with appropriate licensing for the engine family. Upload the specific calibration file matching engine serial number and generator application requirements. Configure speed control parameters including rated frequency, droop percentage for parallel operation, and load acceptance profiles. Execute automated sensor calibration and injector trim procedures before initial operation.'
+    ],
+    specifications: {
+      'Operating Voltage': '18-32 VDC',
+      'Current Draw': '4.5A maximum',
+      'Processor': '32-bit @ 400MHz',
+      'Memory': '4MB Flash, 1MB RAM',
+      'Operating Temperature': '-40°C to +121°C',
+      'Storage Temperature': '-55°C to +150°C',
+      'Vibration': '30G RMS',
+      'Protection Rating': 'IP69K',
+      'Weight': '2.2 kg',
+      'Dimensions': '295 x 195 x 70 mm',
+      'Communication': 'J1939 CAN, J1708/J1587, USB'
+    },
+    pinout: `
+┌─────────────────────────────────────────────────────────────────┐
+│              DETROIT DIESEL DDEC VI - 120 PIN                    │
+│                    DEUTSCH HD30 CONNECTOR                        │
+├─────────────────────────────────────────────────────────────────┤
+│  POWER SECTION (Pins A1-A12)                                    │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐ │
+│  │ A1 │ A2 │ A3 │ A4 │ A5 │ A6 │ A7 │ A8 │ A9 │A10 │A11 │A12 │ │
+│  │VB+ │VB+ │GND │GND │KEY │RLY │RLY2│PGND│PGND│AGND│AGND│SHLD│ │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘ │
+│                                                                  │
+│  SENSOR INPUTS (Pins B1-B36)                                    │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐ │
+│  │ B1 │ B2 │ B3 │ B4 │ B5 │ B6 │ B7 │ B8 │ B9 │B10 │B11 │B12 │ │
+│  │CKP+│CKP-│CMP+│CMP-│ECT │ECTR│IAT │IATR│BPS │BPSR│FRP │FRPR│ │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘ │
+│                                                                  │
+│  INJECTOR OUTPUTS (Pins C1-C24)                                 │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐ │
+│  │ C1 │ C2 │ C3 │ C4 │ C5 │ C6 │ C7 │ C8 │ C9 │C10 │C11 │C12 │ │
+│  │INJ1│INJ1│INJ2│INJ2│INJ3│INJ3│INJ4│INJ4│INJ5│INJ5│INJ6│INJ6│ │
+│  │ H  │ L  │ H  │ L  │ H  │ L  │ H  │ L  │ H  │ L  │ H  │ L  │ │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘ │
+│                                                                  │
+│  COMMUNICATION (Pins D1-D12)                                    │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐ │
+│  │ D1 │ D2 │ D3 │ D4 │ D5 │ D6 │ D7 │ D8 │ D9 │D10 │D11 │D12 │ │
+│  │CAN+│CAN-│J170│J170│CAN2│CAN2│USB+│USB-│DIAG│DIAG│ NC │ NC │ │
+│  │ H  │ L  │ +  │ -  │ H  │ L  │ D+ │ D- │ TX │ RX │    │    │ │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘ │
+└─────────────────────────────────────────────────────────────────┘`,
+    wiringDiagram: `
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    DETROIT DIESEL DDEC VI WIRING DIAGRAM                     │
+│                          Generator Set Application                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│    ┌──────────┐                                  ┌──────────────────┐        │
+│    │ BATTERY  │                                  │   GEN CONTROLLER │        │
+│    │   24V    │                                  │   (DSE/ComAp)    │        │
+│    └────┬─────┘                                  └────────┬─────────┘        │
+│         │                                                 │                   │
+│    ┌────┴────┐                                   CAN H ───┤                   │
+│    │ 50A CB  │                                   CAN L ───┤                   │
+│    └────┬────┘                                            │                   │
+│         │                                                  ▼                   │
+│         ▼                                                                      │
+│    ┌─────────────────────────────────────────────────────────────────────┐   │
+│    │                        DETROIT DDEC VI ECM                           │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ POWER SUPPLY                                                │    │   │
+│    │  │   VB+ (A1,A2) ●────────────────────── 24VDC BATTERY        │    │   │
+│    │  │   GND (A3,A4) ●────────────────────── CHASSIS GROUND       │    │   │
+│    │  │   KEY (A5)    ●────────────────────── IGNITION KEY         │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    │                                                                     │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ ACRS COMMON RAIL SYSTEM                                     │    │   │
+│    │  │                                                              │    │   │
+│    │  │   FRP (B11) ●──────────── Fuel Rail Pressure (2200 bar)    │    │   │
+│    │  │                                                              │    │   │
+│    │  │         ┌─────────────────────────────────────────────┐     │    │   │
+│    │  │   INJ1 ─┤                HIGH PRESSURE RAIL            │     │    │   │
+│    │  │   INJ2 ─┤         ┌───┐  ┌───┐  ┌───┐  ┌───┐        │     │    │   │
+│    │  │   INJ3 ─┼─────────┤ 1 ├──┤ 2 ├──┤ 3 ├──┤ 4 ├────────│     │    │   │
+│    │  │   INJ4 ─┤         └─┬─┘  └─┬─┘  └─┬─┘  └─┬─┘        │     │    │   │
+│    │  │         │         [CYL1] [CYL2] [CYL3] [CYL4]       │     │    │   │
+│    │  │         └─────────────────────────────────────────────┘     │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+│    WIRE COLORS:                                                              │
+│    ─ RED: B+ Power (4mm²)       ─ BLK: Ground (4mm²)                        │
+│    ─ WHT/GRN: CAN H             ─ WHT/BLU: CAN L                            │
+│    ─ PNK: Sensor 5V Ref         ─ TAN: Sensor Signal                        │
+└──────────────────────────────────────────────────────────────────────────────┘`,
+    troubleshooting: {
+      symptoms: [
+        'Engine cranks but does not start',
+        'Extended cranking time',
+        'Black smoke at all loads',
+        'White smoke on cold start',
+        'Power loss or derate active',
+        'Rough idle or surging',
+        'High fuel consumption',
+        'Controller communication fault'
+      ],
+      causes: [
+        'Crankshaft/camshaft position sensor fault',
+        'Fuel rail pressure out of range',
+        'Injector circuit failure',
+        'ECM internal component failure',
+        'Wiring harness damage or water intrusion',
+        'CAN bus termination or wiring fault',
+        'Low battery voltage during cranking',
+        'Incorrect calibration file installed'
+      ],
+      diagnosticSteps: [
+        '1. Connect DiagnosticLink (DDDL) software',
+        '2. Read all active and stored fault codes',
+        '3. Review freeze-frame data for fault conditions',
+        '4. Check ECM power supply (min 18V during crank)',
+        '5. Verify ground circuit integrity',
+        '6. Monitor live engine data during operation',
+        '7. Perform actuator tests via DDDL',
+        '8. Check crankshaft sensor signal quality',
+        '9. Verify fuel rail pressure meets specification',
+        '10. Inspect harness for damage and moisture'
+      ],
+      solutions: [
+        'Replace failed speed/position sensors',
+        'Check high-pressure fuel pump and relief valve',
+        'Replace faulty injector assemblies',
+        'Replace ECM if internal failure confirmed',
+        'Repair harness with genuine Detroit splices',
+        'Correct CAN bus wiring and termination',
+        'Service battery and charging system',
+        'Upload correct calibration file'
+      ],
+      tools: [
+        'Detroit Diesel DiagnosticLink (DDDL)',
+        'Detroit diagnostic adapter (nexiq USB-Link)',
+        'Digital multimeter',
+        'Oscilloscope for signal analysis',
+        'Fuel pressure test kit (0-2500 bar)',
+        'Injector test equipment',
+        'Breakout harness for ECM connector'
+      ]
+    },
+    faultCodes: [
+      {
+        controller: 'DSE',
+        codes: [
+          { code: 'DD-001', description: 'DDEC Communication Lost', severity: 'Critical' },
+          { code: 'DD-002', description: 'Crankshaft Position Sensor Fault', severity: 'Critical' },
+          { code: 'DD-003', description: 'Fuel Rail Pressure Low', severity: 'Warning' },
+          { code: 'DD-004', description: 'Injector Circuit Open', severity: 'Warning' },
+          { code: 'DD-005', description: 'Engine Derate Active', severity: 'Warning' }
+        ]
+      },
+      {
+        controller: 'ComAp',
+        codes: [
+          { code: 'E-DD-01', description: 'CAN Timeout - DDEC VI', severity: 'Critical' },
+          { code: 'E-DD-02', description: 'Engine Speed Signal Lost', severity: 'Critical' },
+          { code: 'E-DD-03', description: 'Turbo Boost Fault', severity: 'Warning' },
+          { code: 'E-DD-04', description: 'Oil Pressure Low', severity: 'Warning' },
+          { code: 'E-DD-05', description: 'ECM Internal Error', severity: 'Critical' }
+        ]
+      }
+    ],
+    partNumbers: [
+      { manufacturer: 'Detroit Diesel', partNumber: 'A4721531579', description: 'DDEC VI ECM Assembly' },
+      { manufacturer: 'Detroit Diesel', partNumber: 'A4721532279', description: 'DDEC VI ECM - Reman' },
+      { manufacturer: 'Detroit Diesel', partNumber: 'A4601506033', description: 'ECM Wiring Harness' },
+      { manufacturer: 'Detroit Diesel', partNumber: 'W060589047510', description: 'Diagnostic Adapter' },
+      { manufacturer: 'Detroit Diesel', partNumber: 'A4601501033', description: 'Connector Kit' }
+    ],
+    compatibleEngines: [
+      'Series 60 12.7L', 'Series 60 14.0L',
+      'DD13', 'DD15', 'DD16',
+      'MBE 900', 'MBE 4000'
+    ]
+  },
+  {
+    id: 'john-deere-powertech',
+    name: 'John Deere PowerTech ECM',
+    manufacturer: 'John Deere',
+    category: 'diesel',
+    description: [
+      'The John Deere PowerTech Electronic Control Module (ECM) provides advanced engine management for the PowerTech Plus, PowerTech PSX, and PowerTech PVX series engines used in generator applications from 50 kW to 500 kW. This robust control unit implements John Deere\'s proprietary FT4 (Final Tier 4) emissions technology while maintaining the reliability and fuel efficiency that generators demand. The ECM processes signals from 25+ sensors to precisely control common rail fuel injection, EGR, and exhaust aftertreatment systems.',
+      'Featuring John Deere\'s exclusive Cooled EGR and High-Pressure Common Rail (HPCR) integration, the PowerTech ECM achieves exceptional fuel economy while meeting stringent global emissions standards. The module supports multiple injection events per combustion cycle with precise timing control to within 0.5 degrees of crankshaft rotation. Adaptive learning algorithms continuously optimize fuel delivery based on fuel quality, ambient conditions, and engine wear characteristics.',
+      'The PowerTech ECM housing is manufactured from reinforced aluminum with environmental sealing rated IP67 for protection against moisture, dust, and agricultural chemicals common in generator deployment environments. Operating reliably from -40°C to +85°C, the unit features ruggedized connector systems and comprehensive electromagnetic compatibility for operation near welding equipment and other electrical noise sources.'
+    ],
+    workingPrinciple: [
+      'The PowerTech ECM utilizes a high-pressure common rail fuel system operating at pressures up to 2,000 bar for superior fuel atomization. Crankshaft and camshaft position sensors provide precise engine timing reference for injection event synchronization. The ECM calculates optimal injection timing, duration, and rail pressure for each cylinder based on load demand, ambient conditions, and fuel temperature, achieving fuel consumption rates below 200 g/kWh.',
+      'EGR (Exhaust Gas Recirculation) control is integral to the PowerTech emissions strategy. The ECM precisely modulates EGR valve position to recirculate a controlled portion of exhaust gas back to the intake manifold, reducing peak combustion temperatures and NOx formation. Cooled EGR technology uses an exhaust gas cooler to reduce recirculated gas temperature, allowing higher EGR rates without compromising power density.',
+      'Engine protection is implemented through continuous monitoring of coolant temperature, oil pressure, oil temperature, boost pressure, and exhaust temperature. The ECM employs graduated protection responses: Level 1 issues warnings while maintaining operation, Level 2 implements power deration following defined curves, and Level 3 initiates controlled shutdown. Critical faults trigger immediate shutdown with injector cutoff completing within 100 milliseconds.'
+    ],
+    installation: [
+      'Mount the PowerTech ECM in a clean, dry location protected from direct water spray and excessive heat. When engine-mounted, use approved vibration isolation mounts. Maintain minimum 50mm clearance around the ECM for connector access and heat dissipation. The mounting surface temperature should not exceed 70°C during normal operation.',
+      'All electrical connections must use genuine John Deere wiring harnesses with factory-sealed connectors. The main 96-pin connector requires proper insertion of cavity seals and engagement of connector position assurance (CPA) locks. Apply John Deere-approved dielectric grease to connector cavities. Route harness at least 75mm away from exhaust components.',
+      'System commissioning requires John Deere Service ADVISOR software connected via diagnostic adapter. Upload the correct engine calibration file matching the specific engine serial number. Configure generator parameters including rated speed, protection setpoints, and communication settings. Execute sensor calibration procedures and verify all readings before releasing to service.'
+    ],
+    specifications: {
+      'Operating Voltage': '18-32 VDC',
+      'Current Draw': '3.2A maximum',
+      'Processor': '32-bit @ 300MHz',
+      'Memory': '2MB Flash, 512KB RAM',
+      'Operating Temperature': '-40°C to +85°C',
+      'Storage Temperature': '-50°C to +105°C',
+      'Vibration': '25G RMS',
+      'Protection Rating': 'IP67',
+      'Weight': '1.6 kg',
+      'Dimensions': '260 x 175 x 60 mm',
+      'Communication': 'J1939 CAN, ISO 11783'
+    },
+    pinout: `
+┌─────────────────────────────────────────────────────────────────┐
+│              JOHN DEERE POWERTECH ECM - 96 PIN                   │
+│                    DEUTSCH HD30 CONNECTOR                        │
+├─────────────────────────────────────────────────────────────────┤
+│  POWER (Pins 1-10)                                               │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐           │
+│  │ 1  │ 2  │ 3  │ 4  │ 5  │ 6  │ 7  │ 8  │ 9  │ 10 │           │
+│  │VB+ │VB+ │GND │GND │KEY │AUX │PGND│PGND│AGND│SHLD│           │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘           │
+│                                                                  │
+│  SENSORS (Pins 11-40)                                           │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐           │
+│  │ 11 │ 12 │ 13 │ 14 │ 15 │ 16 │ 17 │ 18 │ 19 │ 20 │           │
+│  │SPD+│SPD-│CAM+│CAM-│ ECT│ECTR│ IAT│IATR│ BPS│BPSR│           │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘           │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐           │
+│  │ 21 │ 22 │ 23 │ 24 │ 25 │ 26 │ 27 │ 28 │ 29 │ 30 │           │
+│  │ FRP│FRPR│ OPS│OPSR│ EOT│EOTR│ FLV│5REF│5REF│ EGR│           │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘           │
+│                                                                  │
+│  INJECTORS (Pins 50-65)                                         │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐           │
+│  │ 50 │ 51 │ 52 │ 53 │ 54 │ 55 │ 56 │ 57 │ 58 │ 59 │           │
+│  │INJ1│INJ1│INJ2│INJ2│INJ3│INJ3│INJ4│INJ4│INJ5│INJ5│           │
+│  │ +  │ -  │ +  │ -  │ +  │ -  │ +  │ -  │ +  │ -  │           │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘           │
+│                                                                  │
+│  COMMUNICATION (Pins 80-90)                                     │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐           │
+│  │ 80 │ 81 │ 82 │ 83 │ 84 │ 85 │ 86 │ 87 │ 88 │ 89 │           │
+│  │CAN+│CAN-│ISO+│ISO-│DIAG│DIAG│ NC │ NC │ NC │ NC │           │
+│  │ H  │ L  │    │    │ TX │ RX │    │    │    │    │           │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘           │
+└─────────────────────────────────────────────────────────────────┘`,
+    wiringDiagram: `
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                   JOHN DEERE POWERTECH ECM WIRING DIAGRAM                    │
+│                          Generator Set Application                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│    ┌──────────┐                                  ┌──────────────────┐        │
+│    │ BATTERY  │                                  │   GEN CONTROLLER │        │
+│    │   24V    │                                  │   (DSE/ComAp)    │        │
+│    └────┬─────┘                                  └────────┬─────────┘        │
+│         │                                                 │                   │
+│    ┌────┴────┐                                   CAN H ───┤                   │
+│    │ 35A CB  │                                   CAN L ───┤                   │
+│    └────┬────┘                                   ISO ─────┤                   │
+│         │                                                  ▼                   │
+│         ▼                                                                      │
+│    ┌─────────────────────────────────────────────────────────────────────┐   │
+│    │                      JOHN DEERE POWERTECH ECM                        │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ POWER SUPPLY                                                │    │   │
+│    │  │   VB+ (1,2) ●─────────────────────── 24VDC SWITCHED        │    │   │
+│    │  │   GND (3,4) ●─────────────────────── ENGINE BLOCK GROUND   │    │   │
+│    │  │   KEY (5)   ●─────────────────────── IGNITION KEY SWITCH   │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    │                                                                     │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ SPEED SENSORS                                               │    │   │
+│    │  │   SPD+ (11) ●──────┐    ┌───────────────┐                  │    │   │
+│    │  │   SPD- (12) ●──────┼────┤  CRANKSHAFT   │                  │    │   │
+│    │  │                    │    │  MPU SENSOR   │                  │    │   │
+│    │  │   CAM+ (13) ●──────┼────┤───────────────┤                  │    │   │
+│    │  │   CAM- (14) ●──────┘    │  CAMSHAFT     │                  │    │   │
+│    │  │                         │  MPU SENSOR   │                  │    │   │
+│    │  │                         └───────────────┘                  │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    │                                                                     │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ HPCR COMMON RAIL SYSTEM                                     │    │   │
+│    │  │   FRP (21) ●────────────── Fuel Rail Pressure (0-2000bar)  │    │   │
+│    │  │                                                              │    │   │
+│    │  │   INJ1-6 ●───────────────── Unit Injectors (Solenoid Type) │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    │                                                                     │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ EGR SYSTEM                                                  │    │   │
+│    │  │   EGR (30) ●───────────────── EGR Valve Position Feedback  │    │   │
+│    │  │   EGR_PWM ●────────────────── EGR Actuator PWM Control     │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+│    WIRE SPECIFICATIONS:                                                      │
+│    ─ Power: 4mm² minimum, fused protection                                   │
+│    ─ CAN: 120Ω twisted pair, terminated both ends                           │
+│    ─ Sensors: 0.5mm² shielded, shield at ECM ground only                    │
+└──────────────────────────────────────────────────────────────────────────────┘`,
+    troubleshooting: {
+      symptoms: [
+        'Engine cranks but fails to start',
+        'Rough or unstable idle',
+        'Loss of power under load',
+        'Excessive smoke (black/white)',
+        'High fuel consumption',
+        'EGR system fault codes',
+        'Communication errors with controller',
+        'Engine protection shutdown'
+      ],
+      causes: [
+        'Crankshaft/camshaft sensor failure',
+        'Fuel supply restriction',
+        'EGR valve stuck or calibration drift',
+        'Injector failure or clogged nozzle',
+        'ECM internal component failure',
+        'Wiring harness damage',
+        'Turbocharger underperformance',
+        'CAN bus communication fault'
+      ],
+      diagnosticSteps: [
+        '1. Connect John Deere Service ADVISOR',
+        '2. Read all active and stored fault codes',
+        '3. Review fault occurrence conditions',
+        '4. Check ECM power supply voltage',
+        '5. Verify ground connections',
+        '6. Monitor real-time sensor data',
+        '7. Test EGR valve operation',
+        '8. Check fuel rail pressure',
+        '9. Verify crankshaft sensor signal',
+        '10. Inspect harness for damage'
+      ],
+      solutions: [
+        'Replace failed speed sensors',
+        'Service fuel system, replace filters',
+        'Clean or replace EGR valve',
+        'Replace faulty injectors',
+        'Replace ECM if confirmed failed',
+        'Repair harness with genuine parts',
+        'Service turbocharger system',
+        'Correct CAN bus wiring/termination'
+      ],
+      tools: [
+        'John Deere Service ADVISOR software',
+        'John Deere diagnostic adapter',
+        'Digital multimeter',
+        'Oscilloscope',
+        'Fuel pressure test kit',
+        'EGR test equipment',
+        'CAN bus analyzer'
+      ]
+    },
+    faultCodes: [
+      {
+        controller: 'DSE',
+        codes: [
+          { code: 'JD-001', description: 'ECM Communication Lost', severity: 'Critical' },
+          { code: 'JD-002', description: 'Engine Speed Signal Fault', severity: 'Critical' },
+          { code: 'JD-003', description: 'Fuel Rail Pressure Low', severity: 'Warning' },
+          { code: 'JD-004', description: 'EGR System Fault', severity: 'Warning' },
+          { code: 'JD-005', description: 'Injector Circuit Open', severity: 'Warning' }
+        ]
+      },
+      {
+        controller: 'ComAp',
+        codes: [
+          { code: 'E-JD-01', description: 'CAN Timeout - PowerTech', severity: 'Critical' },
+          { code: 'E-JD-02', description: 'Crankshaft Position Fault', severity: 'Critical' },
+          { code: 'E-JD-03', description: 'Boost Pressure Error', severity: 'Warning' },
+          { code: 'E-JD-04', description: 'Engine Derate Active', severity: 'Warning' },
+          { code: 'E-JD-05', description: 'ECM Internal Error', severity: 'Critical' }
+        ]
+      }
+    ],
+    partNumbers: [
+      { manufacturer: 'John Deere', partNumber: 'RE531807', description: 'ECM Assembly - PowerTech Plus' },
+      { manufacturer: 'John Deere', partNumber: 'RE546826', description: 'ECM Assembly - PowerTech PVX' },
+      { manufacturer: 'John Deere', partNumber: 'RE527835', description: 'ECM Wiring Harness' },
+      { manufacturer: 'John Deere', partNumber: 'RE563796', description: 'Service ADVISOR Adapter' },
+      { manufacturer: 'John Deere', partNumber: 'RE553508', description: 'Connector Kit' }
+    ],
+    compatibleEngines: [
+      'PowerTech 4045HF485', 'PowerTech 6068HF485',
+      'PowerTech 6090HF485', 'PowerTech 6135HF485',
+      'PowerTech Plus 4.5L', 'PowerTech Plus 6.8L',
+      'PowerTech PVX 9.0L', 'PowerTech PVX 13.5L'
+    ]
+  },
+  {
+    id: 'deutz-emr4',
+    name: 'Deutz EMR4 ECM',
+    manufacturer: 'Deutz',
+    category: 'diesel',
+    description: [
+      'The Deutz EMR4 (Electronic Engine Management Release 4) represents the latest generation of Deutz engine control technology, deployed across the TCD series engines including TCD 2.9, TCD 3.6, TCD 4.1, TCD 6.1, TCD 7.8, and TCD 12.0/16.0 engines powering generators from 30 kW to 520 kW. This advanced ECM features a high-performance 32-bit processor capable of executing sophisticated combustion optimization algorithms while maintaining robust engine protection. The EMR4 system processes inputs from 20+ sensors to precisely control common rail fuel injection and emissions control systems.',
+      'Distinguished by Deutz\'s proprietary SCR (Selective Catalytic Reduction) integration, the EMR4 ECM coordinates exhaust aftertreatment to meet Stage V and EPA Tier 4 Final emissions standards without requiring diesel particulate filters on most models. The system implements multiple injection strategies including pilot injection for noise reduction and post-injection for active DPF regeneration when equipped. Adaptive algorithms continuously optimize fuel delivery for fuel efficiency while maintaining emissions compliance.',
+      'The EMR4 ECM features a compact aluminum housing with IP67 environmental protection, operating reliably from -40°C to +95°C. The unit incorporates advanced EMC filtering for operation in electrically noisy environments typical of generator installations. Comprehensive diagnostic capability through Deutz SERDIA software enables detailed troubleshooting, parameter adjustment, and software updates.'
+    ],
+    workingPrinciple: [
+      'The EMR4 system utilizes a high-pressure common rail fuel system operating at pressures up to 2,000 bar for optimal fuel atomization. The ECM calculates injection timing and quantity based on crankshaft position, engine load, ambient conditions, and fuel temperature. Multiple injection pulses per combustion cycle optimize the balance between power, efficiency, emissions, and combustion noise.',
+      'Emissions control is achieved through coordinated management of EGR (where equipped) and SCR aftertreatment. The ECM monitors exhaust temperature and NOx levels to modulate DEF (Diesel Exhaust Fluid) dosing for optimal NOx conversion efficiency. Closed-loop control using NOx sensors maintains conversion rates above 95% across the operating range while minimizing DEF consumption.',
+      'Engine protection utilizes multiple independent monitoring channels that operate in parallel with the main control functions. Critical parameters including coolant temperature, oil pressure, and engine speed are monitored continuously with graduated responses from warning indication through power deration to emergency shutdown. Protection activation is logged with operational context for diagnostic analysis.'
+    ],
+    installation: [
+      'The EMR4 ECM should be mounted in a protected location with adequate airflow for cooling. When engine-mounted, use approved vibration isolation hardware. Maintain minimum 40mm clearance around the unit for connector access. The ECM operates from 10-32 VDC supply with internal protection against overvoltage and reverse polarity.',
+      'Wiring connections utilize Deutz-specified harnesses with environmental sealing. The main connector requires proper insertion of pin seals and engagement of secondary locking. Apply approved dielectric grease to all connections. CAN bus wiring must follow Deutz specifications for termination and shielding to ensure reliable communication.',
+      'System commissioning requires Deutz SERDIA diagnostic software with appropriate license level. Verify engine calibration matches the specific configuration. Configure operating parameters including rated speed and protection setpoints. Execute any required sensor calibrations before operational release.'
+    ],
+    specifications: {
+      'Operating Voltage': '10-32 VDC',
+      'Current Draw': '2.5A maximum',
+      'Processor': '32-bit @ 200MHz',
+      'Memory': '1MB Flash, 256KB RAM',
+      'Operating Temperature': '-40°C to +95°C',
+      'Storage Temperature': '-50°C to +105°C',
+      'Vibration': '20G RMS',
+      'Protection Rating': 'IP67',
+      'Weight': '1.2 kg',
+      'Dimensions': '220 x 160 x 55 mm',
+      'Communication': 'J1939 CAN, Proprietary'
+    },
+    pinout: `
+┌─────────────────────────────────────────────────────────────────┐
+│                   DEUTZ EMR4 ECM - 60 PIN                        │
+│                    AMP CONNECTOR SERIES                          │
+├─────────────────────────────────────────────────────────────────┤
+│  POWER (Pins 1-8)                                                │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┐                      │
+│  │ 1  │ 2  │ 3  │ 4  │ 5  │ 6  │ 7  │ 8  │                      │
+│  │VB+ │VB+ │GND │GND │KEY │PGND│AGND│SHLD│                      │
+│  └────┴────┴────┴────┴────┴────┴────┴────┘                      │
+│                                                                  │
+│  SENSORS (Pins 10-30)                                           │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐           │
+│  │ 10 │ 11 │ 12 │ 13 │ 14 │ 15 │ 16 │ 17 │ 18 │ 19 │           │
+│  │SPD+│SPD-│CAM+│CAM-│ ECT│ IAT│ BPS│ OPS│ FRP│5REF│           │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘           │
+│                                                                  │
+│  INJECTORS (Pins 35-46)                                         │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐ │
+│  │ 35 │ 36 │ 37 │ 38 │ 39 │ 40 │ 41 │ 42 │ 43 │ 44 │ 45 │ 46 │ │
+│  │IN1+│IN1-│IN2+│IN2-│IN3+│IN3-│IN4+│IN4-│IN5+│IN5-│IN6+│IN6-│ │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘ │
+│                                                                  │
+│  COMMUNICATION (Pins 50-58)                                     │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┐                 │
+│  │ 50 │ 51 │ 52 │ 53 │ 54 │ 55 │ 56 │ 57 │ 58 │                 │
+│  │CAN+│CAN-│DIAG│DIAG│ NC │ NC │ NC │ NC │ NC │                 │
+│  │ H  │ L  │ TX │ RX │    │    │    │    │    │                 │
+│  └────┴────┴────┴────┴────┴────┴────┴────┴────┘                 │
+└─────────────────────────────────────────────────────────────────┘`,
+    wiringDiagram: `
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                      DEUTZ EMR4 ECM WIRING DIAGRAM                           │
+│                        Generator Set Application                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│    ┌──────────┐                                  ┌──────────────────┐        │
+│    │ BATTERY  │                                  │   GEN CONTROLLER │        │
+│    │ 12/24V   │                                  │   (DSE/ComAp)    │        │
+│    └────┬─────┘                                  └────────┬─────────┘        │
+│         │                                                 │                   │
+│    ┌────┴────┐                                   CAN H ───┤                   │
+│    │ 30A CB  │                                   CAN L ───┤                   │
+│    └────┬────┘                                            │                   │
+│         │                                                  ▼                   │
+│         ▼                                                                      │
+│    ┌─────────────────────────────────────────────────────────────────────┐   │
+│    │                          DEUTZ EMR4 ECM                              │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ POWER                                                       │    │   │
+│    │  │   VB+ (1,2) ●─────────────────── 12/24VDC SWITCHED         │    │   │
+│    │  │   GND (3,4) ●─────────────────── ENGINE BLOCK GROUND       │    │   │
+│    │  │   KEY (5)   ●─────────────────── KEY SWITCH                │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    │                                                                     │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ COMMON RAIL FUEL SYSTEM                                     │    │   │
+│    │  │   FRP (18) ●─────────────── Rail Pressure (0-2000 bar)     │    │   │
+│    │  │   INJ1-6 ●────────────────── Solenoid Injectors            │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    │                                                                     │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ SCR AFTERTREATMENT (IF EQUIPPED)                            │    │   │
+│    │  │   DEF_PWM ●──────────────── DEF Dosing Module              │    │   │
+│    │  │   NOX_SEN ●──────────────── NOx Sensor Input               │    │   │
+│    │  │   EXH_TMP ●──────────────── Exhaust Temperature            │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+│    NOTES:                                                                    │
+│    ─ EMR4 accepts both 12V and 24V systems                                  │
+│    ─ CAN bus requires 120Ω termination                                      │
+│    ─ Use Deutz SERDIA for configuration                                     │
+└──────────────────────────────────────────────────────────────────────────────┘`,
+    troubleshooting: {
+      symptoms: [
+        'Engine cranks but does not start',
+        'Rough idle operation',
+        'Power loss or derate',
+        'Excessive smoke',
+        'High fuel consumption',
+        'SCR/DEF fault codes',
+        'Controller communication fault',
+        'Engine protection shutdown'
+      ],
+      causes: [
+        'Speed sensor failure',
+        'Fuel supply problem',
+        'Injector malfunction',
+        'ECM internal fault',
+        'Wiring damage',
+        'DEF quality or supply issue',
+        'CAN bus fault',
+        'Sensor calibration drift'
+      ],
+      diagnosticSteps: [
+        '1. Connect Deutz SERDIA software',
+        '2. Read all fault codes',
+        '3. Check ECM power supply',
+        '4. Verify sensor readings',
+        '5. Test injector operation',
+        '6. Check fuel rail pressure',
+        '7. Verify DEF quality and level',
+        '8. Test CAN communication',
+        '9. Review operating parameters',
+        '10. Inspect wiring harness'
+      ],
+      solutions: [
+        'Replace speed sensors',
+        'Service fuel system',
+        'Replace faulty injectors',
+        'Replace ECM if confirmed',
+        'Repair wiring harness',
+        'Refill with quality DEF',
+        'Fix CAN bus termination',
+        'Recalibrate sensors'
+      ],
+      tools: [
+        'Deutz SERDIA diagnostic software',
+        'Deutz diagnostic adapter',
+        'Digital multimeter',
+        'Fuel pressure test kit',
+        'DEF quality tester',
+        'CAN bus analyzer'
+      ]
+    },
+    faultCodes: [
+      {
+        controller: 'DSE',
+        codes: [
+          { code: 'DTZ-001', description: 'EMR4 Communication Lost', severity: 'Critical' },
+          { code: 'DTZ-002', description: 'Engine Speed Fault', severity: 'Critical' },
+          { code: 'DTZ-003', description: 'Fuel Rail Pressure Error', severity: 'Warning' },
+          { code: 'DTZ-004', description: 'SCR System Fault', severity: 'Warning' },
+          { code: 'DTZ-005', description: 'Injector Circuit Fault', severity: 'Warning' }
+        ]
+      },
+      {
+        controller: 'ComAp',
+        codes: [
+          { code: 'E-DTZ-01', description: 'CAN Timeout - Deutz', severity: 'Critical' },
+          { code: 'E-DTZ-02', description: 'Speed Signal Lost', severity: 'Critical' },
+          { code: 'E-DTZ-03', description: 'DEF Level Low', severity: 'Warning' },
+          { code: 'E-DTZ-04', description: 'Engine Derate', severity: 'Warning' },
+          { code: 'E-DTZ-05', description: 'ECM Fault', severity: 'Critical' }
+        ]
+      }
+    ],
+    partNumbers: [
+      { manufacturer: 'Deutz', partNumber: '04516430', description: 'EMR4 ECM Assembly' },
+      { manufacturer: 'Deutz', partNumber: '04295155', description: 'ECM Wiring Harness' },
+      { manufacturer: 'Deutz', partNumber: '04504044', description: 'SERDIA Diagnostic Kit' },
+      { manufacturer: 'Deutz', partNumber: '04516436', description: 'Connector Kit' }
+    ],
+    compatibleEngines: [
+      'TCD 2.9 L4', 'TCD 3.6 L4', 'TCD 4.1 L4',
+      'TCD 6.1 L6', 'TCD 7.8 L6',
+      'TCD 12.0 V6', 'TCD 16.0 V8'
+    ]
+  },
+  {
+    id: 'yanmar-ecu',
+    name: 'Yanmar Electronic Control Unit',
+    manufacturer: 'Yanmar',
+    category: 'diesel',
+    description: [
+      'The Yanmar Electronic Control Unit (ECU) provides advanced engine management for the TNV, TNM, and BY series diesel engines used in generator applications from 5 kW to 150 kW. This compact yet sophisticated control system implements Yanmar\'s proprietary common rail fuel injection technology with precise electronic control of injection timing, duration, and pressure. The ECU processes signals from multiple sensors to optimize combustion efficiency while meeting global emissions standards.',
+      'Featuring Yanmar\'s expertise in compact diesel technology, the ECU achieves exceptional power density and fuel efficiency in a small package. The module supports multiple injection events per combustion cycle with timing precision within 1 degree of crankshaft rotation. Adaptive algorithms automatically adjust injection parameters based on fuel quality, altitude, and ambient temperature variations.',
+      'The ECU housing features a compact aluminum design with IP65 environmental sealing, operating reliably from -30°C to +85°C. The unit incorporates robust EMC protection for operation in generator environments. Diagnostic capabilities through Yanmar\'s diagnostic software enable detailed fault analysis and parameter adjustment.'
+    ],
+    workingPrinciple: [
+      'The Yanmar ECU controls a high-pressure common rail system operating at pressures up to 1,800 bar. Crankshaft position sensing provides timing reference for injection events synchronized to each cylinder\'s combustion cycle. The ECU calculates optimal injection parameters based on engine speed, load demand, and operating conditions.',
+      'Fuel quantity modulation achieves stable speed control for generator applications with droop or isochronous governing modes. The ECU implements load anticipation algorithms that adjust fuel delivery proactively during load transients, minimizing frequency deviations. This capability is essential for maintaining power quality in sensitive applications.',
+      'Engine protection monitors coolant temperature, oil pressure, and engine speed with configurable warning and shutdown thresholds. The graduated protection response allows continued operation with warnings for minor issues while providing immediate shutdown protection for critical faults.'
+    ],
+    installation: [
+      'Mount the ECU in a clean, dry location protected from direct water spray and excessive heat. Use approved mounting brackets with vibration isolation when engine-mounted. Maintain adequate clearance for connector access and heat dissipation.',
+      'Use genuine Yanmar wiring harnesses with proper connector sealing. Apply dielectric grease to all electrical connections. Route harness away from exhaust components and secure at regular intervals to prevent chafing.',
+      'System setup requires Yanmar diagnostic software to verify sensor readings and configure operating parameters. Verify fuel rail pressure operation and engine protection settings before operational release.'
+    ],
+    specifications: {
+      'Operating Voltage': '12-32 VDC',
+      'Current Draw': '2.0A maximum',
+      'Processor': '32-bit MCU',
+      'Operating Temperature': '-30°C to +85°C',
+      'Protection Rating': 'IP65',
+      'Weight': '0.8 kg',
+      'Dimensions': '180 x 140 x 50 mm',
+      'Communication': 'J1939 CAN'
+    },
+    pinout: `
+┌─────────────────────────────────────────────────────────────────┐
+│                    YANMAR ECU - 40 PIN                           │
+├─────────────────────────────────────────────────────────────────┤
+│  POWER (Pins 1-6)                                                │
+│  ┌────┬────┬────┬────┬────┬────┐                                │
+│  │ 1  │ 2  │ 3  │ 4  │ 5  │ 6  │                                │
+│  │VB+ │GND │GND │KEY │PGND│AGND│                                │
+│  └────┴────┴────┴────┴────┴────┘                                │
+│                                                                  │
+│  SENSORS (Pins 10-22)                                           │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┐                      │
+│  │ 10 │ 11 │ 12 │ 13 │ 14 │ 15 │ 16 │ 17 │                      │
+│  │SPD+│SPD-│ ECT│ IAT│ BPS│ OPS│ FRP│5REF│                      │
+│  └────┴────┴────┴────┴────┴────┴────┴────┘                      │
+│                                                                  │
+│  INJECTORS (Pins 25-32)                                         │
+│  ┌────┬────┬────┬────┬────┬────┬────┬────┐                      │
+│  │ 25 │ 26 │ 27 │ 28 │ 29 │ 30 │ 31 │ 32 │                      │
+│  │IN1+│IN1-│IN2+│IN2-│IN3+│IN3-│IN4+│IN4-│                      │
+│  └────┴────┴────┴────┴────┴────┴────┴────┘                      │
+│                                                                  │
+│  COMMUNICATION (Pins 35-40)                                     │
+│  ┌────┬────┬────┬────┬────┬────┐                                │
+│  │ 35 │ 36 │ 37 │ 38 │ 39 │ 40 │                                │
+│  │CAN+│CAN-│DIAG│DIAG│ NC │ NC │                                │
+│  │ H  │ L  │ TX │ RX │    │    │                                │
+│  └────┴────┴────┴────┴────┴────┘                                │
+└─────────────────────────────────────────────────────────────────┘`,
+    wiringDiagram: `
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        YANMAR ECU WIRING DIAGRAM                             │
+│                        Compact Generator Application                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│    ┌──────────┐                                  ┌──────────────────┐        │
+│    │ BATTERY  │                                  │   GEN CONTROLLER │        │
+│    │ 12/24V   │                                  │                  │        │
+│    └────┬─────┘                                  └────────┬─────────┘        │
+│         │                                                 │                   │
+│    ┌────┴────┐                                   CAN H ───┤                   │
+│    │ 20A FUSE│                                   CAN L ───┤                   │
+│    └────┬────┘                                            │                   │
+│         │                                                  ▼                   │
+│         ▼                                                                      │
+│    ┌─────────────────────────────────────────────────────────────────────┐   │
+│    │                           YANMAR ECU                                 │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ POWER: VB+ ●───── Battery    GND ●───── Chassis Ground     │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    │                                                                     │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ SENSORS: SPD ●─── Crankshaft   ECT ●─── Coolant Temp       │    │   │
+│    │  │          OPS ●─── Oil Pressure  FRP ●─── Fuel Rail Press   │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    │                                                                     │   │
+│    │  ┌────────────────────────────────────────────────────────────┐    │   │
+│    │  │ INJECTORS: INJ1-4 ●───────── Common Rail Solenoid Type     │    │   │
+│    │  └────────────────────────────────────────────────────────────┘    │   │
+│    └─────────────────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────────────────┘`,
+    troubleshooting: {
+      symptoms: [
+        'No start condition',
+        'Rough idle',
+        'Power loss',
+        'Smoke emission',
+        'Communication fault'
+      ],
+      causes: [
+        'Speed sensor failure',
+        'Fuel supply issue',
+        'Injector fault',
+        'ECU failure',
+        'Wiring problem'
+      ],
+      diagnosticSteps: [
+        '1. Connect diagnostic tool',
+        '2. Read fault codes',
+        '3. Check power supply',
+        '4. Verify sensor readings',
+        '5. Test injectors',
+        '6. Check fuel pressure'
+      ],
+      solutions: [
+        'Replace sensors as needed',
+        'Service fuel system',
+        'Replace faulty injectors',
+        'Replace ECU if confirmed',
+        'Repair wiring'
+      ],
+      tools: [
+        'Yanmar diagnostic software',
+        'Diagnostic adapter',
+        'Multimeter',
+        'Fuel pressure gauge'
+      ]
+    },
+    faultCodes: [
+      {
+        controller: 'DSE',
+        codes: [
+          { code: 'YNM-001', description: 'ECU Communication Lost', severity: 'Critical' },
+          { code: 'YNM-002', description: 'Speed Sensor Fault', severity: 'Critical' },
+          { code: 'YNM-003', description: 'Fuel Pressure Error', severity: 'Warning' },
+          { code: 'YNM-004', description: 'Injector Fault', severity: 'Warning' }
+        ]
+      }
+    ],
+    partNumbers: [
+      { manufacturer: 'Yanmar', partNumber: '129900-77510', description: 'ECU Assembly' },
+      { manufacturer: 'Yanmar', partNumber: '129901-77510', description: 'Wiring Harness' }
+    ],
+    compatibleEngines: [
+      '3TNV76', '3TNV82', '3TNV88', '4TNV84', '4TNV88',
+      '4TNV94', '4TNV98', '4TNV106', 'TNM Series'
+    ]
+  },
+  {
+    id: 'doosan-ecu',
+    name: 'Doosan/Daewoo P086TI ECM',
+    manufacturer: 'Doosan',
+    category: 'diesel',
+    description: [
+      'The Doosan Electronic Control Module provides advanced engine management for the P086TI, P126TI, P158LE, and P222LE series engines widely used in generator applications throughout Africa and Asia. This robust ECM implements electronic unit injector control for precise fuel delivery optimization. The system processes multiple sensor inputs to maintain optimal engine operation across varying load conditions and environmental factors.',
+      'Designed for reliability in demanding generator applications, the Doosan ECM features simplified architecture that minimizes potential failure points while providing essential electronic control functions. The module supports both mechanical governor backup and full electronic speed control modes, ensuring continued operation even with partial system degradation.',
+      'The ECM housing is manufactured to IP65 standards for protection against dust and water ingress common in generator enclosure environments. Operating from -40°C to +80°C, the unit provides reliable service in extreme climates from desert to tropical installations.'
+    ],
+    workingPrinciple: [
+      'The Doosan ECM controls electronic unit injectors (EUI) using high-current driver circuits synchronized to engine crankshaft position. Injection timing is calculated based on speed, load, and temperature inputs to optimize fuel delivery for each operating condition. The system maintains stable speed control through closed-loop governing.',
+      'Protection functions continuously monitor critical parameters with configurable warning and shutdown responses. The ECM stores fault history for diagnostic analysis and can be configured for specific generator protection requirements.',
+      'Communication with generator controllers uses standard J1939 CAN protocol for seamless integration with DSE, ComAp, SmartGen, and other common controller brands.'
+    ],
+    installation: [
+      'Mount ECM in protected location with adequate ventilation. Use vibration-isolated mounting for engine installation. Ensure proper grounding to engine block.',
+      'Use Doosan-specified wiring harnesses and connectors. Apply corrosion protection to all electrical connections. Route harness away from heat sources.',
+      'Configure ECM parameters using Doosan diagnostic software. Verify all sensor readings and protection settings before operational release.'
+    ],
+    specifications: {
+      'Operating Voltage': '18-32 VDC',
+      'Current Draw': '3.0A maximum',
+      'Operating Temperature': '-40°C to +80°C',
+      'Protection Rating': 'IP65',
+      'Weight': '1.4 kg',
+      'Communication': 'J1939 CAN'
+    },
+    pinout: `
+┌─────────────────────────────────────────────────────────────────┐
+│                   DOOSAN ECM - 54 PIN                            │
+├─────────────────────────────────────────────────────────────────┤
+│  Standard Deutsch HD30 connector layout                         │
+│  POWER: Pins 1-6    SENSORS: Pins 10-25                        │
+│  EUI OUTPUTS: Pins 30-45   COMMUNICATION: Pins 50-54           │
+└─────────────────────────────────────────────────────────────────┘`,
+    wiringDiagram: `
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                       DOOSAN ECM WIRING DIAGRAM                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  Standard generator set integration with J1939 CAN communication            │
+│  Power: 24VDC with 40A fused protection                                     │
+│  EUI drivers: High-current outputs to electronic unit injectors             │
+└──────────────────────────────────────────────────────────────────────────────┘`,
+    troubleshooting: {
+      symptoms: ['No start', 'Rough running', 'Power loss', 'Communication fault'],
+      causes: ['Sensor failure', 'EUI fault', 'Wiring issue', 'ECM failure'],
+      diagnosticSteps: ['Connect diagnostic tool', 'Read codes', 'Check sensors', 'Test EUI operation'],
+      solutions: ['Replace sensors', 'Replace EUI', 'Repair wiring', 'Replace ECM'],
+      tools: ['Doosan diagnostic software', 'Multimeter', 'EUI test equipment']
+    },
+    faultCodes: [
+      {
+        controller: 'DSE',
+        codes: [
+          { code: 'DSN-001', description: 'ECM Communication Lost', severity: 'Critical' },
+          { code: 'DSN-002', description: 'Speed Sensor Fault', severity: 'Critical' },
+          { code: 'DSN-003', description: 'EUI Driver Fault', severity: 'Warning' }
+        ]
+      }
+    ],
+    partNumbers: [
+      { manufacturer: 'Doosan', partNumber: '65.99901-0006', description: 'ECM Assembly P086TI' },
+      { manufacturer: 'Doosan', partNumber: '65.99901-0012', description: 'ECM Assembly P126TI' }
+    ],
+    compatibleEngines: [
+      'P086TI', 'P126TI', 'P158LE', 'P180LE',
+      'P222LE', 'DP086LA', 'DP126LA', 'DP158LC'
+    ]
+  },
+  {
+    id: 'weichai-ecu',
+    name: 'Weichai Baudouin ECM',
+    manufacturer: 'Weichai',
+    category: 'diesel',
+    description: [
+      'The Weichai Baudouin Electronic Control Module provides engine management for the WP series and Baudouin M26/M33 series engines powering generators from 200 kW to 2000 kW. This ECM implements Bosch common rail technology with Chinese localization for optimal support and parts availability in African and Asian markets. The system achieves excellent fuel efficiency while meeting emissions requirements.',
+      'Designed for heavy-duty generator applications, the Weichai ECM features robust construction and proven reliability. The module supports both standalone operation and integration with generator controllers via J1939 CAN communication. Diagnostic capability through Weichai WECS software enables comprehensive troubleshooting.',
+      'Environmental protection meets IP67 standards for demanding installation environments. The ECM operates reliably from -40°C to +90°C with comprehensive EMC protection.'
+    ],
+    workingPrinciple: [
+      'Bosch common rail system operates at pressures up to 1,800 bar for precise fuel atomization. ECM calculates injection timing and quantity based on multiple sensor inputs. Closed-loop speed control maintains stable generator frequency.',
+      'Protection functions monitor all critical engine parameters with graduated response levels. Fault history storage enables diagnostic analysis and preventive maintenance planning.',
+      'Standard J1939 CAN communication ensures compatibility with all major generator controller brands.'
+    ],
+    installation: [
+      'Mount ECM in clean, dry location with adequate airflow. Use vibration isolation for engine mounting.',
+      'Use specified harnesses with proper sealing. Apply dielectric grease to connectors.',
+      'Configure using Weichai WECS software. Verify all parameters before operation.'
+    ],
+    specifications: {
+      'Operating Voltage': '18-32 VDC',
+      'Current Draw': '4.0A maximum',
+      'Operating Temperature': '-40°C to +90°C',
+      'Protection Rating': 'IP67',
+      'Weight': '2.0 kg',
+      'Communication': 'J1939 CAN'
+    },
+    pinout: `
+┌─────────────────────────────────────────────────────────────────┐
+│                   WEICHAI/BAUDOUIN ECM                           │
+│              Bosch-based common rail controller                  │
+│  Standard 121-pin HD connector configuration                    │
+└─────────────────────────────────────────────────────────────────┘`,
+    wiringDiagram: `
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    WEICHAI BAUDOUIN ECM WIRING                               │
+│  Standard Bosch common rail system integration                              │
+│  Power: 24VDC, CAN: J1939 standard, Sensors: 5V analog                     │
+└──────────────────────────────────────────────────────────────────────────────┘`,
+    troubleshooting: {
+      symptoms: ['No start', 'Power loss', 'Smoke', 'Communication fault'],
+      causes: ['Sensor fault', 'Injector issue', 'ECM failure', 'Wiring damage'],
+      diagnosticSteps: ['Connect WECS software', 'Read fault codes', 'Check sensors', 'Test rail pressure'],
+      solutions: ['Replace sensors', 'Replace injectors', 'Replace ECM', 'Repair wiring'],
+      tools: ['Weichai WECS software', 'Diagnostic adapter', 'Multimeter', 'Pressure gauge']
+    },
+    faultCodes: [
+      {
+        controller: 'DSE',
+        codes: [
+          { code: 'WCH-001', description: 'ECM Communication Lost', severity: 'Critical' },
+          { code: 'WCH-002', description: 'Rail Pressure Fault', severity: 'Warning' },
+          { code: 'WCH-003', description: 'Injector Circuit Fault', severity: 'Warning' }
+        ]
+      }
+    ],
+    partNumbers: [
+      { manufacturer: 'Weichai', partNumber: '612600190222', description: 'ECM WP10 Series' },
+      { manufacturer: 'Weichai', partNumber: '612600190238', description: 'ECM WP12 Series' },
+      { manufacturer: 'Baudouin', partNumber: '1001067296', description: 'ECM M26 Series' }
+    ],
+    compatibleEngines: [
+      'WP4.1', 'WP6', 'WP7', 'WP10', 'WP12', 'WP13',
+      'Baudouin 6M16', 'Baudouin 6M21', 'Baudouin 12M26',
+      'Baudouin 12M33', 'Baudouin 16M33'
+    ]
   }
 ];
 

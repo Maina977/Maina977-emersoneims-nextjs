@@ -167,6 +167,46 @@ export const FAULT_CATEGORIES = {
   PROTECTION: {
     name: 'Protection',
     subcategories: ['Shutdown', 'Lockout', 'Trip', 'Alarm']
+  },
+  ECM: {
+    name: 'ECM/Engine Control',
+    subcategories: ['Communication', 'J1939', 'Injector', 'Rail Pressure', 'EGR', 'SCR', 'DPF', 'VGT', 'Timing', 'Power Supply']
+  },
+  COOLING: {
+    name: 'Cooling System',
+    subcategories: ['Coolant Flow', 'Thermostat', 'Water Pump', 'Fan', 'Radiator', 'Heat Exchanger', 'Heater']
+  },
+  LUBRICATION: {
+    name: 'Lubrication System',
+    subcategories: ['Oil Flow', 'Oil Filter', 'Oil Cooler', 'Oil Quality', 'Gallery Pressure', 'Bypass']
+  },
+  AIR_SYSTEM: {
+    name: 'Air System',
+    subcategories: ['Air Filter', 'Intake Manifold', 'Charge Air', 'Turbocharger', 'Compressor', 'Wastegate']
+  },
+  EXHAUST: {
+    name: 'Exhaust System',
+    subcategories: ['Exhaust Temp', 'Back Pressure', 'Aftertreatment', 'Catalyst', 'Muffler', 'Pyrometer']
+  },
+  WIRING: {
+    name: 'Wiring & Harness',
+    subcategories: ['Harness', 'Connector', 'Short Circuit', 'Open Circuit', 'Shield', 'Termination']
+  },
+  SENSORS: {
+    name: 'Sensors',
+    subcategories: ['Pressure', 'Temperature', 'Position', 'Speed', 'Level', 'Flow', 'Calibration']
+  },
+  PREDICTIVE: {
+    name: 'Predictive Maintenance',
+    subcategories: ['Oil Life', 'Filter Life', 'Wear Analysis', 'Trend Analysis', 'Service Due']
+  },
+  LOAD: {
+    name: 'Load Management',
+    subcategories: ['Load Profile', 'Load Factor', 'Load Acceptance', 'Load Rejection', 'Load Balance']
+  },
+  PROGRAMMING: {
+    name: 'Programming & Config',
+    subcategories: ['Parameters', 'Setpoints', 'Logic', 'Timers', 'Network', 'Protocol']
   }
 };
 
@@ -275,6 +315,42 @@ function generateExtendedCodes(): ControllerFaultCode[] {
     { range: [6700, 6799], category: 'Mains', subcategories: ['Power Factor', 'PF Correction', 'Capacitor', 'VAr Comp', 'APFC'] },
     { range: [6800, 6899], category: 'Mains', subcategories: ['Energy', 'Import kWh', 'Export kWh', 'Net Meter', 'Revenue'] },
     { range: [6900, 6999], category: 'Mains', subcategories: ['Smart Grid', 'Demand Response', 'Grid Code', 'Frequency Support', 'Voltage Support'] },
+
+    // ECM/Engine Control Module ranges (7000-7999) - NEW ECM DIAGNOSTICS
+    { range: [7000, 7099], category: 'ECM', subcategories: ['ECM Communication', 'CAN Timeout', 'J1939 Error', 'Protocol Fault', 'Data Link'] },
+    { range: [7100, 7199], category: 'ECM', subcategories: ['ECM Internal', 'Processor', 'Memory', 'Watchdog', 'Calibration', 'Firmware'] },
+    { range: [7200, 7299], category: 'ECM', subcategories: ['Injector Control', 'Injector Circuit', 'Driver Fault', 'Solenoid', 'Nozzle', 'Spray Pattern'] },
+    { range: [7300, 7399], category: 'ECM', subcategories: ['Rail Pressure', 'Fuel Pump', 'Relief Valve', 'Pressure Sensor', 'Rail Volume'] },
+    { range: [7400, 7499], category: 'ECM', subcategories: ['EGR System', 'EGR Valve', 'EGR Cooler', 'EGR Position', 'EGR Flow'] },
+    { range: [7500, 7599], category: 'ECM', subcategories: ['SCR System', 'DEF Quality', 'DEF Level', 'NOx Sensor', 'Dosing Module', 'Catalyst Temp'] },
+    { range: [7600, 7699], category: 'ECM', subcategories: ['DPF System', 'Regeneration', 'Soot Level', 'Differential Pressure', 'Ash Level'] },
+    { range: [7700, 7799], category: 'ECM', subcategories: ['VGT System', 'Turbo Actuator', 'Wastegate', 'Boost Control', 'Compressor'] },
+    { range: [7800, 7899], category: 'ECM', subcategories: ['Engine Timing', 'Crankshaft Sensor', 'Camshaft Sensor', 'TDC Error', 'Timing Correlation'] },
+    { range: [7900, 7999], category: 'ECM', subcategories: ['ECM Power', 'Supply Voltage', 'Ground Fault', 'Keep Alive', 'Ignition Circuit'] },
+
+    // Additional subsystem ranges (8000-8999)
+    { range: [8000, 8099], category: 'Cooling', subcategories: ['Coolant Flow', 'Thermostat', 'Water Pump', 'Fan Clutch', 'Radiator Shutters'] },
+    { range: [8100, 8199], category: 'Cooling', subcategories: ['Heat Exchanger', 'Coolant Heater', 'Expansion Tank', 'Coolant Filter', 'Coolant Additive'] },
+    { range: [8200, 8299], category: 'Lubrication', subcategories: ['Oil Flow', 'Oil Filter', 'Oil Cooler', 'Bypass Valve', 'Gallery Pressure'] },
+    { range: [8300, 8399], category: 'Lubrication', subcategories: ['Oil Quality', 'Contamination', 'Dilution', 'Oxidation', 'TBN Level'] },
+    { range: [8400, 8499], category: 'Air System', subcategories: ['Air Filter', 'Restriction', 'Intake Manifold', 'Charge Air', 'Air Dryer'] },
+    { range: [8500, 8599], category: 'Exhaust', subcategories: ['Exhaust Temp', 'Manifold Pressure', 'Back Pressure', 'Pyrometer', 'Exhaust Brake'] },
+    { range: [8600, 8699], category: 'Wiring', subcategories: ['Harness Fault', 'Connector', 'Short Circuit', 'Open Circuit', 'Insulation'] },
+    { range: [8700, 8799], category: 'Wiring', subcategories: ['Shield Ground', 'Sensor Wire', 'Power Wire', 'CAN Wire', 'Termination'] },
+    { range: [8800, 8899], category: 'Sensors', subcategories: ['Sensor Range', 'Sensor Drift', 'Calibration', 'Rationality', 'Response Time'] },
+    { range: [8900, 8999], category: 'Sensors', subcategories: ['Pressure Sensor', 'Temperature Sensor', 'Position Sensor', 'Speed Sensor', 'Level Sensor'] },
+
+    // Predictive maintenance ranges (9000-9999)
+    { range: [9000, 9099], category: 'Predictive', subcategories: ['Oil Life', 'Filter Life', 'Coolant Life', 'Belt Wear', 'Hose Condition'] },
+    { range: [9100, 9199], category: 'Predictive', subcategories: ['Injector Wear', 'Pump Wear', 'Bearing Condition', 'Seal Condition', 'Gasket Condition'] },
+    { range: [9200, 9299], category: 'Predictive', subcategories: ['Hours Service', 'Cycles Service', 'Fuel Service', 'Lube Service', 'Coolant Service'] },
+    { range: [9300, 9399], category: 'Predictive', subcategories: ['Engine Trend', 'Power Trend', 'Efficiency Trend', 'Emission Trend', 'Noise Trend'] },
+    { range: [9400, 9499], category: 'Predictive', subcategories: ['Vibration Analysis', 'Acoustic Analysis', 'Thermal Analysis', 'Wear Analysis', 'Oil Analysis'] },
+    { range: [9500, 9599], category: 'Load', subcategories: ['Load Profile', 'Load Factor', 'Peak Load', 'Base Load', 'Load Step'] },
+    { range: [9600, 9699], category: 'Load', subcategories: ['Load Acceptance', 'Load Rejection', 'Load Ramp', 'Load Balance', 'Load Priority'] },
+    { range: [9700, 9799], category: 'Programming', subcategories: ['Parameter Error', 'Config Mismatch', 'Setpoint Range', 'Logic Error', 'Sequence Error'] },
+    { range: [9800, 9899], category: 'Programming', subcategories: ['Timer Config', 'Relay Config', 'Input Config', 'Output Config', 'Display Config'] },
+    { range: [9900, 9999], category: 'Programming', subcategories: ['Network Config', 'Protocol Config', 'Address Config', 'Baud Rate', 'Parity Error'] },
   ];
 
   dseModels.forEach(model => {
