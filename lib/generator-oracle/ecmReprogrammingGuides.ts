@@ -101,28 +101,30 @@ export interface ParameterGuide {
     defaultValue: string;
     range: string;
     unit: string;
-    affectsWhat: string;
-    howToSet: string;
+    affectsWhat?: string;
+    howToSet?: string;
   }[];
 }
 
 export interface J1939Configuration {
-  protocol: string;
+  protocol?: string;
   baudRate: number;
-  sourceAddress: string;
-  transmitPGNs: { pgn: string; name: string; rate: string; description: string }[];
-  receivePGNs: { pgn: string; name: string; description: string }[];
-  terminationResistor: {
+  sourceAddress: string | number;
+  transmitPGNs?: { pgn: string; name: string; rate: string; description: string }[];
+  receivePGNs?: { pgn: string; name: string; description: string }[];
+  supportedPGNs?: number[];
+  terminationResistor?: {
     required: boolean;
     value: string;
     location: string;
   };
-  wiringDiagram: string;
+  wiringDiagram?: string;
 }
 
 export interface TroubleshootingItem {
   problem: string;
-  possibleCauses: string[];
+  possibleCauses?: string[];
+  causes?: string[];
   solutions: string[];
 }
 
@@ -1418,9 +1420,462 @@ export const DEUTZ_EMR_GUIDE: ReprogrammingGuide = {
   verificationChecklist: ['EMR responds', 'Engine runs']
 };
 
+// ==================== YANMAR ECM GUIDE ====================
+export const YANMAR_ECM_GUIDE: ReprogrammingGuide = {
+  id: 'yanmar-ecu',
+  ecmName: 'Yanmar ECU / EMS',
+  manufacturer: 'Yanmar',
+  models: ['TNV Series', '4TNV88', '4TNV94', '4TNV98', '4TNV106', '3TNV76', '3TNV82', '3TNV84', '3TNV88', 'BY Series', '4BY', '6BY', '4LHA', '6LY'],
+  overview: 'Yanmar electronic control systems for diesel engines. Uses proprietary YDT (Yanmar Diagnostic Tool) or compatible J1939 interfaces for programming and diagnostics.',
+  prerequisites: {
+    tools: [
+      { name: 'Yanmar Diagnostic Tool (YDT)', description: 'Official Yanmar diagnostic interface', alternatives: ['DPA5 with Yanmar license', 'Jaltest'], essential: true },
+      { name: '9-Pin Deutsch Connector', description: 'J1939 diagnostic connector', essential: true },
+      { name: 'Laptop with YDT Software', description: 'Windows PC with diagnostic software', essential: true },
+      { name: 'Battery Charger', description: 'Maintain 24V during programming', essential: true }
+    ],
+    software: [
+      { name: 'Yanmar Diagnostic Tool Software', version: 'Latest', source: 'Yanmar Dealer', licenseRequired: true, alternatives: ['Jaltest Marine/Industrial'] }
+    ],
+    parts: ['Backup fuse kit'],
+    conditions: ['Engine at operating temperature', 'Battery fully charged (>25V)', 'All accessories off']
+  },
+  connectionProcedure: [
+    { step: 1, action: 'Locate 9-pin diagnostic connector', details: 'Usually near ECU or in engine compartment', pinout: [
+      { pin: 'A', function: 'CAN-H (J1939)', wire: 'Yellow' },
+      { pin: 'B', function: 'CAN-L (J1939)', wire: 'Green' },
+      { pin: 'C', function: 'Ground', wire: 'Black' },
+      { pin: 'J', function: '+12V/24V Power', wire: 'Red' }
+    ]},
+    { step: 2, action: 'Connect YDT interface', details: 'Plug diagnostic tool into 9-pin connector' },
+    { step: 3, action: 'Turn ignition ON', details: 'Do not start engine for initial connection' },
+    { step: 4, action: 'Launch YDT software', details: 'Wait for ECU detection (10-30 seconds)' }
+  ],
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Connect battery charger', details: 'Ensure stable 24V supply throughout process', expectedResult: 'Voltage stable at 25-28V', timeEstimate: '2 minutes', criticalNotes: ['Power interruption will corrupt ECU'] },
+    { step: 2, phase: 'backup', action: 'Read and save current ECU data', details: 'YDT > ECU > Read All Data > Save to file', expectedResult: 'Complete backup file saved', timeEstimate: '5 minutes', criticalNotes: ['Store backup in safe location'] },
+    { step: 3, phase: 'programming', action: 'Select programming function', details: 'Navigate to ECU Reprogramming menu', expectedResult: 'Programming mode active', timeEstimate: '2 minutes', criticalNotes: ['Do not disconnect during this phase'] },
+    { step: 4, phase: 'programming', action: 'Upload new calibration', details: 'Select appropriate calibration file for engine model', expectedResult: 'Programming progress 100%', timeEstimate: '10-20 minutes', criticalNotes: ['Must use correct calibration for engine model'] },
+    { step: 5, phase: 'verification', action: 'Verify programming', details: 'Read back ECU data and compare', expectedResult: 'Calibration matches uploaded file', timeEstimate: '5 minutes', criticalNotes: [] }
+  ],
+  parameterConfiguration: [
+    { category: 'Engine Protection', parameters: [
+      { name: 'High Coolant Temp Shutdown', description: 'Temperature at which engine shuts down', path: 'Protection > Coolant > Shutdown Temp', defaultValue: '105°C', range: '95-115°C', unit: '°C' },
+      { name: 'Low Oil Pressure Shutdown', description: 'Oil pressure shutdown threshold', path: 'Protection > Oil > Low Pressure', defaultValue: '0.8 bar', range: '0.5-1.5 bar', unit: 'bar' },
+      { name: 'Overspeed Shutdown', description: 'RPM limit for overspeed protection', path: 'Protection > Speed > Overspeed', defaultValue: '2800 RPM', range: '2200-3200 RPM', unit: 'RPM' }
+    ]},
+    { category: 'Governor', parameters: [
+      { name: 'Rated Speed', description: 'Target operating speed', path: 'Governor > Rated Speed', defaultValue: '1500/1800 RPM', range: '1400-2000 RPM', unit: 'RPM' },
+      { name: 'Idle Speed', description: 'Engine idle speed', path: 'Governor > Idle', defaultValue: '700 RPM', range: '600-900 RPM', unit: 'RPM' },
+      { name: 'Droop', description: 'Speed droop percentage', path: 'Governor > Droop', defaultValue: '4%', range: '0-10%', unit: '%' }
+    ]}
+  ],
+  j1939Setup: {
+    sourceAddress: 0,
+    baudRate: 250000,
+    supportedPGNs: [61444, 65262, 65263, 65270, 65271]
+  },
+  troubleshooting: [
+    { problem: 'YDT cannot detect ECU', causes: ['Wrong baud rate', 'CAN wiring fault', 'ECU not powered'], solutions: ['Check 9-pin connector wiring', 'Verify battery voltage', 'Check CAN termination'] },
+    { problem: 'Programming fails at XX%', causes: ['Power interruption', 'Wrong calibration file', 'ECU hardware fault'], solutions: ['Check battery charger', 'Verify calibration matches engine', 'Try again with stable power'] }
+  ],
+  safetyWarnings: ['Never disconnect power during programming', 'Use correct calibration file only', 'Backup before any changes'],
+  commonMistakes: ['Using calibration for wrong engine model', 'Insufficient battery voltage', 'Not saving backup first'],
+  verificationChecklist: ['ECU communicates normally', 'No active fault codes', 'Engine starts and runs', 'All sensors reading correctly']
+};
+
+// ==================== DOOSAN ECM GUIDE ====================
+export const DOOSAN_ECM_GUIDE: ReprogrammingGuide = {
+  id: 'doosan-ecu',
+  ecmName: 'Doosan ECU / D-ECON',
+  manufacturer: 'Doosan',
+  models: ['DL06', 'DL08', 'DV11', 'DV15', 'DP086', 'DP126', 'DP158', 'DP180', 'DP222', 'DX Series', 'G2 Engine', 'G3 Engine'],
+  overview: 'Doosan D-ECON electronic control system. Common in Doosan/Daewoo generators and industrial equipment. Uses DoosanCONNECT or compatible diagnostic tools.',
+  prerequisites: {
+    tools: [
+      { name: 'DoosanCONNECT Diagnostic Tool', description: 'Official Doosan diagnostic interface', alternatives: ['Texa', 'Jaltest'], essential: true },
+      { name: 'CAN Interface Cable', description: 'J1939/CAN diagnostic cable', essential: true },
+      { name: 'Laptop PC', description: 'Windows computer for diagnostics', essential: true }
+    ],
+    software: [
+      { name: 'DoosanCONNECT Software', version: '2.x or higher', source: 'Doosan Dealer Portal', licenseRequired: true }
+    ],
+    parts: ['ECU fuse kit', 'Diagnostic connector if damaged'],
+    conditions: ['Battery voltage 24V minimum', 'Engine coolant below 40°C for cold tests']
+  },
+  connectionProcedure: [
+    { step: 1, action: 'Locate diagnostic port', details: 'Typically 9-pin Deutsch connector near ECU or on engine harness', pinout: [
+      { pin: 'A', function: 'CAN High', wire: 'Yellow' },
+      { pin: 'B', function: 'CAN Low', wire: 'Green' },
+      { pin: 'C', function: 'Chassis Ground', wire: 'Black' },
+      { pin: 'F', function: 'J1708 Data+', wire: 'White' },
+      { pin: 'G', function: 'J1708 Data-', wire: 'Blue' },
+      { pin: 'J', function: '+24V Battery', wire: 'Red' }
+    ]},
+    { step: 2, action: 'Connect diagnostic interface', details: 'Plug CAN adapter into diagnostic port' },
+    { step: 3, action: 'Key ON, Engine OFF', details: 'Turn ignition to ON position without starting' },
+    { step: 4, action: 'Launch DoosanCONNECT', details: 'Auto-detect should find ECU within 30 seconds' }
+  ],
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Verify battery condition', details: 'Battery must be >24V and fully charged', expectedResult: 'Voltage reads 24-28V DC', timeEstimate: '2 minutes', criticalNotes: ['Connect battery charger for safety'] },
+    { step: 2, phase: 'backup', action: 'Save current configuration', details: 'ECU > Read Configuration > Export to file', expectedResult: 'Configuration file saved', timeEstimate: '3 minutes', criticalNotes: ['Essential for recovery if needed'] },
+    { step: 3, phase: 'backup', action: 'Record fault code history', details: 'Save active and historical fault codes', expectedResult: 'Fault history documented', timeEstimate: '2 minutes', criticalNotes: [] },
+    { step: 4, phase: 'programming', action: 'Enter programming mode', details: 'Service > ECU Programming > Enable', expectedResult: 'ECU in programming mode', timeEstimate: '1 minute', criticalNotes: ['Do not turn off key during programming'] },
+    { step: 5, phase: 'programming', action: 'Flash new calibration', details: 'Select and upload calibration file', expectedResult: 'Programming complete 100%', timeEstimate: '15-25 minutes', criticalNotes: ['Must complete without interruption'] },
+    { step: 6, phase: 'verification', action: 'Verify and test', details: 'Cycle key, verify no faults, test start engine', expectedResult: 'Engine runs normally', timeEstimate: '10 minutes', criticalNotes: [] }
+  ],
+  parameterConfiguration: [
+    { category: 'Speed Control', parameters: [
+      { name: 'Rated Speed', description: 'Nominal operating speed', path: 'Governor > Rated Speed', defaultValue: '1500 RPM', range: '1400-1800 RPM', unit: 'RPM' },
+      { name: 'Low Idle', description: 'Idle speed setting', path: 'Governor > Low Idle', defaultValue: '700 RPM', range: '600-900 RPM', unit: 'RPM' },
+      { name: 'High Idle', description: 'Maximum no-load speed', path: 'Governor > High Idle', defaultValue: '1550 RPM', range: '1500-1600 RPM', unit: 'RPM' }
+    ]},
+    { category: 'Protection Settings', parameters: [
+      { name: 'High Water Temp', description: 'Coolant over-temperature shutdown', path: 'Protection > Coolant Temp', defaultValue: '103°C', range: '95-110°C', unit: '°C' },
+      { name: 'Low Oil Pressure', description: 'Oil pressure shutdown point', path: 'Protection > Oil Pressure', defaultValue: '1.0 bar', range: '0.5-2.0 bar', unit: 'bar' }
+    ]}
+  ],
+  j1939Setup: { sourceAddress: 0, baudRate: 250000, supportedPGNs: [61444, 61443, 65262, 65263, 65226] },
+  troubleshooting: [
+    { problem: 'No communication with ECU', causes: ['CAN wiring fault', 'ECU not powered', 'Wrong baud rate'], solutions: ['Check all connector pins', 'Verify 24V at ECU', 'Try 250k and 500k baud'] },
+    { problem: 'Engine derate after programming', causes: ['Wrong calibration', 'Sensor not calibrated'], solutions: ['Verify calibration file', 'Recalibrate sensors', 'Check for active faults'] }
+  ],
+  safetyWarnings: ['Maintain stable 24V during all programming', 'Never interrupt flash process', 'Always backup before changes'],
+  commonMistakes: ['Using wrong engine family calibration', 'Interrupting programming', 'Not cycling ignition after programming'],
+  verificationChecklist: ['ECU responds to diagnostic tool', 'No active fault codes', 'Engine starts and idles normally', 'All protection systems functional']
+};
+
+// ==================== MAN ECM GUIDE ====================
+export const MAN_ECM_GUIDE: ReprogrammingGuide = {
+  id: 'man-edc',
+  ecmName: 'MAN EDC / Common Rail',
+  manufacturer: 'MAN',
+  models: ['D0836', 'D2066', 'D2676', 'D2868', 'E0836', 'E2876', 'E3262', 'E3268', 'D26', 'D08', 'D15', 'MAN Marine'],
+  overview: 'MAN Electronic Diesel Control (EDC) systems for industrial and marine generators. Uses MAN-cats diagnostic system or compatible J1939 tools.',
+  prerequisites: {
+    tools: [
+      { name: 'MAN-cats II/III Diagnostic Tool', description: 'Official MAN diagnostic system', alternatives: ['Jaltest', 'Texa'], essential: true },
+      { name: '16-Pin OBD Adapter', description: 'For newer MAN engines', essential: false },
+      { name: '9-Pin Deutsch', description: 'For older/industrial applications', essential: true }
+    ],
+    software: [
+      { name: 'MAN-cats', version: 'II or III', source: 'MAN Dealer', licenseRequired: true }
+    ],
+    parts: ['ECU connector pins if damaged'],
+    conditions: ['Battery 24V fully charged', 'All loads disconnected']
+  },
+  connectionProcedure: [
+    { step: 1, action: 'Identify diagnostic connector type', details: '9-pin Deutsch for industrial, 16-pin OBD for newer', pinout: [
+      { pin: 'CAN-H', function: 'J1939 High', wire: 'Yellow' },
+      { pin: 'CAN-L', function: 'J1939 Low', wire: 'Green' },
+      { pin: 'GND', function: 'Signal Ground', wire: 'Brown' },
+      { pin: '+24V', function: 'Power', wire: 'Red' }
+    ]},
+    { step: 2, action: 'Connect MAN-cats interface', details: 'Use appropriate adapter for connector type' },
+    { step: 3, action: 'Power on system', details: 'Key ON, verify MAN-cats detects EDC' }
+  ],
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Connect battery support', details: 'Ensure 24V maintained throughout', expectedResult: 'Stable voltage display', timeEstimate: '2 minutes', criticalNotes: ['Critical: power loss = ECU damage'] },
+    { step: 2, phase: 'backup', action: 'Read current EDC parameters', details: 'MAN-cats > EDC > Read All Parameters', expectedResult: 'Full backup saved', timeEstimate: '5 minutes', criticalNotes: ['Save to multiple locations'] },
+    { step: 3, phase: 'programming', action: 'Select programming function', details: 'Service > EDC Programming', expectedResult: 'Programming menu displayed', timeEstimate: '1 minute', criticalNotes: [] },
+    { step: 4, phase: 'programming', action: 'Upload calibration/firmware', details: 'Select correct file for engine variant', expectedResult: 'Programming 100% complete', timeEstimate: '20-30 minutes', criticalNotes: ['Do not interrupt', 'Verify file matches engine'] },
+    { step: 5, phase: 'configuration', action: 'Configure application parameters', details: 'Set governor mode, protection limits, etc.', expectedResult: 'Parameters accepted', timeEstimate: '10 minutes', criticalNotes: [] },
+    { step: 6, phase: 'verification', action: 'Test engine operation', details: 'Start engine, verify all functions', expectedResult: 'Normal operation confirmed', timeEstimate: '15 minutes', criticalNotes: [] }
+  ],
+  parameterConfiguration: [
+    { category: 'Governor', parameters: [
+      { name: 'Operating Mode', description: 'Isochronous or droop', path: 'Governor > Mode', defaultValue: 'Isochronous', range: 'Iso/Droop/VSpeed', unit: '' },
+      { name: 'Rated Speed', description: 'Target speed at rated load', path: 'Governor > Rated', defaultValue: '1500 RPM', range: '1400-2100 RPM', unit: 'RPM' }
+    ]},
+    { category: 'Protection', parameters: [
+      { name: 'Coolant Temp Limit', description: 'High temperature shutdown', path: 'Limits > Coolant', defaultValue: '105°C', range: '95-115°C', unit: '°C' }
+    ]}
+  ],
+  j1939Setup: { sourceAddress: 0, baudRate: 250000, supportedPGNs: [61444, 65262, 65263, 65226, 65270] },
+  troubleshooting: [
+    { problem: 'MAN-cats no connection', causes: ['Wrong interface', 'CAN fault', 'EDC not powered'], solutions: ['Verify adapter type', 'Check CAN wiring', 'Check 24V supply'] }
+  ],
+  safetyWarnings: ['Never interrupt flash programming', 'Verify calibration file before upload', 'Keep fire extinguisher nearby'],
+  commonMistakes: ['Wrong engine variant calibration', 'Insufficient battery capacity'],
+  verificationChecklist: ['EDC responds', 'No fault codes', 'Engine runs at rated speed', 'All protections active']
+};
+
+// ==================== IVECO/FPT ECM GUIDE ====================
+export const IVECO_FPT_GUIDE: ReprogrammingGuide = {
+  id: 'iveco-fpt-edc',
+  ecmName: 'Iveco/FPT EDC17',
+  manufacturer: 'Iveco/FPT',
+  models: ['NEF Series', 'N45', 'N67', 'Cursor 8', 'Cursor 10', 'Cursor 13', 'F4GE', 'F4HE', 'F5C', 'Vector Series'],
+  overview: 'FPT Industrial (Iveco) engines use Bosch EDC17 or Continental ECUs. Common in SDMO, Kohler, and other generator brands.',
+  prerequisites: {
+    tools: [
+      { name: 'Iveco E.A.S.Y. Diagnostic', description: 'Official Iveco/FPT diagnostic tool', alternatives: ['Texa', 'Jaltest', 'Autocom'], essential: true },
+      { name: '16-Pin OBD-II Connector', description: 'Standard OBD port for newer engines', essential: true },
+      { name: '12/24V Power Supply', description: 'Stable power during programming', essential: true }
+    ],
+    software: [
+      { name: 'E.A.S.Y.', version: 'Current', source: 'Iveco Dealer', licenseRequired: true }
+    ],
+    parts: [],
+    conditions: ['Battery charged', 'Key ON Engine OFF']
+  },
+  connectionProcedure: [
+    { step: 1, action: 'Locate OBD-II port', details: 'Usually under dashboard or on engine harness', pinout: [
+      { pin: '6', function: 'CAN-H', wire: 'Yellow' },
+      { pin: '14', function: 'CAN-L', wire: 'Green' },
+      { pin: '4/5', function: 'Ground', wire: 'Black' },
+      { pin: '16', function: '+12/24V', wire: 'Red' }
+    ]},
+    { step: 2, action: 'Connect E.A.S.Y. interface', details: 'Plug into OBD port' },
+    { step: 3, action: 'Launch software and connect', details: 'Auto-detect ECU type' }
+  ],
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Verify stable power', details: 'Connect battery charger', expectedResult: 'Voltage stable', timeEstimate: '2 minutes', criticalNotes: ['Power loss during flash = bricked ECU'] },
+    { step: 2, phase: 'backup', action: 'Read ECU identification', details: 'Record all ECU data', expectedResult: 'ECU ID saved', timeEstimate: '3 minutes', criticalNotes: [] },
+    { step: 3, phase: 'programming', action: 'Select ECU programming', details: 'Service Functions > ECU Programming', expectedResult: 'Programming mode active', timeEstimate: '2 minutes', criticalNotes: [] },
+    { step: 4, phase: 'programming', action: 'Flash calibration', details: 'Upload correct calibration for application', expectedResult: 'Flash successful', timeEstimate: '15-30 minutes', criticalNotes: ['Do not interrupt'] },
+    { step: 5, phase: 'verification', action: 'Verify and test', details: 'Clear codes, test run engine', expectedResult: 'Normal operation', timeEstimate: '10 minutes', criticalNotes: [] }
+  ],
+  parameterConfiguration: [
+    { category: 'Engine Settings', parameters: [
+      { name: 'Rated Speed', description: 'Operating speed', path: 'Engine > Speed', defaultValue: '1500 RPM', range: '1400-2100 RPM', unit: 'RPM' },
+      { name: 'Idle Speed', description: 'Low idle RPM', path: 'Engine > Idle', defaultValue: '700 RPM', range: '600-900 RPM', unit: 'RPM' }
+    ]}
+  ],
+  j1939Setup: { sourceAddress: 0, baudRate: 250000, supportedPGNs: [61444, 65262, 65263] },
+  troubleshooting: [
+    { problem: 'No ECU communication', causes: ['Wrong protocol', 'Wiring fault'], solutions: ['Try CAN and K-Line', 'Check OBD pins'] }
+  ],
+  safetyWarnings: ['Maintain power throughout programming'],
+  commonMistakes: ['Wrong application calibration'],
+  verificationChecklist: ['ECU communicates', 'No faults', 'Engine runs correctly']
+};
+
+// ==================== LISTER PETTER GUIDE ====================
+export const LISTER_PETTER_GUIDE: ReprogrammingGuide = {
+  id: 'lister-petter',
+  ecmName: 'Lister Petter Alpha/TR Series',
+  manufacturer: 'Lister Petter',
+  models: ['Alpha Series', 'TR1', 'TR2', 'TR3', 'LPW2', 'LPW3', 'LPW4', 'LPWS2', 'LPWS3', 'LPWS4', 'LPWT4', 'GW Series'],
+  overview: 'Lister Petter engines (now part of Kohler/SDMO) range from mechanical to electronic injection. Newer models use electronic governors and fuel systems.',
+  prerequisites: {
+    tools: [
+      { name: 'Lister Petter Diagnostic Kit', description: 'For electronic models', alternatives: ['Generic J1939 tool'], essential: true },
+      { name: 'Mechanical Governor Tools', description: 'For older mechanical models', essential: false },
+      { name: 'Multimeter', description: 'For sensor testing', essential: true }
+    ],
+    software: [
+      { name: 'LP Electronic Diagnostic Software', version: 'Current', source: 'Lister Petter/Kohler Dealer', licenseRequired: true }
+    ],
+    parts: ['Governor seals if adjusting mechanical', 'Sensor connectors'],
+    conditions: ['Engine cold for governor adjustment', 'Battery charged for electronic']
+  },
+  connectionProcedure: [
+    { step: 1, action: 'Identify engine type', details: 'Mechanical (pre-2005) or Electronic (2005+)', pinout: [
+      { pin: 'A', function: 'CAN-H (Electronic only)', wire: 'Yellow' },
+      { pin: 'B', function: 'CAN-L (Electronic only)', wire: 'Green' },
+      { pin: 'C', function: 'Ground', wire: 'Black' }
+    ]},
+    { step: 2, action: 'Connect appropriate interface', details: 'Use LP diagnostic tool for electronic, manual for mechanical' }
+  ],
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Identify system type', details: 'Mechanical or electronic fuel control', expectedResult: 'System type confirmed', timeEstimate: '2 minutes', criticalNotes: ['Different procedures for each'] },
+    { step: 2, phase: 'connection', action: 'Connect diagnostic tool', details: 'For electronic systems only', expectedResult: 'ECU detected', timeEstimate: '3 minutes', criticalNotes: [] },
+    { step: 3, phase: 'configuration', action: 'Adjust parameters', details: 'Set speed, protection limits as needed', expectedResult: 'Parameters saved', timeEstimate: '10 minutes', criticalNotes: [] },
+    { step: 4, phase: 'verification', action: 'Test engine operation', details: 'Run engine and verify settings', expectedResult: 'Correct operation', timeEstimate: '15 minutes', criticalNotes: [] }
+  ],
+  parameterConfiguration: [
+    { category: 'Speed Control', parameters: [
+      { name: 'Rated Speed', description: 'Operating speed', path: 'Governor > Speed', defaultValue: '1500 RPM', range: '1400-3600 RPM', unit: 'RPM' },
+      { name: 'Idle Speed', description: 'Low idle', path: 'Governor > Idle', defaultValue: '800 RPM', range: '700-1000 RPM', unit: 'RPM' }
+    ]}
+  ],
+  j1939Setup: { sourceAddress: 0, baudRate: 250000, supportedPGNs: [61444, 65262] },
+  troubleshooting: [
+    { problem: 'Speed hunting', causes: ['Governor linkage loose', 'Air in fuel'], solutions: ['Check linkage', 'Bleed fuel system'] }
+  ],
+  safetyWarnings: ['Mechanical governor adjustment requires training', 'High pressure fuel system - use caution'],
+  commonMistakes: ['Over-adjusting mechanical governor', 'Not bleeding air from fuel system'],
+  verificationChecklist: ['Stable speed under load', 'No fuel leaks', 'Temperature normal']
+};
+
+// ==================== HONDA GENERATOR ECU GUIDE ====================
+export const HONDA_ECU_GUIDE: ReprogrammingGuide = {
+  id: 'honda-gx-igx',
+  ecmName: 'Honda GX/iGX ECU',
+  manufacturer: 'Honda',
+  models: ['GX120', 'GX160', 'GX200', 'GX240', 'GX270', 'GX340', 'GX390', 'GX630', 'GX690', 'iGX440', 'iGX700', 'iGX800', 'GXV Series'],
+  overview: 'Honda engine electronic controls. iGX series features electronic governor and STR (Self-Tuning Regulator). GX series is mostly mechanical with electronic ignition.',
+  prerequisites: {
+    tools: [
+      { name: 'Honda Diagnostic System (HDS)', description: 'For iGX electronic engines', alternatives: ['Generic OBD if equipped'], essential: true },
+      { name: 'Tachometer', description: 'For speed adjustment verification', essential: true },
+      { name: 'Multimeter', description: 'For sensor testing', essential: true }
+    ],
+    software: [
+      { name: 'Honda iGX Diagnostic Software', version: 'Current', source: 'Honda Power Equipment Dealer', licenseRequired: true }
+    ],
+    parts: ['Spark plug', 'Air filter'],
+    conditions: ['Engine at operating temperature for adjustments']
+  },
+  connectionProcedure: [
+    { step: 1, action: 'Identify engine series', details: 'iGX = electronic governor, GX = mechanical', pinout: [
+      { pin: 'Data', function: 'Serial communication', wire: 'Green' },
+      { pin: 'Ground', function: 'Signal ground', wire: 'Black' },
+      { pin: 'Power', function: '+12V', wire: 'Red' }
+    ]},
+    { step: 2, action: 'Connect HDS for iGX', details: 'Locate 3-pin diagnostic connector near ECU' },
+    { step: 3, action: 'For GX mechanical', details: 'Use manual adjustment procedures' }
+  ],
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Check battery/power supply', details: 'Ensure stable 12V', expectedResult: '12V confirmed', timeEstimate: '1 minute', criticalNotes: [] },
+    { step: 2, phase: 'connection', action: 'Connect HDS (iGX only)', details: 'Plug into diagnostic port', expectedResult: 'ECU detected', timeEstimate: '2 minutes', criticalNotes: [] },
+    { step: 3, phase: 'configuration', action: 'Adjust governor settings', details: 'Set target speed and STR parameters', expectedResult: 'Parameters saved', timeEstimate: '5 minutes', criticalNotes: ['iGX only - GX requires mechanical adjustment'] },
+    { step: 4, phase: 'verification', action: 'Test under load', details: 'Apply load and verify speed stability', expectedResult: 'Speed holds within 3%', timeEstimate: '10 minutes', criticalNotes: [] }
+  ],
+  parameterConfiguration: [
+    { category: 'Governor (iGX)', parameters: [
+      { name: 'Target Speed', description: 'Desired operating speed', path: 'STR > Target', defaultValue: '3600 RPM', range: '1800-3800 RPM', unit: 'RPM' },
+      { name: 'STR Mode', description: 'Self-Tuning Regulator mode', path: 'STR > Mode', defaultValue: 'Auto', range: 'Auto/Manual', unit: '' }
+    ]},
+    { category: 'GX Mechanical', parameters: [
+      { name: 'Governor Arm', description: 'Adjust linkage for speed', path: 'Physical adjustment', defaultValue: 'Factory set', range: 'N/A', unit: '' }
+    ]}
+  ],
+  j1939Setup: { sourceAddress: 0, baudRate: 9600, supportedPGNs: [] },
+  troubleshooting: [
+    { problem: 'Speed surging', causes: ['Dirty carburetor', 'Governor spring worn', 'Air leak'], solutions: ['Clean carburetor', 'Replace governor spring', 'Check intake gaskets'] },
+    { problem: 'iGX STR fault', causes: ['Sensor failure', 'ECU fault'], solutions: ['Check sensors', 'Reset ECU', 'Replace if needed'] }
+  ],
+  safetyWarnings: ['Gasoline engine - no smoking, ensure ventilation', 'Hot exhaust - burn hazard', 'Rotating parts - keep clear'],
+  commonMistakes: ['Over-adjusting mechanical governor', 'Not cleaning carburetor when troubleshooting', 'Ignoring air filter condition'],
+  verificationChecklist: ['Smooth idle', 'Stable speed under load', 'No exhaust smoke', 'Oil level correct']
+};
+
+// ==================== WEICHAI ECU GUIDE ====================
+export const WEICHAI_ECU_GUIDE: ReprogrammingGuide = {
+  id: 'weichai-ecu',
+  ecmName: 'Weichai ECU / WECM',
+  manufacturer: 'Weichai',
+  models: ['WP2.3', 'WP3.9', 'WP4.1', 'WP6', 'WP7', 'WP10', 'WP12', 'WP13', 'WD615', 'WD618', 'WD10', 'WD12', 'Baudouin 4M', 'Baudouin 6M'],
+  overview: 'Weichai Power engines with electronic control. Includes Baudouin marine/genset engines (owned by Weichai). Uses Weichai diagnostic tools or compatible J1939 interfaces.',
+  prerequisites: {
+    tools: [
+      { name: 'Weichai Diagnostic Tool', description: 'Official Weichai ECU interface', alternatives: ['J1939 generic tool', 'Jaltest'], essential: true },
+      { name: '9-Pin J1939 Connector', description: 'Standard heavy-duty diagnostic port', essential: true },
+      { name: 'Battery Charger', description: '24V support during programming', essential: true }
+    ],
+    software: [
+      { name: 'Weichai Diagnostic Software', version: 'Current', source: 'Weichai Dealer', licenseRequired: true }
+    ],
+    parts: [],
+    conditions: ['Battery 24V charged', 'All loads disconnected']
+  },
+  connectionProcedure: [
+    { step: 1, action: 'Locate 9-pin diagnostic port', details: 'Usually on engine harness or control panel', pinout: [
+      { pin: 'A', function: 'CAN-H (J1939)', wire: 'Yellow' },
+      { pin: 'B', function: 'CAN-L (J1939)', wire: 'Green' },
+      { pin: 'C', function: 'Ground', wire: 'Black' },
+      { pin: 'J', function: '+24V', wire: 'Red' }
+    ]},
+    { step: 2, action: 'Connect diagnostic tool', details: 'Plug adapter into port' },
+    { step: 3, action: 'Key ON', details: 'Power ECU without starting engine' },
+    { step: 4, action: 'Launch software', details: 'Auto-detect ECU' }
+  ],
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Connect battery charger', details: 'Ensure stable 24V', expectedResult: 'Voltage 25-28V', timeEstimate: '2 minutes', criticalNotes: ['Critical for flash success'] },
+    { step: 2, phase: 'backup', action: 'Read current calibration', details: 'Save all ECU data to file', expectedResult: 'Backup complete', timeEstimate: '5 minutes', criticalNotes: ['Essential for recovery'] },
+    { step: 3, phase: 'programming', action: 'Select programming mode', details: 'ECU Service > Reprogramming', expectedResult: 'Program mode active', timeEstimate: '2 minutes', criticalNotes: [] },
+    { step: 4, phase: 'programming', action: 'Upload calibration file', details: 'Select file matching engine model', expectedResult: 'Flash complete', timeEstimate: '15-25 minutes', criticalNotes: ['Do not interrupt'] },
+    { step: 5, phase: 'verification', action: 'Verify and test', details: 'Read back data, start engine', expectedResult: 'Normal operation', timeEstimate: '10 minutes', criticalNotes: [] }
+  ],
+  parameterConfiguration: [
+    { category: 'Speed Control', parameters: [
+      { name: 'Rated Speed', description: 'Target operating speed', path: 'Governor > Rated', defaultValue: '1500 RPM', range: '1400-2100 RPM', unit: 'RPM' },
+      { name: 'Idle Speed', description: 'Low idle setting', path: 'Governor > Idle', defaultValue: '700 RPM', range: '600-900 RPM', unit: 'RPM' },
+      { name: 'Governor Mode', description: 'Isochronous or Droop', path: 'Governor > Mode', defaultValue: 'Isochronous', range: 'Iso/Droop', unit: '' }
+    ]},
+    { category: 'Protection', parameters: [
+      { name: 'High Coolant Temp', description: 'Shutdown temperature', path: 'Protection > Coolant', defaultValue: '103°C', range: '95-110°C', unit: '°C' },
+      { name: 'Low Oil Pressure', description: 'Shutdown pressure', path: 'Protection > Oil', defaultValue: '1.0 bar', range: '0.5-2.0 bar', unit: 'bar' }
+    ]}
+  ],
+  j1939Setup: { sourceAddress: 0, baudRate: 250000, supportedPGNs: [61444, 61443, 65262, 65263, 65226, 65270] },
+  troubleshooting: [
+    { problem: 'ECU no communication', causes: ['CAN wiring fault', 'ECU not powered', 'Wrong tool'], solutions: ['Check CAN H/L wiring', 'Verify 24V supply', 'Use compatible tool'] },
+    { problem: 'Engine derate', causes: ['Active fault code', 'Sensor failure'], solutions: ['Read and address fault codes', 'Check sensors'] }
+  ],
+  safetyWarnings: ['Maintain 24V throughout programming', 'Use correct calibration file', 'Keep backup of original data'],
+  commonMistakes: ['Wrong engine model calibration', 'Power interruption during flash', 'Not saving backup first'],
+  verificationChecklist: ['ECU communicates', 'No fault codes', 'Engine starts normally', 'Speed regulation correct']
+};
+
+// ==================== SDMO/KOHLER CONTROLLER GUIDE ====================
+export const SDMO_KOHLER_GUIDE: ReprogrammingGuide = {
+  id: 'sdmo-kohler-apm',
+  ecmName: 'SDMO APM/Kohler Decision-Maker',
+  manufacturer: 'SDMO/Kohler',
+  models: ['APM303', 'APM403', 'APM802', 'Decision-Maker 340', 'Decision-Maker 550', 'Decision-Maker 3500', 'IntelliGen', 'MP Series'],
+  overview: 'SDMO (now Kohler-SDMO) generator controllers. These are generator controllers (not engine ECMs) - engine ECMs depend on engine brand (typically John Deere, Mitsubishi, Volvo, or Doosan).',
+  prerequisites: {
+    tools: [
+      { name: 'SDMO PC Software', description: 'Configuration software for APM controllers', alternatives: ['Kohler OnCue'], essential: true },
+      { name: 'RS232/USB Cable', description: 'For APM controller connection', essential: true },
+      { name: 'Ethernet Cable', description: 'For newer controllers with Ethernet', essential: false }
+    ],
+    software: [
+      { name: 'SDMO APM Software', version: 'Current', source: 'SDMO/Kohler Dealer', licenseRequired: false },
+      { name: 'Kohler OnCue Plus', version: 'Current', source: 'Kohler', licenseRequired: true }
+    ],
+    parts: [],
+    conditions: ['Generator powered', 'Engine not running for configuration']
+  },
+  connectionProcedure: [
+    { step: 1, action: 'Identify controller model', details: 'APM for SDMO, Decision-Maker for Kohler', pinout: [
+      { pin: 'RS232 TX', function: 'Serial transmit', wire: 'Per manual' },
+      { pin: 'RS232 RX', function: 'Serial receive', wire: 'Per manual' },
+      { pin: 'GND', function: 'Signal ground', wire: 'Black' }
+    ]},
+    { step: 2, action: 'Connect PC cable', details: 'RS232 or USB depending on controller version' },
+    { step: 3, action: 'Launch configuration software', details: 'SDMO PC or Kohler OnCue' }
+  ],
+  reprogrammingProcedure: [
+    { step: 1, phase: 'connection', action: 'Connect to controller', details: 'Use serial or Ethernet connection', expectedResult: 'Controller detected', timeEstimate: '2 minutes', criticalNotes: [] },
+    { step: 2, phase: 'backup', action: 'Download current configuration', details: 'Save all parameters to file', expectedResult: 'Configuration backed up', timeEstimate: '3 minutes', criticalNotes: ['Always backup before changes'] },
+    { step: 3, phase: 'configuration', action: 'Modify parameters', details: 'Change settings as needed', expectedResult: 'Parameters modified', timeEstimate: '10-30 minutes', criticalNotes: ['Understand each parameter before changing'] },
+    { step: 4, phase: 'programming', action: 'Upload configuration', details: 'Send new parameters to controller', expectedResult: 'Upload successful', timeEstimate: '2 minutes', criticalNotes: [] },
+    { step: 5, phase: 'verification', action: 'Test all functions', details: 'Verify alarms, start/stop, protections', expectedResult: 'All functions working', timeEstimate: '15 minutes', criticalNotes: [] }
+  ],
+  parameterConfiguration: [
+    { category: 'Engine', parameters: [
+      { name: 'Crank Time', description: 'Maximum cranking duration', path: 'Engine > Crank', defaultValue: '10 sec', range: '5-30 sec', unit: 'seconds' },
+      { name: 'Crank Rest', description: 'Rest between crank attempts', path: 'Engine > Rest', defaultValue: '10 sec', range: '5-30 sec', unit: 'seconds' },
+      { name: 'Max Crank Attempts', description: 'Attempts before fail-to-start', path: 'Engine > Attempts', defaultValue: '3', range: '1-5', unit: '' }
+    ]},
+    { category: 'Protection', parameters: [
+      { name: 'High Coolant Temp', description: 'Shutdown temperature', path: 'Alarms > Coolant', defaultValue: '98°C', range: '85-105°C', unit: '°C' },
+      { name: 'Low Oil Pressure', description: 'Shutdown pressure', path: 'Alarms > Oil', defaultValue: '1.4 bar', range: '0.8-2.0 bar', unit: 'bar' },
+      { name: 'Overspeed', description: 'Overspeed shutdown', path: 'Alarms > Speed', defaultValue: '1650 RPM', range: '1550-1800 RPM', unit: 'RPM' }
+    ]},
+    { category: 'Generator', parameters: [
+      { name: 'Nominal Voltage', description: 'Rated output voltage', path: 'Generator > Voltage', defaultValue: '400V', range: '380-480V', unit: 'V' },
+      { name: 'Nominal Frequency', description: 'Rated frequency', path: 'Generator > Freq', defaultValue: '50 Hz', range: '50/60 Hz', unit: 'Hz' }
+    ]}
+  ],
+  j1939Setup: { sourceAddress: 128, baudRate: 250000, supportedPGNs: [61444, 65262, 65263, 65226] },
+  troubleshooting: [
+    { problem: 'Cannot connect to controller', causes: ['Wrong COM port', 'Cable fault', 'Baud rate mismatch'], solutions: ['Check COM port setting', 'Try different cable', 'Match baud rate'] },
+    { problem: 'Configuration upload fails', causes: ['Parameter out of range', 'Communication interrupted'], solutions: ['Check parameter values', 'Retry upload'] }
+  ],
+  safetyWarnings: ['Test all safety shutdowns after configuration changes', 'Document all changes made'],
+  commonMistakes: ['Not backing up original configuration', 'Setting protection limits too high/low', 'Not testing after changes'],
+  verificationChecklist: ['Controller communicates', 'All alarms respond correctly', 'Engine starts/stops properly', 'Transfer functions work (if ATS)']
+};
+
 // ==================== ALL ECM GUIDES ====================
 
 export const ALL_ECM_REPROGRAMMING_GUIDES: ReprogrammingGuide[] = [
+  // Major Diesel Engine ECMs
   CAT_ADEM_A4_GUIDE,
   CUMMINS_CM2350_GUIDE,
   VOLVO_PENTA_EMS2_GUIDE,
@@ -1429,7 +1884,16 @@ export const ALL_ECM_REPROGRAMMING_GUIDES: ReprogrammingGuide[] = [
   MTU_ADEC_GUIDE,
   DETROIT_DIESEL_GUIDE,
   SCANIA_EMS_GUIDE,
-  DEUTZ_EMR_GUIDE
+  DEUTZ_EMR_GUIDE,
+  // Additional Manufacturers
+  YANMAR_ECM_GUIDE,
+  DOOSAN_ECM_GUIDE,
+  MAN_ECM_GUIDE,
+  IVECO_FPT_GUIDE,
+  LISTER_PETTER_GUIDE,
+  HONDA_ECU_GUIDE,
+  WEICHAI_ECU_GUIDE,
+  SDMO_KOHLER_GUIDE
 ];
 
 // ==================== HELPER FUNCTIONS ====================

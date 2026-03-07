@@ -496,23 +496,26 @@ function GuideDisplay({ guide }: { guide: ReprogrammingGuide }) {
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg text-center">
                   <p className="text-xs text-slate-500 mb-1">Termination</p>
-                  <p className="text-cyan-400 font-bold">{guide.j1939Setup.terminationResistor.value}</p>
+                  <p className="text-cyan-400 font-bold">{guide.j1939Setup.terminationResistor?.value || '120Ω'}</p>
                 </div>
               </div>
 
               {/* Termination Info */}
-              <div className={`p-4 rounded-lg mb-6 ${
-                guide.j1939Setup.terminationResistor.required
-                  ? 'bg-yellow-500/10 border border-yellow-500/30'
-                  : 'bg-green-500/10 border border-green-500/30'
-              }`}>
-                <p className={guide.j1939Setup.terminationResistor.required ? 'text-yellow-400' : 'text-green-400'}>
-                  <strong>Termination Resistor:</strong> {guide.j1939Setup.terminationResistor.required ? 'REQUIRED' : 'Built-in'}
-                </p>
-                <p className="text-sm text-slate-400 mt-1">Location: {guide.j1939Setup.terminationResistor.location}</p>
-              </div>
+              {guide.j1939Setup.terminationResistor && (
+                <div className={`p-4 rounded-lg mb-6 ${
+                  guide.j1939Setup.terminationResistor.required
+                    ? 'bg-yellow-500/10 border border-yellow-500/30'
+                    : 'bg-green-500/10 border border-green-500/30'
+                }`}>
+                  <p className={guide.j1939Setup.terminationResistor.required ? 'text-yellow-400' : 'text-green-400'}>
+                    <strong>Termination Resistor:</strong> {guide.j1939Setup.terminationResistor.required ? 'REQUIRED' : 'Built-in'}
+                  </p>
+                  <p className="text-sm text-slate-400 mt-1">Location: {guide.j1939Setup.terminationResistor.location}</p>
+                </div>
+              )}
 
               {/* Transmit PGNs */}
+              {guide.j1939Setup.transmitPGNs && guide.j1939Setup.transmitPGNs.length > 0 && (
               <div className="mb-6">
                 <h4 className="font-medium text-white mb-3">Transmitted PGNs (ECM → Controller)</h4>
                 <div className="bg-slate-900 rounded-lg overflow-hidden">
@@ -538,6 +541,21 @@ function GuideDisplay({ guide }: { guide: ReprogrammingGuide }) {
                   </table>
                 </div>
               </div>
+              )}
+
+              {/* Supported PGNs (simplified view) */}
+              {guide.j1939Setup.supportedPGNs && guide.j1939Setup.supportedPGNs.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-medium text-white mb-3">Supported PGNs</h4>
+                <div className="flex flex-wrap gap-2">
+                  {guide.j1939Setup.supportedPGNs.map((pgn, idx) => (
+                    <span key={idx} className="px-3 py-1 bg-slate-800 rounded-lg font-mono text-cyan-400 text-sm">
+                      {pgn}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              )}
 
               {/* Wiring Diagram */}
               <div>
@@ -568,7 +586,7 @@ function GuideDisplay({ guide }: { guide: ReprogrammingGuide }) {
                   <div>
                     <h4 className="text-sm font-medium text-yellow-400 mb-2">Possible Causes:</h4>
                     <ul className="space-y-1">
-                      {item.possibleCauses.map((cause, cidx) => (
+                      {(item.possibleCauses || item.causes || []).map((cause, cidx) => (
                         <li key={cidx} className="text-sm text-slate-400 flex items-start gap-2">
                           <span className="text-yellow-400">•</span>
                           {cause}
