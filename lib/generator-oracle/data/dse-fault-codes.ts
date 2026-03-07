@@ -2,13 +2,26 @@
  * INDEPENDENT REFERENCE DATABASE - DSE-Compatible Controllers
  * Community-sourced troubleshooting guide for controllers compatible with DSE protocol
  *
- * DISCLAIMER: This is an independent reference guide created for educational and
- * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
- * are the property of their respective owners. This database is NOT affiliated with,
- * endorsed by, or officially associated with Deep Sea Electronics Ltd or any other
- * manufacturer. All fault descriptions are independently compiled interpretations
- * intended to assist technicians in the field. For official documentation, always
- * refer to the manufacturer's service manuals.
+ * COPYRIGHT-SAFE APPROACH:
+ * ========================
+ * - Fault code NUMBERS are used freely (industry-standard identifiers)
+ * - All DESCRIPTIONS are INDEPENDENTLY WRITTEN - NOT copied from OEM manuals
+ * - Descriptions are rephrased interpretations based on general diesel generator
+ *   diagnostic principles and field technician experience
+ *
+ * DISCLAIMER:
+ * ===========
+ * This is an INDEPENDENT reference guide created for educational and troubleshooting
+ * purposes. All brand names, model numbers, and trademarks mentioned are the property
+ * of their respective owners and used for IDENTIFICATION PURPOSES ONLY.
+ *
+ * This database is NOT affiliated with, endorsed by, or officially associated with
+ * Deep Sea Electronics Ltd or any other manufacturer.
+ *
+ * All fault descriptions are INDEPENDENTLY COMPILED INTERPRETATIONS intended to
+ * assist technicians in the field. They may differ from official manufacturer
+ * documentation. For official documentation, always refer to the manufacturer's
+ * service manuals.
  *
  * Deep Sea Electronics® and DSE® are registered trademarks of Deep Sea Electronics Ltd.
  */

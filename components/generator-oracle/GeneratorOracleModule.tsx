@@ -74,6 +74,11 @@ import SensorDiagnosticsPanel from './panels/SensorDiagnosticsPanel';
 import ECMDiagnosticsPanel from './panels/ECMDiagnosticsPanel';
 import AIAnalysisPanel from './panels/AIAnalysisPanel';
 import UnifiedDiagnosticsPanel from './panels/UnifiedDiagnosticsPanel';
+import ECMProgrammingPanel from './panels/ECMProgrammingPanel';
+import CANbusMonitorPanel from './panels/CANbusMonitorPanel';
+import FleetDashboardPanel from './panels/FleetDashboardPanel';
+import CompleteDiagnosticPanel from './panels/CompleteDiagnosticPanel';
+import ECMReprogrammingGuidePanel from './panels/ECMReprogrammingGuidePanel';
 import SpeechController from './SpeechController';
 import SubscriptionManager from './SubscriptionManager';
 // Phase 4: Professional PDF Reports
@@ -1129,7 +1134,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1487,6 +1492,11 @@ export default function GeneratorOracleModule() {
                   <PremiumNavTab icon="🌡️" label="Sensors" active={activeScreen === 'sensors'} onClick={() => setActiveScreen('sensors')} />
                   <PremiumNavTab icon="🧠" label="ECM" active={activeScreen === 'ecm'} onClick={() => setActiveScreen('ecm')} />
                   <PremiumNavTab icon="🔬" label="Unified Diag" active={activeScreen === 'unified'} onClick={() => setActiveScreen('unified')} />
+                  <PremiumNavTab icon="💾" label="ECM Prog" active={activeScreen === 'ecmprog'} onClick={() => setActiveScreen('ecmprog')} />
+                  <PremiumNavTab icon="📡" label="CANbus" active={activeScreen === 'canbus'} onClick={() => setActiveScreen('canbus')} />
+                  <PremiumNavTab icon="🏭" label="Fleet" active={activeScreen === 'fleet'} onClick={() => setActiveScreen('fleet')} />
+                  <PremiumNavTab icon="🔧" label="Full Solutions" active={activeScreen === 'completediag'} onClick={() => setActiveScreen('completediag')} />
+                  <PremiumNavTab icon="💾" label="ECM Reprogram" active={activeScreen === 'ecmguide'} onClick={() => setActiveScreen('ecmguide')} />
                   {/* Phase 4-8 Features */}
                   <PremiumNavTab icon="📄" label="Reports" active={activeScreen === 'reports'} onClick={() => setActiveScreen('reports')} />
                   <PremiumNavTab icon="📷" label="Camera" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
@@ -2102,6 +2112,66 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                   >
                     <UnifiedDiagnosticsPanel />
+                  </motion.div>
+                )}
+
+                {/* ECM PROGRAMMING - Firmware Updates & Calibration */}
+                {activeScreen === 'ecmprog' && (
+                  <motion.div
+                    key="ecmprog"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <ECMProgrammingPanel />
+                  </motion.div>
+                )}
+
+                {/* CANBUS MONITOR - J1939 Protocol Analysis */}
+                {activeScreen === 'canbus' && (
+                  <motion.div
+                    key="canbus"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <CANbusMonitorPanel />
+                  </motion.div>
+                )}
+
+                {/* FLEET DASHBOARD - Predictive AI Analytics */}
+                {activeScreen === 'fleet' && (
+                  <motion.div
+                    key="fleet"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <FleetDashboardPanel />
+                  </motion.div>
+                )}
+
+                {/* COMPLETE DIAGNOSTIC SOLUTIONS - Full Repair Procedures */}
+                {activeScreen === 'completediag' && (
+                  <motion.div
+                    key="completediag"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <CompleteDiagnosticPanel />
+                  </motion.div>
+                )}
+
+                {/* ECM REPROGRAMMING GUIDE - Step-by-Step ECM/ECU Programming */}
+                {activeScreen === 'ecmguide' && (
+                  <motion.div
+                    key="ecmguide"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <ECMReprogrammingGuidePanel />
                   </motion.div>
                 )}
 

@@ -37,7 +37,8 @@
       "Bash(ls:*)",
       "Bash(head:*)",
       "Bash(vercel:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(wc:*)"
     ]
   }
 }

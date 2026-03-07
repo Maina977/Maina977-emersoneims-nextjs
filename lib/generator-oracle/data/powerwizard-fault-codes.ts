@@ -2,13 +2,26 @@
  * INDEPENDENT REFERENCE DATABASE - PowerWizard-Compatible Controllers
  * Community-sourced troubleshooting guide using industry-standard J1939 SPN-FMI format
  *
- * DISCLAIMER: This is an independent reference guide created for educational and
- * troubleshooting purposes. All brand names, model numbers, and trademarks mentioned
- * are the property of their respective owners. This database is NOT affiliated with,
- * endorsed by, or officially associated with Caterpillar Inc. or any other manufacturer.
- * All fault descriptions are independently compiled interpretations based on public
- * J1939 standards, intended to assist technicians in the field. For official
- * documentation, always refer to the manufacturer's service manuals.
+ * COPYRIGHT-SAFE APPROACH:
+ * ========================
+ * - Fault code NUMBERS (SPN-FMI) are used freely - these are SAE J1939 INDUSTRY STANDARDS
+ * - All DESCRIPTIONS are INDEPENDENTLY WRITTEN - NOT copied from OEM manuals
+ * - Descriptions are rephrased interpretations based on J1939 standard definitions and
+ *   general diesel generator diagnostic principles
+ *
+ * DISCLAIMER:
+ * ===========
+ * This is an INDEPENDENT reference guide created for educational and troubleshooting
+ * purposes. All brand names, model numbers, and trademarks mentioned are the property
+ * of their respective owners and used for IDENTIFICATION PURPOSES ONLY.
+ *
+ * This database is NOT affiliated with, endorsed by, or officially associated with
+ * Caterpillar Inc. or any other manufacturer.
+ *
+ * All fault descriptions are INDEPENDENTLY COMPILED INTERPRETATIONS intended to
+ * assist technicians in the field. They may differ from official manufacturer
+ * documentation. For official documentation, always refer to the manufacturer's
+ * service manuals.
  *
  * CAT®, Caterpillar®, and PowerWizard® are registered trademarks of Caterpillar Inc.
  * J1939 is a standard developed by SAE International.
