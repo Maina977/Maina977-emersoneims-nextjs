@@ -81,6 +81,7 @@ import CompleteDiagnosticPanel from './panels/CompleteDiagnosticPanel';
 import ECMReprogrammingGuidePanel from './panels/ECMReprogrammingGuidePanel';
 import SpeechController from './SpeechController';
 import SubscriptionManager from './SubscriptionManager';
+import BackToCommand from './BackToCommand';
 // Phase 4: Professional PDF Reports
 import ReportBuilder from './ReportBuilder';
 // Phase 5: Photo/Video Capture
@@ -1855,6 +1856,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="engine" />
                     <EnginePanel
                       parameters={{
                         rpm: parameters.rpm,
@@ -1881,6 +1883,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="electrical" />
                     <ElectricalPanel
                       parameters={{
                         voltageL1N: parameters.voltageL1N,
@@ -1912,6 +1915,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="faults" />
                     <FaultDiagnosticsPanel
                       onSearch={handleSearch}
                       searchResults={searchResults as any}
@@ -1928,6 +1932,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="advanced" />
                     <AdvancedDiagnosticsPanel />
                   </motion.div>
                 )}
@@ -1940,6 +1945,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="wiring" />
                     <WiringDiagramsPanel />
                   </motion.div>
                 )}
@@ -1953,6 +1959,7 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-6"
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="allwiring" />
                     <HolographicGlassPanel
                       title="All 10 Controllers - Complete Wiring Reference"
                       subtitle="DSE • ComAp • Woodward • SmartGen • CAT PowerWizard • Datakom • Lovato • Siemens • ENKO • VODIA"
@@ -1978,6 +1985,7 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-6"
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="techinput" />
                     <HolographicGlassPanel
                       title="Technician Input Diagnostics"
                       subtitle="Enter Your Readings - Get Instant Analysis"
@@ -2003,6 +2011,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="aianalysis" />
                     <AIAnalysisPanel />
                   </motion.div>
                 )}
@@ -2015,6 +2024,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="realtime" />
                     <RealTimeMonitoringPanel />
                   </motion.div>
                 )}
@@ -2027,6 +2037,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="obd" />
                     <OBDProtocolPanel />
                   </motion.div>
                 )}
@@ -2039,6 +2050,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="remote" />
                     <RemoteConnectivityPanel />
                   </motion.div>
                 )}
@@ -2051,6 +2063,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="predictive" />
                     <PredictiveMaintenancePanel />
                   </motion.div>
                 )}
@@ -2063,6 +2076,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="recording" />
                     <DataRecordingPanel />
                   </motion.div>
                 )}
@@ -2075,6 +2089,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="manuals" />
                     <ControllerRepairManualsPanel />
                   </motion.div>
                 )}
@@ -2087,6 +2102,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="sensors" />
                     <SensorDiagnosticsPanel />
                   </motion.div>
                 )}
@@ -2099,6 +2115,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecm" />
                     <ECMDiagnosticsPanel />
                   </motion.div>
                 )}
@@ -2111,6 +2128,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="unified" />
                     <UnifiedDiagnosticsPanel />
                   </motion.div>
                 )}
@@ -2123,6 +2141,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecmprog" />
                     <ECMProgrammingPanel />
                   </motion.div>
                 )}
@@ -2135,6 +2154,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="canbus" />
                     <CANbusMonitorPanel />
                   </motion.div>
                 )}
@@ -2147,6 +2167,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="fleet" />
                     <FleetDashboardPanel />
                   </motion.div>
                 )}
@@ -2159,6 +2180,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="completediag" />
                     <CompleteDiagnosticPanel />
                   </motion.div>
                 )}
@@ -2171,6 +2193,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecmguide" />
                     <ECMReprogrammingGuidePanel />
                   </motion.div>
                 )}
@@ -2184,6 +2207,7 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-6"
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="simulator" />
                     <HolographicGlassPanel title="Controller Simulator" subtitle="Interactive Display Emulation" icon="🖥️" accentColor="cyan" variant="glow">
                       <div className="flex flex-wrap gap-2 mb-6">
                         {(Object.keys(CONTROLLER_TYPES) as ControllerType[]).map(type => (
@@ -2217,6 +2241,7 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-6"
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="faultanalysis" />
                     <HolographicGlassPanel title="Detailed Fault Analysis" subtitle="Comprehensive Diagnostic Reports" icon="🔍" accentColor="purple" variant="glow">
                       <p className="text-slate-400 mb-6">
                         Each fault code includes comprehensive multi-paragraph descriptions, diagnostic procedures,
@@ -2249,6 +2274,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="assistant" />
                     <TechnicianAssistantPanel />
                   </motion.div>
                 )}
@@ -2261,6 +2287,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="history" />
                     <HolographicGlassPanel title={t.tabHistory} subtitle={t.diagnosisResults} icon="📋" accentColor="purple" variant="glow">
                       {diagnosisHistory.length === 0 ? (
                         <div className="text-center py-12">
@@ -2309,6 +2336,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="reports" />
                     <HolographicGlassPanel title="Diagnostic Reports" subtitle="Generate Professional PDF Reports" icon="📄" accentColor="cyan" variant="glow">
                       <div className="space-y-6">
                         <div className="p-6 bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-xl border border-cyan-500/30">
@@ -2354,6 +2382,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="camera" />
                     <HolographicGlassPanel title="Photo & Video Capture" subtitle="Document Equipment Conditions" icon="📷" accentColor="green" variant="glow">
                       <CameraCapture
                         onCapture={(media) => {
@@ -2375,6 +2404,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="parts" />
                     <HolographicGlassPanel title="Parts & Suppliers" subtitle="Order Parts & Contact Suppliers" icon="🛒" accentColor="amber" variant="glow">
                       <PartsOrderPanel
                         onClose={() => setActiveScreen('command')}
@@ -2392,6 +2422,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="location" />
                     <HolographicGlassPanel title="Service Location" subtitle="GPS & Site Information" icon="📍" accentColor="red" variant="glow">
                       <LocationCapture
                         onLocationCaptured={(location) => {
@@ -2411,6 +2442,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="notifications" />
                     <HolographicGlassPanel title="Push Notifications" subtitle="Alert Settings & Preferences" icon="🔔" accentColor="purple" variant="glow">
                       <NotificationSettings />
                     </HolographicGlassPanel>
@@ -2425,6 +2457,7 @@ export default function GeneratorOracleModule() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="settings" />
                     <HolographicGlassPanel title={t.tabSettings} subtitle={t.tabSettings} icon="⚙️" accentColor="cyan" variant="glow">
                       <div className="space-y-6">
                         <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
