@@ -14,10 +14,14 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ==================== TYPES ====================
+type MaintenanceCategory =
+  | 'engine' | 'electrical' | 'fuel' | 'cooling' | 'filters' | 'belts' | 'fluids'
+  | 'sensors' | 'control' | 'injection' | 'governor' | 'protection' | 'starter' | 'exhaust';
+
 interface MaintenanceItem {
   id: string;
   name: string;
-  category: 'engine' | 'electrical' | 'fuel' | 'cooling' | 'filters' | 'belts' | 'fluids';
+  category: MaintenanceCategory;
   lastService: string;
   nextService: string;
   intervalHours: number;
@@ -27,6 +31,12 @@ interface MaintenanceItem {
   cost: number;
   parts: string[];
   icon: string;
+  // Enhanced diagnostic info
+  failureSigns?: string[];
+  testProcedure?: string[];
+  criticalValues?: { min: number; max: number; unit: string };
+  componentLifespan?: number; // hours
+  failureRisk?: number; // percentage
 }
 
 interface BatteryHealth {
@@ -53,6 +63,8 @@ interface CalendarEvent {
 
 // ==================== MAINTENANCE ITEM CARD ====================
 function MaintenanceItemCard({ item }: { item: MaintenanceItem }) {
+  const [expanded, setExpanded] = useState(false);
+
   const statusColors = {
     ok: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', progress: 'bg-green-500' },
     due_soon: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', progress: 'bg-amber-500' },
@@ -65,8 +77,9 @@ function MaintenanceItemCard({ item }: { item: MaintenanceItem }) {
 
   return (
     <motion.div
-      className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}
-      whileHover={{ scale: 1.02 }}
+      className={`p-4 rounded-xl ${colors.bg} border ${colors.border} cursor-pointer`}
+      whileHover={{ scale: 1.01 }}
+      onClick={() => setExpanded(!expanded)}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -76,9 +89,16 @@ function MaintenanceItemCard({ item }: { item: MaintenanceItem }) {
             <p className="text-xs text-slate-500 capitalize">{item.category}</p>
           </div>
         </div>
-        <span className={`px-2 py-0.5 rounded text-[10px] uppercase ${colors.bg} ${colors.text} border ${colors.border}`}>
-          {item.status.replace('_', ' ')}
-        </span>
+        <div className="flex items-center gap-2">
+          {item.failureRisk !== undefined && item.failureRisk > 20 && (
+            <span className="px-2 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400 border border-red-500/30">
+              {item.failureRisk}% RISK
+            </span>
+          )}
+          <span className={`px-2 py-0.5 rounded text-[10px] uppercase ${colors.bg} ${colors.text} border ${colors.border}`}>
+            {item.status.replace('_', ' ')}
+          </span>
+        </div>
       </div>
 
       {/* Progress Bar */}
@@ -98,7 +118,7 @@ function MaintenanceItemCard({ item }: { item: MaintenanceItem }) {
       </div>
 
       {/* Info Grid */}
-      <div className="grid grid-cols-3 gap-2 text-center text-xs">
+      <div className="grid grid-cols-4 gap-2 text-center text-xs">
         <div>
           <div className="text-white font-mono">{item.intervalHours}h</div>
           <div className="text-slate-500">Interval</div>
@@ -111,12 +131,88 @@ function MaintenanceItemCard({ item }: { item: MaintenanceItem }) {
           <div className="text-amber-400 font-mono">KES {item.cost.toLocaleString()}</div>
           <div className="text-slate-500">Est. Cost</div>
         </div>
+        {item.componentLifespan && (
+          <div>
+            <div className="text-cyan-400 font-mono">{item.componentLifespan}h</div>
+            <div className="text-slate-500">Lifespan</div>
+          </div>
+        )}
       </div>
 
-      {/* Next Service Date */}
+      {/* Critical Values */}
+      {item.criticalValues && (
+        <div className="mt-3 pt-3 border-t border-slate-700/50">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500">Acceptable Range:</span>
+            <span className="text-cyan-400 font-mono">
+              {item.criticalValues.min} - {item.criticalValues.max} {item.criticalValues.unit}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Expanded Details */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-4 pt-4 border-t border-slate-700/50 space-y-4">
+              {/* Failure Signs */}
+              {item.failureSigns && item.failureSigns.length > 0 && (
+                <div>
+                  <h5 className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">⚠️ Warning Signs of Failure</h5>
+                  <ul className="space-y-1">
+                    {item.failureSigns.map((sign, idx) => (
+                      <li key={idx} className="text-xs text-slate-300 flex items-start gap-2">
+                        <span className="text-red-400">•</span>
+                        {sign}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Test Procedure */}
+              {item.testProcedure && item.testProcedure.length > 0 && (
+                <div>
+                  <h5 className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2">🔧 Test Procedure</h5>
+                  <ol className="space-y-1">
+                    {item.testProcedure.map((step, idx) => (
+                      <li key={idx} className="text-xs text-slate-300 flex items-start gap-2">
+                        <span className="text-cyan-400 font-mono">{idx + 1}.</span>
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {/* Required Parts */}
+              {item.parts && item.parts.length > 0 && (
+                <div>
+                  <h5 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">📦 Required Parts</h5>
+                  <div className="flex flex-wrap gap-1">
+                    {item.parts.map((part, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-slate-800/50 rounded text-xs text-slate-300">
+                        {part}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Next Service Date & Expand Hint */}
       <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between text-xs">
-        <span className="text-slate-500">Next Service:</span>
-        <span className={colors.text}>{item.nextService}</span>
+        <span className="text-slate-500">Next Service: <span className={colors.text}>{item.nextService}</span></span>
+        <span className="text-slate-600">{expanded ? '▲ Less' : '▼ More'}</span>
       </div>
     </motion.div>
   );
@@ -427,14 +523,391 @@ export default function PredictiveMaintenancePanel() {
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
   const [maintenanceItems] = useState<MaintenanceItem[]>([
-    { id: '1', name: 'Engine Oil Change', category: 'fluids', lastService: '2024-01-01', nextService: '2024-02-15', intervalHours: 250, currentHours: 220, hoursRemaining: 30, status: 'due_soon', cost: 8500, parts: ['Oil Filter', '15W-40 Oil (15L)'], icon: '🛢️' },
-    { id: '2', name: 'Air Filter Replacement', category: 'filters', lastService: '2023-12-15', nextService: '2024-03-15', intervalHours: 500, currentHours: 320, hoursRemaining: 180, status: 'ok', cost: 4500, parts: ['Air Filter Element'], icon: '💨' },
-    { id: '3', name: 'Fuel Filter Change', category: 'filters', lastService: '2023-11-20', nextService: '2024-02-20', intervalHours: 500, currentHours: 480, hoursRemaining: 20, status: 'critical', cost: 3500, parts: ['Fuel Filter', 'Seals Kit'], icon: '⛽' },
-    { id: '4', name: 'Coolant System Flush', category: 'cooling', lastService: '2023-08-01', nextService: '2024-08-01', intervalHours: 2000, currentHours: 1200, hoursRemaining: 800, status: 'ok', cost: 12000, parts: ['Coolant (20L)', 'Thermostat', 'Hoses'], icon: '❄️' },
-    { id: '5', name: 'Drive Belt Inspection', category: 'belts', lastService: '2023-10-15', nextService: '2024-01-15', intervalHours: 1000, currentHours: 1050, hoursRemaining: -50, status: 'overdue', cost: 6500, parts: ['V-Belt Set', 'Tensioner'], icon: '⚙️' },
-    { id: '6', name: 'Valve Clearance Adjustment', category: 'engine', lastService: '2023-06-01', nextService: '2024-06-01', intervalHours: 3000, currentHours: 2100, hoursRemaining: 900, status: 'ok', cost: 25000, parts: ['Valve Cover Gasket', 'Feeler Gauges'], icon: '🔧' },
-    { id: '7', name: 'Injector Service', category: 'fuel', lastService: '2023-04-01', nextService: '2024-04-01', intervalHours: 4000, currentHours: 3500, hoursRemaining: 500, status: 'ok', cost: 45000, parts: ['Injector Nozzles', 'Seals'], icon: '💉' },
-    { id: '8', name: 'Alternator Inspection', category: 'electrical', lastService: '2023-09-01', nextService: '2024-03-01', intervalHours: 2000, currentHours: 1800, hoursRemaining: 200, status: 'due_soon', cost: 15000, parts: ['Bearings', 'Brush Set', 'AVR Check'], icon: '⚡' },
+    // ========== FLUIDS ==========
+    {
+      id: '1', name: 'Engine Oil Change', category: 'fluids',
+      lastService: '2024-01-01', nextService: '2024-02-15',
+      intervalHours: 250, currentHours: 220, hoursRemaining: 30,
+      status: 'due_soon', cost: 8500, parts: ['Oil Filter', '15W-40 Oil (15L)'], icon: '🛢️',
+      failureSigns: ['Low oil pressure warning', 'Dark/milky oil color', 'Metallic particles in oil', 'Increased engine noise'],
+      testProcedure: ['Check oil level on dipstick', 'Inspect oil color and consistency', 'Check for metal particles', 'Monitor oil pressure gauge'],
+      criticalValues: { min: 15, max: 65, unit: 'PSI' },
+      componentLifespan: 250, failureRisk: 15
+    },
+    {
+      id: '1b', name: 'Hydraulic Fluid Check', category: 'fluids',
+      lastService: '2023-12-01', nextService: '2024-06-01',
+      intervalHours: 1000, currentHours: 650, hoursRemaining: 350,
+      status: 'ok', cost: 12000, parts: ['Hydraulic Fluid (10L)', 'Filter Element'], icon: '🛢️',
+      failureSigns: ['Slow actuator response', 'Fluid foaming', 'High operating temperature'],
+      testProcedure: ['Check fluid level', 'Inspect for contamination', 'Test viscosity'],
+      componentLifespan: 2000, failureRisk: 5
+    },
+
+    // ========== FILTERS ==========
+    {
+      id: '2', name: 'Air Filter Replacement', category: 'filters',
+      lastService: '2023-12-15', nextService: '2024-03-15',
+      intervalHours: 500, currentHours: 320, hoursRemaining: 180,
+      status: 'ok', cost: 4500, parts: ['Air Filter Element', 'Pre-Filter'], icon: '💨',
+      failureSigns: ['Black exhaust smoke', 'Reduced power', 'High intake restriction', 'Increased fuel consumption'],
+      testProcedure: ['Visual inspection for dirt/damage', 'Check intake restriction gauge', 'Blow test with compressed air'],
+      criticalValues: { min: 0, max: 25, unit: 'inches H2O' },
+      componentLifespan: 500, failureRisk: 8
+    },
+    {
+      id: '3', name: 'Fuel Filter Change', category: 'filters',
+      lastService: '2023-11-20', nextService: '2024-02-20',
+      intervalHours: 500, currentHours: 480, hoursRemaining: 20,
+      status: 'critical', cost: 3500, parts: ['Primary Fuel Filter', 'Secondary Filter', 'Seals Kit', 'Water Separator'], icon: '⛽',
+      failureSigns: ['Hard starting', 'Engine surging', 'Loss of power under load', 'Water in fuel warning'],
+      testProcedure: ['Drain water separator', 'Check filter pressure drop', 'Inspect for contamination'],
+      criticalValues: { min: 0, max: 10, unit: 'PSI drop' },
+      componentLifespan: 500, failureRisk: 85
+    },
+    {
+      id: '3b', name: 'Oil Filter Replacement', category: 'filters',
+      lastService: '2024-01-01', nextService: '2024-02-15',
+      intervalHours: 250, currentHours: 220, hoursRemaining: 30,
+      status: 'due_soon', cost: 2500, parts: ['Oil Filter Element', 'O-Ring Seals'], icon: '🔘',
+      failureSigns: ['Low oil pressure', 'Bypass valve activation', 'Metal particles in oil'],
+      testProcedure: ['Cut open old filter', 'Inspect media for debris', 'Check bypass valve'],
+      componentLifespan: 250, failureRisk: 20
+    },
+
+    // ========== COOLING SYSTEM ==========
+    {
+      id: '4', name: 'Coolant System Flush', category: 'cooling',
+      lastService: '2023-08-01', nextService: '2024-08-01',
+      intervalHours: 2000, currentHours: 1200, hoursRemaining: 800,
+      status: 'ok', cost: 12000, parts: ['Coolant (20L)', 'Thermostat', 'Hoses', 'Clamps'], icon: '❄️',
+      failureSigns: ['Overheating', 'Coolant discoloration', 'White residue', 'Sweet smell from exhaust'],
+      testProcedure: ['Test coolant freeze point', 'Check pH level (7.5-11)', 'Pressure test system', 'Inspect for leaks'],
+      criticalValues: { min: 180, max: 210, unit: '°F' },
+      componentLifespan: 4000, failureRisk: 5
+    },
+    {
+      id: '4b', name: 'Water Pump Inspection', category: 'cooling',
+      lastService: '2023-06-01', nextService: '2024-06-01',
+      intervalHours: 3000, currentHours: 2200, hoursRemaining: 800,
+      status: 'ok', cost: 35000, parts: ['Water Pump', 'Gasket', 'Impeller', 'Bearing'], icon: '💧',
+      failureSigns: ['Coolant leak at weep hole', 'Bearing noise', 'Overheating at idle', 'Wobbling pulley'],
+      testProcedure: ['Check weep hole for leaks', 'Feel for bearing play', 'Listen for bearing noise', 'Inspect belt tension'],
+      componentLifespan: 8000, failureRisk: 8
+    },
+    {
+      id: '4c', name: 'Radiator Service', category: 'cooling',
+      lastService: '2023-04-01', nextService: '2025-04-01',
+      intervalHours: 5000, currentHours: 3500, hoursRemaining: 1500,
+      status: 'ok', cost: 45000, parts: ['Radiator Core', 'Fan Shroud', 'Hoses', 'Cap'], icon: '🌡️',
+      failureSigns: ['External leaks', 'Fin damage', 'Internal blockage', 'Pressure cap failure'],
+      testProcedure: ['Pressure test to 15 PSI', 'Check fin condition', 'Verify coolant flow', 'Test radiator cap'],
+      criticalValues: { min: 13, max: 16, unit: 'PSI cap' },
+      componentLifespan: 10000, failureRisk: 3
+    },
+    {
+      id: '4d', name: 'Thermostat Replacement', category: 'cooling',
+      lastService: '2023-08-01', nextService: '2025-08-01',
+      intervalHours: 4000, currentHours: 2500, hoursRemaining: 1500,
+      status: 'ok', cost: 8000, parts: ['Thermostat', 'Gasket', 'Housing O-Ring'], icon: '🌡️',
+      failureSigns: ['Engine overcooling', 'Slow warm-up', 'Overheating', 'Erratic temperature'],
+      testProcedure: ['Boil test thermostat opening', 'Check opening temperature', 'Verify full opening travel'],
+      criticalValues: { min: 180, max: 195, unit: '°F opening' },
+      componentLifespan: 6000, failureRisk: 5
+    },
+
+    // ========== BELTS ==========
+    {
+      id: '5', name: 'Drive Belt Inspection', category: 'belts',
+      lastService: '2023-10-15', nextService: '2024-01-15',
+      intervalHours: 1000, currentHours: 1050, hoursRemaining: -50,
+      status: 'overdue', cost: 6500, parts: ['V-Belt Set', 'Tensioner Pulley', 'Idler Pulley'], icon: '⚙️',
+      failureSigns: ['Squealing noise', 'Visible cracks', 'Glazed surface', 'Fraying edges', 'Battery not charging'],
+      testProcedure: ['Check belt deflection (10-15mm)', 'Inspect for cracks/wear', 'Check pulley alignment', 'Verify tensioner spring'],
+      criticalValues: { min: 10, max: 15, unit: 'mm deflection' },
+      componentLifespan: 2000, failureRisk: 45
+    },
+    {
+      id: '5b', name: 'Fan Belt Replacement', category: 'belts',
+      lastService: '2023-09-01', nextService: '2024-09-01',
+      intervalHours: 2000, currentHours: 1500, hoursRemaining: 500,
+      status: 'ok', cost: 4500, parts: ['Fan Belt', 'Adjustment Hardware'], icon: '🌀',
+      failureSigns: ['High engine temperature', 'Belt slipping noise', 'Visual wear patterns'],
+      testProcedure: ['Check belt tension', 'Inspect for glazing', 'Verify pulley condition'],
+      componentLifespan: 3000, failureRisk: 12
+    },
+
+    // ========== ENGINE ==========
+    {
+      id: '6', name: 'Valve Clearance Adjustment', category: 'engine',
+      lastService: '2023-06-01', nextService: '2024-06-01',
+      intervalHours: 3000, currentHours: 2100, hoursRemaining: 900,
+      status: 'ok', cost: 25000, parts: ['Valve Cover Gasket', 'Feeler Gauges', 'Adjusting Shims'], icon: '🔧',
+      failureSigns: ['Ticking noise', 'Power loss', 'Hard starting', 'Valve train noise'],
+      testProcedure: ['Check clearance with feeler gauge', 'Intake: 0.25-0.30mm', 'Exhaust: 0.40-0.45mm', 'Adjust as needed'],
+      criticalValues: { min: 0.25, max: 0.45, unit: 'mm' },
+      componentLifespan: 10000, failureRisk: 6
+    },
+    {
+      id: '6b', name: 'Cylinder Compression Test', category: 'engine',
+      lastService: '2023-03-01', nextService: '2024-03-01',
+      intervalHours: 2000, currentHours: 1800, hoursRemaining: 200,
+      status: 'due_soon', cost: 15000, parts: ['Compression Tester', 'Leak-down Tester'], icon: '📊',
+      failureSigns: ['Blue exhaust smoke', 'Hard starting', 'Loss of power', 'Oil consumption'],
+      testProcedure: ['Remove glow plugs/injectors', 'Crank engine and record pressure', 'Compare cylinders (max 10% variance)', 'Perform leak-down test if low'],
+      criticalValues: { min: 350, max: 450, unit: 'PSI' },
+      componentLifespan: 15000, failureRisk: 15
+    },
+    {
+      id: '6c', name: 'Turbocharger Service', category: 'engine',
+      lastService: '2023-01-01', nextService: '2025-01-01',
+      intervalHours: 5000, currentHours: 3800, hoursRemaining: 1200,
+      status: 'ok', cost: 85000, parts: ['Turbo Rebuild Kit', 'Bearings', 'Seals', 'Oil Lines'], icon: '🌪️',
+      failureSigns: ['Blue/black smoke', 'Whining noise', 'Loss of boost', 'Oil in intercooler', 'Shaft play'],
+      testProcedure: ['Check shaft for radial play (<0.05mm)', 'Check axial play (<0.10mm)', 'Inspect compressor wheel', 'Verify oil supply/drain'],
+      criticalValues: { min: 0, max: 0.05, unit: 'mm radial' },
+      componentLifespan: 8000, failureRisk: 8
+    },
+
+    // ========== INJECTION SYSTEM ==========
+    {
+      id: '7', name: 'Injector Nozzle Service', category: 'injection',
+      lastService: '2023-04-01', nextService: '2024-04-01',
+      intervalHours: 4000, currentHours: 3500, hoursRemaining: 500,
+      status: 'ok', cost: 45000, parts: ['Injector Nozzles (set)', 'Copper Washers', 'Seals', 'Hold-down Studs'], icon: '💉',
+      failureSigns: ['Rough idle', 'Black smoke', 'Knock on specific cylinder', 'Poor fuel economy', 'Hard starting'],
+      testProcedure: ['Pop test each injector (opening pressure)', 'Check spray pattern', 'Verify no drip after cut-off', 'Ultrasonic cleaning if needed'],
+      criticalValues: { min: 2900, max: 3200, unit: 'PSI opening' },
+      componentLifespan: 6000, failureRisk: 12
+    },
+    {
+      id: '7b', name: 'Injection Pump Calibration', category: 'injection',
+      lastService: '2023-01-15', nextService: '2025-01-15',
+      intervalHours: 6000, currentHours: 4500, hoursRemaining: 1500,
+      status: 'ok', cost: 120000, parts: ['Calibration Kit', 'Delivery Valves', 'Plungers', 'Governor Springs'], icon: '⚙️',
+      failureSigns: ['Uneven power delivery', 'Timing drift', 'Fuel leak at pump', 'Governor hunting', 'Speed fluctuation'],
+      testProcedure: ['Mount on test bench', 'Check delivery per stroke', 'Verify timing marks', 'Test governor response', 'Check fuel cut-off'],
+      criticalValues: { min: 0, max: 2, unit: '° timing deviation' },
+      componentLifespan: 12000, failureRisk: 6
+    },
+    {
+      id: '7c', name: 'Fuel Lift Pump Service', category: 'injection',
+      lastService: '2023-09-01', nextService: '2024-09-01',
+      intervalHours: 3000, currentHours: 2200, hoursRemaining: 800,
+      status: 'ok', cost: 18000, parts: ['Lift Pump', 'Diaphragm', 'Check Valves', 'Gaskets'], icon: '🔄',
+      failureSigns: ['Air in fuel system', 'Hard starting', 'Engine stalling', 'No fuel at injection pump'],
+      testProcedure: ['Check output pressure (4-8 PSI)', 'Test vacuum capability', 'Check for leaks', 'Verify priming function'],
+      criticalValues: { min: 4, max: 8, unit: 'PSI' },
+      componentLifespan: 6000, failureRisk: 10
+    },
+
+    // ========== GOVERNOR SYSTEM ==========
+    {
+      id: '8', name: 'Governor Actuator Service', category: 'governor',
+      lastService: '2023-07-01', nextService: '2024-07-01',
+      intervalHours: 4000, currentHours: 3200, hoursRemaining: 800,
+      status: 'ok', cost: 55000, parts: ['Actuator Assembly', 'Linkage Kit', 'Potentiometer', 'Spring Set'], icon: '🎯',
+      failureSigns: ['Speed fluctuation/hunting', 'Slow speed response', 'No speed control', 'Actuator noise/vibration'],
+      testProcedure: ['Check actuator stroke (full travel)', 'Verify feedback signal', 'Test response time (<100ms)', 'Check linkage freeplay'],
+      criticalValues: { min: 0, max: 100, unit: 'ms response' },
+      componentLifespan: 10000, failureRisk: 7
+    },
+    {
+      id: '8b', name: 'Mechanical Governor Overhaul', category: 'governor',
+      lastService: '2022-12-01', nextService: '2024-12-01',
+      intervalHours: 6000, currentHours: 4800, hoursRemaining: 1200,
+      status: 'ok', cost: 75000, parts: ['Governor Weights', 'Springs', 'Thrust Bearing', 'Seals', 'Gaskets'], icon: '⚖️',
+      failureSigns: ['Speed droop issues', 'Hunting at idle', 'No load regulation', 'Oil leaks', 'Sluggish response'],
+      testProcedure: ['Check flyweight condition', 'Verify spring tension', 'Test thrust bearing', 'Check linkage wear', 'Verify oil level'],
+      criticalValues: { min: 0, max: 4, unit: '% droop' },
+      componentLifespan: 12000, failureRisk: 5
+    },
+    {
+      id: '8c', name: 'Electronic Governor Controller', category: 'governor',
+      lastService: '2023-05-01', nextService: '2025-05-01',
+      intervalHours: 8000, currentHours: 5500, hoursRemaining: 2500,
+      status: 'ok', cost: 45000, parts: ['GAC Controller', 'Speed Sensor', 'Actuator Driver'], icon: '🖥️',
+      failureSigns: ['Error codes on display', 'Poor speed regulation', 'No communication', 'Erratic behavior'],
+      testProcedure: ['Read fault codes', 'Check sensor inputs', 'Verify actuator output', 'Test PID response'],
+      componentLifespan: 15000, failureRisk: 4
+    },
+
+    // ========== SENSORS ==========
+    {
+      id: '9', name: 'Magnetic Pickup Sensor', category: 'sensors',
+      lastService: '2023-08-01', nextService: '2024-08-01',
+      intervalHours: 3000, currentHours: 2400, hoursRemaining: 600,
+      status: 'ok', cost: 12000, parts: ['MPU Sensor', 'Connector', 'Shielded Cable'], icon: '🧲',
+      failureSigns: ['No speed signal', 'Erratic speed reading', 'Engine won\'t start', 'Governor hunting'],
+      testProcedure: ['Check AC voltage output (1-5V at crank)', 'Verify air gap (0.5-1.0mm)', 'Test resistance (200-400Ω)', 'Inspect flywheel teeth'],
+      criticalValues: { min: 0.5, max: 1.0, unit: 'mm gap' },
+      componentLifespan: 10000, failureRisk: 8
+    },
+    {
+      id: '9b', name: 'Oil Pressure Sensor', category: 'sensors',
+      lastService: '2023-10-01', nextService: '2024-10-01',
+      intervalHours: 4000, currentHours: 3200, hoursRemaining: 800,
+      status: 'ok', cost: 8500, parts: ['Pressure Sender', 'Adapter', 'Connector'], icon: '📊',
+      failureSigns: ['False low pressure alarms', 'Gauge fluctuation', 'No reading', 'Stuck reading'],
+      testProcedure: ['Compare with mechanical gauge', 'Check resistance curve', 'Verify wiring continuity', 'Test at multiple pressures'],
+      criticalValues: { min: 10, max: 180, unit: 'Ω range' },
+      componentLifespan: 8000, failureRisk: 6
+    },
+    {
+      id: '9c', name: 'Coolant Temperature Sensor', category: 'sensors',
+      lastService: '2023-11-01', nextService: '2024-11-01',
+      intervalHours: 4000, currentHours: 3400, hoursRemaining: 600,
+      status: 'ok', cost: 6500, parts: ['Temp Sensor', 'Seal', 'Connector'], icon: '🌡️',
+      failureSigns: ['False high temp alarms', 'No temperature reading', 'Gauge stuck', 'Fan running constantly'],
+      testProcedure: ['Test resistance at known temps', 'Verify with IR thermometer', 'Check wiring', 'Test signal at controller'],
+      criticalValues: { min: 200, max: 3000, unit: 'Ω range' },
+      componentLifespan: 8000, failureRisk: 5
+    },
+    {
+      id: '9d', name: 'Fuel Level Sensor', category: 'sensors',
+      lastService: '2023-06-01', nextService: '2024-06-01',
+      intervalHours: 3000, currentHours: 2500, hoursRemaining: 500,
+      status: 'ok', cost: 15000, parts: ['Fuel Level Sender', 'Float Assembly', 'Gasket'], icon: '⛽',
+      failureSigns: ['Stuck fuel reading', 'Erratic gauge', 'Float stuck', 'Low fuel alarm issues'],
+      testProcedure: ['Move float and check resistance', 'Verify full scale operation', 'Inspect float for leaks', 'Check wiring'],
+      criticalValues: { min: 33, max: 240, unit: 'Ω (E to F)' },
+      componentLifespan: 8000, failureRisk: 7
+    },
+
+    // ========== ELECTRICAL ==========
+    {
+      id: '10', name: 'Alternator/Generator Head', category: 'electrical',
+      lastService: '2023-09-01', nextService: '2024-03-01',
+      intervalHours: 2000, currentHours: 1800, hoursRemaining: 200,
+      status: 'due_soon', cost: 25000, parts: ['Bearings', 'Brush Set', 'AVR', 'Diode Pack'], icon: '⚡',
+      failureSigns: ['Voltage fluctuation', 'Bearing noise', 'Overheating', 'Low output voltage', 'Sparking at brushes'],
+      testProcedure: ['Check bearing play', 'Measure brush length (min 10mm)', 'Test insulation resistance', 'Verify voltage regulation'],
+      criticalValues: { min: 220, max: 240, unit: 'VAC output' },
+      componentLifespan: 15000, failureRisk: 18
+    },
+    {
+      id: '10b', name: 'AVR (Auto Voltage Regulator)', category: 'electrical',
+      lastService: '2023-05-01', nextService: '2025-05-01',
+      intervalHours: 8000, currentHours: 6200, hoursRemaining: 1800,
+      status: 'ok', cost: 35000, parts: ['AVR Module', 'Potentiometer', 'Capacitors'], icon: '📈',
+      failureSigns: ['Voltage hunting', 'Over/under voltage', 'No voltage buildup', 'Unstable output'],
+      testProcedure: ['Check sensing voltage', 'Test output to field', 'Verify potentiometer setting', 'Check for overheating'],
+      criticalValues: { min: 0, max: 3, unit: '% regulation' },
+      componentLifespan: 12000, failureRisk: 8
+    },
+    {
+      id: '10c', name: 'Battery Charging System', category: 'electrical',
+      lastService: '2023-12-01', nextService: '2024-06-01',
+      intervalHours: 1000, currentHours: 850, hoursRemaining: 150,
+      status: 'due_soon', cost: 8500, parts: ['Charging Alternator', 'Voltage Regulator', 'Cables'], icon: '🔌',
+      failureSigns: ['Battery not charging', 'Overcharging', 'Low battery warning', 'Belt squealing'],
+      testProcedure: ['Check output voltage (13.8-14.4V)', 'Test charging current', 'Inspect belt tension', 'Verify connections'],
+      criticalValues: { min: 13.8, max: 14.4, unit: 'VDC' },
+      componentLifespan: 6000, failureRisk: 12
+    },
+
+    // ========== STARTER SYSTEM ==========
+    {
+      id: '11', name: 'Starter Motor Service', category: 'starter',
+      lastService: '2023-04-01', nextService: '2025-04-01',
+      intervalHours: 5000, currentHours: 4200, hoursRemaining: 800,
+      status: 'ok', cost: 45000, parts: ['Starter Motor', 'Solenoid', 'Brushes', 'Bendix Drive'], icon: '🔑',
+      failureSigns: ['Slow cranking', 'Grinding noise', 'Click but no crank', 'Intermittent operation'],
+      testProcedure: ['Check current draw (<300A)', 'Test solenoid pull-in', 'Verify pinion engagement', 'Check brush condition'],
+      criticalValues: { min: 150, max: 300, unit: 'Amps draw' },
+      componentLifespan: 10000, failureRisk: 6
+    },
+    {
+      id: '11b', name: 'Glow Plug System', category: 'starter',
+      lastService: '2023-09-01', nextService: '2024-09-01',
+      intervalHours: 3000, currentHours: 2400, hoursRemaining: 600,
+      status: 'ok', cost: 22000, parts: ['Glow Plugs (set)', 'Relay', 'Timer Module', 'Wiring'], icon: '🔥',
+      failureSigns: ['Hard cold starting', 'White smoke at startup', 'Glow light not illuminating', 'Long crank time'],
+      testProcedure: ['Check glow plug resistance (0.5-2Ω)', 'Test relay operation', 'Verify timer function', 'Check wiring connections'],
+      criticalValues: { min: 0.5, max: 2.0, unit: 'Ω' },
+      componentLifespan: 6000, failureRisk: 10
+    },
+
+    // ========== PROTECTION SYSTEM ==========
+    {
+      id: '12', name: 'Circuit Breaker Inspection', category: 'protection',
+      lastService: '2023-02-01', nextService: '2024-02-01',
+      intervalHours: 2000, currentHours: 1950, hoursRemaining: 50,
+      status: 'critical', cost: 35000, parts: ['Main Breaker', 'Auxiliary Contacts', 'Arc Chutes'], icon: '🔒',
+      failureSigns: ['Nuisance tripping', 'Won\'t reset', 'Overheating', 'Contact pitting', 'Burning smell'],
+      testProcedure: ['Trip test at rated current', 'Check contact resistance', 'Inspect arc chutes', 'Verify mechanical operation'],
+      criticalValues: { min: 80, max: 120, unit: '% trip rating' },
+      componentLifespan: 10000, failureRisk: 65
+    },
+    {
+      id: '12b', name: 'Safety Shutdowns Test', category: 'protection',
+      lastService: '2023-11-01', nextService: '2024-05-01',
+      intervalHours: 1000, currentHours: 750, hoursRemaining: 250,
+      status: 'ok', cost: 8500, parts: ['Test Equipment', 'Shutdown Switches'], icon: '🛑',
+      failureSigns: ['Shutdowns not activating', 'False alarms', 'Delayed response', 'Sensor failures'],
+      testProcedure: ['Simulate overspeed condition', 'Test low oil pressure', 'Test high temp shutdown', 'Verify overcrank protection'],
+      componentLifespan: 8000, failureRisk: 8
+    },
+    {
+      id: '12c', name: 'Fuse and Relay Inspection', category: 'protection',
+      lastService: '2023-08-01', nextService: '2024-08-01',
+      intervalHours: 2000, currentHours: 1500, hoursRemaining: 500,
+      status: 'ok', cost: 5500, parts: ['Fuse Set', 'Relay Set', 'Terminal Blocks'], icon: '⚡',
+      failureSigns: ['Blown fuses', 'Relay clicking', 'Intermittent circuits', 'Corrosion on contacts'],
+      testProcedure: ['Visual inspection', 'Continuity test each fuse', 'Test relay coil resistance', 'Check socket contacts'],
+      componentLifespan: 10000, failureRisk: 6
+    },
+
+    // ========== EXHAUST SYSTEM ==========
+    {
+      id: '13', name: 'Exhaust System Inspection', category: 'exhaust',
+      lastService: '2023-07-01', nextService: '2024-07-01',
+      intervalHours: 3000, currentHours: 2600, hoursRemaining: 400,
+      status: 'ok', cost: 25000, parts: ['Exhaust Gaskets', 'Flexible Section', 'Hangers', 'Clamps'], icon: '💨',
+      failureSigns: ['Exhaust leaks', 'Loud noise', 'Soot deposits', 'Rust/corrosion', 'Back pressure increase'],
+      testProcedure: ['Visual inspection for leaks', 'Check back pressure (<3" Hg)', 'Inspect flexible bellows', 'Verify hanger condition'],
+      criticalValues: { min: 0, max: 3, unit: 'inches Hg' },
+      componentLifespan: 8000, failureRisk: 7
+    },
+    {
+      id: '13b', name: 'DPF Regeneration/Clean', category: 'exhaust',
+      lastService: '2023-05-01', nextService: '2024-05-01',
+      intervalHours: 2500, currentHours: 2200, hoursRemaining: 300,
+      status: 'due_soon', cost: 55000, parts: ['DPF Filter', 'DOC Catalyst', 'Sensors'], icon: '🌫️',
+      failureSigns: ['DPF warning light', 'Reduced power', 'Increased fuel consumption', 'Forced regeneration failing'],
+      testProcedure: ['Check soot loading %', 'Verify regen capability', 'Test pressure sensors', 'Inspect DOC condition'],
+      criticalValues: { min: 0, max: 85, unit: '% soot load' },
+      componentLifespan: 6000, failureRisk: 18
+    },
+
+    // ========== CONTROL SYSTEM ==========
+    {
+      id: '14', name: 'Controller Firmware Update', category: 'control',
+      lastService: '2023-03-01', nextService: '2024-09-01',
+      intervalHours: 5000, currentHours: 4500, hoursRemaining: 500,
+      status: 'ok', cost: 15000, parts: ['USB Interface', 'Configuration Software'], icon: '🖥️',
+      failureSigns: ['Software bugs', 'Missing features', 'Communication errors', 'Display glitches'],
+      testProcedure: ['Backup current config', 'Download latest firmware', 'Update via USB/Ethernet', 'Verify all functions'],
+      componentLifespan: 20000, failureRisk: 3
+    },
+    {
+      id: '14b', name: 'Control Panel Inspection', category: 'control',
+      lastService: '2023-09-01', nextService: '2024-09-01',
+      intervalHours: 2000, currentHours: 1600, hoursRemaining: 400,
+      status: 'ok', cost: 12000, parts: ['Display Module', 'Membrane Keypad', 'LEDs'], icon: '🎛️',
+      failureSigns: ['Dim display', 'Unresponsive buttons', 'LED failures', 'Display errors'],
+      testProcedure: ['Test all buttons', 'Check LED indicators', 'Verify display segments', 'Test backlight'],
+      componentLifespan: 15000, failureRisk: 5
+    },
+    {
+      id: '14c', name: 'Communication Module Check', category: 'control',
+      lastService: '2023-06-01', nextService: '2024-06-01',
+      intervalHours: 3000, currentHours: 2700, hoursRemaining: 300,
+      status: 'due_soon', cost: 18000, parts: ['RS485 Module', 'Ethernet Module', 'GSM Modem'], icon: '📡',
+      failureSigns: ['No remote communication', 'Data errors', 'Connection drops', 'Slow response'],
+      testProcedure: ['Test Modbus communication', 'Verify IP settings', 'Check signal strength', 'Test data logging'],
+      componentLifespan: 10000, failureRisk: 12
+    },
   ]);
 
   const [battery] = useState<BatteryHealth>({
@@ -462,11 +935,17 @@ export default function PredictiveMaintenancePanel() {
     { id: 'all', label: 'All', icon: '📋' },
     { id: 'engine', label: 'Engine', icon: '🔧' },
     { id: 'electrical', label: 'Electrical', icon: '⚡' },
-    { id: 'fuel', label: 'Fuel', icon: '⛽' },
+    { id: 'injection', label: 'Injection', icon: '💉' },
+    { id: 'governor', label: 'Governor', icon: '🎯' },
+    { id: 'sensors', label: 'Sensors', icon: '📡' },
     { id: 'cooling', label: 'Cooling', icon: '❄️' },
     { id: 'filters', label: 'Filters', icon: '🎛️' },
     { id: 'belts', label: 'Belts', icon: '⚙️' },
     { id: 'fluids', label: 'Fluids', icon: '🛢️' },
+    { id: 'starter', label: 'Starter', icon: '🔑' },
+    { id: 'protection', label: 'Protection', icon: '🔒' },
+    { id: 'exhaust', label: 'Exhaust', icon: '💨' },
+    { id: 'control', label: 'Control', icon: '🖥️' },
   ];
 
   const filteredItems = activeCategory === 'all'

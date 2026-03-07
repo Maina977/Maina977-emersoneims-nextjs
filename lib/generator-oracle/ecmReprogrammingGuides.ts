@@ -861,11 +861,575 @@ export const CUMMINS_CM2350_GUIDE: ReprogrammingGuide = {
   ]
 };
 
+// ==================== VOLVO PENTA EMS GUIDE ====================
+
+export const VOLVO_PENTA_EMS2_GUIDE: ReprogrammingGuide = {
+  id: 'volvo-ems2',
+  ecmName: 'Volvo Penta EMS 2',
+  manufacturer: 'Volvo Penta',
+  models: ['EMS 2', 'EDC7', 'D11', 'D13', 'D16', 'TAD series'],
+  overview: 'Volvo Penta EMS 2 (Engine Management System) controls D-series marine and industrial diesel engines. Programming requires VODIA diagnostic software with proper licensing. This guide covers firmware updates and parameter configuration for generator applications.',
+
+  prerequisites: {
+    tools: [
+      { name: 'VODIA Diagnostic Adapter', description: '88890300 adapter or compatible J1939 interface', alternatives: ['88890020 older adapter', 'Nexiq USB-Link with Volvo license'], essential: true },
+      { name: 'Laptop Computer', description: 'Windows 10/11, 8GB RAM minimum, USB 2.0/3.0', essential: true },
+      { name: 'Battery Charger', description: '40A minimum for 24V systems', essential: true },
+      { name: 'Multimeter', description: 'For voltage verification', essential: true }
+    ],
+    software: [
+      { name: 'VODIA5/VODIA6', version: 'Latest version', source: 'Volvo Penta dealer portal', licenseRequired: true },
+      { name: 'Parameter Files', version: 'Per engine serial', source: 'VODIA online database', licenseRequired: true }
+    ],
+    parts: ['Connector sealing kit', 'J1939 termination resistor if needed'],
+    conditions: ['Engine stopped', 'Battery 24-28V', 'Key ON', 'Coolant temp < 40°C']
+  },
+
+  connectionProcedure: [
+    {
+      step: 1,
+      action: 'Locate Diagnostic Connector',
+      details: 'The diagnostic connector is typically a 14-pin Deutsch connector located near the EMS unit or in the wiring junction box.',
+      pinout: [
+        { pin: '1', function: 'J1939 CAN High', wire: 'Yellow' },
+        { pin: '2', function: 'J1939 CAN Low', wire: 'Green' },
+        { pin: '3', function: 'Ground', wire: 'Black' },
+        { pin: '4', function: 'Battery +24V', wire: 'Red' },
+        { pin: '5', function: 'ISO 9141 K-Line', wire: 'White' }
+      ]
+    },
+    {
+      step: 2,
+      action: 'Connect VODIA Adapter',
+      details: 'Connect adapter to diagnostic port. LED should illuminate indicating power. Connect USB to laptop.',
+      voltage: 'Verify 24V at connector before connecting adapter'
+    }
+  ],
+
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Launch VODIA', details: 'Start VODIA software, select adapter, verify license is active', screenPath: 'Start > VODIA5 > Connect', expectedResult: 'VODIA opens with adapter detected', timeEstimate: '2 minutes', criticalNotes: ['Ensure internet connection for license verification'] },
+    { step: 2, phase: 'connection', action: 'Connect to EMS', details: 'Turn key ON, click Connect in VODIA. Select engine type if prompted.', expectedResult: 'EMS detected, engine data displayed', timeEstimate: '1 minute', criticalNotes: ['Multiple ECMs may appear - select Engine'] },
+    { step: 3, phase: 'backup', action: 'Read Current Configuration', details: 'Go to Read ECU > Save to file. Name with serial and date.', expectedResult: 'Configuration saved to laptop', timeEstimate: '3 minutes', criticalNotes: ['CRITICAL: Always backup before programming'] },
+    { step: 4, phase: 'programming', action: 'Download Update', details: 'VODIA will check for available updates for your engine serial.', expectedResult: 'Update package downloaded', timeEstimate: '5-10 minutes', criticalNotes: ['Verify serial number matches engine'] },
+    { step: 5, phase: 'programming', action: 'Flash ECM', details: 'Select Programming > Download to ECM. Battery charger MUST be connected.', expectedResult: 'Programming begins with progress bar', timeEstimate: '15-25 minutes', criticalNotes: ['DO NOT INTERRUPT', 'Battery voltage must stay above 22V', 'ECM will restart multiple times'] },
+    { step: 6, phase: 'configuration', action: 'Configure Parameters', details: 'Set rated speed, power limits, protection setpoints', expectedResult: 'Parameters saved to ECM', timeEstimate: '10 minutes', criticalNotes: ['Verify settings match application requirements'] },
+    { step: 7, phase: 'verification', action: 'Test Run', details: 'Clear codes, start engine, run at idle then rated speed', expectedResult: 'Engine runs normally, no fault codes', timeEstimate: '15 minutes', criticalNotes: ['Monitor all parameters during test'] }
+  ],
+
+  parameterConfiguration: [
+    {
+      category: 'Engine Speed',
+      parameters: [
+        { name: 'Rated Speed', description: 'Generator synchronous speed', path: 'Parameters > Speed > Rated Speed', defaultValue: '1500 RPM (50Hz)', range: '1500-1800 RPM', unit: 'RPM', affectsWhat: 'Generator frequency', howToSet: 'Select 1500 for 50Hz or 1800 for 60Hz generators' },
+        { name: 'Idle Speed', description: 'Engine idle speed', path: 'Parameters > Speed > Idle Speed', defaultValue: '700 RPM', range: '600-900 RPM', unit: 'RPM', affectsWhat: 'Fuel consumption at idle', howToSet: 'Set based on engine model recommendations' }
+      ]
+    },
+    {
+      category: 'Protection',
+      parameters: [
+        { name: 'High Coolant Temp Shutdown', description: 'Shutdown temperature', path: 'Parameters > Protection > High Temp', defaultValue: '105°C', range: '95-110°C', unit: '°C', affectsWhat: 'Overheating protection', howToSet: 'Set based on radiator capacity and ambient conditions' },
+        { name: 'Low Oil Pressure Shutdown', description: 'Minimum oil pressure', path: 'Parameters > Protection > Low Oil', defaultValue: '100 kPa', range: '70-150 kPa', unit: 'kPa', affectsWhat: 'Engine bearing protection', howToSet: 'Factory default usually appropriate' }
+      ]
+    }
+  ],
+
+  j1939Setup: {
+    protocol: 'SAE J1939',
+    baudRate: 250000,
+    sourceAddress: '0x00',
+    transmitPGNs: [
+      { pgn: '61444', name: 'EEC1', rate: '10ms', description: 'Engine speed, torque' },
+      { pgn: '65262', name: 'ET1', rate: '1s', description: 'Engine temperatures' },
+      { pgn: '65263', name: 'EFL/P1', rate: '500ms', description: 'Fluid levels and pressures' },
+      { pgn: '65226', name: 'DM1', rate: 'On event', description: 'Diagnostic messages' }
+    ],
+    receivePGNs: [
+      { pgn: '0', name: 'TSC1', description: 'Torque/Speed Control' }
+    ],
+    terminationResistor: { required: true, value: '120Ω', location: 'At each end of CAN bus' },
+    wiringDiagram: 'Standard J1939: Yellow=CAN_H, Green=CAN_L, 120Ω termination at both ends'
+  },
+
+  troubleshooting: [
+    { problem: 'VODIA cannot find ECM', possibleCauses: ['Adapter not connected', 'Wrong adapter selected', 'ECM not powered'], solutions: ['Check adapter LED', 'Verify key is ON', 'Check ECM fuse'] },
+    { problem: 'Programming fails', possibleCauses: ['Low voltage', 'Wrong file', 'Connection lost'], solutions: ['Check battery charger', 'Verify serial number', 'Retry programming'] }
+  ],
+
+  safetyWarnings: ['Never interrupt programming', 'Maintain battery voltage above 22V', 'Ensure engine cannot start during ECM access'],
+  commonMistakes: ['Programming without battery charger', 'Using wrong parameter file', 'Not backing up before programming'],
+  verificationChecklist: ['ECM communicates', 'New firmware version shown', 'Rated speed correct', 'No active faults', 'Engine starts and runs', 'J1939 data received by controller']
+};
+
+// ==================== PERKINS ECM GUIDE ====================
+
+export const PERKINS_ECM_GUIDE: ReprogrammingGuide = {
+  id: 'perkins-ecm',
+  ecmName: 'Perkins EST-37/EST-39',
+  manufacturer: 'Perkins',
+  models: ['1100 Series', '1200 Series', '1500 Series', '2000 Series', '2500 Series', '4000 Series'],
+  overview: 'Perkins engines use Electronic Service Tool (EST) for diagnostics and programming. EST-37 covers Tier 3 engines while EST-39 covers Tier 4. Programming requires proper licensing and connectivity through Perkins adapter.',
+
+  prerequisites: {
+    tools: [
+      { name: 'Perkins Diagnostic Adapter', description: 'EST adapter or compatible RP1210 interface', alternatives: ['Nexiq USB-Link 2', 'DPA5'], essential: true },
+      { name: 'Laptop', description: 'Windows 10/11, 8GB RAM', essential: true },
+      { name: 'Battery Charger', description: '40A for 24V systems', essential: true }
+    ],
+    software: [
+      { name: 'EST (Electronic Service Tool)', version: '2023A or later', source: 'Perkins SPI2 subscription', licenseRequired: true },
+      { name: 'Flash Files', version: 'Per engine serial', source: 'Perkins SPI2', licenseRequired: true }
+    ],
+    parts: ['Connector kit if damaged'],
+    conditions: ['Engine stopped', 'Battery 24-28V', 'Key ON']
+  },
+
+  connectionProcedure: [
+    {
+      step: 1,
+      action: 'Locate Diagnostic Port',
+      details: 'Perkins diagnostic connector is typically a 9-pin Deutsch near the ECM',
+      pinout: [
+        { pin: 'A', function: 'J1939 CAN High', wire: 'Yellow' },
+        { pin: 'B', function: 'J1939 CAN Low', wire: 'Green' },
+        { pin: 'C', function: 'Ground', wire: 'Black' },
+        { pin: 'F', function: 'Battery +', wire: 'Red' }
+      ]
+    },
+    {
+      step: 2,
+      action: 'Connect Adapter',
+      details: 'Connect adapter to port, USB to laptop. Verify adapter lights.',
+      warnings: ['Check for moisture in connector before connecting']
+    }
+  ],
+
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Launch EST', details: 'Start Perkins EST, verify adapter connection', expectedResult: 'EST opens ready to connect', timeEstimate: '1 minute', criticalNotes: ['Run as administrator if issues'] },
+    { step: 2, phase: 'connection', action: 'Connect to ECM', details: 'Turn key ON, click Connect', expectedResult: 'ECM detected with engine info', timeEstimate: '30 seconds', criticalNotes: ['Verify engine serial matches'] },
+    { step: 3, phase: 'backup', action: 'Backup ECM', details: 'Tools > Backup ECM Configuration', expectedResult: 'Backup file saved', timeEstimate: '2 minutes', criticalNotes: ['ALWAYS backup before any changes'] },
+    { step: 4, phase: 'programming', action: 'Download Flash', details: 'Access SPI2 through EST, enter serial, download flash package', expectedResult: 'Flash file ready', timeEstimate: '10 minutes', criticalNotes: ['Verify engine serial exactly'] },
+    { step: 5, phase: 'programming', action: 'Program ECM', details: 'Service > Flash Programming > Select File', expectedResult: 'Programming complete', timeEstimate: '20-30 minutes', criticalNotes: ['DO NOT INTERRUPT', 'Battery charger must be connected'] },
+    { step: 6, phase: 'configuration', action: 'Set Parameters', details: 'Configure rated speed, protection limits', expectedResult: 'Parameters saved', timeEstimate: '10 minutes', criticalNotes: ['Match to generator requirements'] },
+    { step: 7, phase: 'verification', action: 'Test', details: 'Clear codes, start engine, verify operation', expectedResult: 'Engine runs normally', timeEstimate: '15 minutes', criticalNotes: ['Monitor all parameters'] }
+  ],
+
+  parameterConfiguration: [
+    {
+      category: 'Speed Settings',
+      parameters: [
+        { name: 'Rated Speed', description: 'Generator speed', path: 'Configuration > Speed', defaultValue: '1500/1800 RPM', range: '1500-1800', unit: 'RPM', affectsWhat: 'Generator frequency', howToSet: 'Select based on grid frequency' }
+      ]
+    }
+  ],
+
+  j1939Setup: {
+    protocol: 'SAE J1939',
+    baudRate: 250000,
+    sourceAddress: '0x00',
+    transmitPGNs: [
+      { pgn: '61444', name: 'EEC1', rate: '10ms', description: 'Engine speed/torque' },
+      { pgn: '65262', name: 'ET1', rate: '1s', description: 'Temperatures' }
+    ],
+    receivePGNs: [{ pgn: '0', name: 'TSC1', description: 'Torque control' }],
+    terminationResistor: { required: true, value: '120Ω', location: 'Both ends' },
+    wiringDiagram: 'J1939 standard wiring with 120Ω termination'
+  },
+
+  troubleshooting: [
+    { problem: 'Cannot connect', possibleCauses: ['Adapter issue', 'ECM not powered'], solutions: ['Check adapter', 'Verify key ON'] }
+  ],
+
+  safetyWarnings: ['Maintain 24V during programming', 'Do not disconnect during flash'],
+  commonMistakes: ['Wrong flash file', 'No backup', 'Low battery'],
+  verificationChecklist: ['ECM connects', 'New version shown', 'No faults', 'Engine runs']
+};
+
+// ==================== JOHN DEERE POWERTECH GUIDE ====================
+
+export const JOHN_DEERE_POWERTECH_GUIDE: ReprogrammingGuide = {
+  id: 'john-deere-powertech',
+  ecmName: 'John Deere PowerTech ECU',
+  manufacturer: 'John Deere',
+  models: ['PowerTech E', 'PowerTech M', 'PowerTech Plus', '4045', '6068', '6090', '4.5L', '6.8L', '9.0L'],
+  overview: 'John Deere PowerTech series engines use Service ADVISOR for diagnostics and programming. This covers the ECU calibration and parameter settings for generator applications.',
+
+  prerequisites: {
+    tools: [
+      { name: 'John Deere Service ADVISOR Adapter', description: 'EDL v3 adapter', alternatives: ['Compatible RP1210 adapter'], essential: true },
+      { name: 'Laptop', description: 'Windows 10, 8GB RAM', essential: true },
+      { name: 'Battery Charger', description: '40A for 24V systems', essential: true }
+    ],
+    software: [
+      { name: 'Service ADVISOR', version: '5.3 or later', source: 'John Deere dealer subscription', licenseRequired: true },
+      { name: 'PayLoad Files', version: 'Per engine serial', source: 'John Deere DTF', licenseRequired: true }
+    ],
+    parts: [],
+    conditions: ['Engine stopped', 'Battery charged', 'Key ON']
+  },
+
+  connectionProcedure: [
+    {
+      step: 1,
+      action: 'Locate Diagnostic Connector',
+      details: 'Located near ECU, typically 9-pin Deutsch',
+      pinout: [
+        { pin: 'A', function: 'CAN High', wire: 'Yellow' },
+        { pin: 'B', function: 'CAN Low', wire: 'Green' },
+        { pin: 'C', function: 'Ground', wire: 'Black' },
+        { pin: 'F', function: 'Power', wire: 'Red' }
+      ]
+    }
+  ],
+
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Start Service ADVISOR', details: 'Launch software, verify EDL connection', expectedResult: 'Software ready', timeEstimate: '2 min', criticalNotes: [] },
+    { step: 2, phase: 'connection', action: 'Connect to ECU', details: 'Key ON, connect', expectedResult: 'ECU found', timeEstimate: '1 min', criticalNotes: [] },
+    { step: 3, phase: 'backup', action: 'Backup', details: 'Save current configuration', expectedResult: 'Backup saved', timeEstimate: '3 min', criticalNotes: ['Always backup'] },
+    { step: 4, phase: 'programming', action: 'Download PayLoad', details: 'Get calibration file from DTF', expectedResult: 'File ready', timeEstimate: '10 min', criticalNotes: ['Verify serial'] },
+    { step: 5, phase: 'programming', action: 'Program ECU', details: 'Flash new calibration', expectedResult: 'Programming complete', timeEstimate: '20 min', criticalNotes: ['Do not interrupt'] },
+    { step: 6, phase: 'verification', action: 'Test', details: 'Run engine', expectedResult: 'Normal operation', timeEstimate: '10 min', criticalNotes: [] }
+  ],
+
+  parameterConfiguration: [
+    {
+      category: 'Engine',
+      parameters: [
+        { name: 'Rated Speed', description: 'Target speed', path: 'Parameters > Speed', defaultValue: '1500 RPM', range: '1500-1800', unit: 'RPM', affectsWhat: 'Frequency', howToSet: 'Select based on application' }
+      ]
+    }
+  ],
+
+  j1939Setup: {
+    protocol: 'J1939',
+    baudRate: 250000,
+    sourceAddress: '0x00',
+    transmitPGNs: [
+      { pgn: '61444', name: 'EEC1', rate: '10ms', description: 'Engine data' }
+    ],
+    receivePGNs: [],
+    terminationResistor: { required: true, value: '120Ω', location: 'Both ends' },
+    wiringDiagram: 'Standard J1939'
+  },
+
+  troubleshooting: [
+    { problem: 'No communication', possibleCauses: ['Adapter issue'], solutions: ['Check connections'] }
+  ],
+
+  safetyWarnings: ['Maintain power during programming'],
+  commonMistakes: ['Wrong PayLoad file'],
+  verificationChecklist: ['ECU connects', 'Engine runs']
+};
+
+// ==================== MTU ADEC GUIDE ====================
+
+export const MTU_ADEC_GUIDE: ReprogrammingGuide = {
+  id: 'mtu-adec',
+  ecmName: 'MTU ADEC (Advanced Diesel Engine Control)',
+  manufacturer: 'MTU',
+  models: ['ADEC', 'MDEC', 'Series 2000', 'Series 4000', '8V', '12V', '16V', '20V'],
+  overview: 'MTU ADEC systems control large diesel engines for power generation. Programming uses MTU Diesel Diagnostic System (DDS) or ECOS. These are sophisticated systems requiring proper training and licensing.',
+
+  prerequisites: {
+    tools: [
+      { name: 'MTU Diagnostic Interface (MDI)', description: 'Official MTU adapter', alternatives: ['RP1210 compatible with MTU protocol'], essential: true },
+      { name: 'Laptop', description: 'Windows, min 16GB RAM for large engines', essential: true },
+      { name: 'Battery Charger', description: 'Heavy duty for 24V systems', essential: true }
+    ],
+    software: [
+      { name: 'MTU DDS (Diesel Diagnostic System)', version: 'Current version', source: 'MTU ValueCare subscription', licenseRequired: true }
+    ],
+    parts: [],
+    conditions: ['Engine stopped', 'Full battery charge', 'Key ON']
+  },
+
+  connectionProcedure: [
+    {
+      step: 1,
+      action: 'Locate ECM Connection',
+      details: 'MTU uses proprietary connectors near the ADEC unit',
+      pinout: [
+        { pin: '1', function: 'CAN High', wire: 'Yellow' },
+        { pin: '2', function: 'CAN Low', wire: 'Green' },
+        { pin: '3', function: 'Ground', wire: 'Black' },
+        { pin: '4', function: 'Power', wire: 'Red' }
+      ]
+    }
+  ],
+
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Launch DDS', details: 'Start diagnostic software', expectedResult: 'Ready', timeEstimate: '2 min', criticalNotes: ['Requires active license'] },
+    { step: 2, phase: 'connection', action: 'Connect', details: 'Connect to ADEC', expectedResult: 'ADEC found', timeEstimate: '1 min', criticalNotes: [] },
+    { step: 3, phase: 'backup', action: 'Backup', details: 'Save configuration', expectedResult: 'Backup complete', timeEstimate: '5 min', criticalNotes: ['Essential step'] },
+    { step: 4, phase: 'programming', action: 'Program', details: 'Flash new firmware', expectedResult: 'Complete', timeEstimate: '30-45 min', criticalNotes: ['Large engines take longer', 'Do not interrupt'] },
+    { step: 5, phase: 'verification', action: 'Verify', details: 'Run engine', expectedResult: 'Normal operation', timeEstimate: '20 min', criticalNotes: [] }
+  ],
+
+  parameterConfiguration: [
+    {
+      category: 'Engine',
+      parameters: [
+        { name: 'Rated Speed', description: 'Sync speed', path: 'Engine > Speed', defaultValue: '1500 RPM', range: '1500-1800', unit: 'RPM', affectsWhat: 'Output frequency', howToSet: 'Configure for grid' }
+      ]
+    }
+  ],
+
+  j1939Setup: {
+    protocol: 'J1939',
+    baudRate: 250000,
+    sourceAddress: '0x00',
+    transmitPGNs: [
+      { pgn: '61444', name: 'EEC1', rate: '10ms', description: 'Engine parameters' },
+      { pgn: '65262', name: 'ET1', rate: '1s', description: 'Temperatures' }
+    ],
+    receivePGNs: [],
+    terminationResistor: { required: true, value: '120Ω', location: 'Ends of bus' },
+    wiringDiagram: 'J1939 standard'
+  },
+
+  troubleshooting: [
+    { problem: 'Communication failure', possibleCauses: ['License expired', 'Adapter issue'], solutions: ['Check license', 'Verify connections'] }
+  ],
+
+  safetyWarnings: ['Large engines - follow all safety procedures', 'Maintain power supply'],
+  commonMistakes: ['Insufficient backup power for long programming'],
+  verificationChecklist: ['ADEC responds', 'New firmware verified', 'All parameters set', 'Engine runs smoothly']
+};
+
+// ==================== DETROIT DIESEL GUIDE ====================
+
+export const DETROIT_DIESEL_GUIDE: ReprogrammingGuide = {
+  id: 'detroit-ddec',
+  ecmName: 'Detroit Diesel DDEC (Detroit Diesel Electronic Control)',
+  manufacturer: 'Detroit Diesel',
+  models: ['DDEC III', 'DDEC IV', 'DDEC V', 'DDEC VI', 'Series 60', 'DD13', 'DD15', 'DD16'],
+  overview: 'Detroit Diesel DDEC systems have evolved from DDEC III through DDEC VI. Programming is done through Detroit Diesel Diagnostic Link (DDDL) software. Generator applications typically use Series 60 or newer DD engines.',
+
+  prerequisites: {
+    tools: [
+      { name: 'Nexiq USB-Link 2', description: 'RP1210 adapter with Detroit protocol', alternatives: ['Detroit specific adapter'], essential: true },
+      { name: 'Laptop', description: 'Windows 10, 8GB RAM', essential: true },
+      { name: 'Battery Charger', description: '40A', essential: true }
+    ],
+    software: [
+      { name: 'DDDL (Detroit Diesel Diagnostic Link)', version: '8.x or later', source: 'Daimler dealer subscription', licenseRequired: true }
+    ],
+    parts: [],
+    conditions: ['Engine off', 'Battery charged', 'Key ON']
+  },
+
+  connectionProcedure: [
+    {
+      step: 1,
+      action: 'Find Diagnostic Port',
+      details: '6-pin or 9-pin Deutsch connector',
+      pinout: [
+        { pin: 'A', function: 'J1939 CAN_H', wire: 'Yellow' },
+        { pin: 'B', function: 'J1939 CAN_L', wire: 'Green' },
+        { pin: 'C', function: 'Ground', wire: 'Black' },
+        { pin: 'D', function: 'J1708 +', wire: 'Orange' },
+        { pin: 'E', function: 'J1708 -', wire: 'Green/White' },
+        { pin: 'F', function: 'Battery +', wire: 'Red' }
+      ]
+    }
+  ],
+
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Start DDDL', details: 'Launch Detroit software', expectedResult: 'Ready', timeEstimate: '2 min', criticalNotes: [] },
+    { step: 2, phase: 'connection', action: 'Connect', details: 'Key ON, connect to DDEC', expectedResult: 'DDEC found', timeEstimate: '1 min', criticalNotes: [] },
+    { step: 3, phase: 'backup', action: 'Read ECM', details: 'Backup current configuration', expectedResult: 'Saved', timeEstimate: '3 min', criticalNotes: ['Always backup'] },
+    { step: 4, phase: 'programming', action: 'Flash ECM', details: 'Download new calibration', expectedResult: 'Complete', timeEstimate: '20 min', criticalNotes: ['Do not interrupt'] },
+    { step: 5, phase: 'verification', action: 'Test Run', details: 'Start and run engine', expectedResult: 'Normal', timeEstimate: '10 min', criticalNotes: [] }
+  ],
+
+  parameterConfiguration: [
+    {
+      category: 'Speed',
+      parameters: [
+        { name: 'Rated Speed', description: 'Generator speed', path: 'Parameters > Speed', defaultValue: '1500 RPM', range: '1500-1800', unit: 'RPM', affectsWhat: 'Frequency', howToSet: 'Set for grid' }
+      ]
+    }
+  ],
+
+  j1939Setup: {
+    protocol: 'J1939',
+    baudRate: 250000,
+    sourceAddress: '0x00',
+    transmitPGNs: [
+      { pgn: '61444', name: 'EEC1', rate: '10ms', description: 'Engine data' }
+    ],
+    receivePGNs: [],
+    terminationResistor: { required: true, value: '120Ω', location: 'Both ends' },
+    wiringDiagram: 'J1939 standard wiring'
+  },
+
+  troubleshooting: [
+    { problem: 'No connection', possibleCauses: ['Protocol mismatch', 'Adapter'], solutions: ['Check J1939/J1708 settings'] }
+  ],
+
+  safetyWarnings: ['Maintain power during flash'],
+  commonMistakes: ['Using J1708 when J1939 needed'],
+  verificationChecklist: ['DDEC responds', 'Firmware updated', 'Engine runs']
+};
+
+// ==================== SCANIA EMS GUIDE ====================
+
+export const SCANIA_EMS_GUIDE: ReprogrammingGuide = {
+  id: 'scania-ems',
+  ecmName: 'Scania EMS (Engine Management System)',
+  manufacturer: 'Scania',
+  models: ['EMS S6', 'EMS S7', 'EMS S8', 'DC09', 'DC13', 'DC16', '9-liter', '13-liter', '16-liter'],
+  overview: 'Scania industrial engines use EMS for engine control. Diagnostics and programming are done through SDP3 (Scania Diagnos & Programmer 3) software.',
+
+  prerequisites: {
+    tools: [
+      { name: 'Scania VCI3', description: 'Vehicle Communication Interface', alternatives: [], essential: true },
+      { name: 'Laptop', description: 'Windows 10, 8GB RAM', essential: true },
+      { name: 'Battery Charger', description: '40A', essential: true }
+    ],
+    software: [
+      { name: 'SDP3', version: 'Current version', source: 'Scania dealer subscription', licenseRequired: true }
+    ],
+    parts: [],
+    conditions: ['Engine stopped', 'Key ON', 'Battery charged']
+  },
+
+  connectionProcedure: [
+    {
+      step: 1,
+      action: 'Connect VCI3',
+      details: 'Connect to 16-pin OBD connector or engine harness connector',
+      pinout: [
+        { pin: '6', function: 'CAN High', wire: 'Yellow' },
+        { pin: '14', function: 'CAN Low', wire: 'Green' },
+        { pin: '4-5', function: 'Ground', wire: 'Black' },
+        { pin: '16', function: 'Battery +', wire: 'Red' }
+      ]
+    }
+  ],
+
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Start SDP3', details: 'Launch Scania software', expectedResult: 'Ready', timeEstimate: '2 min', criticalNotes: [] },
+    { step: 2, phase: 'connection', action: 'Connect', details: 'Connect to EMS', expectedResult: 'EMS found', timeEstimate: '1 min', criticalNotes: [] },
+    { step: 3, phase: 'backup', action: 'Backup', details: 'Save configuration', expectedResult: 'Saved', timeEstimate: '3 min', criticalNotes: [] },
+    { step: 4, phase: 'programming', action: 'Program', details: 'Flash new software', expectedResult: 'Complete', timeEstimate: '25 min', criticalNotes: ['Maintain power'] },
+    { step: 5, phase: 'verification', action: 'Test', details: 'Run engine', expectedResult: 'Normal', timeEstimate: '10 min', criticalNotes: [] }
+  ],
+
+  parameterConfiguration: [
+    {
+      category: 'Engine',
+      parameters: [
+        { name: 'Rated Speed', description: 'Sync speed', path: 'Configuration > Speed', defaultValue: '1500 RPM', range: '1500-1800', unit: 'RPM', affectsWhat: 'Generator frequency', howToSet: 'Set based on grid' }
+      ]
+    }
+  ],
+
+  j1939Setup: {
+    protocol: 'J1939',
+    baudRate: 250000,
+    sourceAddress: '0x00',
+    transmitPGNs: [
+      { pgn: '61444', name: 'EEC1', rate: '10ms', description: 'Engine speed/torque' }
+    ],
+    receivePGNs: [],
+    terminationResistor: { required: true, value: '120Ω', location: 'Both ends' },
+    wiringDiagram: 'J1939 standard'
+  },
+
+  troubleshooting: [
+    { problem: 'VCI3 not found', possibleCauses: ['Driver issue'], solutions: ['Reinstall VCI3 drivers'] }
+  ],
+
+  safetyWarnings: ['Follow Scania safety procedures'],
+  commonMistakes: ['Incorrect software version'],
+  verificationChecklist: ['EMS connected', 'Programming complete', 'Engine operational']
+};
+
+// ==================== DEUTZ EMR GUIDE ====================
+
+export const DEUTZ_EMR_GUIDE: ReprogrammingGuide = {
+  id: 'deutz-emr',
+  ecmName: 'Deutz EMR (Electronic Engine Management)',
+  manufacturer: 'Deutz',
+  models: ['EMR2', 'EMR3', 'EMR4', 'TCD 2.9', 'TCD 3.6', 'TCD 4.1', 'TCD 6.1', 'TCD 7.8', 'TCD 12.0', 'TCD 16.0'],
+  overview: 'Deutz EMR systems manage fuel injection timing and quantity for optimal performance. SerDia (Service Diagnostic) software is used for programming and diagnostics.',
+
+  prerequisites: {
+    tools: [
+      { name: 'Deutz Interface', description: 'USB diagnostic interface', alternatives: ['Compatible J1939 adapter'], essential: true },
+      { name: 'Laptop', description: 'Windows 10', essential: true },
+      { name: 'Battery Charger', description: '40A', essential: true }
+    ],
+    software: [
+      { name: 'SerDia', version: 'Current version', source: 'Deutz service portal', licenseRequired: true }
+    ],
+    parts: [],
+    conditions: ['Engine stopped', 'Key ON']
+  },
+
+  connectionProcedure: [
+    {
+      step: 1,
+      action: 'Connect Interface',
+      details: 'Connect to diagnostic port on engine',
+      pinout: [
+        { pin: '1', function: 'CAN High', wire: 'Yellow' },
+        { pin: '2', function: 'CAN Low', wire: 'Green' },
+        { pin: '3', function: 'Ground', wire: 'Black' }
+      ]
+    }
+  ],
+
+  reprogrammingProcedure: [
+    { step: 1, phase: 'preparation', action: 'Start SerDia', details: 'Launch software', expectedResult: 'Ready', timeEstimate: '1 min', criticalNotes: [] },
+    { step: 2, phase: 'connection', action: 'Connect', details: 'Connect to EMR', expectedResult: 'Connected', timeEstimate: '1 min', criticalNotes: [] },
+    { step: 3, phase: 'backup', action: 'Backup', details: 'Save current settings', expectedResult: 'Saved', timeEstimate: '2 min', criticalNotes: [] },
+    { step: 4, phase: 'programming', action: 'Program', details: 'Flash calibration', expectedResult: 'Complete', timeEstimate: '15 min', criticalNotes: [] },
+    { step: 5, phase: 'verification', action: 'Test', details: 'Run engine', expectedResult: 'Normal', timeEstimate: '10 min', criticalNotes: [] }
+  ],
+
+  parameterConfiguration: [
+    {
+      category: 'Engine',
+      parameters: [
+        { name: 'Rated Speed', description: 'Operating speed', path: 'Engine > Speed', defaultValue: '1500 RPM', range: '1500-1800', unit: 'RPM', affectsWhat: 'Output', howToSet: 'Configure' }
+      ]
+    }
+  ],
+
+  j1939Setup: {
+    protocol: 'J1939',
+    baudRate: 250000,
+    sourceAddress: '0x00',
+    transmitPGNs: [
+      { pgn: '61444', name: 'EEC1', rate: '10ms', description: 'Engine data' }
+    ],
+    receivePGNs: [],
+    terminationResistor: { required: true, value: '120Ω', location: 'Both ends' },
+    wiringDiagram: 'Standard J1939'
+  },
+
+  troubleshooting: [
+    { problem: 'No communication', possibleCauses: ['Interface issue'], solutions: ['Check connections'] }
+  ],
+
+  safetyWarnings: ['Maintain power during programming'],
+  commonMistakes: ['Wrong calibration file'],
+  verificationChecklist: ['EMR responds', 'Engine runs']
+};
+
 // ==================== ALL ECM GUIDES ====================
 
 export const ALL_ECM_REPROGRAMMING_GUIDES: ReprogrammingGuide[] = [
   CAT_ADEM_A4_GUIDE,
-  CUMMINS_CM2350_GUIDE
+  CUMMINS_CM2350_GUIDE,
+  VOLVO_PENTA_EMS2_GUIDE,
+  PERKINS_ECM_GUIDE,
+  JOHN_DEERE_POWERTECH_GUIDE,
+  MTU_ADEC_GUIDE,
+  DETROIT_DIESEL_GUIDE,
+  SCANIA_EMS_GUIDE,
+  DEUTZ_EMR_GUIDE
 ];
 
 // ==================== HELPER FUNCTIONS ====================
