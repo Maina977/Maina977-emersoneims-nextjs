@@ -84,8 +84,8 @@ import SubscriptionManager from './SubscriptionManager';
 import BackToCommand from './BackToCommand';
 // Phase 4: Professional PDF Reports
 import ReportBuilder from './ReportBuilder';
-// Phase 5: Photo/Video Capture
-import CameraCapture from './CameraCapture';
+// Phase 5: AI Visual Diagnostic (Camera + AI Analysis)
+import AIVisualDiagnostic from './AIVisualDiagnostic';
 // Phase 6: Parts Ordering
 import PartsOrderPanel from './PartsOrderPanel';
 // Phase 7: GPS/Location
@@ -1500,7 +1500,7 @@ export default function GeneratorOracleModule() {
                   <PremiumNavTab icon="💾" label="ECM Reprogram" active={activeScreen === 'ecmguide'} onClick={() => setActiveScreen('ecmguide')} />
                   {/* Phase 4-8 Features */}
                   <PremiumNavTab icon="📄" label="Reports" active={activeScreen === 'reports'} onClick={() => setActiveScreen('reports')} />
-                  <PremiumNavTab icon="📷" label="Camera" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
+                  <PremiumNavTab icon="📷" label="AI Visual" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
                   <PremiumNavTab icon="🛒" label="Parts" active={activeScreen === 'parts'} onClick={() => setActiveScreen('parts')} />
                   <PremiumNavTab icon="📍" label="Location" active={activeScreen === 'location'} onClick={() => setActiveScreen('location')} />
                   <PremiumNavTab icon="🔔" label="Alerts" active={activeScreen === 'notifications'} onClick={() => setActiveScreen('notifications')} />
@@ -1536,7 +1536,7 @@ export default function GeneratorOracleModule() {
                     <option value="ecm">🧠 ECM</option>
                     <option value="unified">🔬 Unified Diagnostics</option>
                     <option value="reports">📄 Reports</option>
-                    <option value="camera">📷 Camera</option>
+                    <option value="camera">📷 AI Visual Diagnostic</option>
                     <option value="parts">🛒 Parts</option>
                     <option value="location">📍 Location</option>
                     <option value="notifications">🔔 Alerts</option>
@@ -2374,7 +2374,7 @@ export default function GeneratorOracleModule() {
                   </motion.div>
                 )}
 
-                {/* CAMERA - Phase 5 */}
+                {/* AI VISUAL DIAGNOSTIC - Phase 5 */}
                 {activeScreen === 'camera' && (
                   <motion.div
                     key="camera"
@@ -2383,16 +2383,12 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="camera" />
-                    <HolographicGlassPanel title="Photo & Video Capture" subtitle="Document Equipment Conditions" icon="📷" accentColor="green" variant="glow">
-                      <CameraCapture
-                        onCapture={(media) => {
-                          console.log('Captured media:', media.id, media.type);
-                        }}
-                        onClose={() => setActiveScreen('command')}
-                        mode="both"
-                        maxVideoDuration={60}
-                      />
-                    </HolographicGlassPanel>
+                    <AIVisualDiagnostic
+                      onAnalysisComplete={(result) => {
+                        console.log('AI Visual Analysis:', result);
+                      }}
+                      onClose={() => setActiveScreen('command')}
+                    />
                   </motion.div>
                 )}
 

@@ -150,9 +150,9 @@ const PANEL_DESCRIPTIONS: Record<string, { title: string; purpose: string; howTo
     howToUse: 'Complete a diagnosis first. Then build a professional report with customer info, photos, and recommendations.',
   },
   camera: {
-    title: 'Photo/Video Documentation',
-    purpose: 'Capture visual evidence for diagnostic reports',
-    howToUse: 'Take photos or videos of the fault condition, nameplate, or damaged components. Attach to reports.',
+    title: 'AI Visual Diagnostic',
+    purpose: 'Capture photos and get instant AI-powered fault analysis with solutions',
+    howToUse: 'Take a photo of the controller display, damaged component, or nameplate. AI will analyze the image and provide detailed diagnosis, step-by-step repair procedures, required parts, and safety warnings.',
   },
   parts: {
     title: 'Parts Ordering',
