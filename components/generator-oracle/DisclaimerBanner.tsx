@@ -139,20 +139,33 @@ export function InlineDisclaimer({ text }: { text: string }) {
 
 export function FooterDisclaimer() {
   return (
-    <div className="mt-8 p-4 bg-slate-900/50 border-t border-slate-700 text-center">
-      <p className="text-xs text-slate-500 max-w-4xl mx-auto">
-        <strong>DISCLAIMER:</strong> Generator Oracle is an independent diagnostic reference tool.
-        All brand names, model numbers, and trademarks (including Deep Sea Electronics, ComAp,
-        Woodward, SmartGen, Caterpillar, Cummins, Volvo Penta, and others) are property of their
-        respective owners and used for IDENTIFICATION PURPOSES ONLY.
+    <div className="mt-8 p-4 bg-slate-900/80 border-t border-amber-500/20 text-center">
+      {/* Global Legal Disclaimer */}
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <span className="text-amber-400">🛡️</span>
+        <span className="text-amber-400 font-semibold text-sm">INDEPENDENCE STATEMENT</span>
+      </div>
+      <p className="text-xs text-slate-400 max-w-5xl mx-auto leading-relaxed">
+        Generator Oracle is an <strong className="text-amber-300">independent diagnostic and maintenance platform</strong>.
+        Controller and ECM names are used solely for identification purposes. Generator Oracle is{' '}
+        <strong className="text-white">NOT affiliated with, endorsed by, or sponsored by</strong>{' '}
+        Cummins, Caterpillar, Volvo Penta, Perkins, Honda, Doosan, Deutz, John Deere, Lister Petter,
+        SDMO, MTU, MAN, Iveco, Yanmar, Weichai, Deep Sea Electronics, ComAp, Woodward, SmartGen, or any other OEM.
       </p>
       <p className="text-xs text-slate-500 max-w-4xl mx-auto mt-2">
-        Fault code NUMBERS are industry-standard identifiers. All DESCRIPTIONS and procedures are
-        independently developed and may differ from official manufacturer documentation. This tool
-        is NOT affiliated with, endorsed by, or licensed by any equipment manufacturer.
+        All fault code descriptions, diagnostic procedures, and repair guidance are{' '}
+        <strong className="text-slate-400">INDEPENDENTLY DEVELOPED</strong> using technician-friendly,
+        field-report style language. No content is copied from OEM documentation.
       </p>
-      <p className="text-xs text-slate-600 mt-2">
-        © {new Date().getFullYear()} Generator Oracle - Independent Diagnostic Reference
+      <div className="flex items-center justify-center gap-4 mt-3 text-xs text-slate-600">
+        <span>🔒 Data Ownership: Generator Oracle</span>
+        <span>|</span>
+        <span>📋 Audit Trail Enabled</span>
+        <span>|</span>
+        <span>🔐 Encrypted Storage</span>
+      </div>
+      <p className="text-xs text-cyan-400/70 mt-2 font-medium">
+        © {new Date().getFullYear()} Generator Oracle - One Tool for All Brands™
       </p>
     </div>
   );
@@ -191,18 +204,28 @@ export function CompatibilityNotice({ brandNames }: { brandNames: string[] }) {
 
 // Acknowledgment that user has read disclaimer
 export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void }) {
-  const [accepted, setAccepted] = useState(false);
+  const [accepted, setAccepted] = useState(() => {
+    // Check localStorage on initial render
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('oracle_disclaimer_accepted') === 'true';
+    }
+    return false;
+  });
 
+  // Call onAccept if already accepted on mount
   useEffect(() => {
-    const stored = localStorage.getItem('oracle_disclaimer_accepted');
-    if (stored === 'true') {
-      setAccepted(true);
+    if (accepted) {
       onAccept();
     }
-  }, [onAccept]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('oracle_disclaimer_accepted', 'true');
+    try {
+      localStorage.setItem('oracle_disclaimer_accepted', 'true');
+    } catch (e) {
+      console.warn('Could not save to localStorage');
+    }
     setAccepted(true);
     onAccept();
   };
@@ -210,47 +233,109 @@ export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void })
   if (accepted) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="max-w-2xl w-full bg-slate-900 rounded-2xl border border-slate-700 p-6"
+        className="max-w-3xl w-full max-h-[90vh] flex flex-col bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-amber-500/30 shadow-2xl shadow-amber-500/10"
       >
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <span>⚠️</span> Important Notice
-        </h2>
-
-        <div className="space-y-4 text-sm text-slate-300">
-          <p>
-            <strong className="text-amber-400">Generator Oracle</strong> is an INDEPENDENT diagnostic
-            reference tool created for educational and troubleshooting purposes.
-          </p>
-
-          <div className="p-4 bg-slate-800 rounded-lg">
-            <p className="font-medium text-white mb-2">Please understand that:</p>
-            <ul className="space-y-2 text-slate-400">
-              <li>• All brand names (DSE, ComAp, Caterpillar, Cummins, etc.) are property of their respective owners</li>
-              <li>• Brand names are used for <strong className="text-slate-300">IDENTIFICATION PURPOSES ONLY</strong></li>
-              <li>• This tool is NOT affiliated with, endorsed by, or licensed by any equipment manufacturer</li>
-              <li>• Fault code NUMBERS are industry-standard - all DESCRIPTIONS are independently written</li>
-              <li>• Our descriptions are rephrased interpretations, not copied from OEM manuals</li>
-              <li>• Procedures may differ from official manufacturer documentation</li>
-              <li>• For warranty service, always consult authorized service centers</li>
-            </ul>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 pb-0">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-amber-500/20 rounded-xl">
+              <span className="text-3xl">🛡️</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Security & Independence Framework</h2>
+              <p className="text-amber-400 text-sm">Generator Oracle Legal Notice</p>
+            </div>
           </div>
 
-          <p className="text-slate-400">
-            By continuing, you acknowledge that Generator Oracle provides independent interpretations
-            and you will verify critical procedures against official documentation when needed.
-          </p>
+          {/* Main Disclaimer */}
+          <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl mb-4">
+            <p className="text-amber-200 leading-relaxed">
+              <strong>Generator Oracle</strong> is an <strong className="text-white">independent diagnostic and maintenance platform</strong>.
+              Controller and ECM names are used solely for identification purposes. Generator Oracle is{' '}
+              <strong className="text-white">NOT affiliated with, endorsed by, or sponsored by</strong>{' '}
+              Cummins, Caterpillar, Volvo Penta, Perkins, Honda, Doosan, Deutz, John Deere, Lister Petter,
+              SDMO, MTU, MAN, Iveco, Yanmar, Weichai, or any other OEM.
+            </p>
+          </div>
+
+          {/* Key Points */}
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+              <h3 className="text-cyan-400 font-semibold mb-2 flex items-center gap-2">
+                <span>📝</span> Technician-Style Language
+              </h3>
+              <p className="text-slate-400 text-sm">
+                All diagnostic guidance uses <strong className="text-slate-300">Oracle's own phrasing</strong> —
+                field-report style, not OEM manual text.
+              </p>
+            </div>
+
+            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+              <h3 className="text-green-400 font-semibold mb-2 flex items-center gap-2">
+                <span>🔒</span> Security Layer
+              </h3>
+              <p className="text-slate-400 text-sm">
+                <strong className="text-slate-300">Data Ownership:</strong> Oracle's proprietary dataset.{' '}
+                <strong className="text-slate-300">Audit Trail:</strong> Every session logged.
+              </p>
+            </div>
+
+            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+              <h3 className="text-purple-400 font-semibold mb-2 flex items-center gap-2">
+                <span>🎯</span> Market Positioning
+              </h3>
+              <p className="text-slate-400 text-sm">
+                Oracle is <strong className="text-slate-300">NOT a clone of OEM tools</strong> — it's a universal diagnostic suite.
+              </p>
+            </div>
+
+            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+              <h3 className="text-orange-400 font-semibold mb-2 flex items-center gap-2">
+                <span>⚖️</span> Legal Safety
+              </h3>
+              <p className="text-slate-400 text-sm">
+                Fault code <strong className="text-slate-300">NUMBERS</strong> are standard. All <strong className="text-slate-300">DESCRIPTIONS</strong> are independent.
+              </p>
+            </div>
+          </div>
+
+          {/* Acknowledgment Checklist */}
+          <div className="p-4 bg-slate-800 rounded-xl mb-4">
+            <p className="font-medium text-white mb-3">By continuing, you acknowledge:</p>
+            <ul className="space-y-2 text-sm text-slate-400">
+              <li className="flex items-start gap-2">
+                <span className="text-green-400 mt-0.5">✓</span>
+                <span>Generator Oracle provides <strong className="text-slate-300">independent interpretations</strong>, not OEM documentation</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-400 mt-0.5">✓</span>
+                <span>Brand names are used for <strong className="text-slate-300">identification only</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-400 mt-0.5">✓</span>
+                <span>You will verify critical procedures against <strong className="text-slate-300">official documentation</strong></span>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <button
-          onClick={handleAccept}
-          className="w-full mt-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl transition-all"
-        >
-          I Understand - Continue to Generator Oracle
-        </button>
+        {/* Fixed Footer with Button - Always Visible */}
+        <div className="flex-shrink-0 p-6 pt-4 border-t border-slate-700/50 bg-slate-900/80">
+          <button
+            onClick={handleAccept}
+            className="w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-600 hover:via-orange-600 hover:to-red-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
+          >
+            🛡️ I Understand & Accept - Enter Generator Oracle
+          </button>
+          <p className="text-center text-xs text-slate-600 mt-3">
+            © {new Date().getFullYear()} Generator Oracle - Proprietary Independent Diagnostic Platform
+          </p>
+        </div>
       </motion.div>
     </div>
   );
