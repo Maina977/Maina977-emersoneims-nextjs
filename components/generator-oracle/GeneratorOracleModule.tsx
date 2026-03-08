@@ -80,6 +80,7 @@ import FleetDashboardPanel from './panels/FleetDashboardPanel';
 import CompleteDiagnosticPanel from './panels/CompleteDiagnosticPanel';
 import ECMReprogrammingGuidePanel from './panels/ECMReprogrammingGuidePanel';
 import ExpertAIChatPanel from './panels/ExpertAIChatPanel';
+import UniversalDiagnosticPanel from './panels/UniversalDiagnosticPanel';
 import SpeechController from './SpeechController';
 import SubscriptionManager from './SubscriptionManager';
 import BackToCommand from './BackToCommand';
@@ -1136,7 +1137,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat' | 'universaldiag'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1475,6 +1476,7 @@ export default function GeneratorOracleModule() {
                 <nav className="hidden xl:flex items-center gap-1 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex-wrap">
                   <PremiumNavTab icon="🎛️" label={t.navCommand} active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
                   <PremiumNavTab icon="💬" label="Expert AI" active={activeScreen === 'expertchat'} onClick={() => setActiveScreen('expertchat')} />
+                  <PremiumNavTab icon="🔧" label="Universal Diag" active={activeScreen === 'universaldiag'} onClick={() => setActiveScreen('universaldiag')} />
                   <PremiumNavTab icon="⚙️" label={t.navEngine} active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
                   <PremiumNavTab icon="⚡" label={t.navElectrical} active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
                   <PremiumNavTab icon="🔧" label={t.navFaults} active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
@@ -1519,6 +1521,7 @@ export default function GeneratorOracleModule() {
                   >
                     <option value="command">🎛️ {t.navCommand}</option>
                     <option value="expertchat">💬 Expert AI Chat</option>
+                    <option value="universaldiag">🔧 Universal Diagnostic</option>
                     <option value="engine">⚙️ {t.navEngine}</option>
                     <option value="electrical">⚡ {t.navElectrical}</option>
                     <option value="faults">🔧 {t.navFaults}</option>
@@ -2284,6 +2287,19 @@ export default function GeneratorOracleModule() {
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="expertchat" />
                     <ExpertAIChatPanel className="flex-1" />
+                  </motion.div>
+                )}
+
+                {/* UNIVERSAL DIAGNOSTIC INTERFACE - REPLACES CAT ET, INSITE, VODIA */}
+                {activeScreen === 'universaldiag' && (
+                  <motion.div
+                    key="universaldiag"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="universaldiag" />
+                    <UniversalDiagnosticPanel />
                   </motion.div>
                 )}
 
