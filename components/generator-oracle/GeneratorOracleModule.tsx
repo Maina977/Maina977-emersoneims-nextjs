@@ -79,6 +79,7 @@ import CANbusMonitorPanel from './panels/CANbusMonitorPanel';
 import FleetDashboardPanel from './panels/FleetDashboardPanel';
 import CompleteDiagnosticPanel from './panels/CompleteDiagnosticPanel';
 import ECMReprogrammingGuidePanel from './panels/ECMReprogrammingGuidePanel';
+import ExpertAIChatPanel from './panels/ExpertAIChatPanel';
 import SpeechController from './SpeechController';
 import SubscriptionManager from './SubscriptionManager';
 import BackToCommand from './BackToCommand';
@@ -1135,7 +1136,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1473,6 +1474,7 @@ export default function GeneratorOracleModule() {
                 {/* Navigation */}
                 <nav className="hidden xl:flex items-center gap-1 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex-wrap">
                   <PremiumNavTab icon="🎛️" label={t.navCommand} active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
+                  <PremiumNavTab icon="💬" label="Expert AI" active={activeScreen === 'expertchat'} onClick={() => setActiveScreen('expertchat')} />
                   <PremiumNavTab icon="⚙️" label={t.navEngine} active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
                   <PremiumNavTab icon="⚡" label={t.navElectrical} active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
                   <PremiumNavTab icon="🔧" label={t.navFaults} active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
@@ -1516,6 +1518,7 @@ export default function GeneratorOracleModule() {
                     className="bg-slate-900/60 text-cyan-400 px-4 py-2.5 rounded-xl border border-cyan-500/30 font-medium"
                   >
                     <option value="command">🎛️ {t.navCommand}</option>
+                    <option value="expertchat">💬 Expert AI Chat</option>
                     <option value="engine">⚙️ {t.navEngine}</option>
                     <option value="electrical">⚡ {t.navElectrical}</option>
                     <option value="faults">🔧 {t.navFaults}</option>
@@ -1535,6 +1538,12 @@ export default function GeneratorOracleModule() {
                     <option value="sensors">🌡️ Sensors</option>
                     <option value="ecm">🧠 ECM</option>
                     <option value="unified">🔬 Unified Diagnostics</option>
+                    <option value="ecmprog">💾 ECM Programming</option>
+                    <option value="canbus">📡 CANbus Monitor</option>
+                    <option value="fleet">🏭 Fleet Dashboard</option>
+                    <option value="completediag">🔧 Full Solutions</option>
+                    <option value="ecmguide">💾 ECM Reprogram Guide</option>
+                    <option value="aianalysis">🧠 AI Analysis</option>
                     <option value="reports">📄 Reports</option>
                     <option value="camera">📷 AI Visual Diagnostic</option>
                     <option value="parts">🛒 Parts</option>
@@ -1579,6 +1588,72 @@ export default function GeneratorOracleModule() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-6"
                   >
+                    {/* HERO SECTION - Value Proposition */}
+                    <motion.div
+                      className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-950/80 via-slate-900/90 to-purple-950/80 border border-cyan-500/30 p-6"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5" />
+                      <div className="relative flex flex-col lg:flex-row items-center gap-6">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold">NO HARDWARE REQUIRED</span>
+                            <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/50 rounded-full text-xs text-purple-400 font-bold">AI-POWERED</span>
+                          </div>
+                          <h2 className="text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
+                            99% of Generator Issues Solved by AI
+                          </h2>
+                          <p className="text-slate-400 text-sm lg:text-base mb-4">
+                            Expert-level diagnostics for ALL manufacturers: Cummins, Caterpillar, Volvo Penta, Perkins, John Deere, Deutz, MTU, and 20+ more. No external hardware needed - just your knowledge and our AI.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setActiveScreen('expertchat')}
+                              className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 flex items-center gap-2"
+                            >
+                              <span>💬</span> Talk to Expert AI
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setActiveScreen('aianalysis')}
+                              className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
+                            >
+                              <span>🧠</span> Input Readings
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setActiveScreen('camera')}
+                              className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
+                            >
+                              <span>📷</span> Visual Diagnose
+                            </motion.button>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 grid grid-cols-3 gap-3">
+                          {[
+                            { icon: '🔧', label: 'Fault Diagnosis', desc: 'Any error code' },
+                            { icon: '📋', label: 'Repair Guides', desc: 'Step-by-step' },
+                            { icon: '💰', label: 'Cost Estimates', desc: 'Parts & labor' },
+                            { icon: '🔄', label: 'ECM/ECU Reset', desc: 'All brands' },
+                            { icon: '🛡️', label: 'Predictive', desc: 'Prevent failures' },
+                            { icon: '📊', label: 'Fleet Mgmt', desc: 'Multi-unit' },
+                          ].map((item, idx) => (
+                            <div key={idx} className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 text-center">
+                              <span className="text-2xl mb-1 block">{item.icon}</span>
+                              <span className="text-xs text-white font-medium block">{item.label}</span>
+                              <span className="text-[10px] text-slate-500">{item.desc}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+
                     {/* Top Analytics Row */}
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                       <AnalyticsCard title="Active Power" value={`${parameters.activePowerKw?.toFixed(1) || '--'} kW`} change="+2.3%" trend="up" icon="⚡" color="cyan" />
@@ -2195,6 +2270,20 @@ export default function GeneratorOracleModule() {
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecmguide" />
                     <ECMReprogrammingGuidePanel />
+                  </motion.div>
+                )}
+
+                {/* EXPERT AI CHAT - THE CORE SELLING POINT */}
+                {activeScreen === 'expertchat' && (
+                  <motion.div
+                    key="expertchat"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="h-[calc(100vh-200px)] flex flex-col"
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="expertchat" />
+                    <ExpertAIChatPanel className="flex-1" />
                   </motion.div>
                 )}
 
