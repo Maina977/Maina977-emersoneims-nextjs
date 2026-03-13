@@ -56,182 +56,8 @@ export const metadata: Metadata = {
     template: "%s | EmersonEIMS - 3-Year Warranty | Best Generator & Solar Company Kenya"
   },
   description: "Kenya's #1 Generator Company with 3-YEAR WARRANTY. Cummins, Perkins, FG Wilson Authorized. 9 Services: Generators, Solar, UPS, Motors, Borehole, AC, Electrical, Welding, Plumbing. Serving 9,458+ hospitals, 16,245+ hotels, 93,988+ schools across 47 counties. 24/7 Emergency. Call +254768860665",
-  keywords: [
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🎯 #1 PRIORITY: MONEY KEYWORDS - Direct Purchase Intent
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "generator companies in Kenya", "generator company Kenya", "best generator company in Kenya",
-    "generator suppliers in Kenya", "generator dealers Kenya", "generator sellers Kenya",
-    "buy generator Kenya", "generator shop Kenya", "generator store Nairobi",
-    "generator for sale in Kenya", "generator price in Kenya", "generator cost Kenya",
-
-    // Generator Sales & Products - High Commercial Intent
-    "generators for sale Kenya", "diesel generators Kenya", "industrial generators Kenya",
-    "commercial generators Kenya", "silent generators Kenya", "used generators Kenya",
-    "Cummins generators Kenya", "Perkins generators Kenya", "FG Wilson generators Kenya",
-    "Caterpillar generators Kenya", "generator prices Kenya", "cheap generators Kenya",
-    "new generators Kenya", "second hand generators Kenya", "refurbished generators Kenya",
-    "standby generators Kenya", "prime power generators Kenya", "portable generators Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 💰 PRICE & COST KEYWORDS - Purchase Ready Searches
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "generator price list Kenya", "how much is a 10kva generator in Kenya",
-    "how much is a 20kva generator in Kenya", "how much is a 50kva generator in Kenya",
-    "how much is a 100kva generator in Kenya", "generator prices in Nairobi",
-    "cheapest generator in Kenya", "affordable generators Kenya", "generator financing Kenya",
-    "generator cost per kva Kenya", "solar panel prices Kenya", "solar system cost Kenya",
-    "UPS price Kenya", "generator installation cost Kenya", "generator maintenance cost Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🔧 SERVICE KEYWORDS - High Conversion
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "generator installation Kenya", "generator maintenance Kenya", "generator repair Kenya",
-    "generator service Kenya", "generator hire Kenya", "generator rental Kenya",
-    "generator spare parts Kenya", "generator parts supplier Kenya",
-    "24/7 generator service Kenya", "emergency generator repair Nairobi",
-    "generator servicing near me", "generator repair near me", "generator mechanic Kenya",
-    "generator technician Kenya", "generator engineer Kenya", "power plant maintenance Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // ☀️ SOLAR KEYWORDS - Growing Market
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "solar companies Kenya", "solar installation Kenya", "solar panels Kenya",
-    "solar power systems Kenya", "best solar company Kenya", "solar energy Kenya",
-    "commercial solar Kenya", "residential solar Kenya", "solar water heater Kenya",
-    "solar panel installation Nairobi", "solar system for home Kenya", "solar farm Kenya",
-    "off-grid solar Kenya", "hybrid solar system Kenya", "solar battery Kenya",
-    "solar inverter Kenya", "solar charge controller Kenya", "net metering Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🔋 UPS & POWER BACKUP
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "UPS systems Kenya", "UPS suppliers Kenya", "power backup Kenya",
-    "uninterruptible power supply Kenya", "APC UPS Kenya", "battery backup Kenya",
-    "online UPS Kenya", "offline UPS Kenya", "line interactive UPS Kenya",
-    "UPS for server room Kenya", "data center UPS Kenya", "industrial UPS Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🔍 DIAGNOSTIC & ERROR CODE KEYWORDS - Technical Authority
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "generator error codes", "generator fault codes", "Cummins fault codes",
-    "Perkins error codes", "generator troubleshooting Kenya", "power diagnostics Kenya",
-    "DeepSea fault codes", "PowerWizard fault codes", "CAT generator fault codes",
-    "generator alarm codes", "generator warning codes", "generator shutdown codes",
-    "how to reset generator fault", "generator not starting", "generator overspeed alarm",
-    "generator low oil pressure", "generator high temperature alarm",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // ⚡ MOTOR & ELECTRICAL SERVICES
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "motor rewinding Kenya", "electric motor repair Kenya", "borehole pump Kenya",
-    "electrical services Kenya", "AC installation Kenya", "HVAC services Kenya",
-    "submersible pump Kenya", "water pump repair Kenya", "electric motor Kenya",
-    "industrial motor repair Kenya", "motor winding Kenya", "pump installation Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 📍 LOCATION-BASED: ALL 47 KENYA COUNTIES
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // Nairobi Region
-    "generators Nairobi", "generator company Nairobi", "solar installation Nairobi",
-    "generator repair Nairobi", "generator maintenance Nairobi", "UPS Nairobi",
-
-    // Coast Region
-    "generators Mombasa", "generator company Mombasa", "solar Mombasa",
-    "generators Kilifi", "generators Kwale", "generators Lamu", "generators Taita Taveta",
-    "generator Malindi", "generator Diani", "generator Watamu",
-
-    // Central Region
-    "generators Kiambu", "generators Nyeri", "generators Murang'a", "generators Kirinyaga",
-    "generators Nyandarua", "generator Thika", "generator Ruiru", "generator Juja",
-
-    // Rift Valley
-    "generators Nakuru", "generators Eldoret", "generators Narok", "generators Kericho",
-    "generators Bomet", "generators Baringo", "generators Laikipia", "generators Kajiado",
-    "generators Uasin Gishu", "generators Trans Nzoia", "generators Nandi",
-    "generators Elgeyo Marakwet", "generators West Pokot", "generators Turkana", "generators Samburu",
-
-    // Western Region
-    "generators Kakamega", "generators Bungoma", "generators Busia", "generators Vihiga",
-
-    // Nyanza Region
-    "generators Kisumu", "generators Kisii", "generators Nyamira", "generators Homa Bay",
-    "generators Migori", "generators Siaya",
-
-    // Eastern Region
-    "generators Machakos", "generators Meru", "generators Embu", "generators Kitui",
-    "generators Makueni", "generators Tharaka Nithi", "generators Isiolo", "generators Marsabit",
-
-    // North Eastern Region
-    "generators Garissa", "generators Wajir", "generators Mandera",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🗣️ SWAHILI KEYWORDS - Local Market Dominance
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "jenereta Kenya", "kuuza jenereta", "bei ya jenereta", "fundi wa jenereta",
-    "nguvu za jua Kenya", "solari Kenya", "stima backup Kenya",
-    "jenereta ya dizeli", "jenereta ya nyumbani", "kununua jenereta",
-    "huduma ya jenereta", "kukarabati jenereta", "vipuri vya jenereta",
-    "paneli za sola", "mfumo wa sola", "betri ya sola",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🏭 INDUSTRY-SPECIFIC KEYWORDS
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "hospital generators Kenya", "hotel generators Kenya", "factory generators Kenya",
-    "construction site generators", "farm generators Kenya", "school generators Kenya",
-    "office backup power Kenya", "data center UPS Kenya", "bank generators Kenya",
-    "supermarket generators Kenya", "mall generators Kenya", "telecom tower generators",
-    "cell tower power Kenya", "mining generators Kenya", "agricultural generators Kenya",
-    "poultry farm generators Kenya", "dairy farm generators Kenya", "flower farm generators",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🏷️ BRAND-SPECIFIC SEARCHES
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "Cummins dealer Kenya", "Perkins dealer Kenya", "FG Wilson dealer Kenya",
-    "DeepSea controller Kenya", "generator controller Kenya",
-    "Kohler generators Kenya", "Generac generators Kenya", "SDMO generators Kenya",
-    "MTU generators Kenya", "Volvo generators Kenya", "John Deere generators Kenya",
-    "Doosan generators Kenya", "Mitsubishi generators Kenya", "Yanmar generators Kenya",
-    "Kipor generators Kenya", "Lister Petter generators Kenya", "Deutz generators Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // ❓ QUESTION-BASED KEYWORDS - Featured Snippets Target
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "where to buy generator in Nairobi", "best generator for home Kenya",
-    "generator size calculator Kenya", "how much is a generator in Kenya",
-    "what size generator do I need Kenya", "how to choose a generator Kenya",
-    "which generator brand is best in Kenya", "how to maintain generator Kenya",
-    "why is my generator not starting", "when to service generator Kenya",
-    "how often to service generator", "how long does generator last",
-    "how to reduce generator fuel consumption", "how to connect generator to house",
-    "what is the best solar company in Kenya", "how much does solar installation cost Kenya",
-    "how many solar panels do I need Kenya", "is solar worth it in Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 📍 "NEAR ME" KEYWORDS - Local Intent
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "generator company near me", "generator repair near me", "generator shop near me",
-    "generator parts near me", "solar installation near me", "UPS supplier near me",
-    "generator service near me", "generator rental near me", "motor rewinding near me",
-    "generator mechanic near me", "power backup near me", "electrical contractor near me",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🔥 LONG-TAIL COMMERCIAL KEYWORDS
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "solar vs generator Kenya", "hybrid solar generator Kenya",
-    "generator fuel consumption calculator", "generator load calculation Kenya",
-    "automatic transfer switch Kenya", "ATS panel Kenya", "changeover switch Kenya",
-    "generator synchronization Kenya", "parallel generator operation Kenya",
-    "generator load bank testing Kenya", "generator commissioning Kenya",
-    "power factor correction Kenya", "harmonic filter Kenya", "voltage stabilizer Kenya",
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // 🌍 EAST AFRICA REGIONAL KEYWORDS
-    // ═══════════════════════════════════════════════════════════════════════════════
-    "generator companies East Africa", "generator supplier Tanzania", "generator Uganda",
-    "generator Rwanda", "power solutions East Africa", "solar company East Africa",
-    "industrial generators Africa", "power backup solutions Africa"
-  ],
+  // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
+  // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],
   creator: "EmersonEIMS",
   publisher: "EmersonEIMS - Energy Infrastructure Management Solutions",
@@ -546,14 +372,31 @@ export default async function RootLayout({
         {/* CRITICAL: Inline Critical CSS for instant render */}
         <style dangerouslySetInnerHTML={{ __html: `
           /* Critical Above-the-fold CSS - Eliminates render blocking */
-          *{box-sizing:border-box}body{margin:0;-webkit-font-smoothing:antialiased}
+          *{box-sizing:border-box;margin:0;padding:0}
+          html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+          body{margin:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+          /* Skeleton Loading - Instant perceived performance */
           .loading-skeleton{background:linear-gradient(90deg,#1a1a2e 25%,#16213e 50%,#1a1a2e 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
           @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-          .lazy-image{opacity:0;transition:opacity .3s}.lazy-image.loaded{opacity:1}
-          /* Prevent CLS - Reserve space for images */
-          img{height:auto;max-width:100%}
-          /* Fast font loading */
-          @font-face{font-family:Inter;font-style:normal;font-weight:400 700;font-display:swap;src:local('Inter')}
+          /* Lazy Image Loading - Smooth fade in */
+          .lazy-image{opacity:0;transition:opacity .3s ease-in-out}.lazy-image.loaded{opacity:1}
+          /* Prevent CLS - Reserve space for images and media */
+          img,video,iframe{height:auto;max-width:100%;display:block}
+          img{content-visibility:auto}
+          /* Fast font loading with fallback */
+          @font-face{font-family:Inter;font-style:normal;font-weight:400 700;font-display:swap;src:local('Inter'),local('Inter-Regular')}
+          /* Navigation skeleton for instant render */
+          nav{min-height:64px}
+          /* Hero section skeleton */
+          main>section:first-child{min-height:100vh}
+          /* Button focus states for accessibility */
+          button:focus-visible,a:focus-visible{outline:2px solid #0EA5E9;outline-offset:2px}
+          /* Reduce motion for users who prefer it */
+          @media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+          /* GPU acceleration for animations */
+          .animate{will-change:transform,opacity;transform:translateZ(0)}
+          /* Hide content until JS loads */
+          .js-loading{visibility:hidden}.js-loaded{visibility:visible}
         ` }} />
 
         {/* CRITICAL: DNS Prefetch - Resolve domains 100ms+ faster */}
@@ -563,11 +406,14 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://cdn.vercel-insights.com" />
+        <link rel="dns-prefetch" href="https://vercel.live" />
+        <link rel="dns-prefetch" href="https://api.anthropic.com" />
 
         {/* CRITICAL: Preconnect - Establish TCP/TLS 200ms+ faster */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://vitals.vercel-insights.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
 
         {/* HIGHEST PRIORITY: Preload critical resources */}
         <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" fetchPriority="high" />

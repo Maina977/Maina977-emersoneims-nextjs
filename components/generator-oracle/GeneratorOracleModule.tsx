@@ -25,6 +25,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import {
   getAllFaultCodes,
   searchFaultCodes,
@@ -50,51 +51,58 @@ import {
   saveFeedback,
   type DiagnosisHistoryEntry,
 } from '@/lib/generator-oracle/indexedDBService';
+
+// ==================== CRITICAL COMPONENTS (Load immediately) ====================
 import LicenseGate from './LicenseGate';
 import InstallPrompt from './InstallPrompt';
-import EnginePanel from './panels/EnginePanel';
-import ElectricalPanel from './panels/ElectricalPanel';
-import FaultDiagnosticsPanel from './panels/FaultDiagnosticsPanel';
-import TechnicianAssistantPanel from './panels/TechnicianAssistantPanel';
-import AdvancedDiagnosticsPanel from './panels/AdvancedDiagnosticsPanel';
-import WiringDiagramsPanel from './panels/WiringDiagramsPanel';
+import { DisclaimerAcknowledgment, FooterDisclaimer, DisclaimerBanner } from './DisclaimerBanner';
 import ControllerSimulator, { CONTROLLER_TYPES } from './ControllerSimulator';
 import DetailedFaultDisplay, { DETAILED_FAULT_CODES } from './DetailedFaultDisplay';
 import { AnalogClock, AnalogCalendar } from '@/components/ui/AnalogWidgets';
-import AllControllerWiringDiagrams from './AllControllerWiringDiagrams';
-import TechnicianInputDiagnostics from './TechnicianInputDiagnostics';
-// New Advanced Panels
-import RealTimeMonitoringPanel from './panels/RealTimeMonitoringPanel';
-import OBDProtocolPanel from './panels/OBDProtocolPanel';
-import RemoteConnectivityPanel from './panels/RemoteConnectivityPanel';
-import PredictiveMaintenancePanel from './panels/PredictiveMaintenancePanel';
-import DataRecordingPanel from './panels/DataRecordingPanel';
-import ControllerRepairManualsPanel from './panels/ControllerRepairManualsPanel';
-import SensorDiagnosticsPanel from './panels/SensorDiagnosticsPanel';
-import ECMDiagnosticsPanel from './panels/ECMDiagnosticsPanel';
-import AIAnalysisPanel from './panels/AIAnalysisPanel';
-import UnifiedDiagnosticsPanel from './panels/UnifiedDiagnosticsPanel';
-import ECMProgrammingPanel from './panels/ECMProgrammingPanel';
-import CANbusMonitorPanel from './panels/CANbusMonitorPanel';
-import FleetDashboardPanel from './panels/FleetDashboardPanel';
-import CompleteDiagnosticPanel from './panels/CompleteDiagnosticPanel';
-import ECMReprogrammingGuidePanel from './panels/ECMReprogrammingGuidePanel';
-import ExpertAIChatPanel from './panels/ExpertAIChatPanel';
-import UniversalDiagnosticPanel from './panels/UniversalDiagnosticPanel';
-import ODIDashboardPanel from './panels/ODIDashboardPanel';
 import SpeechController from './SpeechController';
-import SubscriptionManager from './SubscriptionManager';
 import BackToCommand from './BackToCommand';
-// Phase 4: Professional PDF Reports
-import ReportBuilder from './ReportBuilder';
-// Phase 5: AI Visual Diagnostic (Camera + AI Analysis)
-import AIVisualDiagnostic from './AIVisualDiagnostic';
-// Phase 6: Parts Ordering
-import PartsOrderPanel from './PartsOrderPanel';
-// Phase 7: GPS/Location
-import LocationCapture from './LocationCapture';
-// Phase 8: Push Notifications
-import NotificationSettings from './NotificationSettings';
+
+// ==================== DYNAMIC IMPORTS (Load on demand - saves ~500KB initial bundle) ====================
+// Panel components - loaded only when user navigates to them
+const EnginePanel = dynamic(() => import('./panels/EnginePanel'), { ssr: false });
+const ElectricalPanel = dynamic(() => import('./panels/ElectricalPanel'), { ssr: false });
+const FaultDiagnosticsPanel = dynamic(() => import('./panels/FaultDiagnosticsPanel'), { ssr: false });
+const TechnicianAssistantPanel = dynamic(() => import('./panels/TechnicianAssistantPanel'), { ssr: false });
+const AdvancedDiagnosticsPanel = dynamic(() => import('./panels/AdvancedDiagnosticsPanel'), { ssr: false });
+const WiringDiagramsPanel = dynamic(() => import('./panels/WiringDiagramsPanel'), { ssr: false });
+const AllControllerWiringDiagrams = dynamic(() => import('./AllControllerWiringDiagrams'), { ssr: false });
+const TechnicianInputDiagnostics = dynamic(() => import('./TechnicianInputDiagnostics'), { ssr: false });
+
+// Advanced Panels - loaded on demand
+const RealTimeMonitoringPanel = dynamic(() => import('./panels/RealTimeMonitoringPanel'), { ssr: false });
+const OBDProtocolPanel = dynamic(() => import('./panels/OBDProtocolPanel'), { ssr: false });
+const RemoteConnectivityPanel = dynamic(() => import('./panels/RemoteConnectivityPanel'), { ssr: false });
+const PredictiveMaintenancePanel = dynamic(() => import('./panels/PredictiveMaintenancePanel'), { ssr: false });
+const DataRecordingPanel = dynamic(() => import('./panels/DataRecordingPanel'), { ssr: false });
+const ControllerRepairManualsPanel = dynamic(() => import('./panels/ControllerRepairManualsPanel'), { ssr: false });
+const SensorDiagnosticsPanel = dynamic(() => import('./panels/SensorDiagnosticsPanel'), { ssr: false });
+const ECMDiagnosticsPanel = dynamic(() => import('./panels/ECMDiagnosticsPanel'), { ssr: false });
+const AIAnalysisPanel = dynamic(() => import('./panels/AIAnalysisPanel'), { ssr: false });
+const UnifiedDiagnosticsPanel = dynamic(() => import('./panels/UnifiedDiagnosticsPanel'), { ssr: false });
+const ECMProgrammingPanel = dynamic(() => import('./panels/ECMProgrammingPanel'), { ssr: false });
+const CANbusMonitorPanel = dynamic(() => import('./panels/CANbusMonitorPanel'), { ssr: false });
+const FleetDashboardPanel = dynamic(() => import('./panels/FleetDashboardPanel'), { ssr: false });
+const CompleteDiagnosticPanel = dynamic(() => import('./panels/CompleteDiagnosticPanel'), { ssr: false });
+const ECMReprogrammingGuidePanel = dynamic(() => import('./panels/ECMReprogrammingGuidePanel'), { ssr: false });
+const ExpertAIChatPanel = dynamic(() => import('./panels/ExpertAIChatPanel'), { ssr: false });
+const UniversalDiagnosticPanel = dynamic(() => import('./panels/UniversalDiagnosticPanel'), { ssr: false });
+const ODIDashboardPanel = dynamic(() => import('./panels/ODIDashboardPanel'), { ssr: false });
+
+// Feature panels - loaded on demand
+const SubscriptionManager = dynamic(() => import('./SubscriptionManager'), { ssr: false });
+const ReportBuilder = dynamic(() => import('./ReportBuilder'), { ssr: false });
+const AIVisualDiagnostic = dynamic(() => import('./AIVisualDiagnostic'), { ssr: false });
+const PartsOrderPanel = dynamic(() => import('./PartsOrderPanel'), { ssr: false });
+const LocationCapture = dynamic(() => import('./LocationCapture'), { ssr: false });
+const NotificationSettings = dynamic(() => import('./NotificationSettings'), { ssr: false });
+
+// Educational content panel
+const PossibleCausesPanel = dynamic(() => import('./PossibleCausesPanel'), { ssr: false });
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -173,198 +181,66 @@ function HexagonalGrid() {
   );
 }
 
-// ==================== ULTRA-PREMIUM COCKPIT BACKGROUND ====================
+// ==================== OPTIMIZED COCKPIT BACKGROUND ====================
+// Performance optimized: Uses CSS animations, reduced particles, respects prefers-reduced-motion
 function UltraCockpitBackground() {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#020205]">
-      {/* Deep space gradient with multiple layers */}
+      {/* Static gradients - no animation, pure CSS */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0d14] via-[#030306] to-[#000002]" />
       <div className="absolute inset-0 bg-gradient-to-r from-cyan-950/5 via-transparent to-purple-950/5" />
 
-      {/* Hexagonal grid overlay */}
+      {/* Hexagonal grid overlay - static SVG, no JS */}
       <HexagonalGrid />
 
-      {/* Animated holographic grid */}
-      <motion.div
-        className="absolute inset-0 opacity-[0.02]"
-        animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
-        transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(6,182,212,0.4) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(6,182,212,0.4) 1px, transparent 1px)
-          `,
-          backgroundSize: '100px 100px',
-        }}
-      />
-
-      {/* Multiple radial glows - Aurora effect */}
+      {/* Static radial glows - no animation */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(6,182,212,0.12),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_100%_50%,rgba(245,158,11,0.08),transparent_45%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_0%_50%,rgba(139,92,246,0.08),transparent_45%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(34,197,94,0.06),transparent_50%)]" />
-      <motion.div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_30%,rgba(6,182,212,0.1),transparent_40%)]"
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+
+      {/* Single CSS-animated scan line - respects reduced motion */}
+      <div
+        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent motion-reduce:hidden"
+        style={{
+          animation: 'scanLine 10s linear infinite',
+          boxShadow: '0 0 20px 5px rgba(6,182,212,0.2)'
+        }}
       />
 
-      {/* Primary scanning beam - horizontal */}
-      <motion.div
-        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent"
-        animate={{ top: ['-5%', '105%'] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-        style={{ boxShadow: '0 0 40px 15px rgba(6,182,212,0.3), 0 0 80px 30px rgba(6,182,212,0.15)' }}
-      />
+      {/* Static corner accents - no animation */}
+      <div className="absolute top-4 left-4 w-20 h-20 border-t-2 border-l-2 border-cyan-500/20 rounded-tl-lg" />
+      <div className="absolute top-4 right-4 w-20 h-20 border-t-2 border-r-2 border-cyan-500/20 rounded-tr-lg" />
+      <div className="absolute bottom-4 left-4 w-20 h-20 border-b-2 border-l-2 border-cyan-500/20 rounded-bl-lg" />
+      <div className="absolute bottom-4 right-4 w-20 h-20 border-b-2 border-r-2 border-cyan-500/20 rounded-br-lg" />
 
-      {/* Secondary scanning beam - slower */}
-      <motion.div
-        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent"
-        animate={{ top: ['105%', '-5%'] }}
-        transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-        style={{ boxShadow: '0 0 30px 10px rgba(245,158,11,0.2)' }}
-      />
-
-      {/* Vertical scanning beam */}
-      <motion.div
-        className="absolute top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-purple-400/30 to-transparent"
-        animate={{ left: ['-5%', '105%'] }}
-        transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-        style={{ boxShadow: '0 0 20px 8px rgba(139,92,246,0.2)' }}
-      />
-
-      {/* Premium corner HUD brackets */}
-      {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner) => (
+      {/* Minimal particles - reduced from 60 to 8 for performance */}
+      {[...Array(8)].map((_, i) => (
         <div
-          key={corner}
-          className={`absolute ${
-            corner === 'top-left' ? 'top-4 left-4' :
-            corner === 'top-right' ? 'top-4 right-4' :
-            corner === 'bottom-left' ? 'bottom-4 left-4' :
-            'bottom-4 right-4'
-          }`}
-        >
-          <svg
-            className={`w-40 h-40 text-cyan-500/20 ${
-              corner === 'top-right' ? 'rotate-90' :
-              corner === 'bottom-left' ? '-rotate-90' :
-              corner === 'bottom-right' ? 'rotate-180' : ''
-            }`}
-          >
-            <motion.path
-              d="M0 80 L0 0 L80 0"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 2, delay: 0.5 }}
-            />
-            <motion.path
-              d="M0 100 L0 0 L100 0"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              opacity="0.3"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 2, delay: 0.8 }}
-            />
-            <motion.circle
-              cx="15" cy="15" r="4"
-              fill="currentColor"
-              opacity="0.6"
-              animate={{ opacity: [0.3, 0.8, 0.3] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <motion.circle
-              cx="35" cy="5" r="2"
-              fill="currentColor"
-              opacity="0.4"
-              animate={{ opacity: [0.2, 0.6, 0.2] }}
-              transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
-            />
-            <motion.circle
-              cx="5" cy="35" r="2"
-              fill="currentColor"
-              opacity="0.4"
-              animate={{ opacity: [0.2, 0.6, 0.2] }}
-              transition={{ duration: 1.5, repeat: Infinity, delay: 1 }}
-            />
-          </svg>
-        </div>
-      ))}
-
-      {/* Floating holographic particles */}
-      {[...Array(60)].map((_, i) => (
-        <motion.div
           key={i}
-          className={`absolute rounded-full ${
-            i % 3 === 0 ? 'w-1 h-1 bg-cyan-400/50' :
-            i % 3 === 1 ? 'w-0.5 h-0.5 bg-amber-400/40' :
-            'w-0.5 h-0.5 bg-purple-400/40'
-          }`}
+          className="absolute w-1 h-1 rounded-full bg-cyan-400/30 motion-reduce:hidden"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            opacity: [0, 0.8, 0],
-            y: [0, -40, -80],
-            x: [0, (Math.random() - 0.5) * 20],
-            scale: [0, 1.2, 0],
-          }}
-          transition={{
-            duration: 4 + Math.random() * 6,
-            repeat: Infinity,
-            delay: Math.random() * 8,
-            ease: 'easeOut',
+            left: `${10 + i * 12}%`,
+            top: `${20 + (i % 3) * 25}%`,
+            animation: `float ${6 + i}s ease-in-out infinite`,
+            animationDelay: `${i * 0.5}s`
           }}
         />
       ))}
 
-      {/* Holographic data streams */}
-      {[...Array(5)].map((_, i) => (
-        <motion.div
-          key={`stream-${i}`}
-          className="absolute h-px bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent"
-          style={{
-            top: `${20 + i * 15}%`,
-            left: 0,
-            right: 0,
-          }}
-          animate={{
-            opacity: [0, 0.5, 0],
-            scaleX: [0, 1, 0],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            delay: i * 0.8,
-          }}
-        />
-      ))}
-
-      {/* Ambient pulse rings */}
-      {[...Array(4)].map((_, i) => (
-        <motion.div
-          key={`ring-${i}`}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-cyan-500/5 rounded-full pointer-events-none"
-          style={{
-            width: `${30 + i * 20}%`,
-            height: `${30 + i * 20}%`,
-          }}
-          animate={{
-            opacity: [0.03, 0.08, 0.03],
-            scale: [1, 1.02, 1],
-          }}
-          transition={{
-            duration: 5 + i * 1.5,
-            repeat: Infinity,
-            delay: i * 0.7,
-          }}
-        />
-      ))}
+      {/* CSS keyframes injected via style tag */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes scanLine {
+          0% { top: -5%; }
+          100% { top: 105%; }
+        }
+        @keyframes float {
+          0%, 100% { opacity: 0.2; transform: translateY(0); }
+          50% { opacity: 0.5; transform: translateY(-20px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .motion-reduce\\:hidden { display: none !important; }
+        }
+      `}} />
     </div>
   );
 }
@@ -1167,6 +1043,14 @@ export default function GeneratorOracleModule() {
   const [totalCodes, setTotalCodes] = useState(0);
   const [diagnosisHistory, setDiagnosisHistory] = useState<DiagnosisHistoryEntry[]>([]);
 
+  // Legal Disclaimer Acknowledgment - Check localStorage on init
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('oracle_disclaimer_accepted') === 'true';
+    }
+    return false;
+  });
+
   // AI Diagnostics state
   const [aiActive, setAiActive] = useState(true);
   const [aiConfidence, setAiConfidence] = useState(94);
@@ -1317,6 +1201,11 @@ export default function GeneratorOracleModule() {
 
   return (
     <LicenseGate>
+      {/* Legal Disclaimer Acknowledgment - Required before using the tool */}
+      {!disclaimerAccepted && (
+        <DisclaimerAcknowledgment onAccept={() => setDisclaimerAccepted(true)} />
+      )}
+
       <div className={`text-white ${isRTL ? 'rtl' : 'ltr'}`} style={{ minHeight: '100vh' }}>
         <UltraCockpitBackground />
         <InstallPrompt />
@@ -2664,6 +2553,9 @@ export default function GeneratorOracleModule() {
 
         {/* Voice Assistant - Accessibility Feature */}
         <SpeechController language={language} />
+
+        {/* Legal Footer Disclaimer - Always visible */}
+        <FooterDisclaimer />
       </div>
     </LicenseGate>
   );

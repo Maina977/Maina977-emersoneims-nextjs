@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
+import { getAllLocations, SERVICES } from '@/lib/seo/kenyaLocations';
 
 // Force dynamic generation - bypass edge cache completely
 export const dynamic = 'force-dynamic';
@@ -605,8 +606,44 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════════
+  // NEW LOCATIONS PAGES - Hyper-Local SEO (~30,000+ Pages)
+  // /locations/[location] + /locations/[location]/[service]
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const newLocationPages: MetadataRoute.Sitemap = [];
+  const allNewLocations = getAllLocations();
+
+  // Locations index page
+  newLocationPages.push({
+    url: `${baseUrl}/locations`,
+    lastModified: currentDate,
+    changeFrequency: 'weekly',
+    priority: 0.9,
+  });
+
+  // Generate pages for each location (counties, constituencies, towns)
+  for (const location of allNewLocations) {
+    // Location landing page
+    newLocationPages.push({
+      url: `${baseUrl}/locations/${location.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: location.type === 'county' ? 0.85 : 0.75,
+    });
+
+    // Location + Service pages
+    for (const service of SERVICES) {
+      newLocationPages.push({
+        url: `${baseUrl}/locations/${location.slug}/${service.slug}`,
+        lastModified: currentDate,
+        changeFrequency: 'monthly',
+        priority: location.type === 'county' ? 0.8 : 0.7,
+      });
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════
   // COMBINE ALL PAGES FOR COMPREHENSIVE SITEMAP
-  // Total: 7,000+ High-Quality URLs
+  // Total: 30,000+ High-Quality URLs for SEO Dominance
   // ═══════════════════════════════════════════════════════════════════════════════
   return [
     ...mainPages,
@@ -625,5 +662,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...industryPages,
     ...sparePartsPages,
     ...kenyaLocationPages,
+    ...newLocationPages,
   ];
 }
