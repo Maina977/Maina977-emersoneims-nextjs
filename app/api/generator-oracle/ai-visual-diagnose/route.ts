@@ -173,7 +173,7 @@ Provide your response in the JSON format specified in the system prompt.`;
 
     // Call Claude Vision API
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-6',
       max_tokens: 8192,
       system: DIAGNOSTIC_SYSTEM_PROMPT,
       messages: [
@@ -259,13 +259,13 @@ Provide your response in the JSON format specified in the system prompt.`;
     // Provide specific error information
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // Return error info along with fallback mock
+    // Return proper error status with fallback content for graceful degradation
     return NextResponse.json({
-      success: true,
+      success: false,
       demoMode: true,
       error: `AI analysis failed: ${errorMessage}. Showing sample analysis.`,
-      result: getMockAnalysis(),
-    });
+      fallbackResult: getMockAnalysis(),
+    }, { status: 503 }); // Service temporarily unavailable
   }
 }
 

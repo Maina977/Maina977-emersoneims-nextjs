@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import {
   createPaymentRequest,
   verifyPayment,
@@ -7,6 +8,36 @@ import {
   getAllPayments,
   initOracleTables,
 } from '@/lib/generator-oracle/db';
+
+/**
+ * Verify admin authorization using timing-safe comparison
+ */
+function verifyAdminAuth(request: NextRequest): boolean {
+  const adminKey = process.env.ADMIN_API_KEY;
+  if (!adminKey) {
+    return process.env.NODE_ENV !== 'production'; // Allow in dev if not configured
+  }
+
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return false;
+  }
+
+  const providedKey = authHeader.slice(7).trim();
+  if (!providedKey) {
+    return false;
+  }
+
+  // Timing-safe comparison to prevent timing attacks
+  const providedBuf = Buffer.from(providedKey, 'utf8');
+  const adminBuf = Buffer.from(adminKey, 'utf8');
+
+  if (providedBuf.length !== adminBuf.length) {
+    return false;
+  }
+
+  return timingSafeEqual(providedBuf, adminBuf);
+}
 
 /**
  * Payment Verification API Endpoint
@@ -175,9 +206,7 @@ export async function POST(request: NextRequest) {
  * Admin endpoint - Get pending payments
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-
-  if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
+  if (!verifyAdminAuth(request)) {
     return NextResponse.json(
       { success: false, error: 'Unauthorized' },
       { status: 401 }
@@ -219,9 +248,7 @@ export async function GET(request: NextRequest) {
  * - reason?: string (for rejection)
  */
 export async function PUT(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-
-  if (authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
+  if (!verifyAdminAuth(request)) {
     return NextResponse.json(
       { success: false, error: 'Unauthorized' },
       { status: 401 }

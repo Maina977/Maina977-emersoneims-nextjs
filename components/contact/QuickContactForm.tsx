@@ -58,11 +58,17 @@ export default function QuickContactForm() {
   };
 
   return (
-    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4" noValidate>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form
+      onSubmit={onSubmit}
+      className="grid grid-cols-1 gap-4"
+      noValidate
+      aria-describedby={status === 'error' ? 'qc-error' : status === 'sent' ? 'qc-success' : undefined}
+    >
+      <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <legend className="sr-only">Contact Information</legend>
         <div>
           <label className="block text-xs tracking-[0.2em] uppercase text-white/60" htmlFor="qc-name">
-            Name
+            Name <span aria-hidden="true">*</span>
           </label>
           <input
             id="qc-name"
@@ -73,73 +79,85 @@ export default function QuickContactForm() {
             autoComplete="name"
             inputMode="text"
             required
+            aria-required="true"
+            aria-invalid={status === 'error' ? 'true' : undefined}
           />
         </div>
         <div>
           <label className="block text-xs tracking-[0.2em] uppercase text-white/60" htmlFor="qc-contact">
-            Phone or Email
+            Phone or Email <span aria-hidden="true">*</span>
           </label>
           <input
             id="qc-contact"
             value={form.contact}
             onChange={(e) => setForm((s) => ({ ...s, contact: e.target.value }))}
             className="mt-2 w-full rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[var(--brand-gold)]"
-            placeholder="+254… or name@email.com"
+            placeholder="+254 or name@email.com"
             autoComplete="tel"
             inputMode="text"
             required
+            aria-required="true"
+            aria-invalid={status === 'error' ? 'true' : undefined}
           />
         </div>
-      </div>
+      </fieldset>
 
       <div>
         <label className="block text-xs tracking-[0.2em] uppercase text-white/60" htmlFor="qc-message">
-          Message
+          Message <span aria-hidden="true">*</span>
         </label>
         <textarea
           id="qc-message"
           value={form.message}
           onChange={(e) => setForm((s) => ({ ...s, message: e.target.value }))}
           className="mt-2 w-full rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[var(--brand-gold)]"
-          placeholder="Site location, load size, timeline… (10+ characters)"
+          placeholder="Site location, load size, timeline (10+ characters)"
           rows={5}
           required
+          aria-required="true"
+          aria-invalid={status === 'error' ? 'true' : undefined}
+          aria-describedby="qc-message-hint"
         />
-        <p className="mt-2 text-xs text-white/50">
-          Keep it short — we’ll reply with the next steps.
+        <p id="qc-message-hint" className="mt-2 text-xs text-white/50">
+          Keep it short - we will reply with the next steps.
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center" role="group" aria-label="Submit options">
         <button
           type="submit"
           disabled={!canSubmit || status === 'sending'}
           className="inline-flex items-center justify-center rounded-xl bg-white text-black px-5 py-3 text-sm font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/90 transition"
+          aria-busy={status === 'sending'}
         >
-          {status === 'sending' ? 'Sending…' : 'Send Request'}
+          {status === 'sending' ? 'Sending...' : 'Send Request'}
         </button>
         <a
           href={whatsappHref}
           className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-transparent text-white px-5 py-3 text-sm font-semibold tracking-wide hover:bg-white/10 transition"
+          aria-label="Contact our technical team via WhatsApp"
         >
           WhatsApp Technical Team
         </a>
         <a
           href={mailtoHref}
           className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-transparent text-white px-5 py-3 text-sm font-semibold tracking-wide hover:bg-white/10 transition"
+          aria-label="Send us an email"
         >
           Email
         </a>
       </div>
 
       {status === 'sent' && (
-        <p className="text-sm text-white/80">
-          Sent. We’ll get back to you shortly.
+        <p id="qc-success" role="status" aria-live="polite" className="text-sm text-white/80">
+          <span className="sr-only">Success: </span>
+          Sent. We will get back to you shortly.
         </p>
       )}
       {status === 'error' && (
-        <p className="text-sm text-white/80">
-          Couldn’t send right now. Use WhatsApp or Email above.
+        <p id="qc-error" role="alert" aria-live="assertive" className="text-sm text-white/80">
+          <span className="sr-only">Error: </span>
+          Could not send right now. Use WhatsApp or Email above.
         </p>
       )}
     </form>

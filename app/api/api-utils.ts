@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { limiter } from '@/lib/rate-limiter';
+import { timingSafeEqual } from 'crypto';
 
 /**
  * Get client IP from request
@@ -31,27 +32,42 @@ export { getClientIP as getIP };
 
 /**
  * Check API authentication (optional)
+ * Uses timing-safe comparison to prevent timing attacks
  */
 export function checkApiAuth(request: NextRequest): { authorized: boolean; error?: string } {
   // Only check if API_KEY is set in environment
-  if (!process.env.API_KEY) {
-    // No API key required
+  const envKey = process.env.API_KEY;
+  if (!envKey) {
+    // No API key required in dev mode
     return { authorized: true };
   }
 
-  const apiKey = request.headers.get('x-api-key');
-  
+  const apiKey = request.headers.get('x-api-key')?.trim();
+
   if (!apiKey) {
-    return { 
-      authorized: false, 
-      error: 'API key required. Provide X-API-Key header.' 
+    return {
+      authorized: false,
+      error: 'API key required. Provide X-API-Key header.'
     };
   }
 
-  if (apiKey !== process.env.API_KEY) {
-    return { 
-      authorized: false, 
-      error: 'Invalid API key' 
+  // Timing-safe comparison to prevent timing attacks
+  const apiKeyBuf = Buffer.from(apiKey, 'utf8');
+  const envKeyBuf = Buffer.from(envKey, 'utf8');
+
+  // Length check first (constant time for different lengths)
+  if (apiKeyBuf.length !== envKeyBuf.length) {
+    return {
+      authorized: false,
+      error: 'Invalid API key'
+    };
+  }
+
+  // Timing-safe equality check
+  if (!timingSafeEqual(apiKeyBuf, envKeyBuf)) {
+    return {
+      authorized: false,
+      error: 'Invalid API key'
     };
   }
 
@@ -118,14 +134,27 @@ export function createUnauthorizedResponse(error: string): NextResponse {
   );
 }
 
+// Allowed origins for CORS - whitelist approach for security
+const ALLOWED_ORIGINS = [
+  'https://www.emersoneims.com',
+  'https://emersoneims.com',
+  'https://generator-oracle.vercel.app',
+  ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000', 'http://localhost:3010'] : []),
+];
+
 /**
  * Add CORS headers to response
+ * Uses whitelist approach instead of wildcard for security
  */
-export function addCorsHeaders(response: NextResponse): NextResponse {
-  response.headers.set('Access-Control-Allow-Origin', '*');
+export function addCorsHeaders(response: NextResponse, origin?: string | null): NextResponse {
+  // Only allow whitelisted origins
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
+  response.headers.set('Access-Control-Allow-Origin', allowedOrigin);
   response.headers.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
   response.headers.set('Access-Control-Max-Age', '86400'); // 24 hours
+  response.headers.set('Vary', 'Origin');
   return response;
 }
 

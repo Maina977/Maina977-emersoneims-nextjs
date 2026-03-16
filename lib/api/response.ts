@@ -46,10 +46,22 @@ export function createUnauthorizedResponse(error: string): NextResponse {
   return createErrorResponse(401, error);
 }
 
-export function addCorsHeaders(response: NextResponse): NextResponse {
-  response.headers.set('Access-Control-Allow-Origin', '*');
+// Allowed origins for CORS - whitelist approach for security
+const ALLOWED_ORIGINS = [
+  'https://www.emersoneims.com',
+  'https://emersoneims.com',
+  'https://generator-oracle.vercel.app',
+  ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000', 'http://localhost:3010'] : []),
+];
+
+export function addCorsHeaders(response: NextResponse, origin?: string | null): NextResponse {
+  // Only allow whitelisted origins
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
+  response.headers.set('Access-Control-Allow-Origin', allowedOrigin);
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
   response.headers.set('Access-Control-Max-Age', '86400');
+  response.headers.set('Vary', 'Origin');
   return response;
 }

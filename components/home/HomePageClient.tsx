@@ -103,13 +103,15 @@ export default function HomePageClient() {
       {/* Hero with animations */}
       <HeroSection />
 
-      {/* Lazy loaded sections */}
-      <TestimonialsSection />
-      <CaseStudiesSection />
-      <DiagnosticModuleShowcase />
+      {/* GENERATOR ORACLE - Lead Generation Tool (Moved Up for Prominence) */}
       <GeneratorOracleShowcase />
+
+      {/* Lazy loaded sections */}
       <PremiumServicesShowcase />
       <TrustBadgesSection />
+      <CaseStudiesSection />
+      <TestimonialsSection />
+      <DiagnosticModuleShowcase />
       <IndustryLeadingTrust />
       <LiveOperationsDashboard />
       <CompetitiveAdvantage />

@@ -107,37 +107,44 @@ export default function CTAForm() {
         <h3 className="text-2xl font-bold text-white mb-2">Get Expert Consultation</h3>
         <p className="text-gray-400 mb-8">Fill in your details and our team will contact you within 2 hours.</p>
         
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate aria-describedby={error ? 'form-error' : undefined}>
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-white/80 mb-2">
-          Full Name *
+          Full Name <span aria-hidden="true">*</span>
         </label>
         <input
           type="text"
           id="name"
           name="name"
           required
+          aria-required="true"
+          aria-invalid={error ? 'true' : undefined}
           placeholder="John Doe"
           value={formData.name}
           onChange={handleChange}
           className={inputStyles}
+          autoComplete="name"
         />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-5">
+      <fieldset className="grid md:grid-cols-2 gap-5">
+        <legend className="sr-only">Contact Information</legend>
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-2">
-            Email *
+            Email <span aria-hidden="true">*</span>
           </label>
           <input
             type="email"
             id="email"
             name="email"
             required
+            aria-required="true"
+            aria-invalid={error ? 'true' : undefined}
             placeholder="john@company.com"
             value={formData.email}
             onChange={handleChange}
             className={inputStyles}
+            autoComplete="email"
           />
         </div>
 
@@ -153,9 +160,10 @@ export default function CTAForm() {
             value={formData.phone}
             onChange={handleChange}
             className={inputStyles}
+            autoComplete="tel"
           />
         </div>
-      </div>
+      </fieldset>
 
       <div className="grid md:grid-cols-2 gap-5">
         <div>
@@ -170,6 +178,7 @@ export default function CTAForm() {
             value={formData.company}
             onChange={handleChange}
             className={inputStyles}
+            autoComplete="organization"
           />
         </div>
 
@@ -183,6 +192,7 @@ export default function CTAForm() {
             value={formData.service}
             onChange={handleChange}
             className={inputStyles}
+            aria-label="Select the service you are interested in"
           >
             <option value="general">General Inquiry</option>
             <option value="generators">Generators</option>
@@ -198,12 +208,14 @@ export default function CTAForm() {
 
       <div>
         <label htmlFor="message" className="block text-sm font-medium text-white/80 mb-2">
-          Message *
+          Message <span aria-hidden="true">*</span>
         </label>
         <textarea
           id="message"
           name="message"
           required
+          aria-required="true"
+          aria-invalid={error ? 'true' : undefined}
           rows={4}
           placeholder="Tell us about your project requirements..."
           value={formData.message}
@@ -212,13 +224,17 @@ export default function CTAForm() {
         />
       </div>
 
-      {/* Error Message */}
+      {/* Error Message - Accessible */}
       {error && (
         <motion.div
+          id="form-error"
+          role="alert"
+          aria-live="assertive"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-sm mb-4"
         >
+          <span className="sr-only">Error: </span>
           {error}
         </motion.div>
       )}

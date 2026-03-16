@@ -259,7 +259,7 @@ RESPONSE FORMAT GUIDELINES:
 
     // Call Claude API
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-6',
       max_tokens: 4096,
       system: enhancedSystemPrompt,
       messages: messages.map((m: { role: string; content: string }) => ({
@@ -298,11 +298,12 @@ RESPONSE FORMAT GUIDELINES:
   } catch (error) {
     console.error('Expert chat API error:', error);
 
-    // Return a helpful error response
+    // Return a proper error response with fallback content
     return NextResponse.json(
       {
+        success: false,
         error: 'Failed to process request',
-        content: `I'm experiencing a temporary connection issue. While I reconnect, here are some general troubleshooting tips:
+        fallbackContent: `I'm experiencing a temporary connection issue. While I reconnect, here are some general troubleshooting tips:
 
 **For Starting Issues:**
 1. Check battery voltage (should be >12.4V for 12V systems)
@@ -325,7 +326,7 @@ RESPONSE FORMAT GUIDELINES:
 Please try your question again or use the other diagnostic panels for detailed guidance.`,
         metadata: {},
       },
-      { status: 200 } // Return 200 with fallback content
+      { status: 503 } // Service temporarily unavailable
     );
   }
 }

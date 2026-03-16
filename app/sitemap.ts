@@ -426,6 +426,57 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // ═══════════════════════════════════════════════════════════════════════════════
+  // GENERATOR ORACLE - Premium Diagnostic Tool
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const generatorOraclePages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/generator-oracle`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/generator-oracle/tools`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/generator-oracle/purchase`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // GENERATOR PROBLEMS - SEO Landing Pages for Common Issues
+  // Targets high-intent searches: "generator won't start", "generator overheating"
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const generatorProblems = [
+    'wont-start',
+    'overheating',
+    'low-oil-pressure',
+    'voltage-frequency-unstable',
+    'exhaust-smoke',
+  ];
+
+  const generatorProblemPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/generator-problems`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    ...generatorProblems.map(problem => ({
+      url: `${baseUrl}/generator-problems/${problem}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    })),
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════════════
   // COUNTY PAGES - Local SEO Dominance (47 Counties)
   // ═══════════════════════════════════════════════════════════════════════════════
   const countyPages: MetadataRoute.Sitemap = [
@@ -653,6 +704,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...servicePages,
     ...blogPages,
     ...toolPages,
+    ...generatorOraclePages,
+    ...generatorProblemPages,
     ...countyPages,
     ...townPages,
     ...brandPages,

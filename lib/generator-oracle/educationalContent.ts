@@ -22,6 +22,7 @@ export interface PossibleCause {
   skillLevel: 'basic' | 'intermediate' | 'advanced';
   partsNeeded?: string[];
   safetyWarnings?: string[];
+  relatedFaultCodes?: string[];
 }
 
 export interface SymptomDiagnosis {

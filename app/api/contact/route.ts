@@ -8,10 +8,52 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getPostgresPool } from '@/lib/db';
+import { timingSafeEqual } from 'crypto';
 
 // Sales team notification settings
 const SALES_EMAIL = process.env.SALES_EMAIL || 'sales@emersoneims.com';
 const SALES_PHONE = process.env.SALES_PHONE || '+254720000000';
+
+/**
+ * Verify admin authorization for protected endpoints
+ * Uses timing-safe comparison to prevent timing attacks
+ */
+function verifyAdminAuth(request: NextRequest): { authorized: boolean; error?: string } {
+  const adminKey = process.env.ADMIN_API_KEY;
+
+  // If no admin key configured, deny all admin access in production
+  if (!adminKey) {
+    if (process.env.NODE_ENV === 'production') {
+      return { authorized: false, error: 'Admin access not configured' };
+    }
+    // Allow in development without key
+    return { authorized: true };
+  }
+
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { authorized: false, error: 'Authorization header required' };
+  }
+
+  const providedKey = authHeader.slice(7).trim();
+  if (!providedKey) {
+    return { authorized: false, error: 'API key required' };
+  }
+
+  // Timing-safe comparison
+  const providedBuf = Buffer.from(providedKey, 'utf8');
+  const adminBuf = Buffer.from(adminKey, 'utf8');
+
+  if (providedBuf.length !== adminBuf.length) {
+    return { authorized: false, error: 'Invalid API key' };
+  }
+
+  if (!timingSafeEqual(providedBuf, adminBuf)) {
+    return { authorized: false, error: 'Invalid API key' };
+  }
+
+  return { authorized: true };
+}
 
 interface ContactFormData {
   name: string;
@@ -337,14 +379,31 @@ async function sendWhatsAppNotification(data: ContactFormData): Promise<void> {
   }
 }
 
-// GET endpoint to check lead status (for admin)
+// GET endpoint to check lead status (for admin - requires authentication)
 export async function GET(request: NextRequest) {
+  // Verify admin authorization first
+  const auth = verifyAdminAuth(request);
+  if (!auth.authorized) {
+    return NextResponse.json(
+      { success: false, error: auth.error || 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const leadId = searchParams.get('id');
 
   if (!leadId) {
     return NextResponse.json(
       { success: false, error: 'Lead ID required' },
+      { status: 400 }
+    );
+  }
+
+  // Validate leadId is a number to prevent injection
+  if (!/^\d+$/.test(leadId)) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid lead ID format' },
       { status: 400 }
     );
   }
