@@ -3,7 +3,7 @@
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "regions": ["jnb1"],
+  "regions": ["iad1"],
   "functions": {
     "app/sitemap.xml/route.ts": {
       "maxDuration": 30
