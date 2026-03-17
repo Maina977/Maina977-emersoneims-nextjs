@@ -8,9 +8,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🗺️ COMPREHENSIVE SITEMAP FOR #1 SEO RANKING
-// All 47 Kenya Counties + 290 Constituencies + 15 Services + Products + Content
-// Total: ~7,000+ strategically targeted SEO pages
+// 🗺️ COMPREHENSIVE SITEMAP FOR #1 SEO RANKING IN KENYA
+// All 47 Counties + 290 Constituencies + 5,800+ Villages + 15 Services
+// Total: ~100,000+ strategically targeted SEO pages for FULL Kenya coverage
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // All 47 Kenya Counties for Local SEO Dominance
@@ -651,8 +651,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
         });
       }
 
-      // Note: Village pages are generated on-demand via ISR
-      // They're discovered through internal linking, not sitemap
+      // ═══════════════════════════════════════════════════════════════════════════
+      // VILLAGE PAGES - Full Kenya Coverage (~5,800 villages × 15 services = 87,000 pages)
+      // Added to sitemap for complete SEO indexing by Google, Bing, Yahoo
+      // ═══════════════════════════════════════════════════════════════════════════
+      for (const village of constituency.villages || []) {
+        // Village landing page
+        kenyaLocationPages.push({
+          url: `${baseUrl}/kenya/${county.slug}/${constituency.slug}/${village.slug}`,
+          lastModified: currentDate,
+          changeFrequency: 'monthly',
+          priority: 0.55,
+        });
+
+        // Village + Service pages (hyper-local targeting)
+        for (const service of SEO_SERVICES) {
+          kenyaLocationPages.push({
+            url: `${baseUrl}/kenya/${county.slug}/${constituency.slug}/${village.slug}/${service.slug}`,
+            lastModified: currentDate,
+            changeFrequency: 'monthly',
+            priority: 0.5,
+          });
+        }
+      }
     }
   }
 
@@ -694,7 +715,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // COMBINE ALL PAGES FOR COMPREHENSIVE SITEMAP
-  // Total: 30,000+ High-Quality URLs for SEO Dominance
+  // Total: 100,000+ URLs covering ALL of Kenya for #1 SEO Ranking
+  // - Core pages: ~200
+  // - /kenya/ route: ~97,000 (counties + constituencies + 5,800 villages × 15 services)
+  // - /locations/ route: ~6,700 (counties + constituencies + towns × 9 services)
+  // Note: Google supports 50,000 URLs per sitemap file. Next.js auto-generates sitemap index.
   // ═══════════════════════════════════════════════════════════════════════════════
   return [
     ...mainPages,
