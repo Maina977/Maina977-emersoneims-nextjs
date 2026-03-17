@@ -466,8 +466,8 @@ export default function GeneratorPage() {
             "offers": {
               "@type": "AggregateOffer",
               "priceCurrency": "KES",
-              "lowPrice": "350000",
-              "highPrice": "38000000",
+              "lowPrice": "850000",
+              "highPrice": "48000000",
               "availability": "https://schema.org/InStock",
               "seller": {
                 "@type": "Organization",
