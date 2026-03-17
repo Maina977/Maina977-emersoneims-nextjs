@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Generator Spare Parts Kenya | Filters, Engine Parts, Electrical | All Brands | EmersonEIMS',
-  description: 'Complete generator spare parts inventory: oil filters, fuel filters, air filters, engine parts, electrical components for Cummins, Caterpillar, Perkins, FG Wilson, Kohler, MTU generators. Genuine & OEM parts. Fast delivery across Kenya. Call +254 768 860 665.',
+  title: 'Generator Spare Parts Kenya | 2000+ Parts | M-Pesa Payment | EmersonEIMS',
+  description: 'Buy 2000+ genuine generator spare parts online in Kenya. Oil filters, fuel filters, engine parts, AVR, controllers for Cummins, Caterpillar, Perkins. Pay via M-Pesa. Same-day delivery in Nairobi. Call +254 793 573 208.',
   keywords: [
     'generator oil filter Kenya', 'generator fuel filter', 'generator air filter', 'oil filter Cummins',
     'fuel filter Perkins', 'air filter Caterpillar', 'coolant filter generator', 'hydraulic filter',
@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     'Kohler generator parts', 'MTU parts', 'Deutz parts Kenya', 'Sdmo parts',
   ],
   openGraph: {
-    title: 'Generator Spare Parts Kenya | Complete Inventory | EmersonEIMS',
-    description: 'Kenya\'s largest generator spare parts inventory. Genuine filters, engine parts, electrical components for all brands. Same-day delivery in Nairobi.',
+    title: 'Buy Generator Spare Parts Online Kenya | 2000+ Parts | M-Pesa | EmersonEIMS',
+    description: 'Shop 2000+ genuine generator spare parts online. Oil filters, fuel filters, AVR, controllers, engine parts. Pay via M-Pesa (0793573208). Same-day delivery in Nairobi.',
     type: 'website',
     url: 'https://emersoneims.com/generators/spare-parts',
     siteName: 'EmersonEIMS',
@@ -59,8 +59,8 @@ const jsonLd = {
       '@type': 'Store',
       '@id': 'https://emersoneims.com/generators/spare-parts/#store',
       name: 'EmersonEIMS Generator Parts Store',
-      description: 'Kenya\'s largest inventory of generator spare parts for Cummins, Caterpillar, Perkins, FG Wilson, and all major brands',
-      telephone: '+254768860665',
+      description: 'Kenya\'s largest inventory of 2000+ genuine generator spare parts for Cummins, Caterpillar, Perkins, FG Wilson, and all major brands. Shop online with M-Pesa payment.',
+      telephone: '+254793573208',
       address: {
         '@type': 'PostalAddress',
         streetAddress: 'Embakasi, off Airport North Road',
@@ -69,6 +69,9 @@ const jsonLd = {
       },
       areaServed: { '@type': 'Country', name: 'Kenya' },
       brand: ['Cummins', 'Caterpillar', 'Perkins', 'FG Wilson', 'Kohler', 'MTU', 'Deutz', 'Fleetguard', 'Donaldson'],
+      paymentAccepted: ['M-Pesa', 'Cash', 'Bank Transfer'],
+      currenciesAccepted: 'KES',
+      priceRange: 'KES 1,500 - KES 500,000',
     },
     {
       '@type': 'BreadcrumbList',

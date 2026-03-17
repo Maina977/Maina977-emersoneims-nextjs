@@ -1,22 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Grid, List, Zap, Sun, Settings, ShoppingCart, X } from 'lucide-react';
+import {
+  Search, Filter, Grid, List, ShoppingCart, X, Plus, Minus,
+  ChevronDown, Star, Truck, Shield, Clock, Heart, Eye,
+  ArrowUpDown, SlidersHorizontal, Package, CheckCircle, Tag
+} from 'lucide-react';
 import sparePartsDatabase from '@/app/data/spare-parts-database-COMPLETE.json';
+import MpesaCheckout from './MpesaCheckout';
 
 /**
- * 🚀 REVOLUTIONARY SPARE PARTS MODULE
+ * ENHANCED SPARE PARTS E-COMMERCE MODULE
  *
- * THE FEATURE THAT CHANGES WEBSITE HISTORY
- * - 500+ parts database with real specifications
- * - Sci-fi holographic interface
- * - AI-powered search
- * - Instant quotation system
- * - 3D card effects
- * - Neural network animations
- *
- * NO ONE HAS EVER BUILT THIS BEFORE
+ * Features:
+ * - 2000+ parts database
+ * - Amazon/Alibaba-style shopping experience
+ * - Full shopping cart with quantities
+ * - M-Pesa payment integration
+ * - Advanced filtering & sorting
+ * - Product quick view
+ * - Wishlist functionality
+ * - SEO optimized
  */
 
 interface Part {
@@ -48,6 +53,10 @@ interface Part {
   certifications?: string[];
 }
 
+interface CartItem extends Part {
+  quantity: number;
+}
+
 interface Category {
   id: string;
   name: string;
@@ -55,314 +64,572 @@ interface Category {
   description: string;
 }
 
+type SortOption = 'featured' | 'price-low' | 'price-high' | 'name-asc' | 'name-desc' | 'stock';
+
 export default function SparePartsModule() {
+  // State
   const [activeCategory, setActiveCategory] = useState<string>('generators');
+  const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedParts, setSelectedParts] = useState<Part[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [hoveredPart, setHoveredPart] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('featured');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
+  const [stockOnly, setStockOnly] = useState(false);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [quickViewPart, setQuickViewPart] = useState<Part | null>(null);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 24;
+
+  // Get category and subcategories
+  const categoryData = useMemo(() => {
+    return sparePartsDatabase.categories.find(c => c.id === activeCategory);
+  }, [activeCategory]);
 
   // Get all parts from active category
   const allParts = useMemo((): Part[] => {
-    const category = sparePartsDatabase.categories.find(c => c.id === activeCategory);
-    if (!category) return [];
+    if (!categoryData) return [];
 
     const parts: Part[] = [];
-    category.subcategories.forEach(sub => {
-      sub.parts.forEach(part => {
-        parts.push(part as Part);
-      });
+    categoryData.subcategories.forEach(sub => {
+      if (!activeSubcategory || sub.id === activeSubcategory) {
+        sub.parts.forEach(part => {
+          parts.push(part as Part);
+        });
+      }
     });
     return parts;
-  }, [activeCategory]);
+  }, [categoryData, activeSubcategory]);
 
-  // Search and filter
+  // Get unique brands
+  const availableBrands = useMemo(() => {
+    const brands = new Set<string>();
+    allParts.forEach(part => brands.add(part.brand));
+    return Array.from(brands).sort();
+  }, [allParts]);
+
+  // Filter and search parts
   const filteredParts = useMemo(() => {
-    if (!searchQuery.trim()) return allParts;
+    let filtered = [...allParts];
 
-    const query = searchQuery.toLowerCase();
-    return allParts.filter(part =>
-      part.name.toLowerCase().includes(query) ||
-      part.partNo.toLowerCase().includes(query) ||
-      part.brand.toLowerCase().includes(query) ||
-      part.tags.some(tag => tag.includes(query)) ||
-      (part.compatibility && part.compatibility.some(comp => comp.toLowerCase().includes(query)))
-    );
-  }, [allParts, searchQuery]);
-
-  // Add to cart
-  const addToCart = (part: Part) => {
-    if (!selectedParts.find(p => p.partNo === part.partNo)) {
-      setSelectedParts([...selectedParts, part]);
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(part =>
+        part.name.toLowerCase().includes(query) ||
+        part.partNo.toLowerCase().includes(query) ||
+        part.brand.toLowerCase().includes(query) ||
+        part.category.toLowerCase().includes(query) ||
+        part.tags.some(tag => tag.includes(query)) ||
+        (part.compatibility && part.compatibility.some(comp => comp.toLowerCase().includes(query)))
+      );
     }
-  };
 
-  // Remove from cart
-  const removeFromCart = (partNo: string) => {
-    setSelectedParts(selectedParts.filter(p => p.partNo !== partNo));
-  };
+    // Price filter
+    filtered = filtered.filter(part =>
+      part.pricing.retailPrice >= priceRange[0] &&
+      part.pricing.retailPrice <= priceRange[1]
+    );
 
-  // Calculate total
+    // Stock filter
+    if (stockOnly) {
+      filtered = filtered.filter(part => part.inventory.stock === 'In Stock');
+    }
+
+    // Brand filter
+    if (selectedBrands.length > 0) {
+      filtered = filtered.filter(part => selectedBrands.includes(part.brand));
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'price-low':
+        filtered.sort((a, b) => a.pricing.retailPrice - b.pricing.retailPrice);
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => b.pricing.retailPrice - a.pricing.retailPrice);
+        break;
+      case 'name-asc':
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'name-desc':
+        filtered.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'stock':
+        filtered.sort((a, b) => {
+          if (a.inventory.stock === 'In Stock' && b.inventory.stock !== 'In Stock') return -1;
+          if (a.inventory.stock !== 'In Stock' && b.inventory.stock === 'In Stock') return 1;
+          return 0;
+        });
+        break;
+      default:
+        // Featured - keep original order
+        break;
+    }
+
+    return filtered;
+  }, [allParts, searchQuery, priceRange, stockOnly, selectedBrands, sortBy]);
+
+  // Pagination
+  const paginatedParts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredParts.slice(start, end);
+  }, [filteredParts, currentPage]);
+
+  const totalPages = Math.ceil(filteredParts.length / itemsPerPage);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, priceRange, stockOnly, selectedBrands, sortBy, activeCategory, activeSubcategory]);
+
+  // Cart functions
+  const addToCart = useCallback((part: Part, qty: number = 1) => {
+    setCart(prev => {
+      const existing = prev.find(p => p.partNo === part.partNo);
+      if (existing) {
+        return prev.map(p =>
+          p.partNo === part.partNo
+            ? { ...p, quantity: p.quantity + qty }
+            : p
+        );
+      }
+      return [...prev, { ...part, quantity: qty }];
+    });
+  }, []);
+
+  const removeFromCart = useCallback((partNo: string) => {
+    setCart(prev => prev.filter(p => p.partNo !== partNo));
+  }, []);
+
+  const updateCartQuantity = useCallback((partNo: string, qty: number) => {
+    if (qty <= 0) {
+      removeFromCart(partNo);
+      return;
+    }
+    setCart(prev => prev.map(p =>
+      p.partNo === partNo ? { ...p, quantity: qty } : p
+    ));
+  }, [removeFromCart]);
+
+  const clearCart = useCallback(() => {
+    setCart([]);
+    setCartOpen(false);
+  }, []);
+
   const cartTotal = useMemo(() => {
-    return selectedParts.reduce((sum, part) => sum + part.pricing.retailPrice, 0);
-  }, [selectedParts]);
+    return cart.reduce((sum, item) => sum + (item.pricing.retailPrice * item.quantity), 0);
+  }, [cart]);
+
+  const cartItemCount = useMemo(() => {
+    return cart.reduce((sum, item) => sum + item.quantity, 0);
+  }, [cart]);
+
+  // Wishlist functions
+  const toggleWishlist = useCallback((partNo: string) => {
+    setWishlist(prev =>
+      prev.includes(partNo)
+        ? prev.filter(p => p !== partNo)
+        : [...prev, partNo]
+    );
+  }, []);
+
+  const isInWishlist = useCallback((partNo: string) => {
+    return wishlist.includes(partNo);
+  }, [wishlist]);
+
+  const isInCart = useCallback((partNo: string) => {
+    return cart.some(p => p.partNo === partNo);
+  }, [cart]);
 
   return (
     <div className="relative min-h-screen bg-black">
-      {/* ═══════════════════════════════════════════════════════════════════
-          NEURAL NETWORK BACKGROUND - Animated Grid
-      ════════════════════════════════════════════════════════════════ */}
-      <div className="fixed inset-0 opacity-10 pointer-events-none">
+      {/* Background Grid */}
+      <div className="fixed inset-0 opacity-5 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,217,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,217,255,0.1)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        <motion.div
-          className="absolute inset-0 bg-gradient-radial from-cyan-500/20 via-transparent to-transparent"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
-        {/* ═══════════════════════════════════════════════════════════════════
-            HOLOGRAPHIC HEADER
-        ════════════════════════════════════════════════════════════════ */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <motion.h1
-            className="text-5xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent"
-            animate={{
-              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-            style={{ backgroundSize: '200% 200%' }}
-          >
-            Spare Parts Universe
-          </motion.h1>
-          <p className="text-xl text-cyan-300 font-light">
-            {sparePartsDatabase.totalParts}+ Parts • Real-Time Inventory • Instant Quotes
-          </p>
-        </motion.div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 py-8">
+        {/* Header Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center">
+            <Package className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-white">{sparePartsDatabase.totalParts}+</p>
+            <p className="text-gray-400 text-sm">Parts Available</p>
+          </div>
+          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center">
+            <Truck className="w-6 h-6 text-green-400 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-white">Same Day</p>
+            <p className="text-gray-400 text-sm">Delivery in Nairobi</p>
+          </div>
+          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center">
+            <Shield className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-white">Genuine</p>
+            <p className="text-gray-400 text-sm">OEM Parts</p>
+          </div>
+          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center">
+            <Tag className="w-6 h-6 text-orange-400 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-white">M-Pesa</p>
+            <p className="text-gray-400 text-sm">Secure Payment</p>
+          </div>
+        </div>
 
-        {/* ═══════════════════════════════════════════════════════════════════
-            CATEGORY SELECTOR - Morphing Tabs
-        ════════════════════════════════════════════════════════════════ */}
-        <div className="flex justify-center gap-4 mb-12 flex-wrap">
+        {/* Category Tabs */}
+        <div className="flex justify-center gap-3 mb-8 flex-wrap">
           {sparePartsDatabase.categories.map((category) => (
             <motion.button
               key={category.id}
-              onClick={() => setActiveCategory(category.id)}
+              onClick={() => {
+                setActiveCategory(category.id);
+                setActiveSubcategory(null);
+              }}
               className={`
-                relative px-6 py-3 rounded-xl font-semibold
+                relative px-5 py-2.5 rounded-xl font-semibold text-sm
                 transition-all duration-300
                 ${activeCategory === category.id
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-2xl shadow-cyan-500/50'
-                  : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30'
+                  : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
                 }
               `}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <span className="text-2xl mr-2">{category.icon}</span>
+              <span className="text-lg mr-2">{category.icon}</span>
               {category.name}
-              {activeCategory === category.id && (
-                <motion.div
-                  layoutId="activeCategory"
-                  className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl -z-10"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
             </motion.button>
           ))}
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════════════
-            HOLOGRAPHIC SEARCH BAR
-        ════════════════════════════════════════════════════════════════ */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mb-12"
-        >
-          <div className="relative max-w-3xl mx-auto">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-2xl blur-xl" />
-            <div className="relative bg-gray-900/80 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-2">
-              <div className="flex items-center gap-4">
-                <Search className="w-6 h-6 text-cyan-400 ml-4" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by part number, name, brand, or compatibility..."
-                  className="flex-1 bg-transparent text-white text-lg placeholder-gray-500 outline-none py-3"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="text-gray-400 hover:text-white mr-4"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                )}
-                <div className="flex gap-2 pr-2">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-cyan-500 text-white' : 'text-gray-400 hover:text-white'}`}
-                  >
-                    <Grid className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-cyan-500 text-white' : 'text-gray-400 hover:text-white'}`}
-                  >
-                    <List className="w-5 h-5" />
-                  </button>
-                </div>
+        {/* Subcategory Pills */}
+        {categoryData && categoryData.subcategories.length > 1 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
+            <button
+              onClick={() => setActiveSubcategory(null)}
+              className={`px-4 py-1.5 rounded-full text-sm transition-all ${
+                !activeSubcategory
+                  ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                  : 'bg-gray-800 text-gray-400 hover:text-white'
+              }`}
+            >
+              All ({allParts.length})
+            </button>
+            {categoryData.subcategories.map(sub => {
+              const count = sub.parts.length;
+              return (
+                <button
+                  key={sub.id}
+                  onClick={() => setActiveSubcategory(sub.id)}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-all ${
+                    activeSubcategory === sub.id
+                      ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                      : 'bg-gray-800 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {sub.name.split(' - ')[0]} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Search and Filters Bar */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search Input */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by part number, name, brand, or compatibility..."
+                className="w-full pl-12 pr-4 py-3.5 bg-gray-900/80 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Filter Controls */}
+            <div className="flex gap-3">
+              {/* Sort Dropdown */}
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="appearance-none px-4 py-3.5 pr-10 bg-gray-900 border border-gray-800 rounded-xl text-white focus:border-cyan-500 focus:outline-none cursor-pointer"
+                >
+                  <option value="featured">Featured</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="name-asc">Name: A-Z</option>
+                  <option value="name-desc">Name: Z-A</option>
+                  <option value="stock">In Stock First</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              </div>
+
+              {/* Filter Toggle */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-3.5 rounded-xl border transition-all flex items-center gap-2 ${
+                  showFilters
+                    ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400'
+                    : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-white'
+                }`}
+              >
+                <SlidersHorizontal className="w-5 h-5" />
+                <span className="hidden md:inline">Filters</span>
+              </button>
+
+              {/* View Toggle */}
+              <div className="flex border border-gray-800 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-3.5 ${viewMode === 'grid' ? 'bg-cyan-500 text-white' : 'bg-gray-900 text-gray-400 hover:text-white'}`}
+                >
+                  <Grid className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-3.5 ${viewMode === 'list' ? 'bg-cyan-500 text-white' : 'bg-gray-900 text-gray-400 hover:text-white'}`}
+                >
+                  <List className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Search Results Count */}
-          <div className="text-center mt-4">
-            <p className="text-cyan-400">
-              {filteredParts.length === allParts.length
-                ? `Showing all ${allParts.length} parts`
-                : `Found ${filteredParts.length} of ${allParts.length} parts`
-              }
-            </p>
-          </div>
-        </motion.div>
+          {/* Expanded Filters */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-4 p-6 bg-gray-900/50 border border-gray-800 rounded-xl">
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {/* Price Range */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Price Range (KES)</label>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="number"
+                          value={priceRange[0]}
+                          onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm"
+                          placeholder="Min"
+                        />
+                        <span className="text-gray-500">-</span>
+                        <input
+                          type="number"
+                          value={priceRange[1]}
+                          onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm"
+                          placeholder="Max"
+                        />
+                      </div>
+                    </div>
 
-        {/* ═══════════════════════════════════════════════════════════════════
-            PARTS GRID - 3D Holographic Cards
-        ════════════════════════════════════════════════════════════════ */}
+                    {/* Stock Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Availability</label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={stockOnly}
+                          onChange={(e) => setStockOnly(e.target.checked)}
+                          className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-cyan-500 focus:ring-cyan-500"
+                        />
+                        <span className="text-white">In Stock Only</span>
+                      </label>
+                    </div>
+
+                    {/* Brand Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Brands</label>
+                      <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
+                        {availableBrands.slice(0, 10).map(brand => (
+                          <button
+                            key={brand}
+                            onClick={() => {
+                              setSelectedBrands(prev =>
+                                prev.includes(brand)
+                                  ? prev.filter(b => b !== brand)
+                                  : [...prev, brand]
+                              );
+                            }}
+                            className={`px-3 py-1 rounded-full text-xs transition-all ${
+                              selectedBrands.includes(brand)
+                                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                                : 'bg-gray-800 text-gray-400 hover:text-white'
+                            }`}
+                          >
+                            {brand}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Clear Filters */}
+                  {(priceRange[0] > 0 || priceRange[1] < 500000 || stockOnly || selectedBrands.length > 0) && (
+                    <button
+                      onClick={() => {
+                        setPriceRange([0, 500000]);
+                        setStockOnly(false);
+                        setSelectedBrands([]);
+                      }}
+                      className="mt-4 px-4 py-2 text-sm text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      Clear All Filters
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Results Count */}
+          <div className="mt-4 flex justify-between items-center text-sm">
+            <p className="text-gray-400">
+              Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredParts.length)} of {filteredParts.length} parts
+            </p>
+            {cart.length > 0 && (
+              <button
+                onClick={() => setCartOpen(true)}
+                className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                {cartItemCount} items in cart
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Parts Grid/List */}
         <AnimatePresence mode="wait">
           {viewMode === 'grid' ? (
             <motion.div
               key="grid"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
             >
-              {filteredParts.map((part, index) => (
+              {paginatedParts.map((part, index) => (
                 <motion.div
                   key={part.partNo}
-                  initial={{ opacity: 0, y: 50 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: index * 0.02 }}
                   onMouseEnter={() => setHoveredPart(part.partNo)}
                   onMouseLeave={() => setHoveredPart(null)}
-                  className="relative group"
+                  className="group relative bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all duration-300"
                 >
-                  {/* Glow Effect */}
-                  <div className={`
-                    absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-2xl blur-xl
-                    transition-opacity duration-300
-                    ${hoveredPart === part.partNo ? 'opacity-100' : 'opacity-0'}
-                  `} />
-
-                  {/* Card */}
-                  <div className="relative bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6 hover:border-cyan-500/50 transition-all duration-300 group-hover:transform group-hover:scale-105">
-                    {/* Stock Indicator */}
-                    <div className="absolute top-4 right-4">
-                      <motion.div
-                        className={`
-                          px-3 py-1 rounded-full text-xs font-semibold
-                          ${part.inventory.stock === 'In Stock'
-                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                            : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                          }
-                        `}
-                        animate={part.inventory.stock === 'In Stock' ? {
-                          boxShadow: [
-                            '0 0 10px rgba(34, 197, 94, 0.3)',
-                            '0 0 20px rgba(34, 197, 94, 0.5)',
-                            '0 0 10px rgba(34, 197, 94, 0.3)'
-                          ]
-                        } : {}}
-                        transition={{ duration: 2, repeat: Infinity }}
+                  {/* Product Image Placeholder */}
+                  <div className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                    <Package className="w-16 h-16 text-gray-700" />
+                    {/* Quick Actions */}
+                    <div className={`absolute top-3 right-3 flex gap-2 transition-opacity ${hoveredPart === part.partNo ? 'opacity-100' : 'opacity-0'}`}>
+                      <button
+                        onClick={() => toggleWishlist(part.partNo)}
+                        className={`p-2 rounded-full ${isInWishlist(part.partNo) ? 'bg-red-500 text-white' : 'bg-gray-800/80 text-gray-400 hover:text-white'}`}
                       >
-                        {part.inventory.stock}
-                      </motion.div>
+                        <Heart className={`w-4 h-4 ${isInWishlist(part.partNo) ? 'fill-current' : ''}`} />
+                      </button>
+                      <button
+                        onClick={() => setQuickViewPart(part)}
+                        className="p-2 rounded-full bg-gray-800/80 text-gray-400 hover:text-white"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
                     </div>
-
-                    {/* Brand & Part Number */}
-                    <div className="mb-4">
-                      <p className="text-cyan-400 text-sm font-semibold">{part.brand}</p>
-                      <p className="text-gray-500 text-xs">{part.partNo}</p>
+                    {/* Stock Badge */}
+                    <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-semibold ${
+                      part.inventory.stock === 'In Stock'
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-orange-500/20 text-orange-400'
+                    }`}>
+                      {part.inventory.stock}
                     </div>
+                  </div>
 
-                    {/* Part Name */}
-                    <h3 className="text-xl font-bold text-white mb-3 line-clamp-2">
-                      {part.name}
-                    </h3>
-
-                    {/* Category */}
-                    <p className="text-sm text-gray-400 mb-4">{part.category}</p>
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <p className="text-cyan-400 text-xs font-semibold">{part.brand}</p>
+                    <p className="text-gray-500 text-xs mb-1">{part.partNo}</p>
+                    <h3 className="text-white font-semibold mb-2 line-clamp-2 min-h-[2.5rem]">{part.name}</h3>
 
                     {/* Compatibility */}
-                    {part.compatibility && (
-                      <div className="mb-4">
-                        <p className="text-xs text-gray-500 mb-1">Compatible with:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {part.compatibility.slice(0, 3).map((comp, i) => (
-                            <span key={i} className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded">
-                              {comp}
-                            </span>
-                          ))}
-                          {part.compatibility.length > 3 && (
-                            <span className="text-xs text-cyan-400">
-                              +{part.compatibility.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                    {part.compatibility && part.compatibility.length > 0 && (
+                      <p className="text-gray-500 text-xs mb-3 line-clamp-1">
+                        Fits: {part.compatibility.slice(0, 2).join(', ')}
+                        {part.compatibility.length > 2 && ` +${part.compatibility.length - 2}`}
+                      </p>
                     )}
 
                     {/* Price */}
-                    <div className="mb-4">
-                      <p className="text-2xl font-bold text-cyan-400">
-                        KES {part.pricing.retailPrice.toLocaleString()}
-                      </p>
-                      {part.pricing.bulkPrice && (
-                        <p className="text-sm text-gray-500">
-                          Bulk: KES {part.pricing.bulkPrice.toLocaleString()} (min {part.pricing.minimumOrder})
+                    <div className="flex items-end justify-between mb-3">
+                      <div>
+                        <p className="text-xl font-bold text-cyan-400">
+                          KES {part.pricing.retailPrice.toLocaleString()}
                         </p>
+                        {part.pricing.bulkPrice && (
+                          <p className="text-xs text-gray-500">
+                            Bulk: KES {part.pricing.bulkPrice.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                      {part.warranty && (
+                        <span className="text-xs text-green-400 flex items-center gap-1">
+                          <Shield className="w-3 h-3" />
+                          {part.warranty}
+                        </span>
                       )}
                     </div>
 
-                    {/* Lead Time */}
-                    <p className="text-xs text-gray-500 mb-4">
-                      {part.inventory.leadTime && `🚚 ${part.inventory.leadTime} delivery`}
-                      {part.inventory.leadTime && part.warranty && ' • '}
-                      {part.warranty && `${part.warranty} warranty`}
-                    </p>
-
-                    {/* Add to Quote Button - Direct WhatsApp */}
-                    <motion.a
-                      href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I need a quote for:\n\n📦 Part: ${part.name}\n🔢 Part No: ${part.partNo}\n🏭 Brand: ${part.brand}\n💰 Price: KES ${part.pricing.retailPrice.toLocaleString()}\n\nPlease confirm availability and delivery time.`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 text-center"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      📱 Get Quote on WhatsApp
-                    </motion.a>
+                    {/* Add to Cart */}
+                    {isInCart(part.partNo) ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateCartQuantity(part.partNo, (cart.find(c => c.partNo === part.partNo)?.quantity || 1) - 1)}
+                          className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700"
+                        >
+                          <Minus className="w-4 h-4 text-white" />
+                        </button>
+                        <span className="flex-1 text-center text-white font-semibold">
+                          {cart.find(c => c.partNo === part.partNo)?.quantity || 0}
+                        </span>
+                        <button
+                          onClick={() => updateCartQuantity(part.partNo, (cart.find(c => c.partNo === part.partNo)?.quantity || 0) + 1)}
+                          className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700"
+                        >
+                          <Plus className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => addToCart(part)}
+                        className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all flex items-center justify-center gap-2"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        Add to Cart
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -374,49 +641,92 @@ export default function SparePartsModule() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="space-y-4"
+              className="space-y-3"
             >
-              {filteredParts.map((part, index) => (
+              {paginatedParts.map((part, index) => (
                 <motion.div
                   key={part.partNo}
-                  initial={{ opacity: 0, x: -50 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-cyan-500/50 transition-all"
+                  className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 hover:border-cyan-500/50 transition-all"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-2">
-                        <h3 className="text-lg font-bold text-white">{part.name}</h3>
-                        <span className="text-cyan-400 text-sm">{part.partNo}</span>
-                        <span className={`
-                          px-2 py-1 rounded text-xs
-                          ${part.inventory.stock === 'In Stock' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}
-                        `}>
-                          {part.inventory.stock}
-                        </span>
-                      </div>
-                      <p className="text-gray-400 text-sm mb-2">{part.brand} • {part.category}</p>
-                      {part.compatibility && (
-                        <p className="text-gray-500 text-sm">
-                          Compatible: {part.compatibility.join(', ')}
-                        </p>
-                      )}
+                  <div className="flex gap-4 items-center">
+                    {/* Image */}
+                    <div className="w-20 h-20 flex-shrink-0 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <Package className="w-8 h-8 text-gray-600" />
                     </div>
-                    <div className="text-right ml-6">
-                      <p className="text-2xl font-bold text-cyan-400 mb-2">
-                        KES {part.pricing.retailPrice.toLocaleString()}
-                      </p>
-                      <motion.a
-                        href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi, I need a quote for:\n\n📦 Part: ${part.name}\n🔢 Part No: ${part.partNo}\n🏭 Brand: ${part.brand}\n💰 Price: KES ${part.pricing.retailPrice.toLocaleString()}\n\nPlease confirm availability and delivery time.`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-700"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-white font-semibold truncate">{part.name}</h3>
+                            <span className={`px-2 py-0.5 rounded text-xs ${
+                              part.inventory.stock === 'In Stock'
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-orange-500/20 text-orange-400'
+                            }`}>
+                              {part.inventory.stock}
+                            </span>
+                          </div>
+                          <p className="text-gray-400 text-sm">
+                            {part.brand} • {part.partNo}
+                          </p>
+                          {part.compatibility && (
+                            <p className="text-gray-500 text-xs mt-1">
+                              Compatible: {part.compatibility.slice(0, 4).join(', ')}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xl font-bold text-cyan-400">
+                            KES {part.pricing.retailPrice.toLocaleString()}
+                          </p>
+                          {part.inventory.leadTime && (
+                            <p className="text-xs text-gray-500">{part.inventory.leadTime}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => toggleWishlist(part.partNo)}
+                        className={`p-2 rounded-lg ${isInWishlist(part.partNo) ? 'text-red-400' : 'text-gray-400 hover:text-white'}`}
                       >
-                        📱 Get Quote
-                      </motion.a>
+                        <Heart className={`w-5 h-5 ${isInWishlist(part.partNo) ? 'fill-current' : ''}`} />
+                      </button>
+                      {isInCart(part.partNo) ? (
+                        <div className="flex items-center gap-1 bg-gray-800 rounded-lg px-2">
+                          <button
+                            onClick={() => updateCartQuantity(part.partNo, (cart.find(c => c.partNo === part.partNo)?.quantity || 1) - 1)}
+                            className="p-1.5"
+                          >
+                            <Minus className="w-4 h-4 text-white" />
+                          </button>
+                          <span className="w-8 text-center text-white font-semibold">
+                            {cart.find(c => c.partNo === part.partNo)?.quantity || 0}
+                          </span>
+                          <button
+                            onClick={() => updateCartQuantity(part.partNo, (cart.find(c => c.partNo === part.partNo)?.quantity || 0) + 1)}
+                            className="p-1.5"
+                          >
+                            <Plus className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => addToCart(part)}
+                          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all flex items-center gap-2"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                          Add
+                        </button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -434,90 +744,293 @@ export default function SparePartsModule() {
           >
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-2xl font-bold text-white mb-2">No parts found</h3>
-            <p className="text-gray-400">Try adjusting your search terms</p>
+            <p className="text-gray-400 mb-4">Try adjusting your search or filters</p>
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setPriceRange([0, 500000]);
+                setStockOnly(false);
+                setSelectedBrands([]);
+              }}
+              className="px-6 py-2 bg-cyan-500/20 text-cyan-400 rounded-lg hover:bg-cyan-500/30 transition-colors"
+            >
+              Clear All Filters
+            </button>
           </motion.div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-lg bg-gray-800 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let page;
+              if (totalPages <= 5) {
+                page = i + 1;
+              } else if (currentPage <= 3) {
+                page = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                page = totalPages - 4 + i;
+              } else {
+                page = currentPage - 2 + i;
+              }
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-10 h-10 rounded-lg ${
+                    currentPage === page
+                      ? 'bg-cyan-500 text-white'
+                      : 'bg-gray-800 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 rounded-lg bg-gray-800 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
         )}
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          FLOATING QUOTATION CART
-      ════════════════════════════════════════════════════════════════ */}
-      {selectedParts.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 100 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-8 right-8 z-50"
+      {/* Floating Cart Button */}
+      {cart.length > 0 && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={() => setCartOpen(true)}
+          className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-full shadow-2xl shadow-green-500/30"
         >
-          <motion.button
-            onClick={() => setCartOpen(!cartOpen)}
-            className="relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-4 rounded-full shadow-2xl"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <ShoppingCart className="w-6 h-6" />
-            <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-              {selectedParts.length}
-            </span>
-          </motion.button>
+          <ShoppingCart className="w-6 h-6" />
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+            {cartItemCount}
+          </span>
+        </motion.button>
+      )}
 
-          {/* Cart Panel */}
-          <AnimatePresence>
-            {cartOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                className="absolute bottom-20 right-0 w-96 bg-gray-900 border border-cyan-500/30 rounded-2xl p-6 shadow-2xl"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-bold text-white">Your Quote</h3>
+      {/* Cart Sidebar */}
+      <AnimatePresence>
+        {cartOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              onClick={() => setCartOpen(false)}
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-gray-900 border-l border-gray-800 z-50 flex flex-col"
+            >
+              {/* Cart Header */}
+              <div className="p-6 border-b border-gray-800">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5" />
+                    Shopping Cart
+                    <span className="text-sm font-normal text-gray-400">({cartItemCount} items)</span>
+                  </h2>
                   <button
                     onClick={() => setCartOpen(false)}
-                    className="text-gray-400 hover:text-white"
+                    className="p-2 rounded-lg hover:bg-gray-800"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-5 h-5 text-gray-400" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Cart Items */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {cart.map((item) => (
+                  <div key={item.partNo} className="bg-gray-800/50 rounded-xl p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <h4 className="text-white font-semibold">{item.name}</h4>
+                        <p className="text-gray-400 text-sm">{item.partNo} • {item.brand}</p>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.partNo)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateCartQuantity(item.partNo, item.quantity - 1)}
+                          className="p-1.5 bg-gray-700 rounded-lg hover:bg-gray-600"
+                        >
+                          <Minus className="w-4 h-4 text-white" />
+                        </button>
+                        <span className="w-10 text-center text-white font-semibold">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateCartQuantity(item.partNo, item.quantity + 1)}
+                          className="p-1.5 bg-gray-700 rounded-lg hover:bg-gray-600"
+                        >
+                          <Plus className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                      <p className="text-cyan-400 font-bold">
+                        KES {(item.pricing.retailPrice * item.quantity).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Cart Footer */}
+              <div className="p-6 border-t border-gray-800 bg-gray-900">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-gray-400">Subtotal</span>
+                  <span className="text-xl font-bold text-white">KES {cartTotal.toLocaleString()}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    setCartOpen(false);
+                    setCheckoutOpen(true);
+                  }}
+                  className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2"
+                >
+                  <img
+                    src="/images/mpesa-logo.png"
+                    alt=""
+                    className="w-6 h-6 object-contain"
+                    onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
+                  />
+                  Checkout with M-Pesa
+                </button>
+                <button
+                  onClick={clearCart}
+                  className="w-full py-2 mt-2 text-gray-400 hover:text-white text-sm transition-colors"
+                >
+                  Clear Cart
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Quick View Modal */}
+      <AnimatePresence>
+        {quickViewPart && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              onClick={() => setQuickViewPart(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl bg-gray-900 border border-gray-800 rounded-2xl z-50 overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-cyan-400 font-semibold">{quickViewPart.brand}</p>
+                    <h3 className="text-2xl font-bold text-white">{quickViewPart.name}</h3>
+                    <p className="text-gray-400">{quickViewPart.partNo}</p>
+                  </div>
+                  <button
+                    onClick={() => setQuickViewPart(null)}
+                    className="p-2 rounded-lg hover:bg-gray-800"
+                  >
+                    <X className="w-5 h-5 text-gray-400" />
                   </button>
                 </div>
 
-                <div className="max-h-96 overflow-y-auto space-y-3 mb-4">
-                  {selectedParts.map((part) => (
-                    <div key={part.partNo} className="flex justify-between items-start bg-gray-800 p-3 rounded-lg">
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">{part.name}</p>
-                        <p className="text-gray-400 text-xs">{part.partNo}</p>
-                        <p className="text-cyan-400 text-sm mt-1">
-                          KES {part.pricing.retailPrice.toLocaleString()}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => removeFromCart(part.partNo)}
-                        className="text-red-400 hover:text-red-300 ml-2"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Specifications */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-400 mb-3">Specifications</h4>
+                    <div className="space-y-2">
+                      {Object.entries(quickViewPart.specifications).map(([key, value]) => (
+                        <div key={key} className="flex justify-between text-sm">
+                          <span className="text-gray-400">{key}</span>
+                          <span className="text-white">{value as string}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Compatibility */}
+                  {quickViewPart.compatibility && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-400 mb-3">Compatible Models</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {quickViewPart.compatibility.map((model, i) => (
+                          <span key={i} className="px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded">
+                            {model}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="border-t border-gray-800 pt-4">
-                  <div className="flex justify-between text-lg font-bold mb-4">
-                    <span className="text-white">Total:</span>
-                    <span className="text-cyan-400">KES {cartTotal.toLocaleString()}</span>
+                <div className="mt-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-3xl font-bold text-cyan-400">
+                      KES {quickViewPart.pricing.retailPrice.toLocaleString()}
+                    </p>
+                    <p className={`text-sm ${quickViewPart.inventory.stock === 'In Stock' ? 'text-green-400' : 'text-orange-400'}`}>
+                      {quickViewPart.inventory.stock} • {quickViewPart.inventory.leadTime}
+                    </p>
                   </div>
-                  <a
-                    href={`https://wa.me/254768860665?text=${encodeURIComponent(`I would like a quote for:\n${selectedParts.map(p => `• ${p.name} (${p.partNo}) - KES ${p.pricing.retailPrice.toLocaleString()}`).join('\n')}\n\nTotal: KES ${cartTotal.toLocaleString()}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl text-center hover:from-green-600 hover:to-emerald-700 transition-all"
+                  <button
+                    onClick={() => {
+                      addToCart(quickViewPart);
+                      setQuickViewPart(null);
+                    }}
+                    className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-700 transition-all flex items-center gap-2"
                   >
-                    📱 Request Quote via WhatsApp
-                  </a>
+                    <ShoppingCart className="w-5 h-5" />
+                    Add to Cart
+                  </button>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* M-Pesa Checkout Modal */}
+      <MpesaCheckout
+        isOpen={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        cartItems={cart.map(item => ({
+          partNo: item.partNo,
+          name: item.name,
+          brand: item.brand,
+          quantity: item.quantity,
+          price: item.pricing.retailPrice
+        }))}
+        cartTotal={cartTotal}
+        onClearCart={clearCart}
+      />
     </div>
   );
 }

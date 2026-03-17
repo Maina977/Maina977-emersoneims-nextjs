@@ -1,16 +1,17 @@
 /**
- * 🚀 REVOLUTIONARY SPARE PARTS PAGE
+ * ENHANCED SPARE PARTS E-COMMERCE PAGE
  *
- * THE FEATURE THAT CHANGES WEBSITE HISTORY
+ * Premium Amazon/Alibaba-style shopping experience
  *
- * - 1,560+ parts with complete specifications
- * - Sci-fi holographic interface
+ * - 2,000+ genuine OEM parts
+ * - Full shopping cart functionality
+ * - M-Pesa secure payment (0793573208)
  * - Real-time inventory tracking
- * - Instant WhatsApp quotations
- * - AI-powered search
- * - 3D card effects
+ * - Advanced filtering & search
+ * - Quick view & wishlist
+ * - SEO optimized for Kenya market
  *
- * NO COMPETITOR HAS THIS
+ * Serving Kenya's generator maintenance needs since 2010
  */
 
 'use client';
@@ -108,7 +109,7 @@ export default function SparePartsPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
             >
               <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">1,560+ Parts in Stock</span>
+              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">2,000+ Genuine Parts in Stock</span>
             </motion.div>
 
             {/* Main Title with Cinematic Typography */}
