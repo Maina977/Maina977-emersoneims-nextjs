@@ -20,6 +20,9 @@ import GeneratorSalesBooster from '@/components/generators/GeneratorSalesBooster
 import GeneratorPriceList from '@/components/generators/GeneratorPriceList';
 import SizingCalculatorNew from '@/components/generators/GeneratorSizingCalculator';
 
+// EDUCATIONAL CONTENT - KNOWLEDGE CENTER
+import GeneratorEducationPanel from '@/components/generators/GeneratorEducationPanel';
+
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
@@ -924,6 +927,9 @@ export default function GeneratorPage() {
           <GeneratorPriceList />
         </div>
       </section>
+
+      {/* EDUCATIONAL CONTENT - Generator Knowledge Center */}
+      <GeneratorEducationPanel />
 
       {/* Quick Diagnostics Preview Section */}
       <section id="diagnostics-preview" className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">

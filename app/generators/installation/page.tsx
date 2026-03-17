@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { GeneratorEducationCompact } from '@/components/generators/GeneratorEducationPanel';
 
 // Comprehensive Installation Knowledge Database
 const installationPhases = [
@@ -872,6 +873,19 @@ export default function GeneratorInstallationPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Educational Content - Installation Knowledge */}
+      <section className="py-16 bg-gradient-to-b from-black to-slate-900">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-3xl font-bold text-white mb-6 text-center">
+            Generator <span className="text-green-400">Knowledge Center</span>
+          </h2>
+          <p className="text-gray-400 text-center mb-8">
+            Learn about generator systems and troubleshooting before installation
+          </p>
+          <GeneratorEducationCompact />
         </div>
       </section>
 

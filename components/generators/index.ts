@@ -11,3 +11,9 @@ export { default as ErrorFrequencyChart } from './ErrorFrequencyChart';
 export { default as MaintenanceCharts } from './MaintenanceCharts';
 export { default as GeneratorHealthIndex } from './GeneratorHealthIndex';
 
+// Sales & Education Components
+export { default as GeneratorSalesBooster } from './GeneratorSalesBooster';
+export { default as GeneratorPriceList } from './GeneratorPriceList';
+export { default as GeneratorSizingCalculator } from './GeneratorSizingCalculator';
+export { default as GeneratorEducationPanel, GeneratorEducationCompact } from './GeneratorEducationPanel';
+

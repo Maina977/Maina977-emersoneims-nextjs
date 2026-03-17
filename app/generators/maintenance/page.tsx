@@ -4,6 +4,7 @@
 import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
+import { GeneratorEducationCompact } from '@/components/generators/GeneratorEducationPanel';
 
 // Metadata moved to layout or generateMetadata for client components
 // SEO metadata is in the head section below
@@ -896,6 +897,19 @@ export default function GeneratorMaintenancePage() {
               📞 Alt: +254782914717
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* Educational Content - Troubleshooting Knowledge */}
+      <section className="py-16 bg-gradient-to-b from-black to-slate-900">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-3xl font-bold text-white mb-6 text-center">
+            Generator <span className="text-amber-400">Troubleshooting Resources</span>
+          </h2>
+          <p className="text-gray-400 text-center mb-8">
+            Learn about common generator problems and how to diagnose them
+          </p>
+          <GeneratorEducationCompact />
         </div>
       </section>
 
