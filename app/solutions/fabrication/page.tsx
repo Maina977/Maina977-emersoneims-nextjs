@@ -796,36 +796,27 @@ const PRICING: PricingItem[] = [
   }
 ]
 
-const CERTIFICATIONS = [
+// Quality commitments (certifications will be added when officially obtained)
+const QUALITY_COMMITMENTS = [
   {
-    name: "ISO 9001:2015",
-    description: "Quality Management System",
-    scope: "Design, fabrication, and installation of steel structures"
+    name: "Quality Workmanship",
+    description: "Professional Standards",
+    scope: "All fabrication work follows industry best practices"
   },
   {
-    name: "ISO 3834-2",
-    description: "Welding Quality Requirements",
-    scope: "Comprehensive quality requirements for fusion welding"
+    name: "Material Quality",
+    description: "Premium Materials",
+    scope: "We use quality steel and materials from reputable suppliers"
   },
   {
-    name: "ASME U-Stamp",
-    description: "Pressure Vessel Authorization",
-    scope: "Fabrication of unfired pressure vessels per ASME VIII"
+    name: "Safety Standards",
+    description: "Workplace Safety",
+    scope: "All work complies with safety regulations"
   },
   {
-    name: "API 650/620",
-    description: "Storage Tank Certification",
-    scope: "Welded tanks for oil storage"
-  },
-  {
-    name: "EN 1090-2 EXC3",
-    description: "Execution Class 3",
-    scope: "Structural steel and aluminum structures"
-  },
-  {
-    name: "AWS D1.1 Certified",
-    description: "Structural Welding",
-    scope: "Welding procedure and personnel certification"
+    name: "Warranty",
+    description: "Work Guarantee",
+    scope: "Warranty on all fabrication work"
   }
 ]
 
@@ -1087,14 +1078,14 @@ const FabricationPage = () => {
                     </div>
 
                     <div className="bg-gray-900 rounded-xl p-6 text-white">
-                      <h3 className="text-lg font-semibold mb-4">Certifications</h3>
+                      <h3 className="text-lg font-semibold mb-4">Our Quality Commitment</h3>
                       <ul className="space-y-2 text-gray-300">
-                        {CERTIFICATIONS.map((cert, index) => (
+                        {QUALITY_COMMITMENTS.map((item, index) => (
                           <li key={index} className="flex items-start gap-2">
                             <Award className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
                             <div>
-                              <span className="font-medium text-white">{cert.name}</span>
-                              <p className="text-sm text-gray-400">{cert.description}</p>
+                              <span className="font-medium text-white">{item.name}</span>
+                              <p className="text-sm text-gray-400">{item.description}</p>
                             </div>
                           </li>
                         ))}

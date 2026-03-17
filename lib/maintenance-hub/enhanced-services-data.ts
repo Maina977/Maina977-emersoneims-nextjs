@@ -555,7 +555,8 @@ Foot protection with steel or composite toes prevents crush injuries from droppe
         emergencyProtocol: 'PPE failures during work: Stop work immediately and assess for injury. Replace damaged PPE before resuming work. Report PPE failures to supervisor for investigation - may indicate need for different PPE or procedural changes. Document any injuries for workers\' compensation and incident investigation.'
       }
     ],
-    certifications: ['EPRA Electrical Contractor License', 'Cummins Authorized Service Partner', 'CAT Certified', 'DeepSea Training Certified'],
+    // Certifications will be added when officially obtained
+    certifications: [],
     warranty: '90 days on parts and labor for all repairs, 12 months on new installations'
   },
   // Additional services will be added in subsequent parts

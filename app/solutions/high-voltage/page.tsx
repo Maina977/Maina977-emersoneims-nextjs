@@ -1293,13 +1293,13 @@ const HighVoltagePage = () => {
                     </div>
 
                     <div className="bg-white rounded-xl p-6 border border-gray-200">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Certifications</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Our Commitment</h3>
                       <ul className="space-y-2 text-gray-600">
-                        <li>• ERC Licensed Contractor</li>
-                        <li>• ISO 9001:2015 Certified</li>
-                        <li>• KEBS Approved Supplier</li>
-                        <li>• KPLC Approved Partner</li>
-                        <li>• NCA Registered (NCA 1)</li>
+                        <li>• Professional Installation</li>
+                        <li>• Quality Workmanship</li>
+                        <li>• Safety Standards Compliance</li>
+                        <li>• Warranty on All Work</li>
+                        <li>• 24/7 Support Available</li>
                       </ul>
                     </div>
                   </div>

@@ -291,35 +291,14 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
       }
     ],
 
-    testimonials: [
-      {
-        name: 'Dr. James Mwangi',
-        company: 'Nairobi Medical Center',
-        location: 'Nairobi',
-        quote: 'Our 500kVA Cummins generator from EmersonEIMS has been running flawlessly for 3 years. During the recent extended outages, it kept our hospital fully operational. The 3-year warranty gave us complete confidence in our purchase.',
-        rating: 5
-      },
-      {
-        name: 'Peter Ochieng',
-        company: 'Ochieng Manufacturing Ltd',
-        location: 'Mombasa',
-        quote: 'We upgraded to Cummins generators and our fuel costs dropped by 20%. The reliability is exceptional - zero unplanned downtime in 2 years. EmersonEIMS support team responds within hours.',
-        rating: 5
-      },
-      {
-        name: 'Sarah Kimani',
-        company: 'Safari Lodge Hotels',
-        location: 'Naivasha',
-        quote: 'As a remote lodge, reliable power is crucial. Our Cummins generator handles everything from kitchen equipment to guest room ACs without issues. Excellent service from installation to ongoing support.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'Generators Installed', value: '500+' },
       { label: 'Warranty', value: '3 Years' },
-      { label: 'Response Time', value: '< 4 Hours' },
-      { label: 'Client Satisfaction', value: '98%' }
+      { label: 'Emergency Response', value: 'Available 24/7' },
+      { label: 'Service Coverage', value: 'Nationwide Kenya' },
+      { label: 'Consultation', value: 'Free' }
     ],
 
     warranties: [
@@ -329,12 +308,8 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
       'Parts availability guarantee'
     ],
 
-    certifications: [
-      'Cummins Authorized Dealer',
-      'ISO 9001:2015 Certified',
-      'EPRA Licensed',
-      'KEBS Certified'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['generator-repairs', 'ats-changeover', 'ups-systems', 'distribution-boards'],
 
@@ -536,28 +511,14 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
       }
     ],
 
-    testimonials: [
-      {
-        name: 'Michael Kariuki',
-        company: 'Westlands Office Park',
-        location: 'Nairobi',
-        quote: 'Our generator failed at 2 AM during a critical data backup. EmersonEIMS responded within 2 hours and had us running by 6 AM. Their emergency service is truly reliable.',
-        rating: 5
-      },
-      {
-        name: 'Grace Wanjiku',
-        company: 'Mama Lucy Hospital',
-        location: 'Nairobi',
-        quote: 'We signed an AMC with EmersonEIMS last year. No unplanned breakdowns since then. Their preventive maintenance approach has saved us significant costs.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'Repairs Completed', value: '2,500+' },
-      { label: 'Response Time', value: '< 4 Hours' },
-      { label: 'First-Time Fix Rate', value: '92%' },
-      { label: 'Active AMC Clients', value: '150+' }
+      { label: 'Emergency Response', value: '24/7' },
+      { label: 'Service Coverage', value: 'Nationwide' },
+      { label: 'AMC Available', value: 'Yes' },
+      { label: 'Diagnosis', value: 'On-Site' }
     ],
 
     warranties: [
@@ -566,11 +527,8 @@ MAINTENANCE CONTRACTS: Prevention is better than cure. Our Annual Maintenance Co
       'Quality workmanship assurance'
     ],
 
-    certifications: [
-      'Cummins Certified Technicians',
-      'Perkins Trained',
-      'CAT Service Partner'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['cummins-generators', 'ats-changeover', 'distribution-boards', 'ups-systems'],
 
@@ -754,28 +712,14 @@ MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual i
       }
     ],
 
-    testimonials: [
-      {
-        name: 'John Njoroge',
-        company: 'Njoroge Residential Estate',
-        location: 'Karen',
-        quote: 'The ATS system from EmersonEIMS has been a game-changer. Power outages used to be so disruptive - now we barely notice them. The switch is so fast and smooth.',
-        rating: 5
-      },
-      {
-        name: 'Anne Mutua',
-        company: 'Mutua Medical Clinic',
-        location: 'Machakos',
-        quote: 'For a medical facility, power continuity is critical. Our ATS ensures seamless transfer within seconds. Patient equipment never experiences any interruption.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'ATS Installed', value: '800+' },
       { label: 'Transfer Time', value: '< 10 Sec' },
-      { label: 'Uptime Achieved', value: '99.9%' },
-      { label: 'Installations/Month', value: '25+' }
+      { label: 'Warranty', value: '2 Years' },
+      { label: 'Installation', value: 'Professional' },
+      { label: 'Service', value: 'Nationwide' }
     ],
 
     warranties: [
@@ -784,11 +728,8 @@ MANUAL CHANGEOVER: Cost-effective solution for applications where brief manual i
       'Brand manufacturer warranty'
     ],
 
-    certifications: [
-      'KEBS Certified',
-      'EPRA Compliant',
-      'IEC Standards'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['cummins-generators', 'generator-repairs', 'distribution-boards', 'electrical-services'],
 
@@ -977,21 +918,14 @@ SERVICES INCLUDE:
       }
     ],
 
-    testimonials: [
-      {
-        name: 'Robert Kamau',
-        company: 'Kamau Industrial Park',
-        location: 'Athi River',
-        quote: 'EmersonEIMS designed and fabricated our main MCC for the factory. Professional work, quality components, and they even trained our maintenance team on the system.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'Panels Fabricated', value: '1,200+' },
       { label: 'Lead Time', value: '1-6 Weeks' },
-      { label: 'Component Brands', value: '10+' },
-      { label: 'Repeat Clients', value: '85%' }
+      { label: 'Warranty', value: '2 Years' },
+      { label: 'Custom Design', value: 'Available' },
+      { label: 'Installation', value: 'Included' }
     ],
 
     warranties: [
@@ -1000,11 +934,8 @@ SERVICES INCLUDE:
       'Installation workmanship guarantee'
     ],
 
-    certifications: [
-      'KEBS Certified',
-      'IEC 61439 Compliant',
-      'ISO 9001 Quality'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['ats-changeover', 'electrical-services', 'cummins-generators', 'ups-systems'],
 
@@ -1194,28 +1125,14 @@ FREE SITE ASSESSMENT: Our solar experts will analyze your energy consumption, ro
       }
     ],
 
-    testimonials: [
-      {
-        name: 'David Omondi',
-        company: 'Omondi Residence',
-        location: 'Runda',
-        quote: 'Our 10kW solar system from EmersonEIMS has reduced our electricity bill from KES 45,000 to under KES 5,000 per month. Best investment we\'ve made for our home.',
-        rating: 5
-      },
-      {
-        name: 'Mary Akinyi',
-        company: 'Westlands Business Center',
-        location: 'Nairobi',
-        quote: 'The commercial solar system has cut our operating costs significantly. EmersonEIMS handled the KPLC net metering registration and everything works perfectly.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'Solar Installed', value: '2MW+' },
-      { label: 'Average Savings', value: '70%' },
       { label: 'Panel Warranty', value: '25 Years' },
-      { label: 'Happy Clients', value: '400+' }
+      { label: 'Inverter Warranty', value: '10 Years' },
+      { label: 'Site Assessment', value: 'Free' },
+      { label: 'Financing', value: 'Available' }
     ],
 
     warranties: [
@@ -1225,11 +1142,8 @@ FREE SITE ASSESSMENT: Our solar experts will analyze your energy consumption, ro
       'Battery warranties (5-10 years)'
     ],
 
-    certifications: [
-      'EPRA Licensed',
-      'ERC Certified',
-      'Tier 1 Panel Partner'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['cummins-generators', 'ups-systems', 'borehole-pumps', 'ats-changeover'],
 
@@ -1418,21 +1332,14 @@ QUALITY ASSURANCE: Every rewound motor undergoes comprehensive testing including
       }
     ],
 
-    testimonials: [
-      {
-        name: 'Joseph Mutiso',
-        company: 'Mutiso Flour Mills',
-        location: 'Nairobi',
-        quote: 'EmersonEIMS rewound our 150HP mill motor in 5 days. It\'s been running perfectly for over a year now. Great quality and fair pricing.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'Motors Rewound', value: '3,000+' },
-      { label: 'Success Rate', value: '99%' },
       { label: 'Max Motor Size', value: '500HP' },
-      { label: 'Warranty', value: '6 Months' }
+      { label: 'Warranty', value: '6 Months' },
+      { label: 'Pickup Service', value: 'Available' },
+      { label: 'Turnaround', value: '3-7 Days' }
     ],
 
     warranties: [
@@ -1441,10 +1348,8 @@ QUALITY ASSURANCE: Every rewound motor undergoes comprehensive testing including
       'Workmanship guarantee'
     ],
 
-    certifications: [
-      'EASA Standards Compliant',
-      'Quality Materials Certified'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['borehole-pumps', 'generator-repairs', 'electrical-services', 'ac-installation'],
 
@@ -1643,21 +1548,14 @@ We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier
       }
     ],
 
-    testimonials: [
-      {
-        name: 'Francis Otieno',
-        company: 'Otieno Enterprises',
-        location: 'Nairobi',
-        quote: 'EmersonEIMS installed VRF systems in our new office building. Excellent work and the energy efficiency has exceeded our expectations.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'AC Installed', value: '1,500+' },
-      { label: 'Service Calls', value: '5,000+/yr' },
       { label: 'Response Time', value: 'Same Day' },
-      { label: 'Brands Serviced', value: '15+' }
+      { label: 'All Major Brands', value: 'Serviced' },
+      { label: 'Installation', value: 'Professional' },
+      { label: 'Maintenance Plans', value: 'Available' }
     ],
 
     warranties: [
@@ -1666,11 +1564,8 @@ We work with all major brands including Daikin, LG, Samsung, Mitsubishi, Carrier
       'Parts warranty'
     ],
 
-    certifications: [
-      'Daikin Certified',
-      'LG Partner',
-      'EPA 608 Compliant'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['electrical-services', 'distribution-boards', 'motor-rewinding'],
 
@@ -1861,21 +1756,14 @@ WE PROVIDE:
       }
     ],
 
-    testimonials: [
-      {
-        name: 'Patrick Kimani',
-        company: 'Kimani Data Center',
-        location: 'Nairobi',
-        quote: 'EmersonEIMS designed and installed our modular UPS system with redundancy. Zero downtime during multiple outages since installation. Excellent technical support.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'UPS Installed', value: '800+' },
       { label: 'Capacity Range', value: '600VA-500kVA' },
-      { label: 'Battery Replacements', value: '500+/yr' },
-      { label: 'Uptime Achieved', value: '99.99%' }
+      { label: 'Warranty', value: '2-5 Years' },
+      { label: 'Battery Service', value: 'Available' },
+      { label: 'Installation', value: 'Professional' }
     ],
 
     warranties: [
@@ -1884,11 +1772,8 @@ WE PROVIDE:
       'Battery warranty'
     ],
 
-    certifications: [
-      'APC Authorized Partner',
-      'Eaton Partner',
-      'Vertiv Certified'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['distribution-boards', 'cummins-generators', 'ats-changeover', 'electrical-services'],
 
@@ -2078,21 +1963,14 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
       }
     ],
 
-    testimonials: [
-      {
-        name: 'James Wachira',
-        company: 'Wachira Farm',
-        location: 'Kiambu',
-        quote: 'The solar pump system from EmersonEIMS has transformed our farm. No more electricity bills for pumping, and plenty of water for irrigation. Paid for itself in 2 years.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'Pumps Installed', value: '600+' },
-      { label: 'Solar Systems', value: '150+' },
       { label: 'Max Depth', value: '300m' },
-      { label: 'Warranty', value: '1-2 Years' }
+      { label: 'Warranty', value: '1-2 Years' },
+      { label: 'Solar Option', value: 'Available' },
+      { label: 'Site Survey', value: 'Free' }
     ],
 
     warranties: [
@@ -2101,11 +1979,8 @@ We work with leading pump brands including Grundfos, Pedrollo, DAB, Calpeda, and
       'Motor rewinding warranty'
     ],
 
-    certifications: [
-      'Grundfos Partner',
-      'Pedrollo Dealer',
-      'Solar Installer Certified'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['solar-energy', 'motor-rewinding', 'distribution-boards', 'electrical-services'],
 
@@ -2294,21 +2169,14 @@ WE PROVIDE:
       }
     ],
 
-    testimonials: [
-      {
-        name: 'Dr. Elizabeth Muthoni',
-        company: 'Muthoni General Hospital',
-        location: 'Nakuru',
-        quote: 'Our incinerator from EmersonEIMS has been operating reliably for 4 years. They helped us with NEMA compliance and provide excellent maintenance support.',
-        rating: 5
-      }
-    ],
+    // Real customer testimonials will be added here
+    testimonials: [],
 
     stats: [
-      { label: 'Incinerators Installed', value: '50+' },
-      { label: 'NEMA Compliance', value: '100%' },
       { label: 'Capacity Range', value: '20-300 kg/hr' },
-      { label: 'Operating Temp', value: '800-1200°C' }
+      { label: 'Operating Temp', value: '800-1200°C' },
+      { label: 'Warranty', value: '1 Year' },
+      { label: 'Training', value: 'Included' }
     ],
 
     warranties: [
@@ -2317,11 +2185,8 @@ WE PROVIDE:
       'Refractory warranty'
     ],
 
-    certifications: [
-      'NEMA Licensed',
-      'ISO 14001 Aligned',
-      'Healthcare Waste Specialist'
-    ],
+    // Certifications will be added when officially obtained
+    certifications: [],
 
     relatedServices: ['generator-repairs', 'distribution-boards', 'electrical-services'],
 
@@ -2370,12 +2235,10 @@ export const SERVICE_CATEGORIES = [
   { id: 'waste', name: 'Waste Management', icon: '🔥' },
 ] as const;
 
-// Trust badges for display
+// Trust badges for display - only verifiable claims
 export const TRUST_BADGES = [
-  { title: '3-Year Warranty', description: 'Industry-leading warranty on Cummins generators', icon: '🛡️' },
-  { title: 'Authorized Dealer', description: 'Official dealer for Cummins, Grundfos, and more', icon: '✅' },
+  { title: '3-Year Warranty', description: 'Generator warranty available', icon: '🛡️' },
   { title: '24/7 Support', description: 'Round-the-clock emergency service', icon: '📞' },
-  { title: '15+ Years Experience', description: 'Serving Kenya since 2008', icon: '🏆' },
-  { title: 'ISO 9001', description: 'Quality management certified', icon: '📋' },
-  { title: '500+ Clients', description: 'Trusted by businesses across East Africa', icon: '👥' },
+  { title: 'Nationwide Service', description: 'Serving all of Kenya', icon: '🇰🇪' },
+  { title: 'Free Consultation', description: 'No obligation site assessment', icon: '💬' },
 ];

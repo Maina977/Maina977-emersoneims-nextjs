@@ -28,10 +28,10 @@ const PHONE_NUMBER = '+254768860665';
 const WHATSAPP_NUMBER = '254768860665';
 
 const trustBadges = [
-  { icon: '✓', text: 'Cummins Authorized Dealer' },
-  { icon: '✓', text: '24/7 Emergency Support' },
   { icon: '✓', text: '3-Year Warranty' },
-  { icon: '✓', text: '10,000+ Satisfied Customers' },
+  { icon: '✓', text: '24/7 Emergency Support' },
+  { icon: '✓', text: 'Nationwide Service' },
+  { icon: '✓', text: 'Free Consultation' },
 ];
 
 export default function ServiceCTA({
@@ -242,16 +242,16 @@ export function HeroServiceCTA({
       {/* Trust Indicators */}
       <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-400">
         <span className="flex items-center gap-1">
-          <span className="text-green-500">✓</span> Cummins Authorized
+          <span className="text-green-500">✓</span> 3-Year Warranty
         </span>
         <span className="flex items-center gap-1">
           <span className="text-green-500">✓</span> 24/7 Support
         </span>
         <span className="flex items-center gap-1">
-          <span className="text-green-500">✓</span> 47 Counties
+          <span className="text-green-500">✓</span> Nationwide Service
         </span>
         <span className="flex items-center gap-1">
-          <span className="text-green-500">✓</span> 10,000+ Customers
+          <span className="text-green-500">✓</span> Free Consultation
         </span>
       </div>
     </div>

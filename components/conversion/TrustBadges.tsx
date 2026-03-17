@@ -28,43 +28,29 @@ const badges: Badge[] = [
     id: '3-year-warranty',
     icon: '🛡️',
     title: '3-Year Warranty',
-    subtitle: 'On All Cummins Generators',
+    subtitle: 'Generator Warranty Available',
     color: 'from-amber-500 to-orange-500',
-  },
-  {
-    id: 'cummins-authorized',
-    icon: '✅',
-    title: 'Cummins Authorized',
-    subtitle: 'Official Dealer in Kenya',
-    color: 'from-red-500 to-red-600',
   },
   {
     id: '24-7-support',
     icon: '📞',
-    title: '24/7 Emergency Support',
+    title: '24/7 Support',
     subtitle: 'Call +254768860665',
     color: 'from-blue-500 to-cyan-500',
   },
   {
-    id: 'customers',
-    icon: '👥',
-    title: '10,000+ Customers',
-    subtitle: 'Trusted Since 2010',
-    color: 'from-green-500 to-emerald-500',
-  },
-  {
-    id: 'counties',
+    id: 'nationwide',
     icon: '📍',
-    title: '47 Counties Served',
-    subtitle: 'Nationwide Coverage',
+    title: 'Nationwide Service',
+    subtitle: 'Serving All Kenya',
     color: 'from-purple-500 to-indigo-500',
   },
   {
-    id: 'iso-certified',
-    icon: '🏆',
-    title: 'ISO 9001:2015',
-    subtitle: 'Quality Certified',
-    color: 'from-yellow-500 to-amber-500',
+    id: 'free-quote',
+    icon: '💬',
+    title: 'Free Consultation',
+    subtitle: 'No Obligation Quote',
+    color: 'from-green-500 to-emerald-500',
   },
 ];
 
@@ -79,53 +65,9 @@ interface Testimonial {
   image?: string;
 }
 
-const testimonials: Testimonial[] = [
-  {
-    id: '1',
-    name: 'James Mwangi',
-    company: 'Safari Lodge',
-    role: 'Operations Manager',
-    location: 'Naivasha',
-    rating: 5,
-    text: 'EmersonEIMS installed a 250kVA Cummins generator for our lodge. Zero downtime in 2 years! Our guests never experience power cuts. The 24/7 support is exceptional.',
-  },
-  {
-    id: '2',
-    name: 'Dr. Sarah Ochieng',
-    company: 'Riverside Hospital',
-    role: 'Hospital Administrator',
-    location: 'Kisumu',
-    rating: 5,
-    text: 'When you run a hospital, power is life. EmersonEIMS understands this. Their response time during emergencies is incredible - they saved us during a critical surgery.',
-  },
-  {
-    id: '3',
-    name: 'Peter Kamau',
-    company: 'Flower Farm',
-    role: 'Managing Director',
-    location: 'Naivasha',
-    rating: 5,
-    text: 'We lost KES 5 million in flowers before EmersonEIMS. Now our cold rooms never fail. The solar + generator hybrid system cut our fuel costs by 40%.',
-  },
-  {
-    id: '4',
-    name: 'Grace Wanjiku',
-    company: 'International School',
-    role: 'Principal',
-    location: 'Karen, Nairobi',
-    rating: 5,
-    text: 'Exams used to be stressful with power blackouts. Since installing the EmersonEIMS backup system, not a single exam has been disrupted. Parents are happy!',
-  },
-  {
-    id: '5',
-    name: 'Ahmed Hassan',
-    company: 'Shopping Mall',
-    role: 'Facility Manager',
-    location: 'Mombasa',
-    rating: 5,
-    text: 'Managing 200 tenants, I cannot afford power issues. EmersonEIMS monitors our system remotely and fixes problems before they happen. True professionals!',
-  },
-];
+// Real testimonials will be added here as customers provide feedback
+// Contact us at +254768860665 to share your experience
+const testimonials: Testimonial[] = [];
 
 interface TrustBadgesProps {
   variant?: 'full' | 'compact' | 'badges-only' | 'testimonials-only';
@@ -140,9 +82,9 @@ export default function TrustBadges({
 }: TrustBadgesProps) {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
-  // Auto-rotate testimonials
+  // Auto-rotate testimonials (only if there are real testimonials)
   useEffect(() => {
-    if (!showTestimonials) return;
+    if (!showTestimonials || testimonials.length === 0) return;
 
     const timer = setInterval(() => {
       setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
@@ -191,6 +133,8 @@ export default function TrustBadges({
   }
 
   if (variant === 'testimonials-only') {
+    // Don't render if no real testimonials
+    if (testimonials.length === 0) return null;
     return (
       <div className={className}>
         <TestimonialCarousel
@@ -208,7 +152,7 @@ export default function TrustBadges({
       {/* Trust Badges */}
       <div>
         <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
-          Why <span className="text-amber-400">10,000+ Customers</span> Trust Us
+          Why <span className="text-amber-400">Kenya Businesses</span> Choose Us
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {badges.map((badge, index) => (
@@ -230,8 +174,8 @@ export default function TrustBadges({
         </div>
       </div>
 
-      {/* Testimonials */}
-      {showTestimonials && (
+      {/* Testimonials - only show if real testimonials exist */}
+      {showTestimonials && testimonials.length > 0 && (
         <div>
           <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
             What Our <span className="text-amber-400">Customers Say</span>
@@ -357,13 +301,10 @@ function TestimonialCarousel({
 // Export badges and testimonials for use elsewhere
 export { badges, testimonials };
 
-// Export a simple inline trust strip
+// Export a simple inline trust strip - only verifiable claims
 export function TrustStrip({ className = '' }: { className?: string }) {
   return (
     <div className={`flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm ${className}`}>
-      <span className="flex items-center gap-1 text-slate-400">
-        <span className="text-green-500">✓</span> Cummins Authorized
-      </span>
       <span className="flex items-center gap-1 text-slate-400">
         <span className="text-green-500">✓</span> 3-Year Warranty
       </span>
@@ -371,10 +312,10 @@ export function TrustStrip({ className = '' }: { className?: string }) {
         <span className="text-green-500">✓</span> 24/7 Support
       </span>
       <span className="flex items-center gap-1 text-slate-400">
-        <span className="text-green-500">✓</span> 47 Counties
+        <span className="text-green-500">✓</span> Nationwide Service
       </span>
       <span className="flex items-center gap-1 text-slate-400">
-        <span className="text-green-500">✓</span> 10,000+ Customers
+        <span className="text-green-500">✓</span> Free Consultation
       </span>
     </div>
   );

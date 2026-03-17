@@ -99,45 +99,8 @@ export default function ComprehensiveKenyaSEO() {
       "description": industry.description,
       "eligibleCustomerType": industry.industry
     })),
-    "award": [
-      "Best Generator Company Kenya 2024",
-      "Top Solar Installer East Africa",
-      "ISO 9001:2015 Certified"
-    ],
-    "slogan": "3-Year Warranty | 47 Counties | 24/7 Emergency Service",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "512",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
-    "review": [
-      {
-        "@type": "Review",
-        "author": {
-          "@type": "Organization",
-          "name": "Kenyatta National Hospital"
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": "5"
-        },
-        "reviewBody": "EmersonEIMS installed our backup generator system. Excellent service and the 3-year warranty gives us peace of mind."
-      },
-      {
-        "@type": "Review",
-        "author": {
-          "@type": "Organization",
-          "name": "Sarova Hotels"
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": "5"
-        },
-        "reviewBody": "Reliable power solutions for our hotel chain across Kenya. 24/7 support is invaluable."
-      }
-    ]
+    // Awards and reviews will be added when earned/received
+    "slogan": "3-Year Warranty | Nationwide Service | 24/7 Emergency Support"
   };
 
   // Service Area Schema for each county

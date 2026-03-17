@@ -169,29 +169,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 15,000/month'
       }
     ],
-    testimonials: [
-      {
-        quote: 'We used to get at least 3 bad reviews every month mentioning power outages. Since EmersonEIMS installed our automatic changeover system, we\'ve had ZERO power-related complaints in 18 months. Our TripAdvisor rating went from 3.8 to 4.6 stars.',
-        name: 'James Mwangi',
-        title: 'General Manager',
-        company: 'Westlands Premier Hotel',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'During a wedding reception for 400 guests, Kenya Power went off. I held my breath... but nothing happened. The lights didn\'t even flicker. The couple\'s parents thanked me personally. That ATS system paid for itself that one night.',
-        name: 'Grace Akinyi',
-        title: 'Operations Director',
-        company: 'Lake Naivasha Resort',
-        location: 'Naivasha'
-      },
-      {
-        quote: 'Our safari lodge in the Mara loses Ksh 50,000 per hour when the power goes out - guests paying $500/night expect 5-star service. EmersonEIMS gave us a solar-generator hybrid that handles everything, even in the middle of nowhere.',
-        name: 'Patrick Leshan',
-        title: 'Owner',
-        company: 'Mara Plains Camp',
-        location: 'Maasai Mara'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'How quickly can you install a generator system for my hotel?',
@@ -323,29 +302,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 35,000/month'
       }
     ],
-    testimonials: [
-      {
-        quote: 'We had a patient on a ventilator when the power went out. Before EmersonEIMS, we had 30 seconds of terror every time. Now? The UPS kicks in instantly, generator starts in 8 seconds, and we never skip a beat. We\'ve done surgeries through 6-hour blackouts.',
-        name: 'Dr. Faith Wanjiru',
-        title: 'Medical Director',
-        company: 'Mater Hospital',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'Our lab equipment is worth Ksh 80 million. One power surge destroyed a Ksh 3 million analyzer. EmersonEIMS installed a complete isolation system - haven\'t had a single equipment issue in 3 years. Insurance company was impressed.',
-        name: 'Dr. Samuel Ochieng',
-        title: 'Laboratory Director',
-        company: 'Lancet Kenya',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'Running a hospital in Turkana means unreliable power is our default. EmersonEIMS gave us a solar-generator hybrid that runs 24/7. We\'ve vaccinated 50,000+ children with vaccines kept at perfect temperature. They understand rural healthcare.',
-        name: 'Sister Mary Njeri',
-        title: 'Administrator',
-        company: 'St. Mary\'s Mission Hospital',
-        location: 'Lodwar'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'What is the difference between a regular UPS and a medical-grade UPS?',
@@ -477,29 +435,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 400,000 (5kW system)'
       }
     ],
-    testimonials: [
-      {
-        quote: 'During last year\'s KCSE, Kenya Power went off for 4 hours in our area. Other schools panicked. Our students kept writing - the generator changeover was so smooth, most didn\'t even notice. We\'ve had 100% exam completion since installing EmersonEIMS systems.',
-        name: 'Mr. Peter Kamau',
-        title: 'Principal',
-        company: 'Starehe Boys Centre',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'Our computer lab has 60 desktops donated by Microsoft. We lost 12 machines to power surges before EmersonEIMS installed proper UPS protection. Three years later, not a single failure. The UPS has paid for itself many times over.',
-        name: 'Mrs. Agnes Mutua',
-        title: 'ICT Head',
-        company: 'Kenya High School',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'As a boarding school for girls in a rural area, security is everything. Parents trust us with their daughters. EmersonEIMS gave us a solar-generator system that keeps our security cameras, fence alarms, and emergency lighting running 24/7. Zero incidents since installation.',
-        name: 'Sister Catherine Omondi',
-        title: 'Director',
-        company: 'St. Teresa\'s Girls Boarding',
-        location: 'Kisii'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'Do you offer payment plans for schools?',
@@ -631,29 +568,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 85,000 per ATM'
       }
     ],
-    testimonials: [
-      {
-        quote: 'We have 42 ATMs in Nairobi alone. Before EmersonEIMS, we averaged 3 ATM failures per week due to power issues. After installing their UPS kits, we\'ve had zero power-related failures in 14 months. Our uptime reports look beautiful now.',
-        name: 'John Kuria',
-        title: 'Head of Electronic Banking',
-        company: 'Tier 1 Bank (Confidential)',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'Our SACCO serves 50,000 members. When power goes out, tellers can\'t work, and members get angry. EmersonEIMS installed a system that keeps us running through 8-hour blackouts. Our members think we have special KPLC treatment!',
-        name: 'Margaret Wambui',
-        title: 'CEO',
-        company: 'Ukulima SACCO',
-        location: 'Nakuru'
-      },
-      {
-        quote: 'As a fintech, our servers are our business. One outage cost us Ksh 2 million in SLA penalties to bank partners. EmersonEIMS designed a redundant power system with 99.99% uptime. We\'ve had perfect uptime for 2 years - our bank partners are impressed.',
-        name: 'Victor Omondi',
-        title: 'CTO',
-        company: 'PesaLink Technologies',
-        location: 'Nairobi'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'How do you ensure CBK compliance?',
@@ -785,29 +701,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 45,000/month (per generator)'
       }
     ],
-    testimonials: [
-      {
-        quote: 'Our plastic injection line worth Ksh 50 million was getting damaged by frequent power cuts. We were spending Ksh 2 million per year on repairs alone. EmersonEIMS installed a 500kVA generator with seamless changeover - repair costs dropped to almost zero.',
-        name: 'Rajesh Patel',
-        title: 'Factory Manager',
-        company: 'Packaging Industries Ltd',
-        location: 'Industrial Area, Nairobi'
-      },
-      {
-        quote: 'We export textiles to the US and EU. Missing a container deadline means air-freighting at Ksh 300 per kg instead of Ksh 30 by sea. Since EmersonEIMS installed our backup system, we\'ve had 100% on-time delivery for 3 years straight.',
-        name: 'Lucy Njuguna',
-        title: 'Operations Director',
-        company: 'Kenya Textile Mills',
-        location: 'Athi River'
-      },
-      {
-        quote: 'Power factor penalties were costing us Ksh 180,000 per month. EmersonEIMS installed automatic capacitor banks - our power factor went from 0.72 to 0.98. Penalties eliminated, plus our motors run cooler and last longer. Best investment we\'ve made.',
-        name: 'Joseph Mutiso',
-        title: 'Plant Engineer',
-        company: 'Brookside Dairy',
-        location: 'Ruiru'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'What size generator does my factory need?',
@@ -939,29 +834,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 1,800,000 (complete system)'
       }
     ],
-    testimonials: [
-      {
-        quote: 'We lost Ksh 8 million in one night when our cold room failed during a power outage. Since EmersonEIMS installed a dedicated backup system, we\'ve had zero cold chain breaks in 3 years. Our reject rate dropped from 5% to under 1%.',
-        name: 'Peter Van Der Berg',
-        title: 'Farm Manager',
-        company: 'Oserian Flowers',
-        location: 'Naivasha'
-      },
-      {
-        quote: 'Our diesel bill was Ksh 450,000 per month just for irrigation pumping. EmersonEIMS installed solar with generator backup. Now we spend Ksh 80,000 per month. We\'ll pay off the system in 18 months and then it\'s pure savings.',
-        name: 'Jane Wangari',
-        title: 'Operations Director',
-        company: 'Flamingo Horticulture',
-        location: 'Nakuru'
-      },
-      {
-        quote: 'During the 2024 election period, we had 12-hour blackouts daily. Other farms were scrambling. Our generator ran smoothly for weeks - EmersonEIMS had done full maintenance just before. We shipped every order on time while competitors lost millions.',
-        name: 'Michael Karanja',
-        title: 'General Manager',
-        company: 'Kenya Cuttings Ltd',
-        location: 'Thika'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'How do you handle remote farm locations?',
@@ -1093,29 +967,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 2,000,000 (100kVA+)'
       }
     ],
-    testimonials: [
-      {
-        quote: 'Our Kilimani project was delayed 3 months waiting for KPLC. On our next project, we rented a generator from EmersonEIMS on day one. We finished 2 months ahead of schedule. The rental cost was nothing compared to delay costs.',
-        name: 'James Maina',
-        title: 'Project Manager',
-        company: 'Hass Consult Developments',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'Our 120-unit apartment complex was getting constant complaints about elevator failures during blackouts. EmersonEIMS installed a generator that starts so smoothly, residents in the elevator don\'t even feel it. Complaints dropped to zero.',
-        name: 'Rose Mutua',
-        title: 'Property Manager',
-        company: 'Knight Frank Kenya',
-        location: 'Westlands'
-      },
-      {
-        quote: 'We manage 15 residential compounds in Nairobi. EmersonEIMS handles all our backup power - from small 15kVA units to 200kVA systems. One vendor, consistent quality, and they respond fast. Residents love the reliability.',
-        name: 'Daniel Ochieng',
-        title: 'Operations Director',
-        company: 'Pam Golding Properties',
-        location: 'Nairobi'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'Can we rent a generator during construction and then buy it?',
@@ -1247,29 +1100,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 120,000 (10kVA refurb)'
       }
     ],
-    testimonials: [
-      {
-        quote: 'Our Sunday service has 3,000 people and is livestreamed globally. When Kenya Power fails, our generator kicks in so smoothly that viewers online don\'t notice. EmersonEIMS understood our budget constraints and worked with us on payments.',
-        name: 'Bishop David Oginde',
-        title: 'Senior Pastor',
-        company: 'Christ Is The Answer Ministries',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'We\'re a small community church. We couldn\'t afford a new generator, but EmersonEIMS offered us a quality refurbished unit at half the price. It\'s been running flawlessly for 2 years. They even let us pay in 6 installments.',
-        name: 'Pastor John Kimani',
-        title: 'Senior Pastor',
-        company: 'Grace Community Chapel',
-        location: 'Nakuru'
-      },
-      {
-        quote: 'We host weddings and funerals for the community. After a wedding was ruined by a 3-hour blackout, we installed EmersonEIMS generator. Now couples specifically request our venue because they know the power is reliable.',
-        name: 'Imam Hassan Mohammed',
-        title: 'Head Imam',
-        company: 'Jamia Mosque',
-        location: 'Mombasa'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'Do you offer payment plans for churches?',
@@ -1401,29 +1233,8 @@ export const INDUSTRIES: Industry[] = [
         price: 'From Ksh 250,000 (portable 10kVA)'
       }
     ],
-    testimonials: [
-      {
-        quote: 'We needed generators for 15 Huduma Centers across 5 counties. EmersonEIMS handled the entire procurement process - their documentation was perfect. Installation was coordinated smoothly across all sites. Service has been excellent for 3 years.',
-        name: 'Dr. Mary Kimonye',
-        title: 'Director, Huduma Kenya',
-        company: 'Ministry of Public Service',
-        location: 'Nairobi'
-      },
-      {
-        quote: 'Our county government offices were losing 20+ productive hours per month to power outages. EmersonEIMS installed generators at our headquarters and 8 sub-county offices. Revenue collection alone has increased by Ksh 2 million monthly.',
-        name: 'Eng. Patrick Khaemba',
-        title: 'County Chief Officer',
-        company: 'Bungoma County Government',
-        location: 'Bungoma'
-      },
-      {
-        quote: 'UNHCR operations in Kakuma require 24/7 power for registration systems, communications, and protection databases. EmersonEIMS provided a solar-diesel hybrid that runs flawlessly in the Turkana heat. They understand field operations.',
-        name: 'Ahmad Hassan',
-        title: 'Operations Manager',
-        company: 'UNHCR Kenya',
-        location: 'Kakuma'
-      }
-    ],
+    // Real testimonials will be added as customers provide feedback
+    testimonials: [],
     faqs: [
       {
         question: 'Are you AGPO registered?',

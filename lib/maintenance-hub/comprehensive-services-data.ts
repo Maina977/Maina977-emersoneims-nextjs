@@ -1052,22 +1052,14 @@ Pressure hazards exist in the cooling system, fuel system, and engine crankcase.
     }
   ],
   qualityStandards: [
-    'ISO 9001:2015 Quality Management',
-    'Kenya Bureau of Standards certified',
     'OEM-specified procedures',
     'Documented service history',
-    'Calibrated test equipment',
-    'Traceable parts sourcing',
-    'Continuing technician training',
-    'Customer satisfaction monitoring'
+    'Quality test equipment',
+    'Quality parts sourcing',
+    'Trained technicians'
   ],
-  certifications: [
-    'Authorized service provider for major brands',
-    'Energy Regulatory Commission licensed',
-    'NEMA environmental compliance',
-    'Occupational Safety certified',
-    'Insurance and bonding'
-  ],
+  // Certifications will be added when officially obtained
+  certifications: [],
   warranty: {
     standard: '90 days on parts and labor for repairs',
     extended: '12 months on installations and major repairs',

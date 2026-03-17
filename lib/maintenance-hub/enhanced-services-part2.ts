@@ -428,7 +428,8 @@ The burnout oven process releases decomposition products from insulation materia
         emergencyProtocol: 'For chemical splash in eyes: Flush with water for 15-20 minutes while holding eyelids open. Seek medical attention. For skin contact: Remove contaminated clothing, wash skin with soap and water. For inhalation: Move to fresh air, seek medical attention if symptoms persist.'
       }
     ],
-    certifications: ['Certified Motor Repair Facility', 'ISO 9001 Quality Management', 'EASA Accredited Service Center'],
+    // Certifications will be added when officially obtained
+    certifications: [],
     warranty: '12 months on rewinding under normal operating conditions'
   },
   {
