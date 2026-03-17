@@ -25,7 +25,7 @@ import {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-5-20250929';
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-opus-4-6';
 const USE_AI_DIAGNOSTICS = process.env.USE_AI_DIAGNOSTICS === 'true';
 const MAX_TOKENS = 8192;
 

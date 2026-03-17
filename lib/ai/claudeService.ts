@@ -16,7 +16,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 // Configuration
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-opus-4-5-20251101';
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-opus-4-6';
 const USE_CLAUDE_API = process.env.USE_CLAUDE_API === 'true';
 const MAX_TOKENS = parseInt(process.env.CLAUDE_MAX_TOKENS || '4096', 10);
 
