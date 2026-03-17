@@ -2,64 +2,48 @@ import { Metadata } from 'next';
 import Script from 'next/script';
 
 /**
- * General Services Maintenance Hub - SEO Metadata
- * Borehole pumps, motor rewinding, AC, electrical services in Kenya
+ * Services Section Layout - SEO Metadata
+ * Comprehensive power solutions in Kenya
  */
 
 export const metadata: Metadata = {
-  title: 'General Services Hub | Pumps, Motors, AC, Electrical Kenya',
-  description: 'Professional maintenance services in Kenya: Borehole pump repair, motor rewinding, AC installation & service, electrical work. 24/7 emergency support. Certified technicians across Nairobi, Mombasa, Kisumu.',
+  title: 'Services | Generators, Solar, Electrical, HVAC | EmersonEIMS Kenya',
+  description: 'Complete power solutions in Kenya: Cummins generators with 3-year warranty, solar installation, ATS changeovers, distribution boards, UPS, motor rewinding, AC, borehole pumps. Call +254768860665',
   keywords: [
-    // Borehole & Pumps
-    'borehole pump repair Kenya',
-    'submersible pump Kenya',
-    'borehole drilling Kenya',
-    'water pump maintenance Nairobi',
-    'pump motor rewinding',
-    'borehole pump installation',
-    'Grundfos pump Kenya',
-    'Pedrollo pump Kenya',
-    'DAB pump Kenya',
+    // Generator Keywords
+    'generator services Kenya',
+    'Cummins generators Kenya',
+    'generator installation Nairobi',
+    'generator repair Kenya',
+    'generator maintenance Kenya',
+    'backup power solutions Kenya',
 
-    // Motor rewinding
-    'motor rewinding Kenya',
-    'motor rewinding Nairobi',
-    'electric motor repair',
-    'motor winding Kenya',
-    'generator motor repair',
-    'industrial motor repair',
-    'three phase motor rewinding',
-    'single phase motor repair',
+    // Solar Keywords
+    'solar installation Kenya',
+    'solar panels Kenya',
+    'solar companies Nairobi',
+    'commercial solar Kenya',
 
-    // AC & Refrigeration
-    'AC repair Kenya',
-    'AC installation Nairobi',
-    'air conditioning service Kenya',
-    'AC maintenance Kenya',
-    'cold room installation Kenya',
-    'refrigeration repair Kenya',
-    'split AC installation',
-    'AC gas refill Kenya',
-
-    // Electrical
-    'electrical services Kenya',
-    'industrial electrical Kenya',
-    'power factor correction Kenya',
-    'electrical panel installation',
-    'changeover switch Kenya',
+    // Electrical Keywords
     'ATS installation Kenya',
-    'electrical wiring Kenya',
+    'automatic changeover Kenya',
+    'distribution board Kenya',
+    'electrical services Kenya',
 
-    // Locations
-    'maintenance services Nairobi',
-    'pump repair Mombasa',
-    'motor rewinding Kisumu',
-    'AC service Nakuru',
-    'electrical Eldoret',
-    'plumbing services Kenya',
+    // Other Services
+    'UPS systems Kenya',
+    'motor rewinding Kenya',
+    'AC installation Kenya',
+    'borehole pump Kenya',
+    'incinerator Kenya',
+
+    // Location Keywords
+    'power solutions Nairobi',
+    'electrical contractor Kenya',
+    'industrial electrician Kenya'
   ],
   authors: [{ name: 'Emerson Industrial Maintenance Services' }],
-  creator: 'Emerson EiMS',
+  creator: 'EmersonEIMS',
   publisher: 'Emerson Industrial Maintenance Services Limited',
   robots: {
     index: true,
@@ -76,32 +60,32 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://www.emersoneims.com/services',
-    siteName: 'Emerson EiMS',
-    title: 'General Services Hub | Complete Maintenance Solutions Kenya',
-    description: 'Borehole pumps, motor rewinding, AC, electrical services. 24/7 professional maintenance across Kenya.',
+    siteName: 'EmersonEIMS',
+    title: 'Professional Power Solutions | EmersonEIMS Kenya',
+    description: 'Complete power solutions: Cummins generators (3-year warranty), solar, electrical, HVAC. Professional installation and maintenance. 24/7 support.',
     images: [
       {
-        url: '/images/general-services-hub-og.jpg',
+        url: '/images/services-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'General Services Hub - Professional Maintenance Kenya',
+        alt: 'EmersonEIMS Services - Power Solutions Kenya',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'General Services Hub | Pumps, Motors, AC Kenya',
-    description: 'Professional maintenance services. Borehole pumps, motor rewinding, AC, electrical.',
-    images: ['/images/general-services-hub-og.jpg'],
-    creator: '@EmersonEiMS',
+    title: 'Power Solutions Kenya | EmersonEIMS',
+    description: 'Generators, solar, electrical, HVAC solutions with 3-year warranty. Professional service across Kenya.',
+    images: ['/images/services-og.jpg'],
+    creator: '@EmersonEIMS',
   },
   alternates: {
     canonical: 'https://www.emersoneims.com/services',
   },
-  category: 'Business',
+  category: 'Business Services',
 };
 
-// Structured Data
+// Structured Data for Services
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -109,12 +93,13 @@ const structuredData = {
       '@type': 'LocalBusiness',
       '@id': 'https://www.emersoneims.com/#organization',
       name: 'Emerson Industrial Maintenance Services',
-      description: 'Professional maintenance services including borehole pump repair, motor rewinding, AC installation, and electrical services across Kenya.',
+      description: 'Kenya\'s leading provider of power solutions including Cummins generators, solar systems, electrical services, and HVAC.',
       url: 'https://www.emersoneims.com',
-      telephone: '+254782914717',
+      telephone: '+254768860665',
       email: 'info@emersoneims.com',
       address: {
         '@type': 'PostalAddress',
+        streetAddress: 'Industrial Area',
         addressLocality: 'Nairobi',
         addressCountry: 'KE',
       },
@@ -123,99 +108,81 @@ const structuredData = {
         latitude: -1.3200,
         longitude: 36.8900,
       },
-      openingHoursSpecification: {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-        opens: '00:00',
-        closes: '23:59',
-      },
-      priceRange: 'KES 2,500 - 500,000',
+      openingHoursSpecification: [
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          opens: '08:00',
+          closes: '18:00',
+        },
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: 'Saturday',
+          opens: '09:00',
+          closes: '16:00',
+        },
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: 'Sunday',
+          opens: '00:00',
+          closes: '00:00',
+          description: 'Emergency service available',
+        },
+      ],
+      priceRange: 'KES 5,000 - 25,000,000',
       areaServed: [
-        { '@type': 'City', name: 'Nairobi' },
-        { '@type': 'City', name: 'Mombasa' },
-        { '@type': 'City', name: 'Kisumu' },
-        { '@type': 'City', name: 'Nakuru' },
-        { '@type': 'City', name: 'Eldoret' },
+        { '@type': 'Country', name: 'Kenya' },
+        { '@type': 'Country', name: 'Uganda' },
+        { '@type': 'Country', name: 'Tanzania' },
       ],
       hasOfferCatalog: {
         '@type': 'OfferCatalog',
-        name: 'Maintenance Services',
+        name: 'EmersonEIMS Services',
         itemListElement: [
           {
             '@type': 'OfferCatalog',
-            name: 'Borehole Pump Services',
+            name: 'Generator Services',
             itemListElement: [
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Pump Installation' } },
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Pump Repair & Overhaul' } },
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Borehole Rehabilitation' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cummins Generator Sales', description: '10kVA-2000kVA with 3-year warranty' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Repairs', description: '24/7 emergency repair service' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Generator Maintenance', description: 'AMC and preventive maintenance' } },
             ],
           },
           {
             '@type': 'OfferCatalog',
-            name: 'Motor Rewinding Services',
+            name: 'Solar Energy',
             itemListElement: [
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'AC Motor Rewinding' } },
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'DC Motor Repair' } },
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VFD Installation' } },
-            ],
-          },
-          {
-            '@type': 'OfferCatalog',
-            name: 'AC & Refrigeration Services',
-            itemListElement: [
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'AC Installation' } },
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'AC Servicing' } },
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cold Room Maintenance' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Residential Solar', description: 'Home solar systems' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Commercial Solar', description: 'Business solar installations' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Hybrid Systems', description: 'Solar-generator hybrid' } },
             ],
           },
           {
             '@type': 'OfferCatalog',
             name: 'Electrical Services',
             itemListElement: [
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Panel Installation' } },
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Power Factor Correction' } },
-              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Industrial Wiring' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'ATS Installation', description: 'Automatic transfer switches' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Distribution Boards', description: 'Panel fabrication and installation' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'UPS Systems', description: 'Sales and installation' } },
+            ],
+          },
+          {
+            '@type': 'OfferCatalog',
+            name: 'Other Services',
+            itemListElement: [
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Motor Rewinding', description: 'All motor types' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'AC Installation', description: 'HVAC solutions' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Borehole Pumps', description: 'Pump installation and repair' } },
+              { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Hospital Incinerators', description: 'Medical waste disposal' } },
             ],
           },
         ],
       },
-    },
-    {
-      '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'How much does motor rewinding cost in Kenya?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Motor rewinding costs start from KES 5,000 for small single-phase motors. Three-phase motors range from KES 8,000 to KES 50,000+ depending on size and complexity. We provide free inspection and quotes.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How often should AC be serviced in Kenya?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'AC units should be serviced every 3-4 months in Kenya due to dust. This includes filter cleaning, coil cleaning, and performance check. Regular service extends equipment life and maintains efficiency.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Do you offer emergency pump repair services?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes, we offer 24/7 emergency services for borehole pumps and critical equipment. Our technicians can respond within hours in Nairobi and same-day in most other areas.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What brands of pumps do you service?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'We service all major brands including Grundfos, Pedrollo, DAB, Calpeda, KSB, Lowara, and local brands. Our technicians are trained on various pump types including submersible, centrifugal, and booster pumps.',
-          },
-        },
-      ],
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.8',
+        reviewCount: '156',
+      },
     },
     {
       '@type': 'BreadcrumbList',
@@ -229,13 +196,7 @@ const structuredData = {
         {
           '@type': 'ListItem',
           position: 2,
-          name: 'Maintenance Hub',
-          item: 'https://www.emersoneims.com/maintenance-hub',
-        },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: 'General Services',
+          name: 'Services',
           item: 'https://www.emersoneims.com/services',
         },
       ],
@@ -243,7 +204,7 @@ const structuredData = {
   ],
 };
 
-export default function GeneralLayout({
+export default function ServicesLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -251,7 +212,7 @@ export default function GeneralLayout({
   return (
     <>
       <Script
-        id="general-services-structured-data"
+        id="services-structured-data"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
