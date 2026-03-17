@@ -1,36 +1,27 @@
 import { MetadataRoute } from 'next';
 import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
-import { getAllLocations, SERVICES } from '@/lib/seo/kenyaLocations';
-
-// Force dynamic generation - bypass edge cache completely
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🗺️ COMPREHENSIVE SITEMAP FOR #1 SEO RANKING IN KENYA
 // All 47 Counties + 290 Constituencies + 5,800+ Villages + 15 Services
 // Total: ~100,000+ strategically targeted SEO pages for FULL Kenya coverage
+//
+// IMPORTANT: Google limits 50,000 URLs per sitemap. Next.js auto-splits into
+// multiple sitemap files with sitemap index when using generateSitemaps().
 // ═══════════════════════════════════════════════════════════════════════════════
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 // All 47 Kenya Counties for Local SEO Dominance
 const counties = [
-  // Nairobi Region
-  'nairobi',
-  // Coast Region
-  'mombasa', 'kilifi', 'kwale', 'lamu', 'taita-taveta', 'tana-river',
-  // Central Region
+  'nairobi', 'mombasa', 'kilifi', 'kwale', 'lamu', 'taita-taveta', 'tana-river',
   'kiambu', 'nyeri', 'muranga', 'kirinyaga', 'nyandarua',
-  // Rift Valley Region
   'nakuru', 'uasin-gishu', 'narok', 'kericho', 'bomet', 'baringo', 'laikipia',
   'kajiado', 'trans-nzoia', 'nandi', 'elgeyo-marakwet', 'west-pokot', 'turkana', 'samburu',
-  // Western Region
   'kakamega', 'bungoma', 'busia', 'vihiga',
-  // Nyanza Region
   'kisumu', 'kisii', 'nyamira', 'homa-bay', 'migori', 'siaya',
-  // Eastern Region
   'machakos', 'meru', 'embu', 'kitui', 'makueni', 'tharaka-nithi', 'isiolo', 'marsabit',
-  // North Eastern Region
   'garissa', 'wajir', 'mandera'
 ];
 
@@ -43,7 +34,7 @@ const majorTowns = [
 ];
 
 // Service Types for Service-Location Pages
-const services = [
+const localServices = [
   'generator-sales', 'generator-installation', 'generator-maintenance', 'generator-repair',
   'generator-rental', 'solar-installation', 'solar-maintenance', 'ups-systems',
   'motor-rewinding', 'borehole-pumps', 'electrical-services', 'power-backup'
@@ -62,612 +53,292 @@ const generatorSizes = [
   '600kva', '750kva', '800kva', '1000kva', '1250kva', '1500kva', '2000kva'
 ];
 
-// Blog posts for sitemap - matches lib/data/blog-articles.ts
+// Blog posts
 const blogPosts = [
-  'generator-maintenance-tips-kenya',
-  'generator-cost-saving-strategies',
-  'generator-buying-guide-kenya',
-  'generator-safety-tips-kenya',
-  'generator-fire-safety-prevention',
-  'solar-energy-solutions-kenya',
-  'weather-impact-generators-kenya-counties',
-  'diy-generator-maintenance-home',
-  'diesel-generator-best-practices',
-  'generator-roi-analysis-kenya',
-  'solar-installation-tips-kenya',
-  'generator-procurement-kenya',
+  'generator-maintenance-tips-kenya', 'generator-cost-saving-strategies',
+  'generator-buying-guide-kenya', 'generator-safety-tips-kenya',
+  'generator-fire-safety-prevention', 'solar-energy-solutions-kenya',
+  'weather-impact-generators-kenya-counties', 'diy-generator-maintenance-home',
+  'diesel-generator-best-practices', 'generator-roi-analysis-kenya',
+  'solar-installation-tips-kenya', 'generator-procurement-kenya',
 ];
 
-// Error Code Categories for Diagnostic Pages
+// Error Code Categories
 const errorCodeCategories = [
   'cummins-fault-codes', 'perkins-fault-codes', 'caterpillar-fault-codes',
   'deepsea-fault-codes', 'powerwizard-fault-codes', 'comap-fault-codes',
   'woodward-fault-codes', 'generator-alarm-codes', 'generator-warning-codes'
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
+// Industries
+const industries = [
+  'hospitals', 'hotels', 'factories', 'schools', 'supermarkets', 'banks',
+  'telecom', 'construction', 'farms', 'data-centers', 'malls', 'offices'
+];
+
+// Spare Parts
+const sparePartsCategories = [
+  'filters', 'belts', 'batteries', 'starters', 'alternators', 'injectors',
+  'fuel-pumps', 'water-pumps', 'turbochargers', 'gaskets', 'bearings', 'controllers'
+];
+
+// Generator Problems
+const generatorProblems = [
+  'wont-start', 'overheating', 'low-oil-pressure', 'voltage-frequency-unstable', 'exhaust-smoke'
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SITEMAP INDEX GENERATOR - Required for 100,000+ URLs
+// Each sitemap file can have max 50,000 URLs
+// ═══════════════════════════════════════════════════════════════════════════════
+export async function generateSitemaps() {
+  // Calculate number of sitemaps needed
+  // Core pages: ~200
+  // Kenya location pages: ~97,000 (villages × services)
+  // We'll split by county for manageable chunks
+
+  const sitemaps = [
+    { id: 0 }, // Core pages, generators, solar, diagnostics, tools
+    { id: 1 }, // Blog, brands, sizes, error codes, industries, spare parts
+  ];
+
+  // Add one sitemap per county (47 counties) for location pages
+  KENYA_LOCATIONS.forEach((_, index) => {
+    sitemaps.push({ id: index + 2 });
+  });
+
+  return sitemaps;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SITEMAP GENERATOR BY ID
+// ═══════════════════════════════════════════════════════════════════════════════
+export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
   const currentDate = new Date();
-  
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // MAIN PAGES - Highest Priority (Homepage & Core Pages)
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const mainPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/about-us`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/brands`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/careers`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.4,
-    },
-    {
-      url: `${baseUrl}/terms`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.4,
-    },
-  ];
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // GENERATOR PAGES - Premium Revenue Pages
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const generatorPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/generators`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/generators/used`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generators/installation`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generators/maintenance`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generators/rental`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generators/spare-parts`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generators/case-studies`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/generator-parts`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/generator-services`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-  ];
+  // Sitemap 0: Core pages
+  if (id === 0) {
+    return [
+      // Main pages
+      { url: BASE_URL, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
+      { url: `${BASE_URL}/about-us`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.8 },
+      { url: `${BASE_URL}/contact`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
+      { url: `${BASE_URL}/careers`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.6 },
+      { url: `${BASE_URL}/privacy`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
+      { url: `${BASE_URL}/terms`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // SOLAR PAGES - Growing Market
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const solarPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/solar`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/solutions/solar`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/solutions/solar-sizing`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-  ];
+      // Generator pages
+      { url: `${BASE_URL}/generators`, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
+      { url: `${BASE_URL}/generators/used`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
+      { url: `${BASE_URL}/generators/installation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
+      { url: `${BASE_URL}/generators/maintenance`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
+      { url: `${BASE_URL}/generators/rental`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
+      { url: `${BASE_URL}/generators/spare-parts`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
+      { url: `${BASE_URL}/generators/case-studies`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+      { url: `${BASE_URL}/generator-parts`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+      { url: `${BASE_URL}/generator-services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // DIAGNOSTIC PAGES - Technical Authority
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const diagnosticPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/diagnostics`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/diagnostic-suite`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/diagnostic-cockpit`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/diagnostic-qa`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/fault-code-lookup`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/innovations`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-  ];
+      // Solar pages
+      { url: `${BASE_URL}/solar`, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
+      { url: `${BASE_URL}/solutions/solar`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${BASE_URL}/solutions/solar-sizing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // SERVICE & SOLUTION PAGES
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const servicePages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/service`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/services`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/solutions`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/solutions/generators`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/solutions/controls`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/solutions/ups`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/solutions/motor-rewinding`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/solutions/borehole-pumps`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/solutions/incinerators`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/solutions/ac`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/solutions/diesel-automation`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/solutions/motors`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/solutions/power-interruptions`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/fabrication`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/case-studies`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-  ];
+      // Diagnostic pages
+      { url: `${BASE_URL}/diagnostics`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${BASE_URL}/diagnostic-suite`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+      { url: `${BASE_URL}/diagnostic-cockpit`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
+      { url: `${BASE_URL}/diagnostic-qa`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.8 },
+      { url: `${BASE_URL}/fault-code-lookup`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+      { url: `${BASE_URL}/innovations`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // BLOG & CONTENT PAGES - Authority Building
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const blogPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    ...blogPosts.map(slug => ({
-      url: `${baseUrl}/blog/${slug}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    })),
-    {
-      url: `${baseUrl}/knowledge-base`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/faq`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/troubleshooting`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-  ];
+      // Service & Solution pages
+      { url: `${BASE_URL}/service`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${BASE_URL}/services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${BASE_URL}/solutions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${BASE_URL}/solutions/generators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+      { url: `${BASE_URL}/solutions/controls`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+      { url: `${BASE_URL}/solutions/ups`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+      { url: `${BASE_URL}/solutions/motor-rewinding`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+      { url: `${BASE_URL}/solutions/borehole-pumps`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+      { url: `${BASE_URL}/solutions/incinerators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+      { url: `${BASE_URL}/solutions/ac`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+      { url: `${BASE_URL}/solutions/diesel-automation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+      { url: `${BASE_URL}/solutions/motors`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+      { url: `${BASE_URL}/solutions/power-interruptions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+      { url: `${BASE_URL}/fabrication`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+      { url: `${BASE_URL}/case-studies`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // TOOLS & CALCULATORS - High Engagement Pages
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const toolPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/calculators`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/diagnostic-journey`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/booking`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/gallery`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-  ];
+      // Tools & Calculators
+      { url: `${BASE_URL}/calculators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${BASE_URL}/diagnostic-journey`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+      { url: `${BASE_URL}/booking`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
+      { url: `${BASE_URL}/gallery`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // GENERATOR ORACLE - Premium Diagnostic Tool
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const generatorOraclePages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/generator-oracle`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/generator-oracle/tools`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/generator-oracle/purchase`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-  ];
+      // Generator Oracle
+      { url: `${BASE_URL}/generator-oracle`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
+      { url: `${BASE_URL}/generator-oracle/tools`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${BASE_URL}/generator-oracle/purchase`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // GENERATOR PROBLEMS - SEO Landing Pages for Common Issues
-  // Targets high-intent searches: "generator won't start", "generator overheating"
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const generatorProblems = [
-    'wont-start',
-    'overheating',
-    'low-oil-pressure',
-    'voltage-frequency-unstable',
-    'exhaust-smoke',
-  ];
+      // Generator Problems
+      { url: `${BASE_URL}/generator-problems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      ...generatorProblems.map(problem => ({
+        url: `${BASE_URL}/generator-problems/${problem}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.85,
+      })),
 
-  const generatorProblemPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/generator-problems`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    ...generatorProblems.map(problem => ({
-      url: `${baseUrl}/generator-problems/${problem}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
-      priority: 0.85,
-    })),
-  ];
+      // County index pages
+      { url: `${BASE_URL}/counties`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+      ...counties.map(county => ({
+        url: `${BASE_URL}/counties/${county}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.85,
+      })),
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // COUNTY PAGES - Local SEO Dominance (47 Counties)
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const countyPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/counties`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    ...counties.map(county => ({
-      url: `${baseUrl}/counties/${county}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
-      priority: 0.85,
-    })),
-  ];
-
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // MAJOR TOWN PAGES - Extra Local SEO Coverage
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const townPages: MetadataRoute.Sitemap = majorTowns.map(town => ({
-    url: `${baseUrl}/locations/${town}`,
-    lastModified: currentDate,
-    changeFrequency: 'weekly' as const,
-    priority: 0.75,
-  }));
-
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // GENERATOR BRAND PAGES - Brand Authority
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const brandPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/brands`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-    ...generatorBrands.map(brand => ({
-      url: `${baseUrl}/generators/brands/${brand}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    })),
-  ];
-
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // GENERATOR SIZE PAGES - Size-Based Search Intent
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const sizePages: MetadataRoute.Sitemap = generatorSizes.map(size => ({
-    url: `${baseUrl}/generators/${size}`,
-    lastModified: currentDate,
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }));
-
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // ERROR CODE PAGES - Technical Authority for Diagnostics
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const errorCodePages: MetadataRoute.Sitemap = errorCodeCategories.map(category => ({
-    url: `${baseUrl}/diagnostics/${category}`,
-    lastModified: currentDate,
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }));
-
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // SERVICE-LOCATION PAGES - Hyper-Local SEO (Top Counties Only)
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const topCounties = ['nairobi', 'mombasa', 'kisumu', 'nakuru', 'kiambu', 'machakos', 'kajiado', 'nyeri', 'meru'];
-  const serviceLocationPages: MetadataRoute.Sitemap = [];
-
-  topCounties.forEach(county => {
-    services.forEach(service => {
-      serviceLocationPages.push({
-        url: `${baseUrl}/services/${service}/${county}`,
+      // Major town pages
+      ...majorTowns.map(town => ({
+        url: `${BASE_URL}/locations/${town}`,
         lastModified: currentDate,
         changeFrequency: 'weekly' as const,
         priority: 0.75,
-      });
-    });
-  });
+      })),
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // INDUSTRY-SPECIFIC PAGES - Vertical Market SEO
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const industries = [
-    'hospitals', 'hotels', 'factories', 'schools', 'supermarkets', 'banks',
-    'telecom', 'construction', 'farms', 'data-centers', 'malls', 'offices'
-  ];
+      // Kenya index
+      { url: `${BASE_URL}/kenya`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+      { url: `${BASE_URL}/locations`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    ];
+  }
 
-  const industryPages: MetadataRoute.Sitemap = industries.map(industry => ({
-    url: `${baseUrl}/solutions/industries/${industry}`,
-    lastModified: currentDate,
-    changeFrequency: 'weekly' as const,
-    priority: 0.75,
-  }));
+  // Sitemap 1: Blog, brands, sizes, categories
+  if (id === 1) {
+    return [
+      // Blog pages
+      { url: `${BASE_URL}/blog`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+      ...blogPosts.map(slug => ({
+        url: `${BASE_URL}/blog/${slug}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      })),
+      { url: `${BASE_URL}/knowledge-base`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+      { url: `${BASE_URL}/faq`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+      { url: `${BASE_URL}/troubleshooting`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // SPARE PARTS PAGES - Product SEO
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const sparePartsCategories = [
-    'filters', 'belts', 'batteries', 'starters', 'alternators', 'injectors',
-    'fuel-pumps', 'water-pumps', 'turbochargers', 'gaskets', 'bearings', 'controllers'
-  ];
+      // Brand pages
+      { url: `${BASE_URL}/brands`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+      ...generatorBrands.map(brand => ({
+        url: `${BASE_URL}/generators/brands/${brand}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      })),
 
-  const sparePartsPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/spare-parts`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    ...sparePartsCategories.map(category => ({
-      url: `${baseUrl}/spare-parts/${category}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    })),
-  ];
+      // Size pages
+      ...generatorSizes.map(size => ({
+        url: `${BASE_URL}/generators/${size}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      })),
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // KENYA LOCATION-SERVICE PAGES - Comprehensive Local SEO (~7,000+ Pages)
-  // /kenya/[county]/[service] + /kenya/[county]/[constituency]/[service]
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const kenyaLocationPages: MetadataRoute.Sitemap = [];
+      // Error code pages
+      ...errorCodeCategories.map(category => ({
+        url: `${BASE_URL}/diagnostics/${category}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      })),
 
-  // Kenya landing page
-  kenyaLocationPages.push({
-    url: `${baseUrl}/kenya`,
-    lastModified: currentDate,
-    changeFrequency: 'daily',
-    priority: 0.9,
-  });
+      // Industry pages
+      ...industries.map(industry => ({
+        url: `${BASE_URL}/solutions/industries/${industry}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.75,
+      })),
 
-  // Generate pages for each county
-  for (const county of KENYA_LOCATIONS) {
+      // Spare parts pages
+      { url: `${BASE_URL}/spare-parts`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+      ...sparePartsCategories.map(category => ({
+        url: `${BASE_URL}/spare-parts/${category}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      })),
+
+      // Top county service pages
+      ...['nairobi', 'mombasa', 'kisumu', 'nakuru', 'kiambu', 'machakos', 'kajiado', 'nyeri', 'meru'].flatMap(county =>
+        localServices.map(service => ({
+          url: `${BASE_URL}/services/${service}/${county}`,
+          lastModified: currentDate,
+          changeFrequency: 'weekly' as const,
+          priority: 0.75,
+        }))
+      ),
+    ];
+  }
+
+  // Sitemaps 2-48: One per county (47 counties)
+  // Each contains: county + constituencies + villages × services
+  const countyIndex = id - 2;
+  if (countyIndex >= 0 && countyIndex < KENYA_LOCATIONS.length) {
+    const county = KENYA_LOCATIONS[countyIndex];
+    const pages: MetadataRoute.Sitemap = [];
+
     // County landing page
-    kenyaLocationPages.push({
-      url: `${baseUrl}/kenya/${county.slug}`,
+    pages.push({
+      url: `${BASE_URL}/kenya/${county.slug}`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.85,
     });
 
-    // County + Service pages (47 counties × 15 services = 705 pages)
+    // County + Service pages
     for (const service of SEO_SERVICES) {
-      kenyaLocationPages.push({
-        url: `${baseUrl}/kenya/${county.slug}/${service.slug}`,
+      pages.push({
+        url: `${BASE_URL}/kenya/${county.slug}/${service.slug}`,
         lastModified: currentDate,
         changeFrequency: 'weekly',
         priority: 0.8,
       });
     }
 
-    // Constituency pages + Constituency + Service pages
+    // Constituency pages + services + villages
     for (const constituency of county.constituencies) {
-      // Constituency landing page
-      kenyaLocationPages.push({
-        url: `${baseUrl}/kenya/${county.slug}/${constituency.slug}`,
+      // Constituency landing
+      pages.push({
+        url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}`,
         lastModified: currentDate,
         changeFrequency: 'monthly',
         priority: 0.7,
       });
 
-      // Constituency + Service pages (290 constituencies × 15 services = 4,350 pages)
+      // Constituency + Service pages
       for (const service of SEO_SERVICES) {
-        kenyaLocationPages.push({
-          url: `${baseUrl}/kenya/${county.slug}/${constituency.slug}/${service.slug}`,
+        pages.push({
+          url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${service.slug}`,
           lastModified: currentDate,
           changeFrequency: 'monthly',
           priority: 0.6,
         });
       }
 
-      // ═══════════════════════════════════════════════════════════════════════════
-      // VILLAGE PAGES - Full Kenya Coverage (~5,800 villages × 15 services = 87,000 pages)
-      // Added to sitemap for complete SEO indexing by Google, Bing, Yahoo
-      // ═══════════════════════════════════════════════════════════════════════════
+      // Village pages + services (FULL COVERAGE)
       for (const village of constituency.villages || []) {
-        // Village landing page
-        kenyaLocationPages.push({
-          url: `${baseUrl}/kenya/${county.slug}/${constituency.slug}/${village.slug}`,
+        // Village landing
+        pages.push({
+          url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${village.slug}`,
           lastModified: currentDate,
           changeFrequency: 'monthly',
           priority: 0.55,
         });
 
-        // Village + Service pages (hyper-local targeting)
+        // Village + Service pages
         for (const service of SEO_SERVICES) {
-          kenyaLocationPages.push({
-            url: `${baseUrl}/kenya/${county.slug}/${constituency.slug}/${village.slug}/${service.slug}`,
+          pages.push({
+            url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${village.slug}/${service.slug}`,
             lastModified: currentDate,
             changeFrequency: 'monthly',
             priority: 0.5,
@@ -675,71 +346,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
         }
       }
     }
+
+    return pages;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // NEW LOCATIONS PAGES - Hyper-Local SEO (~30,000+ Pages)
-  // /locations/[location] + /locations/[location]/[service]
-  // ═══════════════════════════════════════════════════════════════════════════════
-  const newLocationPages: MetadataRoute.Sitemap = [];
-  const allNewLocations = getAllLocations();
-
-  // Locations index page
-  newLocationPages.push({
-    url: `${baseUrl}/locations`,
-    lastModified: currentDate,
-    changeFrequency: 'weekly',
-    priority: 0.9,
-  });
-
-  // Generate pages for each location (counties, constituencies, towns)
-  for (const location of allNewLocations) {
-    // Location landing page
-    newLocationPages.push({
-      url: `${baseUrl}/locations/${location.slug}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: location.type === 'county' ? 0.85 : 0.75,
-    });
-
-    // Location + Service pages
-    for (const service of SERVICES) {
-      newLocationPages.push({
-        url: `${baseUrl}/locations/${location.slug}/${service.slug}`,
-        lastModified: currentDate,
-        changeFrequency: 'monthly',
-        priority: location.type === 'county' ? 0.8 : 0.7,
-      });
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════════
-  // COMBINE ALL PAGES FOR COMPREHENSIVE SITEMAP
-  // Total: 100,000+ URLs covering ALL of Kenya for #1 SEO Ranking
-  // - Core pages: ~200
-  // - /kenya/ route: ~97,000 (counties + constituencies + 5,800 villages × 15 services)
-  // - /locations/ route: ~6,700 (counties + constituencies + towns × 9 services)
-  // Note: Google supports 50,000 URLs per sitemap file. Next.js auto-generates sitemap index.
-  // ═══════════════════════════════════════════════════════════════════════════════
-  return [
-    ...mainPages,
-    ...generatorPages,
-    ...solarPages,
-    ...diagnosticPages,
-    ...servicePages,
-    ...blogPages,
-    ...toolPages,
-    ...generatorOraclePages,
-    ...generatorProblemPages,
-    ...countyPages,
-    ...townPages,
-    ...brandPages,
-    ...sizePages,
-    ...errorCodePages,
-    ...serviceLocationPages,
-    ...industryPages,
-    ...sparePartsPages,
-    ...kenyaLocationPages,
-    ...newLocationPages,
-  ];
+  // Fallback - empty sitemap
+  return [];
 }
