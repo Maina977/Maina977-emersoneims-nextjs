@@ -87,6 +87,11 @@ const SolarInstallationBooking = dynamic(() => import('@/components/solar/SolarI
   ssr: false
 });
 
+const SolarMaintenanceHub = dynamic(() => import('@/components/solar/SolarMaintenanceHub'), {
+  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
+  ssr: false
+});
+
 // Kenya locations for weather
 const KENYA_LOCATIONS = [
   'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret',
@@ -448,37 +453,7 @@ export default function SolarHub() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <h2 className="text-xl font-bold text-white mb-4">📅 Maintenance Schedule</h2>
-              <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-slate-700/50">
-                    <tr>
-                      <th className="text-left p-4 text-slate-300">Task</th>
-                      <th className="text-left p-4 text-slate-300">Frequency</th>
-                      <th className="text-left p-4 text-slate-300">Duration</th>
-                      <th className="text-left p-4 text-slate-300">Priority</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {MAINTENANCE_SCHEDULE.map((item, i) => (
-                      <tr key={i} className="border-t border-slate-700">
-                        <td className="p-4 text-white">{item.task}</td>
-                        <td className="p-4 text-slate-400">{item.frequency}</td>
-                        <td className="p-4 text-slate-400">{item.duration}</td>
-                        <td className="p-4">
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            item.priority === 'critical' ? 'bg-red-500/20 text-red-400' :
-                            item.priority === 'important' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-green-500/20 text-green-400'
-                          }`}>
-                            {item.priority}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <SolarMaintenanceHub />
             </motion.div>
           )}
 
