@@ -22,6 +22,67 @@ import SizingCalculatorNew from '@/components/generators/GeneratorSizingCalculat
 
 // EDUCATIONAL CONTENT - KNOWLEDGE CENTER
 import GeneratorEducationPanel from '@/components/generators/GeneratorEducationPanel';
+import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
+
+// Generator Work Photos Gallery Data
+const generatorGalleryImages = [
+  {
+    src: '/images/enhanced/BIGOT CATERPILLAR 30KVA-4K-CINEMATIC.jpg',
+    alt: 'Caterpillar 30KVA Industrial Generator',
+    category: 'Industrial',
+    title: 'Caterpillar 30KVA Generator',
+    description: 'Premium industrial generator with Hollywood-grade cinematic finish',
+  },
+  {
+    src: '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg',
+    alt: 'FG Wilson Generator Installation',
+    category: 'Commercial',
+    title: 'FG Wilson Generator',
+    description: 'Professional installation for commercial applications',
+  },
+  {
+    src: '/images/enhanced/GREENHEART KILIFI GENERATOR-4K-CINEMATIC.jpg',
+    alt: 'Greenheart Kilifi Generator Project',
+    category: 'Project',
+    title: 'Greenheart Kilifi',
+    description: 'Large-scale generator installation project',
+  },
+  {
+    src: '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg',
+    alt: 'Kivukoni School Cummins Generator',
+    category: 'Education',
+    title: 'Kivukoni School Project',
+    description: 'Reliable power for educational institutions',
+  },
+  {
+    src: '/images/work-photos/IMG_20250513_133922.jpg',
+    alt: 'Generator Installation with Crane',
+    category: 'Installation',
+    title: 'Professional Installation',
+    description: 'Expert team handling heavy generator placement',
+  },
+  {
+    src: '/images/work-photos/IMG_20240620_152044_448.jpg',
+    alt: 'Generator Electrical Diagnostics',
+    category: 'Maintenance',
+    title: 'Electrical Diagnostics',
+    description: 'Precision testing and troubleshooting',
+  },
+  {
+    src: '/images/work-photos/IMG_20240527_090731_477.jpg',
+    alt: 'Engine Overhaul Service',
+    category: 'Overhaul',
+    title: 'Engine Overhaul',
+    description: 'Complete engine rebuild services',
+  },
+  {
+    src: '/images/work-photos/IMG_20240517_124515_040.jpg',
+    alt: 'Generator Parts Transportation',
+    category: 'Logistics',
+    title: 'Parts & Logistics',
+    description: 'Efficient parts delivery across Kenya',
+  },
+];
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -383,6 +444,37 @@ export default function GeneratorPage() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          OUR WORK GALLERY - Cinematic 4K Showcase
+      ════════════════════════════════════════════════════════════════ */}
+      <section className="py-20 bg-gradient-to-b from-black via-gray-900/30 to-black">
+        <div className="eims-shell">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="text-amber-500 text-sm font-medium uppercase tracking-wider">
+              Our Work
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mt-2 mb-4">
+              Generator Excellence in Action
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              From installation to maintenance, see our professional work across Kenya
+            </p>
+          </motion.div>
+
+          <CinematicImageGallery
+            images={generatorGalleryImages}
+            layout="nike-style"
+            showCaptions={true}
+            enableLightbox={true}
+          />
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
           WARRANTY SECTION - Industry-Leading Coverage

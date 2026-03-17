@@ -18,6 +18,53 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { AnalogClock, AnalogCalendar, WeatherWidget } from '@/components/ui/AnalogWidgets';
+import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
+
+// Solar Gallery Images - 4K Cinematic
+const solarGalleryImages = [
+  {
+    src: '/images/1 (1).png',
+    alt: 'Solar Panels at Sunset',
+    category: 'Solar Arrays',
+    title: 'Premium Solar Installation',
+    description: 'High-efficiency solar panels with cinematic sunset backdrop',
+  },
+  {
+    src: '/images/solar power farms.png',
+    alt: 'Solar Power Farm Kenya',
+    category: 'Commercial',
+    title: 'Solar Power Farms',
+    description: 'Large-scale solar farms powering Kenyan businesses',
+  },
+  {
+    src: '/images/solar for flower farms.png',
+    alt: 'Solar for Flower Farms',
+    category: 'Agriculture',
+    title: 'Agricultural Solar',
+    description: 'Solar solutions for Kenya flower farms',
+  },
+  {
+    src: '/images/solar hotel heaters.png',
+    alt: 'Solar Hotel Water Heaters',
+    category: 'Hospitality',
+    title: 'Solar Water Heating',
+    description: 'Solar thermal systems for hotels and resorts',
+  },
+  {
+    src: '/images/solar-water-pumping.png',
+    alt: 'Solar Water Pumping System',
+    category: 'Water Solutions',
+    title: 'Solar Water Pumps',
+    description: 'Off-grid solar pumping for irrigation',
+  },
+  {
+    src: '/images/solar changeover control.png',
+    alt: 'Solar Changeover Control Panel',
+    category: 'Controls',
+    title: 'Smart Changeover Systems',
+    description: 'Automatic solar-grid-generator switching',
+  },
+];
 
 // Dynamic imports for heavy components
 const SolarBibleEngine = dynamic(() => import('@/components/solar/SolarBibleEngine'), {
@@ -282,6 +329,19 @@ export default function SolarHub() {
                   <p className="text-3xl font-bold text-purple-400">47</p>
                   <p className="text-slate-400 text-sm">Counties Served</p>
                 </div>
+              </div>
+
+              {/* Solar Gallery - Cinematic 4K Showcase */}
+              <div className="mt-8">
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                  ☀️ Our Solar Installations
+                </h3>
+                <CinematicImageGallery
+                  images={solarGalleryImages}
+                  layout="carousel"
+                  showCaptions={true}
+                  enableLightbox={true}
+                />
               </div>
             </motion.div>
           )}

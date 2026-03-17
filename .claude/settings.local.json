@@ -38,7 +38,9 @@
       "Bash(head:*)",
       "Bash(vercel:*)",
       "WebSearch",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm list @next/bundle-analyzer 2>/dev/null || echo \"Bundle analyzer not installed\")",
+      "Bash(npm run:*)"
     ]
   }
 }
