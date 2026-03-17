@@ -21,6 +21,15 @@ export interface PartNumber {
   type: 'oem' | 'aftermarket' | 'generic';
 }
 
+export interface PartSupplier {
+  name: string;
+  location: string;
+  priceKES: number;
+  inStock: boolean;
+  leadTimeDays: number;
+  verified: boolean;
+}
+
 export interface GeneratorPart {
   id: string;
   name: string;
@@ -38,6 +47,8 @@ export interface GeneratorPart {
   failureSymptoms: string[];
   diagnosticTips: string[];
   criticalPart: boolean;
+  avgPriceKES?: number;
+  suppliers?: PartSupplier[];
 }
 
 export type PartCategory =
@@ -984,4 +995,20 @@ export function getAvailabilityColor(availability: GeneratorPart['availability']
     case 'special_order': return 'text-orange-500';
     default: return 'text-gray-500';
   }
+}
+
+/**
+ * Format price with currency
+ */
+export function formatPrice(amount: number, currency: 'KES' | 'USD' = 'KES'): string {
+  if (!amount || amount <= 0) return 'Contact for price';
+
+  const exchangeRate = 130; // Approximate KES/USD rate
+
+  if (currency === 'USD') {
+    const usdAmount = amount / exchangeRate;
+    return `$${usdAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  }
+
+  return `KES ${amount.toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }

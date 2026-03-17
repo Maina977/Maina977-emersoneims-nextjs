@@ -113,7 +113,7 @@ export default function PartsCompatibilityPanel() {
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-cyan-400">
-                {formatPrice(selectedPart.avgPriceKES, currency)}
+                {selectedPart.avgPriceKES ? formatPrice(selectedPart.avgPriceKES, currency) : 'Contact for price'}
               </p>
               <p className="text-sm text-slate-500">avg. price</p>
             </div>
@@ -199,35 +199,47 @@ export default function PartsCompatibilityPanel() {
           )}
 
           {/* Kenya Suppliers */}
-          <div className="mb-6">
-            <h3 className="text-white font-semibold mb-3">Kenya Suppliers</h3>
-            <div className="space-y-2">
-              {selectedPart.suppliers.map((supplier, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center justify-between"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-white font-medium">{supplier.name}</p>
-                      {supplier.verified && (
-                        <span className="text-green-400 text-xs">✓ Verified</span>
-                      )}
+          {selectedPart.suppliers && selectedPart.suppliers.length > 0 ? (
+            <div className="mb-6">
+              <h3 className="text-white font-semibold mb-3">Kenya Suppliers</h3>
+              <div className="space-y-2">
+                {selectedPart.suppliers.map((supplier: { name: string; location: string; priceKES: number; inStock: boolean; leadTimeDays: number; verified: boolean }, idx: number) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-slate-800/50 rounded-lg border border-slate-700 flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-white font-medium">{supplier.name}</p>
+                        {supplier.verified && (
+                          <span className="text-green-400 text-xs">✓ Verified</span>
+                        )}
+                      </div>
+                      <p className="text-slate-400 text-sm">{supplier.location}</p>
                     </div>
-                    <p className="text-slate-400 text-sm">{supplier.location}</p>
+                    <div className="text-right">
+                      <p className="text-cyan-400 font-semibold">
+                        {formatPrice(supplier.priceKES, currency)}
+                      </p>
+                      <p className={`text-xs ${supplier.inStock ? 'text-green-400' : 'text-yellow-400'}`}>
+                        {supplier.inStock ? 'In Stock' : `${supplier.leadTimeDays} days`}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-cyan-400 font-semibold">
-                      {formatPrice(supplier.priceKES, currency)}
-                    </p>
-                    <p className={`text-xs ${supplier.inStock ? 'text-green-400' : 'text-yellow-400'}`}>
-                      {supplier.inStock ? 'In Stock' : `${supplier.leadTimeDays} days`}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="mb-6">
+              <h3 className="text-white font-semibold mb-3">Get This Part</h3>
+              <div className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                <p className="text-slate-300 mb-2">Contact EmersonEIMS Parts Department for pricing and availability.</p>
+                <a href="tel:+254768860665" className="text-cyan-400 font-semibold hover:text-cyan-300">
+                  +254 768 860 665
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* Failure Symptoms */}
           <div className="mb-6">
@@ -257,7 +269,7 @@ export default function PartsCompatibilityPanel() {
                   >
                     <p className="text-white text-sm font-medium">{part.name}</p>
                     <p className="text-cyan-400 text-sm mt-1">
-                      {formatPrice(part.avgPriceKES, currency)}
+                      {part.avgPriceKES ? formatPrice(part.avgPriceKES, currency) : 'Contact for price'}
                     </p>
                   </button>
                 ))}
@@ -471,7 +483,7 @@ function PartCard({
             </div>
             <div className="text-right flex-shrink-0">
               <p className="text-cyan-400 font-semibold">
-                {formatPrice(part.avgPriceKES, currency)}
+                {part.avgPriceKES ? formatPrice(part.avgPriceKES, currency) : 'Contact'}
               </p>
               <p className={`text-xs ${getAvailabilityColor(part.availability)}`}>
                 {getAvailabilityLabel(part.availability)}

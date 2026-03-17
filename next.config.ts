@@ -30,6 +30,14 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   generateEtags: true,
 
+  // ═══════════════════════════════════════════════════════════════════
+  // PRODUCTION BUNDLE OPTIMIZATION
+  // ═══════════════════════════════════════════════════════════════════
+  productionBrowserSourceMaps: false, // Disable source maps in production for smaller bundles
+
+  // Output standalone for optimal serverless deployment
+  output: 'standalone',
+
   // Image optimization - MAXIMUM COMPRESSION + QUALITY
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -81,9 +89,73 @@ const nextConfig: NextConfig = {
       'react-hook-form',
       'mapbox-gl',
       'web-vitals',
+      'recharts',
+      'zod',
+      '@radix-ui/react-icons',
+      'react-icons',
+      'clsx',
+      'tailwind-merge',
+      '@anthropic-ai/sdk',
+      'lru-cache',
     ],
-    // Partial Prerendering - Instant static shell with streaming dynamic content
-    // ppr: true,
+    // Partial Pre-Rendering for instant page loads
+    ppr: false, // Enable when stable
+    // Server Actions optimization
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // TURBOPACK CONFIGURATION
+  // ═══════════════════════════════════════════════════════════════════
+  turbopack: {
+    rules: {
+      // Optimize SVG imports
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // WEBPACK OPTIMIZATION - AGGRESSIVE BUNDLE SPLITTING
+  // ═══════════════════════════════════════════════════════════════════
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          minSize: 20000,
+          maxSize: 244000,
+          minChunks: 1,
+          maxAsyncRequests: 30,
+          maxInitialRequests: 30,
+          cacheGroups: {
+            framework: {
+              name: 'framework',
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+              priority: 40,
+              enforce: true,
+            },
+            commons: {
+              name: 'commons',
+              minChunks: 2,
+              priority: 20,
+            },
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+    }
+    return config;
   },
 
   // ═══════════════════════════════════════════════════════════════════

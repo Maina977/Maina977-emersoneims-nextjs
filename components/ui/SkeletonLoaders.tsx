@@ -3,14 +3,18 @@
 /**
  * Premium Skeleton Loaders - Apple/Tesla Quality Loading States
  *
+ * PERFORMANCE OPTIMIZED:
+ * - Zero external dependencies (no framer-motion)
+ * - Pure CSS animations for 60fps
+ * - GPU-accelerated transforms
+ * - Minimal DOM nodes
+ *
  * These provide instant perceived performance by showing
  * placeholder content while real content loads.
  */
 
-import { motion } from 'framer-motion';
-
-// Base shimmer animation - CSS-based for performance
-const shimmerClass = "relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent";
+// Base shimmer animation - Pure CSS for maximum performance
+const shimmerClass = "relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.5s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent";
 
 /**
  * Card Skeleton - For service cards, product cards, etc.
