@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cummins & Voltka Generators 10-2000KVA Kenya | 1 Year Free Service | EmersonEIMS",
-  description: "Buy NEW Cummins & Voltka diesel generators in Kenya. 10kVA to 2000kVA with complete warranty + 1 year FREE maintenance. Same-day quotes. Delivery to Nairobi, Mombasa, Kisumu & all 47 counties. Authorized Cummins dealer. Generator sales, installation, maintenance, rental, spare parts.",
+  title: "CUMMINS Generators Kenya | Authorized VOLTKA Dealer | 3-YEAR WARRANTY + 1 Year Free Service | EmersonEIMS",
+  description: "Kenya's AUTHORIZED CUMMINS/VOLTKA Dealer. 10KVA-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation, 24/7 support. Serving Nairobi, Mombasa, Kisumu & all 47 counties. Call +254793573208",
   keywords: [
-    // Brand Keywords
+    // Primary Brand Keywords - CUMMINS/VOLTKA
     'cummins generators Kenya',
-    'voltka generators Kenya', 
+    'voltka generators Kenya',
+    'authorized cummins dealer Kenya',
+    'cummins voltka authorized dealer',
+    '3 year warranty generator Kenya',
+    'generator 3 year warranty',
+    'free service generator Kenya',
+    // Other Brand Keywords
     'perkins generators Kenya',
     'caterpillar generators Kenya',
     'FG Wilson generators Kenya',
@@ -141,21 +147,26 @@ const jsonLd = {
     {
       '@type': 'Product',
       '@id': 'https://emersoneims.com/generators/#product',
-      name: 'Cummins Diesel Generators',
+      name: 'Cummins Diesel Generators by Voltka - Authorized Dealer Kenya',
       image: 'https://www.emersoneims.com/wp-content/uploads/2024/09/cummins-generator.jpg',
       brand: {
         '@type': 'Brand',
         name: 'Cummins',
       },
-      description: 'Premium Cummins diesel generators from 10kVA to 2000kVA with 1 year free maintenance service',
+      manufacturer: {
+        '@type': 'Organization',
+        name: 'Voltka',
+      },
+      description: 'Authorized Cummins/Voltka dealer in Kenya. 10KVA to 2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation.',
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',
-        lowPrice: '450000',
-        highPrice: '25000000',
+        lowPrice: '350000',
+        highPrice: '38000000',
         availability: 'https://schema.org/InStock',
         seller: { '@id': 'https://emersoneims.com/#organization' },
         offerCount: '50',
+        warranty: '3 Years Comprehensive Warranty + 1 Year Free Service',
       },
       aggregateRating: {
         '@type': 'AggregateRating',

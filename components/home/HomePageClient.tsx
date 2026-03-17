@@ -97,11 +97,19 @@ const CTASection = dynamic(
   { loading: () => <CTASkeleton /> }
 );
 
+const CumminsBanner = dynamic(
+  () => import('@/components/brands/CumminsBanner'),
+  { loading: () => <div className="h-96 bg-red-900/30 animate-pulse" /> }
+);
+
 export default function HomePageClient() {
   return (
     <>
       {/* Hero with animations */}
       <HeroSection />
+
+      {/* CUMMINS/VOLTKA - Our Main Generator Brand */}
+      <CumminsBanner variant="hero" showPricing={true} showCTA={true} />
 
       {/* GENERATOR ORACLE - Lead Generation Tool (Moved Up for Prominence) */}
       <GeneratorOracleShowcase />

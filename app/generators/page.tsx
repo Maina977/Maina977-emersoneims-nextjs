@@ -23,6 +23,8 @@ import SizingCalculatorNew from '@/components/generators/GeneratorSizingCalculat
 // EDUCATIONAL CONTENT - KNOWLEDGE CENTER
 import GeneratorEducationPanel from '@/components/generators/GeneratorEducationPanel';
 import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
+import CumminsBanner from '@/components/brands/CumminsBanner';
+import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
 
 // Generator Work Photos Gallery Data
 const generatorGalleryImages = [
@@ -444,6 +446,43 @@ export default function GeneratorPage() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          CUMMINS AUTHORIZED DEALER - MAIN BRAND SHOWCASE
+      ════════════════════════════════════════════════════════════════ */}
+      <CumminsBanner variant="hero" showPricing={true} showCTA={true} />
+
+      {/* Cummins Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "Cummins Diesel Generators Kenya",
+            "description": "Authorized Cummins/Voltka dealer in Kenya. 10-2000KVA diesel generators with 3-year warranty and 1 year free service.",
+            "brand": { "@type": "Brand", "name": "Cummins" },
+            "manufacturer": { "@type": "Organization", "name": "Voltka" },
+            "offers": {
+              "@type": "AggregateOffer",
+              "priceCurrency": "KES",
+              "lowPrice": "350000",
+              "highPrice": "38000000",
+              "availability": "https://schema.org/InStock",
+              "seller": {
+                "@type": "Organization",
+                "name": "EmersonEIMS",
+                "url": "https://www.emersoneims.com"
+              }
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "reviewCount": "127"
+            }
+          })
+        }}
+      />
 
       {/* ═══════════════════════════════════════════════════════════════════
           OUR WORK GALLERY - Cinematic 4K Showcase

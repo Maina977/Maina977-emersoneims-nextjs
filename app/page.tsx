@@ -14,11 +14,12 @@ import HomePageClient from '@/components/home/HomePageClient';
 // STATIC SEO METADATA - Rendered at build time
 // ═══════════════════════════════════════════════════════════════════════════════
 export const metadata: Metadata = {
-  title: "Generator Companies in Kenya | 3-YEAR WARRANTY | EmersonEIMS - #1 Power Solutions",
-  description: "Kenya's #1 Generator Company with 3-YEAR WARRANTY. Cummins, Perkins, FG Wilson Authorized. Generators, Solar, UPS, Motors. Serving 47 counties. 24/7 Emergency. Call +254768860665",
+  title: "Cummins Generators Kenya | Authorized Voltka Dealer | 3-YEAR WARRANTY | EmersonEIMS",
+  description: "Kenya's Authorized CUMMINS Generator Dealer by VOLTKA. 10-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, 24/7 support. Call +254793573208",
+  keywords: "Cummins generators Kenya, Voltka generators, authorized Cummins dealer Kenya, Cummins generator price Kenya, diesel generators Kenya, 3 year warranty generators, industrial generators Nairobi",
   openGraph: {
-    title: "EmersonEIMS - Kenya's #1 Generator & Solar Company",
-    description: "Premium power solutions with 3-year warranty. 500+ projects, 98.7% uptime.",
+    title: "CUMMINS Generators Kenya | Authorized Voltka Dealer | EmersonEIMS",
+    description: "Authorized CUMMINS dealer in Kenya. 10-2000KVA generators with 3-year warranty + 1 year free service. Genuine Voltka/Cummins generators.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
 };
