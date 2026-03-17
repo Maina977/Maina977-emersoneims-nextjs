@@ -7,7 +7,7 @@
  * Features voting, comments, and contributor profiles
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   getCommunityService,
@@ -17,6 +17,12 @@ import {
   CONTRIBUTOR_REWARDS,
   SAMPLE_COMMUNITY_CODES,
 } from '@/lib/generator-oracle/communityFaultCodes';
+import {
+  searchAllFaultCodes,
+  getTotalFaultCodeCount,
+  getAllFaultCodeStats,
+  CONTROLLER_BRANDS,
+} from '@/lib/generator-oracle/integratedDiagnosticService';
 
 interface CommunityFaultCodesPanelProps {
   userId?: string;

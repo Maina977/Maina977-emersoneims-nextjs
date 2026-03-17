@@ -17,8 +17,15 @@
  * 10. Predictive Maintenance Calendar - When to service each component
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  searchAllFaultCodes,
+  searchControllerFaults,
+  getTotalFaultCodeCount,
+  getFaultCodesByBrand,
+  CONTROLLER_BRANDS,
+} from '@/lib/generator-oracle/integratedDiagnosticService';
 
 // ==================== TYPES ====================
 interface ComponentHealth {

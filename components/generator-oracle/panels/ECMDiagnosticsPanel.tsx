@@ -1,7 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  searchAllFaultCodes,
+  searchControllerFaults,
+  getFaultCodesByBrand,
+  getTotalFaultCodeCount,
+  CONTROLLER_BRANDS,
+  type ControllerFaultCode
+} from '@/lib/generator-oracle/integratedDiagnosticService';
 
 interface ECMEntry {
   id: string;

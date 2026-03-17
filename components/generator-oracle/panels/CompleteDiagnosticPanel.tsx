@@ -23,6 +23,14 @@ import {
   COMPLETE_SOLUTIONS,
   ECM_REPROGRAMMING_GUIDES
 } from '@/lib/generator-oracle/completeDiagnosticSolutions';
+import {
+  searchAllFaultCodes,
+  getTotalFaultCodeCount,
+  searchControllerFaults,
+  getFaultCodesByBrand,
+  CONTROLLER_BRANDS,
+  type ControllerFaultCode
+} from '@/lib/generator-oracle/integratedDiagnosticService';
 import { DisclaimerBanner } from '../DisclaimerBanner';
 
 // ==================== COMPONENTS ====================

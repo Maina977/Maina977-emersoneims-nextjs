@@ -11,10 +11,22 @@
  * Technician Input → ECM Detection → Controller Mapping → Fault Lookup → AI Analysis → Solution
  */
 
-import { getFaultByCode, searchFaultCodes, type EnhancedFaultCode } from './enhanced-fault-database';
+import { getFaultByCode, searchFaultCodes as searchEnhancedFaults, type EnhancedFaultCode } from './enhanced-fault-database';
 import { COMPREHENSIVE_FAULT_CODES } from './comprehensiveFaultCodes';
 import { performAIDiagnosis, performHybridDiagnosis, type GeneratorReadings, type AIAnalysisResult } from './ai-diagnostic-engine';
 import { getAIDiagnosis, streamAIDiagnosis, type StreamingDiagnosticEvent } from './aiDiagnosticService';
+// Import the full 400,000+ fault code database for comprehensive coverage
+import {
+  getAllFaultCodes,
+  searchFaultCodes as searchControllerFaults,
+  getFaultCodesByBrand,
+  getFaultCodesByModel,
+  getFaultCodeById,
+  getTotalFaultCodeCount,
+  getFaultCodeStats,
+  CONTROLLER_BRANDS,
+  type ControllerFaultCode,
+} from './controllerFaultCodes';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ECM DATABASE - Exported for integration
@@ -1142,15 +1154,92 @@ export async function* streamIntegratedDiagnosis(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UTILITY EXPORTS
+// UNIFIED FAULT CODE SEARCH - Combines 400,000+ controller codes with enhanced database
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/**
+ * Search across ALL fault code databases (400,000+ codes)
+ * Returns combined results from both controller codes and enhanced descriptions
+ */
+export function searchAllFaultCodes(query: string, options?: {
+  brand?: string;
+  model?: string;
+  maxResults?: number;
+}): {
+  controllerCodes: ControllerFaultCode[];
+  enhancedCodes: EnhancedFaultCode[];
+  totalCount: number;
+} {
+  const maxResults = options?.maxResults || 100;
+
+  // Search controller fault codes (400,000+)
+  let controllerCodes: ControllerFaultCode[] = [];
+  if (options?.brand) {
+    controllerCodes = getFaultCodesByBrand(options.brand)
+      .filter(code =>
+        code.code.toLowerCase().includes(query.toLowerCase()) ||
+        code.title.toLowerCase().includes(query.toLowerCase()) ||
+        code.description.toLowerCase().includes(query.toLowerCase())
+      );
+  } else if (options?.model) {
+    controllerCodes = getFaultCodesByModel(options.model)
+      .filter(code =>
+        code.code.toLowerCase().includes(query.toLowerCase()) ||
+        code.title.toLowerCase().includes(query.toLowerCase()) ||
+        code.description.toLowerCase().includes(query.toLowerCase())
+      );
+  } else {
+    controllerCodes = searchControllerFaults(query);
+  }
+
+  // Limit results for performance
+  controllerCodes = controllerCodes.slice(0, maxResults);
+
+  // Search enhanced fault codes (with detailed descriptions)
+  const enhancedCodes = searchEnhancedFaults(query).slice(0, maxResults);
+
+  return {
+    controllerCodes,
+    enhancedCodes,
+    totalCount: controllerCodes.length + enhancedCodes.length
+  };
+}
+
+/**
+ * Get fault code statistics across all databases
+ */
+export function getAllFaultCodeStats() {
+  const controllerStats = getFaultCodeStats();
+  return {
+    totalCodes: getTotalFaultCodeCount(),
+    byBrand: controllerStats.byBrand,
+    bySeverity: controllerStats.bySeverity,
+    byCategory: controllerStats.byCategory,
+    controllerBrands: Object.keys(CONTROLLER_BRANDS)
+  };
+}
+
+// Re-export all fault code functions for unified access
 export {
+  // From enhanced-fault-database
   getFaultByCode,
-  searchFaultCodes,
+  searchEnhancedFaults,
+  // From controllerFaultCodes (400,000+ codes)
+  getAllFaultCodes,
+  searchControllerFaults,
+  getFaultCodesByBrand,
+  getFaultCodesByModel,
+  getFaultCodeById,
+  getTotalFaultCodeCount,
+  getFaultCodeStats,
+  CONTROLLER_BRANDS,
+  // AI functions
   performAIDiagnosis,
   performHybridDiagnosis
 };
+
+// Legacy export for backward compatibility
+export const searchFaultCodes = searchEnhancedFaults;
 
 // Get all ECM manufacturers
 export const getECMManufacturers = () => [...new Set(ECM_DATABASE.map(e => e.manufacturer))];

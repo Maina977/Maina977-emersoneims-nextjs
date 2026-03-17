@@ -12,8 +12,16 @@
  *   John Deere, Deutz, MTU, MAN, Doosan, Yanmar, Kubota, Kohler, etc.
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  searchAllFaultCodes,
+  getTotalFaultCodeCount,
+  getAllFaultCodeStats,
+  searchControllerFaults,
+  getFaultCodesByBrand,
+  CONTROLLER_BRANDS,
+} from '@/lib/generator-oracle/integratedDiagnosticService';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES

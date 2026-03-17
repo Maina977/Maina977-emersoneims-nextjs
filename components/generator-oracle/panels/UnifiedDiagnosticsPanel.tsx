@@ -25,6 +25,11 @@ import {
   searchECMs,
   ECM_DATABASE,
   CONTROLLER_DATABASE,
+  // 400,000+ fault codes integration
+  searchAllFaultCodes,
+  getAllFaultCodeStats,
+  getTotalFaultCodeCount,
+  CONTROLLER_BRANDS,
   type TechnicianInput,
   type IntegratedDiagnosisResult,
   type ECMEntry

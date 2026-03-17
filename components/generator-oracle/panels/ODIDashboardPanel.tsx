@@ -40,6 +40,15 @@ import {
   type ProgrammingLog,
   type ProgrammingOptions
 } from '@/lib/generator-oracle/odi/programmingModule';
+import {
+  searchAllFaultCodes,
+  searchControllerFaults,
+  getTotalFaultCodeCount,
+  getFaultCodesByBrand,
+  getAllFaultCodeStats,
+  CONTROLLER_BRANDS,
+  type ControllerFaultCode
+} from '@/lib/generator-oracle/integratedDiagnosticService';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENTS
