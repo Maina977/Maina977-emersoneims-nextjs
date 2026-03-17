@@ -18,6 +18,7 @@ import dynamic from 'next/dynamic';
 // ═══════════════════════════════════════════════════════════════════════════════
 const WhatsAppButton = dynamic(() => import('@/components/conversion/WhatsAppButton'), { ssr: false });
 const StickyCallBar = dynamic(() => import('@/components/conversion/StickyCallBar'), { ssr: false });
+const QuickQuoteWidget = dynamic(() => import('@/components/conversion/QuickQuoteWidget'), { ssr: false });
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TIER 2: Important (load at 2s) - Enhance UX
@@ -121,6 +122,7 @@ export default function DeferredComponents() {
         <>
           <WhatsAppButton />
           <StickyCallBar />
+          <QuickQuoteWidget />
         </>
       )}
 
