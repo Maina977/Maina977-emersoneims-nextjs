@@ -18,8 +18,8 @@ const NAV_ITEMS = [
   { href: '/solutions', label: 'Solutions' },
   { href: '/generators', label: 'Generators' },
   { href: '/solar', label: 'Solar' },
-  { href: '/diagnostics', label: 'Diagnostics' },
-  { href: '/diagnostic-suite', label: 'Diagnostic Suite' },
+  { href: '/technical-bible', label: 'Tech Bible' },
+  { href: '/generator-oracle', label: 'Generator Oracle' },
   { href: '/contact', label: 'Contact' },
 ];
 
