@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import {
   Search, Filter, Grid, List, ShoppingCart, X, Plus, Minus,
   ChevronDown, Star, Truck, Shield, Clock, Heart, Eye,
@@ -9,6 +10,98 @@ import {
 } from 'lucide-react';
 import sparePartsDatabase from '@/app/data/spare-parts-database-COMPLETE.json';
 import MpesaCheckout from './MpesaCheckout';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRODUCT IMAGE MAPPING - Real images for each part category
+// Using actual images from /public/images/ folder
+// ═══════════════════════════════════════════════════════════════════════════════
+const PART_IMAGES: Record<string, string[]> = {
+  // Filters - Perkins filter images
+  'oil filter': ['/images/PERKINS FILTER 2 (1).webp', '/images/Perkins-4000-Parts.webp', '/images/PERKINS-ENGINE-PARTS.jpg'],
+  'fuel filter': ['/images/PERKINS FILTER 2 (1).webp', '/images/Perkins-4000-Parts.webp'],
+  'air filter': ['/images/PERKINS-ENGINE-PARTS.jpg', '/images/Perkins-4000-Parts.webp'],
+  'hydraulic filter': ['/images/PERKINS FILTER 2 (1).webp'],
+  'filter': ['/images/PERKINS FILTER 2 (1).webp', '/images/Perkins-4000-Parts.webp', '/images/PERKINS-ENGINE-PARTS.jpg'],
+
+  // Engine Parts
+  'injector': ['/images/PERKINS-ENGINE-PARTS.jpg', '/images/Perkins-4000-Parts.webp'],
+  'piston': ['/images/PERKINS-ENGINE-PARTS.jpg'],
+  'gasket': ['/images/PERKINS-ENGINE-PARTS.jpg', '/images/Perkins-4000-Parts.webp'],
+  'bearing': ['/images/PERKINS-ENGINE-PARTS.jpg'],
+  'valve': ['/images/PERKINS-ENGINE-PARTS.jpg'],
+  'engine': ['/images/PERKINS-ENGINE-PARTS.jpg', '/images/Perkins-4000-Parts.webp'],
+
+  // Electrical & Controls
+  'starter': ['/images/motor-diagnostics-testing.png', '/images/electric-motor-repair.png'],
+  'alternator': ['/images/motor-diagnostics-testing.png', '/images/electric-motor-repair.png'],
+  'motor': ['/images/motor-rewinding-workshop.png', '/images/motor-diagnostics-testing.png', '/images/electric-motor-repair.png'],
+  'controller': ['/images/custom-control-panel.png', '/images/switchgear-panel.png'],
+  'ecm': ['/images/custom-control-panel.png', '/images/switchgear-panel.png'],
+  'panel': ['/images/custom-control-panel.png', '/images/switchgear-panel.png', '/images/ups-control-panel.png'],
+  'avr': ['/images/custom-control-panel.png'],
+  'governor': ['/images/custom-control-panel.png'],
+
+  // Battery & UPS
+  'battery': ['/images/ups-battery-bank.png', '/images/ups-power-protection-system.png'],
+  'ups': ['/images/ups-battery-bank.png', '/images/ups-control-panel.png', '/images/ups-rack-mount.png', '/images/ups-power-protection-system.png'],
+  'charger': ['/images/ups-battery-bank.png'],
+
+  // Pumps
+  'pump': ['/images/water-pump-system.png', '/images/borehole-pump-installation.png', '/images/solar-water-pumping.png'],
+  'water pump': ['/images/water-pump-system.png', '/images/borehole-pump-installation.png'],
+  'borehole': ['/images/borehole-pump-installation.png', '/images/water-pump-system.png'],
+
+  // Solar
+  'solar': ['/images/solar power farms.png', '/images/solar for flower farms.png', '/images/solar-water-pumping.png'],
+  'inverter': ['/images/solar changeover control.png', '/images/ups-control-panel.png'],
+  'charge controller': ['/images/solar changeover control.png'],
+  'mppt': ['/images/solar changeover control.png'],
+
+  // Generators
+  'generator': ['/images/FG-WILSON-GENERATOR.jpg', '/images/GREENHEART KILIFI GENERATOR.jpg', '/images/tnpl-diesal-generator-1000x1000.webp'],
+  'canopy': ['/images/generator-canopy-fabrication.png'],
+  'enclosure': ['/images/generator-canopy-fabrication.png'],
+
+  // Brand-specific fallbacks
+  'cummins': ['/images/KIVUKONI SCHOOL CUMMINS GENERATOR .webp', '/images/FG-WILSON-GENERATOR.jpg'],
+  'perkins': ['/images/PERKINS FILTER 2 (1).webp', '/images/PERKINS-ENGINE-PARTS.jpg', '/images/ST AUSTINS ACADEMY 50KVA PERKINS ENGINE.jpg'],
+  'caterpillar': ['/images/FG-WILSON-GENERATOR.jpg', '/images/NTSA- ATLAS COPCO GENERATOR.jpg'],
+  'fg wilson': ['/images/FG-WILSON-GENERATOR.jpg'],
+  'atlas copco': ['/images/NTSA- ATLAS COPCO GENERATOR.jpg'],
+  'fleetguard': ['/images/PERKINS FILTER 2 (1).webp', '/images/Perkins-4000-Parts.webp'],
+};
+
+// Get product image based on part name/category
+function getPartImage(part: Part): string {
+  // Check if part has media images
+  if (part.media?.images && part.media.images.length > 0) {
+    return part.media.images[0];
+  }
+
+  // Search by part name keywords
+  const nameLower = part.name.toLowerCase();
+  const categoryLower = part.category?.toLowerCase() || '';
+  const brandLower = part.brand?.toLowerCase() || '';
+
+  // Find matching image
+  for (const [keyword, images] of Object.entries(PART_IMAGES)) {
+    if (nameLower.includes(keyword) || categoryLower.includes(keyword)) {
+      // Return a consistent image based on part number hash
+      const index = part.partNo.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % images.length;
+      return images[index];
+    }
+  }
+
+  // Try brand-based image
+  for (const [keyword, images] of Object.entries(PART_IMAGES)) {
+    if (brandLower.includes(keyword)) {
+      return images[0];
+    }
+  }
+
+  // Generate dynamic placeholder with part info
+  return `/api/placeholder-part?name=${encodeURIComponent(part.name)}&brand=${encodeURIComponent(part.brand)}&partNo=${encodeURIComponent(part.partNo)}`;
+}
 
 /**
  * ENHANCED SPARE PARTS E-COMMERCE MODULE
@@ -540,9 +633,22 @@ export default function SparePartsModule() {
                   onMouseLeave={() => setHoveredPart(null)}
                   className="group relative bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all duration-300"
                 >
-                  {/* Product Image Placeholder */}
-                  <div className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                    <Package className="w-16 h-16 text-gray-700" />
+                  {/* Product Image */}
+                  <div className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden">
+                    <Image
+                      src={getPartImage(part)}
+                      alt={part.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                      onError={(e) => {
+                        // Fallback to dynamic placeholder on error
+                        const target = e.target as HTMLImageElement;
+                        target.src = `/api/placeholder-part?name=${encodeURIComponent(part.name)}&brand=${encodeURIComponent(part.brand)}&partNo=${encodeURIComponent(part.partNo)}`;
+                      }}
+                    />
+                    {/* Gradient overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     {/* Quick Actions */}
                     <div className={`absolute top-3 right-3 flex gap-2 transition-opacity ${hoveredPart === part.partNo ? 'opacity-100' : 'opacity-0'}`}>
                       <button
