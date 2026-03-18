@@ -99,7 +99,7 @@ const CTASection = dynamic(
 
 const CumminsBanner = dynamic(
   () => import('@/components/brands/CumminsBanner'),
-  { loading: () => <div className="h-96 bg-red-900/30 animate-pulse" /> }
+  { loading: () => <div className="h-96 bg-black animate-pulse border-y border-cyan-500/20" /> }
 );
 
 export default function HomePageClient() {

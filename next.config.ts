@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
   // Output standalone for optimal serverless deployment
   output: 'standalone',
 
-  // Image optimization - MAXIMUM COMPRESSION + QUALITY
+  // Image optimization - MAXIMUM COMPRESSION + QUALITY - 96% Target
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
@@ -69,7 +69,7 @@ const nextConfig: NextConfig = {
 
   // ═══════════════════════════════════════════════════════════════════
   // 🔥 EXPERIMENTAL - BLEEDING EDGE PERFORMANCE
-  // Every millisecond counts!
+  // Every millisecond counts! Target: 96% Lighthouse Score
   // ═══════════════════════════════════════════════════════════════════
   experimental: {
     // Tree-shake these packages for MUCH smaller bundles
@@ -97,6 +97,11 @@ const nextConfig: NextConfig = {
       'tailwind-merge',
       '@anthropic-ai/sdk',
       'lru-cache',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      'class-variance-authority',
     ],
     // Partial Pre-Rendering for instant page loads
     ppr: false, // Enable when stable
@@ -104,6 +109,10 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+    // CSS optimization
+    optimizeCss: true,
+    // Scroll restoration
+    scrollRestoration: true,
   },
 
   // ═══════════════════════════════════════════════════════════════════

@@ -1238,6 +1238,12 @@ export {
   performHybridDiagnosis
 };
 
+// Re-export types
+export type { ControllerFaultCode } from './controllerFaultCodes';
+export type { EnhancedFaultCode } from './enhanced-fault-database';
+export type { GeneratorReadings, AIAnalysisResult } from './ai-diagnostic-engine';
+export type { StreamingDiagnosticEvent } from './aiDiagnosticService';
+
 // Legacy export for backward compatibility
 export const searchFaultCodes = searchEnhancedFaults;
 
