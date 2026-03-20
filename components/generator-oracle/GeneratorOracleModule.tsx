@@ -93,6 +93,7 @@ const ExpertAIChatPanel = dynamic(() => import('./panels/ExpertAIChatPanel'), { 
 const UniversalDiagnosticPanel = dynamic(() => import('./panels/UniversalDiagnosticPanel'), { ssr: false });
 const ODIDashboardPanel = dynamic(() => import('./panels/ODIDashboardPanel'), { ssr: false });
 const ProfessionalDiagnosticInterface = dynamic(() => import('./panels/ProfessionalDiagnosticInterface'), { ssr: false });
+const ECMDiagnosticSuite = dynamic(() => import('./panels/ECMDiagnosticSuite'), { ssr: false });
 
 // Feature panels - loaded on demand
 const SubscriptionManager = dynamic(() => import('./SubscriptionManager'), { ssr: false });
@@ -1015,7 +1016,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat' | 'universaldiag' | 'odi' | 'prodiag'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat' | 'universaldiag' | 'odi' | 'prodiag' | 'ecmsuite'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1370,6 +1371,7 @@ export default function GeneratorOracleModule() {
                   <PremiumNavTab icon="🔧" label="Universal Diag" active={activeScreen === 'universaldiag'} onClick={() => setActiveScreen('universaldiag')} />
                   <PremiumNavTab icon="🛠️" label="ODI Platform" active={activeScreen === 'odi'} onClick={() => setActiveScreen('odi')} />
                   <PremiumNavTab icon="🔬" label="Pro Diagnostic" active={activeScreen === 'prodiag'} onClick={() => setActiveScreen('prodiag')} />
+                  <PremiumNavTab icon="🏭" label="ECM Suite (10)" active={activeScreen === 'ecmsuite'} onClick={() => setActiveScreen('ecmsuite')} />
                   <PremiumNavTab icon="⚙️" label={t.navEngine} active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
                   <PremiumNavTab icon="⚡" label={t.navElectrical} active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
                   <PremiumNavTab icon="🔧" label={t.navFaults} active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
@@ -2220,6 +2222,19 @@ export default function GeneratorOracleModule() {
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="prodiag" />
                     <ProfessionalDiagnosticInterface />
+                  </motion.div>
+                )}
+
+                {/* ECM DIAGNOSTIC SUITE - 10 BRAND-SPECIFIC INTERFACES */}
+                {activeScreen === 'ecmsuite' && (
+                  <motion.div
+                    key="ecmsuite"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecmsuite" />
+                    <ECMDiagnosticSuite />
                   </motion.div>
                 )}
 
