@@ -92,6 +92,7 @@ const ECMReprogrammingGuidePanel = dynamic(() => import('./panels/ECMReprogrammi
 const ExpertAIChatPanel = dynamic(() => import('./panels/ExpertAIChatPanel'), { ssr: false });
 const UniversalDiagnosticPanel = dynamic(() => import('./panels/UniversalDiagnosticPanel'), { ssr: false });
 const ODIDashboardPanel = dynamic(() => import('./panels/ODIDashboardPanel'), { ssr: false });
+const ProfessionalDiagnosticInterface = dynamic(() => import('./panels/ProfessionalDiagnosticInterface'), { ssr: false });
 
 // Feature panels - loaded on demand
 const SubscriptionManager = dynamic(() => import('./SubscriptionManager'), { ssr: false });
@@ -1014,7 +1015,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat' | 'universaldiag' | 'odi'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat' | 'universaldiag' | 'odi' | 'prodiag'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1368,6 +1369,7 @@ export default function GeneratorOracleModule() {
                   <PremiumNavTab icon="💬" label="Expert AI" active={activeScreen === 'expertchat'} onClick={() => setActiveScreen('expertchat')} />
                   <PremiumNavTab icon="🔧" label="Universal Diag" active={activeScreen === 'universaldiag'} onClick={() => setActiveScreen('universaldiag')} />
                   <PremiumNavTab icon="🛠️" label="ODI Platform" active={activeScreen === 'odi'} onClick={() => setActiveScreen('odi')} />
+                  <PremiumNavTab icon="🔬" label="Pro Diagnostic" active={activeScreen === 'prodiag'} onClick={() => setActiveScreen('prodiag')} />
                   <PremiumNavTab icon="⚙️" label={t.navEngine} active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
                   <PremiumNavTab icon="⚡" label={t.navElectrical} active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
                   <PremiumNavTab icon="🔧" label={t.navFaults} active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
@@ -2205,6 +2207,19 @@ export default function GeneratorOracleModule() {
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="odi" />
                     <ODIDashboardPanel />
+                  </motion.div>
+                )}
+
+                {/* PROFESSIONAL DIAGNOSTIC INTERFACE - VODIA/CAT ET LEVEL */}
+                {activeScreen === 'prodiag' && (
+                  <motion.div
+                    key="prodiag"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="prodiag" />
+                    <ProfessionalDiagnosticInterface />
                   </motion.div>
                 )}
 
