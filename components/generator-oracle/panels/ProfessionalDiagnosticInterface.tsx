@@ -1,12 +1,30 @@
 'use client';
 
 /**
- * PROFESSIONAL DIAGNOSTIC INTERFACE - Vodia/CAT ET Level
+ * ORACLE PROFESSIONAL DIAGNOSTIC INTERFACE
  *
- * Complete dealer-level diagnostic tool with:
+ * IMPORTANT DISCLAIMER:
+ * This is an INDEPENDENT diagnostic reference tool created for educational and
+ * troubleshooting purposes. Generator Oracle is NOT affiliated with, endorsed by,
+ * licensed by, or officially associated with any engine, controller, or equipment
+ * manufacturer including but not limited to any Swedish, American, British, German,
+ * or other international manufacturers.
+ *
+ * All brand names, model numbers, product names, and trademarks mentioned throughout
+ * this application are the property of their respective owners. References to
+ * "dealer-level" or "professional-grade" describe functionality comparable to
+ * authorized tools, NOT official manufacturer tools.
+ *
+ * This tool provides GENERIC diagnostic capabilities using standard protocols
+ * (J1939, CAN, Modbus) that are compatible with multiple engine platforms.
+ *
+ * For official diagnostics, warranty service, or certified repairs, always consult
+ * the manufacturer's authorized service centers and official technical manuals.
+ *
+ * Features:
  * - Fault Code Management (Read/Clear DTCs)
  * - Live Data Monitoring with Graphing
- * - ECU Programming & Flashing
+ * - ECU Communication & Configuration
  * - Bi-Directional Controls (Active Tests)
  * - Parameter Adjustments & Calibration
  * - Data Logging & Reporting
@@ -63,7 +81,7 @@ import {
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES & INTERFACES (Vodia/CAT ET Compatible)
+// TYPES & INTERFACES (Standard J1939/CAN Compatible)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 interface DiagnosticFaultCode {
@@ -440,6 +458,17 @@ export default function ProfessionalDiagnosticInterface() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Disclaimer Banner */}
+      <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-amber-400/80">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <p>
+            <strong>Independent Tool:</strong> Generator Oracle is NOT affiliated with any manufacturer.
+            This tool uses standard J1939/CAN protocols for compatibility. All trademarks belong to their respective owners.
+          </p>
+        </div>
+      </div>
+
       {/* Header - Connection Status Bar */}
       <div className="bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3">
@@ -451,7 +480,7 @@ export default function ProfessionalDiagnosticInterface() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">Oracle Diagnostic Interface</h1>
-                <p className="text-xs text-slate-400">Professional ECM Diagnostics - Vodia/CAT ET Level</p>
+                <p className="text-xs text-slate-400">Professional ECM Diagnostics - Dealer-Grade Functionality</p>
               </div>
             </div>
 

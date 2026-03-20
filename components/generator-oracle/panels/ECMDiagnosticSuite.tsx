@@ -1,28 +1,32 @@
 'use client';
 
 /**
- * ECM DIAGNOSTIC SUITE - 10 Brand-Specific Diagnostic Interfaces
+ * ORACLE UNIVERSAL DIAGNOSTIC SUITE - 10 Engine Platform Interfaces
  *
- * Professional dealer-level diagnostic tools for:
- * 1. Vodia (Volvo Penta)
- * 2. CAT ET (Caterpillar Electronic Technician)
- * 3. Cummins INSITE
- * 4. Perkins EST
- * 5. John Deere Service Advisor
- * 6. Detroit Diesel DDDL
- * 7. MTU Diasys
- * 8. Kohler OnCue Plus
- * 9. Deep Sea Electronics (DSE Suite)
- * 10. ComAp InteliConfig
+ * IMPORTANT DISCLAIMER:
+ * This is an INDEPENDENT diagnostic reference tool created for educational and
+ * troubleshooting purposes. Generator Oracle is NOT affiliated with, endorsed by,
+ * licensed by, or officially associated with any engine or controller manufacturer.
  *
- * Each interface includes:
- * - Sidebar navigation for systems (Engine, Electrical, Cooling, Fuel, etc.)
- * - Complete fault codes per system
- * - Live data monitoring
- * - Active tests / Bi-directional controls
- * - Calibration parameters
- * - Wiring diagrams
- * - Repair procedures
+ * All brand names, model numbers, and trademarks mentioned are the property of
+ * their respective owners. References to manufacturer protocols are for
+ * COMPATIBILITY purposes only - indicating which engine platforms this tool
+ * can communicate with using standard J1939/CAN protocols.
+ *
+ * This tool provides GENERIC diagnostic capabilities compatible with:
+ * - Swedish Marine/Industrial Engine platforms (J1939/ISO15765)
+ * - American Heavy Equipment Engine platforms (J1939/CAN)
+ * - American Diesel Engine platforms (J1939/J1708)
+ * - British Industrial Engine platforms (J1939/CAN)
+ * - American Agricultural Engine platforms (J1939/CAN)
+ * - American Heavy-Duty Diesel platforms (J1939/J1587)
+ * - German High-Performance Engine platforms (J1939/MDEC)
+ * - American Standby Power platforms (Modbus/CAN)
+ * - British Controller platforms (Modbus/RS485)
+ * - European Controller platforms (Modbus/CAN)
+ *
+ * For official diagnostics, warranty service, or certified repairs, always
+ * consult the manufacturer's authorized service centers.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -95,104 +99,104 @@ interface ECMBrand {
 
 const ECM_BRANDS: ECMBrand[] = [
   {
-    id: 'vodia',
-    name: 'Vodia',
-    fullName: 'Volvo Penta Vodia',
-    manufacturer: 'Volvo Penta',
+    id: 'swedish-marine',
+    name: 'Swedish Marine',
+    fullName: 'Swedish Marine/Industrial Platform',
+    manufacturer: 'Nordic Engine Systems',
     logo: '🔷',
     color: '#003057',
     protocols: ['J1939', 'ISO 15765', 'KWP2000'],
-    description: 'Marine & Industrial Engines'
+    description: 'Compatible with Swedish marine & industrial engines'
   },
   {
-    id: 'cat-et',
-    name: 'CAT ET',
-    fullName: 'Caterpillar Electronic Technician',
-    manufacturer: 'Caterpillar Inc.',
+    id: 'american-heavy',
+    name: 'American Heavy',
+    fullName: 'American Heavy Equipment Platform',
+    manufacturer: 'US Heavy Machinery',
     logo: '🟡',
     color: '#FFCD00',
-    protocols: ['J1939', 'CAT DataLink', 'CAN'],
-    description: 'Heavy Equipment & Power Systems'
+    protocols: ['J1939', 'Proprietary CAN', 'CAN'],
+    description: 'Compatible with American heavy equipment engines'
   },
   {
-    id: 'cummins',
-    name: 'INSITE',
-    fullName: 'Cummins INSITE',
-    manufacturer: 'Cummins Inc.',
+    id: 'american-diesel',
+    name: 'American Diesel',
+    fullName: 'American Diesel Engine Platform',
+    manufacturer: 'US Diesel Systems',
     logo: '🔴',
     color: '#C8102E',
     protocols: ['J1939', 'J1708', 'ISO 15765'],
-    description: 'Diesel & Natural Gas Engines'
+    description: 'Compatible with American diesel & gas engines'
   },
   {
-    id: 'perkins',
-    name: 'EST',
-    fullName: 'Perkins EST',
-    manufacturer: 'Perkins Engines',
+    id: 'british-industrial',
+    name: 'British Industrial',
+    fullName: 'British Industrial Engine Platform',
+    manufacturer: 'UK Engine Systems',
     logo: '🟢',
     color: '#00843D',
-    protocols: ['J1939', 'CAN', 'Perkins DataLink'],
-    description: 'Industrial & Agricultural Engines'
+    protocols: ['J1939', 'CAN', 'Proprietary'],
+    description: 'Compatible with British industrial engines'
   },
   {
-    id: 'john-deere',
-    name: 'Service Advisor',
-    fullName: 'John Deere Service Advisor',
-    manufacturer: 'John Deere',
+    id: 'american-agri',
+    name: 'American Agri',
+    fullName: 'American Agricultural Platform',
+    manufacturer: 'US Agricultural Systems',
     logo: '🟩',
     color: '#367C2B',
-    protocols: ['J1939', 'CAN', 'JDLink'],
-    description: 'Agricultural & Construction Equipment'
+    protocols: ['J1939', 'CAN', 'Telematics'],
+    description: 'Compatible with American agricultural engines'
   },
   {
-    id: 'detroit',
-    name: 'DDDL',
-    fullName: 'Detroit Diesel Diagnostic Link',
-    manufacturer: 'Detroit Diesel',
+    id: 'american-hd',
+    name: 'American HD',
+    fullName: 'American Heavy-Duty Platform',
+    manufacturer: 'US HD Engine Systems',
     logo: '⬛',
     color: '#1C1C1C',
     protocols: ['J1939', 'J1587', 'CAN'],
-    description: 'Heavy-Duty Diesel Engines'
+    description: 'Compatible with American heavy-duty diesel engines'
   },
   {
-    id: 'mtu',
-    name: 'Diasys',
-    fullName: 'MTU Diasys',
-    manufacturer: 'MTU/Rolls-Royce',
+    id: 'german-performance',
+    name: 'German Performance',
+    fullName: 'German High-Performance Platform',
+    manufacturer: 'European Power Systems',
     logo: '🔵',
     color: '#0033A0',
     protocols: ['J1939', 'MDEC', 'CAN'],
-    description: 'High-Performance Diesel Engines'
+    description: 'Compatible with German high-performance engines'
   },
   {
-    id: 'kohler',
-    name: 'OnCue Plus',
-    fullName: 'Kohler OnCue Plus',
-    manufacturer: 'Kohler Power',
+    id: 'american-standby',
+    name: 'American Standby',
+    fullName: 'American Standby Power Platform',
+    manufacturer: 'US Power Systems',
     logo: '🟦',
     color: '#005DAA',
     protocols: ['Modbus', 'CAN', 'Ethernet'],
-    description: 'Standby & Prime Power Generators'
+    description: 'Compatible with American standby generators'
   },
   {
-    id: 'dse',
-    name: 'DSE Suite',
-    fullName: 'Deep Sea Electronics Suite',
-    manufacturer: 'Deep Sea Electronics',
+    id: 'british-controller',
+    name: 'British Controller',
+    fullName: 'British Controller Platform',
+    manufacturer: 'UK Control Systems',
     logo: '🌊',
     color: '#00A3E0',
     protocols: ['Modbus', 'CAN J1939', 'RS485'],
-    description: 'Generator Controllers & ATS'
+    description: 'Compatible with British generator controllers'
   },
   {
-    id: 'comap',
-    name: 'InteliConfig',
-    fullName: 'ComAp InteliConfig',
-    manufacturer: 'ComAp',
+    id: 'european-controller',
+    name: 'European Controller',
+    fullName: 'European Controller Platform',
+    manufacturer: 'EU Control Systems',
     logo: '🟠',
     color: '#FF6B00',
     protocols: ['Modbus', 'CAN', 'Ethernet'],
-    description: 'Generator & Engine Controllers'
+    description: 'Compatible with European generator controllers'
   }
 ];
 
@@ -763,7 +767,21 @@ export default function ECMDiagnosticSuite() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* ═══════════════════════════════════════════════════════════════════════════════ */}
-      {/* TOP BAR - ECM Brand Selector */}
+      {/* DISCLAIMER BANNER */}
+      {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+      <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2">
+        <div className="max-w-[1800px] mx-auto flex items-center gap-2 text-xs text-amber-400/80">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <p>
+            <strong>Independent Reference Tool:</strong> Generator Oracle is NOT affiliated with any engine manufacturer.
+            Platform names indicate protocol compatibility only. All trademarks belong to their respective owners.
+            For official service, contact authorized dealers.
+          </p>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+      {/* TOP BAR - Platform Selector */}
       {/* ═══════════════════════════════════════════════════════════════════════════════ */}
       <div className="bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-[1800px] mx-auto px-4 py-3">
