@@ -102,6 +102,12 @@ const CumminsBanner = dynamic(
   { loading: () => <div className="h-96 bg-black animate-pulse border-y border-cyan-500/20" /> }
 );
 
+// Emergency CTA Floating Button - High-conversion element
+const EmergencyCTA = dynamic(
+  () => import('@/components/cta/EmergencyCTA'),
+  { ssr: false }
+);
+
 export default function HomePageClient() {
   return (
     <>
@@ -132,6 +138,9 @@ export default function HomePageClient() {
         secondaryAction="diagnostic"
         showEmergency={true}
       />
+
+      {/* Floating Emergency CTA - Always visible for quick conversion */}
+      <EmergencyCTA variant="floating" />
     </>
   );
 }

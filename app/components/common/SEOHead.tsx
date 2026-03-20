@@ -8,7 +8,7 @@ import { Helmet } from "react-helmet-async";
  * @param {Object} props
  * @param {string} props.title - Page title (required)
  * @param {string} props.description - Page description (required)
- * @param {string | string[]} [props.keywords] - SEO keywords (optional, accepts string or array)
+ * @param {string | string[]} [props.keywords] - DEPRECATED: Google ignores keywords since 2009. Kept for backwards compatibility but not rendered.
  * @param {string} [props.canonical] - Canonical URL
  * @param {Object} [props.openGraph] - Open Graph metadata
  */
@@ -31,15 +31,12 @@ interface SEOHeadProps {
   };
 }
 
-export default function SEOHead({ title, description, keywords, canonical, openGraph }: SEOHeadProps) {
+export default function SEOHead({ title, description, canonical, openGraph }: SEOHeadProps) {
   /**
-   * PERMANENT FIX: Normalize keywords to handle both string and string[]
-   * This allows pages to pass either format without breaking the build.
-   * Arrays are automatically converted to comma-separated strings for SEO.
+   * NOTE: Keywords meta tag removed - Google has ignored it since 2009.
+   * See: https://developers.google.com/search/blog/2009/09/google-does-not-use-keywords-meta-tag
+   * Focus on quality content, proper headings, and structured data instead.
    */
-  const normalizedKeywords = Array.isArray(keywords)
-    ? keywords.join(", ")
-    : (keywords || '');
   
   const orgSchema = {
     "@context": "https://schema.org",
@@ -85,7 +82,6 @@ export default function SEOHead({ title, description, keywords, canonical, openG
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      {normalizedKeywords && <meta name="keywords" content={normalizedKeywords} />}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />

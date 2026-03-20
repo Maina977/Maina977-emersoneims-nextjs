@@ -16,7 +16,7 @@ import HomePageClient from '@/components/home/HomePageClient';
 export const metadata: Metadata = {
   title: "Cummins Generators Kenya | Authorized Voltka Dealer | 3-YEAR WARRANTY | EmersonEIMS",
   description: "Kenya's Authorized CUMMINS Generator Dealer by VOLTKA. 10-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, 24/7 support. Call +254793573208",
-  keywords: "Cummins generators Kenya, Voltka generators, authorized Cummins dealer Kenya, Cummins generator price Kenya, diesel generators Kenya, 3 year warranty generators, industrial generators Nairobi",
+  // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: "CUMMINS Generators Kenya | Authorized Voltka Dealer | EmersonEIMS",
     description: "Authorized CUMMINS dealer in Kenya. 10-2000KVA generators with 3-year warranty + 1 year free service. Genuine Voltka/Cummins generators.",

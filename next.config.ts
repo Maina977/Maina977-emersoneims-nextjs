@@ -395,6 +395,71 @@ const nextConfig: NextConfig = {
         destination: '/services',
         permanent: true,
       },
+      // ═══════════════════════════════════════════════════════════════════
+      // FIX KEYWORD CANNIBALIZATION - Consolidate competing pages
+      // ═══════════════════════════════════════════════════════════════════
+      // Generator pages - all redirect to /generators (main page)
+      {
+        source: '/service/generators',
+        destination: '/generators',
+        permanent: true,
+      },
+      {
+        source: '/solutions/generators',
+        destination: '/generators',
+        permanent: true,
+      },
+      {
+        source: '/maintenance-hub/generators',
+        destination: '/generators/maintenance',
+        permanent: true,
+      },
+      // Solar pages - all redirect to /solar (main page)
+      {
+        source: '/solutions/solar',
+        destination: '/solar',
+        permanent: true,
+      },
+      {
+        source: '/maintenance-hub/solar',
+        destination: '/solar',
+        permanent: true,
+      },
+      // Motor pages
+      {
+        source: '/solutions/motors',
+        destination: '/services/motor-rewinding',
+        permanent: true,
+      },
+      {
+        source: '/solutions/motor-rewinding',
+        destination: '/services/motor-rewinding',
+        permanent: true,
+      },
+      // ATS pages
+      {
+        source: '/solutions/controls',
+        destination: '/services/ats-changeover',
+        permanent: true,
+      },
+      // UPS pages
+      {
+        source: '/solutions/ups',
+        destination: '/services/ups-systems',
+        permanent: true,
+      },
+      // HVAC/AC pages
+      {
+        source: '/solutions/ac',
+        destination: '/services/ac-installation',
+        permanent: true,
+      },
+      // Borehole pages
+      {
+        source: '/solutions/borehole-pumps',
+        destination: '/services/borehole-pumps',
+        permanent: true,
+      },
     ];
   },
 };

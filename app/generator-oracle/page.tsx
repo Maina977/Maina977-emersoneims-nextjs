@@ -2,6 +2,7 @@
 
 import { Suspense, lazy } from 'react';
 import DMCAProtection from '@/components/security/DMCAProtection';
+import GeneratorOracleSEO from '@/components/seo/GeneratorOracleSEO';
 
 // Lazy load the main component for better initial load performance
 const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/GeneratorOracleModule'));
@@ -27,6 +28,8 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
 export default function GeneratorOraclePage() {
   return (
     <>
+      {/* SEO Schema Markup - SoftwareApplication, FAQ, HowTo, Service */}
+      <GeneratorOracleSEO pageType="diagnostic" />
       {/* Disable DevTools protection - it causes false positives on Windows with display scaling */}
       <DMCAProtection enableDevToolsProtection={false} />
       <Suspense fallback={<LoadingFallback />}>
