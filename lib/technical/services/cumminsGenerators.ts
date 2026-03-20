@@ -3,18 +3,10 @@
  * Complete reference for Cummins diesel generator sets
  */
 
-import type {
-  Schematic,
-  WiringDiagram,
-  TroubleshootingTree,
-  RepairProcedure,
-  Part,
-  MaintenanceSchedule
-} from '../technicalBible';
 
 // ==================== SCHEMATICS ====================
 
-export const CUMMINS_SCHEMATICS: Schematic[] = [
+export const CUMMINS_SCHEMATICS = [
   {
     id: 'cummins-system-overview',
     serviceId: 'diesel-generators',
@@ -729,7 +721,7 @@ export const CUMMINS_SCHEMATICS: Schematic[] = [
 
 // ==================== WIRING DIAGRAMS ====================
 
-export const CUMMINS_WIRING_DIAGRAMS: WiringDiagram[] = [
+export const CUMMINS_WIRING_DIAGRAMS = [
   {
     id: 'cummins-starting-wiring',
     serviceId: 'diesel-generators',

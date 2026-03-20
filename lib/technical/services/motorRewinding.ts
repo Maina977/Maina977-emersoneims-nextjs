@@ -3,18 +3,9 @@
  * Complete reference for electric motor repair and rewinding
  */
 
-import type {
-  Schematic,
-  WiringDiagram,
-  TroubleshootingTree,
-  RepairProcedure,
-  Part,
-  MaintenanceSchedule
-} from '../technicalBible';
-
 // ==================== SCHEMATICS ====================
 
-export const MOTOR_SCHEMATICS: Schematic[] = [
+export const MOTOR_SCHEMATICS = [
   {
     id: 'motor-3ph-induction',
     serviceId: 'motors-rewinding',
@@ -166,7 +157,7 @@ export const MOTOR_SCHEMATICS: Schematic[] = [
 
 // ==================== WIRING DIAGRAMS ====================
 
-export const MOTOR_WIRING: WiringDiagram[] = [
+export const MOTOR_WIRING = [
   {
     id: 'motor-dol-starter',
     serviceId: 'motors-rewinding',
@@ -462,7 +453,7 @@ export const MOTOR_WIRING: WiringDiagram[] = [
 
 // ==================== TROUBLESHOOTING ====================
 
-export const MOTOR_TROUBLESHOOTING: TroubleshootingTree[] = [
+export const MOTOR_TROUBLESHOOTING = [
   {
     id: 'motor-wont-start',
     serviceId: 'motors-rewinding',
@@ -528,7 +519,7 @@ export const MOTOR_TROUBLESHOOTING: TroubleshootingTree[] = [
 
 // ==================== REPAIR PROCEDURES ====================
 
-export const MOTOR_REPAIRS: RepairProcedure[] = [
+export const MOTOR_REPAIRS = [
   {
     id: 'motor-bearing-replacement',
     serviceId: 'motors-rewinding',
@@ -809,7 +800,7 @@ export const MOTOR_REPAIRS: RepairProcedure[] = [
 
 // ==================== PARTS CATALOG ====================
 
-export const MOTOR_PARTS: Part[] = [
+export const MOTOR_PARTS = [
   {
     partNumber: '6308-2RS',
     name: 'Ball Bearing 6308-2RS',
@@ -900,7 +891,7 @@ export const MOTOR_PARTS: Part[] = [
 
 // ==================== MAINTENANCE ====================
 
-export const MOTOR_MAINTENANCE: MaintenanceSchedule[] = [
+export const MOTOR_MAINTENANCE = [
   {
     id: 'motor-monthly',
     serviceId: 'motors-rewinding',

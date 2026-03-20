@@ -3,9 +3,16 @@
  * Comprehensive documentation for air conditioning systems
  */
 
-import { ServiceDocumentation, IEC_WIRE_COLORS } from '../technicalBible';
+// IEC Wire Color Standards (IEC 60446)
+const IEC_WIRE_COLORS = {
+  L1: 'Brown (L1)',
+  L2: 'Black (L2)',
+  L3: 'Grey (L3)',
+  NEUTRAL: 'Blue (N)',
+  PE: 'Green/Yellow (PE)',
+};
 
-export const acInstallationService: ServiceDocumentation = {
+export const acInstallationService = {
   id: 'ac-installation',
   name: 'AC Installation & HVAC',
   description: 'Complete air conditioning and HVAC system installation, maintenance, and repair',

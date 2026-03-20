@@ -3,18 +3,9 @@
  * Complete reference for electrical distribution systems
  */
 
-import type {
-  Schematic,
-  WiringDiagram,
-  TroubleshootingTree,
-  RepairProcedure,
-  Part,
-  MaintenanceSchedule
-} from '../technicalBible';
-
 // ==================== SCHEMATICS ====================
 
-export const DISTRIBUTION_BOARD_SCHEMATICS: Schematic[] = [
+export const DISTRIBUTION_BOARD_SCHEMATICS = [
   {
     id: 'db-3phase-main',
     serviceId: 'controls',
@@ -117,7 +108,7 @@ export const DISTRIBUTION_BOARD_SCHEMATICS: Schematic[] = [
 
 // ==================== WIRING DIAGRAMS ====================
 
-export const DISTRIBUTION_BOARD_WIRING: WiringDiagram[] = [
+export const DISTRIBUTION_BOARD_WIRING = [
   {
     id: 'db-main-wiring',
     serviceId: 'controls',
@@ -260,7 +251,7 @@ export const DISTRIBUTION_BOARD_WIRING: WiringDiagram[] = [
 
 // ==================== TROUBLESHOOTING ====================
 
-export const DISTRIBUTION_BOARD_TROUBLESHOOTING: TroubleshootingTree[] = [
+export const DISTRIBUTION_BOARD_TROUBLESHOOTING = [
   {
     id: 'db-mcb-tripping',
     serviceId: 'controls',
@@ -305,7 +296,7 @@ export const DISTRIBUTION_BOARD_TROUBLESHOOTING: TroubleshootingTree[] = [
 
 // ==================== REPAIR PROCEDURES ====================
 
-export const DISTRIBUTION_BOARD_REPAIRS: RepairProcedure[] = [
+export const DISTRIBUTION_BOARD_REPAIRS = [
   {
     id: 'db-mcb-replacement',
     serviceId: 'controls',
@@ -419,7 +410,7 @@ export const DISTRIBUTION_BOARD_REPAIRS: RepairProcedure[] = [
 
 // ==================== PARTS CATALOG ====================
 
-export const DISTRIBUTION_BOARD_PARTS: Part[] = [
+export const DISTRIBUTION_BOARD_PARTS = [
   {
     partNumber: 'IC60N-C32',
     name: 'MCB 32A Type C 1P',
@@ -496,7 +487,7 @@ export const DISTRIBUTION_BOARD_PARTS: Part[] = [
 
 // ==================== MAINTENANCE ====================
 
-export const DISTRIBUTION_BOARD_MAINTENANCE: MaintenanceSchedule[] = [
+export const DISTRIBUTION_BOARD_MAINTENANCE = [
   {
     id: 'db-monthly',
     serviceId: 'controls',

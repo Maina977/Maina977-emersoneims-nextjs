@@ -3,18 +3,10 @@
  * Complete reference for solar PV installations
  */
 
-import type {
-  Schematic,
-  WiringDiagram,
-  TroubleshootingTree,
-  RepairProcedure,
-  Part,
-  MaintenanceSchedule
-} from '../technicalBible';
 
 // ==================== SCHEMATICS ====================
 
-export const SOLAR_SCHEMATICS: Schematic[] = [
+export const SOLAR_SCHEMATICS = [
   {
     id: 'solar-offgrid-system',
     serviceId: 'solar-systems',
@@ -305,7 +297,7 @@ export const SOLAR_SCHEMATICS: Schematic[] = [
 
 // ==================== WIRING DIAGRAMS ====================
 
-export const SOLAR_WIRING_DIAGRAMS: WiringDiagram[] = [
+export const SOLAR_WIRING_DIAGRAMS = [
   {
     id: 'solar-string-wiring',
     serviceId: 'solar-systems',
@@ -584,7 +576,7 @@ export const SOLAR_WIRING_DIAGRAMS: WiringDiagram[] = [
 
 // ==================== TROUBLESHOOTING ====================
 
-export const SOLAR_TROUBLESHOOTING: TroubleshootingTree[] = [
+export const SOLAR_TROUBLESHOOTING = [
   {
     id: 'solar-no-output',
     serviceId: 'solar-systems',
@@ -753,7 +745,7 @@ export const SOLAR_TROUBLESHOOTING: TroubleshootingTree[] = [
 
 // ==================== REPAIRS ====================
 
-export const SOLAR_REPAIRS: RepairProcedure[] = [
+export const SOLAR_REPAIRS = [
   {
     id: 'solar-panel-cleaning',
     serviceId: 'solar-systems',
@@ -931,7 +923,7 @@ export const SOLAR_REPAIRS: RepairProcedure[] = [
 
 // ==================== PARTS ====================
 
-export const SOLAR_PARTS: Part[] = [
+export const SOLAR_PARTS = [
   {
     id: 'solar-panel-500w',
     partNumber: 'JA-500W-MONO',
@@ -1059,7 +1051,7 @@ export const SOLAR_PARTS: Part[] = [
 
 // ==================== MAINTENANCE ====================
 
-export const SOLAR_MAINTENANCE: MaintenanceSchedule = {
+export const SOLAR_MAINTENANCE= {
   serviceId: 'solar-systems',
   tasks: [
     {

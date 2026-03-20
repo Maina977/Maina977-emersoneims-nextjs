@@ -3,11 +3,9 @@
  * Step-by-step repair guides with tools, parts, and safety info
  */
 
-import type { RepairProcedure, Part, MaintenanceSchedule, MaintenanceTask } from '../technicalBible';
-
 // ==================== REPAIR PROCEDURES ====================
 
-export const CUMMINS_REPAIRS: RepairProcedure[] = [
+export const CUMMINS_REPAIRS = [
   {
     id: 'cummins-fuel-filter-change',
     serviceId: 'diesel-generators',
@@ -581,7 +579,7 @@ export const CUMMINS_REPAIRS: RepairProcedure[] = [
 
 // ==================== PARTS LIST ====================
 
-export const CUMMINS_PARTS: Part[] = [
+export const CUMMINS_PARTS = [
   {
     id: 'cummins-fs1000',
     partNumber: 'FS1000',
@@ -817,7 +815,7 @@ export const CUMMINS_PARTS: Part[] = [
 
 // ==================== MAINTENANCE SCHEDULES ====================
 
-export const CUMMINS_MAINTENANCE: MaintenanceSchedule = {
+export const CUMMINS_MAINTENANCE= {
   serviceId: 'diesel-generators',
   tasks: [
     // Daily Tasks

@@ -90,7 +90,7 @@ export interface WiringDiagram {
 
 export interface TroubleshootingNode {
   id: string;
-  question: string;
+  question?: string; // Optional for leaf/solution nodes
   yesNode?: string;
   noNode?: string;
   solution?: string;
@@ -169,6 +169,96 @@ export interface MaintenanceTask {
 export interface MaintenanceSchedule {
   serviceId: ServiceCategory;
   tasks: MaintenanceTask[];
+}
+
+// ServiceDocumentation - Unified structure for comprehensive service docs
+export interface ServiceDocumentation {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  schematics: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    imageUrl?: string;
+    components: { id: string; name: string; description: string; position: { x: number; y: number } }[];
+    annotations: { id: string; text: string; position: { x: number; y: number }; color?: string }[];
+  }[];
+  wiringDiagrams: {
+    id: string;
+    name: string;
+    description: string;
+    systemType: string;
+    wires: {
+      id: string;
+      from: string;
+      to: string;
+      color: string;
+      gauge: string;
+      function: string;
+      notes?: string;
+    }[];
+    safetyNotes: string[];
+    tools?: string[];
+  }[];
+  troubleshootingGuides: {
+    id: string;
+    title: string;
+    symptoms: string[];
+    possibleCauses: string[];
+    diagnosticSteps: {
+      step: number;
+      action: string;
+      expectedResult: string;
+      ifFails: string;
+    }[];
+    solutions: string[];
+  }[];
+  repairProcedures: {
+    id: string;
+    title: string;
+    difficulty: string;
+    estimatedTime: string;
+    requiredTools: string[];
+    requiredParts: string[];
+    steps: {
+      stepNumber: number;
+      title: string;
+      instruction: string;
+      warnings?: string[];
+      tips?: string[];
+    }[];
+    qualityChecks: string[];
+  }[];
+  partsReference: {
+    id: string;
+    name: string;
+    category: string;
+    variants: {
+      partNumber: string;
+      description: string;
+      specifications: string;
+      compatibleModels: string[];
+      price?: number;
+    }[];
+    imageUrl?: string;
+    supplier?: string;
+    leadTime?: string;
+  }[];
+  maintenanceSchedules: {
+    id: string;
+    name: string;
+    equipmentType: string;
+    tasks: {
+      task: string;
+      interval: string;
+      procedure: string;
+      criticalLevel: 'low' | 'medium' | 'high';
+    }[];
+    notes?: string;
+  }[];
 }
 
 // ==================== IEC WIRE COLOR STANDARDS ====================

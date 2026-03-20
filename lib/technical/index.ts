@@ -3,37 +3,14 @@
 
 export * from './technicalBible';
 
-// Service Documentation Modules
-export { cumminsGeneratorsService } from './services/cumminsGenerators';
-export { cumminsGeneratorsTroubleshooting } from './services/cumminsGeneratorsTroubleshooting';
-export { cumminsGeneratorsRepairs } from './services/cumminsGeneratorsRepairs';
-export { atsChangeoverService } from './services/atsChangeover';
-export { solarEnergyService } from './services/solarEnergy';
-export { distributionBoardsService } from './services/distributionBoards';
-export { motorRewindingService } from './services/motorRewinding';
-export { upsSystemsService, boreholeService } from './services/upsSystemsBorehole';
-export { acInstallationService } from './services/acInstallation';
-export { hospitalIncineratorsService } from './services/hospitalIncinerators';
-
-// Consolidated service list for Technical Bible Hub
-import { cumminsGeneratorsService } from './services/cumminsGenerators';
-import { atsChangeoverService } from './services/atsChangeover';
-import { solarEnergyService } from './services/solarEnergy';
-import { distributionBoardsService } from './services/distributionBoards';
-import { motorRewindingService } from './services/motorRewinding';
-import { upsSystemsService, boreholeService } from './services/upsSystemsBorehole';
-import { acInstallationService } from './services/acInstallation';
-import { hospitalIncineratorsService } from './services/hospitalIncinerators';
-import type { ServiceDocumentation } from './technicalBible';
-
-export const ALL_SERVICES: ServiceDocumentation[] = [
-  cumminsGeneratorsService,
-  atsChangeoverService,
-  solarEnergyService,
-  distributionBoardsService,
-  motorRewindingService,
-  upsSystemsService,
-  boreholeService,
-  acInstallationService,
-  hospitalIncineratorsService,
-];
+// Re-export service modules - these have their own internal structures
+export { default as cumminsGeneratorsService } from './services/cumminsGenerators';
+export { default as cumminsGeneratorsTroubleshooting } from './services/cumminsGeneratorsTroubleshooting';
+export { default as cumminsGeneratorsRepairs } from './services/cumminsGeneratorsRepairs';
+export { default as atsChangeoverService } from './services/atsChangeover';
+export { default as solarEnergyService } from './services/solarEnergy';
+export { default as distributionBoardsService } from './services/distributionBoards';
+export { default as motorRewindingService } from './services/motorRewinding';
+export { default as upsSystemsBoreholeService } from './services/upsSystemsBorehole';
+export { default as acInstallationService } from './services/acInstallation';
+export { default as hospitalIncineratorsService } from './services/hospitalIncinerators';

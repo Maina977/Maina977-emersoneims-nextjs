@@ -3,18 +3,10 @@
  * Complete reference for Automatic Transfer Switch systems
  */
 
-import type {
-  Schematic,
-  WiringDiagram,
-  TroubleshootingTree,
-  RepairProcedure,
-  Part,
-  MaintenanceSchedule
-} from '../technicalBible';
 
 // ==================== SCHEMATICS ====================
 
-export const ATS_SCHEMATICS: Schematic[] = [
+export const ATS_SCHEMATICS = [
   {
     id: 'ats-system-overview',
     serviceId: 'controls',
@@ -297,7 +289,7 @@ export const ATS_SCHEMATICS: Schematic[] = [
 
 // ==================== WIRING DIAGRAMS ====================
 
-export const ATS_WIRING_DIAGRAMS: WiringDiagram[] = [
+export const ATS_WIRING_DIAGRAMS = [
   {
     id: 'ats-control-wiring',
     serviceId: 'controls',
@@ -640,7 +632,7 @@ export const ATS_WIRING_DIAGRAMS: WiringDiagram[] = [
 
 // ==================== TROUBLESHOOTING ====================
 
-export const ATS_TROUBLESHOOTING: TroubleshootingTree[] = [
+export const ATS_TROUBLESHOOTING = [
   {
     id: 'ats-no-transfer',
     serviceId: 'controls',
@@ -810,7 +802,7 @@ export const ATS_TROUBLESHOOTING: TroubleshootingTree[] = [
 
 // ==================== REPAIRS ====================
 
-export const ATS_REPAIRS: RepairProcedure[] = [
+export const ATS_REPAIRS = [
   {
     id: 'ats-contact-cleaning',
     serviceId: 'controls',
@@ -1005,7 +997,7 @@ export const ATS_REPAIRS: RepairProcedure[] = [
 
 // ==================== PARTS ====================
 
-export const ATS_PARTS: Part[] = [
+export const ATS_PARTS = [
   {
     id: 'ats-dse334',
     partNumber: 'DSE334',
@@ -1066,7 +1058,7 @@ export const ATS_PARTS: Part[] = [
 
 // ==================== MAINTENANCE ====================
 
-export const ATS_MAINTENANCE: MaintenanceSchedule = {
+export const ATS_MAINTENANCE = {
   serviceId: 'controls',
   tasks: [
     {

@@ -3,20 +3,12 @@
  * Combined file for UPS and water pumping systems
  */
 
-import type {
-  Schematic,
-  WiringDiagram,
-  TroubleshootingTree,
-  RepairProcedure,
-  Part,
-  MaintenanceSchedule
-} from '../technicalBible';
 
 // ═══════════════════════════════════════════════════════════════
 // UPS SYSTEMS
 // ═══════════════════════════════════════════════════════════════
 
-export const UPS_SCHEMATICS: Schematic[] = [
+export const UPS_SCHEMATICS = [
   {
     id: 'ups-online-block',
     serviceId: 'ac-ups',
@@ -113,7 +105,7 @@ export const UPS_SCHEMATICS: Schematic[] = [
   }
 ];
 
-export const UPS_WIRING: WiringDiagram[] = [
+export const UPS_WIRING = [
   {
     id: 'ups-3phase-install',
     serviceId: 'ac-ups',
@@ -268,7 +260,7 @@ export const UPS_WIRING: WiringDiagram[] = [
   }
 ];
 
-export const UPS_TROUBLESHOOTING: TroubleshootingTree[] = [
+export const UPS_TROUBLESHOOTING = [
   {
     id: 'ups-on-bypass',
     serviceId: 'ac-ups',
@@ -312,7 +304,7 @@ export const UPS_TROUBLESHOOTING: TroubleshootingTree[] = [
   }
 ];
 
-export const UPS_REPAIRS: RepairProcedure[] = [
+export const UPS_REPAIRS = [
   {
     id: 'ups-battery-replacement',
     serviceId: 'ac-ups',
@@ -440,7 +432,7 @@ export const UPS_REPAIRS: RepairProcedure[] = [
 // BOREHOLE PUMPS
 // ═══════════════════════════════════════════════════════════════
 
-export const BOREHOLE_SCHEMATICS: Schematic[] = [
+export const BOREHOLE_SCHEMATICS = [
   {
     id: 'borehole-system',
     serviceId: 'pumps',
@@ -535,7 +527,7 @@ export const BOREHOLE_SCHEMATICS: Schematic[] = [
   }
 ];
 
-export const BOREHOLE_WIRING: WiringDiagram[] = [
+export const BOREHOLE_WIRING = [
   {
     id: 'borehole-pump-wiring',
     serviceId: 'pumps',
@@ -638,7 +630,7 @@ export const BOREHOLE_WIRING: WiringDiagram[] = [
   }
 ];
 
-export const BOREHOLE_TROUBLESHOOTING: TroubleshootingTree[] = [
+export const BOREHOLE_TROUBLESHOOTING = [
   {
     id: 'pump-no-water',
     serviceId: 'pumps',
@@ -681,7 +673,7 @@ export const BOREHOLE_TROUBLESHOOTING: TroubleshootingTree[] = [
   }
 ];
 
-export const BOREHOLE_PARTS: Part[] = [
+export const BOREHOLE_PARTS = [
   {
     partNumber: 'SP30-5',
     name: 'Grundfos SP30-5 Submersible Pump',
@@ -737,7 +729,7 @@ export const BOREHOLE_PARTS: Part[] = [
   }
 ];
 
-export const UPS_PARTS: Part[] = [
+export const UPS_PARTS = [
   {
     partNumber: 'CSB-GPL12750',
     name: 'CSB GPL12750 UPS Battery',

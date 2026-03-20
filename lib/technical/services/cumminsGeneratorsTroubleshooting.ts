@@ -3,11 +3,9 @@
  * Decision trees for diagnosing common problems
  */
 
-import type { TroubleshootingTree, TroubleshootingNode } from '../technicalBible';
-
 // ==================== TROUBLESHOOTING TREES ====================
 
-export const CUMMINS_TROUBLESHOOTING: TroubleshootingTree[] = [
+export const CUMMINS_TROUBLESHOOTING = [
   {
     id: 'cummins-no-start',
     serviceId: 'diesel-generators',
