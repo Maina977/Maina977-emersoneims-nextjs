@@ -2,17 +2,11 @@
 
 import { useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SectionLead } from "@/components/generators";
 import ServiceOverview from "@/components/services/ServiceOverview";
 import HolographicLaser from '@/components/effects/HolographicLaser';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
 
@@ -25,28 +19,42 @@ export default function GeneratorsServicePage() {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const sections = containerRef.current.querySelectorAll('section');
-    
-    sections.forEach((section) => {
-      gsap.fromTo(
-        section,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
-          },
-        }
-      );
+    let ScrollTrigger: typeof import('gsap/ScrollTrigger').ScrollTrigger;
+
+    Promise.all([
+      import('gsap'),
+      import('gsap/ScrollTrigger')
+    ]).then(([gsapMod, scrollTriggerMod]) => {
+      const gsap = gsapMod.gsap;
+      ScrollTrigger = scrollTriggerMod.ScrollTrigger;
+      gsap.registerPlugin(ScrollTrigger);
+
+      const sections = containerRef.current?.querySelectorAll('section');
+      if (!sections) return;
+
+      sections.forEach((section) => {
+        gsap.fromTo(
+          section,
+          { opacity: 0, y: 50 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      });
     });
 
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      if (ScrollTrigger) {
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      }
     };
   }, []);
 
