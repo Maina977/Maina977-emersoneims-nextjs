@@ -18,8 +18,6 @@
 
 import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -28,9 +26,7 @@ import { usePerformanceTier } from '@/components/performance/usePerformanceTier'
 // Cinematic Cummins generator image with Hollywood color grading
 const cumminsImage = '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg';
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+// GSAP will be loaded dynamically in components that need it
 
 // Lazy load premium components
 const AdvancedGeneratorScene = lazy(() => import('@/components/webgl/AdvancedGeneratorScene'));
@@ -62,27 +58,31 @@ export default function SOTDWinningHomepage() {
   const textOpacity = useTransform(smoothProgress, [0, 0.3], [1, 0]);
 
   useEffect(() => {
-    // GSAP Timeline for hero entrance
+    // GSAP Timeline for hero entrance - loaded dynamically
     if (!prefersReducedMotion && heroRef.current) {
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      
-      tl.fromTo(
-        heroRef.current.querySelector('.hero-title'),
-        { opacity: 0, y: 100, scale: 0.8 },
-        { opacity: 1, y: 0, scale: 1, duration: 1.2 }
-      )
-      .fromTo(
-        heroRef.current.querySelector('.hero-subtitle'),
-        { opacity: 0, y: 50 },
-        { opacity: 1, y: 0, duration: 1 },
-        '-=0.8'
-      )
-      .fromTo(
-        heroRef.current.querySelectorAll('.hero-stat'),
-        { opacity: 0, scale: 0.5 },
-        { opacity: 1, scale: 1, duration: 0.8, stagger: 0.1 },
-        '-=0.5'
-      );
+      import('gsap').then(({ gsap }) => {
+        if (!heroRef.current) return;
+
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+        tl.fromTo(
+          heroRef.current.querySelector('.hero-title'),
+          { opacity: 0, y: 100, scale: 0.8 },
+          { opacity: 1, y: 0, scale: 1, duration: 1.2 }
+        )
+        .fromTo(
+          heroRef.current.querySelector('.hero-subtitle'),
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: 0, duration: 1 },
+          '-=0.8'
+        )
+        .fromTo(
+          heroRef.current.querySelectorAll('.hero-stat'),
+          { opacity: 0, scale: 0.5 },
+          { opacity: 1, scale: 1, duration: 0.8, stagger: 0.1 },
+          '-=0.5'
+        );
+      });
     }
 
     // Optimized loading time for better LCP

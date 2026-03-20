@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// GSAP loaded dynamically to reduce initial bundle
+let gsapModule: typeof import('gsap') | null = null;
+let ScrollTriggerModule: typeof import('gsap/ScrollTrigger').ScrollTrigger | null = null;
 import { SectionLead, GeneratorCalculator, MTBFChart, ErrorFrequencyChart } from "@/components/generators";
 import { cumminsGenerators } from "@/app/lib/data/cumminsgenerators";
 import { generatorServices } from "@/app/lib/data/generatorservices";
@@ -86,9 +88,7 @@ const generatorGalleryImages = [
   },
 ];
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+// GSAP will be loaded dynamically in useEffect
 
 const FloatingUFOs = lazy(() => import('@/components/webgl/FloatingUFOs'));
 const InteractiveBlobs = lazy(() => import('@/components/webgl/InteractiveBlobs'));
@@ -283,32 +283,49 @@ export default function GeneratorPage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
 
-  // GSAP ScrollTrigger animations
+  // GSAP ScrollTrigger animations - loaded dynamically
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const sections = containerRef.current.querySelectorAll('section');
-    
-    sections.forEach((section) => {
-      gsap.fromTo(
-        section,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
-          },
-        }
-      );
+    let cleanup: (() => void) | undefined;
+
+    // Dynamically import GSAP to reduce initial bundle
+    Promise.all([
+      import('gsap'),
+      import('gsap/ScrollTrigger')
+    ]).then(([gsapMod, scrollTriggerMod]) => {
+      const gsap = gsapMod.gsap;
+      const ScrollTrigger = scrollTriggerMod.ScrollTrigger;
+      gsap.registerPlugin(ScrollTrigger);
+
+      const sections = containerRef.current?.querySelectorAll('section');
+      if (!sections) return;
+
+      sections.forEach((section) => {
+        gsap.fromTo(
+          section,
+          { opacity: 0, y: 50 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      });
+
+      cleanup = () => {
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      };
     });
 
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      cleanup?.();
     };
   }, []);
 
