@@ -3,6 +3,7 @@
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "framework": "nextjs",
+  "regions": ["jnb1"],
   "functions": {
     "app/sitemap.xml/route.ts": {
       "maxDuration": 30
@@ -41,11 +42,11 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+          "value": "public, max-age=0, s-maxage=60, stale-while-revalidate=300"
         },
         {
           "key": "CDN-Cache-Control",
-          "value": "public, max-age=3600"
+          "value": "public, max-age=60"
         }
       ]
     },
