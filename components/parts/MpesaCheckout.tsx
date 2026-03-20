@@ -48,7 +48,7 @@ export default function MpesaCheckout({
   const [orderNote, setOrderNote] = useState('');
 
   // M-Pesa business details
-  const MPESA_PHONE = '0793573208';
+  const MPESA_PHONE = '0768860665';
   const MPESA_NAME = 'EmersonEIMS';
 
   // Validate Kenyan phone number

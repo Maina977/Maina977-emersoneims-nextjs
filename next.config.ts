@@ -409,19 +409,9 @@ const nextConfig: NextConfig = {
         destination: '/generators',
         permanent: true,
       },
-      {
-        source: '/maintenance-hub/generators',
-        destination: '/generators/maintenance',
-        permanent: true,
-      },
-      // Solar pages - all redirect to /solar (main page)
+      // Solar pages - consolidate to /solar
       {
         source: '/solutions/solar',
-        destination: '/solar',
-        permanent: true,
-      },
-      {
-        source: '/maintenance-hub/solar',
         destination: '/solar',
         permanent: true,
       },
@@ -466,10 +456,41 @@ const nextConfig: NextConfig = {
         destination: '/contact',
         permanent: true,
       },
-      // Maintenance hub motors redirect
+      // ═══════════════════════════════════════════════════════════════════
+      // CONSOLIDATE DUPLICATE PAGES
+      // ═══════════════════════════════════════════════════════════════════
+      // About page consolidation
       {
-        source: '/maintenance-hub/motors',
-        destination: '/services/motor-rewinding',
+        source: '/about',
+        destination: '/about-us',
+        permanent: true,
+      },
+      // Counties → Kenya (consolidate location pages)
+      {
+        source: '/counties',
+        destination: '/kenya',
+        permanent: true,
+      },
+      {
+        source: '/counties/:county',
+        destination: '/kenya/:county',
+        permanent: true,
+      },
+      // Service singular → Services plural
+      {
+        source: '/service',
+        destination: '/services',
+        permanent: true,
+      },
+      // Generator parts consolidation
+      {
+        source: '/generator-parts',
+        destination: '/generators/spare-parts',
+        permanent: true,
+      },
+      {
+        source: '/generator-services',
+        destination: '/generators',
         permanent: true,
       },
     ];

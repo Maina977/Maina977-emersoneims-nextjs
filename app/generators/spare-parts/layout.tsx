@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Buy Generator Spare Parts Online Kenya | 2000+ Parts | M-Pesa | EmersonEIMS',
-    description: 'Shop 2000+ genuine generator spare parts online. Oil filters, fuel filters, AVR, controllers, engine parts. Pay via M-Pesa (0793573208). Same-day delivery in Nairobi.',
+    description: 'Shop 2000+ genuine generator spare parts online. Oil filters, fuel filters, AVR, controllers, engine parts. Pay via M-Pesa (0768860665). Same-day delivery in Nairobi.',
     type: 'website',
     url: 'https://emersoneims.com/generators/spare-parts',
     siteName: 'EmersonEIMS',
@@ -60,7 +60,7 @@ const jsonLd = {
       '@id': 'https://emersoneims.com/generators/spare-parts/#store',
       name: 'EmersonEIMS Generator Parts Store',
       description: 'Kenya\'s largest inventory of 2000+ genuine generator spare parts for Cummins, Caterpillar, Perkins, FG Wilson, and all major brands. Shop online with M-Pesa payment.',
-      telephone: '+254793573208',
+      telephone: '+254768860665',
       address: {
         '@type': 'PostalAddress',
         streetAddress: 'Embakasi, off Airport North Road',

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "CUMMINS Generators Kenya | Authorized VOLTKA Dealer | 3-YEAR WARRANTY + 1 Year Free Service | EmersonEIMS",
-  description: "Kenya's AUTHORIZED CUMMINS/VOLTKA Dealer. 10KVA-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation, 24/7 support. Serving Nairobi, Mombasa, Kisumu & all 47 counties. Call +254793573208",
+  description: "Kenya's AUTHORIZED CUMMINS/VOLTKA Dealer. 10KVA-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation, 24/7 support. Serving Nairobi, Mombasa, Kisumu & all 47 counties. Call +254768860665",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA | EmersonEIMS',

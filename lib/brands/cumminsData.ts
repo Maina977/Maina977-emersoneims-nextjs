@@ -108,7 +108,7 @@ export const CUMMINS_BRAND_INFO = {
   ],
   contact: {
     phone: '+254 793 573 208',
-    whatsapp: '254793573208',
+    whatsapp: '254768860665',
     email: 'sales@emersoneims.com'
   },
   structuredData: {

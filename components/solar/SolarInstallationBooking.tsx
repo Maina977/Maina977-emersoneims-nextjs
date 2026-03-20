@@ -95,7 +95,7 @@ ${formData.additionalNotes || 'None'}
 Please schedule a site assessment.`
     );
 
-    window.open(`https://wa.me/254793573208?text=${message}`, '_blank');
+    window.open(`https://wa.me/254768860665?text=${message}`, '_blank');
     setSubmitted(true);
   };
 

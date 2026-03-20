@@ -346,7 +346,7 @@ export default function SolarROICalculator() {
 
           {/* CTA */}
           <a
-            href={`https://wa.me/254793573208?text=${encodeURIComponent(
+            href={`https://wa.me/254768860665?text=${encodeURIComponent(
               `Hi, I'm interested in a ${systemSize}kW solar system.\n\nMy details:\n- Monthly bill: KES ${monthlyBill.toLocaleString()}\n- Customer type: ${customerType}\n- Quality: ${systemQuality}\n- Battery: ${includesBattery ? `${batteryCapacity}kWh` : 'No'}\n\nEstimated cost: KES ${calculations.totalSystemCost.toLocaleString()}\nPayback: ${calculations.paybackYear} years\n\nPlease provide a detailed quote.`
             )}`}
             target="_blank"

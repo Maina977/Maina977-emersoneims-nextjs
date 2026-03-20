@@ -15,7 +15,7 @@ import HomePageClient from '@/components/home/HomePageClient';
 // ═══════════════════════════════════════════════════════════════════════════════
 export const metadata: Metadata = {
   title: "Cummins Generators Kenya | Authorized Voltka Dealer | 3-YEAR WARRANTY | EmersonEIMS",
-  description: "Kenya's Authorized CUMMINS Generator Dealer by VOLTKA. 10-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, 24/7 support. Call +254793573208",
+  description: "Kenya's Authorized CUMMINS Generator Dealer by VOLTKA. 10-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, 24/7 support. Call +254768860665",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: "CUMMINS Generators Kenya | Authorized Voltka Dealer | EmersonEIMS",

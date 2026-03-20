@@ -782,14 +782,14 @@ export default function SolarMaintenanceHub() {
           </div>
           <div className="flex gap-3">
             <a
-              href="tel:+254793573208"
+              href="tel:+254768860665"
               className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
             >
               <Phone className="w-5 h-5" />
               Call Now
             </a>
             <a
-              href="https://wa.me/254793573208?text=Hi,%20I%20need%20help%20with%20my%20solar%20system"
+              href="https://wa.me/254768860665?text=Hi,%20I%20need%20help%20with%20my%20solar%20system"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white rounded-xl hover:bg-[#20BD5A] transition-colors"

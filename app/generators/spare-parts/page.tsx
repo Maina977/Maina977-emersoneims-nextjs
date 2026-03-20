@@ -5,7 +5,7 @@
  *
  * - 2,000+ genuine OEM parts
  * - Full shopping cart functionality
- * - M-Pesa secure payment (0793573208)
+ * - M-Pesa secure payment (0768860665)
  * - Real-time inventory tracking
  * - Advanced filtering & search
  * - Quick view & wishlist

@@ -484,14 +484,14 @@ export default function SolarHub() {
           <h3 className="text-xl font-bold text-white mb-2">Need Professional Solar Services?</h3>
           <p className="text-amber-100 mb-4">Our certified technicians are available across Kenya</p>
           <div className="flex justify-center gap-4 flex-wrap">
-            <a href="tel:+254793573208" className="bg-white/20 hover:bg-white/30 px-6 py-2 rounded-lg text-white font-medium transition-colors">
+            <a href="tel:+254768860665" className="bg-white/20 hover:bg-white/30 px-6 py-2 rounded-lg text-white font-medium transition-colors">
               📞 0793 573 208
             </a>
-            <a href="https://wa.me/254793573208" className="bg-green-500 hover:bg-green-600 px-6 py-2 rounded-lg text-white font-medium transition-colors">
+            <a href="https://wa.me/254768860665" className="bg-green-500 hover:bg-green-600 px-6 py-2 rounded-lg text-white font-medium transition-colors">
               💬 WhatsApp
             </a>
           </div>
-          <p className="text-amber-200 text-sm mt-3">M-Pesa Payment: 0793573208</p>
+          <p className="text-amber-200 text-sm mt-3">M-Pesa Payment: 0768860665</p>
         </div>
       </main>
 

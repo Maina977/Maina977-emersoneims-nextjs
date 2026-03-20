@@ -85,18 +85,20 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Other Tools',
+        title: 'Advanced Tools',
         items: [
-          { href: '/diagnostics', label: '9-Service Diagnostic', icon: '🔬', desc: 'Comprehensive service check' },
+          { href: '/diagnostic-cockpit', label: 'Diagnostic Cockpit', icon: '🎛️', desc: 'Aerospace-style control panel' },
+          { href: '/diagnostic-journey', label: 'Diagnostic Journey', icon: '🗺️', desc: 'Step-by-step diagnosis' },
+          { href: '/diagnostic-qa', label: 'Expert Q&A', icon: '💬', desc: 'AI-powered answers' },
           { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive problem solver' },
-          { href: '/diagnostic-cockpit', label: 'Diagnostic Cockpit', icon: '🎛️', desc: 'Advanced control panel' },
         ],
       },
       {
-        title: 'Support Tools',
+        title: 'Support & Resources',
         items: [
+          { href: '/guides/emergency-response', label: 'Emergency Guide', icon: '🚨', desc: 'What to do when power fails' },
+          { href: '/resources', label: 'Learning Hub', icon: '📚', desc: 'All guides & resources' },
           { href: '/fault-code-lookup', label: 'Fault Code Lookup', icon: '🔍', desc: 'Error code database' },
-          { href: '/knowledge-base', label: 'Knowledge Base', icon: '📚', desc: 'Guides & tutorials' },
           { href: '/faq', label: 'FAQ', icon: '❓', desc: 'Common questions answered' },
         ],
       },
@@ -111,7 +113,10 @@ const MEGA_MENUS = {
         title: 'Maintenance Hubs',
         items: [
           { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🛠️', desc: 'All equipment maintenance center' },
-          { href: '/maintenance-hub/general', label: 'General Services', icon: '🔧', desc: 'Pumps, motors, AC, electrical' },
+          { href: '/maintenance-hub/generators', label: 'Generator Hub', icon: '⚡', desc: 'Generator maintenance & repair' },
+          { href: '/maintenance-hub/motors', label: 'Motors Hub', icon: '🔄', desc: 'Motor rewinding & service' },
+          { href: '/maintenance-hub/hvac', label: 'HVAC Hub', icon: '❄️', desc: 'AC & refrigeration' },
+          { href: '/maintenance-hub/electrical', label: 'Electrical Hub', icon: '🔌', desc: 'Electrical systems' },
           { href: '/solutions', label: 'All Solutions', icon: '💡', desc: 'View all our solutions' },
         ],
       },

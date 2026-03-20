@@ -56,14 +56,14 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           </div>
           <div className="flex items-center gap-4">
             <a
-              href="tel:+254793573208"
+              href="tel:+254768860665"
               className="flex items-center gap-2 px-4 py-2 bg-white text-red-600 font-bold rounded-full hover:bg-gray-100 transition-colors"
             >
               <Phone className="w-4 h-4" />
               Call Now
             </a>
             <a
-              href="https://wa.me/254793573208?text=EMERGENCY%20-%20I%20need%20immediate%20power%20assistance"
+              href="https://wa.me/254768860665?text=EMERGENCY%20-%20I%20need%20immediate%20power%20assistance"
               className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white font-bold rounded-full hover:bg-green-400 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
@@ -83,14 +83,14 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
         className="fixed bottom-6 right-6 z-50 flex flex-col gap-3"
       >
         <a
-          href="tel:+254793573208"
+          href="tel:+254768860665"
           className="flex items-center gap-2 px-4 py-3 bg-red-600 text-white font-bold rounded-full shadow-lg hover:bg-red-500 transition-all hover:scale-105"
         >
           <Phone className="w-5 h-5 animate-pulse" />
-          Emergency: 0793 573 208
+          Emergency: 0768 860 665
         </a>
         <a
-          href="https://wa.me/254793573208"
+          href="https://wa.me/254768860665"
           className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-500 transition-all hover:scale-105"
         >
           <MessageCircle className="w-5 h-5" />
@@ -115,14 +115,14 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
 
         <div className="space-y-3">
           <a
-            href="tel:+254793573208"
+            href="tel:+254768860665"
             className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl hover:from-red-400 hover:to-orange-400 transition-all"
           >
             <Phone className="w-5 h-5" />
-            Call: 0793 573 208
+            Call: 0768 860 665
           </a>
           <a
-            href="https://wa.me/254793573208?text=Hi%2C%20I%20need%20help%20with%20my%20power%20system"
+            href="https://wa.me/254768860665?text=Hi%2C%20I%20need%20help%20with%20my%20power%20system"
             className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-500 transition-all"
           >
             <MessageCircle className="w-5 h-5" />
@@ -218,14 +218,14 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
               className="flex flex-col sm:flex-row gap-4"
             >
               <a
-                href="tel:+254793573208"
+                href="tel:+254768860665"
                 className="flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-lg rounded-full hover:from-red-400 hover:to-orange-400 transition-all shadow-lg shadow-red-500/30 hover:scale-105"
               >
                 <Phone className="w-6 h-6" />
-                Call Now: 0793 573 208
+                Call Now: 0768 860 665
               </a>
               <a
-                href="https://wa.me/254793573208?text=URGENT%20-%20I%20need%20emergency%20power%20assistance%20immediately"
+                href="https://wa.me/254768860665?text=URGENT%20-%20I%20need%20emergency%20power%20assistance%20immediately"
                 className="flex items-center justify-center gap-3 px-8 py-4 bg-green-600 text-white font-bold text-lg rounded-full hover:bg-green-500 transition-all shadow-lg shadow-green-500/30 hover:scale-105"
               >
                 <MessageCircle className="w-6 h-6" />

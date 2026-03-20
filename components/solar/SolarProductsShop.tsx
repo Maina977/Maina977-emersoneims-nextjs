@@ -190,10 +190,10 @@ ${itemsList}
 *TOTAL: KES ${cartTotal.toLocaleString()}*
 
 Please confirm availability and delivery options.
-Payment: M-Pesa to 0793573208`
+Payment: M-Pesa to 0768860665`
     );
 
-    window.open(`https://wa.me/254793573208?text=${message}`, '_blank');
+    window.open(`https://wa.me/254768860665?text=${message}`, '_blank');
   };
 
   return (
@@ -456,7 +456,7 @@ Payment: M-Pesa to 0793573208`
                   Order via WhatsApp
                 </button>
                 <p className="text-center text-slate-500 text-sm mt-2">
-                  M-Pesa Payment: 0793573208
+                  M-Pesa Payment: 0768860665
                 </p>
               </div>
             </motion.div>

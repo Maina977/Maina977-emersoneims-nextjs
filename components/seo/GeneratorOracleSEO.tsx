@@ -171,7 +171,7 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
       '@type': 'Organization',
       name: 'EmersonEIMS',
       url: 'https://www.emersoneims.com',
-      telephone: '+254793573208',
+      telephone: '+254768860665',
       address: {
         '@type': 'PostalAddress',
         addressLocality: 'Nairobi',

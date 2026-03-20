@@ -166,7 +166,7 @@ export default function CumminsBanner({
 
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                           <a
-                            href="https://wa.me/254793573208?text=Hi,%20I'm%20interested%20in%20Cummins%20generators.%20Please%20send%20me%20a%20quote."
+                            href="https://wa.me/254768860665?text=Hi,%20I'm%20interested%20in%20Cummins%20generators.%20Please%20send%20me%20a%20quote."
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-500 text-white font-bold rounded-2xl transition-all duration-300"
