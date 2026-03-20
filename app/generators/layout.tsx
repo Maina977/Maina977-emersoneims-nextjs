@@ -3,60 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "CUMMINS Generators Kenya | Authorized VOLTKA Dealer | 3-YEAR WARRANTY + 1 Year Free Service | EmersonEIMS",
   description: "Kenya's AUTHORIZED CUMMINS/VOLTKA Dealer. 10KVA-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation, 24/7 support. Serving Nairobi, Mombasa, Kisumu & all 47 counties. Call +254793573208",
-  keywords: [
-    // Primary Brand Keywords - CUMMINS/VOLTKA
-    'cummins generators Kenya',
-    'voltka generators Kenya',
-    'authorized cummins dealer Kenya',
-    'cummins voltka authorized dealer',
-    '3 year warranty generator Kenya',
-    'generator 3 year warranty',
-    'free service generator Kenya',
-    // Other Brand Keywords
-    'perkins generators Kenya',
-    'caterpillar generators Kenya',
-    'FG Wilson generators Kenya',
-    // Size Keywords
-    '10kva generator Kenya',
-    '20kva generator Kenya',
-    '50kva generator Kenya',
-    '100kva generator Kenya',
-    '200kva generator Kenya',
-    '500kva generator Kenya',
-    '1000kva generator Kenya',
-    '1 mva generator Kenya',
-    '2000kva generator Kenya',
-    // Type Keywords
-    'diesel generator Kenya',
-    'silent generator Kenya',
-    'soundproof generator Kenya',
-    'industrial generator Kenya',
-    'commercial generator Kenya',
-    'standby generator Kenya',
-    'prime power generator Kenya',
-    // Service Keywords
-    'generator sales Kenya',
-    'generator installation Kenya',
-    'generator maintenance Kenya',
-    'generator repair Kenya',
-    'generator spare parts Kenya',
-    'generator rental Kenya',
-    // Location Keywords
-    'generator Nairobi',
-    'generator Mombasa',
-    'generator Kisumu',
-    'generator Nakuru',
-    'generator Eldoret',
-    'cummins dealer Nairobi',
-    'generator supplier Kenya',
-    // Long-tail
-    'buy generator Kenya',
-    'generator price Kenya',
-    'generator for sale Nairobi',
-    'best generator company Kenya',
-    'generator with warranty Kenya',
-    'generator free maintenance',
-  ].join(', '),
+  // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA | EmersonEIMS',
     description: 'Kenya\'s leading generator supplier. Cummins authorized dealer. NEW generators with warranty + 1 year free maintenance. All 47 counties.',

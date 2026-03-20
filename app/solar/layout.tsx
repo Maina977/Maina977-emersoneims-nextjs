@@ -9,51 +9,7 @@ import Script from 'next/script';
 export const metadata: Metadata = {
   title: 'Solar Maintenance Hub | Solar System Diagnostics & Repair Kenya',
   description: 'Professional solar maintenance services in Kenya. Complete diagnostics for residential, commercial & industrial solar systems. Panel cleaning, battery maintenance, inverter repair. Weather-based recommendations for optimal performance.',
-  keywords: [
-    // Solar maintenance keywords
-    'solar maintenance Kenya',
-    'solar panel cleaning Kenya',
-    'solar system repair Nairobi',
-    'solar inverter repair Kenya',
-    'solar battery maintenance',
-    'solar system diagnostics',
-
-    // System types
-    'residential solar Kenya',
-    'commercial solar Kenya',
-    'industrial solar Kenya',
-    'off-grid solar Kenya',
-    'hybrid solar system Kenya',
-    'solar water pump Kenya',
-
-    // Locations
-    'solar maintenance Nairobi',
-    'solar repair Mombasa',
-    'solar technician Kisumu',
-    'solar installation Nakuru',
-    'solar service Eldoret',
-
-    // Components
-    'solar panel maintenance',
-    'MPPT controller service',
-    'solar battery replacement',
-    'inverter troubleshooting',
-    'charge controller repair',
-
-    // Brands
-    'Victron solar Kenya',
-    'Growatt inverter Kenya',
-    'Felicity solar Kenya',
-    'Must inverter Kenya',
-    'Luminous solar Kenya',
-    'Sunking solar Kenya',
-
-    // East Africa
-    'solar maintenance East Africa',
-    'solar repair Tanzania',
-    'solar service Uganda',
-    'solar technician Rwanda',
-  ],
+  // NOTE: keywords meta tag removed - Google ignores it since 2009
   authors: [{ name: 'Emerson Industrial Maintenance Services' }],
   creator: 'Emerson EiMS',
   publisher: 'Emerson Industrial Maintenance Services Limited',

@@ -460,6 +460,18 @@ const nextConfig: NextConfig = {
         destination: '/services/borehole-pumps',
         permanent: true,
       },
+      // Duplicate contact page
+      {
+        source: '/solutions/contact',
+        destination: '/contact',
+        permanent: true,
+      },
+      // Maintenance hub motors redirect
+      {
+        source: '/maintenance-hub/motors',
+        destination: '/services/motor-rewinding',
+        permanent: true,
+      },
     ];
   },
 };
