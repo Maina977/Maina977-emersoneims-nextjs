@@ -933,11 +933,11 @@ export default function ProfessionalDiagnosticInterface() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3">
-                <Shield className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3">
+                <Shield className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-red-400">Authorization Required</h4>
-                  <p className="text-sm text-red-400/70">Modifying calibration parameters may affect emissions compliance and engine warranty. Some parameters require dealer-level authorization.</p>
+                  <h4 className="font-semibold text-amber-400">Professional Mode - Full Access</h4>
+                  <p className="text-sm text-amber-400/70">You have full access to all calibration parameters. Changes may affect engine performance. Document all changes for your records.</p>
                 </div>
               </div>
 

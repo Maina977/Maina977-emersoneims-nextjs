@@ -1146,12 +1146,12 @@ export default function ECMDiagnosticSuite() {
           {/* ═══════════════════════════════════════════════════════════════════════════ */}
           {activeTab === 'calibration' && (
             <div className="space-y-4">
-              {/* Warning */}
-              <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400">
+              {/* Info Notice */}
+              <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-400">
                 <Shield className="w-6 h-6 flex-shrink-0" />
                 <div>
-                  <h4 className="font-semibold">Authorization Required</h4>
-                  <p className="text-sm text-red-400/70">Modifying calibration parameters may affect emissions compliance and engine warranty. Some parameters require dealer-level authorization.</p>
+                  <h4 className="font-semibold">Professional Mode - Full Access</h4>
+                  <p className="text-sm text-amber-400/70">You have full access to all calibration parameters. Changes may affect engine performance. Document all changes for reference.</p>
                 </div>
               </div>
 
@@ -1169,7 +1169,7 @@ export default function ECMDiagnosticSuite() {
                           <div className="flex items-center gap-2">
                             <span className="text-white font-medium">{param.name}</span>
                             {param.authRequired && (
-                              <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">Auth Required</span>
+                              <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">Advanced</span>
                             )}
                           </div>
                           <div className="flex items-center gap-3">
