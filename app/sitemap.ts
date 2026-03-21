@@ -66,6 +66,13 @@ const blogSlugs = [
   'generator-servicing-cost-kenya'
 ];
 
+// Fault codes for SEO (sample - full list is in faultCodes.ts)
+const faultCodes = [
+  'spn-111', 'spn-115', 'spn-190', 'spn-94', 'spn-100', 'spn-1514',
+  'dse-e020', 'dse-e040', 'dse-e047', 'dse-e070',
+  'comap-a001', 'comap-a015'
+];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date();
 
@@ -142,6 +149,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.8,
+    });
+  }
+
+  // Generator Oracle Product Pages
+  urls.push(
+    { url: `${BASE_URL}/products/generator-oracle`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
+    { url: `${BASE_URL}/faults`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE_URL}/troubleshooting`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/case-studies`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 }
+  );
+
+  // Add fault code pages (HIGH-INTENT - people searching for specific codes)
+  for (const code of faultCodes) {
+    urls.push({
+      url: `${BASE_URL}/faults/${code}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.85,
     });
   }
 
