@@ -145,6 +145,78 @@ a, button, input, select, textarea {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   🚀 MOBILE PERFORMANCE OPTIMIZATIONS
+   Reduce animations, simplify rendering for faster mobile experience
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Mobile: Reduce animation complexity */
+@media (max-width: 768px) {
+  /* Disable complex backdrop filters on mobile - major performance hit */
+  .backdrop-blur-xl,
+  .backdrop-blur-lg,
+  .backdrop-blur-md {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  /* Reduce box-shadow complexity on mobile */
+  .shadow-2xl,
+  .shadow-xl {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  }
+
+  /* Simplify transitions on mobile */
+  .transition-all {
+    transition-property: opacity, transform !important;
+    transition-duration: 150ms !important;
+  }
+
+  /* Content visibility for below-fold sections */
+  section:not(:first-child) {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+
+  /* Reduce transform complexity */
+  .hover\:scale-105:hover,
+  .hover\:scale-110:hover {
+    transform: scale(1.02) !important;
+  }
+}
+
+/* GPU-accelerated animations for mobile */
+@media (max-width: 768px) {
+  .animate-pulse,
+  .animate-bounce,
+  .animate-spin {
+    will-change: opacity, transform;
+    transform: translateZ(0);
+  }
+}
+
+/* Simple CSS fade-in animation as JS fallback */
+.css-fade-in {
+  animation: cssFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes cssFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile-optimized content loading */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    CONTENT PROTECTION - Prevent Easy Copying
    © 2026 EmersonEIMS. All Rights Reserved.
    ═══════════════════════════════════════════════════════════════════════════════ */

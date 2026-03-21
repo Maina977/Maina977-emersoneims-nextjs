@@ -1,32 +1,56 @@
 ﻿'use client'
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
-// GSAP loaded dynamically to reduce initial bundle
-let gsapModule: typeof import('gsap') | null = null;
-let ScrollTriggerModule: typeof import('gsap/ScrollTrigger').ScrollTrigger | null = null;
-import { SectionLead, GeneratorCalculator, MTBFChart, ErrorFrequencyChart } from "@/components/generators";
+// ═══════════════════════════════════════════════════════════════════════════════
+// PERFORMANCE OPTIMIZED IMPORTS
+// Heavy dependencies (Chart.js, GSAP) loaded via dynamic imports
+// Framer Motion kept for animations but heavy chart/GSAP components lazy loaded
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Light components - loaded immediately
+import { SectionLead, GeneratorCalculator } from "@/components/generators";
 import { cumminsGenerators } from "@/app/lib/data/cumminsgenerators";
 import { generatorServices } from "@/app/lib/data/generatorservices";
-import OptimizedVideo from "@/components/media/OptimizedVideo";
-import CinematicVideo from "@/components/media/CinematicVideo";
-import OptimizedImage from "@/components/media/OptimizedImage";
-import HolographicLaser from '@/components/effects/HolographicLaser';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
-import GeneratorSizingCalculator from '@/components/calculators/GeneratorSizingCalculator';
+import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HEAVY COMPONENTS - Lazy loaded (Chart.js ~70KB, GSAP ~30KB saved)
+// ═══════════════════════════════════════════════════════════════════════════════
+const MTBFChart = dynamic(() => import('@/components/generators/MTBFChart'), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-black/60 rounded-lg animate-pulse" />
+});
+
+const ErrorFrequencyChart = dynamic(() => import('@/components/generators/ErrorFrequencyChart'), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-black/60 rounded-lg animate-pulse" />
+});
+
+const HolographicLaser = dynamic(() => import('@/components/effects/HolographicLaser'), {
+  ssr: false,
+  loading: () => null
+});
+
+const OptimizedVideo = dynamic(() => import('@/components/media/OptimizedVideo'), { ssr: false });
+const CinematicVideo = dynamic(() => import('@/components/media/CinematicVideo'), { ssr: false });
+const OptimizedImage = dynamic(() => import('@/components/media/OptimizedImage'), { ssr: false });
+const GeneratorSizingCalculator = dynamic(() => import('@/components/calculators/GeneratorSizingCalculator'), { ssr: false });
 
 // SALES BOOSTING COMPONENTS - MAXIMIZE CONVERSIONS
-import GeneratorSalesBooster from '@/components/generators/GeneratorSalesBooster';
-import GeneratorPriceList from '@/components/generators/GeneratorPriceList';
-import SizingCalculatorNew from '@/components/generators/GeneratorSizingCalculator';
+const GeneratorSalesBooster = dynamic(() => import('@/components/generators/GeneratorSalesBooster'), { ssr: false });
+const GeneratorPriceList = dynamic(() => import('@/components/generators/GeneratorPriceList'), { ssr: false });
+const SizingCalculatorNew = dynamic(() => import('@/components/generators/GeneratorSizingCalculator'), { ssr: false });
 
 // EDUCATIONAL CONTENT - KNOWLEDGE CENTER
-import GeneratorEducationPanel from '@/components/generators/GeneratorEducationPanel';
-import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
-import CumminsBanner from '@/components/brands/CumminsBanner';
-import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
+const GeneratorEducationPanel = dynamic(() => import('@/components/generators/GeneratorEducationPanel'), { ssr: false });
+const CinematicImageGallery = dynamic(() => import('@/components/ui/CinematicImageGallery'), { ssr: false });
+const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'), { ssr: false });
+
 
 // Generator Work Photos Gallery Data
 const generatorGalleryImages = [

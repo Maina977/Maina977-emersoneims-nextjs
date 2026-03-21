@@ -9,9 +9,26 @@ import HolographicMap from '@/components/map/HolographicMap';
 // 🚀 SCI-FI PREMIUM CONTACT PAGE - AWWWARD SOTD WORTHY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Particle System for background
+// Particle System for background - OPTIMIZED: fewer particles on mobile
 function ParticleField() {
-  const particles = Array.from({ length: 50 }, (_, i) => ({
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check if mobile/low-power device
+    const checkMobile = () => {
+      const mobile = window.matchMedia('(max-width: 768px)').matches;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setIsMobile(mobile || reducedMotion);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Reduce particles on mobile: 50 -> 8
+  const particleCount = isMobile ? 8 : 30;
+
+  const particles = Array.from({ length: particleCount }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
@@ -19,6 +36,26 @@ function ParticleField() {
     duration: Math.random() * 20 + 10,
     delay: Math.random() * 5,
   }));
+
+  // Skip animation entirely on mobile for performance
+  if (isMobile) {
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {particles.map((p) => (
+          <div
+            key={p.id}
+            className="absolute rounded-full bg-amber-500/20"
+            style={{
+              width: p.size,
+              height: p.size,
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
