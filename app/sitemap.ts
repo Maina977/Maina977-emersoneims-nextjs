@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMPLIFIED SITEMAP - Static URLs only for debugging
+// COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BASE_URL = 'https://www.emersoneims.com';
@@ -22,6 +22,48 @@ const counties = [
 const majorTowns = [
   'thika', 'eldoret', 'malindi', 'kitale', 'naivasha', 'ruiru', 'juja', 'kikuyu',
   'westlands', 'karen', 'ngong', 'ongata-rongai', 'mtwapa', 'nyali', 'diani'
+];
+
+// Industries - Critical for B2B SEO
+const industries = [
+  'hotels-hospitality',
+  'hospitals-healthcare',
+  'schools-universities',
+  'banks-financial',
+  'manufacturing',
+  'flower-farms',
+  'real-estate',
+  'churches-religious',
+  'government-ngo'
+];
+
+// Services for location combinations
+const services = [
+  'generators',
+  'generator-repair',
+  'generator-maintenance',
+  'generator-installation',
+  'solar',
+  'ups',
+  'motor-rewinding',
+  'borehole-pumps'
+];
+
+// Blog article slugs
+const blogSlugs = [
+  'generator-maintenance-tips-kenya',
+  'generator-cost-saving-strategies',
+  'generator-buying-guide-kenya',
+  'generator-safety-tips-kenya',
+  'generator-fire-safety-prevention',
+  'solar-energy-solutions-kenya',
+  'weather-impact-generators-kenya-counties',
+  'diy-generator-maintenance-home',
+  'diesel-generator-best-practices',
+  'generator-roi-analysis-kenya',
+  'solar-installation-tips-kenya',
+  'generator-procurement-kenya',
+  'generator-servicing-cost-kenya'
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -78,7 +120,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/locations`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/counties`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/kenya`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
+
+    // Industry pages - Critical for B2B SEO
+    { url: `${BASE_URL}/industries`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },
   ];
+
+  // Add industry-specific pages (HIGH PRIORITY - B2B leads)
+  for (const industry of industries) {
+    urls.push({
+      url: `${BASE_URL}/industries/${industry}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    });
+  }
+
+  // Add blog articles (IMPORTANT for long-tail SEO)
+  for (const slug of blogSlugs) {
+    urls.push({
+      url: `${BASE_URL}/blog/${slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    });
+  }
 
   // Add county pages
   for (const county of counties) {
@@ -87,6 +152,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.8,
+    });
+
+    // Add kenya/county pages
+    urls.push({
+      url: `${BASE_URL}/kenya/${county}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
     });
   }
 
@@ -98,6 +171,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.75,
     });
+  }
+
+  // Add location + service combinations for top towns (HIGH-INTENT keywords)
+  const topLocations = ['nairobi', 'mombasa', 'kisumu', 'nakuru', 'eldoret', 'thika', 'westlands', 'karen'];
+  for (const location of topLocations) {
+    for (const service of services) {
+      urls.push({
+        url: `${BASE_URL}/locations/${location}/${service}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      });
+    }
   }
 
   return urls;
