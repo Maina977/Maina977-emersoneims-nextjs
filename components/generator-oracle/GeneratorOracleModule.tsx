@@ -1438,12 +1438,13 @@ export default function GeneratorOracleModule() {
                 </div>
 
                 {/* CONSOLIDATED 8 SUPER-TABS - Clean & Professional Navigation */}
+                {/* Controllers & Diagnostic Tools prominently placed for technicians */}
                 <nav className="hidden xl:flex items-center gap-2 p-2 bg-slate-900/80 rounded-2xl border border-cyan-500/30">
                   <PremiumNavTab icon="🎛️" label="Command" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
-                  <PremiumNavTab icon="🧠" label="AI Diagnostics" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
+                  <PremiumNavTab icon="🖥️" label="Controllers & Simulators" active={activeScreen === 'controllers'} onClick={() => setActiveScreen('controllers')} />
                   <PremiumNavTab icon="🔧" label="Fault Center" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
+                  <PremiumNavTab icon="🧠" label="AI Diagnostics" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
                   <PremiumNavTab icon="🏭" label="Systems" active={activeScreen === 'systems'} onClick={() => setActiveScreen('systems')} />
-                  <PremiumNavTab icon="🖥️" label="Controllers" active={activeScreen === 'controllers'} onClick={() => setActiveScreen('controllers')} />
                   <PremiumNavTab icon="📐" label="Wiring & Manuals" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
                   <PremiumNavTab icon="📊" label="Monitoring" active={activeScreen === 'monitoring'} onClick={() => setActiveScreen('monitoring')} />
                   <PremiumNavTab icon="🛠️" label="Tools & Reports" active={activeScreen === 'tools'} onClick={() => setActiveScreen('tools')} />
@@ -1457,10 +1458,10 @@ export default function GeneratorOracleModule() {
                     className="bg-slate-900/60 text-cyan-400 px-4 py-2.5 rounded-xl border border-cyan-500/30 font-medium"
                   >
                     <option value="command">🎛️ Command Center</option>
-                    <option value="ai">🧠 AI Diagnostics</option>
+                    <option value="controllers">🖥️ Controllers & Simulators</option>
                     <option value="faults">🔧 Fault Center</option>
+                    <option value="ai">🧠 AI Diagnostics</option>
                     <option value="systems">🏭 Systems</option>
-                    <option value="controllers">🖥️ Controllers</option>
                     <option value="wiring">📐 Wiring & Manuals</option>
                     <option value="monitoring">📊 Monitoring</option>
                     <option value="tools">🛠️ Tools & Reports</option>
@@ -1522,6 +1523,34 @@ export default function GeneratorOracleModule() {
                           <p className="text-slate-400 text-sm lg:text-base mb-4">
                             Expert-level diagnostics for ALL manufacturers: Cummins, Caterpillar, Volvo Penta, Perkins, John Deere, Deutz, MTU, and 20+ more. No external hardware needed - just your knowledge and our AI.
                           </p>
+                          {/* PRIMARY: Diagnostic Tools & Simulators - Most Used by Technicians */}
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => { setActiveScreen('controllers'); setControllersSubTab('simulator'); }}
+                              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 flex items-center gap-2 ring-2 ring-purple-400/50"
+                            >
+                              <span>🖥️</span> Controller Simulators (10)
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => { setActiveScreen('controllers'); setControllersSubTab('protools'); }}
+                              className="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 flex items-center gap-2 ring-2 ring-orange-400/50"
+                            >
+                              <span>🔧</span> Pro Diagnostic Tools (10)
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => { setActiveScreen('controllers'); setControllersSubTab('ecmsuite'); }}
+                              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 flex items-center gap-2"
+                            >
+                              <span>🧠</span> ECM Suite (10 Brands)
+                            </motion.button>
+                          </div>
+                          {/* SECONDARY: AI & Troubleshooting */}
                           <div className="flex flex-wrap gap-2">
                             <motion.button
                               whileHover={{ scale: 1.02 }}
@@ -1529,15 +1558,15 @@ export default function GeneratorOracleModule() {
                               onClick={() => { setActiveScreen('ai'); setAiSubTab('expert'); }}
                               className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 flex items-center gap-2"
                             >
-                              <span>💬</span> Talk to Expert AI
+                              <span>💬</span> AI Expert Chat
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              onClick={() => { setActiveScreen('ai'); setAiSubTab('analyze'); }}
+                              onClick={() => { setActiveScreen('faults'); setFaultsSubTab('lookup'); }}
                               className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
                             >
-                              <span>🧠</span> Input Readings
+                              <span>🔍</span> 400k+ Fault Codes
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.02 }}
@@ -1553,7 +1582,7 @@ export default function GeneratorOracleModule() {
                               onClick={() => { setActiveScreen('faults'); setFaultsSubTab('troubleshoot'); }}
                               className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-green-500/20 flex items-center gap-2"
                             >
-                              <span>🔧</span> Step-by-Step Guide
+                              <span>🛠️</span> Troubleshoot Guide
                             </motion.button>
                           </div>
                         </div>
