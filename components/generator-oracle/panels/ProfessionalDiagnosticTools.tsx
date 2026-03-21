@@ -314,26 +314,107 @@ const DIAGNOSTIC_TOOLS: DiagnosticTool[] = [
   },
 ];
 
-// Sample live parameters
+// Comprehensive live parameters - Based on CAT ET, VODIA, and professional diagnostic tools
 const generateLiveParameters = (): LiveParameter[] => [
+  // Engine Core Parameters
   { id: 'rpm', name: 'Engine Speed', value: 1500 + Math.random() * 10 - 5, unit: 'RPM', min: 0, max: 2000, status: 'normal' },
-  { id: 'oil_pressure', name: 'Oil Pressure', value: 4.2 + Math.random() * 0.3, unit: 'bar', min: 0, max: 10, status: 'normal' },
-  { id: 'coolant_temp', name: 'Coolant Temp', value: 85 + Math.random() * 2, unit: '°C', min: 0, max: 120, status: 'normal' },
+  { id: 'desired_rpm', name: 'Desired Engine Speed', value: 1500, unit: 'RPM', min: 0, max: 2000, status: 'normal' },
+  { id: 'engine_hours', name: 'Total Engine Hours', value: 4567 + Math.random() * 0.01, unit: 'hrs', min: 0, max: 100000, status: 'normal' },
+  { id: 'engine_load', name: 'Engine Load', value: 65 + Math.random() * 5, unit: '%', min: 0, max: 100, status: 'normal' },
+  { id: 'throttle_pos', name: 'Throttle Position', value: 68 + Math.random() * 2, unit: '%', min: 0, max: 100, status: 'normal' },
+
+  // Oil System
+  { id: 'oil_pressure', name: 'Engine Oil Pressure', value: 4.2 + Math.random() * 0.3, unit: 'bar', min: 0, max: 10, status: 'normal' },
+  { id: 'oil_temp', name: 'Engine Oil Temperature', value: 92 + Math.random() * 3, unit: '°C', min: 0, max: 150, status: 'normal' },
+  { id: 'oil_level', name: 'Oil Level', value: 85 + Math.random() * 2, unit: '%', min: 0, max: 100, status: 'normal' },
+
+  // Cooling System
+  { id: 'coolant_temp', name: 'Coolant Temperature', value: 85 + Math.random() * 2, unit: '°C', min: 0, max: 120, status: 'normal' },
+  { id: 'coolant_level', name: 'Coolant Level', value: 92 + Math.random() * 3, unit: '%', min: 0, max: 100, status: 'normal' },
+  { id: 'coolant_pressure', name: 'Coolant Pressure', value: 1.2 + Math.random() * 0.1, unit: 'bar', min: 0, max: 3, status: 'normal' },
+  { id: 'radiator_outlet', name: 'Radiator Outlet Temp', value: 78 + Math.random() * 2, unit: '°C', min: 0, max: 100, status: 'normal' },
+
+  // Fuel System
+  { id: 'fuel_pressure', name: 'Fuel Rail Pressure', value: 1800 + Math.random() * 50, unit: 'bar', min: 0, max: 2500, status: 'normal' },
+  { id: 'fuel_temp', name: 'Fuel Temperature', value: 42 + Math.random() * 2, unit: '°C', min: 0, max: 80, status: 'normal' },
+  { id: 'fuel_rate', name: 'Fuel Consumption Rate', value: 45 + Math.random() * 5, unit: 'L/hr', min: 0, max: 200, status: 'normal' },
+  { id: 'fuel_level', name: 'Fuel Tank Level', value: 72 + Math.random() * 1, unit: '%', min: 0, max: 100, status: 'normal' },
+  { id: 'injection_timing', name: 'Injection Timing', value: 12 + Math.random() * 0.5, unit: '°BTDC', min: -10, max: 30, status: 'normal' },
+
+  // Turbo/Air Intake
   { id: 'boost_pressure', name: 'Boost Pressure', value: 1.8 + Math.random() * 0.1, unit: 'bar', min: 0, max: 4, status: 'normal' },
-  { id: 'fuel_pressure', name: 'Fuel Pressure', value: 350 + Math.random() * 10, unit: 'kPa', min: 0, max: 500, status: 'normal' },
-  { id: 'exhaust_temp', name: 'Exhaust Temp', value: 520 + Math.random() * 20, unit: '°C', min: 0, max: 800, status: 'normal' },
+  { id: 'intake_manifold_temp', name: 'Intake Manifold Temp', value: 48 + Math.random() * 3, unit: '°C', min: 0, max: 100, status: 'normal' },
+  { id: 'intake_manifold_press', name: 'Intake Manifold Pressure', value: 2.1 + Math.random() * 0.1, unit: 'bar', min: 0, max: 5, status: 'normal' },
+  { id: 'turbo_speed', name: 'Turbo Speed', value: 85000 + Math.random() * 2000, unit: 'RPM', min: 0, max: 150000, status: 'normal' },
+  { id: 'air_filter_diff', name: 'Air Filter Restriction', value: 2.5 + Math.random() * 0.5, unit: 'kPa', min: 0, max: 10, status: 'normal' },
+
+  // Exhaust System
+  { id: 'exhaust_temp', name: 'Exhaust Gas Temp', value: 520 + Math.random() * 20, unit: '°C', min: 0, max: 800, status: 'normal' },
+  { id: 'exhaust_press', name: 'Exhaust Backpressure', value: 3.2 + Math.random() * 0.3, unit: 'kPa', min: 0, max: 15, status: 'normal' },
+  { id: 'dpf_soot_load', name: 'DPF Soot Load', value: 35 + Math.random() * 5, unit: '%', min: 0, max: 100, status: 'normal' },
+  { id: 'dpf_diff_press', name: 'DPF Differential Pressure', value: 8 + Math.random() * 1, unit: 'kPa', min: 0, max: 25, status: 'normal' },
+
+  // Electrical System
   { id: 'battery_voltage', name: 'Battery Voltage', value: 27.8 + Math.random() * 0.2, unit: 'V', min: 20, max: 32, status: 'normal' },
-  { id: 'load_percent', name: 'Load', value: 65 + Math.random() * 5, unit: '%', min: 0, max: 100, status: 'normal' },
-  { id: 'frequency', name: 'Frequency', value: 50 + Math.random() * 0.1 - 0.05, unit: 'Hz', min: 45, max: 55, status: 'normal' },
-  { id: 'power_kw', name: 'Active Power', value: 450 + Math.random() * 20, unit: 'kW', min: 0, max: 750, status: 'normal' },
+  { id: 'charge_voltage', name: 'Charging Voltage', value: 28.4 + Math.random() * 0.3, unit: 'V', min: 20, max: 32, status: 'normal' },
+  { id: 'alternator_current', name: 'Alternator Current', value: 45 + Math.random() * 5, unit: 'A', min: 0, max: 200, status: 'normal' },
+  { id: 'starter_current', name: 'Last Starter Current', value: 850, unit: 'A', min: 0, max: 2000, status: 'normal' },
+
+  // Generator Output
+  { id: 'gen_voltage_l1', name: 'Generator Voltage L1-N', value: 230 + Math.random() * 2, unit: 'V', min: 0, max: 300, status: 'normal' },
+  { id: 'gen_voltage_l2', name: 'Generator Voltage L2-N', value: 231 + Math.random() * 2, unit: 'V', min: 0, max: 300, status: 'normal' },
+  { id: 'gen_voltage_l3', name: 'Generator Voltage L3-N', value: 229 + Math.random() * 2, unit: 'V', min: 0, max: 300, status: 'normal' },
+  { id: 'gen_current_l1', name: 'Generator Current L1', value: 520 + Math.random() * 20, unit: 'A', min: 0, max: 2000, status: 'normal' },
+  { id: 'gen_current_l2', name: 'Generator Current L2', value: 515 + Math.random() * 20, unit: 'A', min: 0, max: 2000, status: 'normal' },
+  { id: 'gen_current_l3', name: 'Generator Current L3', value: 525 + Math.random() * 20, unit: 'A', min: 0, max: 2000, status: 'normal' },
+  { id: 'frequency', name: 'Output Frequency', value: 50 + Math.random() * 0.1 - 0.05, unit: 'Hz', min: 45, max: 55, status: 'normal' },
+  { id: 'power_kw', name: 'Active Power (kW)', value: 450 + Math.random() * 20, unit: 'kW', min: 0, max: 750, status: 'normal' },
+  { id: 'power_kva', name: 'Apparent Power (kVA)', value: 485 + Math.random() * 20, unit: 'kVA', min: 0, max: 800, status: 'normal' },
+  { id: 'power_kvar', name: 'Reactive Power (kVAR)', value: 145 + Math.random() * 10, unit: 'kVAR', min: 0, max: 400, status: 'normal' },
+  { id: 'power_factor', name: 'Power Factor', value: 0.92 + Math.random() * 0.02, unit: '', min: 0, max: 1, status: 'normal' },
+
+  // AVR/Excitation
+  { id: 'excitation_voltage', name: 'Excitation Voltage', value: 28 + Math.random() * 2, unit: 'V', min: 0, max: 50, status: 'normal' },
+  { id: 'excitation_current', name: 'Excitation Current', value: 4.5 + Math.random() * 0.5, unit: 'A', min: 0, max: 15, status: 'normal' },
+  { id: 'avr_trim', name: 'AVR Voltage Trim', value: 0, unit: '%', min: -10, max: 10, status: 'normal' },
 ];
 
-// Sample fault codes
+// Comprehensive fault codes - Based on J1939/SPN/FMI standards used by CAT ET, VODIA, etc.
 const SAMPLE_FAULTS: FaultCode[] = [
-  { code: 'SPN 100 FMI 4', spn: 100, fmi: 4, description: 'Engine Oil Pressure - Voltage Below Normal', severity: 'warning', status: 'logged', count: 2, firstOccurrence: '2026-03-15 14:32', lastOccurrence: '2026-03-18 09:15' },
+  // Active Faults
   { code: 'SPN 110 FMI 16', spn: 110, fmi: 16, description: 'Engine Coolant Temperature - High Warning', severity: 'warning', status: 'active', count: 1, firstOccurrence: '2026-03-20 11:45', lastOccurrence: '2026-03-20 11:45' },
-  { code: 'SPN 190 FMI 0', spn: 190, fmi: 0, description: 'Engine Speed - Data Valid Above Normal', severity: 'info', status: 'logged', count: 5, firstOccurrence: '2026-03-10 08:00', lastOccurrence: '2026-03-19 16:30' },
+  { code: 'SPN 3226 FMI 0', spn: 3226, fmi: 0, description: 'Aftertreatment DPF Soot Load - Above Normal', severity: 'warning', status: 'active', count: 1, firstOccurrence: '2026-03-21 08:30', lastOccurrence: '2026-03-21 08:30' },
+
+  // Logged Faults (History)
+  { code: 'SPN 100 FMI 4', spn: 100, fmi: 4, description: 'Engine Oil Pressure - Voltage Below Normal', severity: 'warning', status: 'logged', count: 2, firstOccurrence: '2026-03-15 14:32', lastOccurrence: '2026-03-18 09:15' },
+  { code: 'SPN 190 FMI 0', spn: 190, fmi: 0, description: 'Engine Speed - Data Valid Above Normal (Overspeed Event)', severity: 'critical', status: 'logged', count: 1, firstOccurrence: '2026-03-10 08:00', lastOccurrence: '2026-03-10 08:00' },
+  { code: 'SPN 94 FMI 1', spn: 94, fmi: 1, description: 'Fuel Delivery Pressure - Data Valid But Below Normal', severity: 'warning', status: 'logged', count: 3, firstOccurrence: '2026-03-05 16:20', lastOccurrence: '2026-03-12 10:45' },
+  { code: 'SPN 102 FMI 16', spn: 102, fmi: 16, description: 'Boost Pressure - High Warning (Possible Turbo Issue)', severity: 'warning', status: 'logged', count: 1, firstOccurrence: '2026-03-08 14:15', lastOccurrence: '2026-03-08 14:15' },
+  { code: 'SPN 168 FMI 18', spn: 168, fmi: 18, description: 'Battery Potential - Low Warning', severity: 'info', status: 'logged', count: 4, firstOccurrence: '2026-02-28 06:00', lastOccurrence: '2026-03-15 06:30' },
+  { code: 'SPN 91 FMI 3', spn: 91, fmi: 3, description: 'Throttle Position Sensor - Voltage Above Normal', severity: 'warning', status: 'logged', count: 1, firstOccurrence: '2026-03-01 09:00', lastOccurrence: '2026-03-01 09:00' },
+  { code: 'SPN 1569 FMI 31', spn: 1569, fmi: 31, description: 'Engine Protection Torque Derate - Active', severity: 'info', status: 'logged', count: 2, firstOccurrence: '2026-03-10 08:05', lastOccurrence: '2026-03-15 14:40' },
+  { code: 'SPN 3719 FMI 16', spn: 3719, fmi: 16, description: 'Aftertreatment Exhaust Gas Temp - High Warning', severity: 'warning', status: 'logged', count: 1, firstOccurrence: '2026-03-18 13:20', lastOccurrence: '2026-03-18 13:20' },
+
+  // Pending Faults
+  { code: 'SPN 105 FMI 15', spn: 105, fmi: 15, description: 'Intake Manifold Temperature - High Caution', severity: 'info', status: 'pending', count: 1, firstOccurrence: '2026-03-21 10:00', lastOccurrence: '2026-03-21 10:00' },
 ];
+
+// Cylinder cutout test data
+interface CylinderTestResult {
+  cylinder: number;
+  rpmDrop: number;
+  contribution: number;
+  status: 'normal' | 'weak' | 'faulty';
+}
+
+// Injector calibration data
+interface InjectorCalibration {
+  cylinder: number;
+  trimCode: string;
+  currentTrim: number;
+  flow: number;
+  status: 'calibrated' | 'needs_calibration';
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN DIAGNOSTIC TOOL INTERFACE COMPONENT
@@ -1025,50 +1106,177 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
     </div>
   );
 
-  // Active Tests Tab
-  const TestsTab = () => (
-    <div className="p-4 space-y-4">
-      <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Bi-Directional Controls & Active Tests</h3>
+  // Active Tests Tab - Professional diagnostic tests like CAT ET, VODIA
+  const TestsTab = () => {
+    const [activeTest, setActiveTest] = useState<string | null>(null);
+    const [testProgress, setTestProgress] = useState(0);
+    const [cylinderResults, setCylinderResults] = useState<CylinderTestResult[]>([]);
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {[
-          { name: 'Injector Cutout Test', desc: 'Disable injectors one by one', icon: <Fuel className="w-5 h-5" />, warning: true },
-          { name: 'Cylinder Compression', desc: 'Relative compression test', icon: <Activity className="w-5 h-5" />, warning: false },
-          { name: 'DPF Regeneration', desc: 'Force DPF regen cycle', icon: <Flame className="w-5 h-5" />, warning: true },
-          { name: 'Actuator Test', desc: 'Test solenoids and relays', icon: <ToggleRight className="w-5 h-5" />, warning: false },
-          { name: 'Fan Override', desc: 'Manual fan control', icon: <Wind className="w-5 h-5" />, warning: false },
-          { name: 'Glow Plug Test', desc: 'Test glow plug circuit', icon: <Zap className="w-5 h-5" />, warning: false },
-        ].map((test) => (
-          <div
-            key={test.name}
-            className="p-4 rounded-xl border cursor-pointer hover:border-opacity-100 transition-all"
-            style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}
-          >
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg" style={{ backgroundColor: tool.primaryColor + '20', color: tool.primaryColor }}>
-                  {test.icon}
+    const runCylinderTest = () => {
+      setActiveTest('cylinder_cutout');
+      setTestProgress(0);
+      setCylinderResults([]);
+
+      // Simulate cylinder cutout test
+      const cylinders = [1, 2, 3, 4, 5, 6];
+      let currentCyl = 0;
+
+      const testInterval = setInterval(() => {
+        if (currentCyl < cylinders.length) {
+          const result: CylinderTestResult = {
+            cylinder: cylinders[currentCyl],
+            rpmDrop: 45 + Math.random() * 30,
+            contribution: 14 + Math.random() * 5,
+            status: Math.random() > 0.15 ? 'normal' : (Math.random() > 0.5 ? 'weak' : 'faulty'),
+          };
+          setCylinderResults(prev => [...prev, result]);
+          currentCyl++;
+          setTestProgress((currentCyl / cylinders.length) * 100);
+        } else {
+          clearInterval(testInterval);
+          setActiveTest(null);
+        }
+      }, 1500);
+    };
+
+    const DIAGNOSTIC_TESTS = [
+      // Engine Tests
+      { category: 'Engine Diagnostics', tests: [
+        { id: 'cylinder_cutout', name: 'Cylinder Cutout Test', desc: 'Disable each injector to identify weak cylinders', icon: <Fuel className="w-5 h-5" />, warning: true, duration: '2 min' },
+        { id: 'compression', name: 'Relative Compression Test', desc: 'Compare compression across all cylinders via cranking speed', icon: <Activity className="w-5 h-5" />, warning: false, duration: '30 sec' },
+        { id: 'valve_timing', name: 'Valve Timing Verification', desc: 'Check engine timing marks and cam/crank sync', icon: <Clock className="w-5 h-5" />, warning: false, duration: '1 min' },
+        { id: 'injector_flow', name: 'Injector Flow Balance', desc: 'Compare fuel delivery across all injectors', icon: <Droplets className="w-5 h-5" />, warning: true, duration: '3 min' },
+      ]},
+      // Turbo/Air System Tests
+      { category: 'Turbo & Air System', tests: [
+        { id: 'turbo_test', name: 'Turbo Boost Test', desc: 'Verify turbo response and boost pressure under load', icon: <Wind className="w-5 h-5" />, warning: false, duration: '2 min' },
+        { id: 'wastegate', name: 'Wastegate Actuator Test', desc: 'Test wastegate solenoid and actuator movement', icon: <ToggleRight className="w-5 h-5" />, warning: false, duration: '30 sec' },
+        { id: 'air_intake', name: 'Air Intake System Test', desc: 'Check for intake restrictions and leaks', icon: <Wind className="w-5 h-5" />, warning: false, duration: '1 min' },
+      ]},
+      // Aftertreatment Tests
+      { category: 'Aftertreatment (DPF/SCR)', tests: [
+        { id: 'dpf_regen', name: 'Forced DPF Regeneration', desc: 'Initiate parked regeneration cycle to clean DPF', icon: <Flame className="w-5 h-5" />, warning: true, duration: '30-45 min' },
+        { id: 'dpf_leak', name: 'DPF Leak Test', desc: 'Test for exhaust leaks in aftertreatment system', icon: <AlertTriangle className="w-5 h-5" />, warning: false, duration: '5 min' },
+        { id: 'scr_test', name: 'SCR/DEF System Test', desc: 'Verify DEF injection and NOx reduction', icon: <Droplets className="w-5 h-5" />, warning: false, duration: '3 min' },
+      ]},
+      // Electrical Tests
+      { category: 'Electrical System', tests: [
+        { id: 'glow_plug', name: 'Glow Plug Test', desc: 'Test each glow plug resistance and current draw', icon: <Zap className="w-5 h-5" />, warning: false, duration: '1 min' },
+        { id: 'starter', name: 'Starter Circuit Test', desc: 'Verify starter motor current draw and cranking speed', icon: <Power className="w-5 h-5" />, warning: false, duration: '30 sec' },
+        { id: 'alternator', name: 'Charging System Test', desc: 'Test alternator output and voltage regulation', icon: <Battery className="w-5 h-5" />, warning: false, duration: '1 min' },
+        { id: 'sensors', name: 'Sensor Range Test', desc: 'Verify all sensor signals are within specification', icon: <Gauge className="w-5 h-5" />, warning: false, duration: '2 min' },
+      ]},
+      // Generator Tests
+      { category: 'Generator / Alternator', tests: [
+        { id: 'avr_test', name: 'AVR Response Test', desc: 'Test automatic voltage regulator response to load changes', icon: <Zap className="w-5 h-5" />, warning: false, duration: '2 min' },
+        { id: 'load_test', name: 'Load Bank Test', desc: 'Apply resistive load and verify power output', icon: <BarChart3 className="w-5 h-5" />, warning: true, duration: '15 min' },
+        { id: 'insulation', name: 'Winding Insulation Test', desc: 'Megger test on stator windings', icon: <CircuitBoard className="w-5 h-5" />, warning: true, duration: '5 min' },
+        { id: 'sync_check', name: 'Synchronization Test', desc: 'Verify sync check relay and paralleling capability', icon: <RefreshCw className="w-5 h-5" />, warning: true, duration: '3 min' },
+      ]},
+      // Actuator Overrides
+      { category: 'Actuator Overrides', tests: [
+        { id: 'fan_override', name: 'Cooling Fan Override', desc: 'Manually control engine cooling fan speed', icon: <Wind className="w-5 h-5" />, warning: false, duration: 'Manual' },
+        { id: 'fuel_prime', name: 'Fuel Pump Prime', desc: 'Manually activate fuel transfer pump', icon: <Droplets className="w-5 h-5" />, warning: false, duration: 'Manual' },
+        { id: 'throttle_test', name: 'Throttle Actuator Test', desc: 'Move throttle through full range', icon: <Sliders className="w-5 h-5" />, warning: true, duration: '30 sec' },
+      ]},
+    ];
+
+    return (
+      <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Bi-Directional Controls & Active Tests</h3>
+          <div className="flex items-center gap-2 text-sm text-amber-400">
+            <AlertTriangle className="w-4 h-4" />
+            <span>Some tests require engine running or may affect operation</span>
+          </div>
+        </div>
+
+        {/* Cylinder Cutout Test Results */}
+        {cylinderResults.length > 0 && (
+          <div className="p-4 rounded-xl border" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '60' }}>
+            <h4 className="font-medium mb-3" style={{ color: tool.textColor }}>Cylinder Cutout Test Results</h4>
+            <div className="grid grid-cols-6 gap-2">
+              {cylinderResults.map((result) => (
+                <div
+                  key={result.cylinder}
+                  className={`p-3 rounded-lg text-center ${
+                    result.status === 'normal' ? 'bg-green-500/20 border border-green-500/50' :
+                    result.status === 'weak' ? 'bg-amber-500/20 border border-amber-500/50' :
+                    'bg-red-500/20 border border-red-500/50'
+                  }`}
+                >
+                  <div className="text-lg font-bold" style={{ color: tool.textColor }}>Cyl {result.cylinder}</div>
+                  <div className="text-xs mt-1" style={{ color: tool.textColor + '80' }}>
+                    RPM Drop: {result.rpmDrop.toFixed(0)}
+                  </div>
+                  <div className="text-xs" style={{ color: tool.textColor + '80' }}>
+                    Contrib: {result.contribution.toFixed(1)}%
+                  </div>
+                  <div className={`text-xs font-medium mt-1 ${
+                    result.status === 'normal' ? 'text-green-400' :
+                    result.status === 'weak' ? 'text-amber-400' : 'text-red-400'
+                  }`}>
+                    {result.status.toUpperCase()}
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-medium" style={{ color: tool.textColor }}>{test.name}</h4>
-                  <p className="text-xs" style={{ color: tool.textColor + '80' }}>{test.desc}</p>
+              ))}
+            </div>
+            {activeTest === 'cylinder_cutout' && (
+              <div className="mt-3">
+                <div className="flex justify-between text-xs mb-1" style={{ color: tool.textColor + '80' }}>
+                  <span>Testing cylinders...</span>
+                  <span>{testProgress.toFixed(0)}%</span>
+                </div>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-full transition-all" style={{ width: `${testProgress}%`, backgroundColor: tool.primaryColor }} />
                 </div>
               </div>
-              {test.warning && (
-                <AlertTriangle className="w-4 h-4 text-amber-500" />
-              )}
+            )}
+          </div>
+        )}
+
+        {/* Test Categories */}
+        {DIAGNOSTIC_TESTS.map((category) => (
+          <div key={category.category} className="space-y-3">
+            <h4 className="font-medium text-sm uppercase tracking-wide" style={{ color: tool.primaryColor }}>{category.category}</h4>
+            <div className="grid md:grid-cols-2 gap-3">
+              {category.tests.map((test) => (
+                <div
+                  key={test.id}
+                  className="p-4 rounded-xl border cursor-pointer hover:border-opacity-100 transition-all group"
+                  style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg group-hover:scale-110 transition-transform" style={{ backgroundColor: tool.primaryColor + '20', color: tool.primaryColor }}>
+                        {test.icon}
+                      </div>
+                      <div>
+                        <h4 className="font-medium" style={{ color: tool.textColor }}>{test.name}</h4>
+                        <p className="text-xs" style={{ color: tool.textColor + '80' }}>{test.desc}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      {test.warning && <AlertTriangle className="w-4 h-4 text-amber-500" />}
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-700" style={{ color: tool.textColor + '80' }}>{test.duration}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => test.id === 'cylinder_cutout' ? runCylinderTest() : setActiveTest(test.id)}
+                    disabled={activeTest !== null}
+                    className="w-full mt-2 py-2 rounded-lg text-white text-sm font-medium disabled:opacity-50 transition-all hover:opacity-90"
+                    style={{ backgroundColor: tool.primaryColor }}
+                  >
+                    {activeTest === test.id ? 'Running...' : 'Start Test'}
+                  </button>
+                </div>
+              ))}
             </div>
-            <button
-              className="w-full mt-2 py-2 rounded-lg text-white text-sm font-medium"
-              style={{ backgroundColor: tool.primaryColor }}
-            >
-              Start Test
-            </button>
           </div>
         ))}
       </div>
-    </div>
-  );
+    );
+  };
 
   // Configuration Tab
   const ConfigTab = () => (
