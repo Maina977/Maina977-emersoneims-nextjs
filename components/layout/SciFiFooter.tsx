@@ -36,10 +36,9 @@ const FOOTER_SECTIONS = [
 ];
 
 const SOCIAL_LINKS = [
-  { name: 'LinkedIn', href: '#', icon: '💼' },
-  { name: 'Twitter', href: '#', icon: '🐦' },
-  { name: 'Facebook', href: '#', icon: '📘' },
-  { name: 'YouTube', href: '#', icon: '📺' },
+  { name: 'WhatsApp', href: 'https://wa.me/254768860665', icon: '💬' },
+  { name: 'Call', href: 'tel:+254768860665', icon: '📞' },
+  { name: 'Email', href: 'mailto:info@emersoneims.com', icon: '✉️' },
 ];
 
 export default function SciFiFooter() {
