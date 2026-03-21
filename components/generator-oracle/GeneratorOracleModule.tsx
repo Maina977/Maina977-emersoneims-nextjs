@@ -1364,47 +1364,32 @@ export default function GeneratorOracleModule() {
                   </div>
                 </div>
 
-                {/* Navigation */}
-                <nav className="hidden xl:flex items-center gap-1 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex-wrap">
-                  <PremiumNavTab icon="🎛️" label={t.navCommand} active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
-                  <PremiumNavTab icon="💬" label="Expert AI" active={activeScreen === 'expertchat'} onClick={() => setActiveScreen('expertchat')} />
-                  <PremiumNavTab icon="🔧" label="Universal Diag" active={activeScreen === 'universaldiag'} onClick={() => setActiveScreen('universaldiag')} />
-                  <PremiumNavTab icon="🛠️" label="ODI Platform" active={activeScreen === 'odi'} onClick={() => setActiveScreen('odi')} />
-                  <PremiumNavTab icon="🔬" label="Pro Diagnostic" active={activeScreen === 'prodiag'} onClick={() => setActiveScreen('prodiag')} />
-                  <PremiumNavTab icon="🏭" label="ECM Suite (10)" active={activeScreen === 'ecmsuite'} onClick={() => setActiveScreen('ecmsuite')} />
-                  <PremiumNavTab icon="⚙️" label={t.navEngine} active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
-                  <PremiumNavTab icon="⚡" label={t.navElectrical} active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
-                  <PremiumNavTab icon="🔧" label={t.navFaults} active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
-                  <PremiumNavTab icon="🔍" label={t.navFaultAnalysis} active={activeScreen === 'faultanalysis'} onClick={() => setActiveScreen('faultanalysis')} />
-                  <PremiumNavTab icon="🖥️" label={t.navSimulator} active={activeScreen === 'simulator'} onClick={() => setActiveScreen('simulator')} />
-                  <PremiumNavTab icon="📐" label={t.navDiagrams} active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
-                  <PremiumNavTab icon="🔌" label={t.navAllWiring} active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
-                  <PremiumNavTab icon="📊" label={t.navInput} active={activeScreen === 'techinput'} onClick={() => setActiveScreen('techinput')} />
-                  <PremiumNavTab icon="🧠" label="AI Analyze" active={activeScreen === 'aianalysis'} onClick={() => setActiveScreen('aianalysis')} />
-                  <PremiumNavTab icon="🤖" label={t.navAI} active={activeScreen === 'advanced'} onClick={() => setActiveScreen('advanced')} />
-                  <PremiumNavTab icon="🛠️" label={t.navAssistant} active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
-                  <PremiumNavTab icon="📊" label={t.navLiveMonitor} active={activeScreen === 'realtime'} onClick={() => setActiveScreen('realtime')} />
-                  <PremiumNavTab icon="🔌" label={t.navOBD} active={activeScreen === 'obd'} onClick={() => setActiveScreen('obd')} />
-                  <PremiumNavTab icon="🌐" label={t.navRemote} active={activeScreen === 'remote'} onClick={() => setActiveScreen('remote')} />
-                  <PremiumNavTab icon="🔮" label={t.navPredictive} active={activeScreen === 'predictive'} onClick={() => setActiveScreen('predictive')} />
-                  <PremiumNavTab icon="📈" label={t.navRecording} active={activeScreen === 'recording'} onClick={() => setActiveScreen('recording')} />
-                  <PremiumNavTab icon="📚" label={t.navManuals} active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
-                  <PremiumNavTab icon="🌡️" label="Sensors" active={activeScreen === 'sensors'} onClick={() => setActiveScreen('sensors')} />
-                  <PremiumNavTab icon="🧠" label="ECM" active={activeScreen === 'ecm'} onClick={() => setActiveScreen('ecm')} />
-                  <PremiumNavTab icon="🔬" label="Unified Diag" active={activeScreen === 'unified'} onClick={() => setActiveScreen('unified')} />
-                  <PremiumNavTab icon="💾" label="ECM Prog" active={activeScreen === 'ecmprog'} onClick={() => setActiveScreen('ecmprog')} />
+                {/* Simplified Navigation - 6 Main Categories */}
+                <nav className="hidden xl:flex items-center gap-2 p-2 bg-slate-900/60 rounded-2xl border border-slate-700/50">
+                  {/* Home */}
+                  <PremiumNavTab icon="🏠" label="Home" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
+
+                  {/* Quick Diagnostics - Most Used */}
+                  <PremiumNavTab icon="💬" label="AI Expert" active={activeScreen === 'expertchat'} onClick={() => setActiveScreen('expertchat')} />
+                  <PremiumNavTab icon="🔧" label="Fault Codes" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
+                  <PremiumNavTab icon="📷" label="Photo Scan" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
+
+                  {/* Pro Tools */}
+                  <PremiumNavTab icon="🏭" label="ECM Suite" active={activeScreen === 'ecmsuite'} onClick={() => setActiveScreen('ecmsuite')} />
+                  <PremiumNavTab icon="🔬" label="Pro Diag" active={activeScreen === 'prodiag'} onClick={() => setActiveScreen('prodiag')} />
+
+                  {/* Monitoring */}
+                  <PremiumNavTab icon="📊" label="Live Monitor" active={activeScreen === 'realtime'} onClick={() => setActiveScreen('realtime')} />
                   <PremiumNavTab icon="📡" label="CANbus" active={activeScreen === 'canbus'} onClick={() => setActiveScreen('canbus')} />
-                  <PremiumNavTab icon="🏭" label="Fleet" active={activeScreen === 'fleet'} onClick={() => setActiveScreen('fleet')} />
-                  <PremiumNavTab icon="🔧" label="Full Solutions" active={activeScreen === 'completediag'} onClick={() => setActiveScreen('completediag')} />
-                  <PremiumNavTab icon="💾" label="ECM Reprogram" active={activeScreen === 'ecmguide'} onClick={() => setActiveScreen('ecmguide')} />
-                  {/* Phase 4-8 Features */}
+
+                  {/* Reference */}
+                  <PremiumNavTab icon="📐" label="Wiring" active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
+                  <PremiumNavTab icon="📚" label="Manuals" active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
+
+                  {/* Tools */}
                   <PremiumNavTab icon="📄" label="Reports" active={activeScreen === 'reports'} onClick={() => setActiveScreen('reports')} />
-                  <PremiumNavTab icon="📷" label="AI Visual" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
                   <PremiumNavTab icon="🛒" label="Parts" active={activeScreen === 'parts'} onClick={() => setActiveScreen('parts')} />
-                  <PremiumNavTab icon="📍" label="Location" active={activeScreen === 'location'} onClick={() => setActiveScreen('location')} />
-                  <PremiumNavTab icon="🔔" label="Alerts" active={activeScreen === 'notifications'} onClick={() => setActiveScreen('notifications')} />
-                  <PremiumNavTab icon="📋" label={t.tabHistory} active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
-                  <PremiumNavTab icon="⚙️" label={t.tabSettings} active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
+                  <PremiumNavTab icon="⚙️" label="Settings" active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
                 </nav>
 
                 {/* Mobile nav */}
@@ -1414,42 +1399,19 @@ export default function GeneratorOracleModule() {
                     onChange={(e) => setActiveScreen(e.target.value as typeof activeScreen)}
                     className="bg-slate-900/60 text-cyan-400 px-4 py-2.5 rounded-xl border border-cyan-500/30 font-medium"
                   >
-                    <option value="command">🎛️ {t.navCommand}</option>
-                    <option value="expertchat">💬 Expert AI Chat</option>
-                    <option value="universaldiag">🔧 Universal Diagnostic</option>
-                    <option value="odi">🛠️ ODI Platform</option>
-                    <option value="engine">⚙️ {t.navEngine}</option>
-                    <option value="electrical">⚡ {t.navElectrical}</option>
-                    <option value="faults">🔧 {t.navFaults}</option>
-                    <option value="faultanalysis">🔍 {t.navFaultAnalysis}</option>
-                    <option value="simulator">🖥️ {t.navSimulator}</option>
-                    <option value="wiring">📐 {t.navDiagrams}</option>
-                    <option value="allwiring">🔌 {t.navAllWiring}</option>
-                    <option value="techinput">📊 {t.navInput}</option>
-                    <option value="advanced">🧠 {t.navAI}</option>
-                    <option value="assistant">🛠️ {t.navAssistant}</option>
-                    <option value="realtime">📊 {t.navLiveMonitor}</option>
-                    <option value="obd">🔌 {t.navOBD}</option>
-                    <option value="remote">🌐 {t.navRemote}</option>
-                    <option value="predictive">🔮 {t.navPredictive}</option>
-                    <option value="recording">📈 {t.navRecording}</option>
-                    <option value="manuals">📚 {t.navManuals}</option>
-                    <option value="sensors">🌡️ Sensors</option>
-                    <option value="ecm">🧠 ECM</option>
-                    <option value="unified">🔬 Unified Diagnostics</option>
-                    <option value="ecmprog">💾 ECM Programming</option>
-                    <option value="canbus">📡 CANbus Monitor</option>
-                    <option value="fleet">🏭 Fleet Dashboard</option>
-                    <option value="completediag">🔧 Full Solutions</option>
-                    <option value="ecmguide">💾 ECM Reprogram Guide</option>
-                    <option value="aianalysis">🧠 AI Analysis</option>
+                    <option value="command">🏠 Home</option>
+                    <option value="expertchat">💬 AI Expert</option>
+                    <option value="faults">🔧 Fault Codes</option>
+                    <option value="camera">📷 Photo Scan</option>
+                    <option value="ecmsuite">🏭 ECM Suite</option>
+                    <option value="prodiag">🔬 Pro Diagnostics</option>
+                    <option value="realtime">📊 Live Monitor</option>
+                    <option value="canbus">📡 CANbus</option>
+                    <option value="allwiring">📐 Wiring Diagrams</option>
+                    <option value="manuals">📚 Manuals</option>
                     <option value="reports">📄 Reports</option>
-                    <option value="camera">📷 AI Visual Diagnostic</option>
                     <option value="parts">🛒 Parts</option>
-                    <option value="location">📍 Location</option>
-                    <option value="notifications">🔔 Alerts</option>
-                    <option value="history">📋 {t.tabHistory}</option>
-                    <option value="settings">⚙️ {t.tabSettings}</option>
+                    <option value="settings">⚙️ Settings</option>
                   </select>
                 </div>
 
