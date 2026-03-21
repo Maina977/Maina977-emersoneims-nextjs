@@ -1,11 +1,26 @@
 'use client';
 
 /**
- * Generator Oracle - Advanced Generator Diagnostic Reference System v3.0
+ * ╔═══════════════════════════════════════════════════════════════════════════════╗
+ * ║                                                                               ║
+ * ║   GENERATOR ORACLE™ - Professional Diagnostic System v3.0                    ║
+ * ║   Copyright © 2024-2026 EmersonEIMS. All Rights Reserved.                    ║
+ * ║                                                                               ║
+ * ║   PROPRIETARY SOFTWARE - UNAUTHORIZED USE STRICTLY PROHIBITED                 ║
+ * ║                                                                               ║
+ * ║   This software is the exclusive intellectual property of EmersonEIMS.       ║
+ * ║   Copying, modifying, distributing, reverse engineering, or creating         ║
+ * ║   derivative works from this software is strictly prohibited without         ║
+ * ║   express written permission from EmersonEIMS.                               ║
+ * ║                                                                               ║
+ * ║   Violators will be prosecuted to the fullest extent of applicable law.      ║
+ * ║                                                                               ║
+ * ║   Contact: info@emersoneims.com | https://www.emersoneims.com                ║
+ * ║                                                                               ║
+ * ╚═══════════════════════════════════════════════════════════════════════════════╝
  *
- * IMPORTANT DISCLAIMER:
- * This is an INDEPENDENT reference tool created for educational and troubleshooting
- * purposes. All brand names, model numbers, product names, and trademarks mentioned
+ * THIRD-PARTY TRADEMARK DISCLAIMER:
+ * All brand names, model numbers, product names, and trademarks mentioned
  * throughout this application are the property of their respective owners.
  *
  * Generator Oracle is NOT affiliated with, endorsed by, licensed by, or officially
@@ -2530,13 +2545,15 @@ export default function GeneratorOracleModule() {
                 <span className="hidden sm:inline">DSE | ComAp | Woodward | SmartGen | PowerWizard Compatible</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-slate-400">FREE until April 1, 2026</span>
+                <span className="text-slate-500 text-xs">© 2024-2026 EmersonEIMS. All Rights Reserved.</span>
+                <span className="text-slate-600">|</span>
+                <span className="text-slate-400">Generator Oracle™</span>
                 <motion.span
-                  className="px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 rounded-full text-xs font-medium border border-green-500/30"
-                  animate={{ boxShadow: ['0 0 0 rgba(34,197,94,0)', '0 0 15px rgba(34,197,94,0.3)', '0 0 0 rgba(34,197,94,0)'] }}
+                  className="px-3 py-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 rounded-full text-xs font-medium border border-cyan-500/30"
+                  animate={{ boxShadow: ['0 0 0 rgba(34,211,238,0)', '0 0 15px rgba(34,211,238,0.3)', '0 0 0 rgba(34,211,238,0)'] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  PREMIUM ACTIVE
+                  PROPRIETARY
                 </motion.span>
               </div>
             </div>

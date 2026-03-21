@@ -1169,7 +1169,7 @@ export default function ECMDiagnosticSuite() {
                           <div className="flex items-center gap-2">
                             <span className="text-white font-medium">{param.name}</span>
                             {param.authRequired && (
-                              <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">Advanced</span>
+                              <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 text-xs rounded">Advanced</span>
                             )}
                           </div>
                           <div className="flex items-center gap-3">

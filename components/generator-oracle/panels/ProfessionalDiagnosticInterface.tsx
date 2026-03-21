@@ -956,7 +956,7 @@ export default function ProfessionalDiagnosticInterface() {
                             <span className="ml-2 px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded">Emissions</span>
                           )}
                           {param.requiresAuth && (
-                            <span className="ml-2 px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">Auth Required</span>
+                            <span className="ml-2 px-2 py-0.5 bg-cyan-500/20 text-cyan-400 text-xs rounded">Advanced</span>
                           )}
                         </div>
                         <div className="flex items-center gap-4">
