@@ -46,7 +46,10 @@ import {
   Clock,
   Menu,
   Navigation,
+  Cpu,
 } from 'lucide-react';
+import { sanitizeAndFormatContent } from '@/lib/generator-oracle/sanitizeHtml';
+import { SYSTEM_DIAGRAMS } from '../SystemDiagramSVG';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -1350,6 +1353,761 @@ const DIAGNOSTIC_SYSTEMS: DiagnosticSystem[] = [
       },
     ],
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // STARTING SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'starting',
+    name: 'Starting System',
+    icon: <Power className="w-6 h-6" />,
+    color: 'green',
+    description: 'Engine cranking and starting components',
+    flowDescription: 'Key/Controller → Starter Relay → Starter Motor → Ring Gear → Engine Cranks → Fuel + Compression + Timing = Start. Glow plugs preheat combustion chamber for cold starts.',
+    diagram: 'starting-system',
+    components: [
+      {
+        id: 'starter-battery',
+        name: 'Starting Battery Bank',
+        icon: <Battery className="w-5 h-5" />,
+        position: { x: 5, y: 40 },
+        size: { width: 15, height: 20 },
+        description: 'Lead-acid or AGM batteries providing high cranking current for starter motor. Typically 12V or 24V systems.',
+        function: 'Store electrical energy for starting. Must deliver 500-2000+ CCA (Cold Cranking Amps) depending on engine size.',
+        symptoms: [
+          'Slow cranking',
+          'No crank at all',
+          'Clicking sound only',
+          'Battery not holding charge',
+          'Swollen battery case',
+          'Sulfur smell',
+        ],
+        troubleshooting: [
+          'Measure open circuit voltage: 12.6V (12V) or 25.2V (24V) = fully charged',
+          'Load test: voltage should stay above 9.6V (12V) or 19.2V (24V) under load',
+          'Check specific gravity with hydrometer (1.265-1.299 = good)',
+          'Inspect terminals for corrosion - clean with baking soda solution',
+          'Check cable connections at battery and starter',
+          'Verify charger output is 13.8-14.4V (12V) or 27.6-28.8V (24V)',
+        ],
+        partNumbers: [
+          { brand: 'Chloride Exide', partNo: 'N200 (200Ah)', price: '45,000' },
+          { brand: 'Chloride Exide', partNo: 'N150 (150Ah)', price: '35,000' },
+          { brand: 'Hoppecke', partNo: 'Power.bloc', price: '85,000' },
+          { brand: 'Trojan', partNo: 'T-1275 AGM', price: '120,000' },
+        ],
+        tools: ['Multimeter', 'Battery load tester', 'Hydrometer', 'Terminal cleaner', 'Battery charger'],
+        specifications: [
+          { name: 'Voltage', value: '12V or 24V system' },
+          { name: 'Capacity', value: '100-250Ah typical' },
+          { name: 'CCA', value: '500-2000 amps' },
+          { name: 'Reserve Capacity', value: '150-300 minutes' },
+        ],
+        connections: ['Positive to starter solenoid', 'Negative to engine block ground', 'Charger input', 'Controller sensing'],
+        commonFaults: [
+          { fault: 'Dead battery', cause: 'Charger failure, parasitic drain, age', solution: 'Check charger, charge or replace battery' },
+          { fault: 'Sulfation', cause: 'Undercharging, sitting discharged', solution: 'Desulfate or replace' },
+          { fault: 'Cell short', cause: 'Age, vibration damage', solution: 'Replace battery' },
+        ],
+        maintenanceInterval: 'Check electrolyte monthly, load test every 6 months, replace every 3-5 years',
+      },
+      {
+        id: 'starter-motor',
+        name: 'Starter Motor',
+        icon: <RotateCcw className="w-5 h-5" />,
+        position: { x: 50, y: 35 },
+        size: { width: 18, height: 20 },
+        description: 'High-torque DC motor that cranks the engine via the ring gear. Includes solenoid for engagement.',
+        function: 'Converts electrical energy to mechanical rotation. Pinion engages flywheel ring gear to turn engine for starting.',
+        symptoms: [
+          'No cranking',
+          'Slow cranking',
+          'Grinding noise',
+          'Starter spins but engine doesn\'t',
+          'Starter stays engaged',
+          'Smoke from starter',
+        ],
+        troubleshooting: [
+          'Check battery voltage at starter terminals during crank (minimum 9V for 12V system)',
+          'Tap starter with hammer while cranking - if starts, brushes are worn',
+          'Listen for solenoid click - no click = solenoid or wiring issue',
+          'Check pinion engagement - should extend when energized',
+          'Measure current draw - excessive draw = internal short or seized',
+          'Inspect ring gear teeth for damage',
+        ],
+        partNumbers: [
+          { brand: 'Bosch', partNo: '0001241001', price: '125,000' },
+          { brand: 'Delco Remy', partNo: '39MT', price: '145,000' },
+          { brand: 'Denso', partNo: '428000-5510', price: '98,000' },
+          { brand: 'Iskra', partNo: 'AZF4581', price: '85,000' },
+        ],
+        tools: ['Multimeter', 'Clamp ammeter (500A+)', 'Starter bench tester', 'Socket set'],
+        specifications: [
+          { name: 'Voltage', value: '12V or 24V' },
+          { name: 'Power', value: '3-11 kW' },
+          { name: 'Cranking Speed', value: '150-250 RPM' },
+          { name: 'Current Draw', value: '200-600A normal' },
+        ],
+        connections: ['Battery positive to solenoid main terminal', 'Solenoid trigger from controller', 'Ground through mounting'],
+        commonFaults: [
+          { fault: 'Brushes worn', cause: 'Normal wear', solution: 'Replace brushes or starter' },
+          { fault: 'Solenoid contacts burned', cause: 'High current, arcing', solution: 'Replace solenoid' },
+          { fault: 'Pinion not engaging', cause: 'Solenoid weak, pinion stuck', solution: 'Clean or replace' },
+          { fault: 'Ring gear damage', cause: 'Misaligned starter, worn teeth', solution: 'Replace ring gear' },
+        ],
+        maintenanceInterval: 'Inspect every 1000 hours, rebuild every 5000 hours',
+        testProcedure: [
+          '1. Ensure battery is fully charged (12.6V/25.2V)',
+          '2. Connect clamp ammeter around starter cable',
+          '3. Disable fuel system to prevent starting',
+          '4. Crank engine for 10 seconds max',
+          '5. Measure cranking RPM with tachometer',
+          '6. Current should be within spec (check manual)',
+          '7. Voltage at starter should stay above 9V (12V system)',
+        ],
+      },
+      {
+        id: 'glow-plugs',
+        name: 'Glow Plug System',
+        icon: <Flame className="w-5 h-5" />,
+        position: { x: 70, y: 25 },
+        size: { width: 15, height: 15 },
+        description: 'Electric heating elements in each cylinder that preheat the combustion chamber for cold starting.',
+        function: 'Heat combustion chamber to aid diesel ignition in cold conditions. Controlled by timer relay based on temperature.',
+        symptoms: [
+          'Hard starting when cold',
+          'White smoke on cold start',
+          'Extended cranking time',
+          'Rough running when cold',
+          'Check engine light',
+        ],
+        troubleshooting: [
+          'Measure glow plug resistance - typically 0.5-2 ohms each',
+          'Check for 12V/24V at glow plug during preheat cycle',
+          'Verify timer relay is working (should buzz)',
+          'Check bus bar connections for corrosion',
+          'Test each plug individually - failed plug won\'t glow',
+          'Check coolant temp sensor - controls preheat duration',
+        ],
+        partNumbers: [
+          { brand: 'Bosch', partNo: 'GLP070', price: '3,500' },
+          { brand: 'NGK', partNo: 'Y-547AS', price: '4,200' },
+          { brand: 'Beru', partNo: 'GN104', price: '3,800' },
+          { brand: 'Denso', partNo: 'DG-142', price: '4,500' },
+        ],
+        tools: ['Multimeter', 'Glow plug tester', 'Socket (10mm or 12mm deep)', 'Torque wrench'],
+        specifications: [
+          { name: 'Voltage', value: '12V or 24V' },
+          { name: 'Resistance', value: '0.5-2.0 ohms' },
+          { name: 'Preheat Time', value: '5-30 seconds' },
+          { name: 'Surface Temp', value: '850-1000°C' },
+        ],
+        connections: ['Bus bar to all plugs', 'Power from timer relay', 'Ground through cylinder head'],
+        commonFaults: [
+          { fault: 'Plug tip broken', cause: 'Over-torque, carbon buildup', solution: 'Carefully extract and replace' },
+          { fault: 'High resistance', cause: 'Age, internal damage', solution: 'Replace plug' },
+          { fault: 'Timer relay failure', cause: 'Relay contacts worn', solution: 'Replace timer relay' },
+        ],
+        maintenanceInterval: 'Test every 500 hours, replace every 2000-3000 hours',
+      },
+      {
+        id: 'starter-relay',
+        name: 'Starter Relay/Solenoid',
+        icon: <CircuitBoard className="w-5 h-5" />,
+        position: { x: 30, y: 30 },
+        size: { width: 12, height: 12 },
+        description: 'Heavy-duty relay that switches high current to starter motor when activated by controller.',
+        function: 'Isolates low-current control circuit from high-current starter circuit. Protects controller contacts.',
+        symptoms: [
+          'Clicking but no crank',
+          'No response at all',
+          'Intermittent starting',
+          'Relay getting hot',
+        ],
+        troubleshooting: [
+          'Check for 12V/24V at relay coil when start commanded',
+          'Jump relay terminals briefly to test starter directly',
+          'Measure voltage drop across relay - should be <0.5V',
+          'Check relay coil resistance - typically 50-200 ohms',
+          'Inspect high-current terminals for burning',
+        ],
+        partNumbers: [
+          { brand: 'Bosch', partNo: '0332002150', price: '8,500' },
+          { brand: 'Hella', partNo: '4RA 003 437-061', price: '6,500' },
+          { brand: 'Cole Hersee', partNo: '24812', price: '12,000' },
+        ],
+        tools: ['Multimeter', 'Jumper wire', 'Socket set'],
+        specifications: [
+          { name: 'Coil Voltage', value: '12V or 24V' },
+          { name: 'Contact Rating', value: '200-500A' },
+          { name: 'Coil Current', value: '1-3A' },
+        ],
+        connections: ['Coil to controller start output', 'Main contacts: battery to starter'],
+        commonFaults: [
+          { fault: 'Contacts welded', cause: 'High current, arcing', solution: 'Replace relay' },
+          { fault: 'Coil open', cause: 'Overheating', solution: 'Replace relay' },
+          { fault: 'Voltage drop', cause: 'Corroded contacts', solution: 'Clean or replace' },
+        ],
+        maintenanceInterval: 'Check connections every 500 hours',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AIR INTAKE & TURBO SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'airintake',
+    name: 'Air Intake & Turbo',
+    icon: <Fan className="w-6 h-6" />,
+    color: 'cyan',
+    description: 'Air filtration, turbocharging, and charge air cooling',
+    flowDescription: 'Ambient Air → Air Filter → Turbo Compressor → Intercooler → Intake Manifold → Cylinders. Exhaust drives turbine side. Wastegate controls boost pressure.',
+    diagram: 'air-intake-system',
+    components: [
+      {
+        id: 'air-filter',
+        name: 'Air Filter Assembly',
+        icon: <Fan className="w-5 h-5" />,
+        position: { x: 5, y: 35 },
+        size: { width: 15, height: 18 },
+        description: 'Primary and safety filters that remove dust and debris from intake air before turbo compressor.',
+        function: 'Protect turbo and engine from abrasive particles. Typical filtration 99.9% at 2 microns.',
+        symptoms: [
+          'Low power',
+          'Black smoke',
+          'High exhaust temperature',
+          'Turbo surge',
+          'Restriction indicator triggered',
+        ],
+        troubleshooting: [
+          'Check restriction indicator on air cleaner housing',
+          'Measure pressure drop across filter (max 25" H2O)',
+          'Inspect element for damage, holes, or collapse',
+          'Check housing seals and clamps',
+          'Verify inlet ducting is intact',
+        ],
+        partNumbers: [
+          { brand: 'Donaldson', partNo: 'P181050', price: '8,500' },
+          { brand: 'Baldwin', partNo: 'PA2705', price: '6,500' },
+          { brand: 'Fleetguard', partNo: 'AF25708', price: '7,200' },
+          { brand: 'Mann', partNo: 'C30850/2', price: '9,500' },
+        ],
+        tools: ['Restriction gauge', 'Manometer', 'Clean rags'],
+        specifications: [
+          { name: 'Efficiency', value: '99.9% at 2 microns' },
+          { name: 'Max Restriction', value: '25 inches H2O' },
+          { name: 'Type', value: 'Radial seal or bolt-down' },
+        ],
+        connections: ['Inlet from atmosphere', 'Outlet to turbo compressor', 'Restriction switch'],
+        commonFaults: [
+          { fault: 'Collapsed element', cause: 'High restriction, poor quality', solution: 'Replace element' },
+          { fault: 'Dust bypassing', cause: 'Damaged seal, improper install', solution: 'Check seals, reinstall correctly' },
+          { fault: 'Housing damage', cause: 'Impact, vibration', solution: 'Repair or replace housing' },
+        ],
+        maintenanceInterval: 'Inspect every 250 hours, replace when restriction limit reached',
+      },
+      {
+        id: 'turbocharger',
+        name: 'Turbocharger',
+        icon: <Activity className="w-5 h-5" />,
+        position: { x: 35, y: 30 },
+        size: { width: 20, height: 22 },
+        description: 'Exhaust-driven compressor that forces more air into engine for increased power density.',
+        function: 'Turbine powered by exhaust gases drives compressor wheel to boost intake air pressure 1.5-3x atmospheric.',
+        symptoms: [
+          'Loss of power',
+          'Black or blue smoke',
+          'Excessive oil consumption',
+          'Whining or siren noise',
+          'Turbo lag increased',
+          'Oil in intercooler',
+        ],
+        troubleshooting: [
+          'Check for shaft play: radial <0.003", axial <0.002"',
+          'Inspect compressor wheel for blade damage',
+          'Check for oil leaks at compressor and turbine seals',
+          'Verify boost pressure with gauge (compare to spec)',
+          'Check wastegate operation - should hold vacuum',
+          'Inspect exhaust manifold for cracks/leaks',
+        ],
+        partNumbers: [
+          { brand: 'Holset', partNo: 'HX35', price: '185,000' },
+          { brand: 'Garrett', partNo: 'GT3576', price: '220,000' },
+          { brand: 'BorgWarner', partNo: 'S300', price: '195,000' },
+          { brand: 'Schwitzer', partNo: 'S3B', price: '165,000' },
+        ],
+        tools: ['Boost gauge', 'Dial indicator', 'Vacuum pump', 'Pyrometer'],
+        specifications: [
+          { name: 'Boost Pressure', value: '15-35 PSI typical' },
+          { name: 'Max RPM', value: '80,000-150,000 RPM' },
+          { name: 'Turbine Inlet Temp', value: '600-750°C' },
+        ],
+        connections: ['Exhaust manifold to turbine inlet', 'Turbine outlet to exhaust', 'Air filter to compressor', 'Compressor to intercooler', 'Oil supply and drain'],
+        commonFaults: [
+          { fault: 'Shaft play', cause: 'Bearing wear, oil starvation', solution: 'Rebuild or replace turbo' },
+          { fault: 'Compressor surge', cause: 'Restricted filter, throttle snap', solution: 'Check filter, add blow-off valve' },
+          { fault: 'Oil leaks', cause: 'Seal wear, restricted drain', solution: 'Replace seals, check drain line' },
+        ],
+        maintenanceInterval: 'Inspect every 1000 hours, rebuild every 5000-8000 hours',
+        testProcedure: [
+          '1. Remove intake ducting to access compressor',
+          '2. Check wheel for blade damage or contact marks',
+          '3. Measure shaft radial play with dial indicator',
+          '4. Check for oil in compressor housing',
+          '5. Run engine and measure boost at rated speed',
+          '6. Listen for abnormal sounds (whine, siren)',
+          '7. Check EGT - should be within spec at rated load',
+        ],
+      },
+      {
+        id: 'intercooler',
+        name: 'Intercooler (Charge Air Cooler)',
+        icon: <Thermometer className="w-5 h-5" />,
+        position: { x: 60, y: 25 },
+        size: { width: 18, height: 16 },
+        description: 'Air-to-air or air-to-water heat exchanger that cools compressed air from turbo before engine intake.',
+        function: 'Reduce charge air temperature 50-100°C to increase air density and prevent detonation.',
+        symptoms: [
+          'Low power',
+          'High intake manifold temperature',
+          'Detonation/knock',
+          'Black smoke',
+          'Boost leaks',
+        ],
+        troubleshooting: [
+          'Pressure test for leaks (20 PSI, should hold)',
+          'Check temperature drop across cooler (50-100°C)',
+          'Inspect fins for damage or debris blockage',
+          'Check hoses and clamps for leaks',
+          'Look for oil accumulation (indicates turbo seals)',
+        ],
+        partNumbers: [
+          { brand: 'Modine', partNo: '1E5023', price: '145,000' },
+          { brand: 'Behr', partNo: 'ICC-1234', price: '165,000' },
+          { brand: 'AKG', partNo: 'A50023', price: '125,000' },
+        ],
+        tools: ['Pressure tester', 'Pyrometer', 'Inspection mirror'],
+        specifications: [
+          { name: 'Pressure Rating', value: '50 PSI' },
+          { name: 'Temp Reduction', value: '50-100°C' },
+          { name: 'Efficiency', value: '70-90%' },
+        ],
+        connections: ['Turbo compressor outlet', 'Intake manifold inlet', 'Drain (if air-to-water)'],
+        commonFaults: [
+          { fault: 'Internal leak', cause: 'Corrosion, thermal stress', solution: 'Replace cooler' },
+          { fault: 'External damage', cause: 'Debris impact', solution: 'Repair or replace' },
+          { fault: 'Fin blockage', cause: 'Dirt, debris', solution: 'Clean with low pressure air' },
+        ],
+        maintenanceInterval: 'Inspect and clean every 500 hours',
+      },
+      {
+        id: 'wastegate',
+        name: 'Wastegate/Boost Control',
+        icon: <Settings className="w-5 h-5" />,
+        position: { x: 42, y: 55 },
+        size: { width: 12, height: 12 },
+        description: 'Pressure-controlled valve that bypasses exhaust around turbine to limit boost pressure.',
+        function: 'Prevents over-boost by opening at set pressure, allowing exhaust to bypass turbine.',
+        symptoms: [
+          'Over-boost (too much pressure)',
+          'Under-boost (low power)',
+          'Boost fluctuation',
+          'Turbo overspeeding',
+        ],
+        troubleshooting: [
+          'Check wastegate actuator diaphragm for leaks',
+          'Verify linkage moves freely',
+          'Test with hand vacuum pump - should hold vacuum',
+          'Check boost control solenoid if electronically controlled',
+          'Adjust actuator rod length if needed',
+        ],
+        partNumbers: [
+          { brand: 'Holset', partNo: 'WG Actuator', price: '28,000' },
+          { brand: 'Garrett', partNo: 'Actuator Assembly', price: '32,000' },
+          { brand: 'Electronic', partNo: 'Boost Solenoid', price: '8,500' },
+        ],
+        tools: ['Vacuum pump', 'Boost gauge', 'Wrenches'],
+        specifications: [
+          { name: 'Opening Pressure', value: '10-20 PSI typical' },
+          { name: 'Control Type', value: 'Pneumatic or electronic' },
+        ],
+        connections: ['Exhaust housing', 'Compressor outlet (pressure signal)', 'ECM (if electronic)'],
+        commonFaults: [
+          { fault: 'Stuck open', cause: 'Carbon, corrosion', solution: 'Clean or replace' },
+          { fault: 'Stuck closed', cause: 'Binding linkage', solution: 'Free linkage, lubricate' },
+          { fault: 'Diaphragm leak', cause: 'Age, heat damage', solution: 'Replace actuator' },
+        ],
+        maintenanceInterval: 'Inspect every 1000 hours',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // EXHAUST SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'exhaust',
+    name: 'Exhaust System',
+    icon: <Flame className="w-6 h-6" />,
+    color: 'red',
+    description: 'Exhaust gas routing, aftertreatment, and emissions control',
+    flowDescription: 'Cylinders → Exhaust Manifold → Turbo Turbine → DPF (soot filter) → SCR (NOx reduction) → Muffler/Silencer → Atmosphere. Sensors monitor temperature and emissions.',
+    diagram: 'exhaust-system',
+    components: [
+      {
+        id: 'exhaust-manifold',
+        name: 'Exhaust Manifold',
+        icon: <Flame className="w-5 h-5" />,
+        position: { x: 5, y: 35 },
+        size: { width: 18, height: 20 },
+        description: 'Cast iron or steel manifold that collects exhaust from all cylinders and routes to turbo.',
+        function: 'Collect exhaust gases, maintain pulse energy for turbo, withstand 600-750°C continuous.',
+        symptoms: [
+          'Exhaust leak noise (ticking)',
+          'Loss of power',
+          'High EGT on one cylinder',
+          'Visible cracks',
+          'Soot around gaskets',
+        ],
+        troubleshooting: [
+          'Visual inspection for cracks - especially between ports',
+          'Check gasket sealing surfaces',
+          'Tighten manifold bolts to spec',
+          'Use soapy water to find leaks (bubbles)',
+          'Check for warping with straight edge',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '3970066', price: '65,000' },
+          { brand: 'CAT', partNo: '188-3427', price: '85,000' },
+          { brand: 'Perkins', partNo: '3778E051', price: '45,000' },
+        ],
+        tools: ['Torque wrench', 'Straight edge', 'Inspection mirror', 'Soapy water spray'],
+        specifications: [
+          { name: 'Material', value: 'Cast iron or stainless steel' },
+          { name: 'Max Temperature', value: '750°C continuous' },
+          { name: 'Bolt Torque', value: '25-45 Nm typical' },
+        ],
+        connections: ['Cylinder head exhaust ports', 'Turbo turbine inlet', 'EGT sensors'],
+        commonFaults: [
+          { fault: 'Cracked manifold', cause: 'Thermal stress, age', solution: 'Weld repair or replace' },
+          { fault: 'Gasket leak', cause: 'Loose bolts, gasket failure', solution: 'Retorque or replace gaskets' },
+          { fault: 'Warped flange', cause: 'Overheating', solution: 'Machine flat or replace' },
+        ],
+        maintenanceInterval: 'Inspect every 2000 hours, retorque bolts',
+      },
+      {
+        id: 'dpf',
+        name: 'Diesel Particulate Filter (DPF)',
+        icon: <Activity className="w-5 h-5" />,
+        position: { x: 40, y: 30 },
+        size: { width: 20, height: 18 },
+        description: 'Ceramic honeycomb filter that traps soot particles from exhaust. Requires periodic regeneration.',
+        function: 'Capture 85-95% of particulate matter. Soot burns off during regeneration at 550-600°C.',
+        symptoms: [
+          'Regeneration warning light',
+          'Reduced power/derate',
+          'High exhaust backpressure',
+          'Frequent regeneration attempts',
+          'Check engine light',
+        ],
+        troubleshooting: [
+          'Check soot loading with diagnostic tool (should be <80%)',
+          'Verify exhaust backpressure (max 5-8 kPa)',
+          'Check differential pressure sensor operation',
+          'Inspect for cracks or damage in substrate',
+          'Perform forced regeneration if soot is high',
+          'Check for upstream issues causing excessive soot',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'DPF Assembly', price: '450,000' },
+          { brand: 'CAT', partNo: 'DPF Module', price: '520,000' },
+          { brand: 'Donaldson', partNo: 'DPF Element', price: '280,000' },
+        ],
+        tools: ['Diagnostic scanner', 'Pressure gauges', 'Pyrometer', 'DPF cleaning machine'],
+        specifications: [
+          { name: 'Filtration Efficiency', value: '85-95%' },
+          { name: 'Regen Temperature', value: '550-600°C' },
+          { name: 'Max Backpressure', value: '5-8 kPa' },
+          { name: 'Ash Cleaning', value: 'Every 4000-8000 hours' },
+        ],
+        connections: ['Turbo exhaust outlet', 'SCR inlet', 'Diff pressure sensor', 'Temperature sensors'],
+        commonFaults: [
+          { fault: 'Cracked substrate', cause: 'Thermal shock, water', solution: 'Replace DPF' },
+          { fault: 'Ash clogged', cause: 'Normal accumulation', solution: 'Professional cleaning' },
+          { fault: 'Regen failure', cause: 'Sensor fault, fuel issue', solution: 'Diagnose and fix root cause' },
+        ],
+        maintenanceInterval: 'Monitor soot level, clean ash every 4000-8000 hours',
+      },
+      {
+        id: 'scr',
+        name: 'SCR System (Selective Catalytic Reduction)',
+        icon: <Droplets className="w-5 h-5" />,
+        position: { x: 65, y: 35 },
+        size: { width: 18, height: 16 },
+        description: 'Catalytic converter that uses DEF (urea) injection to reduce NOx emissions by 90%+.',
+        function: 'DEF is injected, converts to ammonia, reacts with NOx on catalyst to form nitrogen and water.',
+        symptoms: [
+          'DEF warning light',
+          'Power derate',
+          'Check engine light',
+          'High NOx readings',
+          'DEF crystallization',
+        ],
+        troubleshooting: [
+          'Check DEF level and quality (32.5% urea)',
+          'Verify DEF pump and injector operation',
+          'Check NOx sensors upstream and downstream',
+          'Monitor SCR inlet temperature (must be >200°C)',
+          'Inspect for DEF crystallization at injector',
+          'Check DEF tank heater in cold climates',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'SCR Assembly', price: '380,000' },
+          { brand: 'Bosch', partNo: 'DEF Pump Module', price: '125,000' },
+          { brand: 'Continental', partNo: 'NOx Sensor', price: '45,000' },
+          { brand: 'AdBlue', partNo: 'DEF 1000L', price: '85,000' },
+        ],
+        tools: ['DEF refractometer', 'Diagnostic scanner', 'Pyrometer'],
+        specifications: [
+          { name: 'NOx Reduction', value: '90%+' },
+          { name: 'DEF Consumption', value: '2-5% of fuel' },
+          { name: 'Operating Temp', value: '>200°C' },
+          { name: 'DEF Concentration', value: '32.5% urea' },
+        ],
+        connections: ['DPF outlet', 'DEF tank and pump', 'Injector', 'NOx sensors', 'Temperature sensors'],
+        commonFaults: [
+          { fault: 'Low efficiency', cause: 'Contaminated DEF, catalyst poisoning', solution: 'Replace DEF, check catalyst' },
+          { fault: 'Injector clogged', cause: 'Crystallization', solution: 'Clean or replace injector' },
+          { fault: 'NOx sensor drift', cause: 'Age, contamination', solution: 'Replace sensor' },
+        ],
+        maintenanceInterval: 'Check DEF quality monthly, replace NOx sensors every 4000 hours',
+      },
+      {
+        id: 'silencer',
+        name: 'Exhaust Silencer/Muffler',
+        icon: <Cable className="w-5 h-5" />,
+        position: { x: 85, y: 40 },
+        size: { width: 12, height: 14 },
+        description: 'Sound attenuation device that reduces exhaust noise to acceptable levels.',
+        function: 'Reduce exhaust noise 25-35 dB through absorption and reactive chambers.',
+        symptoms: [
+          'Excessive noise',
+          'Backpressure increase',
+          'Visible damage',
+          'Internal rattle',
+        ],
+        troubleshooting: [
+          'Check for external damage or corrosion',
+          'Measure backpressure contribution',
+          'Listen for internal component failure',
+          'Inspect mounting brackets',
+        ],
+        partNumbers: [
+          { brand: 'Nelson', partNo: 'Global Silencer', price: '85,000' },
+          { brand: 'Donaldson', partNo: 'M120285', price: '72,000' },
+          { brand: 'Maxim', partNo: 'Critical Grade', price: '95,000' },
+        ],
+        tools: ['Sound level meter', 'Backpressure gauge'],
+        specifications: [
+          { name: 'Attenuation', value: '25-35 dB' },
+          { name: 'Grade', value: 'Industrial, Residential, Critical' },
+          { name: 'Max Backpressure', value: '3-6 kPa' },
+        ],
+        connections: ['SCR or DPF outlet', 'Exhaust stack', 'Rain cap'],
+        commonFaults: [
+          { fault: 'Internal failure', cause: 'Corrosion, thermal cycling', solution: 'Replace silencer' },
+          { fault: 'Excessive noise', cause: 'Packing degraded', solution: 'Repack or replace' },
+        ],
+        maintenanceInterval: 'Inspect annually',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ECM & ELECTRONICS SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'ecm',
+    name: 'ECM & Electronics',
+    icon: <Cpu className="w-6 h-6" />,
+    color: 'purple',
+    description: 'Electronic control modules, sensors, and communication networks',
+    flowDescription: 'Sensors → ECM (processing) → Actuators. Communication via J1939 CAN Bus to controller, diagnostics via service tool.',
+    diagram: 'ecm-system',
+    components: [
+      {
+        id: 'ecm-module',
+        name: 'Engine Control Module (ECM)',
+        icon: <Cpu className="w-5 h-5" />,
+        position: { x: 40, y: 25 },
+        size: { width: 20, height: 18 },
+        description: 'Main computer that controls fuel injection timing, quantity, and all engine functions.',
+        function: 'Process sensor inputs, calculate injection parameters, control actuators, store fault codes, communicate on J1939.',
+        symptoms: [
+          'Check engine light',
+          'Engine won\'t start',
+          'Erratic operation',
+          'Communication failure',
+          'Multiple sensor faults',
+        ],
+        troubleshooting: [
+          'Check ECM power supply: key-on voltage 12V/24V',
+          'Verify ground connections are clean and tight',
+          'Read fault codes with service tool',
+          'Check J1939 communication on CAN bus',
+          'Verify software/calibration version',
+          'Check for water intrusion',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'CM2250 ECM', price: '185,000' },
+          { brand: 'CAT', partNo: 'ADEM A4 ECM', price: '220,000' },
+          { brand: 'Volvo', partNo: 'EMS2 ECM', price: '175,000' },
+        ],
+        tools: ['Service tool (INSITE, CAT ET, VODIA)', 'Multimeter', 'Breakout box', 'Oscilloscope'],
+        specifications: [
+          { name: 'Supply Voltage', value: '12V or 24V nominal' },
+          { name: 'Communication', value: 'J1939 CAN @ 250kbps' },
+          { name: 'Operating Temp', value: '-40°C to +85°C' },
+        ],
+        connections: ['Battery power', 'Key switch', 'All sensors', 'All actuators', 'J1939 CAN bus'],
+        commonFaults: [
+          { fault: 'No communication', cause: 'Power issue, CAN bus fault', solution: 'Check power and CAN wiring' },
+          { fault: 'Internal failure', cause: 'Voltage spike, water damage', solution: 'Replace ECM' },
+          { fault: 'Wrong calibration', cause: 'Incorrect programming', solution: 'Flash correct calibration' },
+        ],
+        maintenanceInterval: 'Check connections every 1000 hours',
+      },
+      {
+        id: 'sensors',
+        name: 'Engine Sensors Array',
+        icon: <Gauge className="w-5 h-5" />,
+        position: { x: 15, y: 35 },
+        size: { width: 18, height: 20 },
+        description: 'Collection of sensors monitoring engine parameters: pressure, temperature, position, speed.',
+        function: 'Provide real-time data to ECM for closed-loop control of fuel, timing, and protection.',
+        symptoms: [
+          'Specific fault code',
+          'Incorrect reading',
+          'Out of range signal',
+          'Intermittent faults',
+          'Derate condition',
+        ],
+        troubleshooting: [
+          'Read specific fault code to identify sensor',
+          'Check connector for corrosion or damage',
+          'Measure signal voltage at ECM connector',
+          'Compare reading to known good value',
+          'Check wiring for shorts or opens',
+          'Swap with known good sensor to verify',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'Oil Pressure Sensor', price: '12,000' },
+          { brand: 'Cummins', partNo: 'Coolant Temp Sensor', price: '8,500' },
+          { brand: 'CAT', partNo: 'Speed/Timing Sensor', price: '18,000' },
+          { brand: 'Bosch', partNo: 'Rail Pressure Sensor', price: '35,000' },
+        ],
+        tools: ['Multimeter', 'Oscilloscope', 'Service tool', 'Breakout harness'],
+        specifications: [
+          { name: 'Signal Type', value: 'Analog 0-5V or digital frequency' },
+          { name: 'Temperature Sensors', value: 'NTC thermistor' },
+          { name: 'Pressure Sensors', value: '0.5-4.5V output' },
+        ],
+        connections: ['ECM harness connector', 'Shield ground', 'Sensor power supply'],
+        commonFaults: [
+          { fault: 'Open circuit', cause: 'Broken wire, bad connection', solution: 'Repair wiring' },
+          { fault: 'Short circuit', cause: 'Chafed wire, water intrusion', solution: 'Find and repair short' },
+          { fault: 'Drift/inaccurate', cause: 'Sensor worn, contaminated', solution: 'Replace sensor' },
+        ],
+        maintenanceInterval: 'Inspect connectors every 500 hours',
+      },
+      {
+        id: 'injectors',
+        name: 'Electronic Fuel Injectors',
+        icon: <Zap className="w-5 h-5" />,
+        position: { x: 65, y: 30 },
+        size: { width: 16, height: 18 },
+        description: 'High-pressure electronically controlled injectors for precise fuel delivery.',
+        function: 'Convert ECM commands to precise fuel injection events. Control timing, duration, and multiple injection events.',
+        symptoms: [
+          'Rough running',
+          'Smoke (black or white)',
+          'Loss of power',
+          'Misfires',
+          'Fuel knock',
+          'Hard starting',
+        ],
+        troubleshooting: [
+          'Read injector trim codes from ECM',
+          'Perform cylinder cutout test',
+          'Check injector resistance (typically 0.2-2 ohms)',
+          'Measure return fuel quantity per cylinder',
+          'Check injection timing with service tool',
+          'Inspect nozzle spray pattern if removed',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '4928260 (ISX)', price: '85,000' },
+          { brand: 'CAT', partNo: '253-0618 (C15)', price: '95,000' },
+          { brand: 'Bosch', partNo: 'CRIN3 Injector', price: '75,000' },
+          { brand: 'Delphi', partNo: 'E3 Injector', price: '68,000' },
+        ],
+        tools: ['Service tool', 'Resistance meter', 'Return flow test kit', 'Nozzle tester'],
+        specifications: [
+          { name: 'Pressure', value: '1800-2500 bar' },
+          { name: 'Response Time', value: '<0.2ms' },
+          { name: 'Spray Holes', value: '6-8 holes' },
+        ],
+        connections: ['High pressure fuel line', 'Return fuel line', 'ECM harness (2-wire solenoid)'],
+        commonFaults: [
+          { fault: 'Stuck open', cause: 'Contamination, wear', solution: 'Replace injector' },
+          { fault: 'Low contribution', cause: 'Nozzle wear, blockage', solution: 'Replace or rebuild' },
+          { fault: 'Electrical fault', cause: 'Solenoid failure', solution: 'Replace injector' },
+        ],
+        maintenanceInterval: 'Check trim codes every 1000 hours, replace every 15000+ hours',
+      },
+      {
+        id: 'canbus',
+        name: 'J1939 CAN Bus Network',
+        icon: <Cable className="w-5 h-5" />,
+        position: { x: 40, y: 55 },
+        size: { width: 20, height: 12 },
+        description: 'Digital communication network connecting ECM to controller and other modules.',
+        function: 'High-speed serial communication at 250kbps. Transmits engine data, receives commands.',
+        symptoms: [
+          'Communication lost to engine',
+          'Intermittent data',
+          'Wrong data displayed',
+          'Multiple ECM faults',
+        ],
+        troubleshooting: [
+          'Check CAN bus termination resistors (60 ohms at each end)',
+          'Measure total bus resistance (should be ~60 ohms)',
+          'Check for CAN-H to CAN-L short',
+          'Verify shield is grounded at one end only',
+          'Check connector pins for damage',
+          'Use oscilloscope to view CAN signals',
+        ],
+        partNumbers: [
+          { brand: 'Generic', partNo: 'CAN Terminator 120Ω', price: '1,500' },
+          { brand: 'Deutsch', partNo: 'DT Connector Kit', price: '3,500' },
+          { brand: 'Generic', partNo: 'Shielded CAN Cable', price: '500/m' },
+        ],
+        tools: ['Multimeter', 'Oscilloscope', 'CAN bus analyzer'],
+        specifications: [
+          { name: 'Speed', value: '250 kbps' },
+          { name: 'Termination', value: '120Ω each end' },
+          { name: 'Cable', value: 'Twisted pair shielded' },
+        ],
+        connections: ['ECM', 'Generator controller', 'Display', 'Other modules'],
+        commonFaults: [
+          { fault: 'No communication', cause: 'Open wire, wrong termination', solution: 'Check wiring and resistors' },
+          { fault: 'Intermittent', cause: 'Loose connection, noise', solution: 'Reseat connectors, check shield' },
+          { fault: 'Errors on bus', cause: 'Damaged node, short', solution: 'Isolate and repair' },
+        ],
+        maintenanceInterval: 'Check connections every 1000 hours',
+      },
+    ],
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1704,11 +2462,7 @@ For controller codes (DSE, ComAp, SmartGen), explain how to navigate and clear t
                 }`}>
                   <div className="text-sm whitespace-pre-wrap prose prose-invert prose-sm max-w-none"
                     dangerouslySetInnerHTML={{
-                      __html: msg.content
-                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
-                        .replace(/\n/g, '<br>')
-                        .replace(/^(\d+)\./gm, '<span class="text-cyan-400 font-bold">$1.</span>')
-                        .replace(/•/g, '<span class="text-cyan-400">•</span>')
+                      __html: sanitizeAndFormatContent(msg.content)
                     }}
                   />
                 </div>
@@ -1952,11 +2706,7 @@ Be conversational, thorough, and ENGAGE the technician throughout!`
                 }`}>
                   <div className="text-sm whitespace-pre-wrap prose prose-invert prose-sm max-w-none"
                     dangerouslySetInnerHTML={{
-                      __html: msg.content
-                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
-                        .replace(/\n/g, '<br>')
-                        .replace(/^(\d+)\./gm, '<span class="text-cyan-400 font-bold">$1.</span>')
-                        .replace(/•/g, '<span class="text-cyan-400">•</span>')
+                      __html: sanitizeAndFormatContent(msg.content)
                     }}
                   />
                 </div>
@@ -2973,10 +3723,7 @@ Be specific, practical, and remember - no diagnostic cables available!`
             <div
               className="text-sm text-slate-200 prose prose-invert prose-sm max-w-none"
               dangerouslySetInnerHTML={{
-                __html: aiResponse
-                  .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
-                  .replace(/\n/g, '<br>')
-                  .replace(/^(\d+)\./gm, '<span class="text-cyan-400 font-bold">$1.</span>')
+                __html: sanitizeAndFormatContent(aiResponse)
               }}
             />
           </div>
@@ -3183,7 +3930,32 @@ export default function InteractiveDiagnosticSystem() {
           <p className="text-sm text-slate-400">{selectedSystem.flowDescription}</p>
         </div>
 
+        {/* Visual SVG Diagram - Click components directly */}
+        {SYSTEM_DIAGRAMS[selectedSystem.id] && (
+          <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4">
+            <h4 className="text-sm font-medium text-slate-300 mb-4 flex items-center gap-2">
+              <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
+              Interactive Visual Diagram - Click any component
+            </h4>
+            {(() => {
+              const DiagramComponent = SYSTEM_DIAGRAMS[selectedSystem.id];
+              return (
+                <DiagramComponent
+                  onComponentClick={(componentId) => {
+                    const component = selectedSystem.components.find(c => c.id === componentId);
+                    if (component) setSelectedComponent(component);
+                  }}
+                  selectedComponent={undefined}
+                />
+              );
+            })()}
+          </div>
+        )}
+
         {/* Interactive Diagram - Components as clickable cards */}
+        <div>
+          <h4 className="text-sm font-medium text-slate-300 mb-4">Component Details - Click to explore:</h4>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {selectedSystem.components.map((component) => (
             <motion.button

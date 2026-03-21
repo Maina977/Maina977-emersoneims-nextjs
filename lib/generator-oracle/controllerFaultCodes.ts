@@ -2036,6 +2036,70 @@ function createExtendedCode(
 // ==================== MAIN DATABASE ====================
 
 let _allFaultCodes: ControllerFaultCode[] | null = null;
+let _extendedCodes: ControllerFaultCode[] | null = null;
+
+// Lazy-loaded brand code caches
+const _brandCodeCache: Map<string, ControllerFaultCode[]> = new Map();
+
+// Brand to loader function mapping for lazy loading
+const BRAND_LOADERS: Record<string, () => ControllerFaultCode[]> = {
+  'DSE': getDSEFaultCodes,
+  'DeepSea': getDSEFaultCodes,
+  'COMAP': getComApFaultCodes,
+  'ComAp': getComApFaultCodes,
+  'WOODWARD': getWoodwardFaultCodes,
+  'Woodward': getWoodwardFaultCodes,
+  'SMARTGEN': getSmartGenFaultCodes,
+  'SmartGen': getSmartGenFaultCodes,
+  'POWERWIZARD': getPowerWizardFaultCodes,
+  'PowerWizard': getPowerWizardFaultCodes,
+  'CAT': getPowerWizardFaultCodes,
+  'DATAKOM': getDatakomFaultCodes,
+  'Datakom': getDatakomFaultCodes,
+  'LOVATO': getLovatoFaultCodes,
+  'Lovato': getLovatoFaultCodes,
+  'SIEMENS': getSiemensFaultCodes,
+  'Siemens': getSiemensFaultCodes,
+  'ENKO': getEnkoFaultCodes,
+  'VODIA': getVODIAFaultCodes,
+  'Volvo': getVODIAFaultCodes,
+};
+
+/**
+ * Lazy load fault codes for a specific brand
+ * More memory efficient than loading all codes at once
+ */
+export function loadFaultCodesByBrand(brand: string): ControllerFaultCode[] {
+  const normalizedBrand = brand.toUpperCase();
+
+  // Check cache first
+  if (_brandCodeCache.has(normalizedBrand)) {
+    return _brandCodeCache.get(normalizedBrand)!;
+  }
+
+  // Find matching loader
+  const loader = BRAND_LOADERS[brand] || BRAND_LOADERS[normalizedBrand];
+  if (loader) {
+    const codes = loader();
+    _brandCodeCache.set(normalizedBrand, codes);
+    return codes;
+  }
+
+  // Fallback: search all codes (loads everything)
+  return getAllFaultCodes().filter(code =>
+    code.brand.toLowerCase().includes(brand.toLowerCase())
+  );
+}
+
+/**
+ * Get extended/generated codes (lazy loaded)
+ */
+function getExtendedCodes(): ControllerFaultCode[] {
+  if (!_extendedCodes) {
+    _extendedCodes = generateExtendedCodes();
+  }
+  return _extendedCodes;
+}
 
 export function getAllFaultCodes(): ControllerFaultCode[] {
   if (!_allFaultCodes) {
@@ -2049,7 +2113,7 @@ export function getAllFaultCodes(): ControllerFaultCode[] {
     const siemensCodes = getSiemensFaultCodes();
     const enkoCodes = getEnkoFaultCodes();
     const vodiaCodes = getVODIAFaultCodes();
-    const extendedCodes = generateExtendedCodes();
+    const extendedCodes = getExtendedCodes();
 
     _allFaultCodes = [
       ...dseCodes,
@@ -2069,9 +2133,8 @@ export function getAllFaultCodes(): ControllerFaultCode[] {
 }
 
 export function getFaultCodesByBrand(brand: string): ControllerFaultCode[] {
-  return getAllFaultCodes().filter(code =>
-    code.brand.toLowerCase().includes(brand.toLowerCase())
-  );
+  // Use lazy loading when possible for memory efficiency
+  return loadFaultCodesByBrand(brand);
 }
 
 export function getFaultCodesByModel(model: string): ControllerFaultCode[] {

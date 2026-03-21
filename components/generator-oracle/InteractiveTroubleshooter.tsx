@@ -31,6 +31,7 @@ import {
   Cpu,
   Battery,
 } from 'lucide-react';
+import { sanitizeInstruction } from '@/lib/generator-oracle/sanitizeHtml';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TROUBLESHOOTING SCENARIOS DATABASE
@@ -1643,10 +1644,7 @@ export default function InteractiveTroubleshooter() {
                       <div
                         className="text-sm text-slate-300 prose prose-invert prose-sm max-w-none"
                         dangerouslySetInnerHTML={{
-                          __html: currentStep.instruction
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\n/g, '<br>')
-                            .replace(/\|(.+)\|/g, '<code>$1</code>')
+                          __html: sanitizeInstruction(currentStep.instruction)
                         }}
                       />
                     </div>

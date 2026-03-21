@@ -76,6 +76,7 @@ import DetailedFaultDisplay, { DETAILED_FAULT_CODES } from './DetailedFaultDispl
 import { AnalogClock, AnalogCalendar } from '@/components/ui/AnalogWidgets';
 import SpeechController from './SpeechController';
 import BackToCommand from './BackToCommand';
+import ErrorBoundary from './ErrorBoundary';
 
 // ==================== DYNAMIC IMPORTS (Load on demand - saves ~500KB initial bundle) ====================
 // Panel components - loaded only when user navigates to them
@@ -122,6 +123,7 @@ const NotificationSettings = dynamic(() => import('./NotificationSettings'), { s
 const PossibleCausesPanel = dynamic(() => import('./PossibleCausesPanel'), { ssr: false });
 const InteractiveTroubleshooter = dynamic(() => import('./InteractiveTroubleshooter'), { ssr: false });
 const InteractiveDiagnosticSystem = dynamic(() => import('./panels/InteractiveDiagnosticSystem'), { ssr: false });
+const ProfessionalDiagnosticTools = dynamic(() => import('./panels/ProfessionalDiagnosticTools'), { ssr: false });
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -1027,13 +1029,67 @@ function PremiumNavTab({
   );
 }
 
+// ==================== SUB-TAB NAVIGATION COMPONENT ====================
+function SubTabNav<T extends string>({
+  tabs,
+  activeTab,
+  onTabChange,
+  accentColor = 'cyan',
+}: {
+  tabs: { id: T; label: string; icon: string }[];
+  activeTab: T;
+  onTabChange: (tab: T) => void;
+  accentColor?: 'cyan' | 'purple' | 'green' | 'amber' | 'red';
+}) {
+  const colors = {
+    cyan: 'from-cyan-500/20 to-cyan-600/10 border-cyan-500/50 text-cyan-400',
+    purple: 'from-purple-500/20 to-purple-600/10 border-purple-500/50 text-purple-400',
+    green: 'from-green-500/20 to-green-600/10 border-green-500/50 text-green-400',
+    amber: 'from-amber-500/20 to-amber-600/10 border-amber-500/50 text-amber-400',
+    red: 'from-red-500/20 to-red-600/10 border-red-500/50 text-red-400',
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 p-2 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-6">
+      {tabs.map((tab) => (
+        <motion.button
+          key={tab.id}
+          onClick={() => onTabChange(tab.id)}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ${
+            activeTab === tab.id
+              ? `bg-gradient-to-br ${colors[accentColor]} border`
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+          }`}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <span className="text-lg">{tab.icon}</span>
+          <span className="text-sm font-medium">{tab.label}</span>
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
 // ==================== MAIN MODULE ====================
 export default function GeneratorOracleModule() {
   // Core state
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat' | 'universaldiag' | 'odi' | 'prodiag' | 'ecmsuite' | 'troubleshoot' | 'systems'>('command');
+  // CONSOLIDATED 8 SUPER-TABS (reduced from 34+ tabs)
+  const [activeScreen, setActiveScreen] = useState<
+    'command' | 'ai' | 'faults' | 'systems' | 'controllers' | 'wiring' | 'monitoring' | 'tools'
+  >('command');
+
+  // Sub-tab states for each super-tab
+  const [aiSubTab, setAiSubTab] = useState<'expert' | 'visual' | 'analyze'>('expert');
+  const [faultsSubTab, setFaultsSubTab] = useState<'lookup' | 'analysis' | 'troubleshoot'>('lookup');
+  const [systemsSubTab, setSystemsSubTab] = useState<'engine' | 'electrical' | 'sensors' | 'interactive'>('interactive');
+  const [controllersSubTab, setControllersSubTab] = useState<'simulator' | 'ecmsuite' | 'ecmprog' | 'protools'>('simulator');
+  const [wiringSubTab, setWiringSubTab] = useState<'diagrams' | 'allwiring' | 'manuals'>('diagrams');
+  const [monitoringSubTab, setMonitoringSubTab] = useState<'realtime' | 'canbus' | 'obd' | 'recording' | 'predictive' | 'remote'>('realtime');
+  const [toolsSubTab, setToolsSubTab] = useState<'reports' | 'history' | 'parts' | 'techinput' | 'assistant' | 'settings' | 'alerts'>('reports');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
@@ -1381,112 +1437,33 @@ export default function GeneratorOracleModule() {
                   </div>
                 </div>
 
-                {/* Full Generator Diagnostic Navigation - 33 Sections */}
-                <nav className="hidden xl:flex items-center gap-1 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex-wrap">
-                  {/* Command & AI */}
+                {/* CONSOLIDATED 8 SUPER-TABS - Clean & Professional Navigation */}
+                <nav className="hidden xl:flex items-center gap-2 p-2 bg-slate-900/80 rounded-2xl border border-cyan-500/30">
                   <PremiumNavTab icon="🎛️" label="Command" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
-                  <PremiumNavTab icon="💬" label="AI Expert" active={activeScreen === 'expertchat'} onClick={() => setActiveScreen('expertchat')} />
-                  <PremiumNavTab icon="📷" label="AI Visual" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
-                  <PremiumNavTab icon="🧠" label="AI Analyze" active={activeScreen === 'aianalysis'} onClick={() => setActiveScreen('aianalysis')} />
-
-                  {/* Diagnostics */}
-                  <PremiumNavTab icon="🔧" label="Fault Codes" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
-                  <PremiumNavTab icon="🔍" label="Fault Analysis" active={activeScreen === 'faultanalysis'} onClick={() => setActiveScreen('faultanalysis')} />
-                  <PremiumNavTab icon="🛠️" label="Troubleshoot" active={activeScreen === 'troubleshoot'} onClick={() => setActiveScreen('troubleshoot')} />
-                  <PremiumNavTab icon="🔬" label="Pro Diag" active={activeScreen === 'prodiag'} onClick={() => setActiveScreen('prodiag')} />
+                  <PremiumNavTab icon="🧠" label="AI Diagnostics" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
+                  <PremiumNavTab icon="🔧" label="Fault Center" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
                   <PremiumNavTab icon="🏭" label="Systems" active={activeScreen === 'systems'} onClick={() => setActiveScreen('systems')} />
-
-                  {/* Engine & ECM */}
-                  <PremiumNavTab icon="⚙️" label="Engine" active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
-                  <PremiumNavTab icon="⚡" label="Electrical" active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
-                  <PremiumNavTab icon="🧠" label="ECM Suite" active={activeScreen === 'ecmsuite'} onClick={() => setActiveScreen('ecmsuite')} />
-                  <PremiumNavTab icon="💾" label="ECM Prog" active={activeScreen === 'ecmprog'} onClick={() => setActiveScreen('ecmprog')} />
-                  <PremiumNavTab icon="💾" label="ECM Guide" active={activeScreen === 'ecmguide'} onClick={() => setActiveScreen('ecmguide')} />
-
-                  {/* Monitoring & Data */}
-                  <PremiumNavTab icon="📊" label="Live Monitor" active={activeScreen === 'realtime'} onClick={() => setActiveScreen('realtime')} />
-                  <PremiumNavTab icon="📡" label="CANbus" active={activeScreen === 'canbus'} onClick={() => setActiveScreen('canbus')} />
-                  <PremiumNavTab icon="🔌" label="OBD" active={activeScreen === 'obd'} onClick={() => setActiveScreen('obd')} />
-                  <PremiumNavTab icon="📈" label="Recording" active={activeScreen === 'recording'} onClick={() => setActiveScreen('recording')} />
-                  <PremiumNavTab icon="🔮" label="Predictive" active={activeScreen === 'predictive'} onClick={() => setActiveScreen('predictive')} />
-
-                  {/* Controllers & Sensors */}
-                  <PremiumNavTab icon="🖥️" label="Simulator" active={activeScreen === 'simulator'} onClick={() => setActiveScreen('simulator')} />
-                  <PremiumNavTab icon="🌡️" label="Sensors" active={activeScreen === 'sensors'} onClick={() => setActiveScreen('sensors')} />
-                  <PremiumNavTab icon="🌐" label="Remote" active={activeScreen === 'remote'} onClick={() => setActiveScreen('remote')} />
-
-                  {/* Wiring & Manuals */}
-                  <PremiumNavTab icon="📐" label="Wiring" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
-                  <PremiumNavTab icon="🔌" label="All Wiring" active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
-                  <PremiumNavTab icon="📚" label="Manuals" active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
-
-                  {/* Tools & Reports */}
-                  <PremiumNavTab icon="📊" label="Tech Input" active={activeScreen === 'techinput'} onClick={() => setActiveScreen('techinput')} />
-                  <PremiumNavTab icon="🛠️" label="Assistant" active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
-                  <PremiumNavTab icon="📄" label="Reports" active={activeScreen === 'reports'} onClick={() => setActiveScreen('reports')} />
-                  <PremiumNavTab icon="🛒" label="Parts" active={activeScreen === 'parts'} onClick={() => setActiveScreen('parts')} />
-
-                  {/* History & Settings */}
-                  <PremiumNavTab icon="📋" label="History" active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
-                  <PremiumNavTab icon="🔔" label="Alerts" active={activeScreen === 'notifications'} onClick={() => setActiveScreen('notifications')} />
-                  <PremiumNavTab icon="⚙️" label="Settings" active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
+                  <PremiumNavTab icon="🖥️" label="Controllers" active={activeScreen === 'controllers'} onClick={() => setActiveScreen('controllers')} />
+                  <PremiumNavTab icon="📐" label="Wiring & Manuals" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
+                  <PremiumNavTab icon="📊" label="Monitoring" active={activeScreen === 'monitoring'} onClick={() => setActiveScreen('monitoring')} />
+                  <PremiumNavTab icon="🛠️" label="Tools & Reports" active={activeScreen === 'tools'} onClick={() => setActiveScreen('tools')} />
                 </nav>
 
-                {/* Mobile nav - Full 33 Sections */}
+                {/* Mobile nav - Consolidated 8 Sections */}
                 <div className="xl:hidden">
                   <select
                     value={activeScreen}
                     onChange={(e) => setActiveScreen(e.target.value as typeof activeScreen)}
                     className="bg-slate-900/60 text-cyan-400 px-4 py-2.5 rounded-xl border border-cyan-500/30 font-medium"
                   >
-                    <optgroup label="Command & AI">
-                      <option value="command">🎛️ Command Center</option>
-                      <option value="expertchat">💬 AI Expert Chat</option>
-                      <option value="camera">📷 AI Visual Diagnostic</option>
-                      <option value="aianalysis">🧠 AI Analysis</option>
-                    </optgroup>
-                    <optgroup label="Diagnostics">
-                      <option value="faults">🔧 Fault Codes</option>
-                      <option value="faultanalysis">🔍 Fault Analysis</option>
-                      <option value="troubleshoot">🛠️ Interactive Troubleshoot</option>
-                      <option value="prodiag">🔬 Pro Diagnostics</option>
-                      <option value="systems">🏭 System Diagnostics</option>
-                    </optgroup>
-                    <optgroup label="Engine & ECM">
-                      <option value="engine">⚙️ Engine Diagnostics</option>
-                      <option value="electrical">⚡ Electrical System</option>
-                      <option value="ecmsuite">🧠 ECM Suite (10 Brands)</option>
-                      <option value="ecmprog">💾 ECM Programming</option>
-                      <option value="ecmguide">💾 ECM Reprogram Guide</option>
-                    </optgroup>
-                    <optgroup label="Monitoring & Data">
-                      <option value="realtime">📊 Live Monitor</option>
-                      <option value="canbus">📡 CANbus Monitor</option>
-                      <option value="obd">🔌 OBD Protocol</option>
-                      <option value="recording">📈 Data Recording</option>
-                      <option value="predictive">🔮 Predictive Maintenance</option>
-                    </optgroup>
-                    <optgroup label="Controllers & Sensors">
-                      <option value="simulator">🖥️ Controller Simulator</option>
-                      <option value="sensors">🌡️ Sensor Diagnostics</option>
-                      <option value="remote">🌐 Remote Connectivity</option>
-                    </optgroup>
-                    <optgroup label="Wiring & Manuals">
-                      <option value="wiring">📐 Wiring Diagrams</option>
-                      <option value="allwiring">🔌 All Controller Wiring</option>
-                      <option value="manuals">📚 Repair Manuals</option>
-                    </optgroup>
-                    <optgroup label="Tools & Reports">
-                      <option value="techinput">📊 Tech Input</option>
-                      <option value="assistant">🛠️ Tech Assistant</option>
-                      <option value="reports">📄 Reports</option>
-                      <option value="parts">🛒 Parts Lookup</option>
-                    </optgroup>
-                    <optgroup label="History & Settings">
-                      <option value="history">📋 History</option>
-                      <option value="notifications">🔔 Alerts</option>
-                      <option value="settings">⚙️ Settings</option>
-                    </optgroup>
+                    <option value="command">🎛️ Command Center</option>
+                    <option value="ai">🧠 AI Diagnostics</option>
+                    <option value="faults">🔧 Fault Center</option>
+                    <option value="systems">🏭 Systems</option>
+                    <option value="controllers">🖥️ Controllers</option>
+                    <option value="wiring">📐 Wiring & Manuals</option>
+                    <option value="monitoring">📊 Monitoring</option>
+                    <option value="tools">🛠️ Tools & Reports</option>
                   </select>
                 </div>
 
@@ -1514,6 +1491,7 @@ export default function GeneratorOracleModule() {
           {/* ==================== MAIN CONTENT ==================== */}
           <main className="flex-1 p-4 lg:p-6">
             <div className="max-w-[1920px] mx-auto pb-10">
+              <ErrorBoundary fallbackTitle="Panel Error" onReset={() => setActiveScreen('command')}>
               <AnimatePresence mode="wait">
                 {/* COMMAND CENTER */}
                 {activeScreen === 'command' && (
@@ -1548,7 +1526,7 @@ export default function GeneratorOracleModule() {
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              onClick={() => setActiveScreen('expertchat')}
+                              onClick={() => { setActiveScreen('ai'); setAiSubTab('expert'); }}
                               className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 flex items-center gap-2"
                             >
                               <span>💬</span> Talk to Expert AI
@@ -1556,7 +1534,7 @@ export default function GeneratorOracleModule() {
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              onClick={() => setActiveScreen('aianalysis')}
+                              onClick={() => { setActiveScreen('ai'); setAiSubTab('analyze'); }}
                               className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
                             >
                               <span>🧠</span> Input Readings
@@ -1564,7 +1542,7 @@ export default function GeneratorOracleModule() {
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              onClick={() => setActiveScreen('camera')}
+                              onClick={() => { setActiveScreen('ai'); setAiSubTab('visual'); }}
                               className="px-6 py-3 bg-slate-800/80 border border-slate-600/50 text-white font-medium rounded-xl hover:bg-slate-700/80 flex items-center gap-2"
                             >
                               <span>📷</span> Visual Diagnose
@@ -1572,7 +1550,7 @@ export default function GeneratorOracleModule() {
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              onClick={() => setActiveScreen('troubleshoot')}
+                              onClick={() => { setActiveScreen('faults'); setFaultsSubTab('troubleshoot'); }}
                               className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-green-500/20 flex items-center gap-2"
                             >
                               <span>🔧</span> Step-by-Step Guide
@@ -1867,760 +1845,403 @@ export default function GeneratorOracleModule() {
                   </motion.div>
                 )}
 
-                {/* ENGINE PANEL */}
-                {activeScreen === 'engine' && (
+                {/* ══════════════════════════════════════════════════════════════════════════
+                    CONSOLIDATED SUPER-TAB: AI DIAGNOSTICS
+                    Combines: AI Expert Chat + AI Visual + AI Analysis
+                ══════════════════════════════════════════════════════════════════════════ */}
+                {activeScreen === 'ai' && (
                   <motion.div
-                    key="engine"
+                    key="ai"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
+                    className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="engine" />
-                    <EnginePanel
-                      parameters={{
-                        rpm: parameters.rpm,
-                        oilPressure: parameters.oilPressure,
-                        oilTemperature: parameters.oilTemperature,
-                        coolantTemp: parameters.coolantTemp,
-                        coolantPressure: parameters.coolantPressure,
-                        fuelPressure: parameters.fuelPressure,
-                        engineHours: parameters.engineHours,
-                        intakeAirTemp: parameters.intakeAirTemp,
-                        exhaustTemp: parameters.exhaustTemp,
-                        turboBoostPressure: parameters.turboBoostPressure,
-                      }}
-                      onParameterChange={updateParameter}
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ai" />
+
+                    {/* AI Super-Tab Header */}
+                    <div className="text-center mb-4">
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400">
+                        AI Diagnostics Hub
+                      </h2>
+                      <p className="text-slate-400 text-sm">Expert AI Chat, Visual Diagnosis & Intelligent Analysis - All in One Place</p>
+                    </div>
+
+                    {/* Sub-Tab Navigation */}
+                    <SubTabNav
+                      tabs={[
+                        { id: 'expert' as const, label: 'Expert Chat', icon: '💬' },
+                        { id: 'visual' as const, label: 'Visual Diagnose', icon: '📷' },
+                        { id: 'analyze' as const, label: 'AI Analysis', icon: '🧠' },
+                      ]}
+                      activeTab={aiSubTab}
+                      onTabChange={setAiSubTab}
+                      accentColor="purple"
                     />
+
+                    {/* Sub-Tab Content */}
+                    {aiSubTab === 'expert' && <ExpertAIChatPanel />}
+                    {aiSubTab === 'visual' && <AIVisualDiagnostic />}
+                    {aiSubTab === 'analyze' && <AIAnalysisPanel />}
                   </motion.div>
                 )}
 
-                {/* ELECTRICAL PANEL */}
-                {activeScreen === 'electrical' && (
-                  <motion.div
-                    key="electrical"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="electrical" />
-                    <ElectricalPanel
-                      parameters={{
-                        voltageL1N: parameters.voltageL1N,
-                        voltageL2N: parameters.voltageL2N,
-                        voltageL3N: parameters.voltageL3N,
-                        voltageL1L2: parameters.voltageL1L2,
-                        voltageL2L3: parameters.voltageL2L3,
-                        voltageL3L1: parameters.voltageL3L1,
-                        currentL1: parameters.currentL1,
-                        currentL2: parameters.currentL2,
-                        currentL3: parameters.currentL3,
-                        currentNeutral: parameters.currentNeutral,
-                        activePowerKw: parameters.activePowerKw,
-                        reactivePowerKvar: parameters.reactivePowerKvar,
-                        apparentPowerKva: parameters.apparentPowerKva,
-                        powerFactor: parameters.powerFactor,
-                        frequency: parameters.frequency,
-                      }}
-                      onParameterChange={updateParameter}
-                    />
-                  </motion.div>
-                )}
-
-                {/* FAULTS PANEL */}
+                {/* ══════════════════════════════════════════════════════════════════════════
+                    CONSOLIDATED SUPER-TAB: FAULT CENTER
+                    Combines: Fault Codes + Fault Analysis + Troubleshoot
+                ══════════════════════════════════════════════════════════════════════════ */}
                 {activeScreen === 'faults' && (
                   <motion.div
                     key="faults"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
+                    className="space-y-4"
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="faults" />
-                    <FaultDiagnosticsPanel
-                      onSearch={handleSearch}
-                      searchResults={searchResults as any}
-                      isSearching={isSearching}
+
+                    {/* Fault Center Header */}
+                    <div className="text-center mb-4">
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-amber-400">
+                        Fault Center
+                      </h2>
+                      <p className="text-slate-400 text-sm">400,000+ Fault Codes, Deep Analysis & Interactive Troubleshooting</p>
+                    </div>
+
+                    {/* Sub-Tab Navigation */}
+                    <SubTabNav
+                      tabs={[
+                        { id: 'lookup' as const, label: 'Fault Code Lookup', icon: '🔍' },
+                        { id: 'analysis' as const, label: 'Detailed Analysis', icon: '📊' },
+                        { id: 'troubleshoot' as const, label: 'Interactive Troubleshoot', icon: '🛠️' },
+                      ]}
+                      activeTab={faultsSubTab}
+                      onTabChange={setFaultsSubTab}
+                      accentColor="amber"
                     />
+
+                    {/* Sub-Tab Content */}
+                    {faultsSubTab === 'lookup' && (
+                      <FaultDiagnosticsPanel
+                        onSearch={handleSearch}
+                        searchResults={searchResults as any}
+                        isSearching={isSearching}
+                      />
+                    )}
+                    {faultsSubTab === 'analysis' && <DetailedFaultDisplay faultCode={DETAILED_FAULT_CODES['190-0']} />}
+                    {faultsSubTab === 'troubleshoot' && <InteractiveTroubleshooter />}
                   </motion.div>
                 )}
 
-                {/* ADVANCED DIAGNOSTICS */}
-                {activeScreen === 'advanced' && (
-                  <motion.div
-                    key="advanced"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="advanced" />
-                    <AdvancedDiagnosticsPanel />
-                  </motion.div>
-                )}
-
-                {/* WIRING DIAGRAMS */}
-                {activeScreen === 'wiring' && (
-                  <motion.div
-                    key="wiring"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="wiring" />
-                    <WiringDiagramsPanel />
-                  </motion.div>
-                )}
-
-                {/* ALL 9 CONTROLLERS WIRING DIAGRAMS */}
-                {activeScreen === 'allwiring' && (
-                  <motion.div
-                    key="allwiring"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-6"
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="allwiring" />
-                    <HolographicGlassPanel
-                      title="All 10 Controllers - Complete Wiring Reference"
-                      subtitle="DSE • ComAp • Woodward • SmartGen • CAT PowerWizard • Datakom • Lovato • Siemens • ENKO • VODIA"
-                      icon="🔌"
-                      accentColor="cyan"
-                      variant="glow"
-                    >
-                      <p className="text-slate-300 text-sm mb-4">
-                        Complete terminal pinouts, wire color codes (IEC Standard), and connection diagrams for all 9 major generator controller brands.
-                        Professional-grade reference for technicians and engineers.
-                      </p>
-                    </HolographicGlassPanel>
-                    <AllControllerWiringDiagrams />
-                  </motion.div>
-                )}
-
-                {/* TECHNICIAN INPUT DIAGNOSTICS */}
-                {activeScreen === 'techinput' && (
-                  <motion.div
-                    key="techinput"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-6"
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="techinput" />
-                    <HolographicGlassPanel
-                      title="Technician Input Diagnostics"
-                      subtitle="Enter Your Readings - Get Instant Analysis"
-                      icon="📊"
-                      accentColor="purple"
-                      variant="glow"
-                    >
-                      <p className="text-slate-300 text-sm">
-                        Input your meter readings and the system will instantly analyze each parameter, identify problems,
-                        provide possible causes, and recommend immediate actions plus long-term solutions.
-                        This is where the diagnostic magic happens!
-                      </p>
-                    </HolographicGlassPanel>
-                    <TechnicianInputDiagnostics />
-                  </motion.div>
-                )}
-
-                {/* AI ANALYSIS PANEL - 100% Detailed Diagnosis */}
-                {activeScreen === 'aianalysis' && (
-                  <motion.div
-                    key="aianalysis"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="aianalysis" />
-                    <AIAnalysisPanel />
-                  </motion.div>
-                )}
-
-                {/* REAL-TIME MONITORING PANEL */}
-                {activeScreen === 'realtime' && (
-                  <motion.div
-                    key="realtime"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="realtime" />
-                    <RealTimeMonitoringPanel />
-                  </motion.div>
-                )}
-
-                {/* OBD-II / CAN PROTOCOL PANEL */}
-                {activeScreen === 'obd' && (
-                  <motion.div
-                    key="obd"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="obd" />
-                    <OBDProtocolPanel />
-                  </motion.div>
-                )}
-
-                {/* REMOTE CONNECTIVITY PANEL */}
-                {activeScreen === 'remote' && (
-                  <motion.div
-                    key="remote"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="remote" />
-                    <RemoteConnectivityPanel />
-                  </motion.div>
-                )}
-
-                {/* PREDICTIVE MAINTENANCE PANEL */}
-                {activeScreen === 'predictive' && (
-                  <motion.div
-                    key="predictive"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="predictive" />
-                    <PredictiveMaintenancePanel />
-                  </motion.div>
-                )}
-
-                {/* DATA RECORDING & GRAPHING PANEL */}
-                {activeScreen === 'recording' && (
-                  <motion.div
-                    key="recording"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="recording" />
-                    <DataRecordingPanel />
-                  </motion.div>
-                )}
-
-                {/* CONTROLLER REPAIR MANUALS PANEL */}
-                {activeScreen === 'manuals' && (
-                  <motion.div
-                    key="manuals"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="manuals" />
-                    <ControllerRepairManualsPanel />
-                  </motion.div>
-                )}
-
-                {/* SENSOR DIAGNOSTICS */}
-                {activeScreen === 'sensors' && (
-                  <motion.div
-                    key="sensors"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="sensors" />
-                    <SensorDiagnosticsPanel />
-                  </motion.div>
-                )}
-
-                {/* ECM DIAGNOSTICS */}
-                {activeScreen === 'ecm' && (
-                  <motion.div
-                    key="ecm"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecm" />
-                    <ECMDiagnosticsPanel />
-                  </motion.div>
-                )}
-
-                {/* UNIFIED DIAGNOSTICS - Integrated ECM + Controllers + Fault Codes + AI */}
-                {activeScreen === 'unified' && (
-                  <motion.div
-                    key="unified"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="unified" />
-                    <UnifiedDiagnosticsPanel />
-                  </motion.div>
-                )}
-
-                {/* ECM PROGRAMMING - Firmware Updates & Calibration */}
-                {activeScreen === 'ecmprog' && (
-                  <motion.div
-                    key="ecmprog"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecmprog" />
-                    <ECMProgrammingPanel />
-                  </motion.div>
-                )}
-
-                {/* CANBUS MONITOR - J1939 Protocol Analysis */}
-                {activeScreen === 'canbus' && (
-                  <motion.div
-                    key="canbus"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="canbus" />
-                    <CANbusMonitorPanel />
-                  </motion.div>
-                )}
-
-                {/* FLEET DASHBOARD - Predictive AI Analytics */}
-                {activeScreen === 'fleet' && (
-                  <motion.div
-                    key="fleet"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="fleet" />
-                    <FleetDashboardPanel />
-                  </motion.div>
-                )}
-
-                {/* COMPLETE DIAGNOSTIC SOLUTIONS - Full Repair Procedures */}
-                {activeScreen === 'completediag' && (
-                  <motion.div
-                    key="completediag"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="completediag" />
-                    <CompleteDiagnosticPanel />
-                  </motion.div>
-                )}
-
-                {/* ECM REPROGRAMMING GUIDE - Step-by-Step ECM/ECU Programming */}
-                {activeScreen === 'ecmguide' && (
-                  <motion.div
-                    key="ecmguide"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecmguide" />
-                    <ECMReprogrammingGuidePanel />
-                  </motion.div>
-                )}
-
-                {/* EXPERT AI CHAT - THE CORE SELLING POINT */}
-                {activeScreen === 'expertchat' && (
-                  <motion.div
-                    key="expertchat"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="h-[calc(100vh-200px)] flex flex-col"
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="expertchat" />
-                    <ExpertAIChatPanel className="flex-1" />
-                  </motion.div>
-                )}
-
-                {/* UNIVERSAL DIAGNOSTIC INTERFACE - REPLACES CAT ET, INSITE, VODIA */}
-                {activeScreen === 'universaldiag' && (
-                  <motion.div
-                    key="universaldiag"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="universaldiag" />
-                    <UniversalDiagnosticPanel />
-                  </motion.div>
-                )}
-
-                {/* ODI DASHBOARD - COMPLETE DIAGNOSTIC & PROGRAMMING PLATFORM */}
-                {activeScreen === 'odi' && (
-                  <motion.div
-                    key="odi"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="odi" />
-                    <ODIDashboardPanel />
-                  </motion.div>
-                )}
-
-                {/* PROFESSIONAL DIAGNOSTIC INTERFACE - VODIA/CAT ET LEVEL */}
-                {activeScreen === 'prodiag' && (
-                  <motion.div
-                    key="prodiag"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="prodiag" />
-                    <ProfessionalDiagnosticInterface />
-                  </motion.div>
-                )}
-
-                {/* ECM DIAGNOSTIC SUITE - 10 BRAND-SPECIFIC INTERFACES */}
-                {activeScreen === 'ecmsuite' && (
-                  <motion.div
-                    key="ecmsuite"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecmsuite" />
-                    <ECMDiagnosticSuite />
-                  </motion.div>
-                )}
-
-                {/* INTERACTIVE TROUBLESHOOTING WIZARD */}
-                {activeScreen === 'troubleshoot' && (
-                  <motion.div
-                    key="troubleshoot"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="troubleshoot" />
-                    <InteractiveTroubleshooter />
-                  </motion.div>
-                )}
-
-                {/* INTERACTIVE SYSTEM DIAGNOSTICS - Fuel, Cooling, Electrical, Engine, ATS */}
+                {/* ══════════════════════════════════════════════════════════════════════════
+                    CONSOLIDATED SUPER-TAB: SYSTEMS
+                    Combines: Engine + Electrical + Sensors + Interactive Systems
+                ══════════════════════════════════════════════════════════════════════════ */}
                 {activeScreen === 'systems' && (
                   <motion.div
                     key="systems"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
+                    className="space-y-4"
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="systems" />
-                    <InteractiveDiagnosticSystem />
-                  </motion.div>
-                )}
 
-                {/* CONTROLLER SIMULATOR */}
-                {activeScreen === 'simulator' && (
-                  <motion.div
-                    key="simulator"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-6"
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="simulator" />
-                    <HolographicGlassPanel title="Controller Simulator" subtitle="Interactive Display Emulation" icon="🖥️" accentColor="cyan" variant="glow">
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {(Object.keys(CONTROLLER_TYPES) as ControllerType[]).map(type => (
-                          <motion.button
-                            key={type}
-                            onClick={() => setSimulatorController(type)}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`px-4 py-2 rounded-lg transition-all ${
-                              simulatorController === type
-                                ? 'bg-cyan-500 text-white'
-                                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                            }`}
-                          >
-                            {CONTROLLER_TYPES[type].shortName || type}
-                          </motion.button>
-                        ))}
-                      </div>
-                    </HolographicGlassPanel>
+                    {/* Systems Header */}
+                    <div className="text-center mb-4">
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">
+                        System Diagnostics
+                      </h2>
+                      <p className="text-slate-400 text-sm">Engine, Electrical, Sensors & Interactive System Analysis</p>
+                    </div>
 
-                    <ControllerSimulator controllerType={simulatorController} />
-                  </motion.div>
-                )}
-
-                {/* DETAILED FAULT ANALYSIS */}
-                {activeScreen === 'faultanalysis' && (
-                  <motion.div
-                    key="faultanalysis"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-6"
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="faultanalysis" />
-                    <HolographicGlassPanel title="Detailed Fault Analysis" subtitle="Comprehensive Diagnostic Reports" icon="🔍" accentColor="purple" variant="glow">
-                      <p className="text-slate-400 mb-6">
-                        Each fault code includes comprehensive multi-paragraph descriptions, diagnostic procedures,
-                        step-by-step reset instructions, and expert repair solutions.
-                      </p>
-                      <div className="grid md:grid-cols-3 gap-4">
-                        {[
-                          { icon: '📝', title: 'Detailed Descriptions', desc: '4+ paragraph explanations' },
-                          { icon: '🔧', title: 'Step-by-Step Fixes', desc: 'Expert repair procedures' },
-                          { icon: '🔄', title: 'Reset Instructions', desc: 'Clear fault clearing guides' },
-                        ].map((item) => (
-                          <div key={item.title} className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
-                            <div className="text-2xl mb-2">{item.icon}</div>
-                            <div className="text-white font-medium">{item.title}</div>
-                            <div className="text-sm text-slate-400">{item.desc}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </HolographicGlassPanel>
-
-                    <DetailedFaultDisplay faultCode={DETAILED_FAULT_CODES['190-0']} />
-                  </motion.div>
-                )}
-
-                {/* TECHNICIAN ASSISTANT */}
-                {activeScreen === 'assistant' && (
-                  <motion.div
-                    key="assistant"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="assistant" />
-                    <TechnicianAssistantPanel />
-                  </motion.div>
-                )}
-
-                {/* HISTORY */}
-                {activeScreen === 'history' && (
-                  <motion.div
-                    key="history"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="history" />
-                    <HolographicGlassPanel title={t.tabHistory} subtitle={t.diagnosisResults} icon="📋" accentColor="purple" variant="glow">
-                      {diagnosisHistory.length === 0 ? (
-                        <div className="text-center py-12">
-                          <motion.div
-                            className="text-6xl mb-4"
-                            animate={{ scale: [1, 1.1, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          >
-                            📋
-                          </motion.div>
-                          <div className="text-slate-400 text-lg">{t.noFaultsDetected}</div>
-                          <div className="text-sm text-slate-600 mt-2">{t.runDiagnosis}</div>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {diagnosisHistory.map((entry, idx) => (
-                            <motion.div
-                              key={entry.id || idx}
-                              className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50 hover:border-purple-500/50 transition-colors"
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: idx * 0.1 }}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <span className="font-mono text-cyan-400">{entry.faultCode}</span>
-                                  <span className="text-white ml-3">{entry.faultTitle}</span>
-                                </div>
-                                <span className="text-xs text-slate-500">
-                                  {new Date(entry.timestamp).toLocaleDateString()}
-                                </span>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      )}
-                    </HolographicGlassPanel>
-                  </motion.div>
-                )}
-
-                {/* REPORTS - Phase 4 */}
-                {activeScreen === 'reports' && (
-                  <motion.div
-                    key="reports"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="reports" />
-                    <HolographicGlassPanel title="Diagnostic Reports" subtitle="Generate Professional PDF Reports" icon="📄" accentColor="cyan" variant="glow">
-                      <div className="space-y-6">
-                        <div className="p-6 bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-xl border border-cyan-500/30">
-                          <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                            <span>📄</span> Professional Report Generator
-                          </h3>
-                          <p className="text-gray-300 mb-4">
-                            Generate comprehensive diagnostic reports with equipment details, fault analysis,
-                            recommended actions, parts quotes, and digital signatures.
-                          </p>
-                          <div className="grid md:grid-cols-3 gap-4 mb-6">
-                            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                              <div className="text-3xl mb-2">📋</div>
-                              <div className="text-white font-medium">Full Diagnosis</div>
-                              <div className="text-gray-400 text-sm">Complete fault analysis</div>
-                            </div>
-                            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                              <div className="text-3xl mb-2">✍️</div>
-                              <div className="text-white font-medium">Digital Signatures</div>
-                              <div className="text-gray-400 text-sm">Tech & customer sign-off</div>
-                            </div>
-                            <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                              <div className="text-3xl mb-2">💰</div>
-                              <div className="text-white font-medium">Parts Quotes</div>
-                              <div className="text-gray-400 text-sm">Cost estimates included</div>
-                            </div>
-                          </div>
-                          <p className="text-sm text-gray-400">
-                            <strong>How to use:</strong> Run a diagnosis in the Simulator or AI Analysis panel first,
-                            then click &quot;Generate Report&quot; to create a professional PDF document.
-                          </p>
-                        </div>
-                      </div>
-                    </HolographicGlassPanel>
-                  </motion.div>
-                )}
-
-                {/* AI VISUAL DIAGNOSTIC - Phase 5 */}
-                {activeScreen === 'camera' && (
-                  <motion.div
-                    key="camera"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="camera" />
-                    <AIVisualDiagnostic
-                      onAnalysisComplete={(result) => {
-                        console.log('AI Visual Analysis:', result);
-                      }}
-                      onClose={() => setActiveScreen('command')}
+                    {/* Sub-Tab Navigation */}
+                    <SubTabNav
+                      tabs={[
+                        { id: 'interactive' as const, label: 'Interactive Systems', icon: '🏭' },
+                        { id: 'engine' as const, label: 'Engine', icon: '⚙️' },
+                        { id: 'electrical' as const, label: 'Electrical', icon: '⚡' },
+                        { id: 'sensors' as const, label: 'Sensors', icon: '🌡️' },
+                      ]}
+                      activeTab={systemsSubTab}
+                      onTabChange={setSystemsSubTab}
+                      accentColor="green"
                     />
-                  </motion.div>
-                )}
 
-                {/* PARTS - Phase 6 */}
-                {activeScreen === 'parts' && (
-                  <motion.div
-                    key="parts"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="parts" />
-                    <HolographicGlassPanel title="Parts & Suppliers" subtitle="Order Parts & Contact Suppliers" icon="🛒" accentColor="amber" variant="glow">
-                      <PartsOrderPanel
-                        onClose={() => setActiveScreen('command')}
-                        brand={selectedBrand || undefined}
+                    {/* Sub-Tab Content */}
+                    {systemsSubTab === 'interactive' && <InteractiveDiagnosticSystem />}
+                    {systemsSubTab === 'engine' && (
+                      <EnginePanel
+                        parameters={parameters as any}
+                        onParameterChange={(key, value) => setParameters(prev => ({ ...prev, [key]: value }))}
                       />
-                    </HolographicGlassPanel>
-                  </motion.div>
-                )}
-
-                {/* LOCATION - Phase 7 */}
-                {activeScreen === 'location' && (
-                  <motion.div
-                    key="location"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="location" />
-                    <HolographicGlassPanel title="Service Location" subtitle="GPS & Site Information" icon="📍" accentColor="red" variant="glow">
-                      <LocationCapture
-                        onLocationCaptured={(location) => {
-                          console.log('Location captured:', location);
-                        }}
-                        showSavedLocations={true}
+                    )}
+                    {systemsSubTab === 'electrical' && (
+                      <ElectricalPanel
+                        parameters={parameters as any}
+                        onParameterChange={(key, value) => setParameters(prev => ({ ...prev, [key]: value }))}
                       />
-                    </HolographicGlassPanel>
+                    )}
+                    {systemsSubTab === 'sensors' && <SensorDiagnosticsPanel />}
                   </motion.div>
                 )}
 
-                {/* NOTIFICATIONS - Phase 8 */}
-                {activeScreen === 'notifications' && (
+                {/* ══════════════════════════════════════════════════════════════════════════
+                    CONSOLIDATED SUPER-TAB: CONTROLLERS
+                    Combines: Simulator + ECM Suite + ECM Prog + Pro Tools
+                ══════════════════════════════════════════════════════════════════════════ */}
+                {activeScreen === 'controllers' && (
                   <motion.div
-                    key="notifications"
+                    key="controllers"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
+                    className="space-y-4"
                   >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="notifications" />
-                    <HolographicGlassPanel title="Push Notifications" subtitle="Alert Settings & Preferences" icon="🔔" accentColor="purple" variant="glow">
-                      <NotificationSettings />
-                    </HolographicGlassPanel>
-                  </motion.div>
-                )}
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="controllers" />
 
-                {/* SETTINGS */}
-                {activeScreen === 'settings' && (
-                  <motion.div
-                    key="settings"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="settings" />
-                    <HolographicGlassPanel title={t.tabSettings} subtitle={t.tabSettings} icon="⚙️" accentColor="cyan" variant="glow">
+                    {/* Controllers Header */}
+                    <div className="text-center mb-4">
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
+                        Controller Center
+                      </h2>
+                      <p className="text-slate-400 text-sm">10 Controller Simulators, ECM Suite, Programming & Professional Tools</p>
+                    </div>
+
+                    {/* Sub-Tab Navigation */}
+                    <SubTabNav
+                      tabs={[
+                        { id: 'simulator' as const, label: 'Controller Simulator', icon: '🖥️' },
+                        { id: 'ecmsuite' as const, label: 'ECM Suite (10 Brands)', icon: '🧠' },
+                        { id: 'ecmprog' as const, label: 'ECM Programming', icon: '💾' },
+                        { id: 'protools' as const, label: 'Pro Diagnostic Tools', icon: '🔧' },
+                      ]}
+                      activeTab={controllersSubTab}
+                      onTabChange={setControllersSubTab}
+                      accentColor="cyan"
+                    />
+
+                    {/* Sub-Tab Content */}
+                    {controllersSubTab === 'simulator' && (
                       <div className="space-y-6">
-                        <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
-                          <div className="text-sm text-slate-400 mb-3">🌐 Language / Lugha / Langue / لغة / भाषा / 语言</div>
-                          <select
-                            value={language}
-                            onChange={(e) => handleLanguageChange(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-lg"
-                          >
-                            {SUPPORTED_ORACLE_LANGUAGES.map(lang => (
-                              <option key={lang.code} value={lang.code}>
-                                {lang.flag} {lang.name}
-                              </option>
+                        <HolographicGlassPanel title="Controller Simulator" subtitle="Interactive Display Emulation" icon="🖥️" accentColor="cyan" variant="glow">
+                          <div className="flex flex-wrap gap-2 mb-6">
+                            {(Object.keys(CONTROLLER_TYPES) as ControllerType[]).map(type => (
+                              <motion.button
+                                key={type}
+                                onClick={() => setSimulatorController(type)}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className={`px-4 py-2 rounded-lg transition-all ${
+                                  simulatorController === type
+                                    ? 'bg-cyan-500 text-white'
+                                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                }`}
+                              >
+                                {CONTROLLER_TYPES[type].shortName || type}
+                              </motion.button>
                             ))}
-                          </select>
-                        </div>
-
-                        <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-400">{t.offlineMode}</span>
-                            <span className={offlineReady ? 'text-green-400 font-medium' : 'text-amber-400'}>
-                              {offlineReady ? `${totalCodes.toLocaleString()} ${t.faultCodes}` : t.syncPending}
-                            </span>
                           </div>
-                        </div>
-
-                        <div className="p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl">
-                          <div className="flex items-center gap-3 text-amber-400 mb-2">
-                            <motion.span
-                              animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ duration: 1, repeat: Infinity }}
-                            >
-                              🎁
-                            </motion.span>
-                            <span className="font-bold text-lg">FREE Access Period</span>
-                          </div>
-                          <div className="text-slate-300">
-                            Full premium access until <strong className="text-white">April 1st, 2026</strong>
-                          </div>
-                          <div className="text-sm text-slate-500 mt-1">
-                            After trial: KES 20,000/year for unlimited access
-                          </div>
-                        </div>
-
-                        {/* Subscription Manager */}
-                        <div className="pt-4 border-t border-slate-700">
-                          <h3 className="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                            <span>👑</span> Subscription & Billing
-                          </h3>
-                          <SubscriptionManager userId={userId} />
-                        </div>
+                        </HolographicGlassPanel>
+                        <ControllerSimulator controllerType={simulatorController} />
                       </div>
-                    </HolographicGlassPanel>
+                    )}
+                    {controllersSubTab === 'ecmsuite' && <ECMDiagnosticSuite />}
+                    {controllersSubTab === 'ecmprog' && <ECMProgrammingPanel />}
+                    {controllersSubTab === 'protools' && <ProfessionalDiagnosticTools />}
                   </motion.div>
                 )}
+
+                {/* ══════════════════════════════════════════════════════════════════════════
+                    CONSOLIDATED SUPER-TAB: WIRING & MANUALS
+                    Combines: Wiring Diagrams + All Controller Wiring + Repair Manuals
+                ══════════════════════════════════════════════════════════════════════════ */}
+                {activeScreen === 'wiring' && (
+                  <motion.div
+                    key="wiring"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-4"
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="wiring" />
+
+                    {/* Wiring Header */}
+                    <div className="text-center mb-4">
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400">
+                        Wiring & Documentation
+                      </h2>
+                      <p className="text-slate-400 text-sm">Complete Wiring Diagrams, Schematics & Repair Manuals</p>
+                    </div>
+
+                    {/* Sub-Tab Navigation */}
+                    <SubTabNav
+                      tabs={[
+                        { id: 'diagrams' as const, label: 'Wiring Diagrams', icon: '📐' },
+                        { id: 'allwiring' as const, label: 'All Controllers (10)', icon: '🔌' },
+                        { id: 'manuals' as const, label: 'Repair Manuals', icon: '📚' },
+                      ]}
+                      activeTab={wiringSubTab}
+                      onTabChange={setWiringSubTab}
+                      accentColor="amber"
+                    />
+
+                    {/* Sub-Tab Content */}
+                    {wiringSubTab === 'diagrams' && <WiringDiagramsPanel />}
+                    {wiringSubTab === 'allwiring' && <AllControllerWiringDiagrams />}
+                    {wiringSubTab === 'manuals' && <ControllerRepairManualsPanel />}
+                  </motion.div>
+                )}
+
+                {/* ══════════════════════════════════════════════════════════════════════════
+                    CONSOLIDATED SUPER-TAB: MONITORING
+                    Combines: Real-time + CANbus + OBD + Recording + Predictive + Remote
+                ══════════════════════════════════════════════════════════════════════════ */}
+                {activeScreen === 'monitoring' && (
+                  <motion.div
+                    key="monitoring"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-4"
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="monitoring" />
+
+                    {/* Monitoring Header */}
+                    <div className="text-center mb-4">
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-400">
+                        Monitoring & Data
+                      </h2>
+                      <p className="text-slate-400 text-sm">Real-time Monitoring, CAN Bus, OBD, Recording & Predictive Maintenance</p>
+                    </div>
+
+                    {/* Sub-Tab Navigation */}
+                    <SubTabNav
+                      tabs={[
+                        { id: 'realtime' as const, label: 'Live Monitor', icon: '📊' },
+                        { id: 'canbus' as const, label: 'CAN Bus', icon: '📡' },
+                        { id: 'obd' as const, label: 'OBD Protocol', icon: '🔌' },
+                        { id: 'recording' as const, label: 'Data Recording', icon: '📈' },
+                        { id: 'predictive' as const, label: 'Predictive', icon: '🔮' },
+                        { id: 'remote' as const, label: 'Remote', icon: '🌐' },
+                      ]}
+                      activeTab={monitoringSubTab}
+                      onTabChange={setMonitoringSubTab}
+                      accentColor="purple"
+                    />
+
+                    {/* Sub-Tab Content */}
+                    {monitoringSubTab === 'realtime' && <RealTimeMonitoringPanel />}
+                    {monitoringSubTab === 'canbus' && <CANbusMonitorPanel />}
+                    {monitoringSubTab === 'obd' && <OBDProtocolPanel />}
+                    {monitoringSubTab === 'recording' && <DataRecordingPanel />}
+                    {monitoringSubTab === 'predictive' && <PredictiveMaintenancePanel />}
+                    {monitoringSubTab === 'remote' && <RemoteConnectivityPanel />}
+                  </motion.div>
+                )}
+
+                {/* ══════════════════════════════════════════════════════════════════════════
+                    CONSOLIDATED SUPER-TAB: TOOLS & REPORTS
+                    Combines: Reports + History + Parts + Tech Input + Assistant + Settings + Alerts
+                ══════════════════════════════════════════════════════════════════════════ */}
+                {activeScreen === 'tools' && (
+                  <motion.div
+                    key="tools"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-4"
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="tools" />
+
+                    {/* Tools Header */}
+                    <div className="text-center mb-4">
+                      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-400 to-red-400">
+                        Tools & Reports
+                      </h2>
+                      <p className="text-slate-400 text-sm">Reports, History, Parts Lookup, Tech Input & Settings</p>
+                    </div>
+
+                    {/* Sub-Tab Navigation */}
+                    <SubTabNav
+                      tabs={[
+                        { id: 'reports' as const, label: 'Reports', icon: '📄' },
+                        { id: 'history' as const, label: 'History', icon: '📋' },
+                        { id: 'parts' as const, label: 'Parts Lookup', icon: '🛒' },
+                        { id: 'techinput' as const, label: 'Tech Input', icon: '📊' },
+                        { id: 'assistant' as const, label: 'Assistant', icon: '🛠️' },
+                        { id: 'settings' as const, label: 'Settings', icon: '⚙️' },
+                        { id: 'alerts' as const, label: 'Alerts', icon: '🔔' },
+                      ]}
+                      activeTab={toolsSubTab}
+                      onTabChange={setToolsSubTab}
+                      accentColor="red"
+                    />
+
+                    {/* Sub-Tab Content */}
+                    {toolsSubTab === 'reports' && (
+                      <HolographicGlassPanel title="Report Builder" subtitle="Generate Professional Diagnostic Reports" icon="📄" accentColor="cyan" variant="glow">
+                        <p className="text-slate-400 text-center py-8">Select a diagnosis from history to generate a detailed report.</p>
+                      </HolographicGlassPanel>
+                    )}
+                    {toolsSubTab === 'history' && (
+                      <HolographicGlassPanel title="Diagnosis History" subtitle="Your Recent Diagnostic Sessions" icon="📋" accentColor="purple" variant="glow">
+                        <div className="space-y-4">
+                          {diagnosisHistory.length > 0 ? (
+                            diagnosisHistory.slice(0, 10).map((entry) => (
+                              <div key={entry.id} className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-mono text-cyan-400">{entry.faultCode}</span>
+                                  <span className="text-xs text-slate-500">{new Date(entry.timestamp).toLocaleString()}</span>
+                                </div>
+                                <p className="text-sm text-slate-300">Diagnosis Session</p>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-slate-400 text-center py-8">No diagnosis history yet. Start diagnosing to build your history!</p>
+                          )}
+                        </div>
+                      </HolographicGlassPanel>
+                    )}
+                    {toolsSubTab === 'parts' && <PartsOrderPanel />}
+                    {toolsSubTab === 'techinput' && <TechnicianInputDiagnostics />}
+                    {toolsSubTab === 'assistant' && <TechnicianAssistantPanel />}
+                    {toolsSubTab === 'settings' && (
+                      <HolographicGlassPanel title="Settings" subtitle="Configure Your Preferences" icon="⚙️" accentColor="purple" variant="glow">
+                        <div className="space-y-6">
+                          {/* Language Selection */}
+                          <div>
+                            <label className="block text-sm text-slate-400 mb-2">Language</label>
+                            <select
+                              value={language}
+                              onChange={(e) => setLanguage(e.target.value)}
+                              className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                            >
+                              {SUPPORTED_ORACLE_LANGUAGES.map((lang) => (
+                                <option key={lang.code} value={lang.code}>{lang.flag} {lang.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          {/* Offline Mode */}
+                          <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
+                            <div>
+                              <p className="text-white font-medium">Offline Mode</p>
+                              <p className="text-sm text-slate-400">Enable offline access to fault codes</p>
+                            </div>
+                            <div className={`px-3 py-1 rounded-full text-sm ${offlineReady ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
+                              {offlineReady ? 'Ready' : 'Not Available'}
+                            </div>
+                          </div>
+                        </div>
+                      </HolographicGlassPanel>
+                    )}
+                    {toolsSubTab === 'alerts' && <NotificationSettings />}
+                  </motion.div>
+                )}
+
+                {/* OLD INDIVIDUAL SECTIONS REMOVED - NOW CONSOLIDATED IN SUPER-TABS */}
               </AnimatePresence>
+              </ErrorBoundary>
             </div>
           </main>
 
