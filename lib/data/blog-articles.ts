@@ -2962,7 +2962,7 @@ Authorized dealer. Competitive pricing. Full support.
         answer: 'Generator servicing costs in Kenya reflect: imported genuine parts (shipping and taxes), skilled labor rates, transportation to site for large generators, and specialized diagnostic equipment. However, preventive maintenance saves money by avoiding costly breakdowns.'
       }
     ],
-    content: \`
+    content: `
 # Generator Servicing Cost in Kenya: Complete 2025 Price Guide
 
 Understanding generator servicing costs helps you budget properly and avoid overcharging. This guide provides transparent pricing based on current market rates across Kenya.
@@ -3117,7 +3117,7 @@ While cheaper alternatives exist, genuine parts:
 6. Location
 
 **Request your free quote today - we match or beat competitors on genuine parts!**
-    \`
+    `
   },
 ];
 
