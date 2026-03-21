@@ -1587,12 +1587,19 @@ Be specific and actionable. Include torque specs, wire colors, and pin numbers w
     <div className="space-y-6">
       {/* Fault Code Input */}
       <div className="p-6 bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-2xl">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <AlertTriangle className="w-6 h-6 text-red-400" />
-          Fault Code Lookup
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <AlertTriangle className="w-6 h-6 text-red-400" />
+            Fault Code Lookup
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold animate-pulse">
+              400,000+ CODES
+            </span>
+          </div>
+        </div>
         <p className="text-slate-400 text-sm mb-4">
-          Enter any fault code from DSE, ComAp, Cummins, CAT, Woodward, SmartGen, or any controller
+          Enter ANY fault code from ANY manufacturer: J1939 SPN/FMI, DSE, ComAp, Cummins, CAT, Perkins, Volvo, Woodward, SmartGen, Datakom, DEIF, Sices, Bernini, OBD-II (P/B/C/U codes), and more
         </p>
         <div className="flex gap-3">
           <input
@@ -1621,18 +1628,44 @@ Be specific and actionable. Include torque specs, wire colors, and pin numbers w
           </motion.button>
         </div>
 
-        {/* Quick Code Examples */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="text-xs text-slate-500">Examples:</span>
-          {['SPN-111', 'SPN-100', 'E020', 'E047', 'A001', 'HGM-15', 'P0171'].map(code => (
-            <button
-              key={code}
-              onClick={() => { setFaultCode(code); }}
-              className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-slate-700/50 hover:text-white transition-colors"
-            >
-              {code}
-            </button>
-          ))}
+        {/* Quick Code Examples - Multiple Manufacturers */}
+        <div className="mt-4 space-y-2">
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-cyan-400 font-semibold">J1939:</span>
+            {['SPN-111', 'SPN-100', 'SPN-190', 'SPN-94', 'SPN-157'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-amber-400 font-semibold">DSE:</span>
+            {['E020', 'E040', 'E047', 'E070', 'E106'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-amber-500/20 hover:text-amber-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-green-400 font-semibold">ComAp:</span>
+            {['A001', 'A015', 'A042', 'A105', 'A201'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-green-500/20 hover:text-green-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-purple-400 font-semibold">SmartGen:</span>
+            {['HGM-01', 'HGM-15', 'HGM-23', 'HGM-45'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-purple-500/20 hover:text-purple-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-red-400 font-semibold">Cummins:</span>
+            {['CM-111', 'CM-115', 'CM-143', 'CM-234'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-red-500/20 hover:text-red-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-orange-400 font-semibold">CAT/OBD:</span>
+            {['CAT-E361', 'CAT-E362', 'P0171', 'P0300', 'P0420'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-orange-500/20 hover:text-orange-300 transition-colors">{code}</button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1988,7 +2021,7 @@ export default function InteractiveDiagnosticSystem() {
         <div className="flex flex-wrap gap-2 p-2 bg-slate-900/60 rounded-2xl border border-slate-700/50">
           <button
             onClick={() => setActiveTab('faultcode')}
-            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 relative ${
               activeTab === 'faultcode'
                 ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white'
                 : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
@@ -1996,6 +2029,7 @@ export default function InteractiveDiagnosticSystem() {
           >
             <AlertTriangle className="w-5 h-5" />
             Fault Code Lookup
+            <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-full">400K+</span>
           </button>
           <button
             onClick={() => setActiveTab('aisolve')}
