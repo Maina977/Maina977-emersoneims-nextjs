@@ -1086,7 +1086,7 @@ export default function GeneratorOracleModule() {
   const [aiSubTab, setAiSubTab] = useState<'expert' | 'visual' | 'analyze'>('expert');
   const [faultsSubTab, setFaultsSubTab] = useState<'lookup' | 'analysis' | 'troubleshoot'>('lookup');
   const [systemsSubTab, setSystemsSubTab] = useState<'engine' | 'electrical' | 'sensors' | 'interactive'>('interactive');
-  const [controllersSubTab, setControllersSubTab] = useState<'simulator' | 'ecmsuite' | 'ecmprog' | 'protools'>('simulator');
+  const [controllersSubTab, setControllersSubTab] = useState<'simulator' | 'ecmsuite' | 'ecmprog' | 'ecmguide' | 'protools'>('simulator');
   const [wiringSubTab, setWiringSubTab] = useState<'diagrams' | 'allwiring' | 'manuals'>('diagrams');
   const [monitoringSubTab, setMonitoringSubTab] = useState<'realtime' | 'canbus' | 'obd' | 'recording' | 'predictive' | 'remote'>('realtime');
   const [toolsSubTab, setToolsSubTab] = useState<'reports' | 'history' | 'parts' | 'techinput' | 'assistant' | 'settings' | 'alerts'>('reports');
@@ -2043,6 +2043,7 @@ export default function GeneratorOracleModule() {
                         { id: 'simulator' as const, label: 'Controller Simulator', icon: '🖥️' },
                         { id: 'ecmsuite' as const, label: 'ECM Suite (10 Brands)', icon: '🧠' },
                         { id: 'ecmprog' as const, label: 'ECM Programming', icon: '💾' },
+                        { id: 'ecmguide' as const, label: 'ECM Reprogram Guide', icon: '📋' },
                         { id: 'protools' as const, label: 'Pro Diagnostic Tools', icon: '🔧' },
                       ]}
                       activeTab={controllersSubTab}
@@ -2077,6 +2078,7 @@ export default function GeneratorOracleModule() {
                     )}
                     {controllersSubTab === 'ecmsuite' && <ECMDiagnosticSuite />}
                     {controllersSubTab === 'ecmprog' && <ECMProgrammingPanel />}
+                    {controllersSubTab === 'ecmguide' && <ECMReprogrammingGuidePanel />}
                     {controllersSubTab === 'protools' && <ProfessionalDiagnosticTools />}
                   </motion.div>
                 )}
