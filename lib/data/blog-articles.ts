@@ -2926,6 +2926,199 @@ For procurement assistance and competitive quotes:
 Authorized dealer. Competitive pricing. Full support.
     `
   },
+  // Article: Generator Servicing Cost in Kenya - SEO Critical
+  {
+    id: 'generator-servicing-cost-kenya',
+    slug: 'generator-servicing-cost-kenya',
+    title: 'Generator Servicing Cost in Kenya 2025: Complete Price Guide',
+    excerpt: 'How much does generator servicing cost in Kenya? Complete breakdown of maintenance costs, repair prices, and parts costs across Nairobi, Mombasa, and all 47 counties.',
+    description: 'Complete guide to generator servicing costs in Kenya 2025. Routine maintenance KES 15,000-45,000. Major repairs KES 50,000-500,000. Parts prices, labor rates, and money-saving tips from certified technicians.',
+    category: 'Cost Savings',
+    tags: ['generator servicing cost', 'generator maintenance price Kenya', 'diesel generator repair cost', 'generator parts price'],
+    date: '2025-03-01',
+    updatedDate: '2025-03-20',
+    readTime: '15 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: true,
+    image: '/images/motor-diagnostics-testing.png',
+    imageAlt: 'Generator servicing and maintenance in Kenya',
+    relatedServices: ['generator-maintenance', 'generator-repairs', 'spare-parts'],
+    relatedCounties: ['nairobi', 'mombasa', 'kisumu', 'nakuru', 'eldoret'],
+    faqs: [
+      {
+        question: 'How much does basic generator servicing cost in Kenya?',
+        answer: 'Basic generator servicing in Kenya typically costs KES 15,000-25,000 for small generators (up to 30kVA), KES 25,000-45,000 for medium generators (30-100kVA), and KES 45,000-80,000 for large generators (100kVA+). This includes oil change, filter replacement, and basic inspection.'
+      },
+      {
+        question: 'What is included in generator servicing?',
+        answer: 'Standard servicing includes: engine oil change, oil filter replacement, fuel filter replacement, air filter cleaning/replacement, coolant level check, battery inspection, belt tension check, electrical connections tightening, and load bank testing where applicable.'
+      },
+      {
+        question: 'How often should I service my generator in Kenya?',
+        answer: 'Service your generator every 250-500 running hours or every 6 months, whichever comes first. For standby generators with minimal use, annual servicing is sufficient. In dusty environments, service more frequently.'
+      },
+      {
+        question: 'Why is generator servicing more expensive in Kenya?',
+        answer: 'Generator servicing costs in Kenya reflect: imported genuine parts (shipping and taxes), skilled labor rates, transportation to site for large generators, and specialized diagnostic equipment. However, preventive maintenance saves money by avoiding costly breakdowns.'
+      }
+    ],
+    content: \`
+# Generator Servicing Cost in Kenya: Complete 2025 Price Guide
+
+Understanding generator servicing costs helps you budget properly and avoid overcharging. This guide provides transparent pricing based on current market rates across Kenya.
+
+## Quick Cost Summary
+
+| Service Type | Small Gen (≤30kVA) | Medium (30-100kVA) | Large (100kVA+) |
+|-------------|-------------------|-------------------|-----------------|
+| Basic Service | KES 15,000-25,000 | KES 25,000-45,000 | KES 45,000-80,000 |
+| Major Service | KES 35,000-60,000 | KES 60,000-120,000 | KES 120,000-250,000 |
+| Overhaul | KES 150,000-300,000 | KES 300,000-600,000 | KES 600,000-1.5M |
+
+## What's Included in Generator Servicing?
+
+### Basic Service (Every 250 Hours or 6 Months)
+- Engine oil change (4-20 liters depending on size)
+- Oil filter replacement
+- Fuel filter replacement
+- Air filter inspection/cleaning
+- Coolant level check
+- Battery terminal cleaning
+- Visual inspection
+- Run test
+
+**Typical Cost:** KES 15,000 - 45,000
+
+### Major Service (Every 500-1000 Hours or Annually)
+Everything in basic service PLUS:
+- Air filter replacement
+- Fuel injector cleaning
+- Valve adjustment check
+- Compression test
+- Load bank test
+- Alternator inspection
+- Control panel diagnostics
+- Coolant flush (if due)
+
+**Typical Cost:** KES 35,000 - 120,000
+
+### Overhaul (Every 15,000-20,000 Hours)
+Complete engine rebuild including:
+- Piston and ring replacement
+- Bearing replacement
+- Head gasket replacement
+- Injector overhaul
+- Turbocharger service
+- Alternator rewinding if needed
+- Complete testing
+
+**Typical Cost:** KES 150,000 - 1,500,000+
+
+## Common Parts Costs in Kenya
+
+### Filters
+| Part | Price Range (KES) |
+|------|------------------|
+| Oil Filter | 1,500 - 8,000 |
+| Fuel Filter | 2,000 - 12,000 |
+| Air Filter | 3,000 - 25,000 |
+| Coolant Filter | 2,500 - 15,000 |
+
+### Consumables
+| Item | Price Range (KES) |
+|------|------------------|
+| Engine Oil (per liter) | 800 - 1,500 |
+| Coolant (per liter) | 500 - 1,200 |
+| Battery (12V) | 15,000 - 45,000 |
+| Drive Belt | 3,000 - 15,000 |
+
+### Major Components
+| Component | Price Range (KES) |
+|-----------|------------------|
+| Starter Motor | 25,000 - 80,000 |
+| Alternator | 80,000 - 350,000 |
+| Radiator | 45,000 - 200,000 |
+| Fuel Pump | 35,000 - 150,000 |
+| Injector Set | 60,000 - 250,000 |
+| Control Panel | 80,000 - 500,000 |
+
+## Labor Rates in Kenya
+
+### By Location
+- **Nairobi CBD/Industrial Area:** KES 2,500-4,000/hour
+- **Nairobi Suburbs:** KES 2,000-3,500/hour
+- **Mombasa:** KES 2,000-3,500/hour
+- **Kisumu/Nakuru:** KES 1,800-3,000/hour
+- **Other Counties:** KES 1,500-2,500/hour + transport
+
+### Call-Out Charges
+- **Within Nairobi:** KES 3,000-5,000
+- **Outside Nairobi (per km):** KES 50-80
+- **Emergency (after hours):** +50-100% surcharge
+
+## How to Save on Generator Servicing
+
+### 1. Annual Maintenance Contracts (AMC)
+Save 15-25% with annual contracts:
+- **Small Generator AMC:** KES 60,000-100,000/year
+- **Medium Generator AMC:** KES 120,000-200,000/year
+- **Large Generator AMC:** KES 200,000-400,000/year
+
+Benefits:
+- Priority response
+- Fixed pricing
+- Genuine parts guaranteed
+- Records maintained
+
+### 2. Bundle Services
+Service multiple generators together for volume discounts (10-20% savings).
+
+### 3. Preventive Maintenance
+Regular maintenance prevents expensive repairs:
+- Neglected generator: KES 500,000+ in repairs
+- Well-maintained: KES 100,000/year in servicing
+
+### 4. Use Genuine Parts
+While cheaper alternatives exist, genuine parts:
+- Last 2-3x longer
+- Maintain warranty
+- Prevent secondary damage
+- Better resale value
+
+## Warning Signs: When to Service Immediately
+
+**Don't ignore these - they lead to expensive repairs:**
+1. Black smoke → KES 50,000-150,000 if ignored
+2. Hard starting → KES 30,000-100,000 if ignored
+3. Low power output → KES 80,000-200,000 if ignored
+4. Unusual noises → KES 100,000-500,000 if ignored
+5. Oil leaks → KES 20,000-100,000 if ignored
+
+## Get a Quote from Emerson EiMS
+
+### Why Choose Us?
+- **Transparent pricing** - No hidden costs
+- **Genuine parts** - Full warranty
+- **Certified technicians** - Factory trained
+- **All 47 counties** - Kenya-wide coverage
+- **24/7 emergency** - 2-hour response in Nairobi
+
+### Contact for Quote
+- **Phone:** +254 768 860 665
+- **WhatsApp:** +254 768 860 665
+- **Email:** info@emersoneims.com
+
+### What We Need for Accurate Quote
+1. Generator brand and model
+2. kVA rating
+3. Running hours
+4. Last service date
+5. Any current issues
+6. Location
+
+**Request your free quote today - we match or beat competitors on genuine parts!**
+    \`
+  },
 ];
 
 // Helper function to get article by slug
