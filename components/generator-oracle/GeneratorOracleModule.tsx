@@ -1033,7 +1033,7 @@ export default function GeneratorOracleModule() {
   const [language, setLanguage] = useState('en');
   const [t, setT] = useState<OracleTranslations>(getOracleTranslation('en'));
   const [isRTL, setIsRTL] = useState(false);
-  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat' | 'universaldiag' | 'odi' | 'prodiag' | 'ecmsuite'>('command');
+  const [activeScreen, setActiveScreen] = useState<'command' | 'engine' | 'electrical' | 'faults' | 'advanced' | 'wiring' | 'assistant' | 'history' | 'settings' | 'simulator' | 'faultanalysis' | 'allwiring' | 'techinput' | 'realtime' | 'obd' | 'remote' | 'predictive' | 'recording' | 'manuals' | 'sensors' | 'ecm' | 'aianalysis' | 'reports' | 'camera' | 'parts' | 'location' | 'notifications' | 'unified' | 'ecmprog' | 'canbus' | 'fleet' | 'completediag' | 'ecmguide' | 'expertchat' | 'universaldiag' | 'odi' | 'prodiag' | 'ecmsuite' | 'troubleshoot' | 'systems'>('command');
 
   // Controller type for simulator
   type ControllerType = keyof typeof CONTROLLER_TYPES;
