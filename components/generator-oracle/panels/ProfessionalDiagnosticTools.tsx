@@ -12,7 +12,7 @@
  * Brand references are for compatibility indication only.
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   searchFaultCodes,
@@ -653,31 +653,70 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
     </button>
   );
 
-  // Dropdown button component
-  const DropdownButton = ({ id, label, options, onSelect }: { id: string; label: string; options: string[]; onSelect: (opt: string) => void }) => (
-    <div className="relative">
-      <button
-        onClick={() => setShowDropdown(showDropdown === id ? null : id)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-white hover:bg-slate-700"
-      >
-        <span>{label}</span>
-        <ChevronDown className="w-4 h-4" />
-      </button>
-      {showDropdown === id && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50">
-          {options.map((opt) => (
-            <button
-              key={opt}
-              onClick={() => { onSelect(opt); setShowDropdown(null); }}
-              className="w-full px-3 py-2 text-left text-sm text-white hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg"
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  // Dropdown button component with smart positioning (opens up or down based on position)
+  const DropdownButton = ({ id, label, options, onSelect, selectedValue }: { id: string; label: string; options: string[]; onSelect: (opt: string) => void; selectedValue?: string }) => {
+    const [dropdownPosition, setDropdownPosition] = useState<'up' | 'down'>('down');
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    const handleToggle = () => {
+      if (showDropdown === id) {
+        setShowDropdown(null);
+      } else {
+        // Check position to determine if dropdown should open up or down
+        if (buttonRef.current) {
+          const rect = buttonRef.current.getBoundingClientRect();
+          const spaceBelow = window.innerHeight - rect.bottom;
+          const spaceAbove = rect.top;
+          const dropdownHeight = Math.min(options.length * 40, 300); // Approximate height
+
+          if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+            setDropdownPosition('up');
+          } else {
+            setDropdownPosition('down');
+          }
+        }
+        setShowDropdown(id);
+      }
+    };
+
+    return (
+      <div className="relative">
+        <button
+          ref={buttonRef}
+          onClick={handleToggle}
+          className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white hover:bg-slate-700 hover:border-slate-500 transition-colors"
+        >
+          <span>{selectedValue || label}</span>
+          {showDropdown === id ? (
+            dropdownPosition === 'up' ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </button>
+        {showDropdown === id && (
+          <div
+            className={`absolute left-0 w-56 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl z-[100] max-h-[300px] overflow-y-auto ${
+              dropdownPosition === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
+            }`}
+          >
+            {options.map((opt, index) => (
+              <button
+                key={opt}
+                onClick={() => { onSelect(opt); setShowDropdown(null); }}
+                className={`w-full px-4 py-2.5 text-left text-sm text-white hover:bg-cyan-500/20 hover:text-cyan-400 transition-colors ${
+                  index === 0 ? 'rounded-t-lg' : ''
+                } ${index === options.length - 1 ? 'rounded-b-lg' : ''} ${
+                  selectedValue === opt ? 'bg-cyan-500/10 text-cyan-400' : ''
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Live Monitor Tab
   const MonitorTab = () => (
@@ -1534,17 +1573,26 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 pt-20">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="w-full max-w-6xl h-[90vh] rounded-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden flex flex-col shadow-2xl"
         style={{ backgroundColor: '#0f172a', border: `2px solid ${tool.primaryColor}` }}
       >
-        {/* Title Bar */}
+        {/* Title Bar with prominent Back Button */}
         <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: tool.primaryColor }}>
           <div className="flex items-center gap-3">
+            {/* Prominent Back Button */}
+            <button
+              onClick={onClose}
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white font-medium transition-all mr-2"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="hidden sm:inline">Back to Menu</span>
+            </button>
+            <div className="w-px h-8 bg-white/30" />
             {tool.icon}
             <div>
               <h2 className="font-bold text-white">{tool.name}</h2>
@@ -1552,17 +1600,17 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded hover:bg-white/10" onClick={() => setIsConnected(!isConnected)}>
+            <button className="p-2 rounded hover:bg-white/10" onClick={() => setIsConnected(!isConnected)} title="Connection Status">
               {isConnected ? <Wifi className="w-5 h-5 text-green-400" /> : <Wifi className="w-5 h-5 text-red-400" />}
             </button>
-            <button className="p-2 rounded hover:bg-white/10" onClick={() => setIsRecording(!isRecording)}>
+            <button className="p-2 rounded hover:bg-white/10" onClick={() => setIsRecording(!isRecording)} title="Data Recording">
               {isRecording ? <Square className="w-5 h-5 text-red-400" /> : <Play className="w-5 h-5 text-white" />}
             </button>
-            <button onClick={onAIAnalyze} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm">
+            <button onClick={onAIAnalyze} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-medium shadow-lg">
               <Sparkles className="w-4 h-4" />
               AI Analyze
             </button>
-            <button onClick={onClose} className="p-2 rounded hover:bg-white/10">
+            <button onClick={onClose} className="p-2 rounded hover:bg-white/10 ml-2" title="Close">
               <X className="w-5 h-5 text-white" />
             </button>
           </div>
@@ -1648,24 +1696,51 @@ export default function ProfessionalDiagnosticTools({ generatorInfo }: Professio
     hours: 4567,
   });
 
-  // Generator selection form
-  const [showGenSelector, setShowGenSelector] = useState(false);
+  // Generator selection form - show by default if no generator configured
+  const [showGenSelector, setShowGenSelector] = useState(!generatorInfo);
+
+  // Generator brands and models database
+  const GENERATOR_BRANDS = [
+    { name: 'Cummins', models: ['C500 D5', 'C400 D5', 'C350 D5', 'C275 D5', 'C200 D5', 'C150 D5', 'C100 D5', 'QSK60', 'QSK50', 'QSX15'] },
+    { name: 'Caterpillar', models: ['C32', 'C18', 'C15', 'C13', 'C9.3', 'C7.1', 'C4.4', '3516', '3512', '3508', '3406'] },
+    { name: 'Perkins', models: ['4008TAG2A', '4006TAG2A', '2806A-E18TAG2', '2506A-E15TAG2', '2206A-E13TAG3', '1506A-E88TAG5', '1104D-E44TAG2'] },
+    { name: 'Volvo Penta', models: ['TAD1643GE', 'TAD1642GE', 'TAD1641GE', 'TAD1344GE', 'TAD734GE', 'D13', 'D11', 'D8', 'D5'] },
+    { name: 'MTU', models: ['16V4000', '12V4000', '8V4000', '16V2000', '12V2000', '8V2000', '6R1500', '6R1300', '6R1100'] },
+    { name: 'John Deere', models: ['6135HFG82', '6090HFG84', '6068HFG82', '4045HFG82', '4045TFG80', '3029TFG80', '6135HFC06'] },
+    { name: 'Kohler', models: ['KD4000', 'KD3500', 'KD2800', 'KD2000', 'KD1800', 'KD1500', 'KD1250', 'KD1000', 'KD800', 'KD600'] },
+    { name: 'Generac', models: ['SD600', 'SD500', 'SD400', 'SD350', 'SD300', 'SD250', 'SD200', 'SD175', 'SD150', 'SD100'] },
+    { name: 'FG Wilson', models: ['P2500', 'P2000', 'P1700', 'P1500', 'P1250', 'P1000', 'P800', 'P650', 'P550', 'P450', 'P300'] },
+    { name: 'Olympian', models: ['GEP550', 'GEP450', 'GEP380', 'GEP330', 'GEP275', 'GEP220', 'GEP165', 'GEP110', 'GEP88', 'GEP65'] },
+  ];
+
+  const KVA_RATINGS = [10, 15, 20, 25, 30, 40, 50, 60, 75, 88, 100, 125, 150, 175, 200, 250, 275, 300, 350, 400, 450, 500, 550, 600, 650, 750, 800, 900, 1000, 1100, 1250, 1400, 1500, 1750, 2000, 2250, 2500, 3000];
+
+  const selectedBrandModels = GENERATOR_BRANDS.find(b => b.name === genInfo.make)?.models || [];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pt-4">
+      {/* Header with prominent generator selection */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white mb-1">Professional Diagnostic Tools</h2>
           <p className="text-slate-400">10 dealer-level diagnostic interfaces with full functionality</p>
         </div>
-        <button
-          onClick={() => setShowGenSelector(!showGenSelector)}
-          className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-cyan-400 hover:bg-cyan-500/30"
-        >
-          <Settings className="w-5 h-5" />
-          Configure Generator
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowAIPanel(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-xl text-white font-medium hover:from-purple-600 hover:to-cyan-600 shadow-lg"
+          >
+            <Sparkles className="w-5 h-5" />
+            AI Analyzer
+          </button>
+          <button
+            onClick={() => setShowGenSelector(!showGenSelector)}
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-cyan-400 hover:bg-cyan-500/30"
+          >
+            <Settings className="w-5 h-5" />
+            {showGenSelector ? 'Hide Generator Setup' : 'Configure Generator'}
+          </button>
+        </div>
       </div>
 
       {/* Generator Info Card */}
@@ -1700,7 +1775,7 @@ export default function ProfessionalDiagnosticTools({ generatorInfo }: Professio
         </div>
       </div>
 
-      {/* Generator Selector Modal */}
+      {/* Generator Selector Panel - Prominent Setup */}
       <AnimatePresence>
         {showGenSelector && (
           <motion.div
@@ -1709,133 +1784,223 @@ export default function ProfessionalDiagnosticTools({ generatorInfo }: Professio
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="p-4 bg-slate-900/80 border border-cyan-500/30 rounded-xl space-y-4">
-              <h3 className="text-lg font-bold text-cyan-400">Configure Generator Details</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs text-slate-400 uppercase">Make</label>
+            <div className="p-6 bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-cyan-500/50 rounded-2xl space-y-6 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center">
+                    <Settings className="w-6 h-6 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Generator Configuration</h3>
+                    <p className="text-sm text-slate-400">Select your generator to get accurate diagnostics</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/30 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs text-amber-400">Required for accurate diagnosis</span>
+                </div>
+              </div>
+
+              {/* Main Selection Row */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 uppercase">
+                    <span className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-xs">1</span>
+                    Generator Make
+                  </label>
                   <select
                     value={genInfo.make}
-                    onChange={(e) => setGenInfo({ ...genInfo, make: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                    onChange={(e) => setGenInfo({ ...genInfo, make: e.target.value, model: '' })}
+                    className="w-full px-4 py-3 bg-slate-800/80 border-2 border-slate-600 hover:border-cyan-500/50 focus:border-cyan-500 rounded-xl text-white text-lg transition-colors cursor-pointer"
                   >
-                    {['Cummins', 'Caterpillar', 'Perkins', 'Volvo Penta', 'MTU', 'John Deere', 'Kohler', 'Generac', 'FG Wilson', 'Olympian'].map((m) => (
-                      <option key={m} value={m}>{m}</option>
+                    <option value="">-- Select Make --</option>
+                    {GENERATOR_BRANDS.map((brand) => (
+                      <option key={brand.name} value={brand.name}>{brand.name}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="text-xs text-slate-400 uppercase">Model</label>
-                  <input
-                    type="text"
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 uppercase">
+                    <span className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-xs">2</span>
+                    Model / Series
+                  </label>
+                  <select
                     value={genInfo.model}
                     onChange={(e) => setGenInfo({ ...genInfo, model: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
-                  />
+                    className="w-full px-4 py-3 bg-slate-800/80 border-2 border-slate-600 hover:border-cyan-500/50 focus:border-cyan-500 rounded-xl text-white text-lg transition-colors cursor-pointer"
+                    disabled={!genInfo.make}
+                  >
+                    <option value="">-- Select Model --</option>
+                    {selectedBrandModels.map((model) => (
+                      <option key={model} value={model}>{model}</option>
+                    ))}
+                    <option value="custom">Other (Enter Custom)</option>
+                  </select>
+                  {genInfo.model === 'custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom model..."
+                      onChange={(e) => setGenInfo({ ...genInfo, model: e.target.value })}
+                      className="w-full mt-2 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                    />
+                  )}
                 </div>
-                <div>
-                  <label className="text-xs text-slate-400 uppercase">kVA Rating</label>
-                  <input
-                    type="number"
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 uppercase">
+                    <span className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center text-xs">3</span>
+                    kVA Rating
+                  </label>
+                  <select
                     value={genInfo.kva}
                     onChange={(e) => setGenInfo({ ...genInfo, kva: parseInt(e.target.value) })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
-                  />
+                    className="w-full px-4 py-3 bg-slate-800/80 border-2 border-slate-600 hover:border-cyan-500/50 focus:border-cyan-500 rounded-xl text-white text-lg transition-colors cursor-pointer"
+                  >
+                    <option value={0}>-- Select kVA --</option>
+                    {KVA_RATINGS.map((kva) => (
+                      <option key={kva} value={kva}>{kva} kVA</option>
+                    ))}
+                  </select>
                 </div>
+              </div>
+
+              {/* Secondary Details */}
+              <div className="grid md:grid-cols-4 gap-4 pt-4 border-t border-slate-700">
                 <div>
-                  <label className="text-xs text-slate-400 uppercase">Engine Model</label>
+                  <label className="text-xs text-slate-400 uppercase mb-1 block">Engine Model</label>
                   <input
                     type="text"
                     value={genInfo.engineModel}
                     onChange={(e) => setGenInfo({ ...genInfo, engineModel: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                    placeholder="e.g., QSX15-G9"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400 uppercase">Controller</label>
+                  <label className="text-xs text-slate-400 uppercase mb-1 block">Controller Type</label>
                   <select
                     value={genInfo.controllerType}
                     onChange={(e) => setGenInfo({ ...genInfo, controllerType: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white cursor-pointer"
                   >
-                    {['DSE 7320', 'DSE 8610', 'ComAp InteliGen', 'ComAp InteliLite', 'Woodward EasyGen', 'PowerWizard 2.0', 'Datakom D-500', 'SmartGen HGM9510'].map((c) => (
+                    <option value="">-- Select --</option>
+                    {['DSE 7320', 'DSE 7310', 'DSE 8610', 'DSE 8620', 'DSE 8660', 'ComAp InteliGen NT', 'ComAp InteliLite NT', 'ComAp InteliSys NT', 'Woodward EasyGen-3000', 'Woodward EasyGen-2500', 'PowerWizard 1.1', 'PowerWizard 2.0', 'Datakom D-500', 'Datakom D-700', 'SmartGen HGM9510', 'SmartGen HGM9520', 'Deif AGC-4'].map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400 uppercase">Hours</label>
+                  <label className="text-xs text-slate-400 uppercase mb-1 block">Serial Number</label>
+                  <input
+                    type="text"
+                    value={genInfo.serialNumber}
+                    onChange={(e) => setGenInfo({ ...genInfo, serialNumber: e.target.value })}
+                    placeholder="Enter serial..."
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 uppercase mb-1 block">Running Hours</label>
                   <input
                     type="number"
                     value={genInfo.hours}
-                    onChange={(e) => setGenInfo({ ...genInfo, hours: parseInt(e.target.value) })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                    onChange={(e) => setGenInfo({ ...genInfo, hours: parseInt(e.target.value) || 0 })}
+                    placeholder="e.g., 4500"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500"
                   />
                 </div>
               </div>
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowGenSelector(false)}
-                  className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600"
-                >
-                  Apply Settings
-                </button>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-slate-500">
+                  Configured: <span className="text-white font-medium">{genInfo.make} {genInfo.model} {genInfo.kva > 0 ? `(${genInfo.kva} kVA)` : ''}</span>
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowGenSelector(false)}
+                    className="px-6 py-2.5 bg-slate-700 text-white rounded-xl hover:bg-slate-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => setShowGenSelector(false)}
+                    className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 font-medium shadow-lg transition-all"
+                  >
+                    Apply & Start Diagnosis
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Tool Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {DIAGNOSTIC_TOOLS.map((tool) => (
-          <motion.button
-            key={tool.id}
-            onClick={() => setSelectedTool(tool)}
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            className="p-4 rounded-xl border text-left transition-all group relative overflow-hidden"
-            style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '60' }}
-          >
-            {/* Glow effect on hover */}
-            <div
-              className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity"
-              style={{ backgroundColor: tool.primaryColor }}
-            />
-
-            <div className="relative">
-              {/* Icon */}
+      {/* Tool Grid - Clickable Cards */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-white">Select Diagnostic Tool</h3>
+          <p className="text-sm text-slate-400">Click any tool to launch</p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          {DIAGNOSTIC_TOOLS.map((tool) => (
+            <motion.button
+              key={tool.id}
+              onClick={() => setSelectedTool(tool)}
+              whileHover={{ scale: 1.03, y: -6 }}
+              whileTap={{ scale: 0.97 }}
+              className="p-4 rounded-xl border-2 text-left transition-all group relative overflow-hidden cursor-pointer hover:shadow-2xl"
+              style={{
+                backgroundColor: tool.screenColor,
+                borderColor: tool.primaryColor + '60',
+                boxShadow: `0 4px 20px ${tool.primaryColor}20`
+              }}
+            >
+              {/* Glow effect on hover */}
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
-                style={{ backgroundColor: tool.primaryColor + '20', color: tool.primaryColor }}
-              >
-                {tool.icon}
-              </div>
+                className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300"
+                style={{ background: `linear-gradient(135deg, ${tool.primaryColor}40, transparent)` }}
+              />
 
-              {/* Name */}
-              <h3 className="font-bold text-white text-sm mb-1">{tool.shortName}</h3>
-              <p className="text-xs mb-2" style={{ color: tool.textColor + '80' }}>{tool.name}</p>
+              {/* Click indicator pulse */}
+              <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/20 transition-all duration-300" />
 
-              {/* Compatible with */}
-              <div className="flex flex-wrap gap-1">
-                {tool.compatibleWith.slice(0, 2).map((brand) => (
-                  <span
-                    key={brand}
-                    className="px-2 py-0.5 rounded text-[10px]"
-                    style={{ backgroundColor: tool.primaryColor + '20', color: tool.primaryColor }}
-                  >
-                    {brand}
-                  </span>
-                ))}
-              </div>
+              <div className="relative">
+                {/* Icon with pulse on hover */}
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300"
+                  style={{ backgroundColor: tool.primaryColor + '30', color: tool.primaryColor }}
+                >
+                  {tool.icon}
+                </div>
 
-              {/* Launch indicator */}
-              <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ChevronRight className="w-5 h-5" style={{ color: tool.primaryColor }} />
+                {/* Name */}
+                <h3 className="font-bold text-white text-sm mb-1 group-hover:text-white transition-colors">{tool.shortName}</h3>
+                <p className="text-xs mb-2" style={{ color: tool.textColor + '80' }}>{tool.name}</p>
+
+                {/* Compatible with */}
+                <div className="flex flex-wrap gap-1">
+                  {tool.compatibleWith.slice(0, 2).map((brand) => (
+                    <span
+                      key={brand}
+                      className="px-2 py-0.5 rounded text-[10px]"
+                      style={{ backgroundColor: tool.primaryColor + '20', color: tool.primaryColor }}
+                    >
+                      {brand}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Launch indicator - always visible but more prominent on hover */}
+                <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 group-hover:bg-white/20 transition-all">
+                  <span className="text-[10px] text-white/60 group-hover:text-white/90 hidden sm:inline">Launch</span>
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" style={{ color: tool.primaryColor }} />
+                </div>
               </div>
-            </div>
-          </motion.button>
-        ))}
+            </motion.button>
+          ))}
+        </div>
       </div>
 
       {/* Selected Tool Interface */}
