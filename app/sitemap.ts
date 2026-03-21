@@ -1,17 +1,41 @@
 import { MetadataRoute } from 'next';
-import { KENYA_LOCATIONS } from '@/lib/data/kenya-locations';
-import { SEO_SERVICES } from '@/lib/data/seo-services';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🗺️ COMPREHENSIVE SITEMAP FOR #1 SEO RANKING IN KENYA
-// All 47 Counties + 290 Constituencies + 5,800+ Villages + 15 Services
-// Total: ~100,000+ strategically targeted SEO pages for FULL Kenya coverage
-//
-// IMPORTANT: Google limits 50,000 URLs per sitemap. Next.js auto-splits into
-// multiple sitemap files with sitemap index when using generateSitemaps().
+// Simplified and robust version with error handling
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
+const BASE_URL = 'https://www.emersoneims.com';
+
+// Lazy load location data to avoid build-time issues
+let cachedLocations: typeof import('@/lib/data/kenya-locations').KENYA_LOCATIONS | null = null;
+let cachedServices: typeof import('@/lib/data/seo-services').SEO_SERVICES | null = null;
+
+async function getLocations() {
+  if (!cachedLocations) {
+    try {
+      const { KENYA_LOCATIONS } = await import('@/lib/data/kenya-locations');
+      cachedLocations = KENYA_LOCATIONS;
+    } catch (e) {
+      console.error('Failed to load KENYA_LOCATIONS:', e);
+      cachedLocations = [];
+    }
+  }
+  return cachedLocations;
+}
+
+async function getServices() {
+  if (!cachedServices) {
+    try {
+      const { SEO_SERVICES } = await import('@/lib/data/seo-services');
+      cachedServices = SEO_SERVICES;
+    } catch (e) {
+      console.error('Failed to load SEO_SERVICES:', e);
+      cachedServices = [];
+    }
+  }
+  return cachedServices;
+}
 
 // All 47 Kenya Counties for Local SEO Dominance
 const counties = [
@@ -92,22 +116,27 @@ const generatorProblems = [
 // Each sitemap file can have max 50,000 URLs
 // ═══════════════════════════════════════════════════════════════════════════════
 export async function generateSitemaps() {
-  // Calculate number of sitemaps needed
-  // Core pages: ~200
-  // Kenya location pages: ~97,000 (villages × services)
-  // We'll split by county for manageable chunks
+  try {
+    const locations = await getLocations();
 
-  const sitemaps = [
-    { id: 0 }, // Core pages, generators, solar, diagnostics, tools
-    { id: 1 }, // Blog, brands, sizes, error codes, industries, spare parts
-  ];
+    const sitemaps = [
+      { id: 0 }, // Core pages, generators, solar, diagnostics, tools
+      { id: 1 }, // Blog, brands, sizes, error codes, industries, spare parts
+    ];
 
-  // Add one sitemap per county (47 counties) for location pages
-  KENYA_LOCATIONS.forEach((_, index) => {
-    sitemaps.push({ id: index + 2 });
-  });
+    // Add one sitemap per county (47 counties) for location pages
+    if (locations && locations.length > 0) {
+      locations.forEach((_, index) => {
+        sitemaps.push({ id: index + 2 });
+      });
+    }
 
-  return sitemaps;
+    return sitemaps;
+  } catch (error) {
+    console.error('Error generating sitemaps:', error);
+    // Return minimal sitemaps on error
+    return [{ id: 0 }, { id: 1 }];
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -282,72 +311,85 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
 
   // Sitemaps 2-48: One per county (47 counties)
   // Each contains: county + constituencies + villages × services
-  const countyIndex = id - 2;
-  if (countyIndex >= 0 && countyIndex < KENYA_LOCATIONS.length) {
-    const county = KENYA_LOCATIONS[countyIndex];
-    const pages: MetadataRoute.Sitemap = [];
+  try {
+    const locations = await getLocations();
+    const services = await getServices();
 
-    // County landing page
-    pages.push({
-      url: `${BASE_URL}/kenya/${county.slug}`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    });
+    const countyIndex = id - 2;
+    if (countyIndex >= 0 && locations && countyIndex < locations.length) {
+      const county = locations[countyIndex];
+      const pages: MetadataRoute.Sitemap = [];
 
-    // County + Service pages
-    for (const service of SEO_SERVICES) {
+      // County landing page
       pages.push({
-        url: `${BASE_URL}/kenya/${county.slug}/${service.slug}`,
+        url: `${BASE_URL}/kenya/${county.slug}`,
         lastModified: currentDate,
         changeFrequency: 'weekly',
-        priority: 0.8,
-      });
-    }
-
-    // Constituency pages + services + villages
-    for (const constituency of county.constituencies) {
-      // Constituency landing
-      pages.push({
-        url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}`,
-        lastModified: currentDate,
-        changeFrequency: 'monthly',
-        priority: 0.7,
+        priority: 0.85,
       });
 
-      // Constituency + Service pages
-      for (const service of SEO_SERVICES) {
-        pages.push({
-          url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${service.slug}`,
-          lastModified: currentDate,
-          changeFrequency: 'monthly',
-          priority: 0.6,
-        });
-      }
-
-      // Village pages + services (FULL COVERAGE)
-      for (const village of constituency.villages || []) {
-        // Village landing
-        pages.push({
-          url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${village.slug}`,
-          lastModified: currentDate,
-          changeFrequency: 'monthly',
-          priority: 0.55,
-        });
-
-        // Village + Service pages
-        for (const service of SEO_SERVICES) {
+      // County + Service pages
+      if (services && services.length > 0) {
+        for (const service of services) {
           pages.push({
-            url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${village.slug}/${service.slug}`,
+            url: `${BASE_URL}/kenya/${county.slug}/${service.slug}`,
             lastModified: currentDate,
-            changeFrequency: 'monthly',
-            priority: 0.5,
+            changeFrequency: 'weekly',
+            priority: 0.8,
           });
         }
       }
-    }
 
-    return pages;
+      // Constituency pages + services + villages
+      for (const constituency of county.constituencies || []) {
+        // Constituency landing
+        pages.push({
+          url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}`,
+          lastModified: currentDate,
+          changeFrequency: 'monthly',
+          priority: 0.7,
+        });
+
+        // Constituency + Service pages
+        if (services && services.length > 0) {
+          for (const service of services) {
+            pages.push({
+              url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${service.slug}`,
+              lastModified: currentDate,
+              changeFrequency: 'monthly',
+              priority: 0.6,
+            });
+          }
+        }
+
+        // Village pages + services (FULL COVERAGE)
+        for (const village of constituency.villages || []) {
+          // Village landing
+          pages.push({
+            url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${village.slug}`,
+            lastModified: currentDate,
+            changeFrequency: 'monthly',
+            priority: 0.55,
+          });
+
+          // Village + Service pages
+          if (services && services.length > 0) {
+            for (const service of services) {
+              pages.push({
+                url: `${BASE_URL}/kenya/${county.slug}/${constituency.slug}/${village.slug}/${service.slug}`,
+                lastModified: currentDate,
+                changeFrequency: 'monthly',
+                priority: 0.5,
+              });
+            }
+          }
+        }
+      }
+
+      return pages;
+    }
+  } catch (error) {
+    console.error(`Error generating sitemap ${id}:`, error);
   }
 
   // Fallback - empty sitemap
