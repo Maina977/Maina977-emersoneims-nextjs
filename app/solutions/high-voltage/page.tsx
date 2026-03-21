@@ -1058,8 +1058,8 @@ const HighVoltagePage = () => {
           className="absolute inset-0"
         >
           <Image
-            src="/images/high-voltage-hero.jpg"
-            alt="High Voltage Infrastructure"
+            src="/images/high-voltage-transformer.png"
+            alt="High Voltage Transformer Systems Kenya"
             fill
             className="object-cover"
             priority

@@ -612,8 +612,8 @@ export default function BoreholePumpsPage() {
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
         <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
           <Image
-            src="/images/16.png"
-            alt="Borehole Pump Systems"
+            src="/images/borehole-pump-installation.png"
+            alt="Borehole Pump Installation Kenya"
             fill
             priority
             className="object-cover"

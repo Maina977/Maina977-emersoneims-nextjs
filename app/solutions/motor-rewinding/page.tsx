@@ -477,7 +477,7 @@ export default function MotorsRewindingHub() {
       {/* Cinematic Hero Section */}
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
         <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
-          <Image src="/images/15.png" alt="Motor Rewinding Workshop" fill priority className="object-cover" sizes="100vw" />
+          <Image src="/images/motor-rewinding-workshop.png" alt="Motor Rewinding Workshop Kenya" fill priority className="object-cover" sizes="100vw" />
           <div className="absolute inset-0 mix-blend-color" style={{ background: 'linear-gradient(135deg, rgba(0, 80, 100, 0.3) 0%, rgba(255, 140, 50, 0.2) 100%)' }} />
           <div className="absolute inset-0 mix-blend-overlay" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.6) 100%)' }} />
           <div className="absolute inset-0 mix-blend-multiply" style={{ background: 'linear-gradient(to bottom, rgba(10, 25, 47, 0.5) 0%, rgba(20, 15, 10, 0.4) 100%)' }} />

@@ -860,8 +860,8 @@ const FabricationPage = () => {
           className="absolute inset-0"
         >
           <Image
-            src="/images/fabrication-hero.jpg"
-            alt="Metal Fabrication Workshop"
+            src="/images/steel-fabrication-workshop.png"
+            alt="Steel Fabrication Workshop Kenya"
             fill
             className="object-cover"
             priority

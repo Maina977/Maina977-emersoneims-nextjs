@@ -424,7 +424,7 @@ export default function ACPage() {
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
         <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
-          <Image src="/images/8.png" alt="Air Conditioning Systems" fill priority className="object-cover" sizes="100vw" />
+          <Image src="/images/hvac-air-conditioning-unit.png" alt="Air Conditioning HVAC Systems Kenya" fill priority className="object-cover" sizes="100vw" />
           <div className="absolute inset-0 mix-blend-color" style={{ background: 'linear-gradient(135deg, rgba(0, 180, 255, 0.3) 0%, rgba(0, 100, 200, 0.25) 100%)' }} />
           <div className="absolute inset-0 mix-blend-overlay" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.7) 100%)' }} />
           <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.8) 100%)' }} />

@@ -422,8 +422,8 @@ export default function ControlsSolutionHub() {
           style={{ scale: heroScale }}
         >
           <Image
-            src="/images/68.png"
-            alt="Generator Control Systems"
+            src="/images/custom-control-panel.png"
+            alt="Generator Control Panel Systems Kenya"
             fill
             priority
             className="object-cover"

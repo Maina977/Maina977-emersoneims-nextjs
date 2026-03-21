@@ -433,7 +433,7 @@ export default function IncineratorsPage() {
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
         <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
-          <Image src="/images/5.png" alt="Incinerator Systems" fill priority className="object-cover" sizes="100vw" />
+          <Image src="/images/medical-waste-incinerator.png" alt="Medical Waste Incinerator Systems Kenya" fill priority className="object-cover" sizes="100vw" />
           <div className="absolute inset-0 mix-blend-color" style={{ background: 'linear-gradient(135deg, rgba(255, 100, 0, 0.3) 0%, rgba(180, 50, 0, 0.25) 100%)' }} />
           <div className="absolute inset-0 mix-blend-overlay" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.7) 100%)' }} />
           <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.8) 100%)' }} />
