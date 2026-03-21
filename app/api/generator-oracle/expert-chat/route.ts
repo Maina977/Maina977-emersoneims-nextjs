@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import {
+  buildExpertSystemPrompt,
+  findMatchingTemplate,
+  findKnowledgeBaseEntry,
+  formatTemplateForAI,
+  formatKnowledgeBaseForAI,
+  getFollowUpQuestions,
+  getEngagementPrompt,
+  type ConversationContext,
+} from '@/lib/generator-oracle/aiExpertSystem';
 
 /**
  * EXPERT AI CHAT API ENDPOINT
@@ -13,6 +23,14 @@ import Anthropic from '@anthropic-ai/sdk';
  * - Explain fault codes from ANY controller
  * - Estimate repair costs
  * - Guide ECM/ECU procedures
+ *
+ * Enhanced with:
+ * - Clarifying questions before answers
+ * - Understanding checks
+ * - Follow-up prompts
+ * - Proactive suggestions
+ * - Part numbers and tool requirements
+ * - Safety warnings
  */
 
 // Comprehensive generator knowledge for the AI
@@ -223,6 +241,259 @@ const GENERATOR_KNOWLEDGE = `
 - Injector Service: 25,000 - 65,000
 - Major Overhaul: 150,000 - 500,000
 - ECM Programming: 15,000 - 45,000
+
+## DETAILED ECM REPROGRAMMING GUIDES
+
+### Cummins ECM Reprogramming (Complete Guide):
+**Software Required:** Cummins INSITE Pro v8.7 or later
+**Hardware Required:**
+- Cummins Inline 7 adapter (P/N 4918416) or Inline 6 (P/N 2892092)
+- OBD-II to 9-pin adapter (P/N 3164652) for engines without 9-pin connector
+- USB cable (included with adapter)
+- Laptop with Windows 10 Pro (8GB RAM minimum)
+
+**Step-by-Step Procedure:**
+1. Connect Inline adapter to engine diagnostic port (usually near ECM)
+2. Connect USB to laptop, launch INSITE
+3. Power on generator (key ON, engine OFF)
+4. Click "Connect" in INSITE - should detect engine automatically
+5. Go to "Calibration" > "Download Calibration"
+6. Select correct calibration file for your engine (match CPL/ESN)
+7. Click "Program" - DO NOT interrupt power during programming (5-10 minutes)
+8. After completion, cycle key OFF then ON
+9. Clear all fault codes
+10. Perform "Trip Reset" to initialize adaptive values
+11. Start engine, let idle for 15 minutes to relearn
+
+**⚠️ WARNINGS:**
+- Ensure battery is fully charged (12.6V+) before programming
+- Connect battery charger during programming
+- Never disconnect during programming - will brick ECM
+- Backup existing calibration first
+
+### Caterpillar ECM Programming:
+**Software Required:** CAT Electronic Technician (ET) 2023A or newer
+**Hardware Required:**
+- CAT Comm Adapter III (P/N 538-5051)
+- 9-pin Deutsch connector cable
+- Laptop with Windows 10
+
+**Procedure:**
+1. Connect Comm Adapter to engine service connector
+2. Launch CAT ET, select correct engine serial number
+3. Go to "Service" > "Calibrations" > "Flash File"
+4. Download appropriate flash file from SIS Web
+5. Click "Flash Programming" - follow prompts
+6. Programming takes 15-20 minutes
+7. Perform "Trip Reset" after completion
+8. Run injector trim calibration if replacing ECM
+
+### Volvo Penta ECM Programming:
+**Software:** VODIA (Volvo Diagnostic Application)
+**Hardware:** Volvo 88890300 interface
+
+**Procedure:**
+1. Connect interface to engine diagnostic port
+2. Open VODIA, connect to engine
+3. Navigate to "Programming" > "Software Update"
+4. Select correct software package
+5. Follow on-screen prompts
+6. Cycle power after completion
+
+## ECM NOT COMMUNICATING - COMPLETE DIAGNOSIS
+
+### When new ECM won't communicate after replacement:
+
+**Step 1 - Verify Power Supply:**
+- Pin 1 (Battery +): Should have 24V/12V constant
+- Pin 2 (Ground): Should have 0 ohms to chassis ground
+- Pin 3 (Key Switch): Should have 24V/12V when key ON
+- Use multimeter to verify all three
+
+**Step 2 - Check CAN Bus Wiring:**
+- CAN High (Pin varies by ECM): Should be ~2.5V with key ON
+- CAN Low: Should be ~2.5V with key ON
+- Difference between CAN H and CAN L: ~2V during communication
+- Termination resistance: 60 ohms between CAN H and CAN L (with both ends connected)
+
+**Step 3 - Termination Resistors:**
+- Most CAN networks need 120-ohm resistor at each end
+- Total network resistance should be 60 ohms
+- Missing termination = no communication
+
+**Step 4 - ECM Initialization:**
+Many new ECMs require initialization before first use:
+- Cummins: Requires INSITE to "Unlock" and configure
+- Caterpillar: Needs flash programming with engine serial data
+- Some ECMs need VIN/ESN programming before operation
+
+**Step 5 - Common Issues:**
+1. Wrong ECM part number for application
+2. Software mismatch between ECM and controller
+3. Damaged CAN bus wiring during installation
+4. Incorrect pin-out (especially on rebuilt ECMs)
+5. ECM not configured for generator application (vehicle vs genset mode)
+
+## GENERATOR TRIPS ON LOAD - COMPLETE DIAGNOSIS
+
+### Diagnostic Flowchart:
+
+**At what load percentage does it trip?**
+
+**25-30% Load Trip:**
+- Check fuel supply rate - may be restricted
+- Verify fuel pump output pressure (should be 3-5 bar for most engines)
+- Check for air leaks in fuel suction line
+- Verify fuel return line not restricted
+
+**50% Load Trip:**
+- Governor response issue - check actuator
+- Verify turbocharger wastegate operation
+- Check intercooler for blockage
+- Verify fuel rack/throttle full movement
+
+**75%+ Load Trip:**
+- Check exhaust backpressure (should be <3" H2O)
+- Verify injector condition - possible worn injectors
+- Check valve clearances
+- Verify engine timing
+
+**Electrical Causes (any load):**
+- AVR instability - check voltage sensing wires
+- Excitation circuit fault - test rotating diodes
+- Load sensing CT ratio incorrect
+- Voltage droop/compensation misadjusted
+
+### Testing Procedure:
+1. Connect load bank in 10% increments
+2. Monitor voltage, frequency, coolant temp, exhaust temp at each step
+3. Log all parameters - look for anomaly just before trip
+4. Check fault code immediately after trip (before clearing)
+5. Compare exhaust temperatures between cylinders (variation >50°C indicates problem)
+
+## INJECTOR DIAGNOSTICS - DETAILED
+
+### "Only Some Injectors Firing":
+
+**How to identify which injectors are not firing:**
+1. **Temperature method:** Use IR thermometer on exhaust manifold at each port - cold port = dead cylinder
+2. **Cylinder cut-out:** Use diagnostic tool to disable each injector - no RPM change = already not firing
+3. **Visual inspection:** Remove valve cover, observe pushrod movement (mechanical injectors)
+
+**Back-Leak Test Procedure:**
+1. Disconnect fuel return line from injectors
+2. Attach clear tubes to each injector return
+3. Crank engine for 10 seconds
+4. Compare fuel flow from each injector
+5. Excessive flow (>10ml/min) indicates worn injector
+
+**Injector Opening Pressure Test:**
+1. Remove injector from engine
+2. Connect to injector test bench
+3. Pump slowly until injector opens
+4. Record opening pressure:
+   - Most engines: 200-250 bar (2900-3600 psi)
+   - Common rail: 350-400 bar (5000-5800 psi)
+5. Pressure should hold for 10 seconds without dripping
+
+**Common Injector Part Numbers:**
+
+| Engine | OEM Part# | Aftermarket | Price (KES) |
+|--------|-----------|-------------|-------------|
+| Cummins 6BT | 3919350 | Bosch 0432131743 | 18,000-25,000 |
+| Cummins 6CT | 3802316 | Bosch 0432193635 | 22,000-30,000 |
+| CAT 3406 | 7W7026 | Aftermarket 127-8209 | 35,000-45,000 |
+| Perkins 1104 | 2645A749 | Delphi EJBR02501Z | 15,000-20,000 |
+
+**Injector Replacement Procedure:**
+1. Release fuel system pressure
+2. Disconnect electrical connector (electronic injectors)
+3. Remove fuel lines - cap immediately
+4. Remove hold-down clamp/bolts (torque: 25-30 Nm typically)
+5. Remove injector with slide hammer if stuck
+6. Clean injector bore thoroughly
+7. Install new copper washer (always replace)
+8. Install injector - hand-tight first
+9. Torque to specification (varies by engine)
+10. Reconnect fuel lines - check for leaks
+11. Bleed air from system
+12. Start engine, check for fuel leaks
+13. Clear fault codes, perform injector trim if electronic
+
+## FUEL INJECTION PUMP TROUBLESHOOTING
+
+### Symptoms of Pump Failure:
+- Hard starting
+- Loss of power
+- Black smoke
+- Hunting/surging at idle
+- Complete no-start
+
+### Testing Fuel Delivery:
+1. Disconnect fuel line at injector
+2. Crank engine - fuel should pulse strongly
+3. No fuel = pump failure or restriction
+4. Weak fuel = worn pump or air leak
+
+### Injection Timing Check:
+1. Remove valve cover
+2. Set cylinder 1 to TDC compression stroke
+3. Check timing marks on pump/engine
+4. Timing off by 1 degree = significant power loss
+
+### Fuel Pump Part Numbers:
+- Cummins 6BT: Bosch 0460426401 / Cummins 3977353
+- Cummins 6CT: Bosch 0460426369 / Cummins 4988593
+- Perkins 1104: Delphi 9320A224G
+- CAT 3306: CAT 1W6753
+
+## CONTROLLER-TO-ECM COMMUNICATION
+
+### DSE Controller to Cummins ECM:
+**Protocol:** J1939 CAN Bus @ 250kbps
+**Wiring:**
+- CAN High: DSE Pin A (Yellow wire) to ECM CAN H
+- CAN Low: DSE Pin B (Green wire) to ECM CAN L
+- Ground: DSE Pin C to engine ground
+
+**Common Issues:**
+1. Baud rate mismatch - ensure both at 250kbps
+2. Address conflict - ECM should be 0x00, controller typically 0x17
+3. Missing termination resistor
+
+### ComAp to Various ECMs:
+**Supported Protocols:**
+- J1939 (Cummins, CAT, Volvo)
+- MDEC (CAT older engines)
+- EDC (MTU)
+
+**Configuration:**
+1. In InteliConfig, go to Setpoints > Engine
+2. Select correct engine type
+3. Set CAN baud rate (usually 250k)
+4. Enable J1939 parameters needed
+5. Download configuration to controller
+
+## TOOLS REQUIRED FOR PROFESSIONAL DIAGNOSTICS
+
+### Essential Tools:
+1. **Digital Multimeter** - Fluke 87V or equivalent (KES 35,000-50,000)
+2. **Clamp Ammeter** - for AC/DC current (KES 15,000-25,000)
+3. **Diagnostic Laptop** - Windows 10, 8GB RAM, USB 3.0
+4. **OBD Adapter** - Cummins Inline 7 or universal J1939
+5. **Oscilloscope** - 2-channel minimum for CAN bus (KES 80,000+)
+6. **Fuel Pressure Gauge** - 0-10 bar (KES 8,000-15,000)
+7. **Compression Tester** - diesel-rated (KES 12,000-20,000)
+8. **Injector Tester** - pop tester (KES 25,000-45,000)
+9. **Megger/Insulation Tester** - for alternator testing (KES 30,000-50,000)
+10. **Torque Wrench** - 10-100 Nm range (KES 8,000-15,000)
+
+### Software Licenses:
+- Cummins INSITE Pro: ~$2,500/year subscription
+- CAT ET: ~$3,000/year subscription
+- DSE Configuration Suite: Free download
+- ComAp InteliConfig: Free download
+- SmartGen SG72 Software: Free download
 `;
 
 // Initialize Anthropic client
@@ -232,7 +503,7 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, systemPrompt } = await request.json();
+    const { messages, systemPrompt, context } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
@@ -241,20 +512,126 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build the enhanced system prompt
-    const enhancedSystemPrompt = `${systemPrompt}
+    // Build conversation context if provided
+    const conversationContext: ConversationContext | undefined = context;
+
+    // Get the last user message to find relevant templates/knowledge
+    const lastUserMessage = messages.filter((m: { role: string }) => m.role === 'user').pop();
+    const userQuery = lastUserMessage?.content || '';
+
+    // Find matching template or knowledge base entry
+    const matchingTemplate = findMatchingTemplate(userQuery);
+    const matchingKnowledge = findKnowledgeBaseEntry(userQuery);
+
+    // Build contextual additions
+    let contextualKnowledge = '';
+    if (matchingTemplate) {
+      contextualKnowledge += `\n\n## RELEVANT TEMPLATE FOR THIS QUERY\n`;
+      contextualKnowledge += formatTemplateForAI(matchingTemplate);
+    }
+    if (matchingKnowledge) {
+      contextualKnowledge += `\n\n## RELEVANT KNOWLEDGE BASE ENTRY\n`;
+      contextualKnowledge += formatKnowledgeBaseForAI(matchingKnowledge);
+    }
+
+    // Get follow-up questions for variety
+    const verificationQuestions = getFollowUpQuestions('verification', 2);
+    const engagementPrompt = getEngagementPrompt('afterSolution');
+
+    // Build the enhanced system prompt using the expert system
+    const expertSystemPrompt = buildExpertSystemPrompt(conversationContext);
+    const enhancedSystemPrompt = `${systemPrompt || expertSystemPrompt}
 
 ${GENERATOR_KNOWLEDGE}
 
-RESPONSE FORMAT GUIDELINES:
-- Be conversational but efficient
-- Use bullet points for lists
-- Bold important terms using **term**
-- Provide specific values and ranges
-- Always include safety warnings where applicable
-- Format repair steps as numbered lists
-- Include cost estimates in KES where relevant
-- Ask clarifying questions when needed (but max 3-4 before diagnosis)
+${contextualKnowledge}
+
+## SUGGESTED FOLLOW-UP QUESTIONS FOR THIS RESPONSE
+After providing your answer, consider asking one of these:
+${verificationQuestions.map(q => `- "${q}"`).join('\n')}
+
+## ENGAGEMENT PROMPT
+${engagementPrompt}
+
+## YOUR INTERACTION STYLE - BE ENGAGING AND THOROUGH
+
+You are an interactive diagnostic expert. You MUST engage with the technician throughout the troubleshooting process.
+
+### ALWAYS ASK FOLLOW-UP QUESTIONS:
+After EVERY response, include at least ONE of these:
+- "Did this solve your issue?" / "Has the fault cleared?"
+- "What does the display show now?"
+- "Are you still experiencing the problem?"
+- "Have you completed these steps?"
+- "What happened when you tried this?"
+- "Do you need me to explain any step in more detail?"
+- "What tools do you have available?"
+- "Would you like the part numbers for replacement?"
+
+### WHEN PROVIDING SOLUTIONS:
+1. Give step-by-step procedures with EXACT details
+2. Include specific part numbers (e.g., "Cummins Part# 4921684, Caterpillar Part# 238-8091")
+3. List required tools: "You'll need: 10mm socket, torque wrench (25-30 Nm), multimeter"
+4. Include safety warnings: "⚠️ SAFETY: Disconnect battery before proceeding"
+5. Estimate time: "This should take approximately 45 minutes"
+6. Add verification steps: "After replacing, start the engine and check for fault codes"
+
+### FOR ECM/CONTROLLER ISSUES:
+When someone says "ECM not communicating" or similar:
+1. First ask: "What exactly happens? No response at all, or intermittent?"
+2. Guide through: CAN bus wiring check, termination resistors, power supply verification
+3. Provide pin-by-pin testing procedures
+4. Include oscilloscope patterns if relevant
+5. Explain ECM initialization requirements for new ECM installation
+
+### FOR REPROGRAMMING REQUESTS:
+When someone needs ECM reprogramming:
+1. Identify exact ECM model and engine
+2. Provide software requirements:
+   - Cummins: INSITE Pro (version X.X), adapter cable P/N 3164655
+   - Caterpillar: CAT ET (Electronic Technician), CAT Comm Adapter III
+   - Perkins: EST (Electronic Service Tool)
+   - Volvo: VODIA diagnostic software
+3. Step-by-step programming procedure
+4. Warn about risks and backup procedures
+5. Include authorization/license requirements if any
+
+### FOR "GENERATOR SHUTTING DOWN ON LOAD":
+This is complex - guide thoroughly:
+1. Ask: "At what load percentage does it shut down? 25%? 50%? 75%?"
+2. Ask: "Any fault codes displayed? What are they?"
+3. Check: Fuel system capacity, governor response, exhaust restriction
+4. Check: Electrical - AVR stability, excitation circuit, load sensing
+5. Check: Mechanical - turbo lag, injector timing, compression
+6. Provide testing procedures for each possibility
+
+### FOR INJECTOR PROBLEMS:
+When someone reports "only some injectors working":
+1. Ask: "Which cylinders? How did you determine this?"
+2. Guide through: Individual injector testing procedure
+3. Explain: Back-leak test, spray pattern test, opening pressure test
+4. Provide: Injector part numbers by engine model
+5. Include: Torque specs, replacement procedure, bleeding procedure
+
+### ALWAYS PROVIDE:
+- ✅ Exact part numbers (OEM and aftermarket alternatives)
+- ✅ Tool specifications with sizes
+- ✅ Torque specifications in Nm
+- ✅ Wire colors and pin numbers
+- ✅ Testing procedures with expected values
+- ✅ Cost estimates in KES
+- ✅ Safety warnings with ⚠️ symbol
+- ✅ Follow-up questions to verify resolution
+
+### RESPONSE FORMAT:
+Use clear formatting:
+- **Bold** for important terms
+- Numbered lists for procedures
+- Bullet points for options
+- Tables for specifications when helpful
+- Include emojis for visual cues: ⚠️ (warning), ✅ (done), 🔧 (tool needed), 💰 (cost)
+
+REMEMBER: Your goal is to guide the technician to a complete solution. Don't leave them hanging - always check if they need more help!
 `;
 
     // Call Claude API
@@ -288,6 +665,18 @@ RESPONSE FORMAT GUIDELINES:
     if (content.toLowerCase().includes('diagnosis:') || content.toLowerCase().includes('the problem is')) {
       metadata.diagnosisComplete = true;
     }
+
+    // Add template/knowledge match info to metadata
+    if (matchingTemplate) {
+      metadata.matchedTemplate = matchingTemplate.id;
+      metadata.templateCategory = matchingTemplate.category;
+    }
+    if (matchingKnowledge) {
+      metadata.matchedKnowledge = matchingKnowledge.id;
+    }
+
+    // Suggest follow-up questions
+    metadata.suggestedFollowUps = verificationQuestions;
 
     return NextResponse.json({
       content,

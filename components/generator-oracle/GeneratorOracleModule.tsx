@@ -120,6 +120,7 @@ const NotificationSettings = dynamic(() => import('./NotificationSettings'), { s
 
 // Educational content panel
 const PossibleCausesPanel = dynamic(() => import('./PossibleCausesPanel'), { ssr: false });
+const InteractiveTroubleshooter = dynamic(() => import('./InteractiveTroubleshooter'), { ssr: false });
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -1509,11 +1510,19 @@ export default function GeneratorOracleModule() {
                             >
                               <span>📷</span> Visual Diagnose
                             </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setActiveScreen('troubleshoot')}
+                              className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-green-500/20 flex items-center gap-2"
+                            >
+                              <span>🔧</span> Step-by-Step Guide
+                            </motion.button>
                           </div>
                         </div>
                         <div className="flex-shrink-0 grid grid-cols-3 gap-3">
                           {[
-                            { icon: '🔧', label: 'Fault Diagnosis', desc: 'Any error code' },
+                            { icon: '🛠️', label: 'Troubleshoot', desc: 'Guided repair', action: 'troubleshoot' },
                             { icon: '📋', label: 'Repair Guides', desc: 'Step-by-step' },
                             { icon: '💰', label: 'Cost Estimates', desc: 'Parts & labor' },
                             { icon: '🔄', label: 'ECM/ECU Reset', desc: 'All brands' },
@@ -2212,6 +2221,19 @@ export default function GeneratorOracleModule() {
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="ecmsuite" />
                     <ECMDiagnosticSuite />
+                  </motion.div>
+                )}
+
+                {/* INTERACTIVE TROUBLESHOOTING WIZARD */}
+                {activeScreen === 'troubleshoot' && (
+                  <motion.div
+                    key="troubleshoot"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="troubleshoot" />
+                    <InteractiveTroubleshooter />
                   </motion.div>
                 )}
 
