@@ -13,21 +13,9 @@ const capabilities = [
   { name: 'Remote Monitoring', icon: '📡', description: 'IoT Integration' },
 ];
 
+// Only verified, authentic partnership
 const partners = [
   { name: 'CUMMINS VOLTKA', tier: 'Authorized Dealer', description: 'Factory-authorized generator sales and service' },
-  { name: 'PERKINS', tier: 'Parts Supplier', description: 'Genuine engine parts and filters' },
-  { name: 'DEEP SEA ELECTRONICS', tier: 'Controller Partner', description: 'DSE controller programming and repair' },
-  { name: 'FG WILSON', tier: 'Service Partner', description: 'Authorized maintenance provider' },
-];
-
-// Industry certifications and licenses
-const certifications = [
-  { name: 'ERC Licensed', description: 'Energy Regulatory Commission approved', icon: '🏛️' },
-  { name: 'NEMA Compliant', description: 'Environmental standards certified', icon: '🌿' },
-  { name: 'KEBS Certified', description: 'Kenya Bureau of Standards approved', icon: '✅' },
-  { name: 'ISO 9001 Processes', description: 'Quality management systems', icon: '📋' },
-  { name: 'OSHA Trained', description: 'Workplace safety certified technicians', icon: '🛡️' },
-  { name: 'NCA Registered', description: 'National Construction Authority', icon: '🏗️' },
 ];
 
 const stats = [
@@ -138,7 +126,7 @@ export default function TrustBadgesSection() {
           className="mb-16"
         >
           <h3 className="text-center text-sm text-gray-500 uppercase tracking-wider mb-8">
-            Authorized Partners & Certifications
+            Authorized Partner
           </h3>
           <div className="flex flex-wrap justify-center gap-6">
             {partners.map((partner, i) => (
@@ -160,33 +148,6 @@ export default function TrustBadgesSection() {
           </div>
         </motion.div>
 
-        {/* Industry Certifications & Licenses */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mb-16"
-        >
-          <h3 className="text-center text-sm text-gray-500 uppercase tracking-wider mb-8">
-            Industry Certifications & Compliance
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {certifications.map((cert, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-green-500/10 to-cyan-500/10 border border-green-500/20 hover:border-green-500/40 transition-all text-center"
-              >
-                <span className="text-2xl mb-2">{cert.icon}</span>
-                <div className="text-white font-semibold text-sm mb-1">{cert.name}</div>
-                <div className="text-xs text-gray-500">{cert.description}</div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
 
         {/* Project Portfolio */}
         <motion.div
