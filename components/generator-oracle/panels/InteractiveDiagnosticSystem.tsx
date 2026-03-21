@@ -1500,10 +1500,470 @@ Be concise but thorough.`
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// FAULT CODE LOOKUP COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const FaultCodeLookup = () => {
+  const [faultCode, setFaultCode] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [conversation, setConversation] = useState<{role: string; content: string}[]>([]);
+
+  const searchFaultCode = async () => {
+    if (!faultCode.trim()) return;
+    setIsSearching(true);
+
+    const userMessage = { role: 'user', content: `What does fault code ${faultCode} mean? Give me the full diagnosis, causes, solutions, and part numbers needed.` };
+    setConversation([userMessage]);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [userMessage],
+          systemPrompt: `You are a generator fault code expert. When given a fault code, provide:
+
+1. **Code Meaning**: What this fault indicates
+2. **Severity**: Shutdown/Warning/Informational
+3. **Possible Causes**: List all causes in order of probability
+4. **Diagnostic Steps**: Step-by-step troubleshooting
+5. **Required Tools**: What tools are needed
+6. **Part Numbers**: OEM and aftermarket part numbers with prices in KES
+7. **Safety Warnings**: Any safety considerations
+
+After providing the diagnosis, ask:
+- "Have you checked [most likely cause]?"
+- "What symptoms are you observing?"
+- "Did this resolve your issue?"
+
+Be specific and actionable. Include torque specs, wire colors, and pin numbers where relevant.`
+        }),
+      });
+
+      const data = await response.json();
+      const assistantMessage = {
+        role: 'assistant',
+        content: data.content || data.fallbackContent || 'Fault code not found in database. Please provide more details about the controller brand and model.'
+      };
+      setConversation(prev => [...prev, assistantMessage]);
+      setResult(data);
+    } catch (error) {
+      setConversation([{ role: 'assistant', content: 'Error looking up fault code. Please try again.' }]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const askFollowUp = async (question: string) => {
+    if (!question.trim()) return;
+    setIsSearching(true);
+
+    const userMessage = { role: 'user', content: question };
+    setConversation(prev => [...prev, userMessage]);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...conversation, userMessage],
+        }),
+      });
+
+      const data = await response.json();
+      const assistantMessage = { role: 'assistant', content: data.content || 'Please try again.' };
+      setConversation(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      setConversation(prev => [...prev, { role: 'assistant', content: 'Error processing follow-up. Please try again.' }]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const [followUpInput, setFollowUpInput] = useState('');
+
+  return (
+    <div className="space-y-6">
+      {/* Fault Code Input */}
+      <div className="p-6 bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-2xl">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <AlertTriangle className="w-6 h-6 text-red-400" />
+          Fault Code Lookup
+        </h3>
+        <p className="text-slate-400 text-sm mb-4">
+          Enter any fault code from DSE, ComAp, Cummins, CAT, Woodward, SmartGen, or any controller
+        </p>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={faultCode}
+            onChange={(e) => setFaultCode(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === 'Enter' && searchFaultCode()}
+            placeholder="Enter fault code (e.g., SPN-111, E020, A001, P0171)"
+            className="flex-1 px-4 py-3 bg-slate-900/80 border border-red-500/30 rounded-xl text-white font-mono text-lg placeholder-slate-500 focus:outline-none focus:border-red-500"
+          />
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={searchFaultCode}
+            disabled={isSearching}
+            className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
+          >
+            {isSearching ? (
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                <Settings className="w-5 h-5" />
+              </motion.div>
+            ) : (
+              <Search className="w-5 h-5" />
+            )}
+            {isSearching ? 'Searching...' : 'Diagnose'}
+          </motion.button>
+        </div>
+
+        {/* Quick Code Examples */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="text-xs text-slate-500">Examples:</span>
+          {['SPN-111', 'SPN-100', 'E020', 'E047', 'A001', 'HGM-15', 'P0171'].map(code => (
+            <button
+              key={code}
+              onClick={() => { setFaultCode(code); }}
+              className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-slate-700/50 hover:text-white transition-colors"
+            >
+              {code}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Results */}
+      {conversation.length > 0 && (
+        <div className="p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl space-y-4">
+          <h4 className="text-lg font-semibold text-cyan-400 flex items-center gap-2">
+            <CheckCircle className="w-5 h-5" />
+            Diagnosis for: <span className="font-mono text-white">{faultCode}</span>
+          </h4>
+
+          <div className="space-y-4 max-h-[500px] overflow-y-auto">
+            {conversation.map((msg, i) => (
+              <div key={i} className={msg.role === 'user' ? 'text-right' : ''}>
+                <div className={`inline-block max-w-full p-4 rounded-xl ${
+                  msg.role === 'user'
+                    ? 'bg-cyan-500/20 text-cyan-100'
+                    : 'bg-slate-900/50 text-slate-200'
+                }`}>
+                  <div className="text-sm whitespace-pre-wrap prose prose-invert prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html: msg.content
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
+                        .replace(/\n/g, '<br>')
+                        .replace(/^(\d+)\./gm, '<span class="text-cyan-400 font-bold">$1.</span>')
+                        .replace(/•/g, '<span class="text-cyan-400">•</span>')
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+            {isSearching && (
+              <div className="flex items-center gap-2 text-slate-400">
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                  <Settings className="w-4 h-4" />
+                </motion.div>
+                <span className="text-sm">Analyzing...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Follow-up Input */}
+          <div className="pt-4 border-t border-slate-700">
+            <p className="text-sm text-slate-400 mb-2">Ask a follow-up question:</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={followUpInput}
+                onChange={(e) => setFollowUpInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && followUpInput.trim()) {
+                    askFollowUp(followUpInput);
+                    setFollowUpInput('');
+                  }
+                }}
+                placeholder="e.g., What part should I replace? What tools do I need?"
+                className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              />
+              <button
+                onClick={() => {
+                  if (followUpInput.trim()) {
+                    askFollowUp(followUpInput);
+                    setFollowUpInput('');
+                  }
+                }}
+                className="p-2 bg-cyan-500 hover:bg-cyan-600 rounded-xl transition-colors"
+              >
+                <Send className="w-5 h-5 text-white" />
+              </button>
+            </div>
+            {/* Quick follow-ups */}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                'What part should I replace?',
+                'What tools do I need?',
+                'How long will this take?',
+                'Is this a serious issue?',
+                'What causes this fault?',
+              ].map(q => (
+                <button
+                  key={q}
+                  onClick={() => askFollowUp(q)}
+                  className="px-3 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI PROBLEM SOLVER COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const AIProblemSolver = () => {
+  const [problem, setProblem] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [conversation, setConversation] = useState<{role: string; content: string}[]>([]);
+  const [followUpInput, setFollowUpInput] = useState('');
+
+  const analyzeProblem = async () => {
+    if (!problem.trim()) return;
+    setIsAnalyzing(true);
+
+    const userMessage = { role: 'user', content: problem };
+    setConversation([userMessage]);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [userMessage],
+          systemPrompt: `You are an expert generator diagnostic technician with 30 years of experience. When a technician describes a problem, you MUST:
+
+1. **Acknowledge the Problem**: Confirm you understand what they're experiencing
+2. **Ask Clarifying Questions**: Before diagnosing, ask 2-3 quick questions like:
+   - "What brand/model is the generator?"
+   - "When did this start happening?"
+   - "Any recent maintenance or changes?"
+
+3. **Provide Diagnosis**: Give probable causes in order of likelihood (percentage)
+4. **Step-by-Step Troubleshooting**: Detailed steps with specific values
+5. **Required Tools**: List exactly what they need
+6. **Part Numbers**: Provide OEM part numbers with KES prices
+7. **Safety Warnings**: Include ⚠️ warnings where needed
+
+After each response, ALWAYS ask engagement questions:
+- "Have you checked this yet?"
+- "What did you find?"
+- "Did this solve the issue?"
+- "Do you need more detail on any step?"
+- "What tools do you have available?"
+
+Be conversational but thorough. Use emojis for clarity (⚠️ warning, ✅ done, 🔧 tool needed).`
+        }),
+      });
+
+      const data = await response.json();
+      setConversation(prev => [...prev, { role: 'assistant', content: data.content || 'Please provide more details about the problem.' }]);
+    } catch (error) {
+      setConversation(prev => [...prev, { role: 'assistant', content: 'Error analyzing problem. Please try again.' }]);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const askFollowUp = async (question: string) => {
+    if (!question.trim()) return;
+    setIsAnalyzing(true);
+
+    const userMessage = { role: 'user', content: question };
+    setConversation(prev => [...prev, userMessage]);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...conversation, userMessage],
+        }),
+      });
+
+      const data = await response.json();
+      setConversation(prev => [...prev, { role: 'assistant', content: data.content }]);
+    } catch (error) {
+      setConversation(prev => [...prev, { role: 'assistant', content: 'Error processing. Please try again.' }]);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Problem Input */}
+      <div className="p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-2xl">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <HelpCircle className="w-6 h-6 text-cyan-400" />
+          AI Problem Solver
+        </h3>
+        <p className="text-slate-400 text-sm mb-4">
+          Describe your generator problem in plain language. The AI will diagnose and guide you to the solution.
+        </p>
+        <textarea
+          value={problem}
+          onChange={(e) => setProblem(e.target.value)}
+          placeholder="Describe your problem... e.g., 'The generator is overheating on load', 'Generator won't start', 'ECM not communicating with controller', 'Black smoke under load', 'Voltage fluctuating'"
+          className="w-full h-24 px-4 py-3 bg-slate-900/80 border border-cyan-500/30 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none"
+        />
+        <div className="mt-3 flex justify-between items-center">
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs text-slate-500">Quick problems:</span>
+            {[
+              'Generator overheating on load',
+              'Won\'t start',
+              'Low oil pressure',
+              'Voltage hunting',
+              'Black smoke',
+            ].map(p => (
+              <button
+                key={p}
+                onClick={() => setProblem(p)}
+                className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={analyzeProblem}
+            disabled={isAnalyzing || !problem.trim()}
+            className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
+          >
+            {isAnalyzing ? (
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                <Settings className="w-5 h-5" />
+              </motion.div>
+            ) : (
+              <Wrench className="w-5 h-5" />
+            )}
+            {isAnalyzing ? 'Analyzing...' : 'Diagnose Problem'}
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Conversation */}
+      {conversation.length > 0 && (
+        <div className="p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl space-y-4">
+          <h4 className="text-lg font-semibold text-cyan-400 flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            AI Diagnosis & Guidance
+          </h4>
+
+          <div className="space-y-4 max-h-[500px] overflow-y-auto">
+            {conversation.map((msg, i) => (
+              <div key={i} className={msg.role === 'user' ? 'text-right' : ''}>
+                <div className={`inline-block max-w-full p-4 rounded-xl ${
+                  msg.role === 'user'
+                    ? 'bg-cyan-500/20 text-cyan-100'
+                    : 'bg-slate-900/50 text-slate-200'
+                }`}>
+                  <div className="text-sm whitespace-pre-wrap prose prose-invert prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html: msg.content
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
+                        .replace(/\n/g, '<br>')
+                        .replace(/^(\d+)\./gm, '<span class="text-cyan-400 font-bold">$1.</span>')
+                        .replace(/•/g, '<span class="text-cyan-400">•</span>')
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+            {isAnalyzing && (
+              <div className="flex items-center gap-2 text-slate-400">
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                  <Settings className="w-4 h-4" />
+                </motion.div>
+                <span className="text-sm">AI is analyzing...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Follow-up Input */}
+          <div className="pt-4 border-t border-slate-700">
+            <p className="text-sm text-slate-400 mb-2">Continue the conversation:</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={followUpInput}
+                onChange={(e) => setFollowUpInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && followUpInput.trim()) {
+                    askFollowUp(followUpInput);
+                    setFollowUpInput('');
+                  }
+                }}
+                placeholder="Type your response or question..."
+                className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              />
+              <button
+                onClick={() => {
+                  if (followUpInput.trim()) {
+                    askFollowUp(followUpInput);
+                    setFollowUpInput('');
+                  }
+                }}
+                className="p-2 bg-cyan-500 hover:bg-cyan-600 rounded-xl transition-colors"
+              >
+                <Send className="w-5 h-5 text-white" />
+              </button>
+            </div>
+            {/* Quick responses */}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                'Yes, I checked that',
+                'No, how do I check?',
+                'What part do I need?',
+                'Give me more detail',
+                'Problem is solved!',
+                'Still not working',
+              ].map(q => (
+                <button
+                  key={q}
+                  onClick={() => askFollowUp(q)}
+                  className="px-3 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function InteractiveDiagnosticSystem() {
+  const [activeTab, setActiveTab] = useState<'systems' | 'faultcode' | 'aisolve'>('systems');
   const [selectedSystem, setSelectedSystem] = useState<DiagnosticSystem | null>(null);
   const [selectedComponent, setSelectedComponent] = useState<SystemComponent | null>(null);
   const [showAIPanel, setShowAIPanel] = useState(false);
@@ -1517,46 +1977,120 @@ export default function InteractiveDiagnosticSystem() {
     purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
   };
 
-  // System Selection View
-  if (!selectedSystem) {
+  // If viewing system details, show that instead of tabs
+  if (selectedSystem || selectedComponent) {
+    // Continue to system/component view...
+  } else {
+    // Main view with tabs
     return (
       <div className="space-y-6">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Interactive Diagnostic System
-          </h2>
-          <p className="text-slate-400">
-            Click any system to explore components with full diagnostics, part numbers, and AI assistance
-          </p>
+        {/* Tab Navigation */}
+        <div className="flex flex-wrap gap-2 p-2 bg-slate-900/60 rounded-2xl border border-slate-700/50">
+          <button
+            onClick={() => setActiveTab('faultcode')}
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === 'faultcode'
+                ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <AlertTriangle className="w-5 h-5" />
+            Fault Code Lookup
+          </button>
+          <button
+            onClick={() => setActiveTab('aisolve')}
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === 'aisolve'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <HelpCircle className="w-5 h-5" />
+            AI Problem Solver
+          </button>
+          <button
+            onClick={() => setActiveTab('systems')}
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === 'systems'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <Settings className="w-5 h-5" />
+            System Diagrams
+          </button>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {DIAGNOSTIC_SYSTEMS.map((system) => (
-            <motion.button
-              key={system.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setSelectedSystem(system)}
-              className={`p-6 bg-gradient-to-br ${colorMap[system.color]} border rounded-2xl text-left transition-all group`}
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'faultcode' && (
+            <motion.div
+              key="faultcode"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
             >
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-slate-900/50 rounded-xl group-hover:scale-110 transition-transform">
-                  {system.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white mb-1">{system.name}</h3>
-                  <p className="text-sm text-slate-400 mb-3">{system.description}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500">
-                      {system.components.length} components
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-slate-500" />
-                  </div>
-                </div>
+              <FaultCodeLookup />
+            </motion.div>
+          )}
+
+          {activeTab === 'aisolve' && (
+            <motion.div
+              key="aisolve"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <AIProblemSolver />
+            </motion.div>
+          )}
+
+          {activeTab === 'systems' && (
+            <motion.div
+              key="systems"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  Interactive System Diagrams
+                </h2>
+                <p className="text-slate-400">
+                  Click any system to explore clickable components with full diagnostics
+                </p>
               </div>
-            </motion.button>
-          ))}
-        </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {DIAGNOSTIC_SYSTEMS.map((system) => (
+                  <motion.button
+                    key={system.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedSystem(system)}
+                    className={`p-6 bg-gradient-to-br ${colorMap[system.color]} border rounded-2xl text-left transition-all group`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-slate-900/50 rounded-xl group-hover:scale-110 transition-transform">
+                        {system.icon}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white mb-1">{system.name}</h3>
+                        <p className="text-sm text-slate-400 mb-3">{system.description}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500">
+                            {system.components.length} clickable components
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-slate-500" />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
