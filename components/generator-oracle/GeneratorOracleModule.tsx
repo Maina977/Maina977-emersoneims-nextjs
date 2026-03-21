@@ -121,6 +121,7 @@ const NotificationSettings = dynamic(() => import('./NotificationSettings'), { s
 // Educational content panel
 const PossibleCausesPanel = dynamic(() => import('./PossibleCausesPanel'), { ssr: false });
 const InteractiveTroubleshooter = dynamic(() => import('./InteractiveTroubleshooter'), { ssr: false });
+const InteractiveDiagnosticSystem = dynamic(() => import('./panels/InteractiveDiagnosticSystem'), { ssr: false });
 
 // ==================== TYPES ====================
 interface GeneratorParameters {
@@ -1380,54 +1381,112 @@ export default function GeneratorOracleModule() {
                   </div>
                 </div>
 
-                {/* Simplified Navigation - 6 Main Categories */}
-                <nav className="hidden xl:flex items-center gap-2 p-2 bg-slate-900/60 rounded-2xl border border-slate-700/50">
-                  {/* Home */}
-                  <PremiumNavTab icon="🏠" label="Home" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
-
-                  {/* Quick Diagnostics - Most Used */}
+                {/* Full Generator Diagnostic Navigation - 33 Sections */}
+                <nav className="hidden xl:flex items-center gap-1 p-1.5 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex-wrap">
+                  {/* Command & AI */}
+                  <PremiumNavTab icon="🎛️" label="Command" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
                   <PremiumNavTab icon="💬" label="AI Expert" active={activeScreen === 'expertchat'} onClick={() => setActiveScreen('expertchat')} />
+                  <PremiumNavTab icon="📷" label="AI Visual" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
+                  <PremiumNavTab icon="🧠" label="AI Analyze" active={activeScreen === 'aianalysis'} onClick={() => setActiveScreen('aianalysis')} />
+
+                  {/* Diagnostics */}
                   <PremiumNavTab icon="🔧" label="Fault Codes" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
-                  <PremiumNavTab icon="📷" label="Photo Scan" active={activeScreen === 'camera'} onClick={() => setActiveScreen('camera')} />
-
-                  {/* Pro Tools */}
-                  <PremiumNavTab icon="🏭" label="ECM Suite" active={activeScreen === 'ecmsuite'} onClick={() => setActiveScreen('ecmsuite')} />
+                  <PremiumNavTab icon="🔍" label="Fault Analysis" active={activeScreen === 'faultanalysis'} onClick={() => setActiveScreen('faultanalysis')} />
+                  <PremiumNavTab icon="🛠️" label="Troubleshoot" active={activeScreen === 'troubleshoot'} onClick={() => setActiveScreen('troubleshoot')} />
                   <PremiumNavTab icon="🔬" label="Pro Diag" active={activeScreen === 'prodiag'} onClick={() => setActiveScreen('prodiag')} />
+                  <PremiumNavTab icon="🏭" label="Systems" active={activeScreen === 'systems'} onClick={() => setActiveScreen('systems')} />
 
-                  {/* Monitoring */}
+                  {/* Engine & ECM */}
+                  <PremiumNavTab icon="⚙️" label="Engine" active={activeScreen === 'engine'} onClick={() => setActiveScreen('engine')} />
+                  <PremiumNavTab icon="⚡" label="Electrical" active={activeScreen === 'electrical'} onClick={() => setActiveScreen('electrical')} />
+                  <PremiumNavTab icon="🧠" label="ECM Suite" active={activeScreen === 'ecmsuite'} onClick={() => setActiveScreen('ecmsuite')} />
+                  <PremiumNavTab icon="💾" label="ECM Prog" active={activeScreen === 'ecmprog'} onClick={() => setActiveScreen('ecmprog')} />
+                  <PremiumNavTab icon="💾" label="ECM Guide" active={activeScreen === 'ecmguide'} onClick={() => setActiveScreen('ecmguide')} />
+
+                  {/* Monitoring & Data */}
                   <PremiumNavTab icon="📊" label="Live Monitor" active={activeScreen === 'realtime'} onClick={() => setActiveScreen('realtime')} />
                   <PremiumNavTab icon="📡" label="CANbus" active={activeScreen === 'canbus'} onClick={() => setActiveScreen('canbus')} />
+                  <PremiumNavTab icon="🔌" label="OBD" active={activeScreen === 'obd'} onClick={() => setActiveScreen('obd')} />
+                  <PremiumNavTab icon="📈" label="Recording" active={activeScreen === 'recording'} onClick={() => setActiveScreen('recording')} />
+                  <PremiumNavTab icon="🔮" label="Predictive" active={activeScreen === 'predictive'} onClick={() => setActiveScreen('predictive')} />
 
-                  {/* Reference */}
-                  <PremiumNavTab icon="📐" label="Wiring" active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
+                  {/* Controllers & Sensors */}
+                  <PremiumNavTab icon="🖥️" label="Simulator" active={activeScreen === 'simulator'} onClick={() => setActiveScreen('simulator')} />
+                  <PremiumNavTab icon="🌡️" label="Sensors" active={activeScreen === 'sensors'} onClick={() => setActiveScreen('sensors')} />
+                  <PremiumNavTab icon="🌐" label="Remote" active={activeScreen === 'remote'} onClick={() => setActiveScreen('remote')} />
+
+                  {/* Wiring & Manuals */}
+                  <PremiumNavTab icon="📐" label="Wiring" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
+                  <PremiumNavTab icon="🔌" label="All Wiring" active={activeScreen === 'allwiring'} onClick={() => setActiveScreen('allwiring')} />
                   <PremiumNavTab icon="📚" label="Manuals" active={activeScreen === 'manuals'} onClick={() => setActiveScreen('manuals')} />
 
-                  {/* Tools */}
+                  {/* Tools & Reports */}
+                  <PremiumNavTab icon="📊" label="Tech Input" active={activeScreen === 'techinput'} onClick={() => setActiveScreen('techinput')} />
+                  <PremiumNavTab icon="🛠️" label="Assistant" active={activeScreen === 'assistant'} onClick={() => setActiveScreen('assistant')} />
                   <PremiumNavTab icon="📄" label="Reports" active={activeScreen === 'reports'} onClick={() => setActiveScreen('reports')} />
                   <PremiumNavTab icon="🛒" label="Parts" active={activeScreen === 'parts'} onClick={() => setActiveScreen('parts')} />
+
+                  {/* History & Settings */}
+                  <PremiumNavTab icon="📋" label="History" active={activeScreen === 'history'} onClick={() => setActiveScreen('history')} />
+                  <PremiumNavTab icon="🔔" label="Alerts" active={activeScreen === 'notifications'} onClick={() => setActiveScreen('notifications')} />
                   <PremiumNavTab icon="⚙️" label="Settings" active={activeScreen === 'settings'} onClick={() => setActiveScreen('settings')} />
                 </nav>
 
-                {/* Mobile nav */}
+                {/* Mobile nav - Full 33 Sections */}
                 <div className="xl:hidden">
                   <select
                     value={activeScreen}
                     onChange={(e) => setActiveScreen(e.target.value as typeof activeScreen)}
                     className="bg-slate-900/60 text-cyan-400 px-4 py-2.5 rounded-xl border border-cyan-500/30 font-medium"
                   >
-                    <option value="command">🏠 Home</option>
-                    <option value="expertchat">💬 AI Expert</option>
-                    <option value="faults">🔧 Fault Codes</option>
-                    <option value="camera">📷 Photo Scan</option>
-                    <option value="ecmsuite">🏭 ECM Suite</option>
-                    <option value="prodiag">🔬 Pro Diagnostics</option>
-                    <option value="realtime">📊 Live Monitor</option>
-                    <option value="canbus">📡 CANbus</option>
-                    <option value="allwiring">📐 Wiring Diagrams</option>
-                    <option value="manuals">📚 Manuals</option>
-                    <option value="reports">📄 Reports</option>
-                    <option value="parts">🛒 Parts</option>
-                    <option value="settings">⚙️ Settings</option>
+                    <optgroup label="Command & AI">
+                      <option value="command">🎛️ Command Center</option>
+                      <option value="expertchat">💬 AI Expert Chat</option>
+                      <option value="camera">📷 AI Visual Diagnostic</option>
+                      <option value="aianalysis">🧠 AI Analysis</option>
+                    </optgroup>
+                    <optgroup label="Diagnostics">
+                      <option value="faults">🔧 Fault Codes</option>
+                      <option value="faultanalysis">🔍 Fault Analysis</option>
+                      <option value="troubleshoot">🛠️ Interactive Troubleshoot</option>
+                      <option value="prodiag">🔬 Pro Diagnostics</option>
+                      <option value="systems">🏭 System Diagnostics</option>
+                    </optgroup>
+                    <optgroup label="Engine & ECM">
+                      <option value="engine">⚙️ Engine Diagnostics</option>
+                      <option value="electrical">⚡ Electrical System</option>
+                      <option value="ecmsuite">🧠 ECM Suite (10 Brands)</option>
+                      <option value="ecmprog">💾 ECM Programming</option>
+                      <option value="ecmguide">💾 ECM Reprogram Guide</option>
+                    </optgroup>
+                    <optgroup label="Monitoring & Data">
+                      <option value="realtime">📊 Live Monitor</option>
+                      <option value="canbus">📡 CANbus Monitor</option>
+                      <option value="obd">🔌 OBD Protocol</option>
+                      <option value="recording">📈 Data Recording</option>
+                      <option value="predictive">🔮 Predictive Maintenance</option>
+                    </optgroup>
+                    <optgroup label="Controllers & Sensors">
+                      <option value="simulator">🖥️ Controller Simulator</option>
+                      <option value="sensors">🌡️ Sensor Diagnostics</option>
+                      <option value="remote">🌐 Remote Connectivity</option>
+                    </optgroup>
+                    <optgroup label="Wiring & Manuals">
+                      <option value="wiring">📐 Wiring Diagrams</option>
+                      <option value="allwiring">🔌 All Controller Wiring</option>
+                      <option value="manuals">📚 Repair Manuals</option>
+                    </optgroup>
+                    <optgroup label="Tools & Reports">
+                      <option value="techinput">📊 Tech Input</option>
+                      <option value="assistant">🛠️ Tech Assistant</option>
+                      <option value="reports">📄 Reports</option>
+                      <option value="parts">🛒 Parts Lookup</option>
+                    </optgroup>
+                    <optgroup label="History & Settings">
+                      <option value="history">📋 History</option>
+                      <option value="notifications">🔔 Alerts</option>
+                      <option value="settings">⚙️ Settings</option>
+                    </optgroup>
                   </select>
                 </div>
 
@@ -2234,6 +2293,19 @@ export default function GeneratorOracleModule() {
                   >
                     <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="troubleshoot" />
                     <InteractiveTroubleshooter />
+                  </motion.div>
+                )}
+
+                {/* INTERACTIVE SYSTEM DIAGNOSTICS - Fuel, Cooling, Electrical, Engine, ATS */}
+                {activeScreen === 'systems' && (
+                  <motion.div
+                    key="systems"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <BackToCommand onBack={() => setActiveScreen('command')} currentPanel="systems" />
+                    <InteractiveDiagnosticSystem />
                   </motion.div>
                 )}
 
