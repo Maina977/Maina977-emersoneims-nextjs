@@ -82,6 +82,11 @@ const SolarProjectWorkflow = dynamic(() => import('@/components/solar/SolarProje
   ssr: false
 });
 
+const AIControlCenter = dynamic(() => import('@/components/solar/AIControlCenter'), {
+  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
+  ssr: false
+});
+
 // Import equipment database and guides
 import {
   SOLAR_PANELS_DATABASE,
@@ -460,7 +465,7 @@ const SOLAR_DOWNLOADS = [
   { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', size: '4.5 MB', icon: '⚡' },
 ];
 
-type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation' | 'design3d' | 'voice' | 'webgl3d' | 'sales' | 'portal' | 'workflow';
+type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation' | 'design3d' | 'voice' | 'webgl3d' | 'sales' | 'portal' | 'workflow' | 'ai-center';
 
 // ==================== ANIMATED COUNTER COMPONENT ====================
 function AnimatedCounter({ end, suffix = '', prefix = '' }: { end: number; suffix?: string; prefix?: string }) {
@@ -703,7 +708,8 @@ export default function SolarBible() {
     { id: 'roi', label: 'Savings Calculator', icon: '💰', badge: 'FREE' },
     { id: 'quotation', label: 'Get AI Quote', icon: '🤖', badge: 'INSTANT' },
 
-    // TIER 2: Design & Visualization Tools
+    // TIER 2: AI & Design Tools (World's Most Advanced)
+    { id: 'ai-center', label: 'AI Control Center', icon: '🤖', badge: 'WORLD #1' },
     { id: 'workflow', label: '8-Step Project', icon: '🚀', badge: 'PRO' },
     { id: 'design3d', label: '3D Design Studio', icon: '🏗️', badge: 'PRO' },
     { id: 'webgl3d', label: 'True 3D Viewer', icon: '🎮', badge: 'NEW!' },
@@ -2079,6 +2085,18 @@ export default function SolarBible() {
                 exit={{ opacity: 0, y: -20 }}
               >
                 <SolarProjectWorkflow />
+              </motion.div>
+            )}
+
+            {/* ==================== AI CONTROL CENTER TAB ==================== */}
+            {activeTab === 'ai-center' && (
+              <motion.div
+                key="ai-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <AIControlCenter />
               </motion.div>
             )}
           </AnimatePresence>
