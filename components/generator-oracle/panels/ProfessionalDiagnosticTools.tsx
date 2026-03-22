@@ -1462,8 +1462,8 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
                       min={param.min}
                       max={param.max}
                       step={param.unit === 'bar' ? 0.1 : 1}
-                      className="w-24 px-3 py-1 rounded bg-slate-800 border border-slate-600 text-right font-mono text-sm"
-                      style={{ color: tool.textColor }}
+                      className="w-24 px-3 py-2 rounded-lg bg-slate-800 border-2 border-slate-600 text-right font-mono text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-text transition-all hover:border-slate-500"
+                      style={{ color: tool.textColor, caretColor: 'white' }}
                     />
                     <span className="text-xs w-12" style={{ color: tool.textColor + '60' }}>{param.unit}</span>
                   </div>
