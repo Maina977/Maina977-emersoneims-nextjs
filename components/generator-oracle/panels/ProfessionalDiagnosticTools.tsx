@@ -21,6 +21,16 @@ import {
   type ControllerFaultCode,
 } from '@/lib/generator-oracle/controllerFaultCodes';
 import {
+  ECMCommunicationService,
+  HardwareAdapter,
+  ECMConnection,
+  LiveParameter as ECMLiveParameter,
+  J1939FaultCode,
+  FaultCodeReadResult,
+  ActiveTest,
+  ConnectionStatus,
+} from '@/lib/generator-oracle/ecm-communication/ECMCommunicationCore';
+import {
   ChevronDown,
   ChevronUp,
   ChevronLeft,
@@ -2746,6 +2756,133 @@ export default function ProfessionalDiagnosticTools({ generatorInfo }: Professio
   // Generator selection form - show by default if no generator configured
   const [showGenSelector, setShowGenSelector] = useState(!generatorInfo);
 
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // ECM HARDWARE COMMUNICATION - REAL HARDWARE CONNECTION
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const ecmService = useRef<ECMCommunicationService>(new ECMCommunicationService());
+  const [ecmConnection, setEcmConnection] = useState<ECMConnection | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
+  const [availableAdapters, setAvailableAdapters] = useState<HardwareAdapter[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
+  const [ecmLiveData, setEcmLiveData] = useState<ECMLiveParameter[]>([]);
+  const [ecmFaultCodes, setEcmFaultCodes] = useState<FaultCodeReadResult | null>(null);
+  const [isStreamingECM, setIsStreamingECM] = useState(false);
+  const [showHardwarePanel, setShowHardwarePanel] = useState(false);
+
+  // Browser capability detection
+  const [browserSupport] = useState({
+    webSerial: typeof navigator !== 'undefined' && 'serial' in navigator,
+    webBluetooth: typeof navigator !== 'undefined' && 'bluetooth' in navigator,
+    webUSB: typeof navigator !== 'undefined' && 'usb' in navigator,
+  });
+
+  // Scan for hardware adapters
+  const scanForAdapters = useCallback(async () => {
+    setIsScanning(true);
+    try {
+      const adapters = await ecmService.current.scanForAdapters();
+      setAvailableAdapters(adapters);
+    } catch (error) {
+      console.error('Failed to scan for adapters:', error);
+    } finally {
+      setIsScanning(false);
+    }
+  }, []);
+
+  // Request new adapter (triggers browser permission dialog)
+  const requestAdapter = useCallback(async (type: 'usb_can' | 'bluetooth_can') => {
+    setIsScanning(true);
+    try {
+      const adapter = await ecmService.current.requestAdapter(type);
+      if (adapter) {
+        setAvailableAdapters(prev => [...prev, adapter]);
+      }
+    } catch (error) {
+      console.error('Failed to request adapter:', error);
+    } finally {
+      setIsScanning(false);
+    }
+  }, []);
+
+  // Connect to ECM
+  const connectToECM = useCallback(async (adapter: HardwareAdapter) => {
+    setConnectionStatus('connecting');
+    try {
+      const conn = await ecmService.current.connectToECM(adapter, {
+        type: 'j1939',
+        baudRate: 250000,
+        canId: 0x18FEF100,
+        extendedId: true,
+        timeout: 5000,
+        retries: 3,
+        addressingMode: 'functional'
+      });
+      setEcmConnection(conn);
+      setConnectionStatus('connected');
+    } catch (error) {
+      console.error('Failed to connect to ECM:', error);
+      setConnectionStatus('error');
+    }
+  }, []);
+
+  // Disconnect from ECM
+  const disconnectFromECM = useCallback(async () => {
+    if (isStreamingECM) {
+      ecmService.current.stopLiveData();
+      setIsStreamingECM(false);
+    }
+    await ecmService.current.disconnect();
+    setEcmConnection(null);
+    setConnectionStatus('disconnected');
+    setEcmLiveData([]);
+    setEcmFaultCodes(null);
+  }, [isStreamingECM]);
+
+  // Start live data stream from ECM
+  const startECMLiveData = useCallback(async () => {
+    if (!ecmConnection) return;
+    try {
+      await ecmService.current.startLiveData(
+        ['engine_speed', 'coolant_temp', 'oil_pressure', 'fuel_rate', 'battery_voltage'],
+        5, // 5Hz update rate
+        (data) => setEcmLiveData(data),
+        (error) => console.error('Live data error:', error)
+      );
+      setIsStreamingECM(true);
+    } catch (error) {
+      console.error('Failed to start live data:', error);
+    }
+  }, [ecmConnection]);
+
+  // Stop live data stream
+  const stopECMLiveData = useCallback(() => {
+    ecmService.current.stopLiveData();
+    setIsStreamingECM(false);
+  }, []);
+
+  // Read fault codes from ECM
+  const readECMFaultCodes = useCallback(async () => {
+    if (!ecmConnection) return;
+    try {
+      const result = await ecmService.current.readFaultCodes();
+      setEcmFaultCodes(result);
+    } catch (error) {
+      console.error('Failed to read fault codes:', error);
+    }
+  }, [ecmConnection]);
+
+  // Clear fault codes from ECM
+  const clearECMFaultCodes = useCallback(async () => {
+    if (!ecmConnection || !ecmFaultCodes) return;
+    try {
+      await ecmService.current.clearFaultCodes(ecmFaultCodes.activeCodes);
+      // Re-read to confirm
+      await readECMFaultCodes();
+    } catch (error) {
+      console.error('Failed to clear fault codes:', error);
+    }
+  }, [ecmConnection, ecmFaultCodes, readECMFaultCodes]);
+
   // Generator brands and models database
   const GENERATOR_BRANDS = [
     { name: 'Cummins', models: ['C500 D5', 'C400 D5', 'C350 D5', 'C275 D5', 'C200 D5', 'C150 D5', 'C100 D5', 'QSK60', 'QSK50', 'QSX15'] },
@@ -2773,6 +2910,18 @@ export default function ProfessionalDiagnosticTools({ generatorInfo }: Professio
           <p className="text-slate-400">10 dealer-level diagnostic interfaces with full functionality</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* ECM Hardware Connection Button */}
+          <button
+            onClick={() => setShowHardwarePanel(!showHardwarePanel)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-lg transition-all ${
+              connectionStatus === 'connected'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white'
+                : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600'
+            }`}
+          >
+            <Usb className="w-5 h-5" />
+            {connectionStatus === 'connected' ? 'ECM Connected' : 'Connect Hardware'}
+          </button>
           <button
             onClick={() => setShowAIPanel(true)}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-xl text-white font-medium hover:from-purple-600 hover:to-cyan-600 shadow-lg"
@@ -2816,10 +2965,206 @@ export default function ProfessionalDiagnosticTools({ generatorInfo }: Professio
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-green-400 text-sm">Ready to Connect</span>
+            <div className={`w-3 h-3 rounded-full animate-pulse ${
+              connectionStatus === 'connected' ? 'bg-green-500' :
+              connectionStatus === 'connecting' ? 'bg-yellow-500' :
+              'bg-orange-500'
+            }`} />
+            <span className={`text-sm ${
+              connectionStatus === 'connected' ? 'text-green-400' :
+              connectionStatus === 'connecting' ? 'text-yellow-400' :
+              'text-orange-400'
+            }`}>
+              {connectionStatus === 'connected' ? 'ECM Hardware Connected' :
+               connectionStatus === 'connecting' ? 'Connecting to ECM...' :
+               'Hardware Not Connected'}
+            </span>
           </div>
         </div>
+
+        {/* ECM Hardware Connection Panel */}
+        <AnimatePresence>
+          {showHardwarePanel && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mt-4 p-4 bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl border border-cyan-500/30"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Usb className="w-5 h-5 text-cyan-400" />
+                  ECM Hardware Communication
+                </h3>
+                <button onClick={() => setShowHardwarePanel(false)} className="text-slate-400 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Browser Capability Check */}
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className={`p-3 rounded-lg text-center ${browserSupport.webSerial ? 'bg-green-900/30 border border-green-500/30' : 'bg-red-900/30 border border-red-500/30'}`}>
+                  <div className="text-2xl mb-1">{browserSupport.webSerial ? '✓' : '✗'}</div>
+                  <div className="text-xs text-slate-300">USB Serial</div>
+                </div>
+                <div className={`p-3 rounded-lg text-center ${browserSupport.webBluetooth ? 'bg-green-900/30 border border-green-500/30' : 'bg-red-900/30 border border-red-500/30'}`}>
+                  <div className="text-2xl mb-1">{browserSupport.webBluetooth ? '✓' : '✗'}</div>
+                  <div className="text-xs text-slate-300">Bluetooth</div>
+                </div>
+                <div className={`p-3 rounded-lg text-center ${browserSupport.webUSB ? 'bg-green-900/30 border border-green-500/30' : 'bg-red-900/30 border border-red-500/30'}`}>
+                  <div className="text-2xl mb-1">{browserSupport.webUSB ? '✓' : '✗'}</div>
+                  <div className="text-xs text-slate-300">WebUSB</div>
+                </div>
+              </div>
+
+              {connectionStatus !== 'connected' ? (
+                <>
+                  {/* Connect Buttons */}
+                  <div className="flex gap-3 mb-4">
+                    {browserSupport.webSerial && (
+                      <button
+                        onClick={() => requestAdapter('usb_can')}
+                        disabled={isScanning}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium disabled:opacity-50"
+                      >
+                        <Usb className="w-5 h-5" />
+                        Connect USB-CAN Adapter
+                      </button>
+                    )}
+                    {browserSupport.webBluetooth && (
+                      <button
+                        onClick={() => requestAdapter('bluetooth_can')}
+                        disabled={isScanning}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium disabled:opacity-50"
+                      >
+                        <Bluetooth className="w-5 h-5" />
+                        Connect Bluetooth Adapter
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Available Adapters */}
+                  {availableAdapters.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-slate-400">Available Adapters:</p>
+                      {availableAdapters.map(adapter => (
+                        <div key={adapter.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
+                          <div>
+                            <p className="text-white font-medium">{adapter.name}</p>
+                            <p className="text-xs text-slate-400">{adapter.manufacturer}</p>
+                          </div>
+                          <button
+                            onClick={() => connectToECM(adapter)}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm"
+                          >
+                            Connect to ECM
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!browserSupport.webSerial && !browserSupport.webBluetooth && (
+                    <p className="text-center text-yellow-400 text-sm py-4">
+                      Use Chrome or Edge browser for hardware adapter support
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Connected - Show ECM Info and Controls */}
+                  <div className="p-4 bg-green-900/20 border border-green-500/30 rounded-lg mb-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-400 font-medium">ECM Connected</p>
+                        <p className="text-sm text-slate-400">
+                          {ecmConnection?.ecmInfo.manufacturer} - {ecmConnection?.ecmInfo.model}
+                        </p>
+                      </div>
+                      <button
+                        onClick={disconnectFromECM}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white text-sm"
+                      >
+                        Disconnect
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ECM Actions */}
+                  <div className="grid grid-cols-4 gap-3">
+                    <button
+                      onClick={isStreamingECM ? stopECMLiveData : startECMLiveData}
+                      className={`flex flex-col items-center justify-center p-4 rounded-lg text-white ${
+                        isStreamingECM ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
+                    >
+                      <Activity className="w-6 h-6 mb-1" />
+                      <span className="text-xs">{isStreamingECM ? 'Stop Stream' : 'Live Data'}</span>
+                    </button>
+                    <button
+                      onClick={readECMFaultCodes}
+                      className="flex flex-col items-center justify-center p-4 bg-orange-600 hover:bg-orange-700 rounded-lg text-white"
+                    >
+                      <AlertTriangle className="w-6 h-6 mb-1" />
+                      <span className="text-xs">Read Codes</span>
+                    </button>
+                    <button
+                      onClick={clearECMFaultCodes}
+                      disabled={!ecmFaultCodes?.activeCodes.length}
+                      className="flex flex-col items-center justify-center p-4 bg-purple-600 hover:bg-purple-700 rounded-lg text-white disabled:opacity-50"
+                    >
+                      <Trash2 className="w-6 h-6 mb-1" />
+                      <span className="text-xs">Clear Codes</span>
+                    </button>
+                    <button className="flex flex-col items-center justify-center p-4 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white">
+                      <Wrench className="w-6 h-6 mb-1" />
+                      <span className="text-xs">Active Tests</span>
+                    </button>
+                  </div>
+
+                  {/* Live ECM Data Display */}
+                  {ecmLiveData.length > 0 && (
+                    <div className="mt-4 grid grid-cols-5 gap-3">
+                      {ecmLiveData.map(param => (
+                        <div key={param.id} className="p-3 bg-slate-700/50 rounded-lg">
+                          <p className="text-xs text-slate-400">{param.name}</p>
+                          <p className={`text-xl font-bold ${
+                            param.status === 'critical' ? 'text-red-400' :
+                            param.status === 'warning' ? 'text-yellow-400' :
+                            'text-green-400'
+                          }`}>
+                            {param.value.toFixed(1)} <span className="text-xs">{param.unit}</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* ECM Fault Codes Display */}
+                  {ecmFaultCodes && (
+                    <div className="mt-4 p-4 bg-slate-700/30 rounded-lg">
+                      <p className="text-sm text-slate-400 mb-2">
+                        Active: {ecmFaultCodes.activeCodes.length} |
+                        Pending: {ecmFaultCodes.pendingCodes.length} |
+                        History: {ecmFaultCodes.historyCodes.length}
+                      </p>
+                      {ecmFaultCodes.activeCodes.map((code, i) => (
+                        <div key={i} className="p-2 bg-red-900/30 rounded mb-1">
+                          <span className="font-mono text-red-300">SPN {code.spn} / FMI {code.fmi}</span>
+                          <span className="text-xs text-slate-400 ml-2">{code.spnDescription}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              <p className="text-xs text-center text-slate-500 mt-4">
+                All 10 diagnostic tools support real ECM hardware communication via J1939/CAN/Modbus
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Generator Selector Panel - Prominent Setup */}

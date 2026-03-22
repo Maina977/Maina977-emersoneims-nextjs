@@ -110,6 +110,7 @@ const UniversalDiagnosticPanel = dynamic(() => import('./panels/UniversalDiagnos
 const ODIDashboardPanel = dynamic(() => import('./panels/ODIDashboardPanel'), { ssr: false });
 const ProfessionalDiagnosticInterface = dynamic(() => import('./panels/ProfessionalDiagnosticInterface'), { ssr: false });
 const ECMDiagnosticSuite = dynamic(() => import('./panels/ECMDiagnosticSuite'), { ssr: false });
+const ECMHardwarePanel = dynamic(() => import('./panels/ECMHardwarePanel'), { ssr: false });
 
 // Feature panels - loaded on demand
 const SubscriptionManager = dynamic(() => import('./SubscriptionManager'), { ssr: false });
@@ -1086,7 +1087,7 @@ export default function GeneratorOracleModule() {
   const [aiSubTab, setAiSubTab] = useState<'expert' | 'visual' | 'analyze'>('expert');
   const [faultsSubTab, setFaultsSubTab] = useState<'lookup' | 'analysis' | 'troubleshoot'>('lookup');
   const [systemsSubTab, setSystemsSubTab] = useState<'engine' | 'electrical' | 'sensors' | 'interactive'>('interactive');
-  const [controllersSubTab, setControllersSubTab] = useState<'simulator' | 'ecmsuite' | 'ecmprog' | 'ecmguide' | 'protools'>('simulator');
+  const [controllersSubTab, setControllersSubTab] = useState<'simulator' | 'ecmsuite' | 'ecmprog' | 'ecmguide' | 'protools' | 'ecmhardware'>('simulator');
   const [wiringSubTab, setWiringSubTab] = useState<'diagrams' | 'allwiring' | 'manuals'>('diagrams');
   const [monitoringSubTab, setMonitoringSubTab] = useState<'realtime' | 'canbus' | 'obd' | 'recording' | 'predictive' | 'remote'>('realtime');
   const [toolsSubTab, setToolsSubTab] = useState<'reports' | 'history' | 'parts' | 'techinput' | 'assistant' | 'settings' | 'alerts'>('reports');
@@ -2042,6 +2043,7 @@ export default function GeneratorOracleModule() {
                       tabs={[
                         { id: 'simulator' as const, label: 'Controller Simulator', icon: '🖥️' },
                         { id: 'ecmsuite' as const, label: 'ECM Suite (10 Brands)', icon: '🧠' },
+                        { id: 'ecmhardware' as const, label: 'ECM Hardware Link', icon: '🔌' },
                         { id: 'ecmprog' as const, label: 'ECM Programming', icon: '💾' },
                         { id: 'ecmguide' as const, label: 'ECM Reprogram Guide', icon: '📋' },
                         { id: 'protools' as const, label: 'Pro Diagnostic Tools', icon: '🔧' },
@@ -2077,6 +2079,7 @@ export default function GeneratorOracleModule() {
                       </div>
                     )}
                     {controllersSubTab === 'ecmsuite' && <ECMDiagnosticSuite />}
+                    {controllersSubTab === 'ecmhardware' && <ECMHardwarePanel />}
                     {controllersSubTab === 'ecmprog' && <ECMProgrammingPanel />}
                     {controllersSubTab === 'ecmguide' && <ECMReprogrammingGuidePanel />}
                     {controllersSubTab === 'protools' && <ProfessionalDiagnosticTools />}
