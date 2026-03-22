@@ -695,26 +695,38 @@ export default function SolarBible() {
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
+  // ==================== TABS ORGANIZED BY USER JOURNEY ====================
   const tabs = [
-    { id: 'workflow', label: 'Project Workflow', icon: '🚀', badge: '8-STEP' },
+    // TIER 1: Customer Entry Points (What customers see first)
+    { id: 'overview', label: 'Solar Overview', icon: '☀️', badge: 'START' },
+    { id: 'calculator', label: 'Size My System', icon: '🧮', badge: 'FREE' },
+    { id: 'roi', label: 'Savings Calculator', icon: '💰', badge: 'FREE' },
+    { id: 'quotation', label: 'Get AI Quote', icon: '🤖', badge: 'INSTANT' },
+
+    // TIER 2: Design & Visualization Tools
+    { id: 'workflow', label: '8-Step Project', icon: '🚀', badge: 'PRO' },
     { id: 'design3d', label: '3D Design Studio', icon: '🏗️', badge: 'PRO' },
     { id: 'webgl3d', label: 'True 3D Viewer', icon: '🎮', badge: 'NEW!' },
     { id: 'voice', label: 'Voice Design', icon: '🎤', badge: 'AI' },
-    { id: 'quotation', label: 'AI Quotation', icon: '🤖', badge: 'HOT' },
-    { id: 'sales', label: 'Sales Dashboard', icon: '📈', badge: 'PRO' },
-    { id: 'portal', label: 'Customer Portal', icon: '👤', badge: 'NEW!' },
-    { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'monitoring', label: 'Monitor App', icon: '📱', badge: 'AI' },
-    { id: 'calculator', label: 'System Calculator', icon: '🧮' },
+
+    // TIER 3: Technical Resources
     { id: 'equipment', label: 'Equipment DB', icon: '🔌', badge: `${TOTAL_EQUIPMENT}+` },
-    { id: 'wiring', label: 'Wiring Diagrams', icon: '⚡' },
-    { id: 'repair', label: 'Repair Guides', icon: '🔧' },
-    { id: 'faults', label: 'Fault Codes', icon: '⚠️' },
-    { id: 'roi', label: 'ROI Calculator', icon: '💰' },
-    { id: 'shop', label: 'Shop', icon: '🛒' },
-    { id: 'booking', label: 'Book Installation', icon: '📅' },
+    { id: 'wiring', label: 'Wiring Diagrams', icon: '⚡', badge: 'TECH' },
+    { id: 'repair', label: 'Repair Guides', icon: '🔧', badge: 'DIY' },
+    { id: 'faults', label: 'Fault Codes', icon: '⚠️', badge: 'HELP' },
+
+    // TIER 4: Monitoring & Maintenance
+    { id: 'monitoring', label: 'Live Monitor', icon: '📱', badge: 'REALTIME' },
     { id: 'maintenance', label: 'Maintenance', icon: '🗓️' },
-    { id: 'education', label: 'Learn', icon: '📚' },
+
+    // TIER 5: Sales & Business Tools
+    { id: 'sales', label: 'Sales Dashboard', icon: '📈', badge: 'TEAM' },
+    { id: 'portal', label: 'Customer Portal', icon: '👤', badge: 'LOGIN' },
+
+    // TIER 6: Action & Education
+    { id: 'shop', label: 'Shop Products', icon: '🛒', badge: 'BUY' },
+    { id: 'booking', label: 'Book Install', icon: '📅', badge: 'SCHEDULE' },
+    { id: 'education', label: 'Solar School', icon: '📚', badge: 'LEARN' },
   ];
 
   return (

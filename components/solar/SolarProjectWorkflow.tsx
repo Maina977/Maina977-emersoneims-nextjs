@@ -102,19 +102,160 @@ interface ProjectState {
   completedSteps: number[];
 }
 
-// Kenya-specific data
-const KENYA_LOCATIONS = [
-  { name: 'Nairobi', irradiance: 5.2, lat: -1.29, tariff: 25 },
-  { name: 'Mombasa', irradiance: 5.5, lat: -4.04, tariff: 25 },
-  { name: 'Kisumu', irradiance: 5.3, lat: -0.09, tariff: 25 },
-  { name: 'Nakuru', irradiance: 5.4, lat: -0.30, tariff: 25 },
-  { name: 'Eldoret', irradiance: 5.1, lat: 0.51, tariff: 25 },
-  { name: 'Malindi', irradiance: 5.6, lat: -3.22, tariff: 25 },
-  { name: 'Nyeri', irradiance: 5.0, lat: -0.42, tariff: 25 },
-  { name: 'Machakos', irradiance: 5.3, lat: -1.52, tariff: 25 },
-  { name: 'Garissa', irradiance: 5.8, lat: -0.45, tariff: 25 },
-  { name: 'Meru', irradiance: 5.2, lat: 0.05, tariff: 25 },
+// ==================== COMPREHENSIVE KENYA SOLAR DATA ====================
+
+// All 47 Counties with Solar Irradiance Data (kWh/m²/day)
+const KENYA_COUNTIES = [
+  // Nairobi Metropolitan
+  { name: 'Nairobi', region: 'Central', irradiance: 5.2, lat: -1.29, lng: 36.82, avgTemp: 19, humidity: 65, dustFactor: 0.97 },
+
+  // Coast Region (High Irradiance)
+  { name: 'Mombasa', region: 'Coast', irradiance: 5.5, lat: -4.04, lng: 39.67, avgTemp: 27, humidity: 75, dustFactor: 0.95 },
+  { name: 'Kilifi', region: 'Coast', irradiance: 5.6, lat: -3.63, lng: 39.85, avgTemp: 26, humidity: 72, dustFactor: 0.96 },
+  { name: 'Kwale', region: 'Coast', irradiance: 5.4, lat: -4.17, lng: 39.45, avgTemp: 26, humidity: 70, dustFactor: 0.96 },
+  { name: 'Lamu', region: 'Coast', irradiance: 5.7, lat: -2.27, lng: 40.90, avgTemp: 28, humidity: 78, dustFactor: 0.94 },
+  { name: 'Taita Taveta', region: 'Coast', irradiance: 5.3, lat: -3.40, lng: 38.35, avgTemp: 23, humidity: 65, dustFactor: 0.96 },
+  { name: 'Tana River', region: 'Coast', irradiance: 5.8, lat: -1.50, lng: 40.05, avgTemp: 29, humidity: 60, dustFactor: 0.93 },
+
+  // Rift Valley (Diverse Conditions)
+  { name: 'Nakuru', region: 'Rift Valley', irradiance: 5.4, lat: -0.30, lng: 36.07, avgTemp: 18, humidity: 60, dustFactor: 0.97 },
+  { name: 'Uasin Gishu', region: 'Rift Valley', irradiance: 5.1, lat: 0.51, lng: 35.27, avgTemp: 17, humidity: 65, dustFactor: 0.97 },
+  { name: 'Kericho', region: 'Rift Valley', irradiance: 4.8, lat: -0.37, lng: 35.28, avgTemp: 18, humidity: 75, dustFactor: 0.96 },
+  { name: 'Bomet', region: 'Rift Valley', irradiance: 5.0, lat: -0.78, lng: 35.34, avgTemp: 19, humidity: 70, dustFactor: 0.96 },
+  { name: 'Narok', region: 'Rift Valley', irradiance: 5.5, lat: -1.08, lng: 35.87, avgTemp: 18, humidity: 55, dustFactor: 0.95 },
+  { name: 'Kajiado', region: 'Rift Valley', irradiance: 5.6, lat: -1.85, lng: 36.78, avgTemp: 20, humidity: 50, dustFactor: 0.94 },
+  { name: 'Baringo', region: 'Rift Valley', irradiance: 5.7, lat: 0.47, lng: 35.97, avgTemp: 25, humidity: 45, dustFactor: 0.93 },
+  { name: 'Turkana', region: 'Rift Valley', irradiance: 6.2, lat: 3.12, lng: 35.60, avgTemp: 30, humidity: 35, dustFactor: 0.90 },
+  { name: 'Samburu', region: 'Rift Valley', irradiance: 5.9, lat: 1.17, lng: 36.95, avgTemp: 26, humidity: 40, dustFactor: 0.92 },
+  { name: 'West Pokot', region: 'Rift Valley', irradiance: 5.5, lat: 1.62, lng: 35.12, avgTemp: 22, humidity: 55, dustFactor: 0.94 },
+  { name: 'Trans Nzoia', region: 'Rift Valley', irradiance: 5.0, lat: 1.02, lng: 34.95, avgTemp: 18, humidity: 70, dustFactor: 0.96 },
+  { name: 'Elgeyo Marakwet', region: 'Rift Valley', irradiance: 5.2, lat: 0.82, lng: 35.52, avgTemp: 17, humidity: 65, dustFactor: 0.96 },
+  { name: 'Nandi', region: 'Rift Valley', irradiance: 4.9, lat: 0.18, lng: 35.13, avgTemp: 19, humidity: 72, dustFactor: 0.96 },
+  { name: 'Laikipia', region: 'Rift Valley', irradiance: 5.6, lat: 0.40, lng: 36.90, avgTemp: 17, humidity: 50, dustFactor: 0.95 },
+
+  // Central Region
+  { name: 'Kiambu', region: 'Central', irradiance: 5.1, lat: -1.17, lng: 36.83, avgTemp: 18, humidity: 68, dustFactor: 0.97 },
+  { name: 'Murang\'a', region: 'Central', irradiance: 5.0, lat: -0.72, lng: 37.15, avgTemp: 19, humidity: 70, dustFactor: 0.97 },
+  { name: 'Nyeri', region: 'Central', irradiance: 5.0, lat: -0.42, lng: 36.95, avgTemp: 17, humidity: 72, dustFactor: 0.97 },
+  { name: 'Kirinyaga', region: 'Central', irradiance: 5.1, lat: -0.50, lng: 37.28, avgTemp: 19, humidity: 68, dustFactor: 0.97 },
+  { name: 'Nyandarua', region: 'Central', irradiance: 4.8, lat: -0.18, lng: 36.52, avgTemp: 14, humidity: 75, dustFactor: 0.97 },
+
+  // Eastern Region (High Irradiance)
+  { name: 'Machakos', region: 'Eastern', irradiance: 5.3, lat: -1.52, lng: 37.27, avgTemp: 21, humidity: 55, dustFactor: 0.95 },
+  { name: 'Makueni', region: 'Eastern', irradiance: 5.5, lat: -1.80, lng: 37.62, avgTemp: 23, humidity: 50, dustFactor: 0.94 },
+  { name: 'Kitui', region: 'Eastern', irradiance: 5.6, lat: -1.37, lng: 38.02, avgTemp: 24, humidity: 48, dustFactor: 0.93 },
+  { name: 'Embu', region: 'Eastern', irradiance: 5.2, lat: -0.53, lng: 37.45, avgTemp: 20, humidity: 65, dustFactor: 0.96 },
+  { name: 'Tharaka Nithi', region: 'Eastern', irradiance: 5.3, lat: -0.30, lng: 37.80, avgTemp: 21, humidity: 60, dustFactor: 0.95 },
+  { name: 'Meru', region: 'Eastern', irradiance: 5.2, lat: 0.05, lng: 37.65, avgTemp: 19, humidity: 65, dustFactor: 0.96 },
+  { name: 'Isiolo', region: 'Eastern', irradiance: 5.9, lat: 0.35, lng: 37.58, avgTemp: 27, humidity: 42, dustFactor: 0.91 },
+  { name: 'Marsabit', region: 'Eastern', irradiance: 6.0, lat: 2.33, lng: 37.98, avgTemp: 28, humidity: 38, dustFactor: 0.90 },
+
+  // North Eastern (Highest Irradiance)
+  { name: 'Garissa', region: 'North Eastern', irradiance: 5.8, lat: -0.45, lng: 39.65, avgTemp: 30, humidity: 40, dustFactor: 0.89 },
+  { name: 'Wajir', region: 'North Eastern', irradiance: 6.1, lat: 1.75, lng: 40.07, avgTemp: 31, humidity: 38, dustFactor: 0.88 },
+  { name: 'Mandera', region: 'North Eastern', irradiance: 6.3, lat: 3.93, lng: 41.87, avgTemp: 32, humidity: 35, dustFactor: 0.87 },
+
+  // Western Region
+  { name: 'Kisumu', region: 'Western', irradiance: 5.3, lat: -0.09, lng: 34.77, avgTemp: 23, humidity: 68, dustFactor: 0.96 },
+  { name: 'Siaya', region: 'Western', irradiance: 5.2, lat: -0.06, lng: 34.29, avgTemp: 22, humidity: 70, dustFactor: 0.96 },
+  { name: 'Homa Bay', region: 'Western', irradiance: 5.4, lat: -0.52, lng: 34.45, avgTemp: 23, humidity: 68, dustFactor: 0.96 },
+  { name: 'Migori', region: 'Western', irradiance: 5.3, lat: -1.07, lng: 34.47, avgTemp: 23, humidity: 65, dustFactor: 0.95 },
+  { name: 'Kisii', region: 'Western', irradiance: 4.9, lat: -0.68, lng: 34.77, avgTemp: 20, humidity: 75, dustFactor: 0.96 },
+  { name: 'Nyamira', region: 'Western', irradiance: 4.8, lat: -0.57, lng: 34.93, avgTemp: 19, humidity: 78, dustFactor: 0.96 },
+  { name: 'Kakamega', region: 'Western', irradiance: 5.0, lat: 0.28, lng: 34.75, avgTemp: 21, humidity: 72, dustFactor: 0.96 },
+  { name: 'Vihiga', region: 'Western', irradiance: 4.9, lat: 0.07, lng: 34.72, avgTemp: 20, humidity: 75, dustFactor: 0.96 },
+  { name: 'Bungoma', region: 'Western', irradiance: 5.1, lat: 0.57, lng: 34.57, avgTemp: 21, humidity: 70, dustFactor: 0.96 },
+  { name: 'Busia', region: 'Western', irradiance: 5.2, lat: 0.47, lng: 34.12, avgTemp: 23, humidity: 68, dustFactor: 0.95 },
 ];
+
+// Kenya Power Tariffs 2024 (KES/kWh)
+const KENYA_TARIFFS = {
+  domestic: {
+    lifeline: { range: '0-10 kWh', rate: 12.00, description: 'Lifeline tariff' },
+    tier1: { range: '11-100 kWh', rate: 15.80, description: 'Low consumption' },
+    tier2: { range: '101-200 kWh', rate: 22.50, description: 'Medium consumption' },
+    tier3: { range: '201+ kWh', rate: 25.00, description: 'High consumption' },
+  },
+  commercial: {
+    smallCommercial: { type: 'SC', rate: 18.51, demandCharge: 800, description: 'Small Commercial' },
+    commercialIndustrial1: { type: 'CI1', rate: 14.55, demandCharge: 520, description: 'Commercial & Industrial (11kV)' },
+    commercialIndustrial2: { type: 'CI2', rate: 12.87, demandCharge: 470, description: 'Commercial & Industrial (33kV)' },
+    commercialIndustrial3: { type: 'CI3', rate: 11.82, demandCharge: 400, description: 'Commercial & Industrial (66kV+)' },
+  },
+  fuelCost: 4.63, // Fuel Energy Cost (changes monthly)
+  forex: 1.21, // Foreign Exchange Fluctuation Adjustment
+  inflation: 0.32, // Inflation Adjustment
+  rep: 0.30, // Rural Electrification Programme Levy
+  erc: 0.03, // ERC Levy
+  warma: 0.02, // WARMA Levy
+};
+
+// Kenya Solar Incentives & Policies
+const KENYA_INCENTIVES = [
+  { name: 'VAT Exemption on Solar Equipment', percentage: 16, type: 'tax', description: 'Solar panels, inverters, batteries exempt from VAT' },
+  { name: 'Import Duty Exemption', percentage: 25, type: 'duty', description: 'Zero import duty on solar equipment' },
+  { name: 'Net Metering Policy', percentage: 0, type: 'policy', description: 'Sell excess power to KPLC at feed-in tariff' },
+  { name: 'Feed-in Tariff (FiT)', rate: 12.0, type: 'revenue', description: 'KES 12/kWh for solar exports under 10MW' },
+  { name: 'Green Bonds Tax Incentive', percentage: 100, type: 'tax', description: 'Tax exempt green bonds for solar financing' },
+];
+
+// Kenya-Specific Solar Panel Brands Available
+const KENYA_SOLAR_BRANDS = [
+  { name: 'JA Solar', origin: 'China', warranty: 25, efficiency: 21.5, pricePerWatt: 35, availability: 'high' },
+  { name: 'LONGi', origin: 'China', warranty: 25, efficiency: 22.3, pricePerWatt: 38, availability: 'high' },
+  { name: 'Jinko Solar', origin: 'China', warranty: 25, efficiency: 21.8, pricePerWatt: 36, availability: 'high' },
+  { name: 'Canadian Solar', origin: 'Canada', warranty: 25, efficiency: 21.1, pricePerWatt: 34, availability: 'medium' },
+  { name: 'Trina Solar', origin: 'China', warranty: 25, efficiency: 21.6, pricePerWatt: 35, availability: 'high' },
+  { name: 'Risen Energy', origin: 'China', warranty: 25, efficiency: 21.0, pricePerWatt: 32, availability: 'medium' },
+  { name: 'SunPower', origin: 'USA', warranty: 25, efficiency: 22.8, pricePerWatt: 55, availability: 'low' },
+];
+
+// Kenya Inverter Brands
+const KENYA_INVERTER_BRANDS = [
+  { name: 'Deye', type: 'Hybrid', warranty: 5, efficiency: 97.5, pricePerKW: 45000, availability: 'high' },
+  { name: 'Growatt', type: 'Hybrid', warranty: 5, efficiency: 97.0, pricePerKW: 42000, availability: 'high' },
+  { name: 'Sungrow', type: 'Hybrid', warranty: 10, efficiency: 98.5, pricePerKW: 55000, availability: 'medium' },
+  { name: 'Victron', type: 'Off-Grid', warranty: 5, efficiency: 96.0, pricePerKW: 85000, availability: 'medium' },
+  { name: 'SMA', type: 'Grid-Tied', warranty: 10, efficiency: 98.2, pricePerKW: 75000, availability: 'low' },
+  { name: 'Fronius', type: 'Grid-Tied', warranty: 10, efficiency: 98.0, pricePerKW: 70000, availability: 'low' },
+];
+
+// Kenya Battery Options
+const KENYA_BATTERY_OPTIONS = [
+  { name: 'Felicity Lithium', type: 'LiFePO4', warranty: 10, cycles: 6000, pricePerKWh: 55000, availability: 'high' },
+  { name: 'Pylontech', type: 'LiFePO4', warranty: 10, cycles: 6000, pricePerKWh: 65000, availability: 'medium' },
+  { name: 'BYD', type: 'LiFePO4', warranty: 10, cycles: 8000, pricePerKWh: 75000, availability: 'medium' },
+  { name: 'Tesla Powerwall', type: 'Li-ion', warranty: 10, cycles: 5000, pricePerKWh: 95000, availability: 'low' },
+  { name: 'Chloride Exide', type: 'Lead-Acid', warranty: 2, cycles: 1500, pricePerKWh: 18000, availability: 'high' },
+  { name: 'Trojan', type: 'Deep Cycle', warranty: 3, cycles: 2000, pricePerKWh: 25000, availability: 'medium' },
+];
+
+// Kenya Permit Requirements
+const KENYA_PERMITS = [
+  { name: 'EPRA License', authority: 'Energy & Petroleum Regulatory Authority', required: true, forSizeKW: 0, description: 'Required for all grid-connected systems' },
+  { name: 'KPLC Net Metering Agreement', authority: 'Kenya Power', required: true, forSizeKW: 0, description: 'Required for grid export' },
+  { name: 'County Building Permit', authority: 'County Government', required: true, forSizeKW: 0, description: 'Structural modifications' },
+  { name: 'EIA Certificate', authority: 'NEMA', required: true, forSizeKW: 1000, description: 'Environmental Impact Assessment for >1MW' },
+  { name: 'Fire Safety Certificate', authority: 'Fire Department', required: false, forSizeKW: 50, description: 'Commercial installations >50kW' },
+];
+
+// Kenya Financing Options
+const KENYA_FINANCING = [
+  { name: 'Cash Purchase', type: 'cash', interestRate: 0, term: 0, downPayment: 100, providers: ['Direct'] },
+  { name: 'Bank Loan', type: 'loan', interestRate: 14.5, term: 60, downPayment: 20, providers: ['KCB', 'Equity', 'Co-op Bank', 'Stanbic'] },
+  { name: 'Solar Lease', type: 'lease', interestRate: 12, term: 84, downPayment: 0, providers: ['SunCulture', 'M-KOPA', 'Greenlight Planet'] },
+  { name: 'Asset Finance', type: 'asset', interestRate: 15, term: 48, downPayment: 25, providers: ['NCBA', 'I&M Bank', 'Standard Chartered'] },
+  { name: 'PPA', type: 'ppa', interestRate: 0, term: 180, downPayment: 0, providers: ['Distributed Power Africa', 'SolarAfrica'] },
+  { name: 'PAYGO', type: 'paygo', interestRate: 18, term: 36, downPayment: 5, providers: ['M-KOPA', 'd.light', 'BBOXX', 'Azuri'] },
+];
+
+// Legacy compatibility
+const KENYA_LOCATIONS = KENYA_COUNTIES.map(c => ({
+  name: c.name,
+  irradiance: c.irradiance,
+  lat: c.lat,
+  tariff: KENYA_TARIFFS.domestic.tier3.rate
+}));
 
 const WORKFLOW_STEPS = [
   {
@@ -280,16 +421,43 @@ const Step1ClientInquiry: React.FC<{
           />
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Location *</label>
+          <label className="block text-sm text-slate-400 mb-1">County / Location *</label>
           <select
             value={formData.location}
             onChange={(e) => handleChange('location', e.target.value)}
             className="w-full bg-slate-700 text-white rounded-lg px-4 py-2 border border-slate-600 focus:border-amber-500 focus:outline-none"
           >
-            <option value="">Select location</option>
-            {KENYA_LOCATIONS.map(loc => (
-              <option key={loc.name} value={loc.name}>{loc.name}</option>
-            ))}
+            <option value="">Select county (47 counties)</option>
+            <optgroup label="Central Region">
+              {KENYA_COUNTIES.filter(c => c.region === 'Central').map(loc => (
+                <option key={loc.name} value={loc.name}>{loc.name} ({loc.irradiance} kWh/m²/day)</option>
+              ))}
+            </optgroup>
+            <optgroup label="Coast Region (High Solar)">
+              {KENYA_COUNTIES.filter(c => c.region === 'Coast').map(loc => (
+                <option key={loc.name} value={loc.name}>{loc.name} ({loc.irradiance} kWh/m²/day)</option>
+              ))}
+            </optgroup>
+            <optgroup label="Rift Valley">
+              {KENYA_COUNTIES.filter(c => c.region === 'Rift Valley').map(loc => (
+                <option key={loc.name} value={loc.name}>{loc.name} ({loc.irradiance} kWh/m²/day)</option>
+              ))}
+            </optgroup>
+            <optgroup label="Eastern Region">
+              {KENYA_COUNTIES.filter(c => c.region === 'Eastern').map(loc => (
+                <option key={loc.name} value={loc.name}>{loc.name} ({loc.irradiance} kWh/m²/day)</option>
+              ))}
+            </optgroup>
+            <optgroup label="North Eastern (Highest Solar)">
+              {KENYA_COUNTIES.filter(c => c.region === 'North Eastern').map(loc => (
+                <option key={loc.name} value={loc.name}>{loc.name} ({loc.irradiance} kWh/m²/day)</option>
+              ))}
+            </optgroup>
+            <optgroup label="Western Region">
+              {KENYA_COUNTIES.filter(c => c.region === 'Western').map(loc => (
+                <option key={loc.name} value={loc.name}>{loc.name} ({loc.irradiance} kWh/m²/day)</option>
+              ))}
+            </optgroup>
           </select>
         </div>
         <div>
@@ -387,35 +555,112 @@ const Step1ClientInquiry: React.FC<{
         />
       </div>
 
+      {/* Location Solar Data */}
+      {formData.location && (
+        <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-xl p-4 border border-blue-700/30">
+          <h4 className="text-blue-400 font-semibold mb-3">Location Solar Data: {formData.location}</h4>
+          {(() => {
+            const countyData = KENYA_COUNTIES.find(c => c.name === formData.location);
+            if (!countyData) return null;
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center text-sm">
+                <div className="bg-slate-800/50 rounded-lg p-2">
+                  <div className="text-xl font-bold text-amber-400">{countyData.irradiance}</div>
+                  <div className="text-xs text-slate-400">kWh/m²/day</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-2">
+                  <div className="text-xl font-bold text-white">{countyData.avgTemp}°C</div>
+                  <div className="text-xs text-slate-400">Avg Temp</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-2">
+                  <div className="text-xl font-bold text-white">{countyData.humidity}%</div>
+                  <div className="text-xs text-slate-400">Humidity</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-2">
+                  <div className="text-xl font-bold text-green-400">{(countyData.dustFactor * 100).toFixed(0)}%</div>
+                  <div className="text-xs text-slate-400">Soiling Factor</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-2">
+                  <div className="text-xl font-bold text-cyan-400">{countyData.region}</div>
+                  <div className="text-xs text-slate-400">Region</div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
       {/* Quick Sizing Estimate */}
       {formData.monthlyBill > 0 && (
         <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-xl p-4 border border-amber-700/30">
-          <h4 className="text-amber-400 font-semibold mb-3">Quick System Sizing Estimate</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-white">
-                {Math.round(formData.monthlyBill / 25)} kWh
+          <h4 className="text-amber-400 font-semibold mb-3">AI-Powered Quick System Sizing</h4>
+          {(() => {
+            const countyData = KENYA_COUNTIES.find(c => c.name === formData.location);
+            const irradiance = countyData?.irradiance || 5.2;
+            const tariff = KENYA_TARIFFS.domestic.tier3.rate;
+            const monthlyKWh = formData.monthlyBill / tariff;
+            const dailyKWh = monthlyKWh / 30;
+            const systemSize = dailyKWh / (irradiance * 0.8);
+            const panelCount = Math.ceil(systemSize * 1000 / 545);
+            const annualProduction = systemSize * irradiance * 365 * 0.8;
+            const annualSavings = annualProduction * tariff;
+            const estimatedCost = systemSize * 120000;
+            const paybackYears = estimatedCost / annualSavings;
+
+            return (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-4">
+                  <div>
+                    <div className="text-2xl font-bold text-white">{Math.round(monthlyKWh)} kWh</div>
+                    <div className="text-xs text-slate-400">Monthly Usage</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-amber-400">{systemSize.toFixed(1)} kW</div>
+                    <div className="text-xs text-slate-400">Recommended System</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white">{panelCount}</div>
+                    <div className="text-xs text-slate-400">Panels (545W JA Solar)</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-400">KES {Math.round(annualSavings / 12).toLocaleString()}</div>
+                    <div className="text-xs text-slate-400">Est. Monthly Savings</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-center pt-3 border-t border-amber-700/30">
+                  <div>
+                    <div className="text-lg font-bold text-white">KES {(estimatedCost / 1000000).toFixed(2)}M</div>
+                    <div className="text-xs text-slate-400">Est. System Cost</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-purple-400">{paybackYears.toFixed(1)} years</div>
+                    <div className="text-xs text-slate-400">Payback Period</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-cyan-400">KES {Math.round(annualSavings * 25).toLocaleString()}</div>
+                    <div className="text-xs text-slate-400">25-Year Savings</div>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Kenya Incentives Summary */}
+      {formData.monthlyBill > 0 && (
+        <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-xl p-4 border border-green-700/30">
+          <h4 className="text-green-400 font-semibold mb-3">Available Kenya Incentives</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {KENYA_INCENTIVES.map((incentive, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <span className="text-green-400">✓</span>
+                <span className="text-slate-300">{incentive.name}</span>
+                {incentive.percentage && incentive.percentage > 0 && (
+                  <span className="text-green-400 text-xs">({incentive.percentage}% savings)</span>
+                )}
               </div>
-              <div className="text-xs text-slate-400">Monthly Usage</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-amber-400">
-                {((formData.monthlyBill / 25) / (30 * 4.5)).toFixed(1)} kW
-              </div>
-              <div className="text-xs text-slate-400">Recommended System</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-white">
-                {Math.ceil((formData.monthlyBill / 25) / (30 * 4.5) * 1000 / 545)}
-              </div>
-              <div className="text-xs text-slate-400">Panels (545W)</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-green-400">
-                KES {Math.round(formData.monthlyBill * 0.7).toLocaleString()}
-              </div>
-              <div className="text-xs text-slate-400">Est. Monthly Savings</div>
-            </div>
+            ))}
           </div>
         </div>
       )}
