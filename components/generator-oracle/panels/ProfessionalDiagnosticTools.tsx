@@ -2465,33 +2465,94 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
           </div>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-auto">
-          <AnimatePresence mode="wait">
-            {activeTab === 'monitor' && <MonitorTab />}
-            {activeTab === 'faults' && <FaultsTab />}
-            {activeTab === 'config' && <ConfigTab />}
-            {activeTab === 'wiring' && <WiringTab />}
-            {activeTab === 'tests' && <TestsTab />}
-            {activeTab === 'techinput' && <TechInputTab />}
-            {activeTab === 'health' && <HealthTab />}
-            {activeTab === 'backup' && <BackupTab />}
-            {activeTab === 'reports' && <ReportsTab />}
-            {activeTab === 'docs' && <DocsTab />}
-          </AnimatePresence>
+        {/* Content Area with Scroll Controls */}
+        <div className="flex-1 overflow-hidden relative">
+          <div id="content-scroll" className="h-full overflow-y-auto scroll-smooth">
+            <AnimatePresence mode="wait">
+              {activeTab === 'monitor' && <MonitorTab />}
+              {activeTab === 'faults' && <FaultsTab />}
+              {activeTab === 'config' && <ConfigTab />}
+              {activeTab === 'wiring' && <WiringTab />}
+              {activeTab === 'tests' && <TestsTab />}
+              {activeTab === 'techinput' && <TechInputTab />}
+              {activeTab === 'health' && <HealthTab />}
+              {activeTab === 'backup' && <BackupTab />}
+              {activeTab === 'reports' && <ReportsTab />}
+              {activeTab === 'docs' && <DocsTab />}
+            </AnimatePresence>
+          </div>
+
+          {/* Floating Scroll Navigation Buttons */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
+            <button
+              onClick={() => document.getElementById('content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="p-3 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-600 shadow-lg hover:scale-110 transition-all group"
+              title="Scroll to top"
+            >
+              <ChevronUp className="w-5 h-5 text-slate-400 group-hover:text-white" />
+            </button>
+            <button
+              onClick={() => {
+                const el = document.getElementById('content-scroll');
+                if (el) el.scrollTo({ top: el.scrollTop + 200, behavior: 'smooth' });
+              }}
+              className="p-3 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-600 shadow-lg hover:scale-110 transition-all group"
+              title="Scroll down"
+            >
+              <ChevronDown className="w-5 h-5 text-slate-400 group-hover:text-white" />
+            </button>
+            <button
+              onClick={() => {
+                const el = document.getElementById('content-scroll');
+                if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+              }}
+              className="p-3 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-600 shadow-lg hover:scale-110 transition-all group"
+              title="Scroll to bottom"
+            >
+              <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-white rotate-90" />
+            </button>
+          </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer with Quick Actions */}
         <div className="flex items-center justify-between px-4 py-2 text-xs border-t border-slate-700" style={{ backgroundColor: '#1e293b' }}>
           <div className="flex items-center gap-4 text-slate-500">
             <span>Protocol: J1939</span>
             <span>Baud: 250kbps</span>
             <span>Node: 0x00</span>
           </div>
-          <div className="flex items-center gap-4 text-slate-500">
-            <span>TX: 1,234</span>
-            <span>RX: 5,678</span>
-            <span>Errors: 0</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4 text-slate-500">
+              <span>TX: 1,234</span>
+              <span>RX: 5,678</span>
+              <span>Errors: 0</span>
+            </div>
+            {/* Tab Navigation Arrows */}
+            <div className="flex items-center gap-1 ml-4 border-l border-slate-600 pl-4">
+              <button
+                onClick={() => {
+                  const tabs = ['monitor', 'faults', 'config', 'wiring', 'tests', 'techinput', 'health', 'backup', 'reports', 'docs'];
+                  const currentIdx = tabs.indexOf(activeTab);
+                  if (currentIdx > 0) setActiveTab(tabs[currentIdx - 1] as typeof activeTab);
+                }}
+                className="p-1.5 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                title="Previous tab"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-slate-500 text-xs px-2">{activeTab}</span>
+              <button
+                onClick={() => {
+                  const tabs = ['monitor', 'faults', 'config', 'wiring', 'tests', 'techinput', 'health', 'backup', 'reports', 'docs'];
+                  const currentIdx = tabs.indexOf(activeTab);
+                  if (currentIdx < tabs.length - 1) setActiveTab(tabs[currentIdx + 1] as typeof activeTab);
+                }}
+                className="p-1.5 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                title="Next tab"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
