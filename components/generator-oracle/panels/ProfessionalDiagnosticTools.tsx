@@ -1070,27 +1070,52 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
     </div>
   );
 
-  // Wiring Diagrams Tab
-  const WiringTab = () => (
-    <div className="p-4 space-y-4">
+  // Wiring Diagrams Tab - With Working Diagram Selection
+  const WiringTab = () => {
+    const [diagramType, setDiagramType] = useState<'Power Wiring' | 'Control Wiring' | 'Sensor Wiring' | 'CAN Bus' | 'Complete'>('Complete');
+
+    return (
+    <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>
           Wiring Diagrams - {generatorInfo.make} {generatorInfo.model} ({generatorInfo.kva} kVA)
         </h3>
         <div className="flex items-center gap-2">
-          <DropdownButton
-            id="diagram-type"
-            label="Diagram Type"
-            options={['Power Wiring', 'Control Wiring', 'Sensor Wiring', 'CAN Bus', 'Complete']}
-            onSelect={() => {}}
-          />
-          <button className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600">
+          {/* Diagram Type Selector - Now Working */}
+          <div className="flex bg-slate-800 rounded-lg p-1">
+            {(['Power Wiring', 'Control Wiring', 'Sensor Wiring', 'CAN Bus', 'Complete'] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => setDiagramType(type)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  diagramType === type
+                    ? 'text-white shadow-md'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                }`}
+                style={diagramType === type ? { backgroundColor: tool.primaryColor } : {}}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+          <button className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 hover:scale-105 transition-all" title="Print Diagram">
             <Printer className="w-4 h-4 text-white" />
           </button>
-          <button className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600">
+          <button className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 hover:scale-105 transition-all" title="Download PDF">
             <Download className="w-4 h-4 text-white" />
           </button>
         </div>
+      </div>
+
+      {/* Diagram Type Description */}
+      <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+        <p className="text-sm" style={{ color: tool.textColor }}>
+          {diagramType === 'Power Wiring' && 'Showing: Main power connections - Battery, starter, alternator charging circuit, and main power distribution.'}
+          {diagramType === 'Control Wiring' && 'Showing: Controller connections - Start/stop circuits, safety interlocks, relay outputs, and indicator connections.'}
+          {diagramType === 'Sensor Wiring' && 'Showing: Sensor circuits - Oil pressure, coolant temperature, speed pickup, fuel level, and auxiliary sensors.'}
+          {diagramType === 'CAN Bus' && 'Showing: CAN bus network - J1939 data connections, ECM communications, and remote monitoring interfaces.'}
+          {diagramType === 'Complete' && 'Showing: Complete system diagram - All wiring including power, control, sensors, and communications.'}
+        </p>
       </div>
 
       {/* SVG Wiring Diagram */}
@@ -1211,7 +1236,8 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
         </table>
       </div>
     </div>
-  );
+    );
+  };
 
   // Active Tests Tab - Professional diagnostic tests like CAT ET, VODIA
   const TestsTab = () => {
@@ -2143,115 +2169,231 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
   );
 
   // ═══════════════════════════════════════════════════════════════════════════════
-  // DOCS TAB - Service Documentation
+  // DOCS TAB - Service Documentation with Detailed Content
   // ═══════════════════════════════════════════════════════════════════════════════
-  const DocsTab = () => (
-    <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Service Documentation</h3>
-          <p className="text-sm" style={{ color: tool.textColor + '80' }}>Manuals, Technical Service Bulletins, and Relevant Documentation</p>
-        </div>
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: tool.textColor + '60' }} />
-          <input
-            type="text"
-            placeholder="Search documents..."
-            className="pl-10 pr-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm w-64"
-            style={{ color: tool.textColor }}
-          />
-        </div>
-      </div>
+  const DocsTab = () => {
+    const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
+    const [docCategory, setDocCategory] = useState('All');
 
-      {/* Document Categories */}
-      <div className="flex gap-2">
-        {['All', 'Manuals', 'TSB', 'Bulletins', 'Recalls'].map((cat) => (
-          <button
-            key={cat}
-            className={`px-3 py-1.5 rounded-lg text-sm ${cat === 'All' ? 'text-white' : 'bg-slate-800 hover:bg-slate-700'}`}
-            style={cat === 'All' ? { backgroundColor: tool.primaryColor } : { color: tool.textColor }}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+    // Detailed manual content
+    const DETAILED_MANUALS: Record<string, { title: string; sections: { heading: string; content: string }[] }> = {
+      'doc1': {
+        title: 'Engine Oil Specifications & Change Intervals',
+        sections: [
+          { heading: 'Recommended Oil Specifications', content: 'Use high-quality diesel engine oil meeting API CI-4, CJ-4, or CK-4 specifications. For most operating conditions, SAE 15W-40 is recommended. In extreme cold conditions below -15°C, use SAE 10W-30 or synthetic 5W-40. The oil must meet manufacturer viscosity requirements and have proper additive packages for diesel engine protection.' },
+          { heading: 'Oil Change Intervals', content: 'Standard interval: Every 250-500 operating hours or 6 months, whichever comes first. Severe duty applications (dusty environments, high load, extreme temperatures): Every 150-250 hours. Always check oil condition weekly using dipstick - look for fuel dilution, coolant contamination, or excessive darkening.' },
+          { heading: 'Oil Capacity & Procedure', content: 'Typical capacity: 35-45 liters depending on engine model. Procedure: 1) Run engine to operating temperature. 2) Shut down and wait 10 minutes. 3) Drain oil completely. 4) Replace oil filter. 5) Add new oil to correct level. 6) Run engine and check for leaks. 7) Recheck level after 5 minutes.' },
+          { heading: 'Oil Analysis Program', content: 'Recommend sampling every oil change. Send to certified laboratory for wear metal analysis, contamination detection, and viscosity verification. Track trends over time to identify developing issues before failure occurs.' },
+        ]
+      },
+      'doc2': {
+        title: 'TSB-2026-003: High Coolant Temperature Issues',
+        sections: [
+          { heading: 'Problem Description', content: 'Some units may experience intermittent high coolant temperature warnings during extended high-load operation, particularly in ambient temperatures above 35°C. This bulletin addresses diagnostic steps and corrective actions.' },
+          { heading: 'Affected Units', content: 'All generators with engine hours between 2000-8000 hours, manufactured between 2022-2025. Check production date on data plate.' },
+          { heading: 'Root Cause Analysis', content: 'Investigation revealed three potential causes: 1) Radiator core fouling from airborne debris. 2) Thermostat not opening fully at correct temperature. 3) Water pump impeller erosion reducing coolant flow.' },
+          { heading: 'Corrective Action', content: 'Step 1: Clean radiator core with low-pressure water (not exceeding 30 PSI). Step 2: Test thermostat in heated water - should open fully at 82°C. Step 3: If issue persists, inspect water pump for cavitation damage. Replace components as necessary and refill with correct coolant mixture (50/50 ELC).' },
+        ]
+      },
+      'doc3': {
+        title: 'DPF Regeneration Procedures',
+        sections: [
+          { heading: 'Understanding DPF Operation', content: 'The Diesel Particulate Filter captures soot particles from exhaust gases. Over time, accumulated soot must be burned off through regeneration. Three types exist: Passive (automatic during normal operation), Active (ECM-initiated at idle), and Parked/Service (manually initiated).' },
+          { heading: 'When Regeneration is Required', content: 'Monitor DPF soot load percentage via diagnostic tool. Passive regen occurs continuously above 300°C exhaust temp. Active regen triggers at 60-80% soot load. Parked regen required if soot exceeds 90% or active regen repeatedly fails. Warning light indicates regeneration needed.' },
+          { heading: 'Parked Regeneration Procedure', content: '1) Park in well-ventilated area away from combustibles. 2) Connect diagnostic tool. 3) Ensure coolant at operating temperature. 4) Fuel tank minimum 25% full. 5) Initiate parked regen via diagnostic menu. 6) Process takes 30-45 minutes - do not interrupt. 7) Exhaust temperatures will exceed 500°C - maintain safe distance.' },
+          { heading: 'Post-Regeneration Verification', content: 'After completion, verify soot load dropped below 20%. Check DPF differential pressure returned to normal range (typically 2-8 kPa at idle). Clear any related fault codes. Document regeneration in service records.' },
+        ]
+      },
+      'doc4': {
+        title: 'SB-2025-018: Fuel Injector Calibration Update',
+        sections: [
+          { heading: 'Bulletin Overview', content: 'Updated injector trim calibration values improve fuel delivery accuracy and reduce emissions. This update applies to all units with electronic fuel injection systems.' },
+          { heading: 'Calibration Procedure', content: 'Each injector has unique trim codes stamped on the body. Enter these codes into the ECM using diagnostic software. Codes compensate for manufacturing variations between injectors, ensuring equal fuel delivery across all cylinders.' },
+          { heading: 'When to Recalibrate', content: 'Required after: 1) Injector replacement. 2) ECM replacement or reflash. 3) Rough running diagnosis. 4) Emissions test failure. Always verify correct codes are entered - incorrect values cause performance issues.' },
+        ]
+      },
+      'doc5': {
+        title: 'Controller Software Update v3.2.2',
+        sections: [
+          { heading: 'Release Notes', content: 'Version 3.2.2 includes bug fixes for communication stability, improved load sharing response, and enhanced protection features. Update recommended for all units running version 3.1.x or earlier.' },
+          { heading: 'Update Procedure', content: '1) Connect PC with update software. 2) Backup current configuration. 3) Download update file to controller. 4) Wait for automatic restart. 5) Verify version in system info. 6) Restore any custom parameters if needed.' },
+          { heading: 'Changes in This Version', content: 'Fixed: Occasional CAN bus timeout errors. Improved: Faster load pickup response. Added: New overspeed protection configuration option. Enhanced: Remote monitoring data refresh rate.' },
+        ]
+      },
+      'doc6': {
+        title: 'Turbocharger Maintenance Guide',
+        sections: [
+          { heading: 'Turbo Inspection Schedule', content: 'Visual inspection every 500 hours: Check for oil leaks at seals, exhaust discoloration, unusual sounds. Every 2000 hours: Measure shaft play (radial and axial). Replace turbo if play exceeds specifications or boost pressure drops.' },
+          { heading: 'Common Turbo Issues', content: 'Oil starvation: Most common failure cause - ensure adequate oil supply and cleanliness. Compressor surge: Listen for cyclic whooshing - indicates boost control or intake restriction. Exhaust leaks: Black soot deposits indicate seal failure.' },
+          { heading: 'Turbo Replacement Procedure', content: 'Critical: Pre-fill new turbo with clean oil before installation. Check oil supply and drain lines are clear. After installation, crank engine without starting to prime turbo. Start and idle for 3-5 minutes before applying load. Verify no leaks and boost pressure is correct.' },
+        ]
+      },
+    };
 
-      {/* Document List */}
-      <div className="rounded-xl border overflow-hidden" style={{ borderColor: tool.primaryColor + '40' }}>
-        <div className="divide-y divide-slate-700" style={{ backgroundColor: tool.screenColor }}>
-          {SAMPLE_SERVICE_DOCS.map((doc) => (
-            <div key={doc.id} className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${
-                  doc.type === 'manual' ? 'bg-blue-500/20 text-blue-400' :
-                  doc.type === 'tsb' ? 'bg-red-500/20 text-red-400' :
-                  doc.type === 'bulletin' ? 'bg-amber-500/20 text-amber-400' :
-                  'bg-purple-500/20 text-purple-400'
-                }`}>
-                  <FileText className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-medium" style={{ color: tool.textColor }}>{doc.title}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase ${
-                      doc.type === 'manual' ? 'bg-blue-500/20 text-blue-400' :
-                      doc.type === 'tsb' ? 'bg-red-500/20 text-red-400' :
-                      doc.type === 'bulletin' ? 'bg-amber-500/20 text-amber-400' :
-                      'bg-purple-500/20 text-purple-400'
-                    }`}>
-                      {doc.type}
-                    </span>
-                    <span className="text-xs" style={{ color: tool.textColor + '60' }}>{doc.date}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                      doc.relevance === 'high' ? 'bg-green-500/20 text-green-400' :
-                      doc.relevance === 'medium' ? 'bg-amber-500/20 text-amber-400' :
-                      'bg-slate-500/20 text-slate-400'
-                    }`}>
-                      {doc.relevance} relevance
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600">
-                  <Eye className="w-4 h-4" style={{ color: tool.textColor }} />
-                </button>
-                <button className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600">
-                  <Download className="w-4 h-4" style={{ color: tool.textColor }} />
-                </button>
-              </div>
-            </div>
+    const filteredDocs = docCategory === 'All'
+      ? SAMPLE_SERVICE_DOCS
+      : SAMPLE_SERVICE_DOCS.filter(d => d.type === docCategory.toLowerCase());
+
+    return (
+      <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Service Documentation</h3>
+            <p className="text-sm" style={{ color: tool.textColor + '80' }}>Manuals, Technical Service Bulletins, and Relevant Documentation</p>
+          </div>
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: tool.textColor + '60' }} />
+            <input
+              type="text"
+              placeholder="Search documents..."
+              className="pl-10 pr-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm w-64 focus:border-cyan-500 focus:outline-none"
+              style={{ color: tool.textColor }}
+            />
+          </div>
+        </div>
+
+        {/* Document Categories - Now Clickable */}
+        <div className="flex gap-2 flex-wrap">
+          {['All', 'Manuals', 'TSB', 'Bulletins', 'Recalls'].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setDocCategory(cat)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                docCategory === cat
+                  ? 'text-white shadow-lg'
+                  : 'bg-slate-800 hover:bg-slate-700 hover:scale-105'
+              }`}
+              style={docCategory === cat ? { backgroundColor: tool.primaryColor } : { color: tool.textColor }}
+            >
+              {cat}
+            </button>
           ))}
         </div>
-      </div>
 
-      {/* Quick Reference */}
-      <div className="p-4 rounded-xl border" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}>
-        <h4 className="font-medium mb-3" style={{ color: tool.textColor }}>Quick Reference - {generatorInfo.make} {generatorInfo.model}</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <span style={{ color: tool.textColor + '60' }}>Oil Type:</span>
-            <p style={{ color: tool.textColor }}>15W-40 CI-4</p>
+        {/* Selected Document Viewer */}
+        {selectedDoc && DETAILED_MANUALS[selectedDoc] && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-6 rounded-xl border-2"
+            style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-bold" style={{ color: tool.textColor }}>{DETAILED_MANUALS[selectedDoc].title}</h4>
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <X className="w-5 h-5" style={{ color: tool.textColor }} />
+              </button>
+            </div>
+            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+              {DETAILED_MANUALS[selectedDoc].sections.map((section, idx) => (
+                <div key={idx} className="p-4 rounded-lg bg-slate-800/50">
+                  <h5 className="font-medium mb-2" style={{ color: tool.primaryColor }}>{section.heading}</h5>
+                  <p className="text-sm leading-relaxed" style={{ color: tool.textColor + 'cc' }}>{section.content}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-700">
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">
+                <Download className="w-4 h-4" />
+                Download PDF
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">
+                <Printer className="w-4 h-4" />
+                Print
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Document List - Now with Working Buttons */}
+        <div className="rounded-xl border overflow-hidden" style={{ borderColor: tool.primaryColor + '40' }}>
+          <div className="divide-y divide-slate-700" style={{ backgroundColor: tool.screenColor }}>
+            {filteredDocs.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${
+                    doc.type === 'manual' ? 'bg-blue-500/20 text-blue-400' :
+                    doc.type === 'tsb' ? 'bg-red-500/20 text-red-400' :
+                    doc.type === 'bulletin' ? 'bg-amber-500/20 text-amber-400' :
+                    'bg-purple-500/20 text-purple-400'
+                  }`}>
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium" style={{ color: tool.textColor }}>{doc.title}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase ${
+                        doc.type === 'manual' ? 'bg-blue-500/20 text-blue-400' :
+                        doc.type === 'tsb' ? 'bg-red-500/20 text-red-400' :
+                        doc.type === 'bulletin' ? 'bg-amber-500/20 text-amber-400' :
+                        'bg-purple-500/20 text-purple-400'
+                      }`}>
+                        {doc.type}
+                      </span>
+                      <span className="text-xs" style={{ color: tool.textColor + '60' }}>{doc.date}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                        doc.relevance === 'high' ? 'bg-green-500/20 text-green-400' :
+                        doc.relevance === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                        'bg-slate-500/20 text-slate-400'
+                      }`}>
+                        {doc.relevance} relevance
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSelectedDoc(selectedDoc === doc.id ? null : doc.id)}
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 hover:scale-105 transition-all text-sm"
+                  >
+                    <Eye className="w-4 h-4" style={{ color: tool.textColor }} />
+                    <span style={{ color: tool.textColor }}>View</span>
+                  </button>
+                  <button className="flex items-center gap-1 px-3 py-2 rounded-lg hover:scale-105 transition-all text-sm text-white" style={{ backgroundColor: tool.primaryColor }}>
+                    <Download className="w-4 h-4" />
+                    <span>Download</span>
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <span style={{ color: tool.textColor + '60' }}>Oil Capacity:</span>
-            <p style={{ color: tool.textColor }}>42 liters</p>
-          </div>
-          <div>
-            <span style={{ color: tool.textColor + '60' }}>Coolant Type:</span>
-            <p style={{ color: tool.textColor }}>ELC Extended Life</p>
-          </div>
-          <div>
+        </div>
+
+        {/* Quick Reference */}
+        <div className="p-4 rounded-xl border" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}>
+          <h4 className="font-medium mb-3" style={{ color: tool.textColor }}>Quick Reference - {generatorInfo.make} {generatorInfo.model}</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <span style={{ color: tool.textColor + '60' }}>Oil Type:</span>
+              <p style={{ color: tool.textColor }}>15W-40 CI-4</p>
+            </div>
+            <div>
+              <span style={{ color: tool.textColor + '60' }}>Oil Capacity:</span>
+              <p style={{ color: tool.textColor }}>42 liters</p>
+            </div>
+            <div>
+              <span style={{ color: tool.textColor + '60' }}>Coolant Type:</span>
+              <p style={{ color: tool.textColor }}>ELC Extended Life</p>
+            </div>
+            <div>
             <span style={{ color: tool.textColor + '60' }}>Fuel Filter:</span>
             <p style={{ color: tool.textColor }}>P/N: FF5580</p>
           </div>
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 pt-20">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/90 p-4 pt-24 pb-4 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
