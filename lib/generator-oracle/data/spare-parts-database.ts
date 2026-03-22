@@ -1042,54 +1042,108 @@ export const VERIFICATION_STEPS: Record<string, VerificationStep[]> = {
   ]
 };
 
-// ==================== KENYA SUPPLIER DATABASE ====================
+// ==================== INTERNAL SPARE PARTS PAGES ====================
+// All parts link to our internal spare parts catalog for SEO
 
-export const KENYA_SUPPLIERS = [
-  {
-    name: 'Mantrac Kenya Ltd (CAT Dealer)',
-    address: 'Enterprise Road, Industrial Area, Nairobi',
-    phone: '+254 20 6553000',
-    email: 'info@mantrackenya.com',
-    specialization: ['Caterpillar', 'Perkins', 'FG Wilson'],
-    services: ['Parts', 'Service', 'Rental'],
-    hours: 'Mon-Fri 8:00-17:00, Sat 8:00-12:00'
+export const SPARE_PARTS_PAGES = {
+  // Engine Parts
+  oilSystem: {
+    name: 'Oil System Parts',
+    url: '/spare-parts/engine/oil-system',
+    description: 'Oil filters, pressure sensors, pumps'
   },
-  {
-    name: 'CMC Motors (Cummins)',
-    address: 'Lusaka Road, Industrial Area, Nairobi',
-    phone: '+254 20 2712201',
-    specialization: ['Cummins', 'Stamford', 'Newage'],
-    services: ['Parts', 'Service', 'Overhaul']
+  coolingSystem: {
+    name: 'Cooling System Parts',
+    url: '/spare-parts/engine/cooling',
+    description: 'Thermostats, water pumps, radiator hoses, coolant'
   },
-  {
-    name: 'Chandarana Industries',
-    address: 'Kitui Road, Industrial Area, Nairobi',
-    phone: '+254 20 6536222',
-    specialization: ['Generator Controllers', 'DeepSea', 'ComAp', 'SmartGen'],
-    services: ['Parts', 'Programming', 'Installation']
+  fuelSystem: {
+    name: 'Fuel System Parts',
+    url: '/spare-parts/engine/fuel',
+    description: 'Fuel filters, pumps, injectors, solenoids'
   },
-  {
-    name: 'Genset Services Ltd',
-    address: 'Mombasa Road, Nairobi',
-    phone: '+254 722 123456',
-    specialization: ['Multi-brand Generator Service'],
-    services: ['Parts', 'Service', 'Installation', 'Hire']
+  airIntake: {
+    name: 'Air System Parts',
+    url: '/spare-parts/engine/air-intake',
+    description: 'Air filters, turbo parts, intake manifolds'
   },
-  {
-    name: 'Power Controls East Africa',
-    address: 'Likoni Road, Industrial Area, Nairobi',
-    phone: '+254 20 6531888',
-    specialization: ['AVR', 'Controllers', 'Electrical Components'],
-    services: ['Parts', 'Rewinding', 'Repair']
+  startingSystem: {
+    name: 'Starting System Parts',
+    url: '/spare-parts/engine/starting',
+    description: 'Starter motors, solenoids, batteries, glow plugs'
   },
-  {
-    name: 'AutoXpress Kenya',
-    address: 'Multiple locations',
-    phone: '+254 20 2717711',
-    specialization: ['Batteries', 'Filters', 'Belts', 'General Parts'],
-    services: ['Parts retail']
+  belts: {
+    name: 'Belts & Pulleys',
+    url: '/spare-parts/engine/belts',
+    description: 'Drive belts, serpentine belts, tensioners'
+  },
+
+  // Electrical Parts
+  avr: {
+    name: 'AVR & Voltage Regulators',
+    url: '/spare-parts/electrical/avr',
+    description: 'Automatic voltage regulators, excitation parts'
+  },
+  controllers: {
+    name: 'Generator Controllers',
+    url: '/spare-parts/electrical/controllers',
+    description: 'DSE, ComAp, SmartGen, DATAKOM controllers'
+  },
+  breakers: {
+    name: 'Circuit Breakers & Contactors',
+    url: '/spare-parts/electrical/breakers',
+    description: 'MCCBs, contactors, relays, fuses'
+  },
+  sensors: {
+    name: 'Sensors & Transducers',
+    url: '/spare-parts/electrical/sensors',
+    description: 'Pressure, temperature, speed, current sensors'
+  },
+
+  // By Brand
+  perkins: {
+    name: 'Perkins Parts',
+    url: '/spare-parts/brands/perkins',
+    description: 'Genuine and aftermarket Perkins parts'
+  },
+  cummins: {
+    name: 'Cummins Parts',
+    url: '/spare-parts/brands/cummins',
+    description: 'Genuine and aftermarket Cummins parts'
+  },
+  caterpillar: {
+    name: 'Caterpillar Parts',
+    url: '/spare-parts/brands/caterpillar',
+    description: 'CAT engine and generator parts'
+  },
+  stamford: {
+    name: 'Stamford/Newage Parts',
+    url: '/spare-parts/brands/stamford',
+    description: 'Alternator parts, AVRs, brushes'
+  },
+
+  // General
+  all: {
+    name: 'All Spare Parts',
+    url: '/spare-parts',
+    description: 'Complete spare parts catalog'
+  },
+  contact: {
+    name: 'Request Parts Quote',
+    url: '/spare-parts/quote',
+    description: 'Get a quote for parts you need'
   }
-];
+};
+
+// Internal links for parts ordering
+export const PARTS_ORDER_INFO = {
+  mainPage: '/spare-parts',
+  quotePage: '/spare-parts/quote',
+  contactPage: '/contact',
+  phone: '+254 XXX XXX XXX',  // Your company phone
+  whatsapp: '+254 XXX XXX XXX',  // Your WhatsApp
+  email: 'parts@emersoneims.co.ke'  // Your parts email
+};
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -1134,11 +1188,53 @@ export function getVerificationSteps(repairType: string): VerificationStep[] {
   return VERIFICATION_STEPS[repairType] || [];
 }
 
-export function findSupplierForPart(partCategory: string, location: string = 'Nairobi'): typeof KENYA_SUPPLIERS {
-  // Simple location-based filter - can be enhanced
-  return KENYA_SUPPLIERS.filter(s =>
-    s.specialization.some(spec =>
-      spec.toLowerCase().includes(partCategory.toLowerCase())
-    ) || s.services.includes('Parts')
-  );
+export function getPartsPageForCategory(category: string): typeof SPARE_PARTS_PAGES.all {
+  const lowerCategory = category.toLowerCase();
+
+  // Map categories to internal spare parts pages
+  if (lowerCategory.includes('oil') || lowerCategory.includes('lubrication')) {
+    return SPARE_PARTS_PAGES.oilSystem;
+  }
+  if (lowerCategory.includes('coolant') || lowerCategory.includes('temperature') || lowerCategory.includes('radiator')) {
+    return SPARE_PARTS_PAGES.coolingSystem;
+  }
+  if (lowerCategory.includes('fuel') || lowerCategory.includes('injection')) {
+    return SPARE_PARTS_PAGES.fuelSystem;
+  }
+  if (lowerCategory.includes('air') || lowerCategory.includes('turbo') || lowerCategory.includes('filter')) {
+    return SPARE_PARTS_PAGES.airIntake;
+  }
+  if (lowerCategory.includes('start') || lowerCategory.includes('battery') || lowerCategory.includes('crank')) {
+    return SPARE_PARTS_PAGES.startingSystem;
+  }
+  if (lowerCategory.includes('belt') || lowerCategory.includes('drive')) {
+    return SPARE_PARTS_PAGES.belts;
+  }
+  if (lowerCategory.includes('avr') || lowerCategory.includes('voltage') || lowerCategory.includes('excit')) {
+    return SPARE_PARTS_PAGES.avr;
+  }
+  if (lowerCategory.includes('controller') || lowerCategory.includes('dse') || lowerCategory.includes('comap')) {
+    return SPARE_PARTS_PAGES.controllers;
+  }
+  if (lowerCategory.includes('breaker') || lowerCategory.includes('contactor') || lowerCategory.includes('relay')) {
+    return SPARE_PARTS_PAGES.breakers;
+  }
+  if (lowerCategory.includes('sensor') || lowerCategory.includes('transducer')) {
+    return SPARE_PARTS_PAGES.sensors;
+  }
+  if (lowerCategory.includes('perkins')) {
+    return SPARE_PARTS_PAGES.perkins;
+  }
+  if (lowerCategory.includes('cummins')) {
+    return SPARE_PARTS_PAGES.cummins;
+  }
+  if (lowerCategory.includes('cat') || lowerCategory.includes('caterpillar')) {
+    return SPARE_PARTS_PAGES.caterpillar;
+  }
+  if (lowerCategory.includes('stamford') || lowerCategory.includes('newage')) {
+    return SPARE_PARTS_PAGES.stamford;
+  }
+
+  // Default to all parts page
+  return SPARE_PARTS_PAGES.all;
 }

@@ -2776,7 +2776,8 @@ export default function ControllerSimulator({
     verificationSteps?: { step: number; check: string; expectedResult: string; passIndicator: string }[];
     costBreakdown?: { parts: { min: number; max: number }; labor: { min: number; max: number }; total: { min: number; max: number }; currency: string };
     safetyWarnings?: string[];
-    whereToBy?: { supplier: string; location: string; phone: string }[];
+    // Internal spare parts links (SEO - links to our website)
+    sparePartsLinks?: { mainPage: string; categoryPage: { name: string; url: string }; quotePage: string };
     repairDifficulty?: string;
     estimatedTime?: string;
     technicianLevel?: string;
@@ -3075,7 +3076,8 @@ export default function ControllerSimulator({
         verificationSteps: enhancedRepairInfo.verificationSteps,
         costBreakdown: enhancedRepairInfo.costBreakdown,
         safetyWarnings: enhancedRepairInfo.safetyWarnings,
-        whereToBy: enhancedRepairInfo.whereToBy,
+        // Internal spare parts links (SEO)
+        sparePartsLinks: enhancedRepairInfo.sparePartsLinks,
         repairDifficulty: enhancedRepairInfo.difficulty,
         estimatedTime: enhancedRepairInfo.estimatedTime,
         technicianLevel: enhancedRepairInfo.technicianLevel
@@ -3092,13 +3094,25 @@ export default function ControllerSimulator({
     // Map problem to relevant spare parts, tools, and manuals
     const lowerProblem = problem.toLowerCase();
 
-    // Kenya Suppliers
-    const kenyaSuppliers = [
-      { supplier: 'Mantrac Kenya (CAT)', location: 'Enterprise Rd, Industrial Area', phone: '+254 20 6553000' },
-      { supplier: 'CMC Motors (Cummins)', location: 'Lusaka Rd, Industrial Area', phone: '+254 20 2712201' },
-      { supplier: 'Chandarana Industries', location: 'Kitui Rd, Industrial Area', phone: '+254 20 6536222' },
-      { supplier: 'Genset Services Ltd', location: 'Mombasa Road', phone: '+254 722 123456' }
-    ];
+    // Internal spare parts links (SEO - all links to our website)
+    const getSparePartsLinks = (category: string) => ({
+      mainPage: '/spare-parts',
+      categoryPage: {
+        name: category.includes('oil') ? 'Oil System Parts' :
+              category.includes('coolant') || category.includes('temp') ? 'Cooling System Parts' :
+              category.includes('fuel') ? 'Fuel System Parts' :
+              category.includes('start') || category.includes('battery') ? 'Starting System Parts' :
+              category.includes('voltage') || category.includes('avr') ? 'AVR & Electrical Parts' :
+              'All Generator Parts',
+        url: category.includes('oil') ? '/spare-parts/engine/oil-system' :
+             category.includes('coolant') || category.includes('temp') ? '/spare-parts/engine/cooling' :
+             category.includes('fuel') ? '/spare-parts/engine/fuel' :
+             category.includes('start') || category.includes('battery') ? '/spare-parts/engine/starting' :
+             category.includes('voltage') || category.includes('avr') ? '/spare-parts/electrical/avr' :
+             '/spare-parts'
+      },
+      quotePage: '/spare-parts/quote'
+    });
 
     // Oil pressure related
     if (lowerProblem.includes('oil') || lowerProblem.includes('pressure') || lowerProblem.includes('lubrication')) {
@@ -3142,7 +3156,7 @@ export default function ControllerSimulator({
           '⚠️ Hot oil causes burns - allow engine to cool',
           '⚠️ Dispose of used oil properly at recycling center'
         ],
-        whereToBy: kenyaSuppliers,
+        sparePartsLinks: getSparePartsLinks(lowerProblem),
         difficulty: 'Moderate',
         estimatedTime: '30 min - 2 hours',
         technicianLevel: 'Journeyman Technician'
@@ -3192,7 +3206,7 @@ export default function ControllerSimulator({
           '⚠️ Coolant is toxic - keep away from children/animals',
           '⚠️ Electric fans can start unexpectedly - keep hands clear'
         ],
-        whereToBy: kenyaSuppliers,
+        sparePartsLinks: getSparePartsLinks(lowerProblem),
         difficulty: 'Easy to Moderate',
         estimatedTime: '30 min - 2 hours',
         technicianLevel: 'Apprentice to Journeyman'
@@ -3242,7 +3256,7 @@ export default function ControllerSimulator({
           '⚠️ Keep away from rotating parts during cranking',
           '⚠️ Fuel vapors are flammable - no sparks near fuel system'
         ],
-        whereToBy: kenyaSuppliers,
+        sparePartsLinks: getSparePartsLinks(lowerProblem),
         difficulty: 'Moderate',
         estimatedTime: '30 min - 3 hours',
         technicianLevel: 'Journeyman Technician'
@@ -3291,7 +3305,7 @@ export default function ControllerSimulator({
           '⚠️ Used oil is hazardous - dispose properly',
           '⚠️ Verify correct filter part numbers before installation'
         ],
-        whereToBy: kenyaSuppliers,
+        sparePartsLinks: getSparePartsLinks(lowerProblem),
         difficulty: 'Easy',
         estimatedTime: '45 min - 1.5 hours',
         technicianLevel: 'Apprentice'
@@ -3336,7 +3350,7 @@ export default function ControllerSimulator({
           '⚠️ Wear arc flash PPE when working in cabinet',
           '⚠️ Verify isolation before touching any terminals'
         ],
-        whereToBy: kenyaSuppliers,
+        sparePartsLinks: getSparePartsLinks(lowerProblem),
         difficulty: 'Advanced',
         estimatedTime: '1-3 hours',
         technicianLevel: 'Master Technician'
@@ -3371,7 +3385,7 @@ export default function ControllerSimulator({
         '⚠️ Follow standard safety procedures',
         '⚠️ Consult manual for specific hazards'
       ],
-      whereToBy: kenyaSuppliers,
+      sparePartsLinks: getSparePartsLinks(lowerProblem),
       difficulty: 'Varies',
       estimatedTime: '1-4 hours',
       technicianLevel: 'Depends on fault'
@@ -4338,7 +4352,7 @@ function DisplayContent({
     verificationSteps?: { step: number; check: string; expectedResult: string; passIndicator: string }[];
     costBreakdown?: { parts: { min: number; max: number }; labor: { min: number; max: number }; total: { min: number; max: number }; currency: string };
     safetyWarnings?: string[];
-    whereToBy?: { supplier: string; location: string; phone: string }[];
+    sparePartsLinks?: { mainPage: string; categoryPage: { name: string; url: string }; quotePage: string };
     repairDifficulty?: string;
     estimatedTime?: string;
     technicianLevel?: string;
@@ -4650,18 +4664,32 @@ function DisplayContent({
               </div>
             )}
 
-            {/* Kenya Suppliers */}
-            {aiSolution.whereToBy && aiSolution.whereToBy.length > 0 && (
+            {/* Internal Spare Parts Links (SEO) */}
+            {aiSolution.sparePartsLinks && (
               <div className="p-1.5 bg-green-900/30 rounded">
                 <div className="font-bold text-[9px] opacity-70 flex items-center gap-1">
-                  <span>🏪</span> WHERE TO BUY (KENYA):
+                  <span>🛒</span> ORDER SPARE PARTS:
                 </div>
-                {aiSolution.whereToBy.slice(0, 2).map((supplier, idx) => (
-                  <div key={idx} className="text-[10px] flex justify-between border-b border-current/10 py-0.5">
-                    <span className="font-bold">{supplier.supplier}</span>
-                    <span className="text-cyan-400">{supplier.phone}</span>
-                  </div>
-                ))}
+                <div className="space-y-1 mt-1">
+                  <a
+                    href={aiSolution.sparePartsLinks.categoryPage.url}
+                    className="block text-[10px] text-cyan-400 hover:text-cyan-300 underline"
+                  >
+                    → {aiSolution.sparePartsLinks.categoryPage.name}
+                  </a>
+                  <a
+                    href={aiSolution.sparePartsLinks.mainPage}
+                    className="block text-[10px] text-cyan-400 hover:text-cyan-300 underline"
+                  >
+                    → Browse All Parts Catalog
+                  </a>
+                  <a
+                    href={aiSolution.sparePartsLinks.quotePage}
+                    className="block text-[10px] text-green-400 hover:text-green-300 underline font-bold"
+                  >
+                    → Request Quote for These Parts
+                  </a>
+                </div>
               </div>
             )}
 

@@ -23,13 +23,14 @@ import {
   MANUAL_REFERENCES,
   CONTROLLER_NAVIGATION,
   VERIFICATION_STEPS,
-  KENYA_SUPPLIERS,
+  SPARE_PARTS_PAGES,
+  PARTS_ORDER_INFO,
   getSparePartsForFault,
   getToolsForRepair,
   getManualReferences,
   getControllerNavigation,
   getVerificationSteps,
-  findSupplierForPart
+  getPartsPageForCategory
 } from './data/spare-parts-database';
 
 // ==================== COMPREHENSIVE REPAIR INFO ====================
@@ -78,8 +79,9 @@ export interface ComprehensiveRepairInfo {
   safetyWarnings: string[];
   certificationRequired: string[];
 
-  // Supplier Info
-  localSuppliers: typeof KENYA_SUPPLIERS;
+  // Internal Parts Pages (SEO)
+  partsPage: { name: string; url: string; description: string };
+  orderInfo: typeof PARTS_ORDER_INFO;
 
   // Cost Summary
   totalEstimatedCost: { min: number; max: number; currency: string };
@@ -177,8 +179,8 @@ export function getComprehensiveRepairInfo(
   // Calculate labor cost based on difficulty
   const laborCost = calculateLaborCost(faultCode.solutions[0]?.difficulty || 'moderate');
 
-  // Get local suppliers
-  const localSuppliers = findSupplierForPart(category);
+  // Get internal parts page (SEO - links to our own spare parts catalog)
+  const partsPage = getPartsPageForCategory(subcategory || category);
 
   // Calculate total cost
   const totalEstimatedCost = {
@@ -223,7 +225,9 @@ export function getComprehensiveRepairInfo(
     safetyWarnings: faultCode.safetyWarnings,
     certificationRequired: getCertificationRequired(category, subcategory),
 
-    localSuppliers,
+    // Internal spare parts pages (SEO)
+    partsPage,
+    orderInfo: PARTS_ORDER_INFO,
 
     totalEstimatedCost,
     laborCost
@@ -303,12 +307,12 @@ export interface EnhancedDiagnosticResponse {
   // Safety
   safetyWarnings: string[];
 
-  // Where to buy in Kenya
-  whereToBy: {
-    supplier: string;
-    location: string;
-    phone: string;
-  }[];
+  // Internal Spare Parts Links (SEO)
+  sparePartsLinks: {
+    mainPage: string;
+    categoryPage: { name: string; url: string };
+    quotePage: string;
+  };
 
   // Timestamp
   generatedAt: Date;
@@ -422,12 +426,13 @@ export function generateEnhancedDiagnosticResponse(
     currency: 'USD'
   };
 
-  // Where to buy
-  const whereToBy = KENYA_SUPPLIERS.slice(0, 3).map(s => ({
-    supplier: s.name,
-    location: s.address,
-    phone: s.phone
-  }));
+  // Internal spare parts links (SEO - all links go to our website)
+  const categoryPage = repairInfo?.partsPage || SPARE_PARTS_PAGES.all;
+  const sparePartsLinks = {
+    mainPage: PARTS_ORDER_INFO.mainPage,
+    categoryPage: { name: categoryPage.name, url: categoryPage.url },
+    quotePage: PARTS_ORDER_INFO.quotePage
+  };
 
   return {
     problem,
@@ -446,7 +451,7 @@ export function generateEnhancedDiagnosticResponse(
       '⚠️ Allow engine to cool before working on cooling/exhaust systems',
       '⚠️ Wear appropriate PPE for the task'
     ],
-    whereToBy,
+    sparePartsLinks,
     generatedAt: new Date()
   };
 }
@@ -724,11 +729,12 @@ export {
   MANUAL_REFERENCES,
   CONTROLLER_NAVIGATION,
   VERIFICATION_STEPS,
-  KENYA_SUPPLIERS,
+  SPARE_PARTS_PAGES,
+  PARTS_ORDER_INFO,
   getSparePartsForFault,
   getToolsForRepair,
   getManualReferences,
   getControllerNavigation,
   getVerificationSteps,
-  findSupplierForPart
+  getPartsPageForCategory
 };

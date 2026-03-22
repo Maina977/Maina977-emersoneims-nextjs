@@ -1732,21 +1732,34 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
               </div>
             )}
 
-            {/* Kenya Suppliers Section */}
+            {/* Internal Spare Parts Links (SEO) */}
             <div className="mt-3 p-3 bg-green-900/20 rounded-lg">
-              <p className="text-xs font-medium text-green-400 mb-2">🏪 WHERE TO BUY (KENYA):</p>
+              <p className="text-xs font-medium text-green-400 mb-2">🛒 ORDER SPARE PARTS:</p>
               <div className="grid md:grid-cols-2 gap-2">
-                {[
-                  { name: 'Mantrac Kenya (CAT)', phone: '+254 20 6553000', location: 'Industrial Area' },
-                  { name: 'CMC Motors (Cummins)', phone: '+254 20 2712201', location: 'Lusaka Rd' },
-                  { name: 'Chandarana Industries', phone: '+254 20 6536222', location: 'Kitui Rd' },
-                  { name: 'Genset Services Ltd', phone: '+254 722 123456', location: 'Mombasa Rd' }
-                ].map((supplier, idx) => (
-                  <div key={idx} className="flex justify-between items-center text-xs p-2 bg-slate-800/50 rounded">
-                    <span className="font-medium text-slate-300">{supplier.name}</span>
-                    <span className="text-cyan-400">{supplier.phone}</span>
-                  </div>
-                ))}
+                <a href="/spare-parts/engine/oil-system" className="flex items-center gap-2 text-xs p-2 bg-slate-800/50 rounded hover:bg-slate-700/50 transition">
+                  <span className="text-cyan-400">→</span>
+                  <span className="text-slate-300">Oil System Parts</span>
+                </a>
+                <a href="/spare-parts/engine/cooling" className="flex items-center gap-2 text-xs p-2 bg-slate-800/50 rounded hover:bg-slate-700/50 transition">
+                  <span className="text-cyan-400">→</span>
+                  <span className="text-slate-300">Cooling System Parts</span>
+                </a>
+                <a href="/spare-parts/engine/fuel" className="flex items-center gap-2 text-xs p-2 bg-slate-800/50 rounded hover:bg-slate-700/50 transition">
+                  <span className="text-cyan-400">→</span>
+                  <span className="text-slate-300">Fuel System Parts</span>
+                </a>
+                <a href="/spare-parts/electrical/avr" className="flex items-center gap-2 text-xs p-2 bg-slate-800/50 rounded hover:bg-slate-700/50 transition">
+                  <span className="text-cyan-400">→</span>
+                  <span className="text-slate-300">AVR & Electrical Parts</span>
+                </a>
+              </div>
+              <div className="mt-3 flex gap-2">
+                <a href="/spare-parts" className="flex-1 text-center text-xs p-2 bg-cyan-600/30 text-cyan-400 rounded hover:bg-cyan-600/50 transition font-medium">
+                  Browse All Parts
+                </a>
+                <a href="/spare-parts/quote" className="flex-1 text-center text-xs p-2 bg-green-600/30 text-green-400 rounded hover:bg-green-600/50 transition font-medium">
+                  Request Quote
+                </a>
               </div>
             </div>
           </motion.div>
