@@ -617,36 +617,27 @@ const LiveStatisticsCounter = () => {
   );
 };
 
-// CLIENT TESTIMONIALS - REAL Social Proof from Actual Clients
+// CLIENT TESTIMONIALS - REAL Social Proof from Actual EmersonEIMS Clients
 const ClientTestimonials = () => {
-  // REAL testimonials from actual EmersonEIMS clients
+  // ONLY testimonials from actual EmersonEIMS case studies
   const testimonials = [
     {
-      name: 'Peter Odhiambo',
-      role: 'Plant Operations Director',
-      company: 'East African Breweries',
+      name: 'Principal',
+      role: 'School Principal',
+      company: 'St. Austin Academy',
       rating: 5,
-      text: 'We reduced our electricity costs by 45% after EmersonEIMS installed our hybrid solar-generator system. The ROI was achieved in under 3 years, way ahead of projections. Their engineering team really understood our production needs.',
-      location: 'Ruaraka, Nairobi',
-      service: 'Solar + Generator Hybrid'
+      text: 'EmersonEIMS transformed our power reliability. No more interruptions during critical exams. The 50kVA Massey Ferguson with Perkins engine has given us 99.8% uptime.',
+      location: 'Nairobi',
+      service: '50kVA Generator Installation'
     },
     {
-      name: 'David Kariuki',
-      role: 'Operations Manager',
-      company: 'Twiga Foods',
+      name: 'Facilities Manager',
+      role: 'Facilities Manager',
+      company: 'Kivukoni International School',
       rating: 5,
-      text: 'Our cold chain used to lose KES 500,000 monthly to power gaps. EmersonEIMS installed an automatic system that switches in under 3 seconds. We haven\'t lost a single product in 18 months.',
-      location: 'Industrial Area',
-      service: 'ATS & Generator Systems'
-    },
-    {
-      name: 'Sarah Kimani',
-      role: 'General Manager',
-      company: 'Sankara Nairobi Hotel',
-      rating: 5,
-      text: '24/7 support means exactly that. Called at 2 AM on a Sunday when our generator failed. Technician arrived by 3:30 AM. That\'s the kind of service that keeps businesses running.',
-      location: 'Westlands',
-      service: '24/7 Maintenance'
+      text: 'The hybrid system exceeded expectations. Our students now have uninterrupted power. 40% reduction in energy costs with the 60kVA Cummins and solar integration.',
+      location: 'Nairobi',
+      service: '60kVA Cummins + Solar Hybrid'
     },
     {
       name: 'Operations Director',
@@ -655,25 +646,34 @@ const ClientTestimonials = () => {
       rating: 5,
       text: 'Our flower export business depends on reliable power. EmersonEIMS delivered a 300kVA Caterpillar with redundant backup and automated failover. Zero product loss, 99.9% uptime.',
       location: 'Naivasha',
-      service: '300kVA Generator Installation'
+      service: '300kVA Caterpillar Installation'
     },
     {
-      name: 'Michael Otieno',
-      role: 'Facilities Director',
-      company: 'Two Rivers Mall',
+      name: 'General Manager',
+      role: 'General Manager',
+      company: 'Greenheart Kilifi',
       rating: 5,
-      text: 'The Generator Oracle diagnostic tool is incredible. We can now troubleshoot issues before calling a technician. It\'s saved us countless emergency callouts. Revolutionary tool!',
-      location: 'Ruaka',
-      service: 'Generator Oracle'
+      text: 'Our guests never experience power issues. The 44kVA Cummins Voltka system is flawless. Maintenance cost reduced by 30% and energy efficiency improved significantly.',
+      location: 'Kilifi',
+      service: '44kVA Cummins Voltka'
     },
     {
-      name: 'Peter Wanyama',
-      role: 'Operations Manager',
-      company: 'Kenya Seed Company',
+      name: 'IT Director',
+      role: 'IT Director',
+      company: 'NTSA Headquarters',
       rating: 5,
-      text: 'EmersonEIMS saved our business. The instant-start generator and UPS system eliminated seed losses. Their remote monitoring gives us SMS alerts before issues become critical. Best investment we have made.',
-      location: 'Kitale',
-      service: 'Cold Storage Power System'
+      text: 'EmersonEIMS ensured our critical government operations never fail. The 300kVA Atlas Copco with redundant system and real-time monitoring delivers 100% operational continuity.',
+      location: 'Nairobi',
+      service: '300kVA Atlas Copco'
+    },
+    {
+      name: 'Plant Manager',
+      role: 'Plant Manager',
+      company: 'Sanergy Limited',
+      rating: 5,
+      text: 'The reliability of our power system transformed our operations. 95% reduction in downtime with the 250kVA FG Wilson and automated load management. KSh 1.8M saved annually.',
+      location: 'Nairobi',
+      service: '250kVA FG Wilson Installation'
     },
   ];
 
@@ -758,21 +758,17 @@ const ClientTestimonials = () => {
           ))}
         </div>
 
-        {/* REAL Client Logos - Actual EmersonEIMS Clients */}
+        {/* REAL Client Logos - Actual EmersonEIMS Clients from Case Studies */}
         <div className="border-t border-gray-800 pt-8">
-          <p className="text-center text-gray-500 text-sm mb-6">TRUSTED BY LEADING ORGANIZATIONS IN KENYA</p>
+          <p className="text-center text-gray-500 text-sm mb-6">OUR CLIENTS</p>
           <div className="flex flex-wrap justify-center items-center gap-8 opacity-70">
             {[
-              'East African Breweries',
-              'Twiga Foods',
-              'Two Rivers Mall',
-              'Sankara Hotel',
-              'Kenya Seed Company',
+              'St. Austin Academy',
+              'Kivukoni International School',
               'Bigot Flowers',
-              'NTSA',
-              'Sanergy',
               'Greenheart Kilifi',
-              'St. Austin Academy'
+              'NTSA Headquarters',
+              'Sanergy Limited'
             ].map(client => (
               <span key={client} className="text-gray-400 font-semibold text-sm md:text-base">{client}</span>
             ))}
@@ -1189,8 +1185,8 @@ const FinalCTA = () => {
             Stop Losing Money to Power Outages
           </h2>
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
-            Every hour without power costs your business money. Join industry leaders like
-            EABL, Twiga Foods, and Two Rivers Mall who trust EmersonEIMS for reliable power.
+            Every hour without power costs your business money. Join organizations like
+            NTSA, Bigot Flowers, and Greenheart Kilifi who trust EmersonEIMS for reliable power.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
