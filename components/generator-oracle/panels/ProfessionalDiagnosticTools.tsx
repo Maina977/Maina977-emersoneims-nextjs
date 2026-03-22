@@ -416,6 +416,111 @@ interface InjectorCalibration {
   status: 'calibrated' | 'needs_calibration';
 }
 
+// Freeze Frame Data - Snapshot when fault occurred
+interface FreezeFrameData {
+  faultCode: string;
+  timestamp: string;
+  engineHours: number;
+  parameters: {
+    name: string;
+    value: number;
+    unit: string;
+  }[];
+}
+
+// ECU Configuration Backup
+interface ECUBackup {
+  id: string;
+  name: string;
+  date: string;
+  ecuSerial: string;
+  softwareVersion: string;
+  parameterCount: number;
+  size: string;
+}
+
+// Component Health Score
+interface ComponentHealth {
+  component: string;
+  healthScore: number;
+  trend: 'improving' | 'stable' | 'degrading';
+  lastService: string;
+  nextService: string;
+  alerts: string[];
+}
+
+// Service Documentation
+interface ServiceDocument {
+  id: string;
+  title: string;
+  type: 'manual' | 'bulletin' | 'tsb' | 'recall';
+  date: string;
+  relevance: 'high' | 'medium' | 'low';
+}
+
+// Sample Freeze Frame Data
+const SAMPLE_FREEZE_FRAMES: FreezeFrameData[] = [
+  {
+    faultCode: 'SPN 110 FMI 16',
+    timestamp: '2026-03-20 11:45:32',
+    engineHours: 4562,
+    parameters: [
+      { name: 'Engine RPM', value: 1498, unit: 'RPM' },
+      { name: 'Coolant Temp', value: 102, unit: '°C' },
+      { name: 'Oil Pressure', value: 4.1, unit: 'bar' },
+      { name: 'Boost Pressure', value: 1.9, unit: 'bar' },
+      { name: 'Fuel Temp', value: 48, unit: '°C' },
+      { name: 'Ambient Temp', value: 38, unit: '°C' },
+      { name: 'Engine Load', value: 78, unit: '%' },
+      { name: 'Battery Voltage', value: 27.6, unit: 'V' },
+    ],
+  },
+  {
+    faultCode: 'SPN 100 FMI 4',
+    timestamp: '2026-03-18 09:15:08',
+    engineHours: 4558,
+    parameters: [
+      { name: 'Engine RPM', value: 1502, unit: 'RPM' },
+      { name: 'Coolant Temp', value: 85, unit: '°C' },
+      { name: 'Oil Pressure', value: 2.8, unit: 'bar' },
+      { name: 'Oil Temp', value: 95, unit: '°C' },
+      { name: 'Fuel Pressure', value: 1780, unit: 'bar' },
+      { name: 'Engine Load', value: 45, unit: '%' },
+      { name: 'Battery Voltage', value: 27.8, unit: 'V' },
+      { name: 'Intake Temp', value: 42, unit: '°C' },
+    ],
+  },
+];
+
+// Sample ECU Backups
+const SAMPLE_ECU_BACKUPS: ECUBackup[] = [
+  { id: 'backup1', name: 'Factory Default', date: '2024-01-15', ecuSerial: 'ECU-2024-00123', softwareVersion: 'v3.2.1', parameterCount: 245, size: '128 KB' },
+  { id: 'backup2', name: 'Pre-Service Backup', date: '2026-02-20', ecuSerial: 'ECU-2024-00123', softwareVersion: 'v3.2.1', parameterCount: 245, size: '128 KB' },
+  { id: 'backup3', name: 'Optimized Settings', date: '2026-03-01', ecuSerial: 'ECU-2024-00123', softwareVersion: 'v3.2.1', parameterCount: 245, size: '128 KB' },
+];
+
+// Sample Component Health Data
+const SAMPLE_COMPONENT_HEALTH: ComponentHealth[] = [
+  { component: 'Engine Oil System', healthScore: 85, trend: 'stable', lastService: '2026-02-15', nextService: '2026-05-15', alerts: [] },
+  { component: 'Cooling System', healthScore: 72, trend: 'degrading', lastService: '2025-11-20', nextService: '2026-04-01', alerts: ['Coolant temp trending high', 'Recommend coolant flush'] },
+  { component: 'Fuel System', healthScore: 91, trend: 'stable', lastService: '2026-01-10', nextService: '2026-07-10', alerts: [] },
+  { component: 'Air Intake/Turbo', healthScore: 88, trend: 'stable', lastService: '2026-02-15', nextService: '2026-08-15', alerts: [] },
+  { component: 'Electrical System', healthScore: 95, trend: 'improving', lastService: '2026-03-01', nextService: '2026-09-01', alerts: [] },
+  { component: 'Aftertreatment (DPF)', healthScore: 65, trend: 'degrading', lastService: '2025-10-05', nextService: '2026-04-05', alerts: ['DPF soot load elevated', 'Regen cycle recommended'] },
+  { component: 'Generator/AVR', healthScore: 94, trend: 'stable', lastService: '2026-01-20', nextService: '2026-07-20', alerts: [] },
+  { component: 'Governor/Speed Control', healthScore: 89, trend: 'stable', lastService: '2026-02-01', nextService: '2026-08-01', alerts: [] },
+];
+
+// Sample Service Documents
+const SAMPLE_SERVICE_DOCS: ServiceDocument[] = [
+  { id: 'doc1', title: 'Engine Oil Specifications & Change Intervals', type: 'manual', date: '2024-06-15', relevance: 'high' },
+  { id: 'doc2', title: 'TSB-2026-003: High Coolant Temperature Issues', type: 'tsb', date: '2026-02-28', relevance: 'high' },
+  { id: 'doc3', title: 'DPF Regeneration Procedures', type: 'manual', date: '2024-03-10', relevance: 'high' },
+  { id: 'doc4', title: 'SB-2025-018: Fuel Injector Calibration Update', type: 'bulletin', date: '2025-09-15', relevance: 'medium' },
+  { id: 'doc5', title: 'Controller Software Update v3.2.2', type: 'bulletin', date: '2026-03-01', relevance: 'medium' },
+  { id: 'doc6', title: 'Turbocharger Maintenance Guide', type: 'manual', date: '2024-01-20', relevance: 'low' },
+];
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN DIAGNOSTIC TOOL INTERFACE COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -428,13 +533,15 @@ interface DiagnosticToolInterfaceProps {
 }
 
 function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: DiagnosticToolInterfaceProps) {
-  const [activeTab, setActiveTab] = useState<'monitor' | 'faults' | 'params' | 'wiring' | 'tests' | 'config' | 'techinput'>('monitor');
+  const [activeTab, setActiveTab] = useState<'monitor' | 'faults' | 'params' | 'wiring' | 'tests' | 'config' | 'techinput' | 'health' | 'backup' | 'reports' | 'docs'>('monitor');
   const [liveParams, setLiveParams] = useState<LiveParameter[]>(generateLiveParameters());
   const [faults, setFaults] = useState<FaultCode[]>(SAMPLE_FAULTS);
   const [isConnected, setIsConnected] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [selectedFault, setSelectedFault] = useState<FaultCode | null>(null);
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [selectedFreezeFrame, setSelectedFreezeFrame] = useState<FreezeFrameData | null>(null);
+  const [dataHistory, setDataHistory] = useState<{time: string; rpm: number; temp: number; load: number}[]>([]);
 
   // Technician Input State
   const [techInput, setTechInput] = useState<TechnicianInput>({
@@ -1780,6 +1887,369 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
     </div>
   );
 
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // HEALTH TAB - Component Health Scoring & Predictive Maintenance
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const HealthTab = () => (
+    <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Component Health & Predictive Maintenance</h3>
+          <p className="text-sm" style={{ color: tool.textColor + '80' }}>AI-powered health scoring based on sensor trends and service history</p>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-green-500/20 border border-green-500/40">
+          <Activity className="w-5 h-5 text-green-400" />
+          <span className="text-green-400 font-medium">Overall Health: 84%</span>
+        </div>
+      </div>
+
+      {/* Health Cards Grid */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {SAMPLE_COMPONENT_HEALTH.map((item) => (
+          <div
+            key={item.component}
+            className="p-4 rounded-xl border"
+            style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h4 className="font-medium" style={{ color: tool.textColor }}>{item.component}</h4>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`text-xs px-2 py-0.5 rounded ${
+                    item.trend === 'improving' ? 'bg-green-500/20 text-green-400' :
+                    item.trend === 'stable' ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-red-500/20 text-red-400'
+                  }`}>
+                    {item.trend === 'improving' ? '↑ Improving' : item.trend === 'stable' ? '→ Stable' : '↓ Degrading'}
+                  </span>
+                </div>
+              </div>
+              {/* Health Score Circle */}
+              <div className="relative w-16 h-16">
+                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="#334155" strokeWidth="3" />
+                  <circle
+                    cx="18" cy="18" r="15" fill="none"
+                    stroke={item.healthScore >= 80 ? '#22c55e' : item.healthScore >= 60 ? '#f59e0b' : '#ef4444'}
+                    strokeWidth="3"
+                    strokeDasharray={`${item.healthScore} 100`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-sm font-bold" style={{ color: tool.textColor }}>{item.healthScore}%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Service Info */}
+            <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+              <div>
+                <span style={{ color: tool.textColor + '60' }}>Last Service:</span>
+                <span className="ml-1" style={{ color: tool.textColor }}>{item.lastService}</span>
+              </div>
+              <div>
+                <span style={{ color: tool.textColor + '60' }}>Next Service:</span>
+                <span className="ml-1" style={{ color: tool.textColor }}>{item.nextService}</span>
+              </div>
+            </div>
+
+            {/* Alerts */}
+            {item.alerts.length > 0 && (
+              <div className="space-y-1">
+                {item.alerts.map((alert, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-xs p-2 rounded bg-amber-500/10 border border-amber-500/30">
+                    <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                    <span className="text-amber-400">{alert}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // BACKUP TAB - ECU Configuration Backup/Restore
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const BackupTab = () => (
+    <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>ECU Configuration Backup & Restore</h3>
+          <p className="text-sm" style={{ color: tool.textColor + '80' }}>Save and restore ECU parameter configurations</p>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-white font-medium" style={{ backgroundColor: tool.primaryColor }}>
+          <Save className="w-4 h-4" />
+          Create New Backup
+        </button>
+      </div>
+
+      {/* Current ECU Info */}
+      <div className="p-4 rounded-xl border" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '60' }}>
+        <h4 className="font-medium mb-3" style={{ color: tool.textColor }}>Current ECU Information</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <span style={{ color: tool.textColor + '60' }}>Serial Number:</span>
+            <p className="font-mono" style={{ color: tool.textColor }}>ECU-2024-00123</p>
+          </div>
+          <div>
+            <span style={{ color: tool.textColor + '60' }}>Software Version:</span>
+            <p className="font-mono" style={{ color: tool.textColor }}>v3.2.1</p>
+          </div>
+          <div>
+            <span style={{ color: tool.textColor + '60' }}>Calibration Date:</span>
+            <p style={{ color: tool.textColor }}>2026-03-01</p>
+          </div>
+          <div>
+            <span style={{ color: tool.textColor + '60' }}>Parameters:</span>
+            <p style={{ color: tool.textColor }}>245 configured</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Saved Backups */}
+      <div className="rounded-xl border overflow-hidden" style={{ borderColor: tool.primaryColor + '40' }}>
+        <div className="px-4 py-2 font-medium text-sm" style={{ backgroundColor: tool.primaryColor, color: 'white' }}>
+          Saved Configurations
+        </div>
+        <div className="divide-y divide-slate-700" style={{ backgroundColor: tool.screenColor }}>
+          {SAMPLE_ECU_BACKUPS.map((backup) => (
+            <div key={backup.id} className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center gap-3">
+                <HardDrive className="w-5 h-5" style={{ color: tool.primaryColor }} />
+                <div>
+                  <p className="font-medium" style={{ color: tool.textColor }}>{backup.name}</p>
+                  <p className="text-xs" style={{ color: tool.textColor + '60' }}>
+                    {backup.date} • {backup.softwareVersion} • {backup.parameterCount} params • {backup.size}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-1.5 rounded-lg bg-slate-700 text-white text-sm hover:bg-slate-600">
+                  <Download className="w-4 h-4 inline mr-1" />
+                  Export
+                </button>
+                <button className="px-3 py-1.5 rounded-lg text-white text-sm" style={{ backgroundColor: tool.primaryColor }}>
+                  <RotateCcw className="w-4 h-4 inline mr-1" />
+                  Restore
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Warning */}
+      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-amber-400 font-medium">Important Notice</p>
+            <p className="text-sm text-amber-400/80">
+              Restoring ECU configurations will overwrite current settings. Always create a backup of current configuration before restoring. Incorrect settings may affect engine operation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // REPORTS TAB - Diagnostic Report Generation
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const ReportsTab = () => (
+    <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Diagnostic Reports & Data Export</h3>
+          <p className="text-sm" style={{ color: tool.textColor + '80' }}>Generate comprehensive reports and export diagnostic data</p>
+        </div>
+      </div>
+
+      {/* Report Types */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {[
+          { name: 'Full Diagnostic Report', desc: 'Complete system analysis with all parameters, faults, and recommendations', icon: <FileText className="w-6 h-6" />, format: 'PDF' },
+          { name: 'Fault History Report', desc: 'Historical fault codes with freeze frame data and trends', icon: <AlertTriangle className="w-6 h-6" />, format: 'PDF' },
+          { name: 'Service Summary', desc: 'Quick overview for service records and maintenance logs', icon: <Wrench className="w-6 h-6" />, format: 'PDF' },
+          { name: 'Parameter Data Export', desc: 'All current parameters in spreadsheet format', icon: <Database className="w-6 h-6" />, format: 'CSV/Excel' },
+          { name: 'Health Assessment Report', desc: 'Component health scores and predictive maintenance alerts', icon: <Activity className="w-6 h-6" />, format: 'PDF' },
+          { name: 'Data Log Export', desc: 'Recorded session data for offline analysis', icon: <HardDrive className="w-6 h-6" />, format: 'CSV' },
+        ].map((report) => (
+          <div
+            key={report.name}
+            className="p-4 rounded-xl border hover:border-opacity-100 transition-all cursor-pointer group"
+            style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg group-hover:scale-110 transition-transform" style={{ backgroundColor: tool.primaryColor + '20', color: tool.primaryColor }}>
+                {report.icon}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium" style={{ color: tool.textColor }}>{report.name}</h4>
+                <p className="text-xs mt-1" style={{ color: tool.textColor + '80' }}>{report.desc}</p>
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-xs px-2 py-0.5 rounded bg-slate-700" style={{ color: tool.textColor + '80' }}>{report.format}</span>
+                  <button className="px-3 py-1 rounded-lg text-white text-sm" style={{ backgroundColor: tool.primaryColor }}>
+                    Generate
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Freeze Frame Data */}
+      <div className="rounded-xl border overflow-hidden" style={{ borderColor: tool.primaryColor + '40' }}>
+        <div className="px-4 py-2 font-medium text-sm flex items-center justify-between" style={{ backgroundColor: tool.primaryColor, color: 'white' }}>
+          <span>Freeze Frame Data (Fault Snapshots)</span>
+          <span className="text-xs opacity-80">{SAMPLE_FREEZE_FRAMES.length} snapshots available</span>
+        </div>
+        <div className="divide-y divide-slate-700" style={{ backgroundColor: tool.screenColor }}>
+          {SAMPLE_FREEZE_FRAMES.map((frame, idx) => (
+            <div key={idx} className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="font-mono font-medium" style={{ color: tool.textColor }}>{frame.faultCode}</span>
+                  <span className="text-xs ml-2" style={{ color: tool.textColor + '60' }}>{frame.timestamp}</span>
+                </div>
+                <button
+                  onClick={() => setSelectedFreezeFrame(selectedFreezeFrame?.faultCode === frame.faultCode ? null : frame)}
+                  className="text-sm px-3 py-1 rounded-lg bg-slate-700 hover:bg-slate-600"
+                  style={{ color: tool.textColor }}
+                >
+                  {selectedFreezeFrame?.faultCode === frame.faultCode ? 'Hide' : 'View'} Data
+                </button>
+              </div>
+              {selectedFreezeFrame?.faultCode === frame.faultCode && (
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 p-3 rounded-lg bg-slate-800/50">
+                  {frame.parameters.map((param, pidx) => (
+                    <div key={pidx} className="text-xs">
+                      <span style={{ color: tool.textColor + '60' }}>{param.name}:</span>
+                      <span className="ml-1 font-mono" style={{ color: tool.textColor }}>{param.value} {param.unit}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // DOCS TAB - Service Documentation
+  // ═══════════════════════════════════════════════════════════════════════════════
+  const DocsTab = () => (
+    <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Service Documentation</h3>
+          <p className="text-sm" style={{ color: tool.textColor + '80' }}>Manuals, Technical Service Bulletins, and Relevant Documentation</p>
+        </div>
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: tool.textColor + '60' }} />
+          <input
+            type="text"
+            placeholder="Search documents..."
+            className="pl-10 pr-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm w-64"
+            style={{ color: tool.textColor }}
+          />
+        </div>
+      </div>
+
+      {/* Document Categories */}
+      <div className="flex gap-2">
+        {['All', 'Manuals', 'TSB', 'Bulletins', 'Recalls'].map((cat) => (
+          <button
+            key={cat}
+            className={`px-3 py-1.5 rounded-lg text-sm ${cat === 'All' ? 'text-white' : 'bg-slate-800 hover:bg-slate-700'}`}
+            style={cat === 'All' ? { backgroundColor: tool.primaryColor } : { color: tool.textColor }}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Document List */}
+      <div className="rounded-xl border overflow-hidden" style={{ borderColor: tool.primaryColor + '40' }}>
+        <div className="divide-y divide-slate-700" style={{ backgroundColor: tool.screenColor }}>
+          {SAMPLE_SERVICE_DOCS.map((doc) => (
+            <div key={doc.id} className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${
+                  doc.type === 'manual' ? 'bg-blue-500/20 text-blue-400' :
+                  doc.type === 'tsb' ? 'bg-red-500/20 text-red-400' :
+                  doc.type === 'bulletin' ? 'bg-amber-500/20 text-amber-400' :
+                  'bg-purple-500/20 text-purple-400'
+                }`}>
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-medium" style={{ color: tool.textColor }}>{doc.title}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase ${
+                      doc.type === 'manual' ? 'bg-blue-500/20 text-blue-400' :
+                      doc.type === 'tsb' ? 'bg-red-500/20 text-red-400' :
+                      doc.type === 'bulletin' ? 'bg-amber-500/20 text-amber-400' :
+                      'bg-purple-500/20 text-purple-400'
+                    }`}>
+                      {doc.type}
+                    </span>
+                    <span className="text-xs" style={{ color: tool.textColor + '60' }}>{doc.date}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                      doc.relevance === 'high' ? 'bg-green-500/20 text-green-400' :
+                      doc.relevance === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                      'bg-slate-500/20 text-slate-400'
+                    }`}>
+                      {doc.relevance} relevance
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600">
+                  <Eye className="w-4 h-4" style={{ color: tool.textColor }} />
+                </button>
+                <button className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600">
+                  <Download className="w-4 h-4" style={{ color: tool.textColor }} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick Reference */}
+      <div className="p-4 rounded-xl border" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}>
+        <h4 className="font-medium mb-3" style={{ color: tool.textColor }}>Quick Reference - {generatorInfo.make} {generatorInfo.model}</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <span style={{ color: tool.textColor + '60' }}>Oil Type:</span>
+            <p style={{ color: tool.textColor }}>15W-40 CI-4</p>
+          </div>
+          <div>
+            <span style={{ color: tool.textColor + '60' }}>Oil Capacity:</span>
+            <p style={{ color: tool.textColor }}>42 liters</p>
+          </div>
+          <div>
+            <span style={{ color: tool.textColor + '60' }}>Coolant Type:</span>
+            <p style={{ color: tool.textColor }}>ELC Extended Life</p>
+          </div>
+          <div>
+            <span style={{ color: tool.textColor + '60' }}>Fuel Filter:</span>
+            <p style={{ color: tool.textColor }}>P/N: FF5580</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 pt-20">
       <motion.div
@@ -1827,30 +2297,30 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
         {/* Status Bar */}
         <StatusBar />
 
-        {/* Navigation */}
-        <div className="flex items-center gap-1 px-4 py-2 border-b border-slate-700" style={{ backgroundColor: '#1e293b' }}>
-          <NavButton icon={<Monitor className="w-4 h-4" />} label="Monitor" active={activeTab === 'monitor'} onClick={() => setActiveTab('monitor')} />
-          <NavButton icon={<AlertTriangle className="w-4 h-4" />} label="Faults" active={activeTab === 'faults'} onClick={() => setActiveTab('faults')} />
-          <NavButton icon={<Sliders className="w-4 h-4" />} label="Config" active={activeTab === 'config'} onClick={() => setActiveTab('config')} />
-          <NavButton icon={<CircuitBoard className="w-4 h-4" />} label="Wiring" active={activeTab === 'wiring'} onClick={() => setActiveTab('wiring')} />
-          <NavButton icon={<Play className="w-4 h-4" />} label="Tests" active={activeTab === 'tests'} onClick={() => setActiveTab('tests')} />
-          <NavButton icon={<User className="w-4 h-4" />} label="Tech Input" active={activeTab === 'techinput'} onClick={() => setActiveTab('techinput')} />
+        {/* Navigation - Two Rows for More Tabs */}
+        <div className="border-b border-slate-700" style={{ backgroundColor: '#1e293b' }}>
+          {/* Primary Tabs */}
+          <div className="flex items-center gap-1 px-4 py-2 flex-wrap">
+            <NavButton icon={<Monitor className="w-4 h-4" />} label="Monitor" active={activeTab === 'monitor'} onClick={() => setActiveTab('monitor')} />
+            <NavButton icon={<AlertTriangle className="w-4 h-4" />} label="Faults" active={activeTab === 'faults'} onClick={() => setActiveTab('faults')} />
+            <NavButton icon={<Sliders className="w-4 h-4" />} label="Config" active={activeTab === 'config'} onClick={() => setActiveTab('config')} />
+            <NavButton icon={<CircuitBoard className="w-4 h-4" />} label="Wiring" active={activeTab === 'wiring'} onClick={() => setActiveTab('wiring')} />
+            <NavButton icon={<Play className="w-4 h-4" />} label="Tests" active={activeTab === 'tests'} onClick={() => setActiveTab('tests')} />
+            <NavButton icon={<User className="w-4 h-4" />} label="Tech Input" active={activeTab === 'techinput'} onClick={() => setActiveTab('techinput')} />
+            <div className="w-px h-6 bg-slate-600 mx-1" />
+            <NavButton icon={<Activity className="w-4 h-4" />} label="Health" active={activeTab === 'health'} onClick={() => setActiveTab('health')} />
+            <NavButton icon={<HardDrive className="w-4 h-4" />} label="Backup" active={activeTab === 'backup'} onClick={() => setActiveTab('backup')} />
+            <NavButton icon={<FileText className="w-4 h-4" />} label="Reports" active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} />
+            <NavButton icon={<Layers className="w-4 h-4" />} label="Docs" active={activeTab === 'docs'} onClick={() => setActiveTab('docs')} />
 
-          <div className="flex-1" />
+            <div className="flex-1" />
 
-          {/* Arrow navigation */}
-          <button className="p-2 rounded hover:bg-slate-700">
-            <ChevronLeft className="w-5 h-5 text-slate-400" />
-          </button>
-          <button className="p-2 rounded hover:bg-slate-700">
-            <ChevronRight className="w-5 h-5 text-slate-400" />
-          </button>
-          <button className="p-2 rounded hover:bg-slate-700">
-            <ChevronUp className="w-5 h-5 text-slate-400" />
-          </button>
-          <button className="p-2 rounded hover:bg-slate-700">
-            <ChevronDown className="w-5 h-5 text-slate-400" />
-          </button>
+            {/* Data Export */}
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm">
+              <Download className="w-4 h-4" />
+              Export
+            </button>
+          </div>
         </div>
 
         {/* Content Area */}
@@ -1862,6 +2332,10 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
             {activeTab === 'wiring' && <WiringTab />}
             {activeTab === 'tests' && <TestsTab />}
             {activeTab === 'techinput' && <TechInputTab />}
+            {activeTab === 'health' && <HealthTab />}
+            {activeTab === 'backup' && <BackupTab />}
+            {activeTab === 'reports' && <ReportsTab />}
+            {activeTab === 'docs' && <DocsTab />}
           </AnimatePresence>
         </div>
 
