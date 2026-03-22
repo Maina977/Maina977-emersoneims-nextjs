@@ -597,7 +597,12 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
         body: JSON.stringify({
           images: capturedImages,
           mode: analysisMode,
+          generatorMake: generatorInfo.make,
+          generatorModel: generatorInfo.model,
           enhancedAnalysis: true,
+          context: analysisMode === 'part_id' ? 'Identify all visible parts with OEM part numbers' :
+                   analysisMode === 'predictive' ? 'Analyze component condition and predict remaining lifespan' :
+                   analysisMode === 'component' ? 'Identify all visible components' : '',
         }),
       });
 
