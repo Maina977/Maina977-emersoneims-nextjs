@@ -2758,6 +2758,18 @@ export default function ControllerSimulator({
   const [analysisTimestamp, setAnalysisTimestamp] = useState<Date | null>(null);
   const [showMaintenanceReset, setShowMaintenanceReset] = useState(false);
 
+  // Tech Input - Problem description and AI solution shown on controller display
+  const [techProblem, setTechProblem] = useState('');
+  const [aiSolution, setAiSolution] = useState<{
+    problem: string;
+    diagnosis: string;
+    possibleCauses: string[];
+    recommendedActions: string[];
+    urgency: string;
+    timestamp: Date | null;
+  } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   // Sensor values - technician inputs these from actual controller readings
   const [sensorValues, setSensorValues] = useState<Record<string, number>>({
     engineOilPressure: 3.5,
@@ -2838,13 +2850,222 @@ export default function ControllerSimulator({
     return CONTROLLER_DATASHEETS[selectedModel.id] || DEFAULT_DATASHEET;
   };
 
-  // Display pages for navigation
+  // AI Analysis of tech problem - generates solution shown on controller display
+  const analyzeTechProblem = useCallback(() => {
+    if (!techProblem.trim()) return;
+
+    setIsAnalyzing(true);
+
+    // Simulate AI analysis with realistic response
+    setTimeout(() => {
+      const problem = techProblem.toLowerCase();
+      let diagnosis = '';
+      let possibleCauses: string[] = [];
+      let recommendedActions: string[] = [];
+      let urgency = 'MODERATE';
+
+      // Intelligent problem analysis based on keywords
+      if (problem.includes('start') && (problem.includes('not') || problem.includes("won't") || problem.includes('fail'))) {
+        diagnosis = 'ENGINE CRANKS BUT FAILS TO START - Fuel or ignition system issue detected';
+        possibleCauses = [
+          'Fuel solenoid not energizing - check 12/24V at solenoid terminal',
+          'Air in fuel system - bleed fuel lines from tank to injection pump',
+          'Fuel filter blocked - replace primary and secondary filters',
+          'Low cranking speed - battery voltage below 22V during crank',
+          'Fuel lift pump failure - no fuel delivery to injection pump'
+        ];
+        recommendedActions = [
+          '1. Check fuel solenoid voltage during crank (should see battery voltage)',
+          '2. Verify fuel pump operation - listen for pump noise with ignition on',
+          '3. Bleed fuel system at injection pump bleed screw',
+          '4. Check fuel filter restriction - replace if overdue',
+          '5. Test battery voltage during cranking (min 22V for 24V system)'
+        ];
+        urgency = 'HIGH - Generator unavailable';
+      }
+      else if (problem.includes('maintenance') || problem.includes('service')) {
+        diagnosis = 'MAINTENANCE ALARM ACTIVE - Service timer has expired';
+        possibleCauses = [
+          'Oil change interval exceeded - service hours past limit',
+          'Air filter service timer expired',
+          'General maintenance countdown reached zero',
+          'Service reminder not reset after last maintenance'
+        ];
+        recommendedActions = [
+          '1. Verify actual maintenance was performed',
+          '2. Access controller MENU → TIMERS/MAINTENANCE',
+          '3. Enter engineer password (typically 0001 or 1234)',
+          '4. Reset service timer to interval value (250-500 hrs)',
+          '5. Press STOP/RESET to clear alarm display'
+        ];
+        urgency = 'LOW - Warning only, generator operational';
+      }
+      else if (problem.includes('overheat') || problem.includes('high temp') || problem.includes('coolant')) {
+        diagnosis = 'HIGH COOLANT TEMPERATURE - Cooling system fault';
+        possibleCauses = [
+          'Low coolant level - check expansion tank and radiator',
+          'Radiator blocked or dirty - restricted airflow',
+          'Thermostat stuck closed - coolant not circulating',
+          'Water pump failure - impeller worn or belt broken',
+          'Fan not operating - check fan clutch or motor'
+        ];
+        recommendedActions = [
+          '1. STOP ENGINE IMMEDIATELY if temp above 105°C',
+          '2. Allow engine to cool before removing radiator cap',
+          '3. Check coolant level and top up if low',
+          '4. Inspect radiator fins for debris/blockage',
+          '5. Verify fan operation and belt tension'
+        ];
+        urgency = 'CRITICAL - Risk of engine damage';
+      }
+      else if (problem.includes('low oil') || problem.includes('oil pressure')) {
+        diagnosis = 'LOW OIL PRESSURE - Lubrication system fault';
+        possibleCauses = [
+          'Low oil level - check dipstick',
+          'Oil pump wear - reduced pumping capacity',
+          'Worn bearings - excessive clearances',
+          'Oil pressure sender faulty - false reading',
+          'Oil filter blocked - restricted flow'
+        ];
+        recommendedActions = [
+          '1. STOP ENGINE if pressure below 1.0 bar at idle',
+          '2. Check oil level on dipstick - add oil if low',
+          '3. Inspect for oil leaks under engine',
+          '4. Replace oil filter if overdue',
+          '5. Test pressure with mechanical gauge to verify sender'
+        ];
+        urgency = 'CRITICAL - Bearing damage imminent';
+      }
+      else if (problem.includes('voltage') || problem.includes('no power') || problem.includes('output')) {
+        diagnosis = 'NO GENERATOR OUTPUT - AVR or excitation fault';
+        possibleCauses = [
+          'AVR failure - no excitation to field',
+          'Exciter winding open - check continuity',
+          'Brushes worn - poor rotor contact',
+          'Loss of residual magnetism - field needs flashing',
+          'Broken connections at AVR terminals'
+        ];
+        recommendedActions = [
+          '1. Check AVR LED indicators for fault codes',
+          '2. Measure voltage at AVR input terminals',
+          '3. Inspect brush condition and spring pressure',
+          '4. Flash field if residual magnetism lost (12V to F+/F-)',
+          '5. Check all AVR wiring connections'
+        ];
+        urgency = 'HIGH - No electrical output';
+      }
+      else if (problem.includes('frequency') || problem.includes('speed') || problem.includes('hunting')) {
+        diagnosis = 'FREQUENCY/SPEED INSTABILITY - Governor fault';
+        possibleCauses = [
+          'Governor actuator wear - sluggish response',
+          'Speed sensor signal weak - check MPU gap',
+          'Governor gain settings incorrect',
+          'Fuel system restriction - inconsistent delivery',
+          'Engine mechanical issue - misfiring cylinder'
+        ];
+        recommendedActions = [
+          '1. Check MPU signal amplitude (min 1V AC at idle)',
+          '2. Verify actuator linkage moves freely',
+          '3. Adjust governor gain settings if hunting',
+          '4. Inspect fuel filters for restriction',
+          '5. Run cylinder contribution test'
+        ];
+        urgency = 'MODERATE - Affects power quality';
+      }
+      else if (problem.includes('smoke') || problem.includes('black') || problem.includes('white')) {
+        diagnosis = 'ABNORMAL EXHAUST SMOKE - Combustion issue';
+        possibleCauses = [
+          'Black smoke: Overloading, restricted air, faulty injector',
+          'White smoke: Coolant leak into cylinder, timing issue',
+          'Blue smoke: Oil consumption, worn rings/guides',
+          'Turbo failure - oil leaking into intake'
+        ];
+        recommendedActions = [
+          '1. Identify smoke color during operation',
+          '2. Black: Check air filter and reduce load',
+          '3. White: Check coolant level and head gasket',
+          '4. Blue: Check oil consumption rate',
+          '5. Inspect turbo for shaft play and oil leaks'
+        ];
+        urgency = 'MODERATE - Monitor and diagnose';
+      }
+      else if (problem.includes('battery') || problem.includes('charge') || problem.includes('dead')) {
+        diagnosis = 'BATTERY/CHARGING SYSTEM FAULT';
+        possibleCauses = [
+          'Battery sulphated - won\'t hold charge',
+          'Alternator not charging - belt or regulator fault',
+          'Battery charger failure - no float voltage',
+          'Parasitic drain - something consuming power',
+          'Loose connections - voltage drop'
+        ];
+        recommendedActions = [
+          '1. Measure battery voltage (should be 27-28V float)',
+          '2. Check alternator output while running',
+          '3. Inspect belt tension and condition',
+          '4. Clean and tighten battery terminals',
+          '5. Load test battery if over 3 years old'
+        ];
+        urgency = 'MODERATE - May prevent starting';
+      }
+      else if (problem.includes('leak') || problem.includes('fuel') || problem.includes('diesel')) {
+        diagnosis = 'FUEL SYSTEM LEAK OR FAULT';
+        possibleCauses = [
+          'Fuel line connection loose or cracked',
+          'Injector return line leaking',
+          'Fuel filter housing seal failure',
+          'Tank vent blocked - vacuum buildup',
+          'Lift pump diaphragm failure'
+        ];
+        recommendedActions = [
+          '1. Inspect all fuel line connections',
+          '2. Check injector return lines for leaks',
+          '3. Examine filter housing O-rings',
+          '4. Verify tank vent is clear',
+          '5. Clean up any spilled fuel immediately'
+        ];
+        urgency = 'HIGH - Fire hazard';
+      }
+      else {
+        diagnosis = 'GENERAL FAULT - Further diagnosis required';
+        possibleCauses = [
+          'Multiple factors may be contributing',
+          'Sensor or wiring issue possible',
+          'Controller configuration may need review',
+          'Mechanical inspection recommended'
+        ];
+        recommendedActions = [
+          '1. Read all fault codes from controller',
+          '2. Check all sensor readings for abnormal values',
+          '3. Inspect wiring for damage or corrosion',
+          '4. Review recent maintenance history',
+          '5. Contact technical support with fault codes'
+        ];
+        urgency = 'MODERATE - Requires investigation';
+      }
+
+      setAiSolution({
+        problem: techProblem,
+        diagnosis,
+        possibleCauses,
+        recommendedActions,
+        urgency,
+        timestamp: new Date()
+      });
+
+      setIsAnalyzing(false);
+      // Switch to diagnosis page on controller display
+      setCurrentPage(5); // Index of 'diagnosis' page
+    }, 1500);
+  }, [techProblem]);
+
+  // Display pages for navigation - includes Diagnosis page for AI solution
   const displayPages = [
     { id: 'overview', name: 'Overview' },
     { id: 'engine', name: 'Engine' },
     { id: 'generator', name: 'Generator' },
     { id: 'mains', name: 'Mains' },
     { id: 'alarms', name: 'Alarms' },
+    { id: 'diagnosis', name: 'AI Diagnosis' },
   ];
 
   return (
@@ -2921,6 +3142,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'COMAP' && (
@@ -2943,6 +3165,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'WOODWARD' && (
@@ -2965,6 +3188,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'SMARTGEN' && (
@@ -2987,6 +3211,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'POWERWIZARD' && (
@@ -3009,6 +3234,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'DATAKOM' && (
@@ -3031,6 +3257,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'LOVATO' && (
@@ -3053,6 +3280,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'SIEMENS' && (
@@ -3075,6 +3303,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'ENKO' && (
@@ -3097,6 +3326,7 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
       {controllerType === 'VODIA' && (
@@ -3119,8 +3349,120 @@ export default function ControllerSimulator({
           setAutoMode={setAutoMode}
           setAlarmMuted={setAlarmMuted}
           setTransferPosition={setTransferPosition}
+          aiSolution={aiSolution}
         />
       )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+      {/* TECH INPUT PANEL - Technician describes problem, AI analyzes and shows on display */}
+      {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border-2 border-cyan-800 overflow-hidden">
+        <div className="bg-gradient-to-r from-cyan-900 to-blue-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📝</span>
+            <div>
+              <h3 className="text-white font-bold">Technician Problem Input</h3>
+              <p className="text-cyan-200 text-xs">Describe the problem - AI will analyze and show solution on controller display</p>
+            </div>
+          </div>
+          {aiSolution && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 rounded-lg border border-green-500/50">
+              <span className="text-green-400 text-sm">✓ Analysis Complete</span>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Problem Input Area */}
+          <div>
+            <label className="block text-cyan-400 text-sm font-medium mb-2">
+              Describe the generator problem (what you observe on the actual unit):
+            </label>
+            <textarea
+              value={techProblem}
+              onChange={(e) => setTechProblem(e.target.value)}
+              placeholder="Example: Generator won't start - cranks but no ignition. Oil pressure shows normal before shutdown. Battery voltage is 24.5V. No alarm codes on display. Last service was 200 hours ago..."
+              rows={4}
+              className="w-full px-4 py-3 bg-slate-800 border-2 border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 resize-none"
+              style={{ caretColor: 'white' }}
+            />
+          </div>
+
+          {/* Quick Problem Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <span className="text-slate-400 text-sm">Quick select:</span>
+            {[
+              'Generator won\'t start',
+              'High coolant temperature',
+              'Low oil pressure',
+              'No voltage output',
+              'Maintenance alarm showing',
+              'Frequency unstable',
+              'Black smoke',
+              'Battery not charging'
+            ].map((problem) => (
+              <button
+                key={problem}
+                onClick={() => setTechProblem(problem)}
+                className="px-3 py-1 bg-slate-700 hover:bg-cyan-700 text-slate-300 hover:text-white text-sm rounded-lg transition-colors"
+              >
+                {problem}
+              </button>
+            ))}
+          </div>
+
+          {/* Analyze Button */}
+          <div className="flex gap-4">
+            <button
+              onClick={analyzeTechProblem}
+              disabled={!techProblem.trim() || isAnalyzing}
+              className={`flex-1 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all ${
+                !techProblem.trim() || isAnalyzing
+                  ? 'bg-slate-700 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500'
+              }`}
+            >
+              {isAnalyzing ? (
+                <>
+                  <motion.span
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  >
+                    ⏳
+                  </motion.span>
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <span>🤖</span>
+                  Analyze Problem & Show on Controller Display
+                </>
+              )}
+            </button>
+            {aiSolution && (
+              <button
+                onClick={() => {
+                  setAiSolution(null);
+                  setTechProblem('');
+                  setCurrentPage(0);
+                }}
+                className="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Info Box */}
+          <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+            <p className="text-slate-400 text-sm">
+              <span className="text-cyan-400 font-medium">💡 How it works:</span> Enter the problem you observe on the actual generator.
+              The AI will analyze and display the diagnosis on the controller simulator above - mimicking how you would see it on the real unit.
+              Use the controller navigation to switch between pages (Overview, Engine, Generator, Mains, Alarms, <span className="text-cyan-400 font-bold">AI Diagnosis</span>).
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* COMPREHENSIVE INLINE ANALYSIS PANEL */}
       {showInlineAnalysis && (
@@ -3650,6 +3992,7 @@ function DisplayContent({
   transferPosition,
   activeAlarms,
   getParameterStatus,
+  aiSolution,
 }: {
   page: string;
   sensorValues: Record<string, number>;
@@ -3659,6 +4002,14 @@ function DisplayContent({
   transferPosition: 'mains' | 'generator';
   activeAlarms: ActiveAlarm[];
   getParameterStatus: (key: string, value: number) => string;
+  aiSolution?: {
+    problem: string;
+    diagnosis: string;
+    possibleCauses: string[];
+    recommendedActions: string[];
+    urgency: string;
+    timestamp: Date | null;
+  } | null;
 }) {
   const statusColor = (status: string) => {
     if (status === 'critical') return '#ff4444';
@@ -3816,6 +4167,73 @@ function DisplayContent({
     );
   }
 
+  // AI DIAGNOSIS PAGE - Shows technician problem and AI solution on controller display
+  if (page === 'diagnosis') {
+    return (
+      <div style={{ color: textColor }} className="h-full">
+        <div className="text-center border-b border-current/30 pb-1 mb-2 font-bold flex items-center justify-center gap-2">
+          <span>🤖</span> AI DIAGNOSIS
+        </div>
+        {aiSolution ? (
+          <div className="space-y-2 text-xs max-h-[160px] overflow-y-auto">
+            {/* Urgency Banner */}
+            <motion.div
+              className={`text-center py-1 rounded font-bold ${
+                aiSolution.urgency.includes('CRITICAL') ? 'bg-red-900/70' :
+                aiSolution.urgency.includes('HIGH') ? 'bg-orange-900/70' :
+                'bg-yellow-900/50'
+              }`}
+              animate={{ opacity: [1, 0.7, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              ⚠ {aiSolution.urgency}
+            </motion.div>
+
+            {/* Diagnosis */}
+            <div className="p-2 bg-current/10 rounded">
+              <div className="font-bold text-[10px] opacity-70 mb-1">DIAGNOSIS:</div>
+              <div className="font-medium">{aiSolution.diagnosis}</div>
+            </div>
+
+            {/* Top 3 Causes */}
+            <div className="p-2 bg-current/10 rounded">
+              <div className="font-bold text-[10px] opacity-70 mb-1">POSSIBLE CAUSES:</div>
+              {aiSolution.possibleCauses.slice(0, 3).map((cause, idx) => (
+                <div key={idx} className="flex items-start gap-1">
+                  <span className="opacity-70">{idx + 1}.</span>
+                  <span className="opacity-90">{cause.length > 50 ? cause.substring(0, 50) + '...' : cause}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Top 3 Actions */}
+            <div className="p-2 bg-current/10 rounded">
+              <div className="font-bold text-[10px] opacity-70 mb-1">RECOMMENDED ACTIONS:</div>
+              {aiSolution.recommendedActions.slice(0, 3).map((action, idx) => (
+                <div key={idx} className="flex items-start gap-1">
+                  <span className="opacity-90">{action.length > 55 ? action.substring(0, 55) + '...' : action}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Timestamp */}
+            {aiSolution.timestamp && (
+              <div className="text-center text-[10px] opacity-50 pt-1">
+                Analyzed: {aiSolution.timestamp.toLocaleTimeString()}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8 opacity-60">
+            <div className="text-2xl mb-2">📝</div>
+            <div>Enter problem description below</div>
+            <div className="text-[10px] mt-1">AI will analyze and display solution here</div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return null;
 }
 
@@ -3966,13 +4384,21 @@ interface LayoutProps {
   setAutoMode: React.Dispatch<React.SetStateAction<boolean>>;
   setAlarmMuted: React.Dispatch<React.SetStateAction<boolean>>;
   setTransferPosition: React.Dispatch<React.SetStateAction<'mains' | 'generator'>>;
+  aiSolution?: {
+    problem: string;
+    diagnosis: string;
+    possibleCauses: string[];
+    recommendedActions: string[];
+    urgency: string;
+    timestamp: Date | null;
+  } | null;
 }
 
 // ==================== DSE LAYOUT - Marine Industrial Style ====================
 function DSELayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-[#1a1a1a] rounded-2xl p-2 shadow-2xl border border-gray-700">
@@ -4021,6 +4447,7 @@ function DSELayout({
               transferPosition={transferPosition}
               activeAlarms={activeAlarms}
               getParameterStatus={getParameterStatus}
+              aiSolution={aiSolution}
             />
           </div>
 
@@ -4057,7 +4484,7 @@ function DSELayout({
 function ComApLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d] rounded-xl p-1 shadow-2xl border-2 border-red-900">
@@ -4095,7 +4522,7 @@ function ComApLayout({
           <div className="p-4 min-h-[180px] font-mono" style={{ backgroundColor: config.displayColor }}>
             <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor={config.textColor}
               engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
           </div>
         </div>
 
@@ -4134,7 +4561,7 @@ function ComApLayout({
 function WoodwardLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-[#1a1a1a] rounded-lg p-1 shadow-2xl border-4 border-green-900">
@@ -4177,7 +4604,7 @@ function WoodwardLayout({
           <div className="p-4 min-h-[180px] font-mono">
             <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor="#ffcc00"
               engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
           </div>
         </div>
 
@@ -4219,7 +4646,7 @@ function WoodwardLayout({
 function SmartGenLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-1 shadow-2xl border border-purple-800">
@@ -4252,7 +4679,7 @@ function SmartGenLayout({
           <div className="p-3 min-h-[160px] font-mono text-xs" style={{ backgroundColor: config.displayColor }}>
             <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor={config.textColor}
               engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
           </div>
         </div>
 
@@ -4291,7 +4718,7 @@ function SmartGenLayout({
 function PowerWizardLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-[#1a1a1a] rounded-xl p-1 shadow-2xl border-4 border-yellow-600">
@@ -4333,7 +4760,7 @@ function PowerWizardLayout({
             <div className="p-4 min-h-[160px] font-mono">
               <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor={config.textColor}
                 engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-                activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+                activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
             </div>
           </div>
         </div>
@@ -4372,7 +4799,7 @@ function PowerWizardLayout({
 function DatakomLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-[#0a1a2a] rounded-xl p-1 shadow-2xl border-2 border-cyan-700">
@@ -4407,7 +4834,7 @@ function DatakomLayout({
           <div className="p-4 min-h-[170px] font-mono">
             <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor={config.textColor}
               engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
           </div>
         </div>
 
@@ -4443,7 +4870,7 @@ function DatakomLayout({
 function LovatoLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-[#1a1510] rounded-2xl p-1 shadow-2xl border-2 border-orange-700">
@@ -4484,7 +4911,7 @@ function LovatoLayout({
             <div className="p-4 min-h-[200px] font-mono">
               <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor={config.textColor}
                 engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-                activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+                activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
             </div>
           </div>
         </div>
@@ -4508,7 +4935,7 @@ function LovatoLayout({
 function SiemensLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-[#0a1a1a] rounded-lg p-1 shadow-2xl border border-teal-600">
@@ -4551,7 +4978,7 @@ function SiemensLayout({
           <div className="p-4 min-h-[180px] font-mono">
             <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor={config.textColor}
               engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
           </div>
         </div>
 
@@ -4588,7 +5015,7 @@ function SiemensLayout({
 function EnkoLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-[#1a0a2a] rounded-xl p-1 shadow-2xl border border-purple-600">
@@ -4622,7 +5049,7 @@ function EnkoLayout({
           <div className="p-3 min-h-[140px] font-mono text-xs">
             <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor={config.textColor}
               engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
           </div>
         </div>
 
@@ -4646,7 +5073,7 @@ function EnkoLayout({
 function VodiaLayout({
   config, selectedModel, currentPage, displayPages, sensorValues, engineRunning, autoMode, mainsAvailable,
   transferPosition, alarmMuted, leds, activeAlarms, getParameterStatus, setCurrentPage, setEngineRunning,
-  setAutoMode, setAlarmMuted, setTransferPosition
+  setAutoMode, setAlarmMuted, setTransferPosition, aiSolution
 }: LayoutProps) {
   return (
     <div className="bg-gradient-to-br from-[#0a1525] to-[#0d1a30] rounded-2xl p-1 shadow-2xl border border-blue-700">
@@ -4684,7 +5111,7 @@ function VodiaLayout({
           <div className="p-5 min-h-[200px] font-mono">
             <DisplayContent page={displayPages[currentPage].id} sensorValues={sensorValues} textColor={config.textColor}
               engineRunning={engineRunning} mainsAvailable={mainsAvailable} transferPosition={transferPosition}
-              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} />
+              activeAlarms={activeAlarms} getParameterStatus={getParameterStatus} aiSolution={aiSolution} />
           </div>
         </div>
 
