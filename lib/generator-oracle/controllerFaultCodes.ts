@@ -44,6 +44,84 @@ export interface ResetPathway {
   successIndicator: string;
 }
 
+// Enhanced Spare Part with OEM details
+export interface SparePart {
+  name: string;
+  partNumber: string;                          // OEM part number
+  alternatePartNumbers?: string[];             // Cross-reference numbers
+  manufacturer: string;
+  category: 'electrical' | 'mechanical' | 'sensor' | 'filter' | 'gasket' | 'belt' | 'bearing' | 'consumable' | 'controller';
+  estimatedCost: { min: number; max: number; currency: string };
+  leadTime?: string;                           // Typical delivery time
+  criticalSpare: boolean;                      // Should be stocked?
+  quantity: number;                            // Qty needed for repair
+  specifications?: string;                     // Technical specs
+  compatibleModels?: string[];                 // Compatible generator models
+  suppliers?: { name: string; location: string; contact?: string }[];
+}
+
+// Manual Reference for parts and repair
+export interface ManualReference {
+  type: 'parts' | 'service' | 'operation' | 'troubleshooting' | 'wiring';
+  title: string;
+  documentNumber?: string;                     // Publication number
+  manufacturer: string;
+  section: string;                             // Section/chapter
+  page?: string;                               // Page number(s)
+  figureNumber?: string;                       // Figure/diagram reference
+  downloadUrl?: string;                        // If available online
+  isbn?: string;
+  edition?: string;
+  notes?: string;
+}
+
+// Controller Navigation - How to access faults on actual hardware
+export interface ControllerNavigation {
+  brand: string;
+  model: string;
+  accessPath: {                                // Step by step navigation
+    step: number;
+    button: string;                            // Button to press
+    display: string;                           // What appears on display
+    holdTime?: number;                         // Seconds to hold if needed
+    notes?: string;
+  }[];
+  menuPath: string[];                          // Simplified menu breadcrumb
+  passwordRequired?: boolean;
+  defaultPassword?: string;
+  firmwareNotes?: string;
+  alternativeMethod?: string;                  // Via software/PC connection
+  screenshotUrl?: string;
+}
+
+// Verification Steps - Confirm issue is resolved
+export interface VerificationStep {
+  step: number;
+  action: string;
+  expectedResult: string;
+  measurement?: {
+    parameter: string;
+    expectedValue: string;
+    unit: string;
+    tolerance?: string;
+  };
+  waitTime?: number;                           // Seconds to wait
+  tools?: string[];
+  failureAction: string;                       // What to do if verification fails
+  passIndicator: string;                       // Clear sign that step passed
+}
+
+// Required Tools with specifications
+export interface RequiredTool {
+  name: string;
+  specification?: string;                      // Size, rating, etc
+  category: 'hand' | 'power' | 'diagnostic' | 'safety' | 'special' | 'calibration' | 'consumable';
+  essential: boolean;                          // Can't do job without it
+  alternativeTools?: string[];                 // Acceptable substitutes
+  rentalAvailable?: boolean;
+  estimatedCost?: { min: number; max: number; currency: string };
+}
+
 export interface Solution {
   difficulty: 'easy' | 'moderate' | 'advanced' | 'expert';
   timeEstimate: string;
@@ -51,6 +129,16 @@ export interface Solution {
   tools: string[];
   parts: string[];
   estimatedCost: { min: number; max: number; currency: string };
+  // Enhanced fields
+  spareParts?: SparePart[];                    // Detailed parts with part numbers
+  requiredTools?: RequiredTool[];              // Tools with specifications
+  manualReferences?: ManualReference[];        // Where to find in manuals
+  controllerNavigation?: ControllerNavigation; // How to navigate controller
+  verificationSteps?: VerificationStep[];      // Confirm repair success
+  safetyPrecautions?: string[];               // Job-specific safety
+  technicianLevel?: 'apprentice' | 'journeyman' | 'master' | 'specialist';
+  certificationRequired?: string[];            // Required certs
+  specialNotes?: string;                       // Important considerations
 }
 
 export interface ControllerFaultCode {

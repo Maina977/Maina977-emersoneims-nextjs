@@ -1647,17 +1647,108 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
                       {solution.tools.length > 0 && (
                         <p className="text-xs text-slate-500">Tools: {solution.tools.join(', ')}</p>
                       )}
-                      {solution.parts.length > 0 && (
+                      {/* Enhanced Parts with OEM Part Numbers */}
+                      {solution.spareParts && solution.spareParts.length > 0 ? (
+                        <div className="mt-2 p-2 bg-amber-900/20 rounded-lg">
+                          <p className="text-xs font-medium text-amber-400 mb-1">🔧 Spare Parts (OEM Part Numbers):</p>
+                          {solution.spareParts.map((part, k) => (
+                            <div key={k} className="flex justify-between items-center text-xs border-b border-slate-700 py-1 last:border-0">
+                              <span className="text-slate-300">{part.name}</span>
+                              <span className="font-mono text-cyan-400">{part.partNumber}</span>
+                              <span className="text-green-400">${part.estimatedCost.min}-{part.estimatedCost.max}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : solution.parts.length > 0 && (
                         <p className="text-xs text-cyan-400 mt-1">Parts: {solution.parts.join(', ')}</p>
                       )}
-                      <p className="text-xs text-green-400 mt-1">
-                        Est. Cost: {solution.estimatedCost.currency} {solution.estimatedCost.min}-{solution.estimatedCost.max}
+
+                      {/* Required Tools with Specifications */}
+                      {solution.requiredTools && solution.requiredTools.length > 0 && (
+                        <div className="mt-2 p-2 bg-purple-900/20 rounded-lg">
+                          <p className="text-xs font-medium text-purple-400 mb-1">🛠 Required Tools:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {solution.requiredTools.map((tool, k) => (
+                              <span key={k} className={`text-[10px] px-1.5 py-0.5 rounded ${tool.essential ? 'bg-red-500/30 text-red-300' : 'bg-slate-600 text-slate-300'}`}>
+                                {tool.name} {tool.specification && `(${tool.specification})`}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Manual References */}
+                      {solution.manualReferences && solution.manualReferences.length > 0 && (
+                        <div className="mt-2 p-2 bg-blue-900/20 rounded-lg">
+                          <p className="text-xs font-medium text-blue-400 mb-1">📚 Manual References:</p>
+                          {solution.manualReferences.map((manual, k) => (
+                            <div key={k} className="text-[10px] text-slate-300 border-b border-slate-700 py-0.5 last:border-0">
+                              <span className="font-medium text-blue-300">{manual.type}:</span> {manual.title} - {manual.section} {manual.page && `(p.${manual.page})`}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Controller Navigation */}
+                      {solution.controllerNavigation && (
+                        <div className="mt-2 p-2 bg-emerald-900/20 rounded-lg">
+                          <p className="text-xs font-medium text-emerald-400 mb-1">🎮 Controller Navigation ({solution.controllerNavigation.brand} {solution.controllerNavigation.model}):</p>
+                          {solution.controllerNavigation.accessPath.slice(0, 5).map((step, k) => (
+                            <div key={k} className="flex items-center gap-1 text-[10px]">
+                              <span className="font-bold text-cyan-400">{step.step}.</span>
+                              <span className="text-slate-300">{step.button}</span>
+                              <span className="text-slate-500">→</span>
+                              <span className="text-green-400 italic">{step.display}</span>
+                            </div>
+                          ))}
+                          {solution.controllerNavigation.defaultPassword && (
+                            <p className="text-[10px] text-amber-400 mt-1">🔑 Default PIN: {solution.controllerNavigation.defaultPassword}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Verification Steps */}
+                      {solution.verificationSteps && solution.verificationSteps.length > 0 && (
+                        <div className="mt-2 p-2 bg-teal-900/20 rounded-lg">
+                          <p className="text-xs font-medium text-teal-400 mb-1">✅ Verification Steps:</p>
+                          {solution.verificationSteps.slice(0, 4).map((vstep, k) => (
+                            <div key={k} className="text-[10px] border-b border-slate-700 py-0.5 last:border-0">
+                              <div className="flex gap-1">
+                                <span className="font-bold text-teal-300">{vstep.step}.</span>
+                                <span className="text-slate-300">{vstep.action}</span>
+                              </div>
+                              <div className="pl-3 text-green-400 italic">✓ {vstep.passIndicator}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <p className="text-xs text-green-400 mt-2 font-medium">
+                        💰 Est. Cost: {solution.estimatedCost.currency} {solution.estimatedCost.min}-{solution.estimatedCost.max}
                       </p>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
+
+            {/* Kenya Suppliers Section */}
+            <div className="mt-3 p-3 bg-green-900/20 rounded-lg">
+              <p className="text-xs font-medium text-green-400 mb-2">🏪 WHERE TO BUY (KENYA):</p>
+              <div className="grid md:grid-cols-2 gap-2">
+                {[
+                  { name: 'Mantrac Kenya (CAT)', phone: '+254 20 6553000', location: 'Industrial Area' },
+                  { name: 'CMC Motors (Cummins)', phone: '+254 20 2712201', location: 'Lusaka Rd' },
+                  { name: 'Chandarana Industries', phone: '+254 20 6536222', location: 'Kitui Rd' },
+                  { name: 'Genset Services Ltd', phone: '+254 722 123456', location: 'Mombasa Rd' }
+                ].map((supplier, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-xs p-2 bg-slate-800/50 rounded">
+                    <span className="font-medium text-slate-300">{supplier.name}</span>
+                    <span className="text-cyan-400">{supplier.phone}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         )}
       </div>
