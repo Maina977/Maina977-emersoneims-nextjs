@@ -636,7 +636,7 @@ const ClientTestimonials = () => {
       company: 'Kivukoni International School',
       rating: 5,
       text: 'The hybrid system exceeded expectations. Our students now have uninterrupted power. 40% reduction in energy costs with the 60kVA Cummins and solar integration.',
-      location: 'Nairobi',
+      location: 'Kilifi',
       service: '60kVA Cummins + Solar Hybrid'
     },
     {
