@@ -1790,10 +1790,21 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
         <textarea
           value={techInput.problemDescription}
           onChange={(e) => setTechInput({ ...techInput, problemDescription: e.target.value })}
+          onFocus={(e) => e.target.select()}
           placeholder="Example: Generator starts but shuts down after 30 seconds. Warning light for high temperature comes on. This started yesterday after a power outage. The coolant level looks normal..."
           rows={5}
-          className="w-full px-4 py-4 rounded-xl bg-slate-800 border-2 border-slate-600 text-white placeholder:text-slate-400 resize-none text-base focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-text"
-          style={{ caretColor: 'white' }}
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={true}
+          tabIndex={0}
+          className="w-full px-4 py-4 rounded-xl bg-slate-900 border-2 border-slate-500 text-white placeholder:text-slate-500 resize-none text-base focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 cursor-text select-text"
+          style={{
+            caretColor: '#22d3ee',
+            WebkitUserSelect: 'text',
+            userSelect: 'text',
+            touchAction: 'auto',
+            pointerEvents: 'auto'
+          }}
         />
         <div className="flex items-center justify-between mt-3">
           <p className="text-xs" style={{ color: tool.textColor + '60' }}>
@@ -1824,7 +1835,10 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
               value={techInput.recentMaintenance}
               onChange={(e) => setTechInput({ ...techInput, recentMaintenance: e.target.value })}
               placeholder="e.g., Oil change 2 weeks ago, filter replacement..."
-              className="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none cursor-text"
+              autoComplete="off"
+              tabIndex={0}
+              className="w-full px-4 py-3 rounded-lg bg-slate-900 border-2 border-slate-500 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 cursor-text select-text"
+              style={{ WebkitUserSelect: 'text', userSelect: 'text', pointerEvents: 'auto' }}
             />
           </div>
           <div>
@@ -1834,7 +1848,10 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
               value={techInput.environmentalFactors}
               onChange={(e) => setTechInput({ ...techInput, environmentalFactors: e.target.value })}
               placeholder="e.g., Dusty location, high humidity, recent rain..."
-              className="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none cursor-text"
+              autoComplete="off"
+              tabIndex={0}
+              className="w-full px-4 py-3 rounded-lg bg-slate-900 border-2 border-slate-500 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 cursor-text select-text"
+              style={{ WebkitUserSelect: 'text', userSelect: 'text', pointerEvents: 'auto' }}
             />
           </div>
         </div>
@@ -2067,7 +2084,10 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
               onChange={(e) => setTechInput({ ...techInput, recentMaintenance: e.target.value })}
               placeholder="Last oil change, filter replacements, any recent repairs..."
               rows={3}
-              className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder:text-slate-500 resize-none text-sm"
+              autoComplete="off"
+              tabIndex={0}
+              className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border-2 border-slate-500 text-white placeholder:text-slate-500 resize-none text-sm focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 cursor-text select-text"
+              style={{ WebkitUserSelect: 'text', userSelect: 'text', pointerEvents: 'auto' }}
             />
           </div>
           <div>
@@ -2077,7 +2097,10 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
               onChange={(e) => setTechInput({ ...techInput, environmentalFactors: e.target.value })}
               placeholder="Temperature, humidity, dust, altitude, recent weather events..."
               rows={3}
-              className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder:text-slate-500 resize-none text-sm"
+              autoComplete="off"
+              tabIndex={0}
+              className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border-2 border-slate-500 text-white placeholder:text-slate-500 resize-none text-sm focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 cursor-text select-text"
+              style={{ WebkitUserSelect: 'text', userSelect: 'text', pointerEvents: 'auto' }}
             />
           </div>
         </div>

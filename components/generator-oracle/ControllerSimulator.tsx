@@ -3715,10 +3715,21 @@ export default function ControllerSimulator({
             <textarea
               value={techProblem}
               onChange={(e) => setTechProblem(e.target.value)}
+              onFocus={(e) => e.target.select()}
               placeholder="Example: Generator won't start - cranks but no ignition. Oil pressure shows normal before shutdown. Battery voltage is 24.5V. No alarm codes on display. Last service was 200 hours ago..."
               rows={4}
-              className="w-full px-4 py-3 bg-slate-800 border-2 border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 resize-none"
-              style={{ caretColor: 'white' }}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={true}
+              tabIndex={0}
+              className="w-full px-4 py-3 bg-slate-900 border-2 border-slate-500 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 resize-none cursor-text select-text"
+              style={{
+                caretColor: '#22d3ee',
+                WebkitUserSelect: 'text',
+                userSelect: 'text',
+                touchAction: 'auto',
+                pointerEvents: 'auto'
+              }}
             />
           </div>
 
