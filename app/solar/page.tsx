@@ -77,6 +77,11 @@ const CustomerPortal = dynamic(() => import('@/components/solar/CustomerPortal')
   ssr: false
 });
 
+const SolarProjectWorkflow = dynamic(() => import('@/components/solar/SolarProjectWorkflow'), {
+  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
+  ssr: false
+});
+
 // Import equipment database and guides
 import {
   SOLAR_PANELS_DATABASE,
@@ -455,7 +460,7 @@ const SOLAR_DOWNLOADS = [
   { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', size: '4.5 MB', icon: '⚡' },
 ];
 
-type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation' | 'design3d' | 'voice' | 'webgl3d' | 'sales' | 'portal';
+type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation' | 'design3d' | 'voice' | 'webgl3d' | 'sales' | 'portal' | 'workflow';
 
 // ==================== ANIMATED COUNTER COMPONENT ====================
 function AnimatedCounter({ end, suffix = '', prefix = '' }: { end: number; suffix?: string; prefix?: string }) {
@@ -691,6 +696,7 @@ export default function SolarBible() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
   const tabs = [
+    { id: 'workflow', label: 'Project Workflow', icon: '🚀', badge: '8-STEP' },
     { id: 'design3d', label: '3D Design Studio', icon: '🏗️', badge: 'PRO' },
     { id: 'webgl3d', label: 'True 3D Viewer', icon: '🎮', badge: 'NEW!' },
     { id: 'voice', label: 'Voice Design', icon: '🎤', badge: 'AI' },
@@ -2049,6 +2055,18 @@ export default function SolarBible() {
                 exit={{ opacity: 0, y: -20 }}
               >
                 <CustomerPortal />
+              </motion.div>
+            )}
+
+            {/* ==================== PROJECT WORKFLOW TAB ==================== */}
+            {activeTab === 'workflow' && (
+              <motion.div
+                key="workflow"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <SolarProjectWorkflow />
               </motion.div>
             )}
           </AnimatePresence>
