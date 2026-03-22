@@ -1662,16 +1662,68 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
         )}
       </div>
 
-      {/* Problem Description */}
-      <div className="rounded-xl border p-4" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}>
-        <h4 className="font-medium mb-3" style={{ color: tool.textColor }}>Problem Description</h4>
+      {/* Problem Description - Main Input Area */}
+      <div className="rounded-xl border-2 p-6" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor }}>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: tool.primaryColor + '30' }}>
+            <PenTool className="w-5 h-5" style={{ color: tool.primaryColor }} />
+          </div>
+          <div>
+            <h4 className="font-bold text-lg" style={{ color: tool.textColor }}>Describe Your Generator Issue</h4>
+            <p className="text-sm" style={{ color: tool.textColor + '80' }}>Type your problem description below - be as detailed as possible</p>
+          </div>
+        </div>
         <textarea
           value={techInput.problemDescription}
           onChange={(e) => setTechInput({ ...techInput, problemDescription: e.target.value })}
-          placeholder="Describe the problem in detail. Include when it started, any patterns, and what was happening before the issue began..."
-          rows={4}
-          className="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder:text-slate-500 resize-none"
+          placeholder="Example: Generator starts but shuts down after 30 seconds. Warning light for high temperature comes on. This started yesterday after a power outage. The coolant level looks normal..."
+          rows={5}
+          className="w-full px-4 py-4 rounded-xl bg-slate-800 border-2 border-slate-600 text-white placeholder:text-slate-400 resize-none text-base focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 cursor-text"
+          style={{ caretColor: 'white' }}
         />
+        <div className="flex items-center justify-between mt-3">
+          <p className="text-xs" style={{ color: tool.textColor + '60' }}>
+            {techInput.problemDescription.length > 0 ? `${techInput.problemDescription.length} characters` : 'Start typing to describe the issue...'}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setTechInput({ ...techInput, problemDescription: '' })}
+              className="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 text-sm hover:bg-slate-600"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Notes Input */}
+      <div className="rounded-xl border p-4" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}>
+        <h4 className="font-medium mb-3 flex items-center gap-2" style={{ color: tool.textColor }}>
+          <FileText className="w-4 h-4" />
+          Additional Notes & Observations
+        </h4>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block">Recent Maintenance (what was done?)</label>
+            <input
+              type="text"
+              value={techInput.recentMaintenance}
+              onChange={(e) => setTechInput({ ...techInput, recentMaintenance: e.target.value })}
+              placeholder="e.g., Oil change 2 weeks ago, filter replacement..."
+              className="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none cursor-text"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block">Environmental Factors</label>
+            <input
+              type="text"
+              value={techInput.environmentalFactors}
+              onChange={(e) => setTechInput({ ...techInput, environmentalFactors: e.target.value })}
+              placeholder="e.g., Dusty location, high humidity, recent rain..."
+              className="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none cursor-text"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Observed Conditions - Quick Assessment */}
@@ -1726,33 +1778,39 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
         </div>
       </div>
 
-      {/* Measurements Input */}
+      {/* Measurements Input - Easy to Fill */}
       <div className="rounded-xl border p-4" style={{ backgroundColor: tool.screenColor, borderColor: tool.primaryColor + '40' }}>
-        <h4 className="font-medium mb-4" style={{ color: tool.textColor }}>Measured Parameters</h4>
-        <div className="grid md:grid-cols-5 gap-4">
+        <h4 className="font-medium mb-4 flex items-center gap-2" style={{ color: tool.textColor }}>
+          <Gauge className="w-5 h-5" style={{ color: tool.primaryColor }} />
+          Enter Measured Values (if available)
+        </h4>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
-            { key: 'batteryVoltage', label: 'Battery Voltage', unit: 'V', icon: <Battery className="w-4 h-4" /> },
-            { key: 'oilPressure', label: 'Oil Pressure', unit: 'bar', icon: <Gauge className="w-4 h-4" /> },
-            { key: 'coolantTemp', label: 'Coolant Temp', unit: '°C', icon: <Thermometer className="w-4 h-4" /> },
-            { key: 'frequency', label: 'Frequency', unit: 'Hz', icon: <Activity className="w-4 h-4" /> },
-            { key: 'voltage', label: 'Output Voltage', unit: 'V', icon: <Zap className="w-4 h-4" /> },
-          ].map(({ key, label, unit, icon }) => (
-            <div key={key}>
-              <label className="flex items-center gap-2 text-xs text-slate-400 mb-1">
-                {icon} {label}
+            { key: 'batteryVoltage', label: 'Battery Voltage', unit: 'V', placeholder: '24.0', icon: <Battery className="w-4 h-4" /> },
+            { key: 'oilPressure', label: 'Oil Pressure', unit: 'bar', placeholder: '4.0', icon: <Gauge className="w-4 h-4" /> },
+            { key: 'coolantTemp', label: 'Coolant Temp', unit: '°C', placeholder: '85', icon: <Thermometer className="w-4 h-4" /> },
+            { key: 'frequency', label: 'Frequency', unit: 'Hz', placeholder: '50.0', icon: <Activity className="w-4 h-4" /> },
+            { key: 'voltage', label: 'Output Voltage', unit: 'V', placeholder: '400', icon: <Zap className="w-4 h-4" /> },
+          ].map(({ key, label, unit, placeholder, icon }) => (
+            <div key={key} className="p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+              <label className="flex items-center gap-2 text-xs text-slate-400 mb-2">
+                <span style={{ color: tool.primaryColor }}>{icon}</span>
+                {label}
               </label>
               <div className="relative">
                 <input
                   type="text"
+                  inputMode="decimal"
                   value={techInput.measurements[key as keyof typeof techInput.measurements]}
                   onChange={(e) => setTechInput({
                     ...techInput,
                     measurements: { ...techInput.measurements, [key]: e.target.value }
                   })}
-                  placeholder="--"
-                  className="w-full px-3 py-2 pr-10 rounded bg-slate-800 border border-slate-600 text-white text-right font-mono"
+                  placeholder={placeholder}
+                  className="w-full px-3 py-3 pr-12 rounded-lg bg-slate-900 border-2 border-slate-600 text-white text-right font-mono text-lg focus:border-cyan-500 focus:outline-none cursor-text"
+                  style={{ caretColor: 'white' }}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">{unit}</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400 text-sm font-medium">{unit}</span>
               </div>
             </div>
           ))}
