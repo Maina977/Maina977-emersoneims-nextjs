@@ -5290,6 +5290,296 @@ function WiringDiagramModal({
             </div>
           </section>
 
+          {/* Visual Schematic Diagram */}
+          <section className="bg-gray-800 rounded-xl p-5 border border-gray-700">
+            <h3 className="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+              <span>📐</span> Visual Schematic Diagram
+            </h3>
+            <div className="bg-slate-900 rounded-xl p-4 border border-slate-600 overflow-x-auto">
+              <svg viewBox="0 0 1000 700" className="w-full min-w-[800px]" style={{ minHeight: '500px' }}>
+                {/* Background Grid */}
+                <defs>
+                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" strokeWidth="0.5"/>
+                  </pattern>
+                  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#60a5fa" />
+                  </marker>
+                </defs>
+                <rect width="1000" height="700" fill="url(#grid)"/>
+
+                {/* Title */}
+                <text x="500" y="30" fill="#f8fafc" fontSize="18" textAnchor="middle" fontWeight="bold">
+                  GENERATOR CONTROLLER WIRING SCHEMATIC
+                </text>
+                <text x="500" y="50" fill="#94a3b8" fontSize="12" textAnchor="middle">
+                  Professional Reference Diagram - {diagram.modelName}
+                </text>
+
+                {/* === BATTERY SECTION (Left) === */}
+                <g transform="translate(50, 100)">
+                  {/* Battery Symbol */}
+                  <rect x="0" y="0" width="100" height="70" rx="5" fill="#1e293b" stroke="#ef4444" strokeWidth="2"/>
+                  <text x="50" y="25" fill="#f8fafc" fontSize="14" textAnchor="middle" fontWeight="bold">BATTERY</text>
+                  <text x="50" y="45" fill="#94a3b8" fontSize="11" textAnchor="middle">24V DC</text>
+                  {/* Battery Terminals */}
+                  <rect x="15" y="55" width="25" height="15" rx="2" fill="#ef4444"/>
+                  <text x="27" y="66" fill="white" fontSize="10" textAnchor="middle">B+</text>
+                  <rect x="60" y="55" width="25" height="15" rx="2" fill="#475569"/>
+                  <text x="72" y="66" fill="white" fontSize="10" textAnchor="middle">B-</text>
+                </g>
+
+                {/* === CONTROLLER (Center) === */}
+                <g transform="translate(350, 80)">
+                  <rect x="0" y="0" width="300" height="300" rx="10" fill="#0f172a" stroke="#3b82f6" strokeWidth="3"/>
+                  <rect x="10" y="10" width="280" height="35" rx="5" fill="#1d4ed8"/>
+                  <text x="150" y="33" fill="white" fontSize="14" textAnchor="middle" fontWeight="bold">CONTROLLER UNIT</text>
+
+                  {/* DC Power Terminals */}
+                  <text x="20" y="65" fill="#94a3b8" fontSize="10">DC POWER</text>
+                  <rect x="20" y="70" width="40" height="20" rx="3" fill="#ef4444" stroke="#f87171"/>
+                  <text x="40" y="84" fill="white" fontSize="9" textAnchor="middle">B+</text>
+                  <rect x="70" y="70" width="40" height="20" rx="3" fill="#475569" stroke="#64748b"/>
+                  <text x="90" y="84" fill="white" fontSize="9" textAnchor="middle">B-</text>
+                  <rect x="120" y="70" width="40" height="20" rx="3" fill="#22c55e" stroke="#4ade80"/>
+                  <text x="140" y="84" fill="white" fontSize="9" textAnchor="middle">GND</text>
+
+                  {/* Engine Sensors */}
+                  <text x="20" y="110" fill="#94a3b8" fontSize="10">ENGINE SENSORS</text>
+                  <rect x="20" y="115" width="30" height="18" rx="2" fill="#a16207" stroke="#ca8a04"/>
+                  <text x="35" y="127" fill="white" fontSize="7" textAnchor="middle">OIL</text>
+                  <rect x="55" y="115" width="35" height="18" rx="2" fill="#15803d" stroke="#22c55e"/>
+                  <text x="72" y="127" fill="white" fontSize="7" textAnchor="middle">TEMP</text>
+                  <rect x="95" y="115" width="30" height="18" rx="2" fill="#0369a1" stroke="#0ea5e9"/>
+                  <text x="110" y="127" fill="white" fontSize="7" textAnchor="middle">W</text>
+                  <rect x="130" y="115" width="35" height="18" rx="2" fill="#c2410c" stroke="#f97316"/>
+                  <text x="147" y="127" fill="white" fontSize="7" textAnchor="middle">FUEL</text>
+
+                  {/* Engine Control Outputs */}
+                  <text x="20" y="155" fill="#94a3b8" fontSize="10">ENGINE CONTROL</text>
+                  <rect x="20" y="160" width="45" height="18" rx="2" fill="#eab308" stroke="#facc15"/>
+                  <text x="42" y="172" fill="#1e293b" fontSize="7" textAnchor="middle">CRANK</text>
+                  <rect x="70" y="160" width="40" height="18" rx="2" fill="#3b82f6" stroke="#60a5fa"/>
+                  <text x="90" y="172" fill="white" fontSize="7" textAnchor="middle">FUEL</text>
+                  <rect x="115" y="160" width="50" height="18" rx="2" fill="#f97316" stroke="#fb923c"/>
+                  <text x="140" y="172" fill="white" fontSize="7" textAnchor="middle">PREHEAT</text>
+
+                  {/* Generator Voltage Sensing */}
+                  <text x="20" y="200" fill="#94a3b8" fontSize="10">GEN VOLTAGE</text>
+                  <rect x="20" y="205" width="30" height="18" rx="2" fill="#a16207"/>
+                  <text x="35" y="217" fill="white" fontSize="7" textAnchor="middle">L1</text>
+                  <rect x="55" y="205" width="30" height="18" rx="2" fill="#1e293b" stroke="#475569"/>
+                  <text x="70" y="217" fill="white" fontSize="7" textAnchor="middle">L2</text>
+                  <rect x="90" y="205" width="30" height="18" rx="2" fill="#6b7280"/>
+                  <text x="105" y="217" fill="white" fontSize="7" textAnchor="middle">L3</text>
+                  <rect x="125" y="205" width="30" height="18" rx="2" fill="#0369a1"/>
+                  <text x="140" y="217" fill="white" fontSize="7" textAnchor="middle">N</text>
+
+                  {/* Relay Outputs */}
+                  <text x="20" y="245" fill="#94a3b8" fontSize="10">RELAY OUTPUTS</text>
+                  <rect x="20" y="250" width="50" height="18" rx="2" fill="#dc2626" stroke="#f87171"/>
+                  <text x="45" y="262" fill="white" fontSize="7" textAnchor="middle">ALARM</text>
+                  <rect x="75" y="250" width="45" height="18" rx="2" fill="#8b5cf6" stroke="#a78bfa"/>
+                  <text x="97" y="262" fill="white" fontSize="7" textAnchor="middle">MAINS</text>
+                  <rect x="125" y="250" width="40" height="18" rx="2" fill="#f97316" stroke="#fb923c"/>
+                  <text x="145" y="262" fill="white" fontSize="7" textAnchor="middle">GEN</text>
+
+                  {/* Communication */}
+                  <text x="190" y="65" fill="#94a3b8" fontSize="10">COMMS</text>
+                  <rect x="190" y="70" width="95" height="45" rx="3" fill="#1e293b" stroke="#6366f1"/>
+                  <text x="237" y="88" fill="#818cf8" fontSize="8" textAnchor="middle">RS485 A/B</text>
+                  <text x="237" y="100" fill="#818cf8" fontSize="8" textAnchor="middle">CAN H/L</text>
+                  <text x="237" y="112" fill="#818cf8" fontSize="8" textAnchor="middle">RS232</text>
+                </g>
+
+                {/* === ENGINE BLOCK (Left Bottom) === */}
+                <g transform="translate(50, 250)">
+                  <rect x="0" y="0" width="180" height="200" rx="8" fill="#1e293b" stroke="#475569" strokeWidth="2"/>
+                  <text x="90" y="25" fill="#f8fafc" fontSize="14" textAnchor="middle" fontWeight="bold">ENGINE</text>
+
+                  {/* Oil Pressure Sensor */}
+                  <circle cx="40" cy="60" r="15" fill="#1e293b" stroke="#ca8a04" strokeWidth="2"/>
+                  <text x="40" y="63" fill="#ca8a04" fontSize="8" textAnchor="middle">OIL P</text>
+                  <text x="40" y="85" fill="#94a3b8" fontSize="8" textAnchor="middle">0-10 bar</text>
+
+                  {/* Coolant Temp Sensor */}
+                  <circle cx="90" cy="60" r="15" fill="#1e293b" stroke="#22c55e" strokeWidth="2"/>
+                  <text x="90" y="63" fill="#22c55e" fontSize="8" textAnchor="middle">TEMP</text>
+                  <text x="90" y="85" fill="#94a3b8" fontSize="8" textAnchor="middle">NTC</text>
+
+                  {/* Speed Pickup */}
+                  <circle cx="140" cy="60" r="15" fill="#1e293b" stroke="#0ea5e9" strokeWidth="2"/>
+                  <text x="140" y="63" fill="#0ea5e9" fontSize="8" textAnchor="middle">MPU</text>
+                  <text x="140" y="85" fill="#94a3b8" fontSize="8" textAnchor="middle">Flywheel</text>
+
+                  {/* Starter Motor */}
+                  <rect x="20" y="110" width="60" height="35" rx="3" fill="#1e293b" stroke="#eab308" strokeWidth="2"/>
+                  <text x="50" y="130" fill="#eab308" fontSize="9" textAnchor="middle">STARTER</text>
+                  <text x="50" y="142" fill="#94a3b8" fontSize="7" textAnchor="middle">MOTOR</text>
+
+                  {/* Fuel Solenoid */}
+                  <rect x="100" y="110" width="60" height="35" rx="3" fill="#1e293b" stroke="#3b82f6" strokeWidth="2"/>
+                  <text x="130" y="130" fill="#3b82f6" fontSize="9" textAnchor="middle">FUEL</text>
+                  <text x="130" y="142" fill="#94a3b8" fontSize="7" textAnchor="middle">SOLENOID</text>
+
+                  {/* Glow Plugs */}
+                  <rect x="20" y="160" width="140" height="25" rx="3" fill="#1e293b" stroke="#f97316" strokeWidth="2"/>
+                  <text x="90" y="177" fill="#f97316" fontSize="9" textAnchor="middle">GLOW PLUGS / PREHEAT</text>
+                </g>
+
+                {/* === GENERATOR / ALTERNATOR (Right) === */}
+                <g transform="translate(750, 100)">
+                  <rect x="0" y="0" width="180" height="220" rx="8" fill="#1e293b" stroke="#8b5cf6" strokeWidth="2"/>
+                  <text x="90" y="25" fill="#f8fafc" fontSize="14" textAnchor="middle" fontWeight="bold">ALTERNATOR</text>
+                  <text x="90" y="45" fill="#94a3b8" fontSize="11" textAnchor="middle">500 kVA</text>
+
+                  {/* Output Terminals */}
+                  <text x="90" y="70" fill="#a78bfa" fontSize="10" textAnchor="middle">OUTPUT TERMINALS</text>
+                  <rect x="15" y="80" width="35" height="25" rx="3" fill="#a16207"/>
+                  <text x="32" y="96" fill="white" fontSize="10" textAnchor="middle">L1</text>
+                  <rect x="55" y="80" width="35" height="25" rx="3" fill="#1e293b" stroke="#475569"/>
+                  <text x="72" y="96" fill="white" fontSize="10" textAnchor="middle">L2</text>
+                  <rect x="95" y="80" width="35" height="25" rx="3" fill="#6b7280"/>
+                  <text x="112" y="96" fill="white" fontSize="10" textAnchor="middle">L3</text>
+                  <rect x="135" y="80" width="30" height="25" rx="3" fill="#0369a1"/>
+                  <text x="150" y="96" fill="white" fontSize="10" textAnchor="middle">N</text>
+
+                  {/* AVR */}
+                  <rect x="30" y="120" width="120" height="40" rx="5" fill="#0f172a" stroke="#06b6d4" strokeWidth="2"/>
+                  <text x="90" y="138" fill="#06b6d4" fontSize="10" textAnchor="middle">AVR</text>
+                  <text x="90" y="152" fill="#94a3b8" fontSize="8" textAnchor="middle">Voltage Regulator</text>
+
+                  {/* Exciter */}
+                  <rect x="30" y="170" width="120" height="35" rx="5" fill="#0f172a" stroke="#f59e0b" strokeWidth="2"/>
+                  <text x="90" y="192" fill="#f59e0b" fontSize="10" textAnchor="middle">EXCITER FIELD</text>
+                </g>
+
+                {/* === ATS / TRANSFER SWITCH (Right Bottom) === */}
+                <g transform="translate(750, 350)">
+                  <rect x="0" y="0" width="180" height="120" rx="8" fill="#1e293b" stroke="#22c55e" strokeWidth="2"/>
+                  <text x="90" y="25" fill="#f8fafc" fontSize="12" textAnchor="middle" fontWeight="bold">TRANSFER SWITCH</text>
+
+                  {/* Contactors */}
+                  <rect x="15" y="40" width="70" height="35" rx="3" fill="#8b5cf6" stroke="#a78bfa"/>
+                  <text x="50" y="55" fill="white" fontSize="8" textAnchor="middle">MAINS</text>
+                  <text x="50" y="68" fill="white" fontSize="8" textAnchor="middle">CONTACTOR</text>
+
+                  <rect x="95" y="40" width="70" height="35" rx="3" fill="#f97316" stroke="#fb923c"/>
+                  <text x="130" y="55" fill="white" fontSize="8" textAnchor="middle">GEN</text>
+                  <text x="130" y="68" fill="white" fontSize="8" textAnchor="middle">CONTACTOR</text>
+
+                  {/* Interlock */}
+                  <line x1="85" y1="57" x2="95" y2="57" stroke="#ef4444" strokeWidth="2"/>
+                  <text x="90" y="100" fill="#ef4444" fontSize="8" textAnchor="middle">INTERLOCK</text>
+                </g>
+
+                {/* === MAINS SUPPLY (Top Right) === */}
+                <g transform="translate(750, 10)">
+                  <rect x="0" y="0" width="180" height="60" rx="5" fill="#1e293b" stroke="#22c55e" strokeWidth="2"/>
+                  <text x="90" y="25" fill="#22c55e" fontSize="12" textAnchor="middle" fontWeight="bold">MAINS SUPPLY</text>
+                  <text x="90" y="45" fill="#94a3b8" fontSize="10" textAnchor="middle">415V 50Hz 3-Phase</text>
+                </g>
+
+                {/* === WIRING CONNECTIONS === */}
+                {/* Battery to Controller - B+ */}
+                <path d="M 150 155 L 250 155 Q 280 155 280 130 L 280 150 Q 280 155 310 155 L 370 155"
+                      stroke="#ef4444" strokeWidth="3" fill="none"/>
+
+                {/* Battery to Controller - B- */}
+                <path d="M 150 170 L 240 170 Q 260 170 260 185 L 260 175 Q 260 180 280 180 L 370 180"
+                      stroke="#475569" strokeWidth="3" fill="none"/>
+
+                {/* Engine sensors to Controller */}
+                <path d="M 90 310 L 90 220 Q 90 200 120 200 L 350 200" stroke="#ca8a04" strokeWidth="2" fill="none"/>
+                <path d="M 140 310 L 140 210 Q 140 195 170 195 L 350 195" stroke="#22c55e" strokeWidth="2" fill="none"/>
+                <path d="M 190 310 L 190 215 Q 190 205 220 205 L 350 205" stroke="#0ea5e9" strokeWidth="2" fill="none"/>
+
+                {/* Controller to Starter */}
+                <path d="M 370 248 L 300 248 Q 280 248 280 280 L 280 330 Q 280 360 200 360"
+                      stroke="#eab308" strokeWidth="2" fill="none"/>
+
+                {/* Controller to Fuel Solenoid */}
+                <path d="M 390 248 L 310 248 Q 290 248 290 300 L 290 340 Q 290 380 200 380"
+                      stroke="#3b82f6" strokeWidth="2" fill="none"/>
+
+                {/* Controller to Generator */}
+                <path d="M 650 210 L 700 210 Q 720 210 720 180 L 720 170 Q 720 160 750 160"
+                      stroke="#a16207" strokeWidth="2" fill="none"/>
+
+                {/* Controller to ATS */}
+                <path d="M 620 340 L 700 340 Q 720 340 720 370 L 720 390"
+                      stroke="#8b5cf6" strokeWidth="2" fill="none" strokeDasharray="5,3"/>
+                <path d="M 620 350 L 690 350 Q 710 350 710 385 L 710 390"
+                      stroke="#f97316" strokeWidth="2" fill="none" strokeDasharray="5,3"/>
+
+                {/* === LEGEND === */}
+                <g transform="translate(50, 500)">
+                  <rect x="0" y="0" width="900" height="85" rx="5" fill="#0f172a" stroke="#475569"/>
+                  <text x="450" y="20" fill="#f8fafc" fontSize="12" textAnchor="middle" fontWeight="bold">WIRING COLOR CODE (IEC 60446)</text>
+
+                  {/* Color Legend Items */}
+                  <g transform="translate(20, 35)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#ef4444"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">RED = DC Positive (+)</text>
+                  </g>
+                  <g transform="translate(160, 35)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#1e293b" stroke="#475569"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">BLACK = DC Negative (-)</text>
+                  </g>
+                  <g transform="translate(320, 35)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#22c55e"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">GREEN = Signal/Data</text>
+                  </g>
+                  <g transform="translate(480, 35)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#eab308"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">YELLOW = Starter/Signal</text>
+                  </g>
+                  <g transform="translate(640, 35)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#3b82f6"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">BLUE = Neutral/Control</text>
+                  </g>
+                  <g transform="translate(800, 35)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#f97316"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">ORANGE = Preheat</text>
+                  </g>
+
+                  <g transform="translate(20, 55)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#a16207"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">BROWN = Phase L1/Oil</text>
+                  </g>
+                  <g transform="translate(180, 55)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#6b7280"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">GREY = Phase L3</text>
+                  </g>
+                  <g transform="translate(320, 55)">
+                    <rect x="0" y="0" width="30" height="12" rx="2" fill="#8b5cf6"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">VIOLET = Contactor</text>
+                  </g>
+                  <g transform="translate(480, 55)">
+                    <line x1="0" y1="6" x2="30" y2="6" stroke="#60a5fa" strokeWidth="2" strokeDasharray="5,3"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">DASHED = Control Signal</text>
+                  </g>
+                  <g transform="translate(650, 55)">
+                    <rect x="0" y="0" width="15" height="12" rx="2" fill="#22c55e"/>
+                    <rect x="15" y="0" width="15" height="12" rx="2" fill="#eab308"/>
+                    <text x="35" y="10" fill="#f8fafc" fontSize="9">GREEN/YELLOW = Earth</text>
+                  </g>
+                </g>
+
+                {/* Diagram Notes */}
+                <text x="500" y="610" fill="#94a3b8" fontSize="10" textAnchor="middle">
+                  NOTE: Always verify terminal designations against actual controller documentation before wiring
+                </text>
+                <text x="500" y="625" fill="#94a3b8" fontSize="10" textAnchor="middle">
+                  Generator Oracle Professional Wiring Reference - For Educational Purposes
+                </text>
+              </svg>
+            </div>
+            <p className="text-gray-400 text-xs mt-3 text-center">
+              Interactive schematic showing major connections. Click on terminal sections below for detailed wiring specifications.
+            </p>
+          </section>
+
           {/* Terminal Wiring Sections */}
           <section>
             <h3 className="text-xl font-bold text-orange-400 mb-4 flex items-center gap-2">
