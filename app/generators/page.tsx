@@ -547,6 +547,535 @@ const AIVisualDiagnosticSection = () => {
 // Trust Signals, Social Proof, Testimonials, Guarantees, Urgency
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// 💰 TRANSPARENT PRICING SECTION - Show Starting Prices
+const TransparentPricing = () => {
+  const priceRanges = [
+    { kva: '10-30 kVA', priceFrom: 350000, priceTo: 850000, ideal: 'Small business, homes', popular: false },
+    { kva: '40-80 kVA', priceFrom: 900000, priceTo: 1800000, ideal: 'Medium business, schools', popular: true },
+    { kva: '100-200 kVA', priceFrom: 2000000, priceTo: 4500000, ideal: 'Hotels, factories', popular: false },
+    { kva: '250-500 kVA', priceFrom: 5000000, priceTo: 12000000, ideal: 'Large industrial', popular: false },
+    { kva: '600-1000 kVA', priceFrom: 15000000, priceTo: 28000000, ideal: 'Major facilities', popular: false },
+    { kva: '1000+ kVA', priceFrom: 30000000, priceTo: 65000000, ideal: 'Power plants, data centers', popular: false },
+  ];
+
+  return (
+    <section id="pricing" className="py-20 bg-gradient-to-b from-black via-amber-900/10 to-black">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
+            💰 Transparent Pricing
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Generator Prices in Kenya 2026
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            No hidden costs. Prices include delivery, installation, ATS, commissioning, and 1-year free service.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {priceRanges.map((range, index) => (
+            <motion.div
+              key={range.kva}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className={`relative p-6 rounded-2xl border transition-all ${
+                range.popular
+                  ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-amber-500/50'
+                  : 'bg-slate-900/50 border-slate-800 hover:border-amber-500/30'
+              }`}
+            >
+              {range.popular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full">
+                  MOST POPULAR
+                </span>
+              )}
+              <h3 className="text-2xl font-bold text-amber-400 mb-2">{range.kva}</h3>
+              <div className="mb-3">
+                <span className="text-gray-400 text-sm">Starting from</span>
+                <div className="text-3xl font-bold text-white">
+                  KES {(range.priceFrom / 1000000).toFixed(1)}M
+                </div>
+                <span className="text-gray-500 text-sm">to KES {(range.priceTo / 1000000).toFixed(1)}M</span>
+              </div>
+              <p className="text-gray-400 text-sm mb-4">Ideal for: {range.ideal}</p>
+              <a
+                href={`/contact?generator=${range.kva}`}
+                className="block text-center px-4 py-2 bg-amber-500 text-black font-semibold rounded-lg hover:bg-amber-400 transition-all"
+              >
+                Get Exact Quote
+              </a>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="text-center text-gray-400 text-sm">
+          <p>* Prices vary based on brand (Cummins, Perkins, CAT), phase, and features</p>
+          <p>* All prices include: Delivery + Installation + ATS + Commissioning + 1-Year Service + 3-Year Warranty</p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// 📸 BEFORE/AFTER PROJECT GALLERY - Show Transformations
+const BeforeAfterGallery = () => {
+  const projects = [
+    {
+      client: 'St. Austin Academy',
+      location: 'Nairobi',
+      before: 'Frequent power outages disrupting classes',
+      after: '99.8% uptime with 50kVA Massey Ferguson',
+      image: '/images/ST-AUSTIN-4K-CINEMATIC.jpg',
+      savings: 'KSh 1.2M saved annually'
+    },
+    {
+      client: 'Bigot Flowers',
+      location: 'Naivasha',
+      before: 'Critical cooling failures during outages',
+      after: 'Zero product loss with 300kVA CAT + redundancy',
+      image: '/images/BIGOT-FLOWERS-4K-CINEMATIC.jpg',
+      savings: '99.9% uptime achieved'
+    },
+    {
+      client: 'NTSA Headquarters',
+      location: 'Nairobi',
+      before: 'Government operations disrupted by grid failures',
+      after: '100% continuity with 300kVA Atlas Copco',
+      image: '/images/NTSA-4K-CINEMATIC.jpg',
+      savings: 'Real-time monitoring enabled'
+    },
+    {
+      client: 'Greenheart Kilifi',
+      location: 'Kilifi',
+      before: 'Resort guests experiencing power issues',
+      after: 'Flawless power with 44kVA Cummins Voltka',
+      image: '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg',
+      savings: '30% maintenance cost reduction'
+    },
+  ];
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-4">
+            📸 Project Transformations
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Before & After Results
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            See the real impact of reliable power on our clients' operations
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {projects.map((project, index) => (
+            <motion.div
+              key={project.client}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-slate-900/50 rounded-2xl overflow-hidden border border-slate-800"
+            >
+              {/* Project Image */}
+              <div className="relative h-48 bg-gradient-to-br from-gray-800 to-gray-900">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-6xl opacity-30">⚡</span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80">
+                  <h3 className="text-xl font-bold text-white">{project.client}</h3>
+                  <p className="text-gray-400 text-sm">📍 {project.location}</p>
+                </div>
+              </div>
+
+              {/* Before/After */}
+              <div className="p-6">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                    <p className="text-red-400 text-xs uppercase font-bold mb-1">Before</p>
+                    <p className="text-gray-300 text-sm">{project.before}</p>
+                  </div>
+                  <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                    <p className="text-green-400 text-xs uppercase font-bold mb-1">After</p>
+                    <p className="text-gray-300 text-sm">{project.after}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-amber-400 font-semibold">{project.savings}</span>
+                  <a href="/generators/case-studies" className="text-cyan-400 text-sm hover:underline">
+                    View Full Case Study →
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// 🎬 VIDEO TESTIMONIALS SECTION
+const VideoTestimonials = () => {
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
+
+  const videos = [
+    {
+      id: 'sanergy',
+      client: 'Sanergy Limited',
+      role: 'Plant Manager',
+      thumbnail: '/images/SANERGY-FG-WILSON-4K-CINEMATIC.jpg',
+      duration: '2:45',
+      title: 'How EmersonEIMS Transformed Our Operations',
+      quote: '95% reduction in downtime, KSh 1.8M saved annually'
+    },
+    {
+      id: 'kivukoni',
+      client: 'Kivukoni School',
+      role: 'Facilities Manager',
+      thumbnail: '/images/KIVUKONI-4K-CINEMATIC.jpg',
+      duration: '1:58',
+      title: 'Hybrid Solar-Generator Success Story',
+      quote: '40% reduction in energy costs with 24/7 power'
+    },
+    {
+      id: 'bigot',
+      client: 'Bigot Flowers',
+      role: 'Operations Director',
+      thumbnail: '/images/BIGOT-FLOWERS-4K-CINEMATIC.jpg',
+      duration: '3:12',
+      title: 'Zero Product Loss Since Installation',
+      quote: 'Our flower export business depends on this system'
+    },
+  ];
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-red-400 text-sm mb-4">
+            🎬 Video Testimonials
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Hear From Our Clients
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Real stories from real businesses about their power transformation
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {videos.map((video, index) => (
+            <motion.div
+              key={video.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="group cursor-pointer"
+              onClick={() => setActiveVideo(video.id)}
+            >
+              {/* Thumbnail */}
+              <div className="relative h-48 rounded-xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 mb-4">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-6xl opacity-30">🎬</span>
+                </div>
+                {/* Play Button */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+                  <div className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <span className="text-white text-2xl ml-1">▶</span>
+                  </div>
+                </div>
+                {/* Duration */}
+                <span className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 rounded text-white text-xs">
+                  {video.duration}
+                </span>
+              </div>
+
+              {/* Info */}
+              <h3 className="text-white font-semibold mb-1">{video.title}</h3>
+              <p className="text-amber-400 text-sm mb-1">{video.client}</p>
+              <p className="text-gray-400 text-sm italic">"{video.quote}"</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <p className="text-center text-gray-500 text-sm mt-8">
+          * Video testimonials coming soon. Contact us to share your success story.
+        </p>
+      </div>
+    </section>
+  );
+};
+
+// 📊 BRAND COMPARISON TABLE
+const BrandComparisonTable = () => {
+  const brands = [
+    { name: 'Cummins', origin: 'USA', warranty: '3 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$$', best: 'Reliability & support' },
+    { name: 'Perkins', origin: 'UK', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$$', best: 'Value for money' },
+    { name: 'Caterpillar', origin: 'USA', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐', price: '$$$$$', best: 'Heavy industrial' },
+    { name: 'FG Wilson', origin: 'UK', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐', price: '$$$', best: 'Commercial use' },
+    { name: 'Atlas Copco', origin: 'Sweden', warranty: '2 Years', fuelEff: '⭐⭐⭐⭐⭐', parts: '⭐⭐⭐', price: '$$$$', best: 'Quiet operation' },
+    { name: 'Voltka', origin: 'China/Cummins', warranty: '3 Years', fuelEff: '⭐⭐⭐⭐', parts: '⭐⭐⭐⭐⭐', price: '$$', best: 'Budget + quality' },
+  ];
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-black to-slate-900">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
+            📊 Compare Brands
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Generator Brand Comparison
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            We service all brands. Here's how they compare:
+          </p>
+        </motion.div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-white">
+            <thead>
+              <tr className="border-b border-gray-700 bg-slate-900/50">
+                <th className="text-left p-4 text-amber-400">Brand</th>
+                <th className="text-left p-4 text-gray-400">Origin</th>
+                <th className="text-left p-4 text-gray-400">Warranty</th>
+                <th className="text-left p-4 text-gray-400">Fuel Efficiency</th>
+                <th className="text-left p-4 text-gray-400">Parts Availability</th>
+                <th className="text-left p-4 text-gray-400">Price Range</th>
+                <th className="text-left p-4 text-gray-400">Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              {brands.map((brand, index) => (
+                <motion.tr
+                  key={brand.name}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  className="border-b border-gray-800 hover:bg-slate-900/50"
+                >
+                  <td className="p-4 font-semibold text-white">{brand.name}</td>
+                  <td className="p-4 text-gray-400">{brand.origin}</td>
+                  <td className="p-4 text-green-400">{brand.warranty}</td>
+                  <td className="p-4">{brand.fuelEff}</td>
+                  <td className="p-4">{brand.parts}</td>
+                  <td className="p-4 text-amber-400">{brand.price}</td>
+                  <td className="p-4 text-gray-300">{brand.best}</td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p className="text-center text-gray-500 text-sm mt-6">
+          Not sure which brand? <a href="/contact" className="text-amber-400 hover:underline">Talk to our engineers</a> for a free recommendation.
+        </p>
+      </div>
+    </section>
+  );
+};
+
+// 💳 FINANCING CALCULATOR
+const FinancingCalculator = () => {
+  const [price, setPrice] = useState(2000000);
+  const [deposit, setDeposit] = useState(30);
+  const [months, setMonths] = useState(12);
+
+  const depositAmount = price * (deposit / 100);
+  const financeAmount = price - depositAmount;
+  const monthlyPayment = financeAmount / months;
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-slate-900 to-black">
+      <div className="max-w-4xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-4">
+            💳 Easy Payment Plans
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Financing Calculator
+          </h2>
+          <p className="text-xl text-gray-400">
+            Calculate your monthly payments. No interest on 3-month plans!
+          </p>
+        </motion.div>
+
+        <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-800">
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {/* Price Slider */}
+            <div>
+              <label className="text-gray-400 text-sm block mb-2">Generator Price (KES)</label>
+              <input
+                type="range"
+                min="500000"
+                max="30000000"
+                step="100000"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className="w-full accent-amber-500"
+              />
+              <div className="text-2xl font-bold text-amber-400 mt-2">
+                KES {(price / 1000000).toFixed(1)}M
+              </div>
+            </div>
+
+            {/* Deposit Slider */}
+            <div>
+              <label className="text-gray-400 text-sm block mb-2">Deposit (%)</label>
+              <input
+                type="range"
+                min="20"
+                max="70"
+                step="5"
+                value={deposit}
+                onChange={(e) => setDeposit(Number(e.target.value))}
+                className="w-full accent-amber-500"
+              />
+              <div className="text-2xl font-bold text-white mt-2">
+                {deposit}% (KES {(depositAmount / 1000).toFixed(0)}K)
+              </div>
+            </div>
+
+            {/* Months Selector */}
+            <div>
+              <label className="text-gray-400 text-sm block mb-2">Payment Period</label>
+              <div className="flex gap-2">
+                {[3, 6, 12].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMonths(m)}
+                    className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
+                      months === m
+                        ? 'bg-amber-500 text-black'
+                        : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+                    }`}
+                  >
+                    {m} Mo
+                  </button>
+                ))}
+              </div>
+              {months === 3 && <p className="text-green-400 text-xs mt-2">✓ 0% Interest!</p>}
+            </div>
+          </div>
+
+          {/* Results */}
+          <div className="bg-black/50 rounded-xl p-6 text-center">
+            <p className="text-gray-400 mb-2">Your Monthly Payment</p>
+            <div className="text-5xl font-bold text-green-400 mb-2">
+              KES {monthlyPayment.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            </div>
+            <p className="text-gray-500 text-sm">
+              for {months} months after KES {depositAmount.toLocaleString()} deposit
+            </p>
+          </div>
+
+          <div className="text-center mt-6">
+            <a
+              href={`/contact?finance=true&price=${price}&deposit=${deposit}&months=${months}`}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl"
+            >
+              Apply for Financing →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// 📄 PDF DOWNLOADS SECTION
+const DownloadsSection = () => {
+  const downloads = [
+    { name: 'Cummins Generator Catalog 2026', type: 'PDF', size: '4.2 MB', icon: '📕' },
+    { name: 'Voltka Price List March 2026', type: 'PDF', size: '1.8 MB', icon: '💰' },
+    { name: 'Generator Sizing Guide', type: 'PDF', size: '2.1 MB', icon: '📐' },
+    { name: 'Maintenance Schedule Template', type: 'PDF', size: '890 KB', icon: '🔧' },
+    { name: 'ATS Installation Manual', type: 'PDF', size: '3.4 MB', icon: '🔀' },
+    { name: 'Warranty Terms & Conditions', type: 'PDF', size: '520 KB', icon: '🛡️' },
+  ];
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-black to-slate-900">
+      <div className="max-w-5xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm mb-4">
+            📄 Free Downloads
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Brochures & Spec Sheets
+          </h2>
+          <p className="text-xl text-gray-400">
+            Download detailed information for your planning
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {downloads.map((doc, index) => (
+            <motion.a
+              key={doc.name}
+              href="/contact?download=brochure"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              className="flex items-center gap-4 p-4 bg-slate-900/50 rounded-xl border border-slate-800 hover:border-blue-500/50 transition-all group"
+            >
+              <span className="text-3xl">{doc.icon}</span>
+              <div className="flex-1">
+                <p className="text-white font-semibold group-hover:text-blue-400 transition-colors">{doc.name}</p>
+                <p className="text-gray-500 text-sm">{doc.type} • {doc.size}</p>
+              </div>
+              <span className="text-blue-400 group-hover:translate-x-1 transition-transform">↓</span>
+            </motion.a>
+          ))}
+        </div>
+
+        <p className="text-center text-gray-500 text-sm mt-6">
+          * Enter your email to receive download links. We respect your privacy.
+        </p>
+      </div>
+    </section>
+  );
+};
+
 // LIVE STATISTICS COUNTER - Real Business Metrics
 const LiveStatisticsCounter = () => {
   // Real business statistics based on actual operations
@@ -1709,6 +2238,11 @@ export default function GeneratorPage() {
       <LiveStatisticsCounter />
 
       {/* ═══════════════════════════════════════════════════════════════════
+          💰 TRANSPARENT PRICING - Show Starting Prices
+      ════════════════════════════════════════════════════════════════ */}
+      <TransparentPricing />
+
+      {/* ═══════════════════════════════════════════════════════════════════
           OUR WORK GALLERY - Cinematic 4K Showcase
       ════════════════════════════════════════════════════════════════ */}
       <section className="py-20 bg-gradient-to-b from-black via-gray-900/30 to-black">
@@ -1919,6 +2453,16 @@ export default function GeneratorPage() {
       ════════════════════════════════════════════════════════════════ */}
       <ClientTestimonials />
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          🎬 VIDEO TESTIMONIALS - Hear From Clients
+      ════════════════════════════════════════════════════════════════ */}
+      <VideoTestimonials />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          📸 BEFORE/AFTER - Project Transformations
+      ════════════════════════════════════════════════════════════════ */}
+      <BeforeAfterGallery />
+
       {/* Interactive Blobs Section */}
       <section className="relative py-20 bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden">
         {!isLite && (
@@ -1975,6 +2519,11 @@ export default function GeneratorPage() {
           <GeneratorComparison />
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          📊 BRAND COMPARISON TABLE - Help Decision Making
+      ════════════════════════════════════════════════════════════════ */}
+      <BrandComparisonTable />
 
       {/* Calculator & Charts Section */}
       <section className="py-16 bg-gradient-to-b from-black to-gray-900">
@@ -2352,6 +2901,16 @@ export default function GeneratorPage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          💳 FINANCING CALCULATOR - Easy Payment Plans
+      ════════════════════════════════════════════════════════════════ */}
+      <FinancingCalculator />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          📄 DOWNLOADS - Brochures & Spec Sheets
+      ════════════════════════════════════════════════════════════════ */}
+      <DownloadsSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
           🛡️ IRON-CLAD GUARANTEE - Build Trust
