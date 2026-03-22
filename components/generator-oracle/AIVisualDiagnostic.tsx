@@ -148,6 +148,85 @@ interface ComponentMatch {
   internalLink: string;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// PREDICTIVE FAILURE ANALYSIS INTERFACES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface PredictiveFailureAnalysis {
+  componentId: string;
+  componentName: string;
+  currentCondition: 'excellent' | 'good' | 'fair' | 'poor' | 'critical';
+  failureProbability: number; // 0-100%
+  estimatedTimeToFailure: string; // e.g., "~2,500 hours", "3-6 months"
+  remainingLifespan: number; // percentage 0-100%
+  wearIndicators: WearIndicator[];
+  maintenanceRecommendation: string;
+  urgency: 'immediate' | 'urgent' | 'scheduled' | 'monitor' | 'none';
+  riskLevel: 'critical' | 'high' | 'medium' | 'low' | 'minimal';
+  confidenceScore: number;
+}
+
+interface WearIndicator {
+  indicator: string;
+  severity: 'critical' | 'warning' | 'minor' | 'normal';
+  details: string;
+  visualEvidence: string;
+}
+
+interface ShelfLifeAnalysis {
+  componentId: string;
+  componentName: string;
+  estimatedAge: string; // e.g., "2-3 years"
+  manufactureDate?: string; // if visible
+  typicalLifespan: string;
+  remainingLifeExpectancy: string;
+  isPastServiceInterval: boolean;
+  serviceIntervalStatus: 'overdue' | 'due_soon' | 'within_spec' | 'new';
+  conditionScore: number; // 0-100
+  agingFactors: {
+    factor: string;
+    impact: 'severe' | 'moderate' | 'minor';
+    evidence: string;
+  }[];
+  replacementRecommendation: 'immediate' | 'soon' | 'scheduled' | 'monitor';
+}
+
+interface PartIdentification {
+  id: string;
+  componentName: string;
+  boundingBox: { x: number; y: number; width: number; height: number };
+  generatorMake: string;
+  generatorModel: string;
+  oemPartNumbers: {
+    primary: string;
+    manufacturer: string;
+    alternates: { partNumber: string; brand: string; compatibility: string }[];
+  };
+  crossReferences: { brand: string; partNumber: string }[];
+  specifications: Record<string, string>;
+  pricing: {
+    oem: { min: number; max: number; currency: string };
+    aftermarket: { min: number; max: number; currency: string };
+  };
+  availability: {
+    status: 'in_stock' | 'limited' | 'order' | 'discontinued';
+    leadTime: string;
+    suppliers: string[];
+  };
+  installationNotes: string[];
+  compatibleModels: string[];
+  internalLink: string;
+}
+
+interface Annotation {
+  id: string;
+  type: 'circle' | 'highlight' | 'arrow' | 'rectangle' | 'freehand';
+  points: { x: number; y: number }[];
+  color: string;
+  label?: string;
+  timestamp: number;
+}
+
 interface SimilarIssue {
   id: string;
   title: string;
@@ -199,6 +278,15 @@ interface VisualAnalysisResult {
 
   // Component matching
   identifiedComponents: ComponentMatch[];
+
+  // Advanced Part Identification (with circled/highlighted parts)
+  partIdentifications: PartIdentification[];
+
+  // Predictive Failure Analysis
+  predictiveFailures: PredictiveFailureAnalysis[];
+
+  // Shelf Life Analysis
+  shelfLifeAnalysis: ShelfLifeAnalysis[];
 
   // AI Diagnosis
   diagnosis: {
@@ -303,6 +391,8 @@ const ANALYSIS_MODES: AnalysisMode[] = [
   { id: 'fluid', name: 'Fluid Analysis', icon: <Droplets className="w-4 h-4" />, description: 'Analyze oil/coolant condition' },
   { id: 'wiring', name: 'Wiring Check', icon: <Cable className="w-4 h-4" />, description: 'Inspect wiring and connections' },
   { id: 'nameplate', name: 'Nameplate OCR', icon: <Tag className="w-4 h-4" />, description: 'Read equipment specifications' },
+  { id: 'part_id', name: 'Part Identification', icon: <Hash className="w-4 h-4" />, description: 'Get OEM part numbers for circled parts' },
+  { id: 'predictive', name: 'Predictive Failure', icon: <TrendingUp className="w-4 h-4" />, description: 'Predict remaining lifespan & failure risk' },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -344,6 +434,9 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     detection: true,
     diagnosis: true,
+    predictive: true,
+    shelflife: true,
+    partid: true,
     solutions: true,
     parts: true,
     safety: true,
@@ -353,6 +446,14 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [viewMode, setViewMode] = useState<'camera' | 'gallery' | 'results'>('camera');
+
+  // Annotation state for part identification
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [drawingTool, setDrawingTool] = useState<'circle' | 'highlight' | 'arrow' | 'rectangle'>('circle');
+  const [currentDrawing, setCurrentDrawing] = useState<{ start: { x: number; y: number } | null; current: { x: number; y: number } | null }>({ start: null, current: null });
+  const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
+  const [generatorInfo, setGeneratorInfo] = useState<{ make: string; model: string }>({ make: '', model: '' });
 
   // ─────────────────────────────────────────────────────────────────────────────
   // CAMERA INITIALIZATION
@@ -660,6 +761,285 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
         estimatedPrice: { min: 3500, max: 6000, currency: 'KES' },
         availability: 'in_stock',
         internalLink: '/spare-parts/engine/cooling',
+      },
+    ],
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ADVANCED PART IDENTIFICATION (For circled/highlighted parts)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    partIdentifications: [
+      {
+        id: 'part-1',
+        componentName: 'Engine Thermostat Assembly',
+        boundingBox: { x: 55, y: 30, width: 20, height: 15 },
+        generatorMake: generatorInfo.make || 'Cummins',
+        generatorModel: generatorInfo.model || 'QSB6.7',
+        oemPartNumbers: {
+          primary: '3076489',
+          manufacturer: 'Cummins',
+          alternates: [
+            { partNumber: '4936026', brand: 'Cummins OEM', compatibility: '100%' },
+            { partNumber: '33479', brand: 'Gates', compatibility: '99%' },
+            { partNumber: '45879', brand: 'Stant', compatibility: '98%' },
+            { partNumber: 'TH-82C', brand: 'Motorcraft', compatibility: '95%' },
+          ],
+        },
+        crossReferences: [
+          { brand: 'Fleetguard', partNumber: 'WF2126' },
+          { brand: 'Donaldson', partNumber: 'P552071' },
+          { brand: 'Baldwin', partNumber: 'BW5071' },
+          { brand: 'CAT', partNumber: '2W1225' },
+        ],
+        specifications: {
+          'Opening Temperature': '82°C (180°F)',
+          'Full Open Temperature': '95°C (203°F)',
+          'Gasket Included': 'Yes',
+          'Material': 'Brass/Stainless Steel',
+          'OD': '54mm',
+          'Height': '42mm',
+        },
+        pricing: {
+          oem: { min: 8500, max: 12000, currency: 'KES' },
+          aftermarket: { min: 3500, max: 6000, currency: 'KES' },
+        },
+        availability: {
+          status: 'in_stock',
+          leadTime: 'Same day',
+          suppliers: ['EmersonEIMS Warehouse', 'Cummins Kenya', 'Auto Parts Direct'],
+        },
+        installationNotes: [
+          'Drain coolant below thermostat housing before removal',
+          'Clean all gasket mating surfaces thoroughly',
+          'Install thermostat with jiggle valve at 12 o\'clock position',
+          'Torque housing bolts to 24-28 Nm',
+          'Bleed air from cooling system after installation',
+        ],
+        compatibleModels: ['QSB6.7', 'QSB7', 'QSL9', 'QSC8.3', '6BT5.9', '6CT8.3'],
+        internalLink: '/spare-parts/engine/cooling/thermostat',
+      },
+      {
+        id: 'part-2',
+        componentName: 'Water Pump Assembly',
+        boundingBox: { x: 35, y: 45, width: 25, height: 20 },
+        generatorMake: generatorInfo.make || 'Cummins',
+        generatorModel: generatorInfo.model || 'QSB6.7',
+        oemPartNumbers: {
+          primary: '5473172',
+          manufacturer: 'Cummins',
+          alternates: [
+            { partNumber: '5473172RX', brand: 'Cummins Reman', compatibility: '100%' },
+            { partNumber: 'RW6172', brand: 'Airtex', compatibility: '95%' },
+            { partNumber: 'WP-6.7C', brand: 'GMB', compatibility: '92%' },
+          ],
+        },
+        crossReferences: [
+          { brand: 'PAI Industries', partNumber: '181873' },
+          { brand: 'Holset', partNumber: 'HE351VE' },
+        ],
+        specifications: {
+          'Flow Rate': '454 LPM @ 2100 RPM',
+          'Drive Type': 'Belt Driven',
+          'Seal Type': 'Mechanical Ceramic',
+          'Bearing Type': 'Double Row Ball',
+          'Impeller Material': 'Cast Iron',
+          'Weight': '8.2 kg',
+        },
+        pricing: {
+          oem: { min: 45000, max: 65000, currency: 'KES' },
+          aftermarket: { min: 25000, max: 38000, currency: 'KES' },
+        },
+        availability: {
+          status: 'in_stock',
+          leadTime: '1-2 days',
+          suppliers: ['EmersonEIMS Warehouse', 'Cummins East Africa'],
+        },
+        installationNotes: [
+          'Drain entire cooling system before removal',
+          'Replace all O-rings and gaskets with new parts',
+          'Check belt alignment after installation',
+          'Fill and bleed cooling system completely',
+          'Run engine and check for leaks',
+        ],
+        compatibleModels: ['QSB6.7', 'QSB7', 'QSL9'],
+        internalLink: '/spare-parts/engine/cooling/water-pump',
+      },
+    ],
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // PREDICTIVE FAILURE ANALYSIS
+    // ═══════════════════════════════════════════════════════════════════════════════
+    predictiveFailures: [
+      {
+        componentId: 'pf-1',
+        componentName: 'Engine Thermostat',
+        currentCondition: 'poor',
+        failureProbability: 78,
+        estimatedTimeToFailure: '~200-500 hours of operation',
+        remainingLifespan: 22,
+        wearIndicators: [
+          {
+            indicator: 'Thermal Response Degradation',
+            severity: 'warning',
+            details: 'Thermostat not opening at correct temperature (visual heat buildup pattern)',
+            visualEvidence: 'Hot spots detected at 98°C while engine at normal load',
+          },
+          {
+            indicator: 'Potential Wax Element Deterioration',
+            severity: 'warning',
+            details: 'Age-related wax element degradation suspected based on thermal signature',
+            visualEvidence: 'Inconsistent temperature zones around thermostat housing',
+          },
+          {
+            indicator: 'Seal Wear Pattern',
+            severity: 'minor',
+            details: 'Minor coolant residue detected suggesting early seal degradation',
+            visualEvidence: 'Slight discoloration around housing gasket line',
+          },
+        ],
+        maintenanceRecommendation: 'Replace thermostat within next 200 operating hours or before any critical operation. Current thermal response indicates wax element is not functioning optimally.',
+        urgency: 'urgent',
+        riskLevel: 'high',
+        confidenceScore: 94.5,
+      },
+      {
+        componentId: 'pf-2',
+        componentName: 'Water Pump',
+        currentCondition: 'fair',
+        failureProbability: 35,
+        estimatedTimeToFailure: '~2,500-4,000 hours of operation',
+        remainingLifespan: 65,
+        wearIndicators: [
+          {
+            indicator: 'Bearing Noise Pattern',
+            severity: 'minor',
+            details: 'Slight bearing wear detected based on visual pump housing condition',
+            visualEvidence: 'Minor rust staining at weep hole (normal wear indicator)',
+          },
+          {
+            indicator: 'Seal Integrity',
+            severity: 'normal',
+            details: 'No significant coolant leakage detected',
+            visualEvidence: 'Weep hole shows minimal moisture - within specification',
+          },
+        ],
+        maintenanceRecommendation: 'Schedule water pump replacement at next major service interval (5,000 hours). Monitor for coolant leaks and unusual noise during regular inspections.',
+        urgency: 'scheduled',
+        riskLevel: 'medium',
+        confidenceScore: 89.2,
+      },
+      {
+        componentId: 'pf-3',
+        componentName: 'Coolant Temperature Sensor',
+        currentCondition: 'good',
+        failureProbability: 15,
+        estimatedTimeToFailure: '~8,000-10,000 hours of operation',
+        remainingLifespan: 85,
+        wearIndicators: [
+          {
+            indicator: 'Signal Response',
+            severity: 'normal',
+            details: 'Sensor responding correctly to temperature changes',
+            visualEvidence: 'Controller readings correlate with thermal imaging data',
+          },
+          {
+            indicator: 'Connector Condition',
+            severity: 'normal',
+            details: 'Electrical connector appears clean and secure',
+            visualEvidence: 'No corrosion or damage visible at connection point',
+          },
+        ],
+        maintenanceRecommendation: 'No immediate action required. Include in routine inspection schedule.',
+        urgency: 'monitor',
+        riskLevel: 'low',
+        confidenceScore: 91.8,
+      },
+    ],
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // SHELF LIFE / AGE ANALYSIS
+    // ═══════════════════════════════════════════════════════════════════════════════
+    shelfLifeAnalysis: [
+      {
+        componentId: 'sl-1',
+        componentName: 'Engine Thermostat',
+        estimatedAge: '4-5 years',
+        manufactureDate: '2021 (estimated from visual wear)',
+        typicalLifespan: '5-7 years or 10,000 hours',
+        remainingLifeExpectancy: '6-12 months',
+        isPastServiceInterval: true,
+        serviceIntervalStatus: 'overdue',
+        conditionScore: 35,
+        agingFactors: [
+          {
+            factor: 'Wax Element Degradation',
+            impact: 'severe',
+            evidence: 'Thermal response curve indicates wax element is not expanding properly at rated temperature',
+          },
+          {
+            factor: 'Gasket Hardening',
+            impact: 'moderate',
+            evidence: 'Visual inspection shows compression set on housing gasket',
+          },
+          {
+            factor: 'Corrosion Deposits',
+            impact: 'minor',
+            evidence: 'Light scale deposits visible on thermostat housing exterior',
+          },
+        ],
+        replacementRecommendation: 'immediate',
+      },
+      {
+        componentId: 'sl-2',
+        componentName: 'Radiator Hoses',
+        estimatedAge: '3-4 years',
+        manufactureDate: '2022 (estimated)',
+        typicalLifespan: '5-6 years or 8,000 hours',
+        remainingLifeExpectancy: '1-2 years',
+        isPastServiceInterval: false,
+        serviceIntervalStatus: 'due_soon',
+        conditionScore: 62,
+        agingFactors: [
+          {
+            factor: 'Rubber Hardening',
+            impact: 'moderate',
+            evidence: 'Hoses showing reduced flexibility at connection points',
+          },
+          {
+            factor: 'Surface Cracking',
+            impact: 'minor',
+            evidence: 'Minor surface crazing visible under high magnification',
+          },
+        ],
+        replacementRecommendation: 'scheduled',
+      },
+      {
+        componentId: 'sl-3',
+        componentName: 'Coolant Fluid',
+        estimatedAge: '2+ years',
+        manufactureDate: 'Unknown',
+        typicalLifespan: '2 years or 3,000 hours',
+        remainingLifeExpectancy: 'Overdue for replacement',
+        isPastServiceInterval: true,
+        serviceIntervalStatus: 'overdue',
+        conditionScore: 45,
+        agingFactors: [
+          {
+            factor: 'Additive Depletion',
+            impact: 'severe',
+            evidence: 'Color analysis indicates depleted corrosion inhibitors',
+          },
+          {
+            factor: 'Contamination',
+            impact: 'moderate',
+            evidence: 'Slight discoloration suggests contamination or oxidation',
+          },
+          {
+            factor: 'pH Degradation',
+            impact: 'moderate',
+            evidence: 'Estimated pH drop based on color analysis (recommend testing)',
+          },
+        ],
+        replacementRecommendation: 'immediate',
       },
     ],
 
@@ -1180,8 +1560,115 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
         {/* View Mode: Gallery */}
         {viewMode === 'gallery' && !analysisResult && !isAnalyzing && (
           <>
-            {/* Main Image Display */}
-            <div className="relative aspect-video bg-black rounded-xl overflow-hidden mb-4">
+            {/* Generator Make/Model Input for Part Identification */}
+            {(analysisMode === 'part_id' || analysisMode === 'predictive') && (
+              <div className="mb-4 p-4 bg-gradient-to-r from-purple-900/30 to-cyan-900/30 border border-purple-500/30 rounded-xl">
+                <p className="text-sm text-purple-300 font-medium mb-3 flex items-center gap-2">
+                  <Hash className="w-4 h-4" /> Enter Generator Info for Accurate Part Numbers
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-slate-400 mb-1 block">Generator Make</label>
+                    <select
+                      value={generatorInfo.make}
+                      onChange={(e) => setGeneratorInfo(prev => ({ ...prev, make: e.target.value }))}
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
+                    >
+                      <option value="">Select Make</option>
+                      <option value="Cummins">Cummins</option>
+                      <option value="Caterpillar">Caterpillar</option>
+                      <option value="Perkins">Perkins</option>
+                      <option value="John Deere">John Deere</option>
+                      <option value="Volvo Penta">Volvo Penta</option>
+                      <option value="MTU">MTU</option>
+                      <option value="Deutz">Deutz</option>
+                      <option value="Yanmar">Yanmar</option>
+                      <option value="Kubota">Kubota</option>
+                      <option value="Mitsubishi">Mitsubishi</option>
+                      <option value="Doosan">Doosan</option>
+                      <option value="FG Wilson">FG Wilson</option>
+                      <option value="Kohler">Kohler</option>
+                      <option value="Generac">Generac</option>
+                      <option value="SDMO">SDMO</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-400 mb-1 block">Engine Model</label>
+                    <input
+                      type="text"
+                      value={generatorInfo.model}
+                      onChange={(e) => setGeneratorInfo(prev => ({ ...prev, model: e.target.value }))}
+                      placeholder="e.g., QSB6.7, C15, 1104D"
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Annotation Drawing Tools */}
+            <div className="mb-4 p-3 bg-slate-800/70 rounded-xl border border-slate-700">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm text-cyan-400 font-medium flex items-center gap-2">
+                  <Target className="w-4 h-4" /> Mark Parts for Identification
+                </p>
+                <button
+                  onClick={() => setIsDrawingMode(!isDrawingMode)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    isDrawingMode
+                      ? 'bg-cyan-500 text-white'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  {isDrawingMode ? 'Drawing Mode ON' : 'Enable Drawing'}
+                </button>
+              </div>
+
+              {isDrawingMode && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-slate-400">Tool:</span>
+                  {[
+                    { id: 'circle', icon: <div className="w-4 h-4 border-2 border-current rounded-full" />, label: 'Circle' },
+                    { id: 'rectangle', icon: <div className="w-4 h-4 border-2 border-current" />, label: 'Rectangle' },
+                    { id: 'highlight', icon: <div className="w-4 h-4 bg-yellow-400/50 rounded" />, label: 'Highlight' },
+                    { id: 'arrow', icon: <span className="text-lg">→</span>, label: 'Arrow' },
+                  ].map((tool) => (
+                    <button
+                      key={tool.id}
+                      onClick={() => setDrawingTool(tool.id as typeof drawingTool)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                        drawingTool === tool.id
+                          ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
+                          : 'bg-slate-700 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {tool.icon}
+                      {tool.label}
+                    </button>
+                  ))}
+                  {annotations.length > 0 && (
+                    <button
+                      onClick={() => setAnnotations([])}
+                      className="ml-auto flex items-center gap-1 px-2 py-1 text-xs text-red-400 hover:text-red-300"
+                    >
+                      <X className="w-3 h-3" /> Clear All
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {annotations.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-slate-700">
+                  <p className="text-xs text-slate-400 mb-1">{annotations.length} area(s) marked for analysis</p>
+                </div>
+              )}
+            </div>
+
+            {/* Main Image Display with Annotation Canvas */}
+            <div
+              className="relative aspect-video bg-black rounded-xl overflow-hidden mb-4"
+              style={{ cursor: isDrawingMode ? 'crosshair' : 'default' }}
+            >
               {capturedImages[activeImageIndex] && (
                 <img
                   src={capturedImages[activeImageIndex]}
@@ -1193,10 +1680,151 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
                 />
               )}
 
+              {/* Annotation Overlay */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                {annotations.map((ann) => {
+                  if (ann.type === 'circle' && ann.points.length >= 2) {
+                    const centerX = (ann.points[0].x + ann.points[1].x) / 2;
+                    const centerY = (ann.points[0].y + ann.points[1].y) / 2;
+                    const rx = Math.abs(ann.points[1].x - ann.points[0].x) / 2;
+                    const ry = Math.abs(ann.points[1].y - ann.points[0].y) / 2;
+                    return (
+                      <ellipse
+                        key={ann.id}
+                        cx={`${centerX}%`}
+                        cy={`${centerY}%`}
+                        rx={`${rx}%`}
+                        ry={`${ry}%`}
+                        fill="rgba(34, 211, 238, 0.1)"
+                        stroke="#22d3ee"
+                        strokeWidth="3"
+                        strokeDasharray="8 4"
+                      />
+                    );
+                  }
+                  if (ann.type === 'rectangle' && ann.points.length >= 2) {
+                    return (
+                      <rect
+                        key={ann.id}
+                        x={`${Math.min(ann.points[0].x, ann.points[1].x)}%`}
+                        y={`${Math.min(ann.points[0].y, ann.points[1].y)}%`}
+                        width={`${Math.abs(ann.points[1].x - ann.points[0].x)}%`}
+                        height={`${Math.abs(ann.points[1].y - ann.points[0].y)}%`}
+                        fill="rgba(168, 85, 247, 0.1)"
+                        stroke="#a855f7"
+                        strokeWidth="3"
+                        strokeDasharray="8 4"
+                      />
+                    );
+                  }
+                  if (ann.type === 'highlight' && ann.points.length >= 2) {
+                    return (
+                      <rect
+                        key={ann.id}
+                        x={`${Math.min(ann.points[0].x, ann.points[1].x)}%`}
+                        y={`${Math.min(ann.points[0].y, ann.points[1].y)}%`}
+                        width={`${Math.abs(ann.points[1].x - ann.points[0].x)}%`}
+                        height={`${Math.abs(ann.points[1].y - ann.points[0].y)}%`}
+                        fill="rgba(250, 204, 21, 0.3)"
+                        stroke="#facc15"
+                        strokeWidth="2"
+                      />
+                    );
+                  }
+                  return null;
+                })}
+
+                {/* Current drawing preview */}
+                {currentDrawing.start && currentDrawing.current && isDrawingMode && (
+                  <>
+                    {drawingTool === 'circle' && (
+                      <ellipse
+                        cx={`${(currentDrawing.start.x + currentDrawing.current.x) / 2}%`}
+                        cy={`${(currentDrawing.start.y + currentDrawing.current.y) / 2}%`}
+                        rx={`${Math.abs(currentDrawing.current.x - currentDrawing.start.x) / 2}%`}
+                        ry={`${Math.abs(currentDrawing.current.y - currentDrawing.start.y) / 2}%`}
+                        fill="rgba(34, 211, 238, 0.1)"
+                        stroke="#22d3ee"
+                        strokeWidth="3"
+                        strokeDasharray="8 4"
+                        className="animate-pulse"
+                      />
+                    )}
+                    {drawingTool === 'rectangle' && (
+                      <rect
+                        x={`${Math.min(currentDrawing.start.x, currentDrawing.current.x)}%`}
+                        y={`${Math.min(currentDrawing.start.y, currentDrawing.current.y)}%`}
+                        width={`${Math.abs(currentDrawing.current.x - currentDrawing.start.x)}%`}
+                        height={`${Math.abs(currentDrawing.current.y - currentDrawing.start.y)}%`}
+                        fill="rgba(168, 85, 247, 0.1)"
+                        stroke="#a855f7"
+                        strokeWidth="3"
+                        strokeDasharray="8 4"
+                        className="animate-pulse"
+                      />
+                    )}
+                    {drawingTool === 'highlight' && (
+                      <rect
+                        x={`${Math.min(currentDrawing.start.x, currentDrawing.current.x)}%`}
+                        y={`${Math.min(currentDrawing.start.y, currentDrawing.current.y)}%`}
+                        width={`${Math.abs(currentDrawing.current.x - currentDrawing.start.x)}%`}
+                        height={`${Math.abs(currentDrawing.current.y - currentDrawing.start.y)}%`}
+                        fill="rgba(250, 204, 21, 0.3)"
+                        stroke="#facc15"
+                        strokeWidth="2"
+                        className="animate-pulse"
+                      />
+                    )}
+                  </>
+                )}
+              </svg>
+
+              {/* Drawing interaction layer */}
+              {isDrawingMode && (
+                <div
+                  className="absolute inset-0"
+                  onMouseDown={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    setCurrentDrawing({ start: { x, y }, current: { x, y } });
+                  }}
+                  onMouseMove={(e) => {
+                    if (!currentDrawing.start) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    setCurrentDrawing(prev => ({ ...prev, current: { x, y } }));
+                  }}
+                  onMouseUp={() => {
+                    if (currentDrawing.start && currentDrawing.current) {
+                      const newAnnotation: Annotation = {
+                        id: `ann-${Date.now()}`,
+                        type: drawingTool,
+                        points: [currentDrawing.start, currentDrawing.current],
+                        color: drawingTool === 'circle' ? '#22d3ee' : drawingTool === 'highlight' ? '#facc15' : '#a855f7',
+                        timestamp: Date.now(),
+                      };
+                      setAnnotations(prev => [...prev, newAnnotation]);
+                    }
+                    setCurrentDrawing({ start: null, current: null });
+                  }}
+                  onMouseLeave={() => setCurrentDrawing({ start: null, current: null })}
+                />
+              )}
+
               {/* Image counter */}
               <div className="absolute top-3 right-3 px-3 py-1 bg-black/70 rounded-full text-white text-sm">
                 {activeImageIndex + 1} / {capturedImages.length}
               </div>
+
+              {/* Drawing mode indicator */}
+              {isDrawingMode && (
+                <div className="absolute top-3 left-3 px-3 py-1 bg-cyan-500/80 rounded-full text-white text-sm flex items-center gap-2">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                  Draw to mark parts
+                </div>
+              )}
             </div>
 
             {/* Thumbnail Strip */}
@@ -1546,6 +2174,500 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
                   </div>
                 )}
               </div>
+
+              {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+              {/* PREDICTIVE FAILURE ANALYSIS SECTION */}
+              {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+              {analysisResult.predictiveFailures && analysisResult.predictiveFailures.length > 0 && (
+                <div className="bg-gradient-to-br from-orange-900/30 to-red-900/30 rounded-xl border border-orange-500/30 overflow-hidden">
+                  <button
+                    onClick={() => toggleSection('predictive')}
+                    className="w-full flex items-center justify-between p-4 hover:bg-orange-900/20"
+                  >
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-orange-400" />
+                      <span className="font-medium text-white">Predictive Failure Analysis</span>
+                      <span className="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded-full">AI Prediction</span>
+                    </div>
+                    {expandedSections.predictive ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                  </button>
+                  {expandedSections.predictive !== false && (
+                    <div className="p-4 pt-0 space-y-4">
+                      <p className="text-sm text-slate-400 mb-3">
+                        AI-powered predictions based on visual wear indicators, thermal patterns, and historical failure data
+                      </p>
+
+                      {analysisResult.predictiveFailures.map((pf) => (
+                        <div
+                          key={pf.componentId}
+                          className={`p-4 rounded-xl border ${
+                            pf.riskLevel === 'critical' ? 'bg-red-900/30 border-red-500/50' :
+                            pf.riskLevel === 'high' ? 'bg-orange-900/30 border-orange-500/50' :
+                            pf.riskLevel === 'medium' ? 'bg-yellow-900/30 border-yellow-500/50' :
+                            'bg-green-900/30 border-green-500/50'
+                          }`}
+                        >
+                          {/* Component Header */}
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                pf.riskLevel === 'critical' ? 'bg-red-500/20' :
+                                pf.riskLevel === 'high' ? 'bg-orange-500/20' :
+                                pf.riskLevel === 'medium' ? 'bg-yellow-500/20' :
+                                'bg-green-500/20'
+                              }`}>
+                                <Gauge className={`w-6 h-6 ${
+                                  pf.riskLevel === 'critical' ? 'text-red-400' :
+                                  pf.riskLevel === 'high' ? 'text-orange-400' :
+                                  pf.riskLevel === 'medium' ? 'text-yellow-400' :
+                                  'text-green-400'
+                                }`} />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-white">{pf.componentName}</h4>
+                                <p className={`text-sm capitalize ${
+                                  pf.currentCondition === 'critical' || pf.currentCondition === 'poor' ? 'text-red-400' :
+                                  pf.currentCondition === 'fair' ? 'text-yellow-400' :
+                                  'text-green-400'
+                                }`}>
+                                  Condition: {pf.currentCondition}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className={`text-2xl font-bold ${
+                                pf.failureProbability >= 70 ? 'text-red-400' :
+                                pf.failureProbability >= 40 ? 'text-orange-400' :
+                                pf.failureProbability >= 20 ? 'text-yellow-400' :
+                                'text-green-400'
+                              }`}>
+                                {pf.failureProbability}%
+                              </span>
+                              <p className="text-xs text-slate-400">Failure Probability</p>
+                            </div>
+                          </div>
+
+                          {/* Lifespan Bar */}
+                          <div className="mb-4">
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="text-slate-400">Remaining Lifespan</span>
+                              <span className={`font-bold ${
+                                pf.remainingLifespan <= 25 ? 'text-red-400' :
+                                pf.remainingLifespan <= 50 ? 'text-orange-400' :
+                                pf.remainingLifespan <= 75 ? 'text-yellow-400' :
+                                'text-green-400'
+                              }`}>{pf.remainingLifespan}%</span>
+                            </div>
+                            <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${
+                                  pf.remainingLifespan <= 25 ? 'bg-red-500' :
+                                  pf.remainingLifespan <= 50 ? 'bg-orange-500' :
+                                  pf.remainingLifespan <= 75 ? 'bg-yellow-500' :
+                                  'bg-green-500'
+                                }`}
+                                style={{ width: `${pf.remainingLifespan}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Time to Failure */}
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <div className="p-3 bg-black/20 rounded-lg">
+                              <p className="text-xs text-slate-400 mb-1">Estimated Time to Failure</p>
+                              <p className="text-white font-medium">{pf.estimatedTimeToFailure}</p>
+                            </div>
+                            <div className="p-3 bg-black/20 rounded-lg">
+                              <p className="text-xs text-slate-400 mb-1">Urgency Level</p>
+                              <p className={`font-medium capitalize ${
+                                pf.urgency === 'immediate' ? 'text-red-400' :
+                                pf.urgency === 'urgent' ? 'text-orange-400' :
+                                pf.urgency === 'scheduled' ? 'text-yellow-400' :
+                                'text-green-400'
+                              }`}>{pf.urgency}</p>
+                            </div>
+                          </div>
+
+                          {/* Wear Indicators */}
+                          <div className="mb-4">
+                            <p className="text-xs text-slate-400 mb-2">Wear Indicators Detected:</p>
+                            <div className="space-y-2">
+                              {pf.wearIndicators.map((wi, idx) => (
+                                <div key={idx} className={`p-2 rounded-lg border ${getSeverityColor(wi.severity)}`}>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    {wi.severity === 'critical' && <AlertCircle className="w-4 h-4" />}
+                                    {wi.severity === 'warning' && <AlertTriangle className="w-4 h-4" />}
+                                    {wi.severity === 'minor' && <Info className="w-4 h-4" />}
+                                    {wi.severity === 'normal' && <CheckCircle className="w-4 h-4" />}
+                                    <span className="font-medium text-sm">{wi.indicator}</span>
+                                  </div>
+                                  <p className="text-xs opacity-80 ml-6">{wi.details}</p>
+                                  <p className="text-[10px] opacity-60 ml-6 mt-1 italic">Evidence: {wi.visualEvidence}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Recommendation */}
+                          <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-600">
+                            <p className="text-xs text-cyan-400 font-medium mb-1 flex items-center gap-1">
+                              <Wrench className="w-3 h-3" /> Maintenance Recommendation
+                            </p>
+                            <p className="text-sm text-slate-300">{pf.maintenanceRecommendation}</p>
+                          </div>
+
+                          {/* Confidence */}
+                          <div className="mt-3 flex items-center justify-between text-xs">
+                            <span className="text-slate-500">Prediction Confidence</span>
+                            <span className={`font-medium ${getConfidenceColor(pf.confidenceScore)}`}>
+                              {pf.confidenceScore}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+              {/* SHELF LIFE / AGE ANALYSIS SECTION */}
+              {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+              {analysisResult.shelfLifeAnalysis && analysisResult.shelfLifeAnalysis.length > 0 && (
+                <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-xl border border-purple-500/30 overflow-hidden">
+                  <button
+                    onClick={() => toggleSection('shelflife')}
+                    className="w-full flex items-center justify-between p-4 hover:bg-purple-900/20"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-purple-400" />
+                      <span className="font-medium text-white">Shelf Life & Age Analysis</span>
+                      <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">Lifespan Prediction</span>
+                    </div>
+                    {expandedSections.shelflife ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                  </button>
+                  {expandedSections.shelflife !== false && (
+                    <div className="p-4 pt-0 space-y-4">
+                      <p className="text-sm text-slate-400 mb-3">
+                        AI estimates component age and remaining service life based on visual condition analysis
+                      </p>
+
+                      {analysisResult.shelfLifeAnalysis.map((sl) => (
+                        <div
+                          key={sl.componentId}
+                          className={`p-4 rounded-xl border ${
+                            sl.serviceIntervalStatus === 'overdue' ? 'bg-red-900/30 border-red-500/50' :
+                            sl.serviceIntervalStatus === 'due_soon' ? 'bg-orange-900/30 border-orange-500/50' :
+                            sl.serviceIntervalStatus === 'within_spec' ? 'bg-green-900/30 border-green-500/50' :
+                            'bg-cyan-900/30 border-cyan-500/50'
+                          }`}
+                        >
+                          {/* Component Header */}
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                sl.serviceIntervalStatus === 'overdue' ? 'bg-red-500/20' :
+                                sl.serviceIntervalStatus === 'due_soon' ? 'bg-orange-500/20' :
+                                'bg-green-500/20'
+                              }`}>
+                                <Clock className={`w-6 h-6 ${
+                                  sl.serviceIntervalStatus === 'overdue' ? 'text-red-400' :
+                                  sl.serviceIntervalStatus === 'due_soon' ? 'text-orange-400' :
+                                  'text-green-400'
+                                }`} />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-white">{sl.componentName}</h4>
+                                <p className={`text-sm ${
+                                  sl.isPastServiceInterval ? 'text-red-400' : 'text-green-400'
+                                }`}>
+                                  {sl.isPastServiceInterval ? 'Past Service Interval' : 'Within Service Interval'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                                sl.serviceIntervalStatus === 'overdue' ? 'bg-red-500/20 text-red-400' :
+                                sl.serviceIntervalStatus === 'due_soon' ? 'bg-orange-500/20 text-orange-400' :
+                                sl.serviceIntervalStatus === 'within_spec' ? 'bg-green-500/20 text-green-400' :
+                                'bg-cyan-500/20 text-cyan-400'
+                              }`}>
+                                {sl.serviceIntervalStatus.replace('_', ' ')}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Condition Score */}
+                          <div className="mb-4">
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="text-slate-400">Condition Score</span>
+                              <span className={`font-bold ${
+                                sl.conditionScore <= 35 ? 'text-red-400' :
+                                sl.conditionScore <= 60 ? 'text-orange-400' :
+                                sl.conditionScore <= 80 ? 'text-yellow-400' :
+                                'text-green-400'
+                              }`}>{sl.conditionScore}/100</span>
+                            </div>
+                            <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${
+                                  sl.conditionScore <= 35 ? 'bg-red-500' :
+                                  sl.conditionScore <= 60 ? 'bg-orange-500' :
+                                  sl.conditionScore <= 80 ? 'bg-yellow-500' :
+                                  'bg-green-500'
+                                }`}
+                                style={{ width: `${sl.conditionScore}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Age & Lifespan Info */}
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                            <div className="p-3 bg-black/20 rounded-lg">
+                              <p className="text-xs text-slate-400 mb-1">Estimated Age</p>
+                              <p className="text-white font-medium text-sm">{sl.estimatedAge}</p>
+                            </div>
+                            <div className="p-3 bg-black/20 rounded-lg">
+                              <p className="text-xs text-slate-400 mb-1">Typical Lifespan</p>
+                              <p className="text-white font-medium text-sm">{sl.typicalLifespan}</p>
+                            </div>
+                            <div className="p-3 bg-black/20 rounded-lg">
+                              <p className="text-xs text-slate-400 mb-1">Remaining Life</p>
+                              <p className={`font-medium text-sm ${
+                                sl.remainingLifeExpectancy.toLowerCase().includes('overdue') ? 'text-red-400' : 'text-green-400'
+                              }`}>{sl.remainingLifeExpectancy}</p>
+                            </div>
+                            {sl.manufactureDate && (
+                              <div className="p-3 bg-black/20 rounded-lg">
+                                <p className="text-xs text-slate-400 mb-1">Manufacture Date</p>
+                                <p className="text-white font-medium text-sm">{sl.manufactureDate}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Aging Factors */}
+                          <div className="mb-4">
+                            <p className="text-xs text-slate-400 mb-2">Aging Factors Detected:</p>
+                            <div className="space-y-2">
+                              {sl.agingFactors.map((af, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`p-2 rounded-lg border ${
+                                    af.impact === 'severe' ? 'bg-red-500/10 border-red-500/30 text-red-400' :
+                                    af.impact === 'moderate' ? 'bg-orange-500/10 border-orange-500/30 text-orange-400' :
+                                    'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="font-medium text-sm">{af.factor}</span>
+                                    <span className="text-xs uppercase px-2 py-0.5 bg-white/10 rounded">
+                                      {af.impact} impact
+                                    </span>
+                                  </div>
+                                  <p className="text-xs opacity-80">{af.evidence}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Replacement Recommendation */}
+                          <div className={`p-3 rounded-lg border ${
+                            sl.replacementRecommendation === 'immediate' ? 'bg-red-500/20 border-red-500/50' :
+                            sl.replacementRecommendation === 'soon' ? 'bg-orange-500/20 border-orange-500/50' :
+                            sl.replacementRecommendation === 'scheduled' ? 'bg-yellow-500/20 border-yellow-500/50' :
+                            'bg-green-500/20 border-green-500/50'
+                          }`}>
+                            <div className="flex items-center gap-2">
+                              <RefreshCw className={`w-5 h-5 ${
+                                sl.replacementRecommendation === 'immediate' ? 'text-red-400' :
+                                sl.replacementRecommendation === 'soon' ? 'text-orange-400' :
+                                sl.replacementRecommendation === 'scheduled' ? 'text-yellow-400' :
+                                'text-green-400'
+                              }`} />
+                              <div>
+                                <p className={`font-medium ${
+                                  sl.replacementRecommendation === 'immediate' ? 'text-red-400' :
+                                  sl.replacementRecommendation === 'soon' ? 'text-orange-400' :
+                                  sl.replacementRecommendation === 'scheduled' ? 'text-yellow-400' :
+                                  'text-green-400'
+                                }`}>
+                                  Replacement: {sl.replacementRecommendation === 'immediate' ? 'REPLACE IMMEDIATELY' :
+                                    sl.replacementRecommendation === 'soon' ? 'Replace Soon' :
+                                    sl.replacementRecommendation === 'scheduled' ? 'Schedule Replacement' :
+                                    'Monitor Only'}
+                                </p>
+                                <p className="text-xs text-slate-400">
+                                  {sl.replacementRecommendation === 'immediate' ? 'Component is past its safe operating life' :
+                                    sl.replacementRecommendation === 'soon' ? 'Plan replacement within next maintenance window' :
+                                    sl.replacementRecommendation === 'scheduled' ? 'Add to next scheduled service' :
+                                    'Continue regular inspections'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+              {/* PART IDENTIFICATION WITH OEM NUMBERS SECTION */}
+              {/* ═══════════════════════════════════════════════════════════════════════════════ */}
+              {analysisResult.partIdentifications && analysisResult.partIdentifications.length > 0 && (
+                <div className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 rounded-xl border border-emerald-500/30 overflow-hidden">
+                  <button
+                    onClick={() => toggleSection('partid')}
+                    className="w-full flex items-center justify-between p-4 hover:bg-emerald-900/20"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Hash className="w-5 h-5 text-emerald-400" />
+                      <span className="font-medium text-white">Part Identification & OEM Numbers</span>
+                      <span className="text-xs px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">For {generatorInfo.make || 'Detected'} {generatorInfo.model}</span>
+                    </div>
+                    {expandedSections.partid ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                  </button>
+                  {expandedSections.partid !== false && (
+                    <div className="p-4 pt-0 space-y-4">
+                      <p className="text-sm text-slate-400 mb-3">
+                        Parts identified from your marked/highlighted areas with exact OEM part numbers
+                      </p>
+
+                      {analysisResult.partIdentifications.map((part) => (
+                        <div key={part.id} className="p-4 bg-slate-800/50 rounded-xl border border-slate-600">
+                          {/* Part Header */}
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h4 className="font-bold text-white text-lg">{part.componentName}</h4>
+                              <p className="text-sm text-slate-400">For: {part.generatorMake} {part.generatorModel}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-emerald-400 font-medium">OEM Part Number</p>
+                              <p className="font-mono text-xl font-bold text-white">{part.oemPartNumbers.primary}</p>
+                              <p className="text-xs text-slate-400">{part.oemPartNumbers.manufacturer}</p>
+                            </div>
+                          </div>
+
+                          {/* Alternate Part Numbers */}
+                          <div className="mb-4">
+                            <p className="text-xs text-slate-400 mb-2">Alternate Part Numbers:</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              {part.oemPartNumbers.alternates.map((alt, idx) => (
+                                <div key={idx} className="p-2 bg-slate-700/50 rounded-lg">
+                                  <p className="font-mono text-sm text-cyan-400">{alt.partNumber}</p>
+                                  <p className="text-xs text-slate-400">{alt.brand}</p>
+                                  <p className="text-[10px] text-green-400">{alt.compatibility} compatible</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Cross References */}
+                          <div className="mb-4">
+                            <p className="text-xs text-slate-400 mb-2">Cross References:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {part.crossReferences.map((cr, idx) => (
+                                <span key={idx} className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs">
+                                  {cr.brand}: {cr.partNumber}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Specifications */}
+                          <div className="mb-4">
+                            <p className="text-xs text-slate-400 mb-2">Specifications:</p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {Object.entries(part.specifications).map(([key, value]) => (
+                                <div key={key} className="p-2 bg-slate-700/30 rounded">
+                                  <p className="text-[10px] text-slate-500">{key}</p>
+                                  <p className="text-xs text-white font-medium">{value}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Pricing */}
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <div className="p-3 bg-emerald-900/30 border border-emerald-500/30 rounded-lg">
+                              <p className="text-xs text-emerald-400 mb-1">OEM Price Range</p>
+                              <p className="text-lg font-bold text-white">
+                                {part.pricing.oem.min.toLocaleString()}-{part.pricing.oem.max.toLocaleString()} {part.pricing.oem.currency}
+                              </p>
+                            </div>
+                            <div className="p-3 bg-cyan-900/30 border border-cyan-500/30 rounded-lg">
+                              <p className="text-xs text-cyan-400 mb-1">Aftermarket Price Range</p>
+                              <p className="text-lg font-bold text-white">
+                                {part.pricing.aftermarket.min.toLocaleString()}-{part.pricing.aftermarket.max.toLocaleString()} {part.pricing.aftermarket.currency}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Availability */}
+                          <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className={`w-3 h-3 rounded-full ${
+                                part.availability.status === 'in_stock' ? 'bg-green-500' :
+                                part.availability.status === 'limited' ? 'bg-yellow-500' :
+                                part.availability.status === 'order' ? 'bg-orange-500' :
+                                'bg-red-500'
+                              }`} />
+                              <span className={`font-medium capitalize ${
+                                part.availability.status === 'in_stock' ? 'text-green-400' :
+                                part.availability.status === 'limited' ? 'text-yellow-400' :
+                                part.availability.status === 'order' ? 'text-orange-400' :
+                                'text-red-400'
+                              }`}>
+                                {part.availability.status.replace('_', ' ')}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-slate-400">Lead Time: <span className="text-white">{part.availability.leadTime}</span></p>
+                              <p className="text-xs text-slate-500">
+                                Suppliers: {part.availability.suppliers.join(', ')}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Installation Notes */}
+                          <div className="mb-4">
+                            <p className="text-xs text-slate-400 mb-2">Installation Notes:</p>
+                            <ul className="space-y-1">
+                              {part.installationNotes.map((note, idx) => (
+                                <li key={idx} className="flex items-start gap-2 text-xs text-slate-300">
+                                  <span className="text-cyan-400 mt-0.5">•</span>
+                                  {note}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Compatible Models */}
+                          <div className="mb-4">
+                            <p className="text-xs text-slate-400 mb-2">Compatible Models:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {part.compatibleModels.map((model, idx) => (
+                                <span key={idx} className="px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-xs">
+                                  {model}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Order Button */}
+                          <a
+                            href={part.internalLink}
+                            className="block w-full py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-center rounded-lg hover:from-emerald-400 hover:to-cyan-400 transition-colors"
+                          >
+                            Order Part Now - P/N: {part.oemPartNumbers.primary}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Solutions Section */}
               <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-xl border border-cyan-500/30 overflow-hidden">
