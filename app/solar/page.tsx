@@ -52,6 +52,11 @@ const AIQuotationSystem = dynamic(() => import('@/components/solar/AIQuotationSy
   ssr: false
 });
 
+const Solar3DDesignStudio = dynamic(() => import('@/components/solar/Solar3DDesignStudio'), {
+  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
+  ssr: false
+});
+
 // Import equipment database and guides
 import {
   SOLAR_PANELS_DATABASE,
@@ -430,7 +435,7 @@ const SOLAR_DOWNLOADS = [
   { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', size: '4.5 MB', icon: '⚡' },
 ];
 
-type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation';
+type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation' | 'design3d';
 
 // ==================== ANIMATED COUNTER COMPONENT ====================
 function AnimatedCounter({ end, suffix = '', prefix = '' }: { end: number; suffix?: string; prefix?: string }) {
@@ -666,6 +671,7 @@ export default function SolarBible() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
   const tabs = [
+    { id: 'design3d', label: '3D Design Studio', icon: '🏗️', badge: 'PRO' },
     { id: 'quotation', label: 'AI Quotation', icon: '🤖', badge: 'NEW!' },
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'monitoring', label: 'Monitor App', icon: '📱', badge: 'AI' },
@@ -1947,6 +1953,18 @@ export default function SolarBible() {
                     </table>
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {/* ==================== 3D DESIGN STUDIO TAB ==================== */}
+            {activeTab === 'design3d' && (
+              <motion.div
+                key="design3d"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <Solar3DDesignStudio />
               </motion.div>
             )}
 
