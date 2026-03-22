@@ -42,6 +42,35 @@ const SolarMaintenanceHub = dynamic(() => import('@/components/solar/SolarMainte
   ssr: false
 });
 
+const SolarMonitoringApp = dynamic(() => import('@/components/solar/SolarMonitoringApp'), {
+  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
+  ssr: false
+});
+
+// Import equipment database and guides
+import {
+  SOLAR_PANELS_DATABASE,
+  INVERTERS_DATABASE,
+  BATTERIES_DATABASE,
+  CABLE_SPECIFICATIONS,
+  MPPT_CONTROLLERS,
+  KENYA_SOLAR_DATA,
+  calculateCableSize,
+  TOTAL_EQUIPMENT
+} from '@/lib/solar/solarEquipmentDatabase';
+
+import {
+  ALL_MAINTENANCE_GUIDES,
+  INVERTER_FAULT_CODES,
+  getGuidesByCategory,
+  getFaultCodesByBrand
+} from '@/lib/solar/solarMaintenanceGuides';
+
+import {
+  WIRING_DIAGRAMS,
+  COMMON_CONNECTION_PATTERNS
+} from '@/lib/solar/solarWiringDiagrams';
+
 // ==================== HERO GALLERY ====================
 const heroGalleryImages = [
   {
@@ -238,28 +267,6 @@ const INVERTER_BRANDS = [
   { name: 'Victron', type: 'Off-Grid', warranty: '5 Years', origin: 'Netherlands', priceRange: 'Premium' },
 ];
 
-// ==================== REAL TESTIMONIALS (FROM CASE STUDIES ONLY) ====================
-const SOLAR_TESTIMONIALS = [
-  {
-    name: 'Hotel Management',
-    company: 'Lenchada Group of Hotels',
-    location: 'Nairobi',
-    service: '250kWp Hybrid Solar-Diesel System',
-    quote: 'The hybrid system from EmersonEIMS transformed our energy profile. We are saving significantly while meeting our sustainability commitments. The smart EMS ensures guests never notice when we switch between solar, battery, and generator.',
-    savings: 'KES 1.82M/month',
-    result: '65% grid dependency reduction'
-  },
-  {
-    name: 'School Administrator',
-    company: 'Kivukoni International School',
-    location: 'Kilifi',
-    service: '60kVA Cummins + Solar Hybrid System',
-    quote: 'The solar-generator hybrid system ensures our students never experience learning disruptions. The solar panels handle our daytime load completely, and the generator seamlessly takes over when needed.',
-    savings: 'KES 180,000/month',
-    result: 'Zero power interruptions'
-  },
-];
-
 // ==================== BEFORE/AFTER PROJECTS ====================
 const SOLAR_PROJECTS = [
   {
@@ -418,7 +425,7 @@ const SOLAR_DOWNLOADS = [
   { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', size: '4.5 MB', icon: '⚡' },
 ];
 
-type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education';
+type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair';
 
 // ==================== ANIMATED COUNTER COMPONENT ====================
 function AnimatedCounter({ end, suffix = '', prefix = '' }: { end: number; suffix?: string; prefix?: string }) {
@@ -655,12 +662,16 @@ export default function SolarBible() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'shop', label: 'Shop', icon: '🛒', badge: 'NEW' },
+    { id: 'monitoring', label: 'Monitor App', icon: '📱', badge: 'AI' },
     { id: 'calculator', label: 'System Calculator', icon: '🧮' },
+    { id: 'equipment', label: 'Equipment DB', icon: '🔌', badge: `${TOTAL_EQUIPMENT}+` },
+    { id: 'wiring', label: 'Wiring Diagrams', icon: '⚡' },
+    { id: 'repair', label: 'Repair Guides', icon: '🔧' },
+    { id: 'faults', label: 'Fault Codes', icon: '⚠️' },
     { id: 'roi', label: 'ROI Calculator', icon: '💰' },
+    { id: 'shop', label: 'Shop', icon: '🛒' },
     { id: 'booking', label: 'Book Installation', icon: '📅' },
-    { id: 'faults', label: 'Fault Diagnostics', icon: '⚠️' },
-    { id: 'maintenance', label: 'Maintenance', icon: '🔧' },
+    { id: 'maintenance', label: 'Maintenance', icon: '🗓️' },
     { id: 'education', label: 'Learn', icon: '📚' },
   ];
 
@@ -973,72 +984,6 @@ export default function SolarBible() {
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
-      </section>
-
-      {/* ==================== REAL TESTIMONIALS ==================== */}
-      <section className="py-20 bg-gradient-to-b from-amber-900/10 to-transparent">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-6">
-              ✓ Real Client Stories
-            </span>
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              What Our <span className="text-amber-400">Clients Say</span>
-            </h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {SOLAR_TESTIMONIALS.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.company}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-                className="bg-slate-900/50 rounded-2xl p-8 border border-slate-700 relative"
-              >
-                <div className="absolute -top-4 -left-4 text-6xl text-amber-500/20">"</div>
-                <p className="text-gray-300 text-lg mb-6 relative z-10 italic">
-                  "{testimonial.quote}"
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-xl font-bold">
-                    {testimonial.company[0]}
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">{testimonial.name}</p>
-                    <p className="text-amber-400">{testimonial.company}</p>
-                    <p className="text-gray-500 text-sm">{testimonial.location}</p>
-                  </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-slate-700 flex justify-between">
-                  <div>
-                    <p className="text-gray-500 text-xs">Service</p>
-                    <p className="text-gray-300 text-sm">{testimonial.service}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-gray-500 text-xs">Result</p>
-                    <p className="text-green-400 font-semibold">{testimonial.result}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <Link
-              href="/case-studies"
-              className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 font-medium"
-            >
-              View All Case Studies →
-            </Link>
           </div>
         </div>
       </section>
@@ -1537,6 +1482,464 @@ export default function SolarBible() {
                       <p className="text-slate-400 text-sm leading-relaxed">{topic.content}</p>
                     </div>
                   ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ==================== SOLAR MONITORING APP TAB ==================== */}
+            {activeTab === 'monitoring' && (
+              <motion.div
+                key="monitoring"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <SolarMonitoringApp />
+              </motion.div>
+            )}
+
+            {/* ==================== EQUIPMENT DATABASE TAB ==================== */}
+            {activeTab === 'equipment' && (
+              <motion.div
+                key="equipment"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-8"
+              >
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-white mb-2">🔋 Solar Equipment Database</h2>
+                  <p className="text-amber-400 text-lg">1000+ Products with Full Specifications & Pricing</p>
+                  <p className="text-gray-500 text-sm mt-2">The most comprehensive solar equipment database in East Africa</p>
+                </div>
+
+                {/* Solar Panels Database */}
+                <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-6">
+                  <h3 className="text-2xl font-bold text-amber-400 mb-4">☀️ Solar Panels ({SOLAR_PANELS_DATABASE.length} Models)</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-700 text-left">
+                          <th className="p-3 text-amber-400">Brand</th>
+                          <th className="p-3 text-amber-400">Model</th>
+                          <th className="p-3 text-amber-400">Wattage</th>
+                          <th className="p-3 text-amber-400">Efficiency</th>
+                          <th className="p-3 text-amber-400">Type</th>
+                          <th className="p-3 text-amber-400">Vmp</th>
+                          <th className="p-3 text-amber-400">Imp</th>
+                          <th className="p-3 text-amber-400">Warranty</th>
+                          <th className="p-3 text-amber-400">Price (KES)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {SOLAR_PANELS_DATABASE.map((panel, i) => (
+                          <tr key={i} className="border-b border-slate-800 hover:bg-slate-800/50">
+                            <td className="p-3 text-white font-semibold">{panel.brand}</td>
+                            <td className="p-3 text-gray-300">{panel.model}</td>
+                            <td className="p-3 text-green-400 font-bold">{panel.wattage}W</td>
+                            <td className="p-3 text-blue-400">{panel.efficiency}%</td>
+                            <td className="p-3 text-purple-400">{panel.type}</td>
+                            <td className="p-3 text-gray-400">{panel.vmp}V</td>
+                            <td className="p-3 text-gray-400">{panel.imp}A</td>
+                            <td className="p-3 text-gray-400">{panel.warranty.product}yr/{panel.warranty.performance}yr</td>
+                            <td className="p-3 text-amber-400 font-bold">{panel.priceKES.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Inverters Database */}
+                <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-6">
+                  <h3 className="text-2xl font-bold text-blue-400 mb-4">⚡ Inverters ({INVERTERS_DATABASE.length} Models)</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-700 text-left">
+                          <th className="p-3 text-blue-400">Brand</th>
+                          <th className="p-3 text-blue-400">Model</th>
+                          <th className="p-3 text-blue-400">Capacity</th>
+                          <th className="p-3 text-blue-400">Type</th>
+                          <th className="p-3 text-blue-400">MPPT</th>
+                          <th className="p-3 text-blue-400">Max PV</th>
+                          <th className="p-3 text-blue-400">Battery V</th>
+                          <th className="p-3 text-blue-400">Efficiency</th>
+                          <th className="p-3 text-blue-400">Price (KES)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {INVERTERS_DATABASE.map((inv, i) => (
+                          <tr key={i} className="border-b border-slate-800 hover:bg-slate-800/50">
+                            <td className="p-3 text-white font-semibold">{inv.brand}</td>
+                            <td className="p-3 text-gray-300">{inv.model}</td>
+                            <td className="p-3 text-green-400 font-bold">{(inv.ratedPower / 1000).toFixed(1)}kW</td>
+                            <td className="p-3 text-purple-400">{inv.type}</td>
+                            <td className="p-3 text-amber-400">{inv.mpptChannels}x MPPT</td>
+                            <td className="p-3 text-gray-400">{(inv.maxDCPower / 1000).toFixed(1)}kW</td>
+                            <td className="p-3 text-gray-400">{inv.batteryVoltage || 'N/A'}V</td>
+                            <td className="p-3 text-blue-400">{inv.efficiency}%</td>
+                            <td className="p-3 text-amber-400 font-bold">{inv.priceKES.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Batteries Database */}
+                <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-6">
+                  <h3 className="text-2xl font-bold text-green-400 mb-4">🔋 Batteries ({BATTERIES_DATABASE.length} Models)</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-700 text-left">
+                          <th className="p-3 text-green-400">Brand</th>
+                          <th className="p-3 text-green-400">Model</th>
+                          <th className="p-3 text-green-400">Capacity</th>
+                          <th className="p-3 text-green-400">Voltage</th>
+                          <th className="p-3 text-green-400">Type</th>
+                          <th className="p-3 text-green-400">DoD</th>
+                          <th className="p-3 text-green-400">Cycles</th>
+                          <th className="p-3 text-green-400">Warranty</th>
+                          <th className="p-3 text-green-400">Price (KES)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {BATTERIES_DATABASE.map((bat, i) => (
+                          <tr key={i} className="border-b border-slate-800 hover:bg-slate-800/50">
+                            <td className="p-3 text-white font-semibold">{bat.brand}</td>
+                            <td className="p-3 text-gray-300">{bat.model}</td>
+                            <td className="p-3 text-green-400 font-bold">{bat.capacity}Ah</td>
+                            <td className="p-3 text-amber-400">{bat.nominalVoltage}V</td>
+                            <td className="p-3 text-purple-400">{bat.type}</td>
+                            <td className="p-3 text-blue-400">{bat.maxDoD}%</td>
+                            <td className="p-3 text-gray-400">{bat.cycleLife.toLocaleString()}</td>
+                            <td className="p-3 text-gray-400">{bat.warranty}yr</td>
+                            <td className="p-3 text-amber-400 font-bold">{bat.priceKES.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Cable Specifications */}
+                <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-6">
+                  <h3 className="text-2xl font-bold text-orange-400 mb-4">🔌 Cable Sizing Guide</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-700 text-left">
+                          <th className="p-3 text-orange-400">Size (mm²)</th>
+                          <th className="p-3 text-orange-400">Max DC (A)</th>
+                          <th className="p-3 text-orange-400">Max AC (A)</th>
+                          <th className="p-3 text-orange-400">Resistance (Ω/km)</th>
+                          <th className="p-3 text-orange-400">Voltage</th>
+                          <th className="p-3 text-orange-400">Application</th>
+                          <th className="p-3 text-orange-400">Price/m (KES)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {CABLE_SPECIFICATIONS.map((cable, i) => (
+                          <tr key={i} className="border-b border-slate-800 hover:bg-slate-800/50">
+                            <td className="p-3 text-white font-bold">{cable.crossSection} mm²</td>
+                            <td className="p-3 text-green-400 font-bold">{cable.maxCurrentDC}A</td>
+                            <td className="p-3 text-blue-400">{cable.maxCurrentAC}A</td>
+                            <td className="p-3 text-gray-400">{cable.resistancePerKm}</td>
+                            <td className="p-3 text-amber-400">{cable.voltageRating}V</td>
+                            <td className="p-3 text-purple-400">{cable.application.join(', ')}</td>
+                            <td className="p-3 text-amber-400">{cable.pricePerMeterKES}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ==================== WIRING DIAGRAMS TAB ==================== */}
+            {activeTab === 'wiring' && (
+              <motion.div
+                key="wiring"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-8"
+              >
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-white mb-2">📐 Solar Wiring Diagrams</h2>
+                  <p className="text-amber-400 text-lg">Professional ASCII Diagrams with Cable Sizing</p>
+                  <p className="text-gray-500 text-sm mt-2">Complete wiring reference for solar installations</p>
+                </div>
+
+                {/* System Wiring Diagrams */}
+                {WIRING_DIAGRAMS.map((diagram, i) => (
+                  <div key={i} className="bg-slate-900/50 border border-slate-700 rounded-2xl p-6 mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="text-3xl">
+                        {diagram.systemType === 'Off-Grid' ? '🏠' :
+                         diagram.systemType === 'Grid-Tied' ? '⚡' :
+                         diagram.systemType === 'Hybrid' ? '🔄' :
+                         diagram.systemType === 'Solar Pump' ? '💧' : '🔌'}
+                      </span>
+                      <div>
+                        <h3 className="text-xl font-bold text-amber-400">{diagram.title}</h3>
+                        <p className="text-gray-500 text-sm">{diagram.description}</p>
+                        <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded mt-1 inline-block">{diagram.systemSize}</span>
+                      </div>
+                    </div>
+
+                    {/* ASCII Diagram */}
+                    <div className="bg-black rounded-xl p-4 mb-4 overflow-x-auto">
+                      <pre className="text-green-400 text-xs font-mono whitespace-pre">{diagram.diagram}</pre>
+                    </div>
+
+                    {/* Components */}
+                    <div className="grid md:grid-cols-2 gap-4 mb-4">
+                      <div className="bg-slate-800/50 rounded-xl p-4">
+                        <h4 className="text-white font-bold mb-2">Components Used:</h4>
+                        <ul className="space-y-1">
+                          {diagram.components.map((comp, j) => (
+                            <li key={j} className="text-gray-300 text-sm flex items-start gap-2">
+                              <span className="text-green-400">•</span>
+                              <span><strong>{comp.quantity}×</strong> {comp.name} - {comp.specifications}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-xl p-4">
+                        <h4 className="text-white font-bold mb-2">Protection Devices:</h4>
+                        <ul className="space-y-1">
+                          {diagram.protectionDevices.map((device, j) => (
+                            <li key={j} className="text-gray-300 text-sm flex items-center gap-2">
+                              <span className="text-amber-400">⚡</span> {device.device}: {device.rating} ({device.location})
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Cable Sizing Table */}
+                    <div className="bg-slate-800/50 rounded-xl p-4">
+                      <h4 className="text-white font-bold mb-2">Cable Sizing:</h4>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-700 text-left">
+                              <th className="p-2 text-amber-400">Segment</th>
+                              <th className="p-2 text-amber-400">Cable Size</th>
+                              <th className="p-2 text-amber-400">Length</th>
+                              <th className="p-2 text-amber-400">Color</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {diagram.cableSizing.map((cable, j) => (
+                              <tr key={j} className="border-b border-slate-800">
+                                <td className="p-2 text-white">{cable.segment}</td>
+                                <td className="p-2 text-green-400 font-bold">{cable.cableSize}</td>
+                                <td className="p-2 text-gray-400">{cable.length}</td>
+                                <td className="p-2 text-blue-400">{cable.color}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Common Connection Patterns */}
+                <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-6">
+                  <h3 className="text-2xl font-bold text-blue-400 mb-4">🔗 Common Connection Patterns</h3>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="bg-black rounded-xl p-4">
+                      <h4 className="text-amber-400 font-bold mb-2">Series Connection</h4>
+                      <pre className="text-green-400 text-xs font-mono whitespace-pre">{COMMON_CONNECTION_PATTERNS.seriesConnection}</pre>
+                    </div>
+                    <div className="bg-black rounded-xl p-4">
+                      <h4 className="text-amber-400 font-bold mb-2">Parallel Connection</h4>
+                      <pre className="text-green-400 text-xs font-mono whitespace-pre">{COMMON_CONNECTION_PATTERNS.parallelConnection}</pre>
+                    </div>
+                    <div className="bg-black rounded-xl p-4">
+                      <h4 className="text-amber-400 font-bold mb-2">MC4 Connector Assembly</h4>
+                      <pre className="text-green-400 text-xs font-mono whitespace-pre">{COMMON_CONNECTION_PATTERNS.mc4Connection}</pre>
+                    </div>
+                    <div className="bg-black rounded-xl p-4">
+                      <h4 className="text-amber-400 font-bold mb-2">48V Battery Bank (4×12V)</h4>
+                      <pre className="text-green-400 text-xs font-mono whitespace-pre">{COMMON_CONNECTION_PATTERNS.batteryBankWiring}</pre>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ==================== REPAIR GUIDES TAB ==================== */}
+            {activeTab === 'repair' && (
+              <motion.div
+                key="repair"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+              >
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-white mb-2">🔧 Step-by-Step Repair Guides</h2>
+                  <p className="text-amber-400 text-lg">Professional Maintenance & Troubleshooting</p>
+                  <p className="text-gray-500 text-sm mt-2">{ALL_MAINTENANCE_GUIDES.length} comprehensive guides for panels, inverters, batteries & wiring</p>
+                </div>
+
+                {/* Category Filter */}
+                <div className="flex flex-wrap gap-2 justify-center mb-6">
+                  {['All', 'panel', 'inverter', 'battery', 'wiring', 'system'].map((cat) => (
+                    <button
+                      key={cat}
+                      className="px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-gray-300 hover:border-amber-500 hover:text-amber-400 transition-all text-sm capitalize"
+                    >
+                      {cat === 'All' ? `All (${ALL_MAINTENANCE_GUIDES.length})` : cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Guides List */}
+                <div className="space-y-4">
+                  {ALL_MAINTENANCE_GUIDES.map((guide, i) => (
+                    <details key={i} className="bg-slate-900/50 border border-slate-700 rounded-2xl overflow-hidden group">
+                      <summary className="p-6 cursor-pointer hover:bg-slate-800/50 transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <span className="text-3xl">
+                            {guide.category === 'Panel' ? '☀️' :
+                             guide.category === 'Inverter' ? '⚡' :
+                             guide.category === 'Battery' ? '🔋' :
+                             guide.category === 'Wiring' ? '🔌' :
+                             guide.category === 'Controller' ? '🎛️' : '🔧'}
+                          </span>
+                          <div>
+                            <h3 className="text-lg font-bold text-white">{guide.title}</h3>
+                            <div className="flex items-center gap-3 mt-1">
+                              <span className={`px-2 py-0.5 rounded text-xs ${
+                                guide.difficulty === 'Basic' ? 'bg-green-500/20 text-green-400' :
+                                guide.difficulty === 'Intermediate' ? 'bg-amber-500/20 text-amber-400' :
+                                guide.difficulty === 'Advanced' ? 'bg-orange-500/20 text-orange-400' :
+                                'bg-red-500/20 text-red-400'
+                              }`}>
+                                {guide.difficulty}
+                              </span>
+                              <span className="text-gray-500 text-sm">⏱ {guide.estimatedTime}</span>
+                              <span className="text-purple-400 text-xs px-2 py-0.5 bg-purple-500/20 rounded">{guide.category}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-amber-400 group-open:rotate-180 transition-transform">▼</span>
+                      </summary>
+
+                      <div className="px-6 pb-6 space-y-4">
+                        {/* Safety Warnings */}
+                        {guide.safetyWarnings && guide.safetyWarnings.length > 0 && (
+                          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                            <h4 className="text-red-400 font-bold mb-2">⚠️ Safety Warnings</h4>
+                            <ul className="space-y-1">
+                              {guide.safetyWarnings.map((warning, j) => (
+                                <li key={j} className="text-red-300 text-sm flex items-start gap-2">
+                                  <span>•</span> {warning}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Tools Required */}
+                        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                          <h4 className="text-blue-400 font-bold mb-2">🔧 Tools Required</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {guide.tools.map((tool, j) => (
+                              <span key={j} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm">{tool}</span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Step-by-Step Instructions */}
+                        <div className="bg-slate-800/50 rounded-xl p-4">
+                          <h4 className="text-amber-400 font-bold mb-4">📋 Step-by-Step Instructions</h4>
+                          <div className="space-y-3">
+                            {guide.steps.map((step, j) => (
+                              <div key={j} className="flex gap-4 p-3 bg-black/30 rounded-lg">
+                                <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold shrink-0">
+                                  {step.stepNumber}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-white font-semibold">{step.title}</p>
+                                  <p className="text-gray-400 text-sm mt-1">{step.description}</p>
+                                  {step.warnings && step.warnings.length > 0 && step.warnings.map((warning, k) => (
+                                    <p key={k} className="text-red-400 text-sm mt-1">⚠️ {warning}</p>
+                                  ))}
+                                  {step.tips && step.tips.length > 0 && step.tips.map((tip, k) => (
+                                    <p key={k} className="text-green-400 text-sm mt-1">💡 {tip}</p>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Troubleshooting */}
+                        {guide.troubleshooting && guide.troubleshooting.length > 0 && (
+                          <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+                            <h4 className="text-purple-400 font-bold mb-2">🔍 Troubleshooting</h4>
+                            <div className="space-y-2">
+                              {guide.troubleshooting.map((item, j) => (
+                                <div key={j} className="bg-black/30 rounded-lg p-3">
+                                  <p className="text-red-300 text-sm"><strong>Symptom:</strong> {item.symptom}</p>
+                                  <p className="text-amber-300 text-sm mt-1"><strong>Causes:</strong> {item.causes.join(', ')}</p>
+                                  <p className="text-green-300 text-sm mt-1"><strong>Solutions:</strong> {item.solutions.join('; ')}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+
+                {/* Inverter Fault Codes Reference */}
+                <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-6 mt-8">
+                  <h3 className="text-2xl font-bold text-red-400 mb-4">⚠️ Inverter Fault Code Reference</h3>
+                  <p className="text-gray-400 mb-4">Quick reference for common inverter error codes across major brands</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-700 text-left">
+                          <th className="p-3 text-red-400">Brand</th>
+                          <th className="p-3 text-red-400">Code</th>
+                          <th className="p-3 text-red-400">Description</th>
+                          <th className="p-3 text-red-400">Severity</th>
+                          <th className="p-3 text-red-400">Solution</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {INVERTER_FAULT_CODES.slice(0, 20).map((fault, i) => (
+                          <tr key={i} className="border-b border-slate-800 hover:bg-slate-800/50">
+                            <td className="p-3 text-white font-semibold">{fault.brand}</td>
+                            <td className="p-3 text-amber-400 font-mono">{fault.code}</td>
+                            <td className="p-3 text-gray-300">{fault.description}</td>
+                            <td className="p-3">
+                              <span className={`px-2 py-0.5 rounded text-xs ${
+                                fault.severity === 'Critical' ? 'bg-red-500/20 text-red-400' :
+                                fault.severity === 'Error' ? 'bg-orange-500/20 text-orange-400' :
+                                fault.severity === 'Warning' ? 'bg-amber-500/20 text-amber-400' :
+                                'bg-blue-500/20 text-blue-400'
+                              }`}>
+                                {fault.severity}
+                              </span>
+                            </td>
+                            <td className="p-3 text-green-400 text-sm">{fault.solutions.join('; ')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </motion.div>
             )}
