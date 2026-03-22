@@ -51,6 +51,497 @@ const GeneratorEducationPanel = dynamic(() => import('@/components/generators/Ge
 const CinematicImageGallery = dynamic(() => import('@/components/ui/CinematicImageGallery'), { ssr: false });
 const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'), { ssr: false });
 
+// AI DIAGNOSTIC COMPONENTS
+const AIVisualDiagnostic = dynamic(() => import('@/components/generator-oracle/AIVisualDiagnostic'), { ssr: false });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BIBLE OF GENERATORS - COMPREHENSIVE NAVIGATION HUB
+// ═══════════════════════════════════════════════════════════════════════════════
+const GENERATOR_HUB_SECTIONS = [
+  {
+    id: 'new-generators',
+    title: 'New Generators',
+    icon: '⚡',
+    href: '#new-generators',
+    color: 'amber',
+    description: 'Cummins & Voltka - 10kVA to 2000kVA',
+    badge: 'HOT'
+  },
+  {
+    id: 'used-generators',
+    title: 'Used Generators',
+    icon: '🔄',
+    href: '/generators/used',
+    color: 'green',
+    description: 'Certified pre-owned with warranty'
+  },
+  {
+    id: 'rental',
+    title: 'Rental & Leasing',
+    icon: '📅',
+    href: '/generators/rental',
+    color: 'blue',
+    description: 'Short & long-term power solutions'
+  },
+  {
+    id: 'spare-parts',
+    title: 'Spare Parts',
+    icon: '🔧',
+    href: '/generators/spare-parts',
+    color: 'orange',
+    description: '2000+ OEM & aftermarket parts'
+  },
+  {
+    id: 'maintenance',
+    title: 'Maintenance',
+    icon: '🛠️',
+    href: '/generators/maintenance',
+    color: 'cyan',
+    description: 'Scheduled & emergency service'
+  },
+  {
+    id: 'installation',
+    title: 'Installation',
+    icon: '🏗️',
+    href: '/generators/installation',
+    color: 'purple',
+    description: 'Professional 8-phase installation'
+  },
+  {
+    id: 'ai-diagnostic',
+    title: 'AI Diagnostic',
+    icon: '🤖',
+    href: '#ai-diagnostic',
+    color: 'pink',
+    description: '99.9% accuracy visual analysis',
+    badge: 'AI'
+  },
+  {
+    id: 'maintenance-hub',
+    title: 'Maintenance Hub',
+    icon: '📊',
+    href: '/maintenance-hub/generators',
+    color: 'red',
+    description: 'Engine Room Command Center'
+  },
+];
+
+// GENERATOR SYSTEMS - Educational Hub
+const GENERATOR_SYSTEMS = [
+  {
+    id: 'engine-system',
+    name: 'Engine System',
+    icon: '🔥',
+    description: 'The heart of your generator - diesel/gas combustion engine',
+    components: ['Cylinder block', 'Pistons', 'Crankshaft', 'Camshaft', 'Valves', 'Turbocharger'],
+    commonIssues: ['Overheating', 'Low oil pressure', 'White/black smoke', 'Hard starting'],
+    maintenanceTips: ['Regular oil changes', 'Air filter inspection', 'Coolant level checks'],
+    color: 'orange'
+  },
+  {
+    id: 'fuel-system',
+    name: 'Fuel System',
+    icon: '⛽',
+    description: 'Delivers clean fuel for optimal combustion',
+    components: ['Fuel tank', 'Fuel pump', 'Fuel filter', 'Injectors', 'Fuel lines', 'Return lines'],
+    commonIssues: ['Contaminated fuel', 'Clogged filters', 'Injector failure', 'Air in fuel lines'],
+    maintenanceTips: ['Use clean diesel', 'Replace filters regularly', 'Drain water from tank'],
+    color: 'yellow'
+  },
+  {
+    id: 'cooling-system',
+    name: 'Cooling System',
+    icon: '❄️',
+    description: 'Prevents engine overheating and maintains optimal temperature',
+    components: ['Radiator', 'Water pump', 'Thermostat', 'Coolant hoses', 'Fan', 'Temperature sensors'],
+    commonIssues: ['Coolant leaks', 'Thermostat failure', 'Radiator blockage', 'Fan belt wear'],
+    maintenanceTips: ['Check coolant levels', 'Inspect hoses for cracks', 'Clean radiator fins'],
+    color: 'cyan'
+  },
+  {
+    id: 'electrical-system',
+    name: 'Electrical System',
+    icon: '🔌',
+    description: 'Generates and distributes electrical power',
+    components: ['Alternator', 'AVR', 'Exciter', 'Battery', 'Starter motor', 'Wiring harness'],
+    commonIssues: ['Low voltage output', 'AVR failure', 'Dead battery', 'Starter problems'],
+    maintenanceTips: ['Battery maintenance', 'Check connections', 'AVR calibration'],
+    color: 'blue'
+  },
+  {
+    id: 'ats-system',
+    name: 'ATS (Auto Transfer Switch)',
+    icon: '🔀',
+    description: 'Automatic power transfer between mains and generator',
+    components: ['Transfer contactor', 'Control module', 'Sensors', 'Time delay relays', 'Indicators'],
+    commonIssues: ['Delayed transfer', 'Stuck contactors', 'Sensor faults', 'Control failures'],
+    maintenanceTips: ['Test monthly', 'Clean contacts', 'Verify settings'],
+    color: 'purple'
+  },
+  {
+    id: 'exhaust-system',
+    name: 'Exhaust System',
+    icon: '💨',
+    description: 'Expels combustion gases safely with noise reduction',
+    components: ['Exhaust manifold', 'Turbo outlet', 'Silencer/muffler', 'Exhaust pipe', 'Rain cap'],
+    commonIssues: ['Backpressure', 'Leaks', 'Excessive noise', 'Corrosion'],
+    maintenanceTips: ['Check for leaks', 'Inspect silencer', 'Clear blockages'],
+    color: 'gray'
+  },
+  {
+    id: 'canopy-enclosure',
+    name: 'Canopy & Enclosure',
+    icon: '🏠',
+    description: 'Weather protection and sound attenuation',
+    components: ['Sound panels', 'Ventilation louvers', 'Access doors', 'Lifting points', 'Base frame'],
+    commonIssues: ['Corrosion', 'Panel damage', 'Door seal wear', 'Ventilation blockage'],
+    maintenanceTips: ['Clean regularly', 'Check seals', 'Touch up paint', 'Oil hinges'],
+    color: 'slate'
+  },
+  {
+    id: 'fuel-tank-automation',
+    name: 'Fuel Tank Automation',
+    icon: '🤖',
+    description: 'Automatic fuel level monitoring and refilling',
+    components: ['Level sensors', 'Auto-fill system', 'Remote monitoring', 'Leak detection', 'Overflow prevention'],
+    commonIssues: ['Sensor drift', 'Pump failure', 'Connection loss', 'Overfill'],
+    maintenanceTips: ['Calibrate sensors', 'Test alarms', 'Inspect connections'],
+    color: 'emerald'
+  },
+];
+
+// COMPREHENSIVE NAVIGATION HUB COMPONENT
+const GeneratorBibleHub = () => {
+  return (
+    <section id="bible-hub" className="py-16 bg-gradient-to-b from-black via-slate-900/50 to-black">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
+            📖 The Complete Generator Resource
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Bible of Generators
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Everything you need - from sales to service, spare parts to AI diagnostics.
+            Your complete generator resource in Kenya.
+          </p>
+        </motion.div>
+
+        {/* Quick Navigation Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          {GENERATOR_HUB_SECTIONS.map((section, index) => (
+            <motion.a
+              key={section.id}
+              href={section.href}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.03, y: -5 }}
+              className={`relative group p-5 rounded-2xl bg-gradient-to-br from-${section.color}-500/10 to-${section.color}-600/5 border border-${section.color}-500/20 hover:border-${section.color}-500/50 transition-all`}
+            >
+              {section.badge && (
+                <span className={`absolute -top-2 -right-2 px-2 py-0.5 text-xs font-bold rounded-full ${section.badge === 'AI' ? 'bg-pink-500' : 'bg-red-500'} text-white`}>
+                  {section.badge}
+                </span>
+              )}
+              <div className="text-3xl mb-3">{section.icon}</div>
+              <h3 className="text-white font-semibold mb-1">{section.title}</h3>
+              <p className="text-gray-400 text-xs">{section.description}</p>
+            </motion.a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// GENERATOR SYSTEMS EDUCATION SECTION
+const GeneratorSystemsHub = () => {
+  const [activeSystem, setActiveSystem] = useState<string | null>(null);
+
+  return (
+    <section id="generator-systems" className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm mb-4">
+            📚 Educational Content
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Generator Systems Guide
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Understand every component of your generator. From engine to automation,
+            learn how each system works and how to maintain it.
+          </p>
+        </motion.div>
+
+        {/* Systems Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {GENERATOR_SYSTEMS.map((system, index) => (
+            <motion.div
+              key={system.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              className={`group cursor-pointer rounded-2xl p-5 border transition-all ${
+                activeSystem === system.id
+                  ? `bg-${system.color}-500/20 border-${system.color}-500/50`
+                  : 'bg-slate-900/50 border-slate-800 hover:border-slate-600'
+              }`}
+              onClick={() => setActiveSystem(activeSystem === system.id ? null : system.id)}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-3xl">{system.icon}</span>
+                <motion.span
+                  animate={{ rotate: activeSystem === system.id ? 180 : 0 }}
+                  className="text-gray-400"
+                >
+                  ▼
+                </motion.span>
+              </div>
+              <h3 className="text-white font-semibold mb-1">{system.name}</h3>
+              <p className="text-gray-400 text-sm mb-3">{system.description}</p>
+
+              {activeSystem === system.id && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="border-t border-slate-700 pt-3 mt-3 space-y-3"
+                >
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Components</p>
+                    <div className="flex flex-wrap gap-1">
+                      {system.components.slice(0, 4).map(comp => (
+                        <span key={comp} className="px-2 py-0.5 bg-slate-800 rounded text-xs text-gray-300">{comp}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Common Issues</p>
+                    <ul className="text-xs text-red-400 space-y-0.5">
+                      {system.commonIssues.slice(0, 3).map(issue => (
+                        <li key={issue}>• {issue}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Maintenance Tips</p>
+                    <ul className="text-xs text-green-400 space-y-0.5">
+                      {system.maintenanceTips.slice(0, 2).map(tip => (
+                        <li key={tip}>✓ {tip}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* CTA for More Learning */}
+        <div className="text-center mt-12">
+          <a
+            href="/generator-oracle"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl hover:from-cyan-400 hover:to-blue-400 transition-all"
+          >
+            <span>🔍 Diagnose System Issues with AI</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// LEASING SECTION
+const GeneratorLeasingSection = () => {
+  const leasingPlans = [
+    { duration: '6 Months', discount: '5%', ideal: 'Construction projects' },
+    { duration: '1 Year', discount: '10%', ideal: 'Business expansion' },
+    { duration: '2 Years', discount: '15%', ideal: 'Established operations' },
+    { duration: '3+ Years', discount: '20%', ideal: 'Lease-to-own option' },
+  ];
+
+  return (
+    <section id="leasing" className="py-20 bg-gradient-to-b from-black via-emerald-900/10 to-black">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm mb-4">
+            💰 Flexible Power Solutions
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Generator Leasing Programs
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Don't want to buy? Lease a generator with maintenance included.
+            Flexible terms from 6 months to lease-to-own options.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          {leasingPlans.map((plan, index) => (
+            <motion.div
+              key={plan.duration}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-2xl p-6 border border-emerald-500/20"
+            >
+              <h3 className="text-2xl font-bold text-white mb-2">{plan.duration}</h3>
+              <div className="text-3xl font-bold text-emerald-400 mb-2">{plan.discount} OFF</div>
+              <p className="text-gray-400 text-sm">Ideal for: {plan.ideal}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-800">
+          <h3 className="text-xl font-bold text-white mb-4">Leasing Benefits</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">✅</span>
+              <div>
+                <h4 className="text-white font-semibold">No Capital Outlay</h4>
+                <p className="text-gray-400 text-sm">Preserve your cash flow for core business</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">🔧</span>
+              <div>
+                <h4 className="text-white font-semibold">Maintenance Included</h4>
+                <p className="text-gray-400 text-sm">All service and repairs covered</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">🔄</span>
+              <div>
+                <h4 className="text-white font-semibold">Upgrade Anytime</h4>
+                <p className="text-gray-400 text-sm">Scale up or down as needed</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center mt-8">
+          <a href="/contact?subject=leasing" className="cta-button-primary">
+            Get Leasing Quote →
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// AI VISUAL DIAGNOSTIC SECTION
+const AIVisualDiagnosticSection = () => {
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
+
+  return (
+    <section id="ai-diagnostic" className="py-20 bg-gradient-to-b from-black via-pink-900/10 to-black">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500/10 border border-pink-500/20 rounded-full text-pink-400 text-sm mb-4">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
+            </span>
+            AI-Powered • 99.9% Accuracy
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            AI Visual Diagnostic
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Upload a photo of any generator component. Our AI identifies parts,
+            predicts failures, estimates lifespan, and provides OEM part numbers.
+          </p>
+        </motion.div>
+
+        {/* Feature Cards */}
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          {[
+            { icon: '📸', title: 'Part Identification', desc: 'Name & OEM numbers' },
+            { icon: '⏰', title: 'Shelf Life Analysis', desc: 'Age & wear estimation' },
+            { icon: '🔮', title: 'Failure Prediction', desc: 'Time to failure estimate' },
+            { icon: '💰', title: 'Parts & Pricing', desc: 'Availability & cost' },
+          ].map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-slate-900/50 rounded-xl p-4 border border-slate-800 text-center"
+            >
+              <div className="text-3xl mb-2">{feature.icon}</div>
+              <h3 className="text-white font-semibold text-sm">{feature.title}</h3>
+              <p className="text-gray-400 text-xs">{feature.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Toggle Diagnostic Tool */}
+        <div className="text-center mb-8">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowDiagnostic(!showDiagnostic)}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30"
+          >
+            <span className="text-2xl">🤖</span>
+            <span>{showDiagnostic ? 'Hide Diagnostic Tool' : 'Open AI Visual Diagnostic'}</span>
+          </motion.button>
+        </div>
+
+        {/* AI Diagnostic Component */}
+        {showDiagnostic && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden"
+          >
+            <AIVisualDiagnostic />
+          </motion.div>
+        )}
+
+        {/* Alternative: Full Page Link */}
+        <div className="text-center mt-6">
+          <a
+            href="/generator-oracle"
+            className="text-pink-400 hover:text-pink-300 underline"
+          >
+            Or open Generator Oracle for full diagnostic suite →
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 
 // Generator Work Photos Gallery Data
 const generatorGalleryImages = [
@@ -524,6 +1015,11 @@ export default function GeneratorPage() {
           })
         }}
       />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          BIBLE OF GENERATORS - COMPREHENSIVE NAVIGATION HUB
+      ════════════════════════════════════════════════════════════════ */}
+      <GeneratorBibleHub />
 
       {/* ═══════════════════════════════════════════════════════════════════
           OUR WORK GALLERY - Cinematic 4K Showcase
@@ -1102,6 +1598,21 @@ export default function GeneratorPage() {
 
       {/* EDUCATIONAL CONTENT - Generator Knowledge Center */}
       <GeneratorEducationPanel />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          GENERATOR SYSTEMS - Educational Hub
+      ════════════════════════════════════════════════════════════════ */}
+      <GeneratorSystemsHub />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          LEASING PROGRAMS - Flexible Power Solutions
+      ════════════════════════════════════════════════════════════════ */}
+      <GeneratorLeasingSection />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          AI VISUAL DIAGNOSTIC - 99.9% Accuracy Analysis
+      ════════════════════════════════════════════════════════════════ */}
+      <AIVisualDiagnosticSection />
 
       {/* Quick Diagnostics Preview Section */}
       <section id="diagnostics-preview" className="py-20 bg-gradient-to-b from-black via-slate-900 to-black">
