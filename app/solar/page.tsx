@@ -47,6 +47,11 @@ const SolarMonitoringApp = dynamic(() => import('@/components/solar/SolarMonitor
   ssr: false
 });
 
+const AIQuotationSystem = dynamic(() => import('@/components/solar/AIQuotationSystem'), {
+  loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
+  ssr: false
+});
+
 // Import equipment database and guides
 import {
   SOLAR_PANELS_DATABASE,
@@ -425,7 +430,7 @@ const SOLAR_DOWNLOADS = [
   { title: 'Solar System Wiring Diagrams', description: 'Technical diagrams for common configurations', type: 'PDF', size: '4.5 MB', icon: '⚡' },
 ];
 
-type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair';
+type TabType = 'overview' | 'shop' | 'calculator' | 'roi' | 'booking' | 'faults' | 'maintenance' | 'education' | 'equipment' | 'wiring' | 'monitoring' | 'repair' | 'quotation';
 
 // ==================== ANIMATED COUNTER COMPONENT ====================
 function AnimatedCounter({ end, suffix = '', prefix = '' }: { end: number; suffix?: string; prefix?: string }) {
@@ -661,6 +666,7 @@ export default function SolarBible() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
   const tabs = [
+    { id: 'quotation', label: 'AI Quotation', icon: '🤖', badge: 'NEW!' },
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'monitoring', label: 'Monitor App', icon: '📱', badge: 'AI' },
     { id: 'calculator', label: 'System Calculator', icon: '🧮' },
@@ -1941,6 +1947,18 @@ export default function SolarBible() {
                     </table>
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {/* ==================== AI QUOTATION SYSTEM TAB ==================== */}
+            {activeTab === 'quotation' && (
+              <motion.div
+                key="quotation"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <AIQuotationSystem />
               </motion.div>
             )}
           </AnimatePresence>
