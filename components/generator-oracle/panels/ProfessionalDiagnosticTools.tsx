@@ -1075,7 +1075,7 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
     const [diagramType, setDiagramType] = useState<'Power Wiring' | 'Control Wiring' | 'Sensor Wiring' | 'CAN Bus' | 'Complete'>('Complete');
 
     return (
-    <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh]">
+    <div className="p-4 space-y-4 ">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>
           Wiring Diagrams - {generatorInfo.make} {generatorInfo.model} ({generatorInfo.kva} kVA)
@@ -1315,7 +1315,7 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
     ];
 
     return (
-      <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+      <div className="p-4 space-y-6 ">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Bi-Directional Controls & Active Tests</h3>
           <div className="flex items-center gap-2 text-sm text-amber-400">
@@ -1480,7 +1480,7 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
   // TECHNICIAN INPUT TAB - Full Diagnostic Engagement System
   // ═══════════════════════════════════════════════════════════════════════════════
   const TechInputTab = () => (
-    <div className="p-4 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+    <div className="p-4 space-y-6">
       {/* Header with Fault Code Database Info */}
       <div className="flex items-center justify-between">
         <div>
@@ -1917,7 +1917,7 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
   // HEALTH TAB - Component Health Scoring & Predictive Maintenance
   // ═══════════════════════════════════════════════════════════════════════════════
   const HealthTab = () => (
-    <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+    <div className="p-4 space-y-6 ">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Component Health & Predictive Maintenance</h3>
@@ -2001,7 +2001,7 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
   // BACKUP TAB - ECU Configuration Backup/Restore
   // ═══════════════════════════════════════════════════════════════════════════════
   const BackupTab = () => (
-    <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+    <div className="p-4 space-y-6 ">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>ECU Configuration Backup & Restore</h3>
@@ -2087,7 +2087,7 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
   // REPORTS TAB - Diagnostic Report Generation
   // ═══════════════════════════════════════════════════════════════════════════════
   const ReportsTab = () => (
-    <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+    <div className="p-4 space-y-6 ">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Diagnostic Reports & Data Export</h3>
@@ -2235,7 +2235,7 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
       : SAMPLE_SERVICE_DOCS.filter(d => d.type === docCategory.toLowerCase());
 
     return (
-      <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+      <div className="p-4 space-y-6 ">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold" style={{ color: tool.textColor }}>Service Documentation</h3>
