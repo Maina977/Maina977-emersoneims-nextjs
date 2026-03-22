@@ -1590,6 +1590,489 @@ function getWiringDiagram(modelId: string): WiringDiagram {
   return WIRING_DIAGRAMS[modelId] || DEFAULT_WIRING_DIAGRAM;
 }
 
+// ==================== MAINTENANCE ALARM RESET PROCEDURES ====================
+// Comprehensive guide for clearing maintenance/service alarms on various controllers
+const MAINTENANCE_RESET_PROCEDURES: Record<string, {
+  controllerName: string;
+  alarmTypes: {
+    name: string;
+    description: string;
+    triggerCondition: string;
+    resetProcedure: string[];
+    resetButtonSequence?: string;
+    requiredPassword?: string;
+    specialNotes: string[];
+  }[];
+  generalTips: string[];
+  serviceIntervals: { service: string; interval: string; resetRequired: boolean }[];
+}> = {
+  'DSE': {
+    controllerName: 'DSE Series Controllers (7310, 7320, 6020, 8610, etc.)',
+    alarmTypes: [
+      {
+        name: 'Service Due Alarm / Maintenance Timer',
+        description: 'Indicates scheduled maintenance interval has elapsed based on running hours',
+        triggerCondition: 'Running hours exceed configured service interval (typically 250-500 hours)',
+        resetProcedure: [
+          '1. Press MENU button to enter configuration menu',
+          '2. Navigate to "TIMERS" or "MAINTENANCE" section using arrow keys',
+          '3. Select "SERVICE DUE" or "MAINTENANCE TIMER"',
+          '4. Look for "RESET SERVICE TIMER" option',
+          '5. Press ENTER/OK to select',
+          '6. If prompted, enter engineer password (default: 0001 or 1234)',
+          '7. Confirm reset by pressing ENTER again',
+          '8. Press STOP/RESET button to acknowledge and clear display alarm'
+        ],
+        resetButtonSequence: 'MENU → TIMERS → SERVICE DUE → RESET → PASSWORD → CONFIRM',
+        requiredPassword: 'Engineer level: 0001 (DSE 7xxx) or 1234 (DSE 6xxx)',
+        specialNotes: [
+          'Update service hours in controller before reset to track next service',
+          'Some models require DSE Configuration Software to reset',
+          'LED will stop flashing once timer is reset',
+          'Document reset in maintenance log with date and hours'
+        ]
+      },
+      {
+        name: 'Oil Change Due Alarm',
+        description: 'Oil service interval countdown timer has expired',
+        triggerCondition: 'Oil service hours exceeded configured limit (default 250 hours)',
+        resetProcedure: [
+          '1. Access CONFIGURATION menu (MENU button)',
+          '2. Navigate to MAINTENANCE → OIL SERVICE',
+          '3. Enter engineer password if required',
+          '4. Select "RESET OIL TIMER"',
+          '5. Confirm reset',
+          '6. Optionally adjust next service interval'
+        ],
+        specialNotes: [
+          'Only reset after actually performing oil change',
+          'Record old oil analysis results before resetting'
+        ]
+      },
+      {
+        name: 'Air Filter Alarm',
+        description: 'Air filter restriction exceeded or service timer elapsed',
+        triggerCondition: 'Air filter switch activated or maintenance timer expired',
+        resetProcedure: [
+          '1. First ensure air filter is actually clean/replaced',
+          '2. Check air filter restriction switch is reset (if fitted)',
+          '3. Access CONFIGURATION → MAINTENANCE → AIR FILTER',
+          '4. Reset air filter service timer',
+          '5. Press STOP/RESET to clear alarm from display'
+        ],
+        specialNotes: [
+          'Alarm may return immediately if restriction switch still triggered',
+          'Check restriction switch operation and wiring if alarm persists'
+        ]
+      }
+    ],
+    generalTips: [
+      'DSE controllers have three password levels: Operator (0000), Engineer (0001/1234), Master (varies)',
+      'Most maintenance resets require Engineer level access',
+      'DSE Configuration Software provides easier reset via laptop connection',
+      'Back up configuration before making changes',
+      'Press and hold STOP/RESET for 3+ seconds to clear acknowledged alarms'
+    ],
+    serviceIntervals: [
+      { service: 'Oil & Filter Change', interval: '250-500 hours', resetRequired: true },
+      { service: 'Air Filter Inspection', interval: '250 hours', resetRequired: true },
+      { service: 'Coolant Check', interval: '500 hours', resetRequired: false },
+      { service: 'Major Service', interval: '1000-2000 hours', resetRequired: true }
+    ]
+  },
+  'COMAP': {
+    controllerName: 'ComAp InteliLite/InteliGen Controllers',
+    alarmTypes: [
+      {
+        name: 'Maintenance Request Alarm',
+        description: 'Scheduled maintenance interval based on engine running hours',
+        triggerCondition: 'Running hours exceed "Maintenance Request" setpoint',
+        resetProcedure: [
+          '1. Press PAGE button to access menus',
+          '2. Navigate to SETPOINTS → TIMERS or SETPOINTS → MAINTENANCE',
+          '3. Find "Maintenance Running Hours" counter',
+          '4. Press ENTER to select, then use UP/DOWN to reset to 0',
+          '5. Press ENTER to confirm',
+          '6. Exit menu and press FAULT RESET button to clear alarm',
+          '7. Alternatively use InteliConfig software to reset remotely'
+        ],
+        resetButtonSequence: 'PAGE → SETPOINTS → MAINTENANCE → Reset Hours → FAULT RESET',
+        requiredPassword: 'Configurable in software (default may be 1111 or 0000)',
+        specialNotes: [
+          'Some InteliGen models require WebSupervisor or InteliConfig software',
+          'Alarm may be classified as "Warning" not "Shutdown"',
+          'Check if timer auto-resets or requires manual reset in settings'
+        ]
+      },
+      {
+        name: 'Service Due Warning',
+        description: 'Calendar-based or hours-based service reminder',
+        triggerCondition: 'Service interval countdown timer expired',
+        resetProcedure: [
+          '1. Enter programming mode via PAGE button',
+          '2. Go to HISTORY → SERVICE COUNTERS',
+          '3. Select the expired service counter',
+          '4. Reset counter to full interval value',
+          '5. Save and exit',
+          '6. Press FAULT RESET to acknowledge'
+        ],
+        specialNotes: [
+          'Multiple service counters can be configured for different tasks',
+          'Date-based and hours-based timers may both be active'
+        ]
+      }
+    ],
+    generalTips: [
+      'ComAp uses InteliConfig Suite software for advanced configuration',
+      'Access levels: User (view only), Operator (limited), Engineer (full)',
+      'Remote reset possible via InteliMonitor/InteliCloud',
+      'FAULT RESET button clears display but counter must be reset separately',
+      'Export configuration before making changes'
+    ],
+    serviceIntervals: [
+      { service: 'Engine Oil Change', interval: '250-400 hours', resetRequired: true },
+      { service: 'Air Filter Service', interval: '500 hours', resetRequired: true },
+      { service: 'Fuel Filter Change', interval: '500 hours', resetRequired: true },
+      { service: 'Full Major Service', interval: '2000 hours', resetRequired: true }
+    ]
+  },
+  'SMARTGEN': {
+    controllerName: 'SmartGen HGM Series Controllers',
+    alarmTypes: [
+      {
+        name: 'Maintenance Alarm (Common)',
+        description: 'General service reminder based on running hours or calendar time',
+        triggerCondition: 'Service countdown reaches zero or calendar date passed',
+        resetProcedure: [
+          '1. Press MENU or ▶ button to enter menu',
+          '2. Navigate to "SETUP" or "SYSTEM SETTINGS"',
+          '3. Go to "MAINTENANCE" or "SERVICE" submenu',
+          '4. Enter password if prompted (default: 0000 or 1234)',
+          '5. Find "SERVICE TIMER" or "MAINTENANCE HOURS"',
+          '6. Select "RESET" or change value to restart countdown',
+          '7. Press ESC repeatedly to exit menu',
+          '8. Press MUTE/RESET to clear alarm display'
+        ],
+        resetButtonSequence: 'MENU → SETUP → MAINTENANCE → RESET TIMER → ESC → MUTE/RESET',
+        requiredPassword: 'User: 0000, Admin: 1234 (may vary by configuration)',
+        specialNotes: [
+          'HGM6000/7000/9000 series have different menu structures',
+          'Some models use SG72 configuration software',
+          'LED indicators show alarm status separate from display'
+        ]
+      },
+      {
+        name: 'Oil Pressure Maintenance Reminder',
+        description: 'Oil change interval has elapsed',
+        triggerCondition: 'Oil service hours counter reached limit',
+        resetProcedure: [
+          '1. Enter SETUP → MAINTENANCE menu',
+          '2. Select "OIL CHANGE HOURS"',
+          '3. Reset counter value to 0 or configured interval',
+          '4. Confirm and exit menu',
+          '5. Clear alarm with RESET button'
+        ],
+        specialNotes: [
+          'Verify actual oil change was performed before resetting',
+          'Document oil type and quantity in service record'
+        ]
+      }
+    ],
+    generalTips: [
+      'SmartGen controllers often use simple menu navigation via arrow keys',
+      'Default passwords are commonly 0000, 1234, or 8888',
+      'MUTE button often doubles as alarm acknowledgment',
+      'Some alarms auto-clear when condition is resolved',
+      'Check PCB revision as menu options vary between firmware versions'
+    ],
+    serviceIntervals: [
+      { service: 'Oil Change', interval: '200-300 hours', resetRequired: true },
+      { service: 'Air Filter Check', interval: '300 hours', resetRequired: true },
+      { service: 'Coolant Service', interval: '1000 hours', resetRequired: true },
+      { service: 'Belt Inspection', interval: '500 hours', resetRequired: false }
+    ]
+  },
+  'WOODWARD': {
+    controllerName: 'Woodward easYgen Controllers',
+    alarmTypes: [
+      {
+        name: 'Scheduled Maintenance Alarm',
+        description: 'Programmable maintenance reminder based on runtime or calendar',
+        triggerCondition: 'Maintenance interval timer has expired',
+        resetProcedure: [
+          '1. Access OPERATOR menu using front panel buttons',
+          '2. Navigate to SERVICE → MAINTENANCE TIMERS',
+          '3. Enter security code if required (default varies)',
+          '4. Select the expired maintenance timer',
+          '5. Choose RESET TIMER function',
+          '6. Confirm reset action',
+          '7. Press ALARM ACK button to clear active alarm',
+          '8. For ToolKit software: Connect via serial/Ethernet and use Maintenance menu'
+        ],
+        resetButtonSequence: 'OPERATOR → SERVICE → MAINT TIMERS → RESET → ALARM ACK',
+        requiredPassword: 'Access level dependent - configured during commissioning',
+        specialNotes: [
+          'easYgen 3000 series supports multiple independent maintenance timers',
+          'Woodward ToolKit software provides full reset capabilities',
+          'Alarms may be Warning (continue operation) or Shutdown class',
+          'CAN/MODBUS register addresses available for remote reset'
+        ]
+      }
+    ],
+    generalTips: [
+      'Woodward controllers typically have sophisticated security levels',
+      'ToolKit software is the preferred method for maintenance resets',
+      'Front panel reset may be disabled by configuration',
+      'Documentation available on Woodward website with password',
+      'Contact Woodward technical support for lost passwords'
+    ],
+    serviceIntervals: [
+      { service: 'Minor Service', interval: '250 hours', resetRequired: true },
+      { service: 'Intermediate Service', interval: '500 hours', resetRequired: true },
+      { service: 'Major Overhaul', interval: '2000 hours', resetRequired: true }
+    ]
+  },
+  'POWERWIZARD': {
+    controllerName: 'PowerWizard Controllers (CAT/FG Wilson)',
+    alarmTypes: [
+      {
+        name: 'Service Alert / Maintenance Due',
+        description: 'Service interval based on engine hours has been reached',
+        triggerCondition: 'Engine hours exceed service setpoint (typically 250/500/1000 hours)',
+        resetProcedure: [
+          '1. From main display, press MENU button',
+          '2. Navigate to SETPOINTS or SERVICE menu',
+          '3. Enter password if prompted (factory: varies)',
+          '4. Go to MAINTENANCE SCHEDULE or SERVICE INTERVALS',
+          '5. Select the service type to reset (Oil, Air Filter, etc.)',
+          '6. Choose RESET or enter new target hours',
+          '7. Press ENTER to confirm',
+          '8. Press STOP/RESET to acknowledge alarm',
+          '9. Alternative: Use Cat ET or WinGPC software'
+        ],
+        resetButtonSequence: 'MENU → SERVICE → MAINTENANCE → SELECT TYPE → RESET → STOP/RESET',
+        requiredPassword: 'Factory password varies - contact dealer or OEM',
+        specialNotes: [
+          'PowerWizard 1.0/1.1 has limited front panel reset capability',
+          'PowerWizard 2.0 has more advanced menu options',
+          'CAT ET or dealer software may be required for some resets',
+          'OEM (FG Wilson) may lock certain parameters'
+        ]
+      }
+    ],
+    generalTips: [
+      'PowerWizard controllers are often factory-configured by generator OEM',
+      'Contact FG Wilson or CAT dealer for password recovery',
+      'Software tools: Cat ET, WinGPC (FG Wilson)',
+      'Some maintenance alarms may require ECM reset via J1939',
+      'LED sequence indicates alarm priority (solid, flashing, etc.)'
+    ],
+    serviceIntervals: [
+      { service: 'Oil/Filter Service', interval: '250-500 hours', resetRequired: true },
+      { service: 'Air Filter Service', interval: '500 hours', resetRequired: true },
+      { service: 'Coolant System', interval: '1000 hours', resetRequired: true },
+      { service: 'Major Overhaul', interval: '8000+ hours', resetRequired: true }
+    ]
+  },
+  'DATAKOM': {
+    controllerName: 'DATAKOM D-Series Controllers',
+    alarmTypes: [
+      {
+        name: 'Maintenance Timer Alarm',
+        description: 'Service reminder based on running hours countdown',
+        triggerCondition: 'Maintenance countdown timer has reached zero',
+        resetProcedure: [
+          '1. Press MENU to access main menu',
+          '2. Navigate to COUNTERS or MAINTENANCE menu',
+          '3. Enter operator/engineer password (default: 0001)',
+          '4. Select MAINTENANCE COUNTER or SERVICE TIMER',
+          '5. Use UP/DOWN to reset counter to interval value',
+          '6. Press ENTER to save',
+          '7. Exit menu with ESC',
+          '8. Press LAMP TEST/RESET to clear alarm'
+        ],
+        resetButtonSequence: 'MENU → COUNTERS → MAINTENANCE → RESET VALUE → ESC → LAMP TEST',
+        requiredPassword: '0001 (Operator) or 0003 (Engineer)',
+        specialNotes: [
+          'DATAKOM Rainbow software provides PC-based reset option',
+          'D-500, D-700 have different menu layouts',
+          'Some models support USB configuration'
+        ]
+      }
+    ],
+    generalTips: [
+      'DATAKOM controllers often have straightforward menu navigation',
+      'Password levels: User (view), Operator (adjust), Engineer (configure)',
+      'Rainbow software available free from DATAKOM website',
+      'Most alarms can be reset from front panel without PC',
+      'Check configuration for auto-reset vs manual reset setting'
+    ],
+    serviceIntervals: [
+      { service: 'Oil Service', interval: '250 hours', resetRequired: true },
+      { service: 'Filter Service', interval: '500 hours', resetRequired: true },
+      { service: 'Full Service', interval: '1000 hours', resetRequired: true }
+    ]
+  },
+  'LOVATO': {
+    controllerName: 'LOVATO RGK Series Controllers',
+    alarmTypes: [
+      {
+        name: 'Service Request Alarm',
+        description: 'Maintenance interval timer has elapsed',
+        triggerCondition: 'Service hours counter exceeded setpoint',
+        resetProcedure: [
+          '1. Press ENTER to access menu from main screen',
+          '2. Navigate to SETPOINTS → MAINTENANCE',
+          '3. Enter password (default: 1234)',
+          '4. Select MAINTENANCE TIMER',
+          '5. Reset value to desired interval (e.g., 250, 500 hours)',
+          '6. Press ENTER to confirm',
+          '7. Press ESC to exit menus',
+          '8. Press RESET button to clear alarm display'
+        ],
+        resetButtonSequence: 'ENTER → SETPOINTS → MAINTENANCE → TIMER → RESET → ESC → RESET',
+        requiredPassword: '1234 (default engineer password)',
+        specialNotes: [
+          'Synergy software available for PC-based configuration',
+          'RGK600 vs RGK800 have different feature sets',
+          'Maintenance alarms are typically Warning class, not Shutdown'
+        ]
+      }
+    ],
+    generalTips: [
+      'LOVATO uses Synergy configuration software (free download)',
+      'Front panel has intuitive icon-based navigation',
+      'RESET button typically clears acknowledged alarms only',
+      'Some models support NFC configuration via smartphone app',
+      'Check module firmware version for available features'
+    ],
+    serviceIntervals: [
+      { service: 'Regular Service', interval: '250 hours', resetRequired: true },
+      { service: 'Extended Service', interval: '500 hours', resetRequired: true },
+      { service: 'Major Service', interval: '1500 hours', resetRequired: true }
+    ]
+  },
+  'SIEMENS': {
+    controllerName: 'SIEMENS SICAM Controllers',
+    alarmTypes: [
+      {
+        name: 'Maintenance Reminder',
+        description: 'Scheduled maintenance based on running hours or calendar',
+        triggerCondition: 'Maintenance counter or date trigger activated',
+        resetProcedure: [
+          '1. Access MAINTENANCE menu via front panel or SICAM software',
+          '2. Navigate to SERVICE COUNTERS',
+          '3. Enter authorized password/access code',
+          '4. Select maintenance item to reset',
+          '5. Confirm reset action',
+          '6. Exit menu',
+          '7. Acknowledge alarm via RESET function'
+        ],
+        requiredPassword: 'Configured during commissioning - contact Siemens',
+        specialNotes: [
+          'SICAM controllers often require SICAM Device Manager software',
+          'Industrial security standards may restrict front panel access',
+          'Maintenance data may be logged automatically for audit'
+        ]
+      }
+    ],
+    generalTips: [
+      'Siemens controllers prioritize cybersecurity - strong passwords common',
+      'SICAM Device Manager software required for most configuration',
+      'Contact Siemens Energy for support and password recovery',
+      'Controllers may have remote reset capability via SCADA',
+      'Documentation typically requires Siemens account access'
+    ],
+    serviceIntervals: [
+      { service: 'Routine Maintenance', interval: '500 hours', resetRequired: true },
+      { service: 'Full Service', interval: '2000 hours', resetRequired: true }
+    ]
+  },
+  'ENKO': {
+    controllerName: 'ENKO GCU Controllers',
+    alarmTypes: [
+      {
+        name: 'Service Timer Alarm',
+        description: 'Maintenance countdown based on engine running hours',
+        triggerCondition: 'Service timer countdown has reached zero',
+        resetProcedure: [
+          '1. Press SET button to enter programming mode',
+          '2. Use UP/DOWN to navigate to SERVICE menu',
+          '3. Press SET to enter submenu',
+          '4. Find SERVICE HOURS or MAINTENANCE TIMER',
+          '5. Press SET and use UP/DOWN to reset value',
+          '6. Press SET to confirm',
+          '7. Press MODE/ESC to exit',
+          '8. Press RESET to clear alarm'
+        ],
+        resetButtonSequence: 'SET → SERVICE → SET → RESET VALUE → SET → ESC → RESET',
+        requiredPassword: 'May not require password on basic models',
+        specialNotes: [
+          'Simpler interface compared to major brands',
+          'Limited number of service counters available',
+          'Manual/operating guide typically included with unit'
+        ]
+      }
+    ],
+    generalTips: [
+      'ENKO controllers have simplified menu structures',
+      'Most configuration possible without PC software',
+      'Check jumper settings for some configuration options',
+      'Contact ENKO directly for technical support',
+      'Alarms typically auto-clear when condition resolved or manually reset'
+    ],
+    serviceIntervals: [
+      { service: 'Basic Service', interval: '250 hours', resetRequired: true },
+      { service: 'Full Service', interval: '500 hours', resetRequired: true }
+    ]
+  },
+  'VODIA': {
+    controllerName: 'Volvo Penta VODIA Diagnostic System',
+    alarmTypes: [
+      {
+        name: 'Service Indicator / Maintenance Message',
+        description: 'ECM-based maintenance reminder from Volvo Penta engine',
+        triggerCondition: 'Engine control module maintenance timer expired',
+        resetProcedure: [
+          '1. Connect VODIA diagnostic tool to engine diagnostic port',
+          '2. Launch VODIA software and connect to ECM',
+          '3. Navigate to SERVICE/MAINTENANCE section',
+          '4. Select RESET SERVICE INDICATOR',
+          '5. Confirm service type performed (Oil, Filter, etc.)',
+          '6. Execute reset command',
+          '7. Verify indicator clears on engine display',
+          '8. Disconnect and document in service record'
+        ],
+        requiredPassword: 'VODIA software license/subscription required',
+        specialNotes: [
+          'VODIA is the ONLY way to reset Volvo Penta engine maintenance indicators',
+          'Requires official VODIA interface hardware (USB adapter)',
+          'Software license is annual subscription based',
+          'Contact authorized Volvo Penta dealer if VODIA unavailable',
+          'Some parameters stored in ECM cannot be reset without VODIA'
+        ]
+      }
+    ],
+    generalTips: [
+      'VODIA is dealer-level diagnostic tool - may need professional service',
+      'Third-party scan tools cannot reset Volvo Penta ECM alarms',
+      'Engine display may show fault even after controller alarm cleared',
+      'Marine engines may have additional specific reset requirements',
+      'Document ECM software version when performing service'
+    ],
+    serviceIntervals: [
+      { service: 'A Service (Oil)', interval: '500 hours', resetRequired: true },
+      { service: 'B Service (Filters)', interval: '1000 hours', resetRequired: true },
+      { service: 'C Service (Major)', interval: '2000 hours', resetRequired: true }
+    ]
+  }
+};
+
+// Helper function to get maintenance reset procedures
+function getMaintenanceResetProcedures(controllerType: string) {
+  return MAINTENANCE_RESET_PROCEDURES[controllerType] || MAINTENANCE_RESET_PROCEDURES['DSE'];
+}
+
 const CONTROLLER_DATASHEETS: Record<string, {
   overview: string;
   features: string[];
@@ -2273,6 +2756,7 @@ export default function ControllerSimulator({
   const [showInputModal, setShowInputModal] = useState(false);
   const [showInlineAnalysis, setShowInlineAnalysis] = useState(false);
   const [analysisTimestamp, setAnalysisTimestamp] = useState<Date | null>(null);
+  const [showMaintenanceReset, setShowMaintenanceReset] = useState(false);
 
   // Sensor values - technician inputs these from actual controller readings
   const [sensorValues, setSensorValues] = useState<Record<string, number>>({
@@ -2406,6 +2890,13 @@ export default function ControllerSimulator({
           className="px-4 py-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-lg font-medium flex items-center gap-2"
         >
           <span>📐</span> Wiring Diagram
+        </button>
+
+        <button
+          onClick={() => setShowMaintenanceReset(true)}
+          className="px-4 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white rounded-lg font-medium flex items-center gap-2 animate-pulse"
+        >
+          <span>🔧</span> Clear Maintenance Alarm
         </button>
       </div>
 
@@ -3065,6 +3556,17 @@ export default function ControllerSimulator({
           <WiringDiagramModal
             diagram={getWiringDiagram(selectedModel.id)}
             onClose={() => setShowWiringDiagram(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Maintenance Reset Modal */}
+      <AnimatePresence>
+        {showMaintenanceReset && (
+          <MaintenanceResetModal
+            procedures={getMaintenanceResetProcedures(controllerType)}
+            controllerType={controllerType}
+            onClose={() => setShowMaintenanceReset(false)}
           />
         )}
       </AnimatePresence>
@@ -4937,6 +5439,329 @@ function WiringDiagramModal({
               Get Wiring Support
             </a>
             <button onClick={onClose} className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium">Close</button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ==================== MAINTENANCE RESET MODAL ====================
+function MaintenanceResetModal({
+  procedures,
+  controllerType,
+  onClose,
+}: {
+  procedures: typeof MAINTENANCE_RESET_PROCEDURES[string];
+  controllerType: string;
+  onClose: () => void;
+}) {
+  const [expandedAlarm, setExpandedAlarm] = useState<number | null>(0);
+  const [activeTab, setActiveTab] = useState<'procedures' | 'intervals' | 'tips'>('procedures');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 50 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 50 }}
+        className="bg-gray-900 rounded-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-amber-900 to-yellow-900 p-6 border-b border-amber-700">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                <span className="text-3xl">🔧</span>
+                Maintenance Alarm Reset Guide
+              </h2>
+              <p className="text-amber-200 mt-1">{procedures.controllerName}</p>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-white text-xl">✕</button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-2 mt-4">
+            {[
+              { id: 'procedures', label: '📋 Reset Procedures', icon: '📋' },
+              { id: 'intervals', label: '📅 Service Intervals', icon: '📅' },
+              { id: 'tips', label: '💡 General Tips', icon: '💡' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-white/20 text-white'
+                    : 'text-amber-200 hover:bg-white/10'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* Procedures Tab */}
+          {activeTab === 'procedures' && (
+            <div className="space-y-4">
+              <div className="bg-amber-900/30 rounded-xl p-4 border border-amber-700">
+                <h3 className="text-amber-400 font-bold flex items-center gap-2">
+                  <span>⚠️</span> Important: Perform Actual Maintenance First!
+                </h3>
+                <p className="text-amber-200 mt-2 text-sm">
+                  Only reset maintenance alarms AFTER completing the actual service work.
+                  Resetting without performing maintenance can lead to engine damage and void warranties.
+                </p>
+              </div>
+
+              {procedures.alarmTypes.map((alarm, idx) => (
+                <div
+                  key={idx}
+                  className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden"
+                >
+                  <button
+                    onClick={() => setExpandedAlarm(expandedAlarm === idx ? null : idx)}
+                    className="w-full px-5 py-4 flex justify-between items-center hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 text-left">
+                      <span className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center text-white text-xl">
+                        {idx + 1}
+                      </span>
+                      <div>
+                        <h4 className="text-white font-bold">{alarm.name}</h4>
+                        <p className="text-gray-400 text-sm">{alarm.description}</p>
+                      </div>
+                    </div>
+                    <span className={`text-2xl transform transition-transform ${expandedAlarm === idx ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+
+                  {expandedAlarm === idx && (
+                    <div className="border-t border-gray-700 p-5 space-y-4">
+                      {/* Trigger Condition */}
+                      <div className="bg-blue-900/30 rounded-lg p-4 border border-blue-700/50">
+                        <h5 className="text-blue-400 font-semibold mb-2">🔍 Trigger Condition</h5>
+                        <p className="text-blue-100">{alarm.triggerCondition}</p>
+                      </div>
+
+                      {/* Button Sequence */}
+                      {alarm.resetButtonSequence && (
+                        <div className="bg-green-900/30 rounded-lg p-4 border border-green-700/50">
+                          <h5 className="text-green-400 font-semibold mb-2">⌨️ Quick Button Sequence</h5>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {alarm.resetButtonSequence.split(' → ').map((step, i) => (
+                              <span key={i} className="flex items-center gap-2">
+                                <span className="px-3 py-1 bg-gray-700 rounded text-white font-mono text-sm">
+                                  {step}
+                                </span>
+                                {i < alarm.resetButtonSequence!.split(' → ').length - 1 && (
+                                  <span className="text-green-400">→</span>
+                                )}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Password */}
+                      {alarm.requiredPassword && (
+                        <div className="bg-purple-900/30 rounded-lg p-4 border border-purple-700/50">
+                          <h5 className="text-purple-400 font-semibold mb-2">🔐 Required Password</h5>
+                          <p className="text-purple-100 font-mono">{alarm.requiredPassword}</p>
+                        </div>
+                      )}
+
+                      {/* Step-by-Step Procedure */}
+                      <div className="bg-gray-900 rounded-lg p-4 border border-gray-600">
+                        <h5 className="text-white font-semibold mb-3">📝 Step-by-Step Procedure</h5>
+                        <ol className="space-y-2">
+                          {alarm.resetProcedure.map((step, stepIdx) => (
+                            <li key={stepIdx} className="flex items-start gap-3">
+                              <span className="w-6 h-6 bg-amber-600 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0 mt-0.5">
+                                {stepIdx + 1}
+                              </span>
+                              <span className="text-gray-200">{step.replace(/^\d+\.\s*/, '')}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+
+                      {/* Special Notes */}
+                      {alarm.specialNotes.length > 0 && (
+                        <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-700/50">
+                          <h5 className="text-yellow-400 font-semibold mb-2">📌 Special Notes</h5>
+                          <ul className="space-y-1">
+                            {alarm.specialNotes.map((note, noteIdx) => (
+                              <li key={noteIdx} className="flex items-start gap-2 text-yellow-100">
+                                <span className="text-yellow-500">•</span>
+                                <span>{note}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Service Intervals Tab */}
+          {activeTab === 'intervals' && (
+            <div className="space-y-4">
+              <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
+                <h3 className="text-lg font-bold text-white mb-4">Standard Service Intervals</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-900">
+                        <th className="px-4 py-3 text-left text-gray-400 font-medium">Service Type</th>
+                        <th className="px-4 py-3 text-left text-gray-400 font-medium">Interval</th>
+                        <th className="px-4 py-3 text-left text-gray-400 font-medium">Reset Required?</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {procedures.serviceIntervals.map((interval, idx) => (
+                        <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-800' : 'bg-gray-800/50'}>
+                          <td className="px-4 py-3 text-white font-medium">{interval.service}</td>
+                          <td className="px-4 py-3 text-amber-400 font-mono">{interval.interval}</td>
+                          <td className="px-4 py-3">
+                            {interval.resetRequired ? (
+                              <span className="px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs font-medium">
+                                Yes - Reset Timer
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-gray-600/50 text-gray-400 rounded text-xs font-medium">
+                                No
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="bg-blue-900/30 rounded-xl p-5 border border-blue-700">
+                <h3 className="text-blue-400 font-bold mb-3">⏱️ Why Service Intervals Matter</h3>
+                <ul className="space-y-2 text-blue-100">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400">•</span>
+                    Regular oil changes prevent bearing wear and extend engine life
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400">•</span>
+                    Clean air filters ensure proper combustion and fuel efficiency
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400">•</span>
+                    Coolant maintenance prevents corrosion and overheating
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400">•</span>
+                    Documented service history maintains warranty and resale value
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* General Tips Tab */}
+          {activeTab === 'tips' && (
+            <div className="space-y-4">
+              <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
+                <h3 className="text-lg font-bold text-white mb-4">General Tips for {procedures.controllerName}</h3>
+                <ul className="space-y-3">
+                  {procedures.generalTips.map((tip, idx) => (
+                    <li key={idx} className="flex items-start gap-3 p-3 bg-gray-900 rounded-lg">
+                      <span className="text-2xl">💡</span>
+                      <span className="text-gray-200">{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="bg-red-900/30 rounded-xl p-5 border border-red-700">
+                <h3 className="text-red-400 font-bold mb-3">⚠️ Common Mistakes to Avoid</h3>
+                <ul className="space-y-2 text-red-100">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400">✕</span>
+                    Resetting maintenance timers without performing actual service
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400">✕</span>
+                    Using incorrect passwords and getting locked out
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400">✕</span>
+                    Not documenting service work in maintenance log
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400">✕</span>
+                    Ignoring maintenance alarms until shutdown occurs
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-green-900/30 rounded-xl p-5 border border-green-700">
+                <h3 className="text-green-400 font-bold mb-3">✓ Best Practices</h3>
+                <ul className="space-y-2 text-green-100">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400">✓</span>
+                    Document all service work with dates, hours, and parts used
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400">✓</span>
+                    Take photos before/after service for reference
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400">✓</span>
+                    Keep backup of controller configuration
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400">✓</span>
+                    Use genuine OEM parts when possible
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400">✓</span>
+                    Reset timer immediately after completing service
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-900 p-4 border-t border-gray-700 flex justify-between items-center">
+          <p className="text-gray-500 text-sm">
+            Generator Oracle - Maintenance Reset Guide
+          </p>
+          <div className="flex gap-4">
+            <a
+              href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi! I need help clearing a maintenance alarm on my ${procedures.controllerName}. The generator has been serviced but the alarm persists.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-medium"
+            >
+              📞 Get Expert Help
+            </a>
+            <button onClick={onClose} className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium">
+              Close
+            </button>
           </div>
         </div>
       </motion.div>
