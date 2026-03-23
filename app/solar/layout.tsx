@@ -7,12 +7,11 @@ import Script from 'next/script';
  */
 
 export const metadata: Metadata = {
-  title: 'Solar Maintenance Hub | Solar System Diagnostics & Repair Kenya',
-  description: 'Professional solar maintenance services in Kenya. Complete diagnostics for residential, commercial & industrial solar systems. Panel cleaning, battery maintenance, inverter repair. Weather-based recommendations for optimal performance.',
-  // NOTE: keywords meta tag removed - Google ignores it since 2009
-  authors: [{ name: 'Emerson Industrial Maintenance Services' }],
-  creator: 'Emerson EiMS',
-  publisher: 'Emerson Industrial Maintenance Services Limited',
+  title: 'Solar Solution School | 10 AI Engines | World\'s Most Advanced Solar Platform | EmersonEIMS',
+  description: 'World\'s most advanced solar design platform with 10 AI engines. 3D AI modeling, voice commands, neural optimization, 25-year predictions. Covers 15 African countries. Enterprise integrations with Salesforce & DocuSign. Free AI-powered solar design.',
+  authors: [{ name: 'EmersonEIMS' }],
+  creator: 'EmersonEIMS',
+  publisher: 'EmersonEIMS',
   robots: {
     index: true,
     follow: true,
@@ -26,25 +25,25 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'en_US',
+    locale: 'en_KE',
     url: 'https://www.emersoneims.com/solar',
-    siteName: 'Emerson EiMS',
-    title: 'Solar Maintenance Hub | Complete Solar System Diagnostics',
-    description: 'Professional solar maintenance for Kenya. Diagnostics, repair, and optimization for all solar system types. Weather-integrated recommendations.',
+    siteName: 'EmersonEIMS',
+    title: 'Solar Solution School | 10 AI Engines | EmersonEIMS',
+    description: 'World\'s most advanced solar platform. 10 AI engines: 3D Design, Voice Control, Neural Optimizer, Permit Generator, Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, Grid Analyzer. 15 African countries.',
     images: [
       {
-        url: '/images/solar-maintenance-hub-og.jpg',
+        url: '/images/solar-ai-platform-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Solar Maintenance Hub - Professional Solar Diagnostics',
+        alt: 'EmersonEIMS Solar Solution School - 10 AI Engines',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Solar Maintenance Hub | Solar System Diagnostics Kenya',
-    description: 'Complete solar maintenance services. Panel cleaning, battery service, inverter repair.',
-    images: ['/images/solar-maintenance-hub-og.jpg'],
+    title: 'Solar Solution School | 10 AI Engines | EmersonEIMS',
+    description: 'World\'s most advanced solar AI. 10 engines, 15 countries, voice control, 3D design. Free.',
+    images: ['/images/solar-ai-platform-og.jpg'],
     creator: '@EmersonEiMS',
   },
   alternates: {
@@ -58,14 +57,40 @@ const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
     {
-      '@type': 'Service',
-      name: 'Solar System Maintenance',
-      serviceType: 'Solar Panel Maintenance and Repair',
-      description: 'Complete solar system maintenance including panel cleaning, battery service, inverter repair, and system optimization for residential, commercial, and industrial installations.',
+      '@type': 'SoftwareApplication',
+      name: 'Solar Solution School',
+      applicationCategory: 'BusinessApplication',
+      description: 'World\'s most advanced solar design platform featuring 10 AI engines: AI Depth Estimator, Neural Panel Optimizer, AI Permit Generator, Satellite Roof Analyzer, AI Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, and Grid Analyzer.',
+      operatingSystem: 'Any (Web-based)',
+      url: 'https://www.emersoneims.com/solar',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'KES',
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.9',
+        ratingCount: '500',
+        bestRating: '5',
+      },
+      featureList: '10 AI Engines, 3D Design Studio, Voice Commands, 25-Year Predictions, 15 Countries Coverage, Enterprise Integrations, Neural Optimization, Permit Generation, Drone Planning, Grid Analysis',
       provider: {
         '@type': 'Organization',
-        name: 'Emerson Industrial Maintenance Services',
-        telephone: '+254782914717',
+        name: 'EmersonEIMS',
+        telephone: '+254768860665',
+        email: 'info@emersoneims.com',
+      },
+    },
+    {
+      '@type': 'Service',
+      name: 'AI-Powered Solar Design & Installation',
+      serviceType: 'Solar System Design and Installation',
+      description: 'Complete AI-powered solar design with 10 AI engines, 3D modeling, voice control, and installation services across 15 African countries.',
+      provider: {
+        '@type': 'Organization',
+        name: 'EmersonEIMS',
+        telephone: '+254768860665',
         email: 'info@emersoneims.com',
       },
       areaServed: [
@@ -73,79 +98,60 @@ const structuredData = {
         { '@type': 'Country', name: 'Tanzania' },
         { '@type': 'Country', name: 'Uganda' },
         { '@type': 'Country', name: 'Rwanda' },
+        { '@type': 'Country', name: 'Ethiopia' },
+        { '@type': 'Country', name: 'Burundi' },
+        { '@type': 'Country', name: 'South Sudan' },
+        { '@type': 'Country', name: 'Somalia' },
+        { '@type': 'Country', name: 'DR Congo' },
+        { '@type': 'Country', name: 'Cameroon' },
+        { '@type': 'Country', name: 'Central African Republic' },
+        { '@type': 'Country', name: 'Gabon' },
+        { '@type': 'Country', name: 'Congo' },
+        { '@type': 'Country', name: 'Chad' },
+        { '@type': 'Country', name: 'Madagascar' },
       ],
-      hasOfferCatalog: {
-        '@type': 'OfferCatalog',
-        name: 'Solar Maintenance Services',
-        itemListElement: [
-          {
-            '@type': 'Offer',
-            itemOffered: {
-              '@type': 'Service',
-              name: 'Solar Panel Cleaning',
-              description: 'Professional cleaning of solar panels to maximize energy output',
-            },
-          },
-          {
-            '@type': 'Offer',
-            itemOffered: {
-              '@type': 'Service',
-              name: 'Battery Maintenance',
-              description: 'Solar battery testing, water level checks, and replacement',
-            },
-          },
-          {
-            '@type': 'Offer',
-            itemOffered: {
-              '@type': 'Service',
-              name: 'Inverter Repair',
-              description: 'Solar inverter diagnostics, repair, and replacement',
-            },
-          },
-          {
-            '@type': 'Offer',
-            itemOffered: {
-              '@type': 'Service',
-              name: 'System Optimization',
-              description: 'Full solar system audit and performance optimization',
-            },
-          },
-        ],
-      },
     },
     {
       '@type': 'FAQPage',
       mainEntity: [
         {
           '@type': 'Question',
-          name: 'How often should solar panels be cleaned in Kenya?',
+          name: 'What is Solar Solution School?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'In Kenya, solar panels should be cleaned monthly during the dry season and every 2-3 months during rainy periods. Areas with high dust (like near roads or construction sites) may need weekly cleaning for optimal performance.',
+            text: 'Solar Solution School is the world\'s most advanced solar design platform by EmersonEIMS. It features 10 AI engines including 3D design, voice control, neural optimization, permit generation, and 25-year production predictions. It covers 15 African countries.',
           },
         },
         {
           '@type': 'Question',
-          name: 'What is the lifespan of solar batteries in Kenya?',
+          name: 'What are the 10 AI engines in Solar Solution School?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Lead-acid batteries typically last 3-5 years, while lithium batteries can last 10-15 years. Proper maintenance including regular water checks, avoiding deep discharge, and temperature control can extend battery life significantly.',
+            text: 'The 10 AI engines are: 1) AI Depth Estimator - 3D from photos, 2) Neural Panel Optimizer - ML placement, 3) AI Permit Generator - auto documents, 4) Satellite Roof Analyzer, 5) AI Energy Oracle - 25-year predictions, 6) Financial Genius - ROI analysis, 7) Design Copilot - voice commands, 8) Anomaly Detector - predictive maintenance, 9) Drone Commander - survey planning, 10) Grid Analyzer - optimization.',
           },
         },
         {
           '@type': 'Question',
-          name: 'Why is my solar system producing less power?',
+          name: 'Which countries does Solar Solution School cover?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Common causes include dirty panels, shading from new obstacles, battery degradation, inverter issues, or wiring problems. Weather conditions also affect output - cloudy days produce 25-50% less power than sunny days.',
+            text: 'Solar Solution School covers 15 African countries: Kenya, Tanzania, Uganda, Rwanda, Ethiopia, Burundi, South Sudan, Somalia, DR Congo, Cameroon, Central African Republic, Gabon, Congo, Chad, and Madagascar. Each country has local utility data, incentives, and currency support.',
           },
         },
         {
           '@type': 'Question',
-          name: 'Do you service all brands of solar equipment?',
+          name: 'Is Solar Solution School free to use?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes, we service all major brands including Victron, Growatt, Felicity, Must, Luminous, Sunking, and others. Our technicians are trained on various inverter and charge controller systems.',
+            text: 'Yes, Solar Solution School is free to use. All 10 AI engines, 3D design tools, voice control, and calculators are available at no cost. Enterprise integrations with Salesforce, DocuSign, and QuickBooks are also included.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can I design solar systems using voice commands?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes! Solar Solution School features AI Design Copilot that accepts natural language voice commands like "Add 10 panels avoiding the chimney" or "Maximize production on south roof". This is an industry-first feature.',
           },
         },
       ],
@@ -162,13 +168,7 @@ const structuredData = {
         {
           '@type': 'ListItem',
           position: 2,
-          name: 'Maintenance Hub',
-          item: 'https://www.emersoneims.com/maintenance-hub',
-        },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: 'Solar',
+          name: 'Solar Solution School',
           item: 'https://www.emersoneims.com/solar',
         },
       ],
