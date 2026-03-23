@@ -9,8 +9,25 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Service } from '@/lib/services/allServices';
+
+// Dynamic import for AI Borehole Analyzer (only loads when needed)
+const BoreholeAIAnalyzer = dynamic(
+  () => import('@/components/borehole/BoreholeAIAnalyzer'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading AI Analyzer...</p>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface ServiceDetailClientProps {
   service: Service;
@@ -34,7 +51,14 @@ export default function ServiceDetailClient({
   trustBadges,
   contact
 }: ServiceDetailClientProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'pricing' | 'faq'>('overview');
+  // Check if this is a borehole-related service
+  const isBoreholeService = service.slug?.includes('borehole') ||
+                            service.name?.toLowerCase().includes('borehole') ||
+                            service.category === 'water';
+
+  const [activeTab, setActiveTab] = useState<'overview' | 'pricing' | 'faq' | 'ai-analyzer'>(
+    isBoreholeService ? 'ai-analyzer' : 'overview'
+  );
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   return (
@@ -223,8 +247,10 @@ export default function ServiceDetailClient({
       {/* Tab Navigation */}
       <section className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-1 py-3">
+          <div className="flex gap-1 py-3 overflow-x-auto">
             {[
+              // AI Analyzer tab only for borehole services
+              ...(isBoreholeService ? [{ id: 'ai-analyzer', label: 'AI Site Analyzer', badge: 'NEW' }] : []),
               { id: 'overview', label: 'Overview' },
               { id: 'pricing', label: 'Pricing' },
               { id: 'faq', label: 'FAQ' }
@@ -232,13 +258,21 @@ export default function ServiceDetailClient({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                className={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-cyan-500 text-white'
+                    ? tab.id === 'ai-analyzer'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white'
+                      : 'bg-cyan-500 text-white'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
+                {tab.id === 'ai-analyzer' && <span>🤖</span>}
                 {tab.label}
+                {'badge' in tab && tab.badge && (
+                  <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+                    {tab.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -247,6 +281,109 @@ export default function ServiceDetailClient({
 
       {/* Tab Content */}
       <AnimatePresence mode="wait">
+        {/* AI Borehole Analyzer Tab - Only for borehole services */}
+        {activeTab === 'ai-analyzer' && isBoreholeService && (
+          <motion.div
+            key="ai-analyzer"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <section className="py-12 px-4">
+              <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium mb-4">
+                    <span className="animate-pulse">AI-POWERED</span>
+                    <span>Kenya&apos;s Most Advanced Borehole Site Analysis</span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                    AI Borehole Site Analyzer
+                  </h2>
+                  <p className="text-slate-400 max-w-3xl mx-auto">
+                    Upload a photo of your land and get instant AI-powered groundwater assessment using
+                    satellite imagery, LiDAR, hyperspectral rock mapping, geophysics simulation, and GIS analysis.
+                  </p>
+                </div>
+
+                {/* Technology Features */}
+                <div className="grid grid-cols-4 md:grid-cols-7 gap-2 mb-8">
+                  {[
+                    { icon: '🛰️', label: 'Sentinel-2' },
+                    { icon: '📡', label: 'LiDAR' },
+                    { icon: '💎', label: 'Hyperspectral' },
+                    { icon: '⚡', label: 'Geophysics' },
+                    { icon: '🗺️', label: 'GIS' },
+                    { icon: '📋', label: 'EIA' },
+                    { icon: '🇰🇪', label: '47 Counties' },
+                  ].map((tech, i) => (
+                    <div key={i} className="bg-slate-800/50 backdrop-blur rounded-lg p-2 text-center border border-slate-700">
+                      <div className="text-xl mb-1">{tech.icon}</div>
+                      <p className="text-white text-[10px] font-medium">{tech.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* AI Analyzer Component */}
+                <BoreholeAIAnalyzer />
+
+                {/* Bottom Info */}
+                <div className="grid md:grid-cols-2 gap-6 mt-8">
+                  <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-xl p-6 border border-green-500/30">
+                    <h3 className="text-lg font-bold text-green-400 mb-3">What This AI Can Do</h3>
+                    <ul className="space-y-2 text-sm text-slate-300">
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500">✓</span>
+                        Analyze terrain using satellite and LiDAR data
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500">✓</span>
+                        Map rock types using hyperspectral signatures
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500">✓</span>
+                        Simulate VES/ERT geophysical surveys
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500">✓</span>
+                        Estimate drilling depth and success probability
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500">✓</span>
+                        Generate EIA requirements and permit costs
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-500/30">
+                    <h3 className="text-lg font-bold text-amber-400 mb-3">Professional Follow-Up</h3>
+                    <p className="text-sm text-slate-300 mb-4">
+                      AI provides powerful preliminary analysis. We recommend professional verification:
+                    </p>
+                    <ul className="space-y-2 text-sm text-slate-300">
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-500">→</span>
+                        Hydrogeological survey (KES 30,000-80,000)
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-500">→</span>
+                        Actual VES/ERT geophysical survey
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-500">→</span>
+                        WRMA permit application assistance
+                      </li>
+                    </ul>
+                    <a href={`tel:${contact.phoneIntl}`} className="inline-flex items-center gap-2 mt-4 text-cyan-400 hover:text-cyan-300">
+                      <span>📞</span> Call us: {contact.phoneDisplay}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </motion.div>
+        )}
+
         {activeTab === 'overview' && (
           <motion.div
             key="overview"
