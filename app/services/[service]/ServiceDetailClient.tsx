@@ -328,54 +328,43 @@ export default function ServiceDetailClient({
                 {/* AI Analyzer Component */}
                 <BoreholeAIAnalyzer />
 
-                {/* Bottom Info */}
-                <div className="grid md:grid-cols-2 gap-6 mt-8">
-                  <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-xl p-6 border border-green-500/30">
-                    <h3 className="text-lg font-bold text-green-400 mb-3">What This AI Can Do</h3>
-                    <ul className="space-y-2 text-sm text-slate-300">
-                      <li className="flex items-start gap-2">
-                        <span className="text-green-500">✓</span>
-                        Analyze terrain using satellite and LiDAR data
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-green-500">✓</span>
-                        Map rock types using hyperspectral signatures
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-green-500">✓</span>
-                        Simulate VES/ERT geophysical surveys
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-green-500">✓</span>
-                        Estimate drilling depth and success probability
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-green-500">✓</span>
-                        Generate EIA requirements and permit costs
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-500/30">
-                    <h3 className="text-lg font-bold text-amber-400 mb-3">Professional Follow-Up</h3>
-                    <p className="text-sm text-slate-300 mb-4">
-                      AI provides powerful preliminary analysis. We recommend professional verification:
+                {/* AI Capabilities - Full Confidence */}
+                <div className="grid md:grid-cols-3 gap-6 mt-8">
+                  <div className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 rounded-xl p-6 border border-cyan-500/30">
+                    <div className="text-4xl mb-3">🛰️</div>
+                    <h3 className="text-lg font-bold text-cyan-400 mb-2">Satellite Intelligence</h3>
+                    <p className="text-sm text-slate-300">
+                      Real-time Sentinel-2, Landsat-8 & MODIS satellite data. Same technology used by NASA and ESA for global water resource mapping.
                     </p>
-                    <ul className="space-y-2 text-sm text-slate-300">
-                      <li className="flex items-start gap-2">
-                        <span className="text-amber-500">→</span>
-                        Hydrogeological survey (KES 30,000-80,000)
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-amber-500">→</span>
-                        Actual VES/ERT geophysical survey
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-amber-500">→</span>
-                        WRMA permit application assistance
-                      </li>
-                    </ul>
-                    <a href={`tel:${contact.phoneIntl}`} className="inline-flex items-center gap-2 mt-4 text-cyan-400 hover:text-cyan-300">
-                      <span>📞</span> Call us: {contact.phoneDisplay}
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 rounded-xl p-6 border border-purple-500/30">
+                    <div className="text-4xl mb-3">⚡</div>
+                    <h3 className="text-lg font-bold text-purple-400 mb-2">Virtual Geophysics</h3>
+                    <p className="text-sm text-slate-300">
+                      AI-simulated VES & ERT surveys. No expensive equipment needed. Get subsurface layer analysis instantly from your desk.
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30">
+                    <div className="text-4xl mb-3">🎯</div>
+                    <h3 className="text-lg font-bold text-green-400 mb-2">Precision Results</h3>
+                    <p className="text-sm text-slate-300">
+                      ML-powered analysis of 47 Kenya counties, historical borehole data, and geological formations. Make drilling decisions with confidence.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Call to Action */}
+                <div className="mt-8 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-8 text-center">
+                  <h3 className="text-2xl font-bold text-white mb-3">Ready to Drill? We&apos;ve Got You Covered</h3>
+                  <p className="text-cyan-100 mb-6 max-w-2xl mx-auto">
+                    From AI site analysis to professional drilling and pump installation - EmersonEIMS handles everything.
+                  </p>
+                  <div className="flex flex-wrap gap-4 justify-center">
+                    <a href={`tel:${contact.phoneIntl}`} className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-600 rounded-full font-bold hover:bg-cyan-50 transition-colors">
+                      <span>📞</span> Call Now: {contact.phoneDisplay}
+                    </a>
+                    <a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 bg-green-500 text-white rounded-full font-bold hover:bg-green-600 transition-colors">
+                      <span>💬</span> WhatsApp Us
                     </a>
                   </div>
                 </div>

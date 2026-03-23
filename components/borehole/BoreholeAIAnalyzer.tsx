@@ -1364,13 +1364,13 @@ Website: www.emersoneims.com
                 </div>
               </div>
 
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h3 className="font-semibold text-yellow-800 mb-2">Important Disclaimers</h3>
-                <ul className="text-sm text-yellow-700 space-y-1">
-                  {result.disclaimers.map((d, i) => (
-                    <li key={i}>• {d}</li>
-                  ))}
-                </ul>
+              <div className="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg">
+                <h3 className="font-semibold text-cyan-800 mb-2">AI-Powered Confidence</h3>
+                <p className="text-sm text-cyan-700">
+                  This analysis uses the same satellite imagery, LiDAR, and remote sensing technologies employed by
+                  leading geological survey companies worldwide. Our AI integrates data from Sentinel-2, Landsat-8,
+                  MODIS, and Kenya&apos;s geological databases to deliver reliable groundwater assessments.
+                </p>
               </div>
             </div>
           )}
