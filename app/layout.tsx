@@ -52,10 +52,10 @@ const yandexVerification = process.env.NEXT_PUBLIC_YANDEX_VERIFICATION;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Generator Companies in Kenya | 3-YEAR WARRANTY | EmersonEIMS - #1 Power Solutions",
-    template: "%s | EmersonEIMS - 3-Year Warranty | Best Generator & Solar Company Kenya"
+    default: "EmersonEIMS | #1 Generator & Solar Company Kenya | AI-Powered | 3-Year Warranty",
+    template: "%s | EmersonEIMS - AI-Powered Generator & Solar Solutions Kenya"
   },
-  description: "Kenya's #1 Generator Company with 3-YEAR WARRANTY. Cummins, Perkins, FG Wilson Authorized. 9 Services: Generators, Solar, UPS, Motors, Borehole, AC, Electrical, Welding, Plumbing. Serving 9,458+ hospitals, 16,245+ hotels, 93,988+ schools across 47 counties. 24/7 Emergency. Call +254768860665",
+  description: "Kenya's #1 Generator & Solar Company with 3-YEAR WARRANTY. AI Generator Oracle (90% accuracy). Solar Solution School with 10 AI engines. Cummins, Perkins, FG Wilson Authorized. 15 African countries. 47 counties. 24/7 Emergency. Call +254768860665",
   // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
   // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],
@@ -70,9 +70,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_KE",
     url: siteUrl,
-    siteName: "EmersonEIMS - 3-Year Warranty Generator Company Kenya",
-    title: "EmersonEIMS - #1 Generator Company Kenya | 3-YEAR WARRANTY | 9 Services | 47 Counties",
-    description: "Kenya's Best Generator Company - 3-YEAR WARRANTY. 9 Services: Generators, Solar, UPS, Motors, Borehole, AC, Electrical, Welding, Plumbing. Serving 9,458+ hospitals, 16,245+ hotels, 93,988+ schools. 47 counties. Call +254768860665",
+    siteName: "EmersonEIMS",
+    title: "EmersonEIMS | #1 AI-Powered Generator & Solar Company Kenya | 3-Year Warranty",
+    description: "Kenya's #1 Generator & Solar Company. 3-Year Warranty. AI Generator Oracle (90% accuracy). Solar Solution School with 10 AI engines. 15 African countries. 47 counties. Call +254768860665",
     images: [
       {
         url: `${siteUrl}/og-image.jpg`,
@@ -88,8 +88,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "EmersonEIMS - 3-YEAR WARRANTY | Best Generator Company Kenya",
-    description: "Kenya's #1 Power Solutions. 3-YEAR WARRANTY on generators. 9 Services: Generators, Solar, UPS, Motors, Borehole, AC, Electrical, Welding, Plumbing. 47 Counties. 9,458+ hospitals. 16,245+ hotels. Call +254768860665",
+    title: "EmersonEIMS | #1 AI-Powered Generator & Solar Kenya | 3-Year Warranty",
+    description: "Kenya's #1 Generator & Solar Company. AI Generator Oracle (90% accuracy). Solar AI with 10 engines. 3-Year Warranty. 15 African countries. Call +254768860665",
     images: [`${siteUrl}/og-image.jpg`],
     creator: "@EmersonEIMS",
     site: "@EmersonEIMS",

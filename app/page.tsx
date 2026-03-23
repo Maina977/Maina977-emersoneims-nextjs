@@ -14,20 +14,22 @@ import HomePageClient from '@/components/home/HomePageClient';
 // STATIC SEO METADATA - Rendered at build time
 // ═══════════════════════════════════════════════════════════════════════════════
 export const metadata: Metadata = {
-  title: "EmersonEIMS | AI-Powered Generator & Solar Solutions | 10 AI Engines | East Africa",
-  description: "East Africa's most advanced power solutions platform. AI Generator Oracle with 90% diagnostic accuracy. Solar Solution School with 10 AI engines covering 15 African countries. Enterprise integrations with Salesforce, DocuSign & QuickBooks. 3-Year Warranty on generators. Call +254768860665",
+  metadataBase: new URL('https://www.emersoneims.com'),
+  title: "EmersonEIMS | #1 Generator & Solar Company Kenya | AI-Powered | 3-Year Warranty",
+  description: "Kenya's #1 Generator & Solar Company with 3-Year Warranty. AI Generator Oracle (90% accuracy). Solar Solution School with 10 AI engines. Covers 15 African countries. Enterprise integrations. Cummins, Perkins, FG Wilson Authorized. Call +254768860665",
   openGraph: {
-    title: "EmersonEIMS | World's Most Advanced Generator & Solar AI Platform",
-    description: "10 AI engines. 90% diagnostic accuracy. 15 African countries. Generator Oracle AI diagnoses problems instantly. Solar Solution School designs systems with voice commands. Enterprise-grade platform with Salesforce & DocuSign integration.",
+    title: "EmersonEIMS | Kenya's #1 AI-Powered Generator & Solar Company",
+    description: "3-Year Warranty. AI Generator Oracle with 90% accuracy. Solar Solution School with 10 AI engines. 15 African countries. Enterprise integrations (Salesforce, DocuSign). Authorized Cummins dealer.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
     type: 'website',
     locale: 'en_KE',
+    url: 'https://www.emersoneims.com',
     siteName: 'EmersonEIMS',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EmersonEIMS | AI-Powered Generator & Solar Solutions',
-    description: '10 AI engines powering East Africa. Generator Oracle diagnoses with 90% accuracy. Solar AI covers 15 countries.',
+    title: 'EmersonEIMS | #1 Generator & Solar Kenya | AI-Powered',
+    description: '3-Year Warranty. AI Generator Oracle (90% accuracy). Solar AI with 10 engines. 15 countries. Call +254768860665',
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
   alternates: {
