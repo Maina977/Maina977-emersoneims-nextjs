@@ -199,6 +199,17 @@ function AITechnologyShowcase() {
       badge: 'AI-POWERED'
     },
     {
+      id: 'borehole-analyzer',
+      title: 'AI Borehole Analyzer',
+      subtitle: 'Rock Mapping Without Site Visit',
+      description: 'Africa\'s FIRST AI that analyzes borehole sites remotely using satellite imagery, LiDAR, and hyperspectral data. No expensive site surveys needed.',
+      features: ['Satellite Rock Mapping', 'Virtual VES/ERT', '47 Counties Data', '85% Success Rate'],
+      icon: '💧',
+      gradient: 'from-cyan-500 to-teal-500',
+      link: '/services/borehole-pumps',
+      badge: "AFRICA'S FIRST"
+    },
+    {
       id: 'solar-school',
       title: 'Solar Solution School',
       subtitle: '10 AI Engines',
@@ -223,10 +234,10 @@ function AITechnologyShowcase() {
   ];
 
   const achievements = [
-    { number: '10', label: 'AI Engines', icon: '🤖' },
+    { number: '11', label: 'AI Engines', icon: '🤖' },
     { number: '90%', label: 'AI Accuracy', icon: '🎯' },
     { number: '15', label: 'Countries', icon: '🌍' },
-    { number: '400K+', label: 'Fault Codes', icon: '📊' },
+    { number: "Africa's 1st", label: 'AI Borehole Tool', icon: '💧' },
   ];
 
   return (
@@ -261,7 +272,7 @@ function AITechnologyShowcase() {
         </div>
 
         {/* Product Cards */}
-        <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {products.map((product) => (
             <Link
               key={product.id}
@@ -317,12 +328,18 @@ function AITechnologyShowcase() {
           <p className="text-gray-400 mb-6">
             Experience the future of power solutions with EmersonEIMS
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
             <Link
               href="/generator-oracle"
               className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold rounded-full hover:scale-105 transition-all shadow-lg"
             >
               Try Generator Oracle Free
+            </Link>
+            <Link
+              href="/services/borehole-pumps"
+              className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
+            >
+              AI Borehole Site Analysis
             </Link>
             <Link
               href="/solar"
@@ -482,6 +499,17 @@ export default function HomePage() {
                 {
                   '@type': 'Offer',
                   itemOffered: {
+                    '@type': 'SoftwareApplication',
+                    name: 'AI Borehole Site Analyzer',
+                    description: "Africa's first AI-powered borehole site analysis tool using satellite imagery, LiDAR, hyperspectral data, and virtual geophysical surveys. Rock mapping without site visits.",
+                    applicationCategory: 'BusinessApplication',
+                    operatingSystem: 'Web Browser',
+                    offers: { '@type': 'Offer', price: '0', priceCurrency: 'KES' }
+                  }
+                },
+                {
+                  '@type': 'Offer',
+                  itemOffered: {
                     '@type': 'Service',
                     name: 'Generator Sales & Installation',
                     description: 'CUMMINS generators 10-2000KVA with 3-year warranty',
@@ -505,13 +533,19 @@ export default function HomePage() {
               'Generator Diagnostics',
               'Solar Panel Design',
               'Power Solutions',
+              'Borehole Site Analysis',
+              'Remote Sensing',
+              'Satellite Imagery Analysis',
+              'LiDAR Terrain Mapping',
+              'Geophysical Surveys',
               'Enterprise Software',
               'CRM Integration',
               'Voice Recognition'
             ],
             award: [
               'Most Advanced Solar AI Platform in Africa',
-              '10 AI Engines',
+              "Africa's First AI Borehole Site Analyzer",
+              '11 AI Engines',
               '90% Diagnostic Accuracy'
             ]
           }),
@@ -607,6 +641,14 @@ export default function HomePage() {
                 acceptedAnswer: {
                   '@type': 'Answer',
                   text: 'EmersonEIMS serves 15 African countries including Kenya, Tanzania, Uganda, Rwanda, Ethiopia, Burundi, South Sudan, Somalia, DR Congo, Cameroon, Central African Republic, Gabon, Congo, Chad, Madagascar, Mauritius, and Seychelles.'
+                }
+              },
+              {
+                '@type': 'Question',
+                name: 'Can you do borehole site analysis without a site visit?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: "Yes! EmersonEIMS has Africa's first AI Borehole Analyzer that performs rock mapping and groundwater analysis using satellite imagery (Sentinel-2, Landsat-8, MODIS), LiDAR terrain analysis, hyperspectral rock classification, and virtual VES/ERT geophysical surveys. No expensive site surveys required - the AI analyzes your site remotely with 85%+ accuracy across all 47 Kenya counties."
                 }
               }
             ]
