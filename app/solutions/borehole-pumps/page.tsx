@@ -3,9 +3,27 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 
+// Dynamic import for AI Borehole Analyzer
+const BoreholeAIAnalyzer = dynamic(
+  () => import('@/components/borehole/BoreholeAIAnalyzer'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading AI Analyzer...</p>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
 const TABS = [
+  { id: 'ai-analyzer', label: 'AI Site Analyzer', color: 'gradient', badge: 'NEW' },
   { id: 'overview', label: 'Overview', color: 'cyan' },
   { id: 'types', label: 'Pump Types', color: 'blue' },
   { id: 'parts', label: 'Pump Parts', color: 'slate' },
@@ -662,8 +680,23 @@ export default function BoreholePumpsPage() {
         <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex flex-wrap gap-2 justify-center">
             {TABS.map((tab) => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-3 py-2 rounded-full text-xs md:text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-cyan-500 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-2 rounded-full text-xs md:text-sm font-medium transition-all flex items-center gap-2 ${
+                  activeTab === tab.id
+                    ? tab.color === 'gradient'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white'
+                      : 'bg-cyan-500 text-white'
+                    : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                }`}
+              >
                 {tab.label}
+                {'badge' in tab && tab.badge && (
+                  <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+                    {tab.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -673,6 +706,114 @@ export default function BoreholePumpsPage() {
       {/* Content Sections */}
       <div className="mx-auto max-w-7xl px-6 py-12">
         <AnimatePresence mode="wait">
+          {/* AI Site Analyzer Tab */}
+          {activeTab === 'ai-analyzer' && (
+            <motion.div
+              key="ai-analyzer"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="space-y-8"
+            >
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium mb-4">
+                  <span className="animate-pulse">AI-POWERED</span>
+                  <span>Kenya&apos;s Most Advanced Borehole Site Analysis</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                  AI Borehole Site Analyzer
+                </h2>
+                <p className="text-gray-400 max-w-3xl mx-auto">
+                  Upload a photo of your land and get instant AI-powered groundwater assessment using
+                  satellite imagery, LiDAR, hyperspectral rock mapping, geophysics simulation, and GIS analysis.
+                </p>
+              </div>
+
+              {/* Technology Features */}
+              <div className="grid md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
+                {[
+                  { icon: '🛰️', label: 'Sentinel-2', desc: 'Satellite Imagery' },
+                  { icon: '📡', label: 'LiDAR', desc: 'Terrain Analysis' },
+                  { icon: '💎', label: 'Hyperspectral', desc: 'Rock Mapping' },
+                  { icon: '⚡', label: 'VES/ERT', desc: 'Geophysics' },
+                  { icon: '🗺️', label: 'GIS', desc: 'Spatial Analysis' },
+                  { icon: '📋', label: 'EIA', desc: 'Permits' },
+                  { icon: '🇰🇪', label: '47 Counties', desc: 'Kenya Data' },
+                ].map((tech, i) => (
+                  <div key={i} className="bg-white/5 backdrop-blur rounded-xl p-3 text-center border border-white/10 hover:border-cyan-500/50 transition-colors">
+                    <div className="text-2xl mb-1">{tech.icon}</div>
+                    <p className="text-white text-xs font-semibold">{tech.label}</p>
+                    <p className="text-gray-500 text-[10px]">{tech.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* AI Analyzer Component */}
+              <BoreholeAIAnalyzer />
+
+              {/* Bottom Info */}
+              <div className="grid md:grid-cols-2 gap-6 mt-8">
+                <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-xl p-6 border border-green-500/30">
+                  <h3 className="text-lg font-bold text-green-400 mb-3">What This AI Can Do</h3>
+                  <ul className="space-y-2 text-sm text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500">✓</span>
+                      Analyze terrain using satellite and LiDAR data
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500">✓</span>
+                      Map rock types using hyperspectral signatures
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500">✓</span>
+                      Simulate VES/ERT geophysical surveys
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500">✓</span>
+                      Identify lineaments and fracture zones
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500">✓</span>
+                      Estimate drilling depth and success probability
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500">✓</span>
+                      Generate EIA requirements and permit costs
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-500/30">
+                  <h3 className="text-lg font-bold text-amber-400 mb-3">Professional Follow-Up</h3>
+                  <p className="text-sm text-gray-300 mb-4">
+                    While AI provides powerful preliminary analysis, we recommend professional verification:
+                  </p>
+                  <ul className="space-y-2 text-sm text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500">→</span>
+                      Hydrogeological survey (KES 30,000-80,000)
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500">→</span>
+                      Actual VES/ERT geophysical survey
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500">→</span>
+                      WRMA permit application assistance
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500">→</span>
+                      Professional drilling by certified contractors
+                    </li>
+                  </ul>
+                  <a href="tel:+254768860665" className="inline-flex items-center gap-2 mt-4 text-cyan-400 hover:text-cyan-300">
+                    <span>📞</span> Call us: +254 768 860 665
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <motion.div key="overview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">

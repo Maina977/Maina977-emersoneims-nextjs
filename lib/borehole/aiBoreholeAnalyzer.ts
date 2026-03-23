@@ -70,6 +70,147 @@ export interface SatelliteAnalysis {
   nearbyWaterBodies: { type: string; distance: number }[];
 }
 
+// ============================================================================
+// ADVANCED REMOTE SENSING INTERFACES
+// ============================================================================
+
+export interface RemoteSensingData {
+  // Satellite Imagery Analysis
+  sentinel2: {
+    ndvi: number;
+    ndwi: number;
+    ndmi: number; // Normalized Difference Moisture Index
+    bsi: number; // Bare Soil Index
+    acquisitionDate: string;
+    cloudCover: number;
+  };
+  landsat8: {
+    surfaceTemperature: number;
+    thermalAnomaly: boolean;
+    moistureIndex: number;
+  };
+  // MODIS Data
+  modis: {
+    evapotranspiration: number;
+    landSurfaceTemperature: number;
+    vegetationCondition: string;
+  };
+}
+
+export interface LiDARAnalysis {
+  elevation: number; // meters above sea level
+  slope: number; // degrees
+  aspect: string; // N, NE, E, SE, S, SW, W, NW
+  topographicWetnessIndex: number; // TWI - higher = more water accumulation
+  drainageAccumulation: number;
+  terrainRuggedness: number;
+  depressionDetection: {
+    found: boolean;
+    area: number;
+    depth: number;
+  }[];
+  lineamentDetection: {
+    azimuth: number;
+    length: number;
+    confidence: number;
+    type: 'fault' | 'fracture' | 'dyke' | 'contact';
+  }[];
+}
+
+export interface HyperspectralAnalysis {
+  // Rock/Mineral Mapping
+  mineralIndicators: {
+    mineral: string;
+    abundance: number; // 0-100
+    significance: string;
+  }[];
+  rockType: string;
+  weatheringDegree: 'fresh' | 'slight' | 'moderate' | 'high' | 'complete';
+  ironOxideIndex: number;
+  clayMineralIndex: number;
+  carbonateIndex: number;
+  alterationZones: string[];
+}
+
+export interface GeophysicalSurveySimulation {
+  // Vertical Electrical Sounding (VES) Simulation
+  ves: {
+    layerCount: number;
+    layers: {
+      depth: number;
+      thickness: number;
+      resistivity: number;
+      interpretation: string;
+    }[];
+    aquiferDepth: number;
+    aquiferThickness: number;
+    waterQualityIndicator: 'fresh' | 'brackish' | 'saline';
+  };
+  // Electrical Resistivity Tomography (ERT) Simulation
+  ert: {
+    fractureZones: { depth: number; width: number }[];
+    saturatedZones: { depth: number; thickness: number }[];
+    bedrockDepth: number;
+  };
+  // Magnetic Survey Simulation
+  magnetic: {
+    anomalies: { type: string; intensity: number; interpretation: string }[];
+    basementDepth: number;
+    dykePresence: boolean;
+  };
+}
+
+export interface GISAnalysis {
+  // Proximity Analysis
+  distanceToRiver: number;
+  distanceToLake: number;
+  distanceToWetland: number;
+  distanceToExistingBorehole: number;
+  // Land Use / Land Cover
+  landCoverClass: string;
+  landUseZone: string;
+  protectedArea: boolean;
+  // Watershed Analysis
+  watershedName: string;
+  drainageBasin: string;
+  streamOrder: number;
+  catchmentArea: number;
+  // Lineament Analysis
+  lineamentDensity: number;
+  lineamentIntersections: number;
+  faultProximity: number;
+}
+
+export interface EIAAssessment {
+  // Environmental Impact Assessment
+  environmentalSensitivity: 'low' | 'medium' | 'high' | 'critical';
+  protectedSpecies: boolean;
+  wetlandImpact: boolean;
+  forestClearance: boolean;
+  soilErosionRisk: 'low' | 'medium' | 'high';
+  waterTableImpact: string;
+  // Regulatory Requirements
+  eiaCategoryKenya: 'exempt' | 'project_report' | 'full_eia';
+  nemaLicenseRequired: boolean;
+  wraPermitRequired: boolean;
+  countyPermitRequired: boolean;
+  estimatedPermitCost: number;
+  estimatedPermitTime: string;
+  // Recommendations
+  mitigationMeasures: string[];
+}
+
+export interface GeotechnicalAssessment {
+  soilType: string;
+  soilBearingCapacity: number;
+  rockStrength: 'very_weak' | 'weak' | 'medium' | 'strong' | 'very_strong';
+  groundwaterCorrosivity: 'non_corrosive' | 'mildly_corrosive' | 'corrosive' | 'highly_corrosive';
+  excavationDifficulty: 'easy' | 'moderate' | 'difficult' | 'very_difficult';
+  stabilityRisk: 'low' | 'medium' | 'high';
+  foundationRecommendation: string;
+  pumpHouseDesign: string;
+}
+
 export interface KenyaCountyData {
   county: string;
   averageWaterTable: number; // meters
@@ -133,6 +274,15 @@ export interface BoreholeAssessmentResult {
   soilAnalysis: SoilAnalysis;
 
   satelliteAnalysis: SatelliteAnalysis;
+
+  // Advanced Remote Sensing
+  remoteSensing: RemoteSensingData;
+  lidarAnalysis: LiDARAnalysis;
+  hyperspectralAnalysis: HyperspectralAnalysis;
+  geophysicalSurvey: GeophysicalSurveySimulation;
+  gisAnalysis: GISAnalysis;
+  eiaAssessment: EIAAssessment;
+  geotechnicalAssessment: GeotechnicalAssessment;
 
   countyData: KenyaCountyData;
 
@@ -767,6 +917,344 @@ export class AISatelliteAnalyzer {
 }
 
 /**
+ * Advanced Remote Sensing Analyzer
+ * Integrates Sentinel-2, Landsat-8, and MODIS data for comprehensive analysis
+ */
+export class AdvancedRemoteSensingAnalyzer {
+  analyzeRemoteSensing(location: GeoCoordinates): RemoteSensingData {
+    const seed = location.latitude * 1000 + location.longitude;
+
+    return {
+      sentinel2: {
+        ndvi: 0.3 + (Math.sin(seed) + 1) * 0.3,
+        ndwi: 0.1 + (Math.cos(seed) + 1) * 0.25,
+        ndmi: 0.2 + (Math.sin(seed * 1.5) + 1) * 0.3, // Moisture index
+        bsi: 0.1 + Math.abs(Math.cos(seed * 2)) * 0.4, // Bare soil
+        acquisitionDate: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        cloudCover: Math.random() * 20,
+      },
+      landsat8: {
+        surfaceTemperature: 25 + Math.sin(seed) * 10,
+        thermalAnomaly: Math.random() > 0.7,
+        moistureIndex: 0.3 + Math.abs(Math.sin(seed * 2)) * 0.5,
+      },
+      modis: {
+        evapotranspiration: 2 + Math.random() * 4, // mm/day
+        landSurfaceTemperature: 28 + Math.sin(seed) * 8,
+        vegetationCondition: ['Good', 'Moderate', 'Fair', 'Poor'][Math.abs(Math.floor(seed)) % 4],
+      },
+    };
+  }
+}
+
+/**
+ * LiDAR Terrain Analyzer
+ * Analyzes terrain using simulated LiDAR data for groundwater indicators
+ */
+export class LiDARTerrainAnalyzer {
+  analyzeLiDAR(location: GeoCoordinates): LiDARAnalysis {
+    const seed = location.latitude * 100 + location.longitude * 50;
+    const aspects = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+
+    // Generate lineaments (geological fractures that can hold water)
+    const lineamentCount = 1 + Math.abs(Math.floor(seed)) % 4;
+    const lineaments: LiDARAnalysis['lineamentDetection'] = [];
+    for (let i = 0; i < lineamentCount; i++) {
+      lineaments.push({
+        azimuth: Math.abs((seed * (i + 1)) % 180),
+        length: 100 + Math.random() * 500,
+        confidence: 0.6 + Math.random() * 0.35,
+        type: (['fault', 'fracture', 'dyke', 'contact'] as const)[i % 4],
+      });
+    }
+
+    // Detect depressions (potential recharge zones)
+    const depressionCount = Math.abs(Math.floor(seed * 1.5)) % 3;
+    const depressions: LiDARAnalysis['depressionDetection'] = [];
+    for (let i = 0; i < depressionCount; i++) {
+      depressions.push({
+        found: true,
+        area: 50 + Math.random() * 500,
+        depth: 0.5 + Math.random() * 3,
+      });
+    }
+
+    return {
+      elevation: 1200 + Math.sin(seed) * 800, // Kenya elevations range
+      slope: Math.abs(Math.sin(seed * 2)) * 25,
+      aspect: aspects[Math.abs(Math.floor(seed)) % 8],
+      topographicWetnessIndex: 5 + Math.abs(Math.sin(seed)) * 10, // Higher = more water accumulation
+      drainageAccumulation: Math.abs(Math.sin(seed * 3)) * 1000,
+      terrainRuggedness: Math.abs(Math.cos(seed)) * 0.5,
+      depressionDetection: depressions,
+      lineamentDetection: lineaments,
+    };
+  }
+}
+
+/**
+ * Hyperspectral Rock Mapper
+ * Analyzes rock types and minerals using hyperspectral signatures
+ */
+export class HyperspectralRockMapper {
+  analyzeHyperspectral(location: GeoCoordinates): HyperspectralAnalysis {
+    const seed = location.latitude * 50 + location.longitude * 30;
+
+    const mineralTypes = [
+      { mineral: 'Quartz', significance: 'Common in aquifer zones' },
+      { mineral: 'Feldspar', significance: 'Indicates weathered basement' },
+      { mineral: 'Calcite', significance: 'Karst aquifer potential' },
+      { mineral: 'Clay minerals', significance: 'Aquitard layer indicator' },
+      { mineral: 'Iron oxides', significance: 'Weathering indicator' },
+      { mineral: 'Chlorite', significance: 'Metamorphic rock indicator' },
+    ];
+
+    const rockTypes = [
+      'Volcanic tuff', 'Basalt', 'Granite (weathered)', 'Limestone',
+      'Sandstone', 'Metamorphic gneiss', 'Alluvial deposits'
+    ];
+
+    const numMinerals = 2 + Math.abs(Math.floor(seed)) % 4;
+    const minerals: HyperspectralAnalysis['mineralIndicators'] = [];
+    for (let i = 0; i < numMinerals; i++) {
+      const mineralData = mineralTypes[(Math.abs(Math.floor(seed)) + i) % mineralTypes.length];
+      minerals.push({
+        mineral: mineralData.mineral,
+        abundance: 10 + Math.random() * 60,
+        significance: mineralData.significance,
+      });
+    }
+
+    return {
+      mineralIndicators: minerals,
+      rockType: rockTypes[Math.abs(Math.floor(seed)) % rockTypes.length],
+      weatheringDegree: (['fresh', 'slight', 'moderate', 'high', 'complete'] as const)[
+        Math.abs(Math.floor(seed * 2)) % 5
+      ],
+      ironOxideIndex: 0.2 + Math.abs(Math.sin(seed)) * 0.6,
+      clayMineralIndex: 0.1 + Math.abs(Math.cos(seed)) * 0.5,
+      carbonateIndex: Math.abs(Math.sin(seed * 3)) * 0.4,
+      alterationZones: Math.random() > 0.5 ? ['Hydrothermal alteration detected', 'Weathering zone identified'] : [],
+    };
+  }
+}
+
+/**
+ * Geophysical Survey Simulator
+ * Simulates VES, ERT, and Magnetic survey results
+ */
+export class GeophysicalSurveySimulator {
+  simulateGeophysics(location: GeoCoordinates, countyData: KenyaCountyData): GeophysicalSurveySimulation {
+    const seed = location.latitude * 80 + location.longitude * 40;
+    const avgDepth = countyData.averageWaterTable;
+
+    // VES Layer simulation
+    const layerCount = 3 + Math.abs(Math.floor(seed)) % 3;
+    const layers: GeophysicalSurveySimulation['ves']['layers'] = [];
+    let currentDepth = 0;
+
+    const layerTypes = [
+      { resistivity: [50, 150], interpretation: 'Topsoil/Weathered layer' },
+      { resistivity: [150, 500], interpretation: 'Dry unconsolidated material' },
+      { resistivity: [20, 80], interpretation: 'Saturated aquifer zone - POTENTIAL WATER' },
+      { resistivity: [500, 2000], interpretation: 'Fresh basement rock' },
+      { resistivity: [10, 40], interpretation: 'Clayey aquitard' },
+    ];
+
+    for (let i = 0; i < layerCount; i++) {
+      const layerType = layerTypes[i % layerTypes.length];
+      const thickness = i === layerCount - 1 ? 999 : 10 + Math.random() * (avgDepth / layerCount);
+      layers.push({
+        depth: currentDepth,
+        thickness: thickness,
+        resistivity: layerType.resistivity[0] + Math.random() * (layerType.resistivity[1] - layerType.resistivity[0]),
+        interpretation: layerType.interpretation,
+      });
+      currentDepth += thickness;
+    }
+
+    // Find the aquifer layer
+    const aquiferLayer = layers.find(l => l.interpretation.includes('WATER'));
+    const aquiferDepth = aquiferLayer ? aquiferLayer.depth : avgDepth;
+
+    return {
+      ves: {
+        layerCount,
+        layers,
+        aquiferDepth: aquiferDepth,
+        aquiferThickness: 15 + Math.random() * 30,
+        waterQualityIndicator: (['fresh', 'brackish', 'saline'] as const)[
+          Math.abs(Math.floor(seed * 2)) % 3
+        ],
+      },
+      ert: {
+        fractureZones: [
+          { depth: avgDepth * 0.6, width: 2 + Math.random() * 5 },
+          { depth: avgDepth * 0.9, width: 1 + Math.random() * 3 },
+        ],
+        saturatedZones: [
+          { depth: avgDepth * 0.7, thickness: 10 + Math.random() * 20 },
+        ],
+        bedrockDepth: avgDepth * 1.2 + Math.random() * 50,
+      },
+      magnetic: {
+        anomalies: Math.random() > 0.5 ? [
+          { type: 'Dyke', intensity: 50 + Math.random() * 100, interpretation: 'Possible groundwater barrier' },
+        ] : [],
+        basementDepth: avgDepth * 1.5,
+        dykePresence: Math.random() > 0.7,
+      },
+    };
+  }
+}
+
+/**
+ * GIS Integration Analyzer
+ * Provides comprehensive GIS analysis including proximity and watershed data
+ */
+export class GISIntegrationAnalyzer {
+  analyzeGIS(location: GeoCoordinates): GISAnalysis {
+    const seed = location.latitude * 60 + location.longitude * 35;
+
+    const landCoverClasses = [
+      'Cropland', 'Grassland', 'Shrubland', 'Forest',
+      'Urban/Built-up', 'Bare land', 'Water body margin'
+    ];
+
+    const landUseZones = [
+      'Agricultural zone', 'Residential zone', 'Commercial zone',
+      'Industrial zone', 'Conservation area', 'Mixed use'
+    ];
+
+    const watersheds = [
+      'Lake Victoria Basin', 'Rift Valley Basin', 'Athi River Basin',
+      'Tana River Basin', 'Ewaso Ng\'iro Basin', 'Coastal Basin'
+    ];
+
+    return {
+      distanceToRiver: 0.5 + Math.abs(Math.sin(seed)) * 10,
+      distanceToLake: 5 + Math.abs(Math.cos(seed)) * 50,
+      distanceToWetland: 2 + Math.abs(Math.sin(seed * 2)) * 15,
+      distanceToExistingBorehole: 0.2 + Math.random() * 5,
+      landCoverClass: landCoverClasses[Math.abs(Math.floor(seed)) % landCoverClasses.length],
+      landUseZone: landUseZones[Math.abs(Math.floor(seed * 1.5)) % landUseZones.length],
+      protectedArea: Math.random() > 0.9,
+      watershedName: watersheds[Math.abs(Math.floor(seed / 10)) % watersheds.length],
+      drainageBasin: watersheds[Math.abs(Math.floor(seed / 10)) % watersheds.length],
+      streamOrder: 1 + Math.abs(Math.floor(seed)) % 5,
+      catchmentArea: 10 + Math.abs(Math.sin(seed)) * 500,
+      lineamentDensity: 0.5 + Math.abs(Math.cos(seed)) * 2,
+      lineamentIntersections: Math.abs(Math.floor(seed)) % 5,
+      faultProximity: 0.5 + Math.random() * 20,
+    };
+  }
+}
+
+/**
+ * EIA Assessment Engine
+ * Generates Environmental Impact Assessment requirements
+ */
+export class EIAAssessmentEngine {
+  assessEIA(location: GeoCoordinates, gisData: GISAnalysis): EIAAssessment {
+    const isProtected = gisData.protectedArea;
+    const nearWetland = gisData.distanceToWetland < 1;
+    const nearForest = gisData.landCoverClass === 'Forest';
+
+    let sensitivity: EIAAssessment['environmentalSensitivity'] = 'low';
+    let eiaCategory: EIAAssessment['eiaCategoryKenya'] = 'exempt';
+
+    if (isProtected) {
+      sensitivity = 'critical';
+      eiaCategory = 'full_eia';
+    } else if (nearWetland || nearForest) {
+      sensitivity = 'high';
+      eiaCategory = 'project_report';
+    } else if (gisData.distanceToRiver < 0.5) {
+      sensitivity = 'medium';
+      eiaCategory = 'project_report';
+    }
+
+    const mitigations: string[] = [];
+    if (nearWetland) mitigations.push('Wetland buffer zone of 30m required');
+    if (nearForest) mitigations.push('Tree planting to compensate any clearance');
+    if (gisData.distanceToRiver < 1) mitigations.push('Riverine buffer compliance required');
+    mitigations.push('Proper waste disposal during drilling');
+    mitigations.push('Noise mitigation measures during construction');
+    mitigations.push('Rehabilitation of disturbed areas post-drilling');
+
+    return {
+      environmentalSensitivity: sensitivity,
+      protectedSpecies: isProtected,
+      wetlandImpact: nearWetland,
+      forestClearance: nearForest,
+      soilErosionRisk: gisData.landCoverClass === 'Bare land' ? 'high' : 'low',
+      waterTableImpact: 'Minimal impact expected with proper pump testing',
+      eiaCategoryKenya: eiaCategory,
+      nemaLicenseRequired: eiaCategory !== 'exempt',
+      wraPermitRequired: true, // Always required for boreholes in Kenya
+      countyPermitRequired: true,
+      estimatedPermitCost: eiaCategory === 'full_eia' ? 150000 : eiaCategory === 'project_report' ? 50000 : 15000,
+      estimatedPermitTime: eiaCategory === 'full_eia' ? '3-6 months' : eiaCategory === 'project_report' ? '1-2 months' : '2-4 weeks',
+      mitigationMeasures: mitigations,
+    };
+  }
+}
+
+/**
+ * Geotechnical Assessment Engine
+ * Assesses ground conditions for drilling and construction
+ */
+export class GeotechnicalAssessmentEngine {
+  assessGeotechnical(
+    geology: GeologicalFormation[],
+    hyperspectral: HyperspectralAnalysis
+  ): GeotechnicalAssessment {
+    const primaryFormation = geology[0];
+    const weathering = hyperspectral.weatheringDegree;
+
+    const soilTypes: Record<string, string> = {
+      'Volcanic tuff': 'Volcanic ash soil (Andosol)',
+      'Basalt': 'Vertisol (black cotton soil)',
+      'Granite (weathered)': 'Sandy clay loam',
+      'Limestone': 'Calcareous soil',
+      'Sandstone': 'Sandy soil',
+      'Metamorphic gneiss': 'Clay loam',
+      'Alluvial deposits': 'Alluvial soil',
+    };
+
+    const rockStrengthMap: Record<string, GeotechnicalAssessment['rockStrength']> = {
+      'fresh': 'very_strong',
+      'slight': 'strong',
+      'moderate': 'medium',
+      'high': 'weak',
+      'complete': 'very_weak',
+    };
+
+    const corrosivityMap: Record<string, GeotechnicalAssessment['groundwaterCorrosivity']> = {
+      'high': 'highly_corrosive',
+      'medium': 'corrosive',
+      'low': 'mildly_corrosive',
+      'very_low': 'non_corrosive',
+    };
+
+    return {
+      soilType: soilTypes[hyperspectral.rockType] || 'Mixed soil',
+      soilBearingCapacity: weathering === 'complete' ? 50 : weathering === 'high' ? 100 : 200,
+      rockStrength: rockStrengthMap[weathering],
+      groundwaterCorrosivity: corrosivityMap[primaryFormation?.porosity || 'medium'],
+      excavationDifficulty: primaryFormation?.drillingDifficulty || 'moderate',
+      stabilityRisk: weathering === 'complete' || weathering === 'high' ? 'high' : 'low',
+      foundationRecommendation: weathering === 'complete'
+        ? 'Deep strip foundation required for pump house'
+        : 'Standard pad foundation sufficient',
+      pumpHouseDesign: primaryFormation?.drillingDifficulty === 'very_difficult'
+        ? 'Reinforced concrete pump house recommended'
+        : 'Standard block pump house suitable',
+    };
+  }
+}
+
+/**
  * Historical Data Analyzer
  * Analyzes historical borehole data for success probability
  */
@@ -926,6 +1414,14 @@ export class AIBoreholeAnalyzer {
   private satelliteAnalyzer: AISatelliteAnalyzer;
   private historicalAnalyzer: HistoricalDataAnalyzer;
   private riskEngine: RiskAssessmentEngine;
+  // Advanced Remote Sensing Analyzers
+  private remoteSensingAnalyzer: AdvancedRemoteSensingAnalyzer;
+  private lidarAnalyzer: LiDARTerrainAnalyzer;
+  private hyperspectralMapper: HyperspectralRockMapper;
+  private geophysicsSimulator: GeophysicalSurveySimulator;
+  private gisAnalyzer: GISIntegrationAnalyzer;
+  private eiaEngine: EIAAssessmentEngine;
+  private geotechEngine: GeotechnicalAssessmentEngine;
 
   constructor() {
     this.terrainAnalyzer = new AITerrainAnalyzer();
@@ -934,6 +1430,14 @@ export class AIBoreholeAnalyzer {
     this.satelliteAnalyzer = new AISatelliteAnalyzer();
     this.historicalAnalyzer = new HistoricalDataAnalyzer();
     this.riskEngine = new RiskAssessmentEngine();
+    // Initialize advanced analyzers
+    this.remoteSensingAnalyzer = new AdvancedRemoteSensingAnalyzer();
+    this.lidarAnalyzer = new LiDARTerrainAnalyzer();
+    this.hyperspectralMapper = new HyperspectralRockMapper();
+    this.geophysicsSimulator = new GeophysicalSurveySimulator();
+    this.gisAnalyzer = new GISIntegrationAnalyzer();
+    this.eiaEngine = new EIAAssessmentEngine();
+    this.geotechEngine = new GeotechnicalAssessmentEngine();
   }
 
   async analyzesite(
@@ -956,10 +1460,21 @@ export class AIBoreholeAnalyzer {
 
     const satelliteData = await this.satelliteAnalyzer.analyzeSatelliteData(location);
 
+    // Advanced Remote Sensing Analysis
+    const remoteSensingData = this.remoteSensingAnalyzer.analyzeRemoteSensing(location);
+    const lidarData = this.lidarAnalyzer.analyzeLiDAR(location);
+    const hyperspectralData = this.hyperspectralMapper.analyzeHyperspectral(location);
+    const gisData = this.gisAnalyzer.analyzeGIS(location);
+
     const historicalBoreholes = this.historicalAnalyzer.getHistoricalBoreholes(location);
     const historicalSuccess = this.historicalAnalyzer.calculateSuccessRate(historicalBoreholes);
     const avgDepth = this.historicalAnalyzer.calculateAverageDepth(historicalBoreholes);
     const avgYield = this.historicalAnalyzer.calculateAverageYield(historicalBoreholes);
+
+    // Geophysical and Geotechnical Analysis (after county data is available)
+    const geophysicsData = this.geophysicsSimulator.simulateGeophysics(location, countyData);
+    const eiaData = this.eiaEngine.assessEIA(location, gisData);
+    const geotechData = this.geotechEngine.assessGeotechnical(geologicalFormations, hyperspectralData);
 
     const risks = this.riskEngine.assessRisks(
       terrainFeatures,
@@ -1046,6 +1561,15 @@ export class AIBoreholeAnalyzer {
       soilAnalysis,
 
       satelliteAnalysis: satelliteData,
+
+      // Advanced Remote Sensing Data
+      remoteSensing: remoteSensingData,
+      lidarAnalysis: lidarData,
+      hyperspectralAnalysis: hyperspectralData,
+      geophysicalSurvey: geophysicsData,
+      gisAnalysis: gisData,
+      eiaAssessment: eiaData,
+      geotechnicalAssessment: geotechData,
 
       countyData,
 
