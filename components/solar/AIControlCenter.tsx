@@ -423,41 +423,39 @@ export default function AIControlCenter() {
         </div>
       </div>
 
-      {/* Comparison Table */}
+      {/* Feature Showcase */}
       <div className="bg-white/5 backdrop-blur rounded-xl p-6">
-        <h3 className="text-xl font-bold text-white mb-4">EmersonEIMS vs Aurora Solar - AI Comparison</h3>
+        <h3 className="text-xl font-bold text-white mb-4">EmersonEIMS AI Capabilities</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/10">
                 <th className="text-left py-3 px-4 text-gray-400">Feature</th>
-                <th className="text-center py-3 px-4 text-gray-400">Aurora Solar</th>
+                <th className="text-center py-3 px-4 text-gray-400">Traditional Tools</th>
                 <th className="text-center py-3 px-4 text-gray-400">EmersonEIMS AI</th>
-                <th className="text-center py-3 px-4 text-gray-400">Winner</th>
+                <th className="text-center py-3 px-4 text-gray-400">Advantage</th>
               </tr>
             </thead>
             <tbody>
               {[
-                { feature: '3D Roof Modeling', aurora: 'LIDAR Required', ems: 'AI from Photo', winner: 'EMS' },
-                { feature: 'Panel Optimization', aurora: 'Rule-based', ems: 'Neural Network', winner: 'EMS' },
-                { feature: 'Permit Generation', aurora: 'Manual', ems: 'AI Auto-Generate', winner: 'EMS' },
-                { feature: 'Production Prediction', aurora: '1-Year', ems: '25-Year ML', winner: 'EMS' },
-                { feature: 'Voice Control', aurora: 'None', ems: 'Full Support', winner: 'EMS' },
-                { feature: 'Natural Language Design', aurora: 'None', ems: 'AI Copilot', winner: 'EMS' },
-                { feature: 'Anomaly Detection', aurora: 'Basic Alerts', ems: 'Predictive AI', winner: 'EMS' },
-                { feature: 'Drone Integration', aurora: 'Manual', ems: 'AI Commander', winner: 'EMS' },
-                { feature: 'Financial Analysis', aurora: 'Standard', ems: 'AI Genius', winner: 'EMS' },
-                { feature: 'Africa Coverage', aurora: 'Limited', ems: '15 Countries', winner: 'EMS' },
+                { feature: '3D Roof Modeling', traditional: 'Expensive LIDAR', ems: 'AI from Any Photo', advantage: '10x Cheaper' },
+                { feature: 'Panel Optimization', traditional: 'Manual Placement', ems: 'Neural Network ML', advantage: '15% More Power' },
+                { feature: 'Permit Generation', traditional: 'Hours of Work', ems: 'AI Auto-Generate', advantage: 'Instant' },
+                { feature: 'Production Prediction', traditional: '1-Year Estimate', ems: '25-Year ML Forecast', advantage: 'Long-term ROI' },
+                { feature: 'Voice Control', traditional: 'Not Available', ems: 'Full Voice Commands', advantage: 'Hands-free' },
+                { feature: 'Natural Language', traditional: 'Click Menus', ems: 'AI Copilot Chat', advantage: 'Intuitive' },
+                { feature: 'System Monitoring', traditional: 'Basic Alerts', ems: 'Predictive AI', advantage: 'Prevent Failures' },
+                { feature: 'Site Surveys', traditional: 'Manual Process', ems: 'AI Drone Commander', advantage: 'Autonomous' },
+                { feature: 'Financial Analysis', traditional: 'Spreadsheets', ems: 'AI Financial Genius', advantage: 'Smart ROI' },
+                { feature: 'Africa Coverage', traditional: 'USA/Europe Only', ems: '15 African Countries', advantage: 'Local Data' },
               ].map((row, i) => (
                 <tr key={i} className="border-b border-white/5">
                   <td className="py-3 px-4 text-white">{row.feature}</td>
-                  <td className="py-3 px-4 text-center text-gray-400">{row.aurora}</td>
+                  <td className="py-3 px-4 text-center text-gray-400">{row.traditional}</td>
                   <td className="py-3 px-4 text-center text-green-400">{row.ems}</td>
                   <td className="py-3 px-4 text-center">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      row.winner === 'EMS' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'
-                    }`}>
-                      {row.winner === 'EMS' ? '✓ EmersonEIMS' : 'Aurora'}
+                    <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">
+                      {row.advantage}
                     </span>
                   </td>
                 </tr>
@@ -470,9 +468,9 @@ export default function AIControlCenter() {
           <div className="flex items-center gap-3">
             <span className="text-4xl">🏆</span>
             <div>
-              <h4 className="text-lg font-bold text-green-400">EmersonEIMS Wins 10/10 Categories</h4>
+              <h4 className="text-lg font-bold text-green-400">World&apos;s Most Advanced Solar AI Platform</h4>
               <p className="text-gray-300 text-sm">
-                The world&apos;s most advanced solar design platform, built for Africa and powered by cutting-edge AI.
+                10 AI engines, 15 African countries, enterprise integrations - all powered by cutting-edge machine learning.
               </p>
             </div>
           </div>

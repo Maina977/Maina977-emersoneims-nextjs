@@ -1,5 +1,5 @@
 /**
- * AURORA-MATCHING FEATURES FOR EMERSONEIMS SOLAR SOLUTION SCHOOL
+ * EMERSONEIMS PROFESSIONAL SOLAR FEATURES
  *
  * 1. True WebGL 3D Engine - Three.js mesh rendering
  * 2. Real Shade Raytracing - 8760-hour simulation
@@ -1265,7 +1265,7 @@ export class EmersonEIMSAPI {
 }
 
 // Export all features
-export const AuroraMatchFeatures = {
+export const ProfessionalFeatures = {
   // 3D Engine
   generateRoofMesh,
 
@@ -1296,4 +1296,4 @@ export const AuroraMatchFeatures = {
   API_DOCUMENTATION
 };
 
-export default AuroraMatchFeatures;
+export default ProfessionalFeatures;

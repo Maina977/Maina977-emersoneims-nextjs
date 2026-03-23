@@ -1,7 +1,7 @@
 // ============================================================================
 // EMERSONEIMS AI SOLAR ENGINE - WORLD'S MOST ADVANCED SOLAR AI
 // ============================================================================
-// Features that surpass Aurora Solar and every competitor globally
+// World's most advanced solar AI - industry-leading features
 // Powered by cutting-edge AI/ML algorithms
 // ============================================================================
 

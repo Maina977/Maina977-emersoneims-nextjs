@@ -1,7 +1,7 @@
 // ============================================================================
-// EMERSONEIMS AURORA PARITY FEATURES
+// EMERSONEIMS ENTERPRISE FEATURES
 // ============================================================================
-// Matching and exceeding Aurora Solar in every category
+// World-class enterprise-grade solar platform capabilities
 // ============================================================================
 
 // =============================================================================

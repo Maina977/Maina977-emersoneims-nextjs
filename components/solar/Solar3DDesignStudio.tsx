@@ -373,7 +373,7 @@ export default function Solar3DDesignStudio() {
               3D Solar Design Studio
             </h2>
             <p className="text-blue-100">
-              AI-Powered Design | Better Than Aurora Solar | No Site Visit Required
+              AI-Powered Design | Industry-Leading Technology | No Site Visit Required
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -994,7 +994,7 @@ export default function Solar3DDesignStudio() {
       {/* Footer */}
       <div className="bg-slate-900/50 border-t border-slate-700 p-4 text-center">
         <p className="text-gray-500 text-sm">
-          EmersonEIMS 3D Solar Design Studio v2.0 | AI-Powered | More Advanced Than Aurora Solar
+          EmersonEIMS 3D Solar Design Studio v2.0 | AI-Powered | World&apos;s Most Advanced Platform
         </p>
       </div>
     </div>
