@@ -11,12 +11,29 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   BOREHOLE_REPAIR_MANUALS,
   BOREHOLE_PARTS_CATALOGUE,
   BOREHOLE_MAINTENANCE_SCHEDULES,
   BOREHOLE_KENYA_SUPPLIERS,
 } from '@/lib/maintenance-hub/borehole-bible';
+
+// Dynamic import for AI Borehole Analyzer (reduces initial bundle)
+const BoreholeAIAnalyzer = dynamic(
+  () => import('@/components/borehole/BoreholeAIAnalyzer'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/70">Loading AI Analyzer...</p>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // KENYA 47 COUNTIES AQUIFER DATA
@@ -439,7 +456,7 @@ const TYPICAL_APPLICATIONS = [
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function BoreholeMaintenanceHub() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'aquifer' | 'faults' | 'calculator' | 'pumps' | 'drilling' | 'repair' | 'parts' | 'maintenance'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'ai-analyzer' | 'aquifer' | 'faults' | 'calculator' | 'pumps' | 'drilling' | 'repair' | 'parts' | 'maintenance'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedFault, setSelectedFault] = useState<typeof BOREHOLE_FAULT_CODES[0] | null>(null);
@@ -493,6 +510,7 @@ export default function BoreholeMaintenanceHub() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '💧' },
+    { id: 'ai-analyzer', label: 'AI Site Analyzer', icon: '🤖', badge: 'NEW' },
     { id: 'aquifer', label: '47 Counties Data', icon: '🗺️' },
     { id: 'faults', label: 'Fault Codes (200+)', icon: '⚠️' },
     { id: 'calculator', label: 'Pump Calculator', icon: '🔢' },
@@ -566,6 +584,11 @@ export default function BoreholeMaintenanceHub() {
               >
                 <span>{tab.icon}</span>
                 {tab.label}
+                {'badge' in tab && tab.badge && (
+                  <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">
+                    {tab.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -633,6 +656,82 @@ export default function BoreholeMaintenanceHub() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* AI BOREHOLE ANALYZER TAB */}
+          {activeTab === 'ai-analyzer' && (
+            <motion.div
+              key="ai-analyzer"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+                  <span className="animate-pulse">AI-POWERED</span>
+                  <span>Kenya&apos;s First Borehole Pre-Assessment Tool</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                  AI Borehole Site Analyzer
+                </h2>
+                <p className="text-slate-400 max-w-2xl mx-auto">
+                  Upload a photo of your land and get an instant AI-powered groundwater assessment.
+                  Our AI analyzes terrain, vegetation, and geological indicators to estimate
+                  borehole success probability and provide recommendations.
+                </p>
+              </div>
+
+              {/* Feature Highlights */}
+              <div className="grid md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-slate-800 rounded-xl p-4 border border-blue-500/30 text-center">
+                  <div className="text-3xl mb-2">🏔️</div>
+                  <h3 className="font-semibold text-white text-sm">Terrain Analysis</h3>
+                  <p className="text-xs text-slate-400">Identifies valleys, slopes & drainage</p>
+                </div>
+                <div className="bg-slate-800 rounded-xl p-4 border border-green-500/30 text-center">
+                  <div className="text-3xl mb-2">🌿</div>
+                  <h3 className="font-semibold text-white text-sm">Vegetation Mapping</h3>
+                  <p className="text-xs text-slate-400">Detects water-indicating plants</p>
+                </div>
+                <div className="bg-slate-800 rounded-xl p-4 border border-orange-500/30 text-center">
+                  <div className="text-3xl mb-2">🪨</div>
+                  <h3 className="font-semibold text-white text-sm">Geological Analysis</h3>
+                  <p className="text-xs text-slate-400">Rock types & aquifer potential</p>
+                </div>
+                <div className="bg-slate-800 rounded-xl p-4 border border-cyan-500/30 text-center">
+                  <div className="text-3xl mb-2">📊</div>
+                  <h3 className="font-semibold text-white text-sm">47 Counties Data</h3>
+                  <p className="text-xs text-slate-400">Regional success rates & depths</p>
+                </div>
+              </div>
+
+              {/* AI Analyzer Component */}
+              <BoreholeAIAnalyzer />
+
+              {/* Disclaimer */}
+              <div className="mt-8 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <div>
+                    <h4 className="font-semibold text-yellow-400 mb-1">Important Disclaimer</h4>
+                    <p className="text-sm text-slate-400">
+                      This AI tool provides preliminary assessments only. Underground conditions cannot be
+                      determined with 100% accuracy from surface analysis. We recommend a professional
+                      hydrogeological survey and geophysical survey before drilling. EmersonEIMS can
+                      arrange these services for you.
+                    </p>
+                    <a
+                      href="tel:+254768860665"
+                      className="inline-flex items-center gap-2 mt-3 text-blue-400 hover:text-blue-300 text-sm"
+                    >
+                      <span>📞</span>
+                      <span>Contact us for professional site survey: +254 768 860 665</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </motion.div>
