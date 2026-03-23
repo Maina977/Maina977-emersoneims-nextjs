@@ -161,6 +161,158 @@ function StaticFeaturesSection() {
   );
 }
 
+function AITechnologyShowcase() {
+  const products = [
+    {
+      id: 'generator-oracle',
+      title: 'Generator Oracle',
+      subtitle: 'AI Diagnostic System',
+      description: 'World-class AI that diagnoses generator problems with 90% accuracy. Analyzes symptoms, provides solutions, and connects you with certified technicians.',
+      features: ['90% Diagnostic Accuracy', 'Voice-Activated', '400,000+ Fault Codes', 'Real-time Analysis'],
+      icon: '🔧',
+      gradient: 'from-amber-500 to-orange-600',
+      link: '/generator-oracle',
+      badge: 'AI-POWERED'
+    },
+    {
+      id: 'solar-school',
+      title: 'Solar Solution School',
+      subtitle: '10 AI Engines',
+      description: 'The world\'s most advanced solar design platform. 3D modeling, AI optimization, voice control, and coverage across 15 African countries.',
+      features: ['3D AI Design', 'Voice Commands', '25-Year Predictions', '15 Countries'],
+      icon: '☀️',
+      gradient: 'from-blue-500 to-cyan-500',
+      link: '/solar',
+      badge: 'WORLD #1'
+    },
+    {
+      id: 'enterprise',
+      title: 'Enterprise Platform',
+      subtitle: 'Business Solutions',
+      description: 'Full enterprise integrations including Salesforce, DocuSign, HubSpot, QuickBooks. Professional workflow management for solar installers.',
+      features: ['Salesforce CRM', 'E-Signatures', 'Auto Invoicing', 'Project Tracking'],
+      icon: '🏢',
+      gradient: 'from-purple-500 to-pink-500',
+      link: '/solutions',
+      badge: 'ENTERPRISE'
+    }
+  ];
+
+  const achievements = [
+    { number: '10', label: 'AI Engines', icon: '🤖' },
+    { number: '90%', label: 'AI Accuracy', icon: '🎯' },
+    { number: '15', label: 'Countries', icon: '🌍' },
+    { number: '400K+', label: 'Fault Codes', icon: '📊' },
+  ];
+
+  return (
+    <section className="py-16 sm:py-24 bg-gradient-to-b from-black via-slate-900 to-black overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-12 sm:mb-16">
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium mb-6">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            AI-Powered Technology
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+            Advanced Solutions
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
+              Powered by AI
+            </span>
+          </h2>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Industry-leading AI technology built for Africa. From generator diagnostics to solar design, we&apos;re redefining what&apos;s possible.
+          </p>
+        </div>
+
+        {/* Achievement Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 sm:mb-16">
+          {achievements.map((stat, i) => (
+            <div key={i} className="text-center p-4 sm:p-6 rounded-2xl bg-white/5 border border-white/10">
+              <span className="text-2xl sm:text-3xl mb-2 block">{stat.icon}</span>
+              <div className="text-2xl sm:text-3xl font-bold text-amber-500">{stat.number}</div>
+              <div className="text-sm text-gray-400">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Product Cards */}
+        <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
+          {products.map((product) => (
+            <Link
+              key={product.id}
+              href={product.link}
+              className="group relative bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:border-amber-500/50 transition-all duration-500 overflow-hidden"
+            >
+              {/* Badge */}
+              <div className="absolute top-4 right-4 z-10">
+                <span className={`px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${product.gradient} text-white`}>
+                  {product.badge}
+                </span>
+              </div>
+
+              {/* Gradient Overlay */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${product.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+
+              {/* Content */}
+              <div className="relative p-6 sm:p-8">
+                {/* Icon */}
+                <div className="text-5xl sm:text-6xl mb-4">{product.icon}</div>
+
+                {/* Title */}
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">{product.title}</h3>
+                <p className={`text-sm font-medium bg-gradient-to-r ${product.gradient} bg-clip-text text-transparent mb-3`}>
+                  {product.subtitle}
+                </p>
+
+                {/* Description */}
+                <p className="text-gray-400 text-sm mb-6">{product.description}</p>
+
+                {/* Features */}
+                <div className="grid grid-cols-2 gap-2 mb-6">
+                  {product.features.map((feature, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs text-gray-300">
+                      <span className="text-green-400">✓</span>
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <div className={`flex items-center gap-2 text-sm font-semibold bg-gradient-to-r ${product.gradient} bg-clip-text text-transparent group-hover:gap-4 transition-all`}>
+                  Explore {product.title}
+                  <span className="text-amber-500">→</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-12 sm:mt-16 text-center">
+          <p className="text-gray-400 mb-6">
+            Experience the future of power solutions with EmersonEIMS
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/generator-oracle"
+              className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold rounded-full hover:scale-105 transition-all shadow-lg"
+            >
+              Try Generator Oracle Free
+            </Link>
+            <Link
+              href="/solar"
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
+            >
+              Explore Solar AI
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function StaticCountiesSection() {
   const counties = [
     { name: 'Nairobi', slug: 'nairobi', highlight: true },
@@ -253,6 +405,7 @@ export default function HomePage() {
       <StaticHeroFallback />
       <StaticFeaturesSection />
       <StaticStatsSection />
+      <AITechnologyShowcase />
       <StaticCountiesSection />
 
       {/* CLIENT INTERACTIVE SECTIONS - Load after static content */}
