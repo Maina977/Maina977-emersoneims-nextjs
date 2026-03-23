@@ -294,16 +294,25 @@ export default function ServiceDetailClient({
               <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium mb-4">
-                    <span className="animate-pulse">AI-POWERED</span>
-                    <span>Kenya&apos;s Most Advanced Borehole Site Analysis</span>
+                  {/* World's First Badge */}
+                  <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-black px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg shadow-amber-500/30">
+                    <span className="text-xl">🏆</span>
+                    <span>AFRICA&apos;S FIRST AI BOREHOLE ANALYZER</span>
+                    <span className="text-xl">🌍</span>
+                  </div>
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium mb-4 ml-2">
+                    <span className="animate-pulse">7 AI ENGINES</span>
+                    <span>•</span>
+                    <span>47 COUNTIES</span>
+                    <span>•</span>
+                    <span>FREE</span>
                   </div>
                   <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                     AI Borehole Site Analyzer
                   </h2>
                   <p className="text-slate-400 max-w-3xl mx-auto">
-                    Upload a photo of your land and get instant AI-powered groundwater assessment using
-                    satellite imagery, LiDAR, hyperspectral rock mapping, geophysics simulation, and GIS analysis.
+                    The world&apos;s first commercial AI platform for groundwater exploration in Africa.
+                    No site visits needed. Same satellite technology used by NASA and ESA.
                   </p>
                 </div>
 

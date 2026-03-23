@@ -717,16 +717,24 @@ export default function BoreholePumpsPage() {
             >
               {/* Header */}
               <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium mb-4">
-                  <span className="animate-pulse">AI-POWERED</span>
-                  <span>Kenya&apos;s Most Advanced Borehole Site Analysis</span>
+                {/* Africa's First Badge */}
+                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-black px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg shadow-amber-500/30 animate-pulse">
+                  <span className="text-xl">🏆</span>
+                  <span>AFRICA&apos;S FIRST AI BOREHOLE ANALYZER</span>
+                  <span className="text-xl">🌍</span>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                  <span className="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-xs font-medium border border-cyan-500/30">7 AI ENGINES</span>
+                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium border border-green-500/30">47 COUNTIES</span>
+                  <span className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-xs font-medium border border-purple-500/30">100% FREE</span>
+                  <span className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-xs font-medium border border-orange-500/30">NO SITE VISIT</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                   AI Borehole Site Analyzer
                 </h2>
                 <p className="text-gray-400 max-w-3xl mx-auto">
-                  Upload a photo of your land and get instant AI-powered groundwater assessment using
-                  satellite imagery, LiDAR, hyperspectral rock mapping, geophysics simulation, and GIS analysis.
+                  The world&apos;s first commercial AI platform for groundwater exploration in Africa.
+                  Same satellite technology used by NASA and ESA. No competitors. No site visits. Just results.
                 </p>
               </div>
 
