@@ -200,14 +200,14 @@ function AITechnologyShowcase() {
     },
     {
       id: 'borehole-analyzer',
-      title: 'AI Borehole Analyzer',
-      subtitle: 'Rock Mapping Without Site Visit',
-      description: 'Africa\'s FIRST AI that analyzes borehole sites remotely using satellite imagery, LiDAR, and hyperspectral data. No expensive site surveys needed.',
-      features: ['Satellite Rock Mapping', 'Virtual VES/ERT', '47 Counties Data', '85% Success Rate'],
+      title: 'AquaScan Pro',
+      subtitle: 'AI Borehole Analyzer - 195+ Countries',
+      description: 'World\'s most comprehensive AI that analyzes borehole sites remotely using NASA GLDAS, satellite imagery, LiDAR, and hyperspectral data. Global coverage - no site visits needed.',
+      features: ['195+ Countries', 'NASA GLDAS Data', 'Satellite Rock Mapping', 'Virtual VES/ERT'],
       icon: '💧',
       gradient: 'from-cyan-500 to-teal-500',
       link: '/services/borehole-pumps',
-      badge: "AFRICA'S FIRST"
+      badge: "WORLD'S #1"
     },
     {
       id: 'solar-school',
@@ -236,8 +236,8 @@ function AITechnologyShowcase() {
   const achievements = [
     { number: '11', label: 'AI Engines', icon: '🤖' },
     { number: '90%', label: 'AI Accuracy', icon: '🎯' },
-    { number: '15', label: 'Countries', icon: '🌍' },
-    { number: "Africa's 1st", label: 'AI Borehole Tool', icon: '💧' },
+    { number: '195+', label: 'Countries Covered', icon: '🌍' },
+    { number: "World's #1", label: 'AI Borehole Tool', icon: '💧' },
   ];
 
   return (
@@ -544,7 +544,7 @@ export default function HomePage() {
             ],
             award: [
               'Most Advanced Solar AI Platform in Africa',
-              "Africa's First AI Borehole Site Analyzer",
+              "World's Most Comprehensive AI Borehole Analyzer (AquaScan Pro) - 195+ Countries",
               '11 AI Engines',
               '90% Diagnostic Accuracy'
             ]
@@ -648,7 +648,7 @@ export default function HomePage() {
                 name: 'Can you do borehole site analysis without a site visit?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: "Yes! EmersonEIMS has Africa's first AI Borehole Analyzer that performs rock mapping and groundwater analysis using satellite imagery (Sentinel-2, Landsat-8, MODIS), LiDAR terrain analysis, hyperspectral rock classification, and virtual VES/ERT geophysical surveys. No expensive site surveys required - the AI analyzes your site remotely with 85%+ accuracy across all 47 Kenya counties."
+                  text: "Yes! EmersonEIMS has AquaScan Pro - the world's most comprehensive AI Borehole Analyzer that performs rock mapping and groundwater analysis using NASA GLDAS data, satellite imagery (Sentinel-2, Landsat-8, MODIS), LiDAR terrain analysis, hyperspectral rock classification, and virtual VES/ERT geophysical surveys. No expensive site surveys required - the AI analyzes your site remotely with 85%+ accuracy covering 195+ countries across 6 continents."
                 }
               }
             ]

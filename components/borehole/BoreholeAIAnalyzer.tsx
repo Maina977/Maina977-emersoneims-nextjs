@@ -5,7 +5,8 @@ import {
   AIBoreholeAnalyzer,
   BoreholeAssessmentResult,
   GeoCoordinates,
-  KENYA_GEOLOGICAL_ZONES,
+  GLOBAL_GEOLOGICAL_DATABASE,
+  detectRegionFromCoordinates,
 } from '@/lib/borehole/aiBoreholeAnalyzer';
 
 // ============================================================================
@@ -75,7 +76,7 @@ const BoreholeAIAnalyzer: React.FC = () => {
   const [imageData, setImageData] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [location, setLocation] = useState<GeoCoordinates>({ latitude: -1.2921, longitude: 36.8219 });
-  const [county, setCounty] = useState<string>('nairobi');
+  const [region, setRegion] = useState<string>('nairobi');
   const [result, setResult] = useState<BoreholeAssessmentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('summary');
@@ -146,7 +147,7 @@ const BoreholeAIAnalyzer: React.FC = () => {
       const assessmentResult = await analyzer.current.analyzesite(
         imageData,
         location,
-        county
+        region
       );
 
       setResult(assessmentResult);
@@ -155,7 +156,7 @@ const BoreholeAIAnalyzer: React.FC = () => {
       setError('Analysis failed. Please try again.');
       setStep('location');
     }
-  }, [imageData, location, county]);
+  }, [imageData, location, region]);
 
   const handleReset = useCallback(() => {
     setStep('upload');
@@ -190,8 +191,9 @@ CONFIDENCE LEVEL: ${result.confidenceLevel.toUpperCase()}
 LOCATION DETAILS
 ----------------
 Coordinates: ${result.location.latitude.toFixed(6)}, ${result.location.longitude.toFixed(6)}
-County: ${result.countyData.county}
-Geological Zone: ${result.countyData.geologicalZone}
+Region: ${result.regionData.region}, ${result.regionData.country}
+Continent: ${result.regionData.continent}
+Geological Zone: ${result.regionData.geologicalZone}
 
 GEOLOGICAL ANALYSIS
 -------------------
@@ -310,25 +312,33 @@ Website: www.emersoneims.com
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* County Selection */}
+        {/* Region Selection - Global Coverage */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            County
+            Region / City (195+ Countries)
           </label>
           <select
-            value={county}
-            onChange={(e) => setCounty(e.target.value)}
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            {Object.entries(KENYA_GEOLOGICAL_ZONES)
-              .filter(([key]) => key !== 'default')
-              .sort((a, b) => a[1].county.localeCompare(b[1].county))
-              .map(([key, data]) => (
-                <option key={key} value={key}>
-                  {data.county}
-                </option>
-              ))}
+            {/* Group by continent */}
+            {['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(continent => (
+              <optgroup key={continent} label={`🌍 ${continent}`}>
+                {Object.entries(GLOBAL_GEOLOGICAL_DATABASE)
+                  .filter(([key, data]) => key !== 'default' && data.continent === continent)
+                  .sort((a, b) => `${a[1].country}-${a[1].region}`.localeCompare(`${b[1].country}-${b[1].region}`))
+                  .map(([key, data]) => (
+                    <option key={key} value={key}>
+                      {data.region}, {data.country}
+                    </option>
+                  ))}
+              </optgroup>
+            ))}
           </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Or enter GPS coordinates below for auto-detection
+          </p>
         </div>
 
         {/* GPS Coordinates */}
@@ -367,30 +377,40 @@ Website: www.emersoneims.com
         </div>
       </div>
 
-      {/* County Info Preview */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <h3 className="font-semibold text-gray-800 mb-2">Regional Information</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+      {/* Regional Info Preview */}
+      <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
+        <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+          <span className="text-lg">🌍</span>
+          Regional Geological Data: {GLOBAL_GEOLOGICAL_DATABASE[region]?.region || 'Unknown'}, {GLOBAL_GEOLOGICAL_DATABASE[region]?.country || ''}
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+          <div>
+            <span className="text-gray-500">Continent</span>
+            <p className="font-medium">{GLOBAL_GEOLOGICAL_DATABASE[region]?.continent || 'Unknown'}</p>
+          </div>
           <div>
             <span className="text-gray-500">Avg. Water Table</span>
-            <p className="font-medium">{KENYA_GEOLOGICAL_ZONES[county]?.averageWaterTable || 60}m</p>
+            <p className="font-medium">{GLOBAL_GEOLOGICAL_DATABASE[region]?.averageWaterTable || 60}m</p>
           </div>
           <div>
             <span className="text-gray-500">Success Rate</span>
-            <p className="font-medium">{KENYA_GEOLOGICAL_ZONES[county]?.drillingSuccessRate || 70}%</p>
+            <p className="font-medium">{GLOBAL_GEOLOGICAL_DATABASE[region]?.drillingSuccessRate || 70}%</p>
           </div>
           <div>
             <span className="text-gray-500">Typical Depth</span>
             <p className="font-medium">
-              {KENYA_GEOLOGICAL_ZONES[county]?.recommendedDepth?.min || 80}-
-              {KENYA_GEOLOGICAL_ZONES[county]?.recommendedDepth?.max || 250}m
+              {GLOBAL_GEOLOGICAL_DATABASE[region]?.recommendedDepth?.min || 80}-
+              {GLOBAL_GEOLOGICAL_DATABASE[region]?.recommendedDepth?.max || 250}m
             </p>
           </div>
           <div>
-            <span className="text-gray-500">Aquifer Type</span>
-            <p className="font-medium text-xs">{KENYA_GEOLOGICAL_ZONES[county]?.aquiferType?.slice(0, 30) || 'Mixed'}...</p>
+            <span className="text-gray-500">Currency</span>
+            <p className="font-medium">{GLOBAL_GEOLOGICAL_DATABASE[region]?.currency || 'USD'}</p>
           </div>
         </div>
+        <p className="text-xs text-gray-600 mt-2">
+          Aquifer: {GLOBAL_GEOLOGICAL_DATABASE[region]?.aquiferType || 'Mixed aquifer system'}
+        </p>
       </div>
 
       {/* Action Buttons */}
@@ -503,7 +523,7 @@ Website: www.emersoneims.com
             Download Report
           </button>
           <a
-            href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi EmersonEIMS, I just completed an AI Borehole Analysis. Report ID: ${result.id}. Success Rate: ${result.successProbability}%. Location: ${result.countyData.county}. Please contact me about drilling.`)}`}
+            href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi EmersonEIMS, I just completed an AI Borehole Analysis (AquaScan Pro). Report ID: ${result.id}. Success Rate: ${result.successProbability}%. Location: ${result.regionData.region}, ${result.regionData.country}. Please contact me about drilling.`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-full shadow-xl hover:scale-105 transition-all font-bold"
@@ -2928,20 +2948,27 @@ Website: www.emersoneims.com
                 ))}
               </div>
 
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-2">Regional Data: {result.countyData.county}</h4>
-                <div className="grid md:grid-cols-3 gap-4 text-sm text-blue-700">
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
+                <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                  <span>🌍</span>
+                  Regional Data: {result.regionData.region}, {result.regionData.country}
+                </h4>
+                <div className="grid md:grid-cols-4 gap-4 text-sm text-blue-700">
+                  <div>
+                    <span className="text-blue-600">Continent</span>
+                    <p className="font-medium">{result.regionData.continent}</p>
+                  </div>
                   <div>
                     <span className="text-blue-600">Geological Zone</span>
-                    <p className="font-medium">{result.countyData.geologicalZone}</p>
+                    <p className="font-medium">{result.regionData.geologicalZone}</p>
                   </div>
                   <div>
                     <span className="text-blue-600">Aquifer Type</span>
-                    <p className="font-medium">{result.countyData.aquiferType}</p>
+                    <p className="font-medium">{result.regionData.aquiferType}</p>
                   </div>
                   <div>
                     <span className="text-blue-600">Water Quality</span>
-                    <p className="font-medium">{result.countyData.waterQualityNotes}</p>
+                    <p className="font-medium">{result.regionData.waterQualityNotes}</p>
                   </div>
                 </div>
               </div>
