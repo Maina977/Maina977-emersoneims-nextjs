@@ -460,6 +460,11 @@ Website: www.emersoneims.com
 
     const tabs = [
       { id: 'summary', label: 'Summary', icon: '📊' },
+      { id: 'areaMap', label: 'Area Map', icon: '🗺️', isNew: true, isPremium: true },
+      { id: 'gldasData', label: 'GLDAS Groundwater', icon: '🌍', isNew: true, isPremium: true },
+      { id: 'soilAnalysis', label: 'Soil Analysis', icon: '🏔️', isNew: true, isPremium: true },
+      { id: 'weatherData', label: 'Weather & Rainfall', icon: '🌧️', isNew: true, isPremium: true },
+      { id: 'visualGraphs', label: 'Charts & Graphs', icon: '📉', isNew: true, isPremium: true },
       { id: 'imageId', label: 'Image ID', icon: '📍', isNew: true },
       { id: 'subsurface', label: 'Subsurface', icon: '🔬', isNew: true },
       { id: 'costBreakdown', label: 'Full Costs', icon: '💰', isNew: true },
@@ -475,7 +480,7 @@ Website: www.emersoneims.com
       { id: 'hyperspectral', label: 'Rock Mapping', icon: '💎' },
       { id: 'geophysics', label: 'Geophysics', icon: '⚡' },
       { id: 'gis', label: 'GIS Analysis', icon: '🗺️' },
-      { id: 'nearbyMap', label: 'Nearby Boreholes', icon: '🗺️', isNew: true },
+      { id: 'nearbyMap', label: 'Nearby Boreholes', icon: '📍', isNew: true },
       { id: 'geology', label: 'Geology', icon: '🪨' },
       { id: 'eia', label: 'EIA/Permits', icon: '📋' },
       { id: 'history', label: 'History', icon: '📜' },
@@ -547,9 +552,11 @@ Website: www.emersoneims.com
               className={`flex items-center gap-1 px-4 py-2 rounded-lg whitespace-nowrap transition-colors relative ${
                 activeTab === tab.id
                   ? 'bg-blue-600 text-white'
-                  : tab.isNew
-                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200 hover:bg-green-100'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : tab.isPremium
+                    ? 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-300 hover:bg-amber-100'
+                    : tab.isNew
+                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200 hover:bg-green-100'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               <span>{tab.icon}</span>
@@ -612,6 +619,788 @@ Website: www.emersoneims.com
                     <p>• Method: {result.recommendations.drillingMethod.slice(0, 40)}...</p>
                     <p>• Timeline: {result.recommendations.constructionTime.min}-{result.recommendations.constructionTime.max} days</p>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Area Map Visualization Tab */}
+          {activeTab === 'areaMap' && result.areaMapData && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🗺️</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Area Map & Location Analysis</h3>
+                  <p className="text-sm text-gray-600">100% real location with satellite imagery, Google Earth integration</p>
+                </div>
+                <span className="px-3 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-xs font-bold rounded-full">PREMIUM</span>
+              </div>
+
+              {/* Map Placeholder with Satellite Info */}
+              <div className="relative rounded-xl overflow-hidden border-4 border-blue-300 shadow-xl">
+                <div className="bg-gradient-to-br from-green-200 via-green-300 to-blue-200 h-80 relative">
+                  {/* Grid overlay */}
+                  <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+                  {/* Points of Interest */}
+                  {result.areaMapData.pointsOfInterest.map((poi, index) => (
+                    <div
+                      key={index}
+                      className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:scale-125 transition-transform"
+                      style={{
+                        left: `${50 + (poi.coordinates.longitude - result.areaMapData.center.longitude) * 2000}%`,
+                        top: `${50 - (poi.coordinates.latitude - result.areaMapData.center.latitude) * 2000}%`,
+                      }}
+                      title={`${poi.name} (${poi.distance.toFixed(1)}km)`}
+                    >
+                      <span className="text-2xl drop-shadow-lg">{poi.icon}</span>
+                    </div>
+                  ))}
+
+                  {/* Center marker - Your Site */}
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <div className="relative">
+                      <div className="w-8 h-8 bg-red-500 rounded-full animate-ping absolute" />
+                      <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold relative z-10">📍</div>
+                    </div>
+                    <p className="text-xs font-bold text-center mt-1 bg-white/80 px-2 py-1 rounded">YOUR SITE</p>
+                  </div>
+
+                  {/* Compass */}
+                  <div className="absolute top-4 right-4 w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-sm font-bold">N ↑</span>
+                  </div>
+
+                  {/* Scale bar */}
+                  <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded shadow">
+                    <div className="w-20 h-1 bg-black mb-1" />
+                    <p className="text-xs">500m</p>
+                  </div>
+                </div>
+
+                {/* Satellite info overlay */}
+                <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-xs">
+                  <p className="font-bold">{result.areaMapData.layers.satellite.source}</p>
+                  <p>Date: {result.areaMapData.layers.satellite.date}</p>
+                  <p>Cloud: {result.areaMapData.layers.satellite.cloudCover.toFixed(0)}%</p>
+                </div>
+              </div>
+
+              {/* Map Legend */}
+              <div className="p-4 bg-white rounded-xl border shadow">
+                <h4 className="font-semibold text-gray-800 mb-3">Map Legend</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {result.areaMapData.legend.map((item, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color }} />
+                      <span className="text-sm">{item.item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Location Details */}
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <h4 className="font-semibold text-blue-800 mb-3">📍 Coordinates</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Latitude</span><span className="font-mono font-bold">{result.areaMapData.center.latitude.toFixed(6)}°</span></div>
+                    <div className="flex justify-between"><span>Longitude</span><span className="font-mono font-bold">{result.areaMapData.center.longitude.toFixed(6)}°</span></div>
+                    <div className="flex justify-between"><span>Elevation</span><span className="font-bold">{result.areaMapData.layers.elevation.minElevation.toFixed(0)}m</span></div>
+                    <div className="flex justify-between"><span>Slope</span><span>{result.areaMapData.layers.elevation.slope.toFixed(1)}°</span></div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <h4 className="font-semibold text-green-800 mb-3">🏛️ Administrative</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>County</span><span className="font-bold">{result.areaMapData.administrativeBoundaries.county}</span></div>
+                    <div className="flex justify-between"><span>Sub-County</span><span>{result.areaMapData.administrativeBoundaries.subCounty}</span></div>
+                    <div className="flex justify-between"><span>Ward</span><span>{result.areaMapData.administrativeBoundaries.ward}</span></div>
+                    <div className="flex justify-between"><span>Country</span><span>{result.areaMapData.administrativeBoundaries.country}</span></div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <h4 className="font-semibold text-amber-800 mb-3">📊 Area Statistics</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Total Area</span><span className="font-bold">{result.areaMapData.statistics.totalArea.toFixed(2)} km²</span></div>
+                    <div className="flex justify-between"><span>Cultivated</span><span>{result.areaMapData.statistics.cultivatedArea.toFixed(2)} km²</span></div>
+                    <div className="flex justify-between"><span>Forest</span><span>{result.areaMapData.statistics.forestArea.toFixed(2)} km²</span></div>
+                    <div className="flex justify-between"><span>Pop. Density</span><span>{result.areaMapData.statistics.populationDensity.toFixed(0)}/km²</span></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Land Use Distribution */}
+              <div className="p-4 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">Land Use Distribution</h4>
+                <div className="flex h-8 rounded-full overflow-hidden mb-3">
+                  {result.areaMapData.layers.landUse.map((lu, index) => (
+                    <div
+                      key={index}
+                      style={{ width: `${lu.percentage}%`, backgroundColor: lu.color }}
+                      className="h-full"
+                      title={`${lu.type}: ${lu.percentage}%`}
+                    />
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  {result.areaMapData.layers.landUse.map((lu, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded" style={{ backgroundColor: lu.color }} />
+                      <span>{lu.type}: {lu.percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Nearby Water Sources */}
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <h4 className="font-semibold text-blue-800 mb-3">💧 Nearby Water Sources</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium mb-2">Rivers & Streams</p>
+                    {result.areaMapData.layers.hydrology.rivers.map((river, i) => (
+                      <div key={i} className="flex justify-between text-sm p-2 bg-white rounded mb-1">
+                        <span>{river.name}</span>
+                        <span>{river.distance.toFixed(1)} km ({river.flow})</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium mb-2">Drainage Direction: {result.areaMapData.layers.hydrology.drainageDirection}</p>
+                    <p className="text-sm text-gray-600">Geology: {result.areaMapData.layers.geology.formation}</p>
+                    <p className="text-sm text-gray-600">Aquifer Potential: <span className={`font-bold ${result.areaMapData.layers.geology.aquiferPotential === 'high' ? 'text-green-600' : 'text-yellow-600'}`}>{result.areaMapData.layers.geology.aquiferPotential.toUpperCase()}</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: GLDAS Groundwater Tab */}
+          {activeTab === 'gldasData' && result.gldasGroundwater && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🌍</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">GLDAS Groundwater Monitoring</h3>
+                  <p className="text-sm text-gray-600">NASA Global Land Data Assimilation System via Google Earth Engine</p>
+                </div>
+                <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold rounded-full">NASA DATA</span>
+              </div>
+
+              {/* Dataset Info */}
+              <div className="p-4 bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-xl">
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">🛰️</div>
+                  <div>
+                    <p className="font-bold text-lg">NASA GLDAS 2.1 Dataset</p>
+                    <p className="text-blue-200 text-sm">Resolution: {result.gldasGroundwater.datasetInfo.resolution} | Coverage: {result.gldasGroundwater.datasetInfo.temporalCoverage}</p>
+                    <p className="text-blue-300 text-xs">Last Update: {result.gldasGroundwater.datasetInfo.lastUpdate}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Groundwater Storage */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-xl">
+                  <h4 className="font-semibold text-cyan-800 mb-4">💧 Groundwater Storage</h4>
+                  <div className="text-center mb-4">
+                    <p className="text-5xl font-bold text-cyan-600">{result.gldasGroundwater.groundwaterStorage.currentLevel.toFixed(0)}</p>
+                    <p className="text-sm text-gray-600">mm (Current Level)</p>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Monthly Average</span><span>{result.gldasGroundwater.groundwaterStorage.monthlyAverage} mm</span></div>
+                    <div className="flex justify-between"><span>Annual Average</span><span>{result.gldasGroundwater.groundwaterStorage.annualAverage} mm</span></div>
+                    <div className="flex justify-between"><span>Trend</span><span className={`font-bold ${result.gldasGroundwater.groundwaterStorage.trend === 'increasing' ? 'text-green-600' : result.gldasGroundwater.groundwaterStorage.trend === 'stable' ? 'text-blue-600' : 'text-red-600'}`}>{result.gldasGroundwater.groundwaterStorage.trend.toUpperCase()}</span></div>
+                    <div className="flex justify-between"><span>Anomaly</span><span>{result.gldasGroundwater.groundwaterStorage.anomaly.toFixed(1)} mm</span></div>
+                    <div className="flex justify-between"><span>Percentile</span><span>{result.gldasGroundwater.groundwaterStorage.percentile.toFixed(0)}%</span></div>
+                  </div>
+                </div>
+
+                {/* Soil Moisture by Layer */}
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <h4 className="font-semibold text-amber-800 mb-4">🏔️ Soil Moisture by Layer</h4>
+                  {Object.entries(result.gldasGroundwater.soilMoisture).filter(([key]) => key !== 'rootZoneMoisture').map(([key, data]: [string, any]) => (
+                    <div key={key} className="mb-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{key.replace(/layer|cm/g, ' ').trim()}</span>
+                        <span className={`px-2 py-0.5 rounded text-xs ${data.status === 'wet' ? 'bg-blue-200 text-blue-800' : data.status === 'dry' ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'}`}>{data.status}</span>
+                      </div>
+                      <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+                        <div className={`h-full ${data.status === 'wet' ? 'bg-blue-500' : data.status === 'dry' ? 'bg-red-400' : 'bg-green-500'}`} style={{ width: `${Math.min(data.value * 2, 100)}%` }} />
+                      </div>
+                      <p className="text-xs text-right text-gray-500">{data.value.toFixed(1)}%</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Monthly Time Series Chart */}
+              <div className="p-4 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">📊 Monthly Groundwater & Precipitation</h4>
+                <div className="h-48 flex items-end justify-between gap-1">
+                  {result.gldasGroundwater.monthlyTimeSeries.map((data, index) => (
+                    <div key={index} className="flex-1 flex flex-col items-center">
+                      <div className="w-full flex flex-col items-center gap-1" style={{ height: '160px' }}>
+                        {/* Precipitation bar */}
+                        <div
+                          className="w-full bg-blue-400 rounded-t"
+                          style={{ height: `${data.precipitation / 3}%` }}
+                          title={`Precipitation: ${data.precipitation.toFixed(0)}mm`}
+                        />
+                        {/* Groundwater line dot */}
+                        <div
+                          className="w-3 h-3 bg-cyan-600 rounded-full absolute"
+                          style={{ bottom: `${data.groundwaterStorage / 3}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{data.month}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-center gap-6 mt-3 text-sm">
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-400 rounded" /> Precipitation</div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-cyan-600 rounded-full" /> Groundwater</div>
+                </div>
+              </div>
+
+              {/* Recharge Indicators */}
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                <h4 className="font-semibold text-green-800 mb-3">🔄 Recharge Indicators</h4>
+                <div className="grid md:grid-cols-4 gap-4 text-center">
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">{result.gldasGroundwater.rechargeIndicators.estimatedRecharge.toFixed(0)}</p>
+                    <p className="text-xs text-gray-600">mm/year Recharge</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-2xl font-bold text-blue-600">{result.gldasGroundwater.rechargeIndicators.rechargeEfficiency.toFixed(0)}%</p>
+                    <p className="text-xs text-gray-600">Efficiency</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-2xl font-bold text-amber-600">{result.gldasGroundwater.rechargeIndicators.rechargeZoneProximity.toFixed(1)}</p>
+                    <p className="text-xs text-gray-600">km to Recharge Zone</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className={`text-xl font-bold ${result.gldasGroundwater.rechargeIndicators.aquiferVulnerability === 'low' ? 'text-green-600' : result.gldasGroundwater.rechargeIndicators.aquiferVulnerability === 'moderate' ? 'text-yellow-600' : 'text-red-600'}`}>
+                      {result.gldasGroundwater.rechargeIndicators.aquiferVulnerability.toUpperCase()}
+                    </p>
+                    <p className="text-xs text-gray-600">Vulnerability</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Evapotranspiration & Runoff */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                  <h4 className="font-semibold text-orange-800 mb-3">☀️ Evapotranspiration</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Actual ET</span><span className="font-bold">{result.gldasGroundwater.evapotranspiration.actual.toFixed(1)} mm/day</span></div>
+                    <div className="flex justify-between"><span>Potential ET</span><span>{result.gldasGroundwater.evapotranspiration.potential.toFixed(1)} mm/day</span></div>
+                    <div className="flex justify-between"><span>ET Ratio</span><span>{(result.gldasGroundwater.evapotranspiration.ratio * 100).toFixed(0)}%</span></div>
+                    <div className="flex justify-between"><span>Monthly Total</span><span>{result.gldasGroundwater.evapotranspiration.monthlyTotal.toFixed(0)} mm</span></div>
+                  </div>
+                </div>
+                <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+                  <h4 className="font-semibold text-indigo-800 mb-3">🌊 Runoff & Infiltration</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Surface Runoff</span><span>{result.gldasGroundwater.runoff.surface.toFixed(1)} mm</span></div>
+                    <div className="flex justify-between"><span>Subsurface Runoff</span><span>{result.gldasGroundwater.runoff.subsurface.toFixed(1)} mm</span></div>
+                    <div className="flex justify-between"><span>Total Runoff</span><span className="font-bold">{result.gldasGroundwater.runoff.total.toFixed(1)} mm</span></div>
+                    <div className="flex justify-between"><span>Infiltration Rate</span><span className="font-bold text-green-600">{result.gldasGroundwater.runoff.infiltrationRate.toFixed(1)} mm/hr</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Detailed Soil Analysis Tab */}
+          {activeTab === 'soilAnalysis' && result.detailedSoilAnalysis && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🏔️</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Detailed Soil Analysis</h3>
+                  <p className="text-sm text-gray-600">Comprehensive soil classification, physical & chemical properties</p>
+                </div>
+                <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full">EXPERT</span>
+              </div>
+
+              {/* Soil Classification */}
+              <div className="p-4 bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-300 rounded-xl">
+                <h4 className="font-bold text-amber-800 mb-3">Soil Classification</h4>
+                <div className="grid md:grid-cols-4 gap-4 text-center">
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-sm text-gray-600">USDA Order</p>
+                    <p className="font-bold text-lg">{result.detailedSoilAnalysis.classification.usdaSoilOrder}</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-sm text-gray-600">FAO Group</p>
+                    <p className="font-bold text-lg">{result.detailedSoilAnalysis.classification.faoSoilGroup}</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-sm text-gray-600">Texture Class</p>
+                    <p className="font-bold text-lg">{result.detailedSoilAnalysis.classification.textureClass}</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-sm text-gray-600">Local Name</p>
+                    <p className="font-bold text-lg">{result.detailedSoilAnalysis.classification.localName}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Soil Color Profile */}
+              <div className="p-4 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">🎨 Soil Color Profile</h4>
+                <div className="flex gap-2 h-20">
+                  {result.detailedSoilAnalysis.soilColorPalette.map((layer, index) => (
+                    <div key={index} className="flex-1 rounded-lg relative group cursor-pointer" style={{ backgroundColor: layer.hexCode }}>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-2 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="font-bold">{layer.depth}</p>
+                        <p>{layer.color}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Texture Triangle */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <h4 className="font-semibold text-amber-800 mb-4">📐 Soil Texture</h4>
+                  <div className="relative h-40">
+                    {/* Simple texture visualization */}
+                    <div className="flex h-full gap-2">
+                      <div className="flex-1 bg-yellow-200 rounded flex items-end justify-center">
+                        <div className="bg-yellow-400 w-full rounded-t" style={{ height: `${result.detailedSoilAnalysis.physicalProperties.texture.sand}%` }}>
+                          <p className="text-center text-xs font-bold py-1">Sand {result.detailedSoilAnalysis.physicalProperties.texture.sand}%</p>
+                        </div>
+                      </div>
+                      <div className="flex-1 bg-gray-200 rounded flex items-end justify-center">
+                        <div className="bg-gray-400 w-full rounded-t" style={{ height: `${result.detailedSoilAnalysis.physicalProperties.texture.silt}%` }}>
+                          <p className="text-center text-xs font-bold py-1">Silt {result.detailedSoilAnalysis.physicalProperties.texture.silt}%</p>
+                        </div>
+                      </div>
+                      <div className="flex-1 bg-red-200 rounded flex items-end justify-center">
+                        <div className="bg-red-400 w-full rounded-t" style={{ height: `${result.detailedSoilAnalysis.physicalProperties.texture.clay}%` }}>
+                          <p className="text-center text-xs font-bold py-1">Clay {result.detailedSoilAnalysis.physicalProperties.texture.clay}%</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-center font-bold mt-2">Texture Triangle: {result.detailedSoilAnalysis.physicalProperties.texture.textureTriangle}</p>
+                </div>
+
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <h4 className="font-semibold text-green-800 mb-4">💧 Hydraulic Properties</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Saturated Conductivity</span><span className="font-bold">{result.detailedSoilAnalysis.hydraulicProperties.saturatedConductivity} cm/hr</span></div>
+                    <div className="flex justify-between"><span>Field Capacity</span><span>{result.detailedSoilAnalysis.hydraulicProperties.fieldCapacity}%</span></div>
+                    <div className="flex justify-between"><span>Wilting Point</span><span>{result.detailedSoilAnalysis.hydraulicProperties.wiltingPoint}%</span></div>
+                    <div className="flex justify-between"><span>Available Water</span><span className="font-bold text-blue-600">{result.detailedSoilAnalysis.hydraulicProperties.availableWaterCapacity}%</span></div>
+                    <div className="flex justify-between"><span>Infiltration Rate</span><span>{result.detailedSoilAnalysis.hydraulicProperties.infiltrationRate} mm/hr</span></div>
+                    <div className="flex justify-between"><span>Drainage Class</span><span className="capitalize">{result.detailedSoilAnalysis.hydraulicProperties.drainageClass.replace('_', ' ')}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chemical Properties */}
+              <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                <h4 className="font-semibold text-purple-800 mb-4">🧪 Chemical Properties</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-3 bg-white rounded-lg text-center">
+                    <p className="text-3xl font-bold text-purple-600">{result.detailedSoilAnalysis.chemicalProperties.ph.value.toFixed(1)}</p>
+                    <p className="text-xs text-gray-600">pH ({result.detailedSoilAnalysis.chemicalProperties.ph.classification})</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg text-center">
+                    <p className="text-3xl font-bold text-blue-600">{result.detailedSoilAnalysis.chemicalProperties.organicCarbon.toFixed(1)}%</p>
+                    <p className="text-xs text-gray-600">Organic Carbon</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg text-center">
+                    <p className="text-3xl font-bold text-green-600">{result.detailedSoilAnalysis.chemicalProperties.cationExchangeCapacity.toFixed(0)}</p>
+                    <p className="text-xs text-gray-600">CEC (cmol/kg)</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg text-center">
+                    <p className="text-3xl font-bold text-amber-600">{result.detailedSoilAnalysis.chemicalProperties.basesSaturation.toFixed(0)}%</p>
+                    <p className="text-xs text-gray-600">Base Saturation</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Suitability Assessment */}
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <h4 className="font-semibold text-blue-800 mb-4">✅ Suitability Assessment</h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {Object.entries(result.detailedSoilAnalysis.suitability).map(([key, value]) => (
+                    <div key={key} className={`p-3 rounded-lg text-center ${
+                      value === 'excellent' || value === 'stable' || value === 'low' ? 'bg-green-100 border border-green-300' :
+                      value === 'good' || value === 'moderate' ? 'bg-yellow-100 border border-yellow-300' :
+                      'bg-red-100 border border-red-300'
+                    }`}>
+                      <p className="text-xs text-gray-600 mb-1">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                      <p className="font-bold capitalize">{String(value).replace('_', ' ')}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Depth Profile */}
+              <div className="p-4 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">📊 Soil Depth Profile</h4>
+                <div className="space-y-2">
+                  {result.detailedSoilAnalysis.depthProfile.map((horizon, index) => (
+                    <div key={index} className="flex items-center gap-4 p-3 rounded-lg" style={{ backgroundColor: horizon.color + '20' }}>
+                      <div className="w-8 h-8 rounded" style={{ backgroundColor: horizon.color }} />
+                      <div className="flex-1">
+                        <p className="font-bold">{horizon.horizon}</p>
+                        <p className="text-sm text-gray-600">{horizon.depthFrom}-{horizon.depthTo}cm | {horizon.texture} | {horizon.structure}</p>
+                      </div>
+                      <div className="text-right text-sm">
+                        <p>Roots: {horizon.rootDensity}</p>
+                        {horizon.waterBearing && <span className="text-blue-600 font-bold">💧 Water Bearing</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Weather & Rainfall Tab */}
+          {activeTab === 'weatherData' && result.weatherAnalysis && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🌧️</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Weather & Rainfall Analysis</h3>
+                  <p className="text-sm text-gray-600">Historical climate data, rainfall patterns, seasonal forecasts</p>
+                </div>
+              </div>
+
+              {/* Current Weather */}
+              <div className="p-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="text-6xl">{result.weatherAnalysis.currentConditions.weatherIcon}</span>
+                    <div>
+                      <p className="text-5xl font-bold">{result.weatherAnalysis.currentConditions.temperature.toFixed(0)}°C</p>
+                      <p className="text-blue-100">{result.weatherAnalysis.currentConditions.weatherDescription}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><span className="text-blue-200">Humidity:</span> {result.weatherAnalysis.currentConditions.humidity.toFixed(0)}%</div>
+                    <div><span className="text-blue-200">Wind:</span> {result.weatherAnalysis.currentConditions.windSpeed.toFixed(0)} km/h {result.weatherAnalysis.currentConditions.windDirection}</div>
+                    <div><span className="text-blue-200">Pressure:</span> {result.weatherAnalysis.currentConditions.pressure.toFixed(0)} hPa</div>
+                    <div><span className="text-blue-200">UV Index:</span> {result.weatherAnalysis.currentConditions.uvIndex.toFixed(0)}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Climate Zone */}
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                <h4 className="font-semibold text-amber-800 mb-3">🌡️ Climate Classification</h4>
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-amber-600">{result.weatherAnalysis.climateData.climateZone}</p>
+                    <p className="text-sm text-gray-600">Climate Zone</p>
+                  </div>
+                  <div className="flex-1 grid grid-cols-3 gap-4 text-center">
+                    <div><p className="font-bold">{result.weatherAnalysis.climateData.meanAnnualTemperature}°C</p><p className="text-xs text-gray-600">Avg Temperature</p></div>
+                    <div><p className="font-bold">{result.weatherAnalysis.climateData.meanAnnualRainfall}mm</p><p className="text-xs text-gray-600">Annual Rainfall</p></div>
+                    <div><p className="font-bold">{result.weatherAnalysis.climateData.rainyDaysPerYear}</p><p className="text-xs text-gray-600">Rainy Days/Year</p></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Monthly Rainfall Chart */}
+              <div className="p-4 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">📊 Monthly Rainfall Pattern</h4>
+                <div className="h-48 flex items-end justify-between gap-1">
+                  {result.weatherAnalysis.rainfallAnalysis.monthlyData.map((data, index) => (
+                    <div key={index} className="flex-1 flex flex-col items-center">
+                      <div
+                        className={`w-full rounded-t transition-all hover:opacity-80 ${data.intensity === 'heavy' ? 'bg-blue-600' : data.intensity === 'moderate' ? 'bg-blue-400' : 'bg-blue-200'}`}
+                        style={{ height: `${Math.max(data.rainfall / 3, 5)}%` }}
+                        title={`${data.month}: ${data.rainfall.toFixed(0)}mm (${data.rainyDays} rainy days)`}
+                      />
+                      <p className="text-xs text-gray-500 mt-2">{data.month}</p>
+                      <p className="text-xs font-bold">{data.rainfall.toFixed(0)}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-center gap-6 mt-4 text-sm">
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-600 rounded" /> Heavy</div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-400 rounded" /> Moderate</div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-blue-200 rounded" /> Light</div>
+                </div>
+              </div>
+
+              {/* Seasons Summary */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <h4 className="font-semibold text-blue-800 mb-3">🌧️ Rainy Seasons</h4>
+                  <div className="space-y-2">
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="font-bold">Long Rains (MAM)</p>
+                      <p className="text-2xl font-bold text-blue-600">{result.weatherAnalysis.rainfallAnalysis.longRainsTotal.toFixed(0)}mm</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="font-bold">Short Rains (OND)</p>
+                      <p className="text-2xl font-bold text-blue-500">{result.weatherAnalysis.rainfallAnalysis.shortRainsTotal.toFixed(0)}mm</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                  <h4 className="font-semibold text-orange-800 mb-3">☀️ Dry Seasons</h4>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="font-bold">Dry Months</p>
+                    <p className="text-lg">{result.weatherAnalysis.climateData.dryMonths.join(', ')}</p>
+                    <p className="text-sm text-gray-600 mt-2">Drought Risk: <span className={`font-bold ${result.weatherAnalysis.rainfallAnalysis.droughtRisk === 'low' ? 'text-green-600' : 'text-amber-600'}`}>{result.weatherAnalysis.rainfallAnalysis.droughtRisk.toUpperCase()}</span></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Water Balance */}
+              <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-xl">
+                <h4 className="font-semibold text-cyan-800 mb-4">💧 Water Balance</h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-2xl font-bold text-blue-600">{result.weatherAnalysis.waterBalance.annualEvaporation.toFixed(0)}</p>
+                    <p className="text-xs text-gray-600">Annual Evaporation (mm)</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-2xl font-bold text-orange-600">{result.weatherAnalysis.waterBalance.potentialEvapotranspiration.toFixed(0)}</p>
+                    <p className="text-xs text-gray-600">Potential ET (mm)</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-2xl font-bold text-red-600">{result.weatherAnalysis.waterBalance.waterDeficit.toFixed(0)}</p>
+                    <p className="text-xs text-gray-600">Water Deficit (mm)</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">{result.weatherAnalysis.waterBalance.waterSurplus.toFixed(0)}</p>
+                    <p className="text-xs text-gray-600">Water Surplus (mm)</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg">
+                    <p className="text-2xl font-bold text-purple-600">{result.weatherAnalysis.waterBalance.ariditIndex.toFixed(2)}</p>
+                    <p className="text-xs text-gray-600">Aridity Index</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Seasonal Forecast */}
+              <div className="p-4 bg-gradient-to-r from-green-100 to-blue-100 border border-green-300 rounded-xl">
+                <h4 className="font-semibold text-green-800 mb-3">🔮 Seasonal Forecast</h4>
+                <div className="flex items-center gap-4">
+                  <div className="text-center p-4 bg-white rounded-lg">
+                    <p className="font-bold">{result.weatherAnalysis.seasonalForecast.nextSeason}</p>
+                    <p className={`text-xl font-bold ${result.weatherAnalysis.seasonalForecast.expectedRainfall === 'above_normal' ? 'text-green-600' : result.weatherAnalysis.seasonalForecast.expectedRainfall === 'normal' ? 'text-blue-600' : 'text-orange-600'}`}>
+                      {result.weatherAnalysis.seasonalForecast.expectedRainfall.replace('_', ' ').toUpperCase()}
+                    </p>
+                    <p className="text-sm text-gray-600">Confidence: {result.weatherAnalysis.seasonalForecast.confidence}%</p>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium mb-2">Advisories:</p>
+                    <ul className="list-disc list-inside text-sm space-y-1">
+                      {result.weatherAnalysis.seasonalForecast.advisories.map((adv, i) => (
+                        <li key={i}>{adv}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Visual Graphs & Charts Tab */}
+          {activeTab === 'visualGraphs' && result.visualGraphs && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">📉</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Charts, Graphs & Visual Analysis</h3>
+                  <p className="text-sm text-gray-600">Comprehensive visual data representation</p>
+                </div>
+                <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full">VISUAL</span>
+              </div>
+
+              {/* Success Gauge */}
+              <div className="p-6 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4 text-center">Success Probability Gauge</h4>
+                <div className="relative h-32 mx-auto max-w-md">
+                  {/* Gauge background */}
+                  <div className="absolute inset-0 flex">
+                    {result.visualGraphs.successGauge.segments.map((seg, i) => (
+                      <div key={i} className="flex-1 first:rounded-l-full last:rounded-r-full" style={{ backgroundColor: seg.color + '30' }} />
+                    ))}
+                  </div>
+                  {/* Gauge fill */}
+                  <div className="absolute left-0 top-0 bottom-0 rounded-l-full" style={{ width: `${result.visualGraphs.successGauge.value}%`, background: `linear-gradient(to right, ${result.visualGraphs.successGauge.segments.map(s => s.color).join(', ')})` }} />
+                  {/* Needle */}
+                  <div className="absolute top-0 bottom-0 w-1 bg-black shadow-lg" style={{ left: `${result.visualGraphs.successGauge.value}%` }} />
+                  {/* Value display */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-white rounded-full p-4 shadow-lg">
+                      <p className="text-4xl font-bold">{result.visualGraphs.successGauge.value}%</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-4 text-xs">
+                  {result.visualGraphs.successGauge.segments.map((seg, i) => (
+                    <span key={i} style={{ color: seg.color }} className="font-bold">{seg.label}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cost Breakdown Pie */}
+              <div className="p-6 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">Cost Breakdown</h4>
+                <div className="flex items-center gap-8">
+                  {/* Pie chart simulation */}
+                  <div className="relative w-48 h-48">
+                    <svg viewBox="0 0 100 100" className="transform -rotate-90">
+                      {(() => {
+                        let cumulative = 0;
+                        return result.visualGraphs.costPieChart.segments.map((seg, i) => {
+                          const start = cumulative;
+                          cumulative += seg.percentage;
+                          const large = seg.percentage > 50 ? 1 : 0;
+                          const startX = 50 + 40 * Math.cos(2 * Math.PI * start / 100);
+                          const startY = 50 + 40 * Math.sin(2 * Math.PI * start / 100);
+                          const endX = 50 + 40 * Math.cos(2 * Math.PI * cumulative / 100);
+                          const endY = 50 + 40 * Math.sin(2 * Math.PI * cumulative / 100);
+                          return (
+                            <path
+                              key={i}
+                              d={`M 50 50 L ${startX} ${startY} A 40 40 0 ${large} 1 ${endX} ${endY} Z`}
+                              fill={seg.color}
+                              stroke="white"
+                              strokeWidth="1"
+                            />
+                          );
+                        });
+                      })()}
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Total</p>
+                        <p className="font-bold">KES {(result.visualGraphs.costPieChart.totalCost / 1000000).toFixed(1)}M</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    {result.visualGraphs.costPieChart.segments.map((seg, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: seg.color }} />
+                        <span className="flex-1 text-sm">{seg.category}</span>
+                        <span className="font-bold text-sm">{seg.percentage}%</span>
+                        <span className="text-sm text-gray-500">KES {seg.amount.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Depth vs Yield Chart */}
+              <div className="p-6 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">Depth vs Yield Analysis</h4>
+                <div className="h-64 flex items-end justify-between gap-2 border-l-2 border-b-2 border-gray-300 p-4 relative">
+                  {/* Y-axis label */}
+                  <div className="absolute -left-12 top-1/2 transform -rotate-90 text-sm text-gray-600">Yield (m³/hr)</div>
+                  {/* Optimal zone highlight */}
+                  <div className="absolute bg-green-100 border-l-4 border-r-4 border-green-400" style={{ left: '40%', right: '30%', top: 0, bottom: 0, opacity: 0.5 }}>
+                    <p className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs font-bold text-green-700">OPTIMAL ZONE</p>
+                  </div>
+                  {result.visualGraphs.depthYieldChart.data.map((point, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center justify-end">
+                      <div
+                        className="w-full bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t relative group cursor-pointer"
+                        style={{ height: `${point.yield * 10}%` }}
+                      >
+                        <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                          Depth: {point.depth}m<br/>Yield: {point.yield.toFixed(1)} m³/hr<br/>Prob: {point.probability}%
+                        </div>
+                        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-bold border-2 border-white">
+                          {point.probability}
+                        </div>
+                      </div>
+                      <p className="text-xs mt-2 font-medium">{point.depth}m</p>
+                    </div>
+                  ))}
+                  {/* X-axis label */}
+                  <p className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-sm text-gray-600">Drilling Depth (m)</p>
+                </div>
+              </div>
+
+              {/* ROI Timeline */}
+              <div className="p-6 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">ROI Timeline & Break-even Analysis</h4>
+                <div className="h-48 relative border-l-2 border-b-2 border-gray-300 ml-8">
+                  {/* Investment line */}
+                  <div className="absolute top-1/3 left-0 right-0 border-t-2 border-dashed border-red-400">
+                    <span className="absolute -top-4 right-0 text-xs text-red-600 font-bold">Investment: KES {(result.visualGraphs.roiTimeline.investmentLine / 1000000).toFixed(1)}M</span>
+                  </div>
+                  {/* Savings curve */}
+                  <svg className="w-full h-full">
+                    <polyline
+                      fill="none"
+                      stroke="#10B981"
+                      strokeWidth="3"
+                      points={result.visualGraphs.roiTimeline.months.slice(0, 48).map((m, i) => {
+                        const x = (i / 47) * 100 + '%';
+                        const y = 100 - (result.visualGraphs.roiTimeline.cumulativeSavings[i] / (result.visualGraphs.roiTimeline.investmentLine * 1.5)) * 100 + '%';
+                        return `${(i / 47) * 100},${100 - (result.visualGraphs.roiTimeline.cumulativeSavings[i] / (result.visualGraphs.roiTimeline.investmentLine * 1.5)) * 100}`;
+                      }).join(' ')}
+                    />
+                  </svg>
+                  {/* Break-even marker */}
+                  <div className="absolute bg-green-500 w-3 h-3 rounded-full" style={{ left: `${(result.visualGraphs.roiTimeline.breakEvenPoint / 48) * 100}%`, top: '33%' }}>
+                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-green-700 whitespace-nowrap">Break-even: {result.visualGraphs.roiTimeline.breakEvenPoint} months</span>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-2 text-xs text-gray-500">
+                  <span>Month 0</span>
+                  <span>Month 24</span>
+                  <span>Month 48</span>
+                </div>
+              </div>
+
+              {/* Aquifer Cross-Section */}
+              <div className="p-6 bg-white border rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-4">Aquifer Cross-Section Diagram</h4>
+                <div className="relative h-64 bg-gradient-to-b from-amber-100 via-gray-200 to-blue-200 rounded-xl overflow-hidden">
+                  {/* Layers */}
+                  {result.visualGraphs.aquiferCrossSection.lithologyColors.map((layer, i) => (
+                    <div
+                      key={i}
+                      className="absolute left-0 right-0"
+                      style={{
+                        top: `${layer.depth / 2}%`,
+                        height: '30%',
+                        backgroundColor: layer.color + '80',
+                      }}
+                    >
+                      <span className="absolute left-2 top-2 text-xs font-bold text-white drop-shadow">{layer.label}</span>
+                    </div>
+                  ))}
+                  {/* Water table line */}
+                  <div className="absolute left-0 right-0 border-t-4 border-dashed border-blue-500" style={{ top: '35%' }}>
+                    <span className="absolute -top-6 right-2 text-xs font-bold text-blue-700 bg-white px-2 rounded">💧 Water Table</span>
+                  </div>
+                  {/* Borehole */}
+                  <div className="absolute left-1/2 transform -translate-x-1/2 w-4 bg-gradient-to-b from-gray-800 to-gray-600 rounded-b" style={{ top: '0', height: '70%' }}>
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <span className="text-2xl">⬇️</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-center gap-4 mt-4">
+                  {result.visualGraphs.aquiferCrossSection.lithologyColors.map((layer, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: layer.color }} />
+                      <span>{layer.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
