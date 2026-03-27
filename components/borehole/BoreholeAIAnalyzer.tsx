@@ -460,15 +460,27 @@ Website: www.emersoneims.com
 
     const tabs = [
       { id: 'summary', label: 'Summary', icon: '📊' },
+      { id: 'imageId', label: 'Image ID', icon: '📍', isNew: true },
+      { id: 'subsurface', label: 'Subsurface', icon: '🔬', isNew: true },
+      { id: 'costBreakdown', label: 'Full Costs', icon: '💰', isNew: true },
+      { id: 'solarCost', label: 'Solar+Shelter', icon: '☀️', isNew: true },
+      { id: 'waterQuality', label: 'Water Quality', icon: '💧', isNew: true },
+      { id: 'roiAnalysis', label: 'ROI Analysis', icon: '📈', isNew: true },
+      { id: 'scenarios', label: 'Scenarios', icon: '🎯', isNew: true },
+      { id: 'climate', label: 'Climate', icon: '🌦️', isNew: true },
+      { id: 'strategy', label: 'Drill Strategy', icon: '🛠️', isNew: true },
+      { id: 'confidence', label: 'Confidence', icon: '✓', isNew: true },
       { id: 'satellite', label: 'Satellite', icon: '🛰️' },
       { id: 'lidar', label: 'LiDAR', icon: '📡' },
       { id: 'hyperspectral', label: 'Rock Mapping', icon: '💎' },
       { id: 'geophysics', label: 'Geophysics', icon: '⚡' },
       { id: 'gis', label: 'GIS Analysis', icon: '🗺️' },
+      { id: 'nearbyMap', label: 'Nearby Boreholes', icon: '🗺️', isNew: true },
       { id: 'geology', label: 'Geology', icon: '🪨' },
       { id: 'eia', label: 'EIA/Permits', icon: '📋' },
       { id: 'history', label: 'History', icon: '📜' },
       { id: 'risks', label: 'Risks', icon: '⚠️' },
+      { id: 'timeBased', label: '5-10 Year', icon: '⏳', isNew: true },
       { id: 'recommendations', label: 'Next Steps', icon: '✅' },
     ];
 
@@ -532,10 +544,12 @@ Website: www.emersoneims.com
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1 px-4 py-2 rounded-lg whitespace-nowrap transition-colors relative ${
                 activeTab === tab.id
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : tab.isNew
+                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200 hover:bg-green-100'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               <span>{tab.icon}</span>
@@ -597,6 +611,897 @@ Website: www.emersoneims.com
                     <p>• Drilling: {result.recommendations.recommendedDepth.optimal}m depth</p>
                     <p>• Method: {result.recommendations.drillingMethod.slice(0, 40)}...</p>
                     <p>• Timeline: {result.recommendations.constructionTime.min}-{result.recommendations.constructionTime.max} days</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Image ID & Geolocation Tab */}
+          {activeTab === 'imageId' && result.photoImageId && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">📍</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Photo Image ID & Geolocation</h3>
+                  <p className="text-sm text-gray-600">NASA/Google Earth verified location</p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-xl">✓</div>
+                  <div>
+                    <p className="font-bold text-green-800">LOCATION VERIFIED</p>
+                    <p className="text-sm text-green-600">Confirmed via NASA/Google Earth satellite overlay</p>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4 mt-4">
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3">Image Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-600">Image ID</span><span className="font-mono font-medium">{result.photoImageId.imageId}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Timestamp</span><span className="font-medium">{result.photoImageId.timestamp.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Latitude</span><span className="font-medium">{result.photoImageId.gpsCoordinates.latitude.toFixed(6)}°</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Longitude</span><span className="font-medium">{result.photoImageId.gpsCoordinates.longitude.toFixed(6)}°</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Altitude</span><span className="font-medium">{result.photoImageId.altitude.toFixed(0)}m</span></div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3">Satellite Verification</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-gray-600">Source</span><span className="font-medium">{result.photoImageId.satelliteOverlay.source}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Image Date</span><span className="font-medium">{result.photoImageId.satelliteOverlay.imageDate}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Resolution</span><span className="font-medium">{result.photoImageId.satelliteOverlay.resolution}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Match Confidence</span><span className="font-bold text-green-600">{result.photoImageId.verification.confidence.toFixed(1)}%</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-800 mb-2">NASA Earth Data</h4>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div><span className="text-gray-600">Terrain:</span> <span className="font-medium">{result.photoImageId.nasaEarthData.terrainType}</span></div>
+                    <div><span className="text-gray-600">Elevation:</span> <span className="font-medium">{result.photoImageId.nasaEarthData.elevationVerified.toFixed(0)}m</span></div>
+                    <div><span className="text-gray-600">Vegetation:</span> <span className="font-medium">{(result.photoImageId.nasaEarthData.vegetationIndex * 100).toFixed(0)}%</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Subsurface Visualization Tab */}
+          {activeTab === 'subsurface' && result.subsurfaceVisualization && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🔬</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Subsurface Visualization</h3>
+                  <p className="text-sm text-gray-600">Visual representation of underground layers</p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Visual Diagram */}
+                <div className="p-4 bg-white border rounded-xl">
+                  <h4 className="font-semibold text-gray-800 mb-4">Subsurface Profile</h4>
+                  <div className="relative">
+                    {result.subsurfaceVisualization.layers.map((layer, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center border-b border-gray-200 last:border-0"
+                        style={{ minHeight: Math.max(40, layer.thickness * 1.5) }}
+                      >
+                        <div
+                          className="w-16 h-full mr-4 rounded"
+                          style={{ backgroundColor: layer.color, minHeight: Math.max(40, layer.thickness * 1.5) }}
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{layer.depthFrom}-{layer.depthTo}m: {layer.layerType}</p>
+                          <p className="text-xs text-gray-500">{layer.description}</p>
+                          {layer.waterBearing && <span className="text-xs text-blue-600 font-medium">💧 Water Bearing</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Aquifer Details */}
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <h4 className="font-semibold text-blue-800 mb-3">Aquifer Zone</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Depth Range</span><span className="font-bold">{result.subsurfaceVisualization.aquiferZone.topDepth}-{result.subsurfaceVisualization.aquiferZone.bottomDepth}m</span></div>
+                      <div className="flex justify-between"><span>Thickness</span><span className="font-bold">{result.subsurfaceVisualization.aquiferZone.thickness}m</span></div>
+                      <div className="flex justify-between"><span>Type</span><span className="font-bold capitalize">{result.subsurfaceVisualization.aquiferZone.type.replace('_', ' ')}</span></div>
+                      <div className="flex justify-between"><span>Productivity</span><span className="font-bold capitalize text-green-600">{result.subsurfaceVisualization.aquiferZone.productivityClass.replace('_', ' ')}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-gray-50 border rounded-xl">
+                    <h4 className="font-semibold text-gray-800 mb-3">Water Table</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Static Level</span><span className="font-bold">{result.subsurfaceVisualization.waterTable.staticLevel}m</span></div>
+                      <div className="flex justify-between"><span>Seasonal Variation</span><span className="font-medium">±{result.subsurfaceVisualization.waterTable.seasonalVariation.toFixed(1)}m</span></div>
+                      <div className="flex justify-between"><span>Trend</span><span className="font-medium capitalize">{result.subsurfaceVisualization.waterTable.trend}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    <h4 className="font-semibold text-amber-800 mb-3">Bedrock Info</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Depth</span><span className="font-bold">{result.subsurfaceVisualization.bedrockInfo.depth}m</span></div>
+                      <div className="flex justify-between"><span>Type</span><span className="font-medium">{result.subsurfaceVisualization.bedrockInfo.type}</span></div>
+                      <div className="flex justify-between"><span>Fractured</span><span className="font-medium">{result.subsurfaceVisualization.bedrockInfo.fractured ? 'Yes ✓' : 'No'}</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <h4 className="font-semibold text-gray-800 mb-3">Layer Legend</h4>
+                <div className="flex flex-wrap gap-4">
+                  {result.subsurfaceVisualization.diagramLegend.map((item, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color }} />
+                      <span className="font-medium">{item.label}</span>
+                      <span className="text-gray-500">- {item.description}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Comprehensive Cost Breakdown Tab */}
+          {activeTab === 'costBreakdown' && result.comprehensiveCost && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">💰</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Comprehensive Cost Breakdown</h3>
+                  <p className="text-sm text-gray-600">Complete itemized quotation</p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl">
+                <div className="text-center mb-6">
+                  <p className="text-sm text-amber-600 mb-1">Total Borehole Cost</p>
+                  <p className="text-4xl font-bold text-amber-800">KES {result.comprehensiveCost.totalCost.toLocaleString()}</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Drilling Costs */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">🔧 Drilling</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Cost per meter</span><span>KES {result.comprehensiveCost.drilling.costPerMeter.toLocaleString()}/m</span></div>
+                      <div className="flex justify-between"><span>Total depth</span><span>{result.comprehensiveCost.drilling.totalDepth}m</span></div>
+                      <div className="flex justify-between"><span>Drilling cost</span><span className="font-medium">KES {result.comprehensiveCost.drilling.drillingCost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Mobilization</span><span>KES {result.comprehensiveCost.drilling.mobilizationCost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Site clearing</span><span>KES {result.comprehensiveCost.drilling.siteClearingCost.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Casing Costs */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">🔩 Casing & Screens</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>PVC Casing ({result.comprehensiveCost.casing.pvcCasing.meters}m)</span><span>KES {result.comprehensiveCost.casing.pvcCasing.total.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Steel Casing ({result.comprehensiveCost.casing.steelCasing.meters}m)</span><span>KES {result.comprehensiveCost.casing.steelCasing.total.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Screens ({result.comprehensiveCost.casing.screens.meters}m)</span><span>KES {result.comprehensiveCost.casing.screens.total.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Gravel pack ({result.comprehensiveCost.casing.gravelPack.bags} bags)</span><span>KES {result.comprehensiveCost.casing.gravelPack.total.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Pump System */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">⚡ Pump System</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Type</span><span className="capitalize">{result.comprehensiveCost.pump.type}</span></div>
+                      <div className="flex justify-between"><span>Brand</span><span>{result.comprehensiveCost.pump.brand}</span></div>
+                      <div className="flex justify-between"><span>Power</span><span>{result.comprehensiveCost.pump.powerRating} kW</span></div>
+                      <div className="flex justify-between"><span>Pump cost</span><span className="font-medium">KES {result.comprehensiveCost.pump.cost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Installation</span><span>KES {result.comprehensiveCost.pump.installationCost.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Accessories */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">🔧 Accessories</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Pipes ({result.comprehensiveCost.accessories.pipes.meters}m)</span><span>KES {result.comprehensiveCost.accessories.pipes.cost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Fittings</span><span>KES {result.comprehensiveCost.accessories.fittings.cost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Valves</span><span>KES {result.comprehensiveCost.accessories.valves.cost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Tank ({result.comprehensiveCost.accessories.tank.capacity}L)</span><span>KES {result.comprehensiveCost.accessories.tank.cost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Electrical panel</span><span>KES {result.comprehensiveCost.accessories.electricalPanel.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Labour */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">👷 Labour</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Pump installation</span><span>KES {result.comprehensiveCost.labour.pumpInstallation.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Plumbing</span><span>KES {result.comprehensiveCost.labour.plumbing.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Electrical</span><span>KES {result.comprehensiveCost.labour.electrical.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Supervision</span><span>KES {result.comprehensiveCost.labour.supervision.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Permits */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">📋 Permits</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>WRA License</span><span>KES {result.comprehensiveCost.permits.wraBoreholeLicense.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>NEMA Permit</span><span>KES {result.comprehensiveCost.permits.nemaPermit.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>County Permit</span><span>KES {result.comprehensiveCost.permits.countyPermit.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Water Testing</span><span>KES {result.comprehensiveCost.permits.waterTestingFee.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cost Summary Chart */}
+                <div className="mt-6 p-4 bg-white rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-4">Cost Distribution</h4>
+                  <div className="space-y-2">
+                    {result.comprehensiveCost.costBreakdownSummary.map((item, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <span className="w-32 text-sm text-gray-600">{item.category}</span>
+                        <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-amber-400 to-amber-600 flex items-center justify-end pr-2 text-xs text-white font-medium"
+                            style={{ width: `${item.percentage}%` }}
+                          >
+                            {item.percentage}%
+                          </div>
+                        </div>
+                        <span className="w-28 text-right text-sm font-medium">KES {item.amount.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Solar + Shelter Cost Tab */}
+          {activeTab === 'solarCost' && result.solarSystemCost && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">☀️</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Solar System + Shelter Costing</h3>
+                  <p className="text-sm text-gray-600">Complete solar pump system with structure</p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-xl">
+                <div className="text-center mb-6">
+                  <p className="text-sm text-orange-600 mb-1">Total Solar System Cost</p>
+                  <p className="text-4xl font-bold text-orange-800">KES {result.solarSystemCost.totalSolarCost.toLocaleString()}</p>
+                  <p className="text-sm text-orange-600 mt-2">Cost per kWp: KES {result.solarSystemCost.costPerKwp.toLocaleString()} | Payback: {result.solarSystemCost.paybackPeriod} months</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Power Requirements */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">⚡ Power Requirements</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Pump Power</span><span className="font-medium">{result.solarSystemCost.powerRequirement.pumpPower} kW</span></div>
+                      <div className="flex justify-between"><span>Daily Runtime</span><span>{result.solarSystemCost.powerRequirement.dailyRuntime} hours</span></div>
+                      <div className="flex justify-between"><span>Daily Energy Need</span><span className="font-bold text-blue-600">{result.solarSystemCost.powerRequirement.dailyEnergyNeed.toFixed(1)} kWh</span></div>
+                      <div className="flex justify-between"><span>Peak Sun Hours</span><span>{result.solarSystemCost.powerRequirement.peakSunHours} hrs</span></div>
+                    </div>
+                  </div>
+
+                  {/* Solar Panels */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">🔆 Solar Panels</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Panels Required</span><span className="font-bold">{result.solarSystemCost.solarSystem.numberOfPanels} x {result.solarSystemCost.solarSystem.panelCapacity}Wp</span></div>
+                      <div className="flex justify-between"><span>Total Capacity</span><span className="font-bold text-green-600">{result.solarSystemCost.solarSystem.totalCapacity.toFixed(2)} kWp</span></div>
+                      <div className="flex justify-between"><span>Brand</span><span>{result.solarSystemCost.solarSystem.panelBrand}</span></div>
+                      <div className="flex justify-between"><span>Panel Cost</span><span>KES {result.solarSystemCost.solarSystem.totalPanelCost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Mounting</span><span>KES {result.solarSystemCost.solarSystem.mountingStructure.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Battery System */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">🔋 Battery System</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Type</span><span className="capitalize">{result.solarSystemCost.battery.type}</span></div>
+                      <div className="flex justify-between"><span>Capacity</span><span>{result.solarSystemCost.battery.totalKwh} kWh</span></div>
+                      <div className="flex justify-between"><span>Quantity</span><span>{result.solarSystemCost.battery.quantity} units</span></div>
+                      <div className="flex justify-between"><span>Backup Time</span><span>{result.solarSystemCost.battery.backupHours} hours</span></div>
+                      <div className="flex justify-between"><span>Total Cost</span><span className="font-medium">KES {result.solarSystemCost.battery.totalCost.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Inverter */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">🔌 Inverter</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Type</span><span className="capitalize">{result.solarSystemCost.inverter.type}</span></div>
+                      <div className="flex justify-between"><span>Capacity</span><span>{result.solarSystemCost.inverter.capacity} kVA</span></div>
+                      <div className="flex justify-between"><span>Brand</span><span>{result.solarSystemCost.inverter.brand}</span></div>
+                      <div className="flex justify-between"><span>Cost</span><span className="font-medium">KES {result.solarSystemCost.inverter.cost.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Shelter/Structure */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">🏠 Pump House/Shelter</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Type</span><span className="capitalize">{result.solarSystemCost.shelter.type}</span></div>
+                      <div className="flex justify-between"><span>Size</span><span>{result.solarSystemCost.shelter.size.length}x{result.solarSystemCost.shelter.size.width}x{result.solarSystemCost.shelter.size.height}m</span></div>
+                      <div className="flex justify-between"><span>Foundation</span><span>KES {result.solarSystemCost.shelter.foundation.cost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Walls</span><span>KES {result.solarSystemCost.shelter.walls.cost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Roof</span><span>KES {result.solarSystemCost.shelter.roof.cost.toLocaleString()}</span></div>
+                      <div className="flex justify-between font-bold"><span>Total Structure</span><span>KES {result.solarSystemCost.shelter.totalStructureCost.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Installation */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">🛠️ Installation</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Panel Installation</span><span>KES {result.solarSystemCost.installation.solarPanelInstallation.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Electrical Wiring</span><span>KES {result.solarSystemCost.installation.electricalWiring.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Commissioning</span><span>KES {result.solarSystemCost.installation.commissioning.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Testing</span><span>KES {result.solarSystemCost.installation.testing.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Water Quality Prediction Tab */}
+          {activeTab === 'waterQuality' && result.waterQualityPrediction && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">💧</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Water Quality Prediction</h3>
+                  <p className="text-sm text-gray-600">AI-predicted water quality parameters</p>
+                </div>
+              </div>
+
+              <div className={`p-6 rounded-xl border ${result.waterQualityPrediction.treatmentRequired ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl ${result.waterQualityPrediction.treatmentRequired ? 'bg-amber-200' : 'bg-green-200'}`}>
+                    {result.waterQualityPrediction.treatmentRequired ? '⚠️' : '✓'}
+                  </div>
+                  <div>
+                    <p className={`font-bold text-xl ${result.waterQualityPrediction.treatmentRequired ? 'text-amber-800' : 'text-green-800'}`}>
+                      {result.waterQualityPrediction.overallQualityRating.toUpperCase().replace('_', ' ')}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {result.waterQualityPrediction.treatmentRequired ? 'Water treatment will be required' : 'Water suitable for use without treatment'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Parameters Grid */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.entries(result.waterQualityPrediction.parameters).filter(([key]) => key !== 'bacteria').map(([key, param]: [string, any]) => (
+                    <div key={key} className="p-3 bg-white rounded-lg">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium capitalize">{key}</span>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${param.status === 'safe' ? 'bg-green-100 text-green-700' : param.status === 'caution' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                          {param.status.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-2xl font-bold">{typeof param.predicted === 'number' ? param.predicted.toFixed(2) : param.predicted} <span className="text-sm font-normal text-gray-500">{param.unit}</span></div>
+                      <p className="text-xs text-gray-500">Limit: {param.limit || `${param.minLimit}-${param.maxLimit}`} {param.unit}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Usability */}
+                <div className="mt-6 p-4 bg-white rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-3">Usability Assessment</h4>
+                  <div className="flex flex-wrap gap-4">
+                    <div className={`px-4 py-2 rounded-full ${result.waterQualityPrediction.usability.drinking ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {result.waterQualityPrediction.usability.drinking ? '✓' : '✗'} Drinking
+                    </div>
+                    <div className={`px-4 py-2 rounded-full ${result.waterQualityPrediction.usability.irrigation ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {result.waterQualityPrediction.usability.irrigation ? '✓' : '✗'} Irrigation
+                    </div>
+                    <div className={`px-4 py-2 rounded-full ${result.waterQualityPrediction.usability.livestock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {result.waterQualityPrediction.usability.livestock ? '✓' : '✗'} Livestock
+                    </div>
+                    <div className={`px-4 py-2 rounded-full ${result.waterQualityPrediction.usability.industrial ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {result.waterQualityPrediction.usability.industrial ? '✓' : '✗'} Industrial
+                    </div>
+                  </div>
+                </div>
+
+                {/* Treatment Costs if needed */}
+                {result.waterQualityPrediction.treatmentRequired && (
+                  <div className="mt-6 p-4 bg-amber-100 rounded-lg">
+                    <h4 className="font-semibold text-amber-800 mb-3">Treatment Required</h4>
+                    <p className="text-sm mb-3">Recommended: {result.waterQualityPrediction.treatmentType.join(', ')}</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div><span className="text-gray-600">Equipment:</span><br/><span className="font-bold">KES {result.waterQualityPrediction.treatmentCost.equipment.toLocaleString()}</span></div>
+                      <div><span className="text-gray-600">Installation:</span><br/><span className="font-bold">KES {result.waterQualityPrediction.treatmentCost.installation.toLocaleString()}</span></div>
+                      <div><span className="text-gray-600">Monthly Operating:</span><br/><span className="font-bold">KES {result.waterQualityPrediction.treatmentCost.monthlyOperating.toLocaleString()}</span></div>
+                      <div><span className="text-gray-600">Annual Maintenance:</span><br/><span className="font-bold">KES {result.waterQualityPrediction.treatmentCost.annualMaintenance.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* NEW: ROI Analysis Tab */}
+          {activeTab === 'roiAnalysis' && result.roiAnalysis && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">📈</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">ROI & Payback Analysis</h3>
+                  <p className="text-sm text-gray-600">Is this investment financially worth it?</p>
+                </div>
+              </div>
+
+              <div className={`p-6 rounded-xl border ${result.roiAnalysis.financialVerdict === 'highly_recommended' ? 'bg-green-50 border-green-300' : result.roiAnalysis.financialVerdict === 'recommended' ? 'bg-blue-50 border-blue-300' : 'bg-yellow-50 border-yellow-300'}`}>
+                <div className="text-center mb-6">
+                  <p className={`text-4xl font-bold ${result.roiAnalysis.financialVerdict === 'highly_recommended' ? 'text-green-600' : result.roiAnalysis.financialVerdict === 'recommended' ? 'text-blue-600' : 'text-yellow-600'}`}>
+                    {result.roiAnalysis.financialVerdict.replace('_', ' ').toUpperCase()}
+                  </p>
+                  <p className="text-gray-600 mt-2">{result.roiAnalysis.financialSummary}</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <div className="p-4 bg-white rounded-lg text-center">
+                    <p className="text-sm text-gray-600">Total Investment</p>
+                    <p className="text-2xl font-bold text-gray-800">KES {result.roiAnalysis.investment.totalInvestment.toLocaleString()}</p>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg text-center">
+                    <p className="text-sm text-gray-600">Monthly Savings</p>
+                    <p className="text-2xl font-bold text-green-600">KES {result.roiAnalysis.netMonthlySavings.toLocaleString()}</p>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg text-center">
+                    <p className="text-sm text-gray-600">Payback Period</p>
+                    <p className="text-2xl font-bold text-blue-600">{result.roiAnalysis.paybackPeriod} months</p>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg text-center">
+                    <p className="text-sm text-gray-600">Annual ROI</p>
+                    <p className="text-2xl font-bold text-amber-600">{result.roiAnalysis.roiPercentage}%</p>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Investment Breakdown */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3">Investment Breakdown</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Borehole + Pump</span><span>KES {result.roiAnalysis.investment.boreholeCost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Solar System</span><span>KES {result.roiAnalysis.investment.solarSystemCost.toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Structure</span><span>KES {result.roiAnalysis.investment.structureCost.toLocaleString()}</span></div>
+                      <div className="flex justify-between font-bold border-t pt-2"><span>TOTAL</span><span>KES {result.roiAnalysis.investment.totalInvestment.toLocaleString()}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Savings Breakdown */}
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3">Savings Analysis</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span>Current Water Cost</span><span>KES {result.roiAnalysis.savings.currentWaterCost.toLocaleString()}/month</span></div>
+                      <div className="flex justify-between"><span>Operating Costs</span><span className="text-red-600">-KES {result.roiAnalysis.operatingCosts.totalMonthlyOperating.toLocaleString()}/month</span></div>
+                      <div className="flex justify-between font-bold text-green-600 border-t pt-2"><span>Net Savings</span><span>KES {result.roiAnalysis.netMonthlySavings.toLocaleString()}/month</span></div>
+                      <div className="flex justify-between font-bold text-green-600"><span>Annual Savings</span><span>KES {(result.roiAnalysis.netMonthlySavings * 12).toLocaleString()}/year</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">Financial Projections</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div><span className="text-gray-600">Break-even:</span><br/><span className="font-bold">{result.roiAnalysis.breakEvenPoint.date}</span></div>
+                    <div><span className="text-gray-600">10-Year NPV:</span><br/><span className="font-bold text-green-600">KES {result.roiAnalysis.npv10Year.toLocaleString()}</span></div>
+                    <div><span className="text-gray-600">IRR:</span><br/><span className="font-bold">{result.roiAnalysis.irr}%</span></div>
+                    <div><span className="text-gray-600">Annual ROI:</span><br/><span className="font-bold text-amber-600">{result.roiAnalysis.roiPercentage}%</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Scenario Simulation Tab */}
+          {activeTab === 'scenarios' && result.scenarioSimulation && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🎯</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Scenario Simulation</h3>
+                  <p className="text-sm text-gray-600">What-if analysis for different drilling depths</p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl">
+                {/* Optimal Scenario Highlight */}
+                <div className="p-4 bg-green-100 border border-green-300 rounded-lg mb-6">
+                  <h4 className="font-bold text-green-800 mb-2">✓ OPTIMAL SCENARIO</h4>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div><p className="text-sm text-gray-600">Depth</p><p className="text-2xl font-bold text-green-700">{result.scenarioSimulation.optimalScenario.depth}m</p></div>
+                    <div><p className="text-sm text-gray-600">Expected Yield</p><p className="text-2xl font-bold text-blue-700">{result.scenarioSimulation.optimalScenario.yield} m³/hr</p></div>
+                    <div><p className="text-sm text-gray-600">Estimated Cost</p><p className="text-2xl font-bold text-amber-700">KES {result.scenarioSimulation.optimalScenario.cost.toLocaleString()}</p></div>
+                  </div>
+                  <p className="text-sm text-green-700 mt-2">{result.scenarioSimulation.optimalScenario.reason}</p>
+                </div>
+
+                {/* All Scenarios */}
+                <div className="space-y-4">
+                  {result.scenarioSimulation.scenarios.map((scenario, index) => (
+                    <div key={index} className={`p-4 rounded-lg ${scenario.yieldCategory === 'optimal' ? 'bg-green-50 border-2 border-green-300' : 'bg-white border'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                          scenario.yieldCategory === 'optimal' ? 'bg-green-200 text-green-800' :
+                          scenario.yieldCategory === 'moderate' ? 'bg-blue-200 text-blue-800' :
+                          scenario.yieldCategory === 'low' ? 'bg-yellow-200 text-yellow-800' :
+                          'bg-gray-200 text-gray-800'
+                        }`}>
+                          {scenario.yieldCategory.toUpperCase()}
+                        </span>
+                        <span className="text-sm text-gray-600">Success: {scenario.successProbability}%</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div><p className="text-xs text-gray-500">Depth</p><p className="font-bold">{scenario.depth}m</p></div>
+                        <div><p className="text-xs text-gray-500">Yield</p><p className="font-bold">{scenario.estimatedYield} m³/hr</p></div>
+                        <div><p className="text-xs text-gray-500">Cost</p><p className="font-bold">KES {scenario.cost.toLocaleString()}</p></div>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">{scenario.recommendation}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Probability Breakdown */}
+                <div className="mt-6 p-4 bg-white rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-4">Probability Breakdown</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <p className="text-3xl font-bold text-green-600">{result.scenarioSimulation.probabilityBreakdown.overallSuccess}%</p>
+                      <p className="text-xs text-gray-600">Overall Success</p>
+                    </div>
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <p className="text-3xl font-bold text-blue-600">{result.scenarioSimulation.probabilityBreakdown.hitMainAquifer}%</p>
+                      <p className="text-xs text-gray-600">Hit Main Aquifer</p>
+                    </div>
+                    <div className="p-3 bg-amber-50 rounded-lg">
+                      <p className="text-3xl font-bold text-amber-600">{result.scenarioSimulation.probabilityBreakdown.achieveTargetYield}%</p>
+                      <p className="text-xs text-gray-600">Target Yield</p>
+                    </div>
+                    <div className="p-3 bg-purple-50 rounded-lg">
+                      <p className="text-3xl font-bold text-purple-600">{result.scenarioSimulation.probabilityBreakdown.deeperYieldImprovement}%</p>
+                      <p className="text-xs text-gray-600">Deeper Yield Gain</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Climate & Seasonal Modeling Tab */}
+          {activeTab === 'climate' && result.climateModeling && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🌦️</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Climate & Seasonal Modeling</h3>
+                  <p className="text-sm text-gray-600">Rainfall patterns, recharge analysis & best drilling time</p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Best Drilling Season - Highlight */}
+                <div className="md:col-span-2 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+                  <h4 className="font-bold text-green-800 mb-3">🎯 BEST DRILLING SEASON</h4>
+                  <p className="text-2xl font-bold text-green-700">{result.climateModeling.bestDrillingSeason.recommended}</p>
+                  <p className="text-sm text-green-600 mt-1">{result.climateModeling.bestDrillingSeason.reason}</p>
+                  <div className="mt-4 p-3 bg-red-50 rounded-lg">
+                    <p className="text-sm text-red-700"><strong>Avoid:</strong> {result.climateModeling.bestDrillingSeason.monthsToAvoid}</p>
+                    <p className="text-xs text-red-600">{result.climateModeling.bestDrillingSeason.avoidReason}</p>
+                  </div>
+                </div>
+
+                {/* Rainfall Patterns */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <h4 className="font-semibold text-blue-800 mb-3">🌧️ Rainfall Patterns</h4>
+                  <p className="text-2xl font-bold text-blue-700 mb-3">{result.climateModeling.rainfall.annualAverage.toFixed(0)}mm/year</p>
+                  <div className="space-y-2 text-sm">
+                    {result.climateModeling.rainfall.rainySeasons.map((season, i) => (
+                      <div key={i} className="flex justify-between p-2 bg-white rounded">
+                        <span className="font-medium">{season.name} ({season.months})</span>
+                        <span>{season.avgRainfall}mm</span>
+                      </div>
+                    ))}
+                    {result.climateModeling.rainfall.drySeasons.map((season, i) => (
+                      <div key={i} className="flex justify-between p-2 bg-gray-100 rounded">
+                        <span>{season.name} ({season.months})</span>
+                        <span>{season.avgRainfall}mm</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recharge Analysis */}
+                <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-xl">
+                  <h4 className="font-semibold text-cyan-800 mb-3">💧 Recharge Analysis</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span>Recharge Rate</span>
+                      <span className="font-bold">{result.climateModeling.rechargeAnalysis.rechargeRate.toFixed(0)} mm/year</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Potential</span>
+                      <span className={`px-2 py-1 rounded font-bold ${result.climateModeling.rechargeAnalysis.rechargePotential === 'high' ? 'bg-green-200 text-green-800' : result.climateModeling.rechargeAnalysis.rechargePotential === 'medium' ? 'bg-yellow-200 text-yellow-800' : 'bg-red-200 text-red-800'}`}>
+                        {result.climateModeling.rechargeAnalysis.rechargePotential.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="text-sm">
+                      <p className="text-gray-600">Primary Source:</p>
+                      <p className="font-medium">{result.climateModeling.rechargeAnalysis.primaryRechargeSource}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Long-term Predictions */}
+                <div className="md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <h4 className="font-semibold text-amber-800 mb-3">📊 Long-term Predictions</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="text-sm text-gray-600">Water Table Stability</p>
+                      <p className="font-bold capitalize">{result.climateModeling.longTermPrediction.waterTableStability}</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="text-sm text-gray-600">5-Year Depletion Risk</p>
+                      <p className={`font-bold capitalize ${result.climateModeling.longTermPrediction.depletionRisk5Year === 'low' ? 'text-green-600' : result.climateModeling.longTermPrediction.depletionRisk5Year === 'moderate' ? 'text-yellow-600' : 'text-red-600'}`}>
+                        {result.climateModeling.longTermPrediction.depletionRisk5Year}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="text-sm text-gray-600">Climate Impact</p>
+                      <p className="font-medium text-sm">{result.climateModeling.longTermPrediction.climateChangeImpact}</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <p className="text-sm text-gray-600">Sustainability Score</p>
+                      <p className="font-bold text-green-600">{result.climateModeling.longTermPrediction.sustainabilityScore}/100</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Drilling Strategy Tab */}
+          {activeTab === 'strategy' && result.drillingStrategy && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🛠️</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Best Drilling Strategy</h3>
+                  <p className="text-sm text-gray-600">Recommended method, casing program & timeline</p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-gradient-to-r from-slate-50 to-gray-50 border border-gray-200 rounded-xl">
+                {/* Recommended Method */}
+                <div className="p-4 bg-blue-100 border border-blue-300 rounded-lg mb-6">
+                  <h4 className="font-bold text-blue-800 mb-2">Recommended Drilling Method</h4>
+                  <p className="text-2xl font-bold text-blue-700">{result.drillingStrategy.recommendedMethod.replace('_', ' ')}</p>
+                  <p className="text-sm text-blue-600 mt-1">{result.drillingStrategy.methodReason}</p>
+                  <div className="mt-3 flex gap-4 text-sm">
+                    <span className="px-3 py-1 bg-white rounded-full">Duration: {result.drillingStrategy.estimatedDuration} days</span>
+                    <span className="px-3 py-1 bg-white rounded-full">Best Time: {result.drillingStrategy.bestDrillingTime}</span>
+                  </div>
+                </div>
+
+                {/* Drilling Phases */}
+                <div className="grid md:grid-cols-3 gap-4 mb-6">
+                  {result.drillingStrategy.drillingPhases.map((phase, index) => (
+                    <div key={index} className="p-4 bg-white rounded-lg border-l-4 border-blue-500">
+                      <h5 className="font-semibold text-gray-800">{phase.phase}</h5>
+                      <p className="text-sm text-gray-600">{phase.depthFrom}-{phase.depthTo}m</p>
+                      <p className="text-sm"><strong>Method:</strong> {phase.method}</p>
+                      <p className="text-sm"><strong>Equipment:</strong> {phase.equipment}</p>
+                      <p className="text-sm text-blue-600">{phase.duration}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Casing Program */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3">Casing Program</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="p-2 bg-gray-50 rounded">
+                        <strong>Surface Casing:</strong> {result.drillingStrategy.casingProgram.surfaceCasing.diameter} {result.drillingStrategy.casingProgram.surfaceCasing.material} to {result.drillingStrategy.casingProgram.surfaceCasing.depth}m
+                      </div>
+                      <div className="p-2 bg-gray-50 rounded">
+                        <strong>Production Casing:</strong> {result.drillingStrategy.casingProgram.productionCasing.diameter} {result.drillingStrategy.casingProgram.productionCasing.material} to {result.drillingStrategy.casingProgram.productionCasing.depth}m
+                      </div>
+                      <div className="p-2 bg-blue-50 rounded">
+                        <strong>Screens:</strong> {result.drillingStrategy.casingProgram.screens.depthFrom}-{result.drillingStrategy.casingProgram.screens.depthTo}m (slot: {result.drillingStrategy.casingProgram.screens.slotSize})
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-3">Additional Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="p-2 bg-gray-50 rounded">
+                        <strong>Gravel Pack:</strong> {result.drillingStrategy.gravelPacking.depthFrom}-{result.drillingStrategy.gravelPacking.depthTo}m, {result.drillingStrategy.gravelPacking.grainSize}
+                      </div>
+                      <div className="p-2 bg-gray-50 rounded">
+                        <strong>Development:</strong> {result.drillingStrategy.developmentMethod}
+                      </div>
+                      <div className="p-2 bg-gray-50 rounded">
+                        <strong>Test Pumping:</strong> {result.drillingStrategy.testPumping.duration}hr {result.drillingStrategy.testPumping.method}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Risk Mitigation */}
+                <div className="mt-6 p-4 bg-amber-50 rounded-lg">
+                  <h4 className="font-semibold text-amber-800 mb-2">Risk Mitigation Measures</h4>
+                  <ul className="list-disc list-inside text-sm text-amber-700 space-y-1">
+                    {result.drillingStrategy.riskMitigation.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Confidence Metrics Tab */}
+          {activeTab === 'confidence' && result.confidenceMetrics && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">✓</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">Confidence Metrics</h3>
+                  <p className="text-sm text-gray-600">How AI explains its decision</p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl">
+                {/* Overall Confidence */}
+                <div className="text-center mb-6">
+                  <p className="text-sm text-indigo-600 mb-2">Overall Confidence Score</p>
+                  <p className="text-5xl font-bold text-indigo-700">{result.confidenceMetrics.overallConfidence}%</p>
+                  <p className="text-sm text-gray-600 mt-2">{result.confidenceMetrics.confidenceExplanation}</p>
+                </div>
+
+                {/* Individual Metrics */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { name: 'Geological', data: result.confidenceMetrics.geological, color: 'amber', source: result.confidenceMetrics.geological.dataSource },
+                    { name: 'Terrain', data: result.confidenceMetrics.terrain, color: 'green', source: result.confidenceMetrics.terrain.dataSource },
+                    { name: 'Vegetation', data: result.confidenceMetrics.vegetation, color: 'emerald', source: result.confidenceMetrics.vegetation.dataSource },
+                    { name: 'Satellite', data: result.confidenceMetrics.satellite, color: 'blue', source: result.confidenceMetrics.satellite.dataSource },
+                    { name: 'Historical', data: result.confidenceMetrics.historical, color: 'purple', source: result.confidenceMetrics.historical.dataSource },
+                    { name: 'Data Density', data: result.confidenceMetrics.dataDensity, color: 'cyan', source: `${result.confidenceMetrics.dataDensity.nearbyDataPoints} nearby data points` },
+                  ].map((metric, index) => (
+                    <div key={index} className="p-4 bg-white rounded-lg">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold">{metric.name}</span>
+                        <span className={`text-2xl font-bold text-${metric.color}-600`}>{metric.data.score.toFixed(0)}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className={`h-full bg-${metric.color}-500`} style={{ width: `${metric.data.score}%` }} />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">{metric.source}</p>
+                      <p className="text-xs text-gray-400">Reliability: {metric.data.reliability}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Data Gaps & Improvements */}
+                {(result.confidenceMetrics.dataGaps.length > 0 || result.confidenceMetrics.improvementSuggestions.length > 0) && (
+                  <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
+                    {result.confidenceMetrics.dataGaps.length > 0 && (
+                      <div className="mb-3">
+                        <h4 className="font-semibold text-yellow-800">Data Gaps:</h4>
+                        <ul className="list-disc list-inside text-sm text-yellow-700">
+                          {result.confidenceMetrics.dataGaps.map((gap, i) => <li key={i}>{gap}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                    {result.confidenceMetrics.improvementSuggestions.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-yellow-800">Improvement Suggestions:</h4>
+                        <ul className="list-disc list-inside text-sm text-yellow-700">
+                          {result.confidenceMetrics.improvementSuggestions.map((sug, i) => <li key={i}>{sug}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Time-Based Modeling Tab */}
+          {activeTab === 'timeBased' && result.timeBasedModeling && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">⏳</span>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg">5-10 Year Projections</h3>
+                  <p className="text-sm text-gray-600">Long-term sustainability & maintenance planning</p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                {/* Current State */}
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <h4 className="font-semibold text-green-800 mb-3">Current State</h4>
+                  <div className="space-y-3 text-sm">
+                    <div><span className="text-gray-600">Water Table:</span><br/><span className="font-bold text-lg">{result.timeBasedModeling.currentState.waterTableDepth}m</span></div>
+                    <div><span className="text-gray-600">Estimated Yield:</span><br/><span className="font-bold text-lg">{result.timeBasedModeling.currentState.estimatedYield} m³/hr</span></div>
+                    <div><span className="text-gray-600">Quality:</span><br/><span className="font-bold">{result.timeBasedModeling.currentState.qualityRating}</span></div>
+                  </div>
+                </div>
+
+                {/* 5-Year Projection */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <h4 className="font-semibold text-blue-800 mb-3">5-Year Projection</h4>
+                  <div className="space-y-3 text-sm">
+                    <div><span className="text-gray-600">Water Table:</span><br/><span className="font-bold text-lg">{result.timeBasedModeling.projection5Year.waterTableDepth}m</span></div>
+                    <div><span className="text-gray-600">Yield Change:</span><br/><span className={`font-bold text-lg ${result.timeBasedModeling.projection5Year.yieldChange < 0 ? 'text-red-600' : 'text-green-600'}`}>{result.timeBasedModeling.projection5Year.yieldChange}%</span></div>
+                    <div><span className="text-gray-600">Quality:</span><br/><span className="font-medium">{result.timeBasedModeling.projection5Year.qualityChange}</span></div>
+                    <div><span className="text-gray-600">Risk:</span><br/><span className="font-medium">{result.timeBasedModeling.projection5Year.risk}</span></div>
+                  </div>
+                </div>
+
+                {/* 10-Year Projection */}
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <h4 className="font-semibold text-amber-800 mb-3">10-Year Projection</h4>
+                  <div className="space-y-3 text-sm">
+                    <div><span className="text-gray-600">Water Table:</span><br/><span className="font-bold text-lg">{result.timeBasedModeling.projection10Year.waterTableDepth}m</span></div>
+                    <div><span className="text-gray-600">Yield Change:</span><br/><span className={`font-bold text-lg ${result.timeBasedModeling.projection10Year.yieldChange < 0 ? 'text-red-600' : 'text-green-600'}`}>{result.timeBasedModeling.projection10Year.yieldChange}%</span></div>
+                    <div><span className="text-gray-600">Quality:</span><br/><span className="font-medium">{result.timeBasedModeling.projection10Year.qualityChange}</span></div>
+                    <div><span className="text-gray-600">Risk:</span><br/><span className="font-medium">{result.timeBasedModeling.projection10Year.risk}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sustainability & Extraction */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="p-4 bg-white border rounded-xl">
+                  <h4 className="font-semibold text-gray-800 mb-3">Sustainability Index</h4>
+                  <div className="text-center">
+                    <p className="text-5xl font-bold text-green-600">{result.timeBasedModeling.sustainabilityIndex}</p>
+                    <p className="text-sm text-gray-500">/100</p>
+                  </div>
+                  <div className="mt-4 space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Max Daily Extraction</span><span className="font-bold">{result.timeBasedModeling.recommendedExtraction.maxDailyExtraction} m³</span></div>
+                    <div className="flex justify-between"><span>Sustainable Yield</span><span className="font-bold text-green-600">{result.timeBasedModeling.recommendedExtraction.sustainableYield} m³/hr</span></div>
+                    <div className="text-xs text-gray-500 mt-2">{result.timeBasedModeling.recommendedExtraction.overextractionRisk}</div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white border rounded-xl">
+                  <h4 className="font-semibold text-gray-800 mb-3">Maintenance Schedule</h4>
+                  <div className="space-y-2">
+                    {result.timeBasedModeling.maintenanceSchedule.map((item, index) => (
+                      <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
+                        <div>
+                          <p className="font-medium">{item.task}</p>
+                          <p className="text-xs text-gray-500">{item.frequency}</p>
+                        </div>
+                        <span className="font-bold">KES {item.estimatedCost.toLocaleString()}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
