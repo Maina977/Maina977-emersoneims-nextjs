@@ -2,9 +2,24 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
+
+// Dynamic import for SolarGenius Pro to reduce initial bundle
+const SolarGeniusPro = dynamic(() => import('@/components/solar/SolarGeniusPro'), {
+  loading: () => (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-white text-lg">Loading SolarGenius Pro™...</p>
+        <p className="text-gray-400 text-sm mt-2">World's Most Advanced Solar AI</p>
+      </div>
+    </div>
+  ),
+  ssr: false
+});
 
 // =====================================================
 // COMPREHENSIVE SOLAR POWER SOLUTIONS HUB
@@ -12,6 +27,7 @@ import Link from 'next/link';
 // =====================================================
 
 const SOLAR_TABS = [
+  { id: 'ai-quotation', label: '⚡ AI Quotation', color: 'gradient' },
   { id: 'installation', label: '🔧 Installation', color: 'amber' },
   { id: 'maintenance', label: '🛠️ Maintenance', color: 'green' },
   { id: 'faults', label: '⚠️ Faults &amp; Diagnostics', color: 'red' },
@@ -410,7 +426,7 @@ const INVERTER_FAULTS = [
 ];
 
 export default function SolarSolutionHub() {
-  const [activeTab, setActiveTab] = useState('installation');
+  const [activeTab, setActiveTab] = useState('ai-quotation');
   const [expandedFault, setExpandedFault] = useState<string | null>(null);
   const [expandedInverter, setExpandedInverter] = useState<string | null>(null);
 
@@ -448,6 +464,18 @@ export default function SolarSolutionHub() {
 
       <div className="mx-auto max-w-7xl px-6 py-12">
         <AnimatePresence mode="wait">
+          {/* AI QUOTATION SECTION - SOLARGENIUS PRO */}
+          {activeTab === 'ai-quotation' && (
+            <motion.div
+              key="ai-quotation"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <SolarGeniusPro />
+            </motion.div>
+          )}
+
           {/* INSTALLATION SECTION */}
           {activeTab === 'installation' && (
             <motion.div
