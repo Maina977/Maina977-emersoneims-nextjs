@@ -133,6 +133,131 @@ const AQUASCAN_FINGERPRINT = btoa(JSON.stringify({
   coverage: 195,
 }));
 
+// AUTO-DETECT COORDINATES FOR EACH REGION - NO MANUAL INPUT NEEDED
+const REGION_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  // KENYA
+  'nairobi': { lat: -1.2921, lng: 36.8219 },
+  'kiambu': { lat: -1.1714, lng: 36.8356 },
+  'muranga': { lat: -0.7839, lng: 37.0404 },
+  'nyeri': { lat: -0.4246, lng: 36.9473 },
+  'kirinyaga': { lat: -0.5024, lng: 37.2725 },
+  'nakuru': { lat: -0.3031, lng: 36.0800 },
+  'kajiado': { lat: -1.8524, lng: 36.7820 },
+  'narok': { lat: -1.0912, lng: 35.8606 },
+  'mombasa': { lat: -4.0435, lng: 39.6682 },
+  'kilifi': { lat: -3.5107, lng: 39.9093 },
+  'kwale': { lat: -4.1816, lng: 39.4521 },
+  'kisumu': { lat: -0.0917, lng: 34.7680 },
+  'kakamega': { lat: 0.2827, lng: 34.7519 },
+  'bungoma': { lat: 0.5635, lng: 34.5606 },
+  'garissa': { lat: -0.4536, lng: 39.6401 },
+  'wajir': { lat: 1.7471, lng: 40.0573 },
+  'mandera': { lat: 3.9366, lng: 41.8670 },
+  // NIGERIA
+  'lagos': { lat: 6.5244, lng: 3.3792 },
+  'abuja': { lat: 9.0765, lng: 7.3986 },
+  'kano': { lat: 12.0022, lng: 8.5920 },
+  'portHarcourt': { lat: 4.8156, lng: 7.0498 },
+  // SOUTH AFRICA
+  'johannesburg': { lat: -26.2041, lng: 28.0473 },
+  'capeTown': { lat: -33.9249, lng: 18.4241 },
+  'durban': { lat: -29.8587, lng: 31.0218 },
+  'pretoria': { lat: -25.7479, lng: 28.2293 },
+  // ETHIOPIA
+  'addisAbaba': { lat: 9.0320, lng: 38.7469 },
+  'diredawa': { lat: 9.6000, lng: 41.8500 },
+  // TANZANIA
+  'daressalaam': { lat: -6.7924, lng: 39.2083 },
+  'dodoma': { lat: -6.1630, lng: 35.7516 },
+  'arusha': { lat: -3.3869, lng: 36.6830 },
+  // UGANDA
+  'kampala': { lat: 0.3476, lng: 32.5825 },
+  'entebbe': { lat: 0.0512, lng: 32.4637 },
+  // GHANA
+  'accra': { lat: 5.6037, lng: -0.1870 },
+  'kumasi': { lat: 6.6885, lng: -1.6244 },
+  // EGYPT
+  'cairo': { lat: 30.0444, lng: 31.2357 },
+  'alexandria': { lat: 31.2001, lng: 29.9187 },
+  // MOROCCO
+  'casablanca': { lat: 33.5731, lng: -7.5898 },
+  'marrakech': { lat: 31.6295, lng: -7.9811 },
+  // INDIA
+  'mumbai': { lat: 19.0760, lng: 72.8777 },
+  'delhi': { lat: 28.7041, lng: 77.1025 },
+  'bangalore': { lat: 12.9716, lng: 77.5946 },
+  'chennai': { lat: 13.0827, lng: 80.2707 },
+  'kolkata': { lat: 22.5726, lng: 88.3639 },
+  'hyderabad': { lat: 17.3850, lng: 78.4867 },
+  'jaipur': { lat: 26.9124, lng: 75.7873 },
+  // CHINA
+  'beijing': { lat: 39.9042, lng: 116.4074 },
+  'shanghai': { lat: 31.2304, lng: 121.4737 },
+  'guangzhou': { lat: 23.1291, lng: 113.2644 },
+  'chengdu': { lat: 30.5728, lng: 104.0668 },
+  // INDONESIA
+  'jakarta': { lat: -6.2088, lng: 106.8456 },
+  'surabaya': { lat: -7.2575, lng: 112.7521 },
+  'bali': { lat: -8.4095, lng: 115.1889 },
+  // PHILIPPINES
+  'manila': { lat: 14.5995, lng: 120.9842 },
+  'cebu': { lat: 10.3157, lng: 123.8854 },
+  // THAILAND
+  'bangkok': { lat: 13.7563, lng: 100.5018 },
+  'chiangmai': { lat: 18.7883, lng: 98.9853 },
+  // VIETNAM
+  'hochiminh': { lat: 10.8231, lng: 106.6297 },
+  'hanoi': { lat: 21.0278, lng: 105.8342 },
+  // PAKISTAN
+  'karachi': { lat: 24.8607, lng: 67.0011 },
+  'lahore': { lat: 31.5204, lng: 74.3587 },
+  'islamabad': { lat: 33.6844, lng: 73.0479 },
+  // BANGLADESH
+  'dhaka': { lat: 23.8103, lng: 90.4125 },
+  'chittagong': { lat: 22.3569, lng: 91.7832 },
+  // JAPAN
+  'tokyo': { lat: 35.6762, lng: 139.6503 },
+  'osaka': { lat: 34.6937, lng: 135.5023 },
+  // MIDDLE EAST
+  'dubai': { lat: 25.2048, lng: 55.2708 },
+  'riyadh': { lat: 24.7136, lng: 46.6753 },
+  'telaviv': { lat: 32.0853, lng: 34.7818 },
+  // EUROPE
+  'london': { lat: 51.5074, lng: -0.1278 },
+  'berlin': { lat: 52.5200, lng: 13.4050 },
+  'munich': { lat: 48.1351, lng: 11.5820 },
+  'paris': { lat: 48.8566, lng: 2.3522 },
+  'madrid': { lat: 40.4168, lng: -3.7038 },
+  'rome': { lat: 41.9028, lng: 12.4964 },
+  'milan': { lat: 45.4642, lng: 9.1900 },
+  // AMERICAS
+  'losangeles': { lat: 34.0522, lng: -118.2437 },
+  'newyork': { lat: 40.7128, lng: -74.0060 },
+  'chicago': { lat: 41.8781, lng: -87.6298 },
+  'houston': { lat: 29.7604, lng: -95.3698 },
+  'phoenix': { lat: 33.4484, lng: -112.0740 },
+  'miami': { lat: 25.7617, lng: -80.1918 },
+  'toronto': { lat: 43.6532, lng: -79.3832 },
+  'vancouver': { lat: 49.2827, lng: -123.1207 },
+  'mexicocity': { lat: 19.4326, lng: -99.1332 },
+  'saopaulo': { lat: -23.5505, lng: -46.6333 },
+  'riodejaneiro': { lat: -22.9068, lng: -43.1729 },
+  'buenosaires': { lat: -34.6037, lng: -58.3816 },
+  'santiago': { lat: -33.4489, lng: -70.6693 },
+  'bogota': { lat: 4.7110, lng: -74.0721 },
+  'lima': { lat: -12.0464, lng: -77.0428 },
+  // OCEANIA
+  'sydney': { lat: -33.8688, lng: 151.2093 },
+  'melbourne': { lat: -37.8136, lng: 144.9631 },
+  'brisbane': { lat: -27.4698, lng: 153.0251 },
+  'perth': { lat: -31.9505, lng: 115.8605 },
+  'auckland': { lat: -36.8485, lng: 174.7633 },
+  'wellington': { lat: -41.2865, lng: 174.7762 },
+  'christchurch': { lat: -43.5321, lng: 172.6362 },
+  // Default
+  'default': { lat: 0, lng: 0 },
+};
+
 const RatingBadge: React.FC<{ rating: string }> = ({ rating }) => {
   const colors: Record<string, string> = {
     'excellent': 'bg-green-500',
@@ -207,6 +332,12 @@ const BoreholeAIAnalyzer: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const analyzer = useRef(new AIBoreholeAnalyzer());
+
+  // AUTO-SET COORDINATES WHEN REGION CHANGES - NO MANUAL INPUT REQUIRED
+  React.useEffect(() => {
+    const coords = REGION_COORDINATES[region] || REGION_COORDINATES['default'];
+    setLocation({ latitude: coords.lat, longitude: coords.lng });
+  }, [region]);
 
   // Handle multiple image uploads (up to 4)
   const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -326,6 +457,13 @@ const BoreholeAIAnalyzer: React.FC = () => {
     try {
       const allResults: { id: number; label: string; result: BoreholeAssessmentResult }[] = [];
 
+      // AUTO-CORRECT: Ensure valid coordinates from selected region
+      const coords = REGION_COORDINATES[region] || REGION_COORDINATES['nairobi'];
+      const analysisLocation: GeoCoordinates = {
+        latitude: coords.lat || -1.2921,
+        longitude: coords.lng || 36.8219
+      };
+
       // Analyze each site
       for (let i = 0; i < images.length; i++) {
         const img = images[i];
@@ -334,7 +472,7 @@ const BoreholeAIAnalyzer: React.FC = () => {
 
         const assessmentResult = await analyzer.current.analyzesite(
           img.data,
-          location,
+          analysisLocation,
           region
         );
 
@@ -669,14 +807,14 @@ Generated: ${new Date().toISOString()}
           </div>
         )}
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Confirm Your Region</h2>
-          <p className="text-gray-600">Select your county/country - AI will detect the exact location</p>
-          <p className="text-sm text-green-600 mt-1 font-medium">✓ {images.length} image{images.length > 1 ? 's' : ''} ready for AI location analysis</p>
+          <h2 className="text-2xl font-bold text-gray-800">Select Your County/Country</h2>
+          <p className="text-gray-600">Just select below - AI handles everything else automatically</p>
+          <p className="text-sm text-green-600 mt-1 font-medium">✓ {images.length} image{images.length > 1 ? 's' : ''} ready • Coordinates auto-detected</p>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Region Selection - Global Coverage */}
+      <div className="grid md:grid-cols-1 gap-6">
+        {/* Region Selection - Global Coverage - FULL WIDTH */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Select Your County / Region (195+ Countries)
@@ -684,7 +822,7 @@ Generated: ${new Date().toISOString()}
           <select
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-4 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-medium bg-white"
           >
             {/* Group by continent */}
             {['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(continent => (
@@ -700,44 +838,15 @@ Generated: ${new Date().toISOString()}
               </optgroup>
             ))}
           </select>
-          <p className="text-xs text-green-600 mt-1 font-medium">
-            ✓ AI will auto-detect exact ward, estate & street from your images
-          </p>
-        </div>
-
-        {/* GPS Coordinates - Optional */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            GPS Coordinates <span className="text-gray-400 font-normal">(Optional - for faster detection)</span>
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              step="0.0001"
-              placeholder="Latitude"
-              value={location.latitude}
-              onChange={(e) => setLocation({ ...location, latitude: parseFloat(e.target.value) || 0 })}
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="number"
-              step="0.0001"
-              placeholder="Longitude"
-              value={location.longitude}
-              onChange={(e) => setLocation({ ...location, longitude: parseFloat(e.target.value) || 0 })}
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-sm text-green-700 font-medium flex items-center gap-2">
+              <span className="text-lg">✓</span>
+              GPS Coordinates Auto-Set: {REGION_COORDINATES[region]?.lat?.toFixed(4) || '-1.2921'}, {REGION_COORDINATES[region]?.lng?.toFixed(4) || '36.8219'}
+            </p>
+            <p className="text-xs text-green-600 mt-1">
+              AI will identify exact ward, estate & street from your uploaded images
+            </p>
           </div>
-          <button
-            onClick={handleGetLocation}
-            className="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Auto-detect from device
-          </button>
         </div>
       </div>
 
