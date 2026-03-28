@@ -405,10 +405,10 @@ const SolarGeniusProHubV2: React.FC = () => {
             <div className="bg-slate-800/50 rounded-xl p-4">
               <h4 className="text-green-400 font-bold mb-3">Financial Analysis</h4>
               <div className="space-y-2 text-sm">
-                <p className="flex justify-between"><span className="text-gray-400">Total Investment:</span><span className="text-white font-bold">{formatCurrency(quotation.financials.totalCost)}</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">Total Investment:</span><span className="text-white font-bold">{formatCurrency(quotation.financials.totalSystemCost)}</span></p>
                 <p className="flex justify-between"><span className="text-gray-400">Annual Savings:</span><span className="text-white font-bold">{formatCurrency(quotation.financials.annualSavings)}</span></p>
                 <p className="flex justify-between"><span className="text-gray-400">Payback Period:</span><span className="text-white font-bold">{quotation.financials.paybackPeriod.toFixed(1)} years</span></p>
-                <p className="flex justify-between"><span className="text-gray-400">25-Year ROI:</span><span className="text-white font-bold">{quotation.financials.roi25Year.toFixed(0)}%</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">25-Year ROI:</span><span className="text-white font-bold">{quotation.financials.roi.toFixed(0)}%</span></p>
               </div>
             </div>
 
