@@ -1330,38 +1330,6 @@ function convertComprehensiveCode(code: any): ErrorCode {
   };
 }
 
-// Convert WordPress fault codes to standard format
-function convertWordPressCode(wpCode: WordPressFaultCode): ErrorCode {
-  return {
-    code: wpCode.code,
-    brand: wpCode.brand,
-    category: wpCode.category,
-    severity: wpCode.severity === 'critical' ? 'critical' : wpCode.severity === 'warning' ? 'warning' : 'info',
-    title: wpCode.title,
-    description: wpCode.description,
-    symptoms: wpCode.symptoms || [],
-    causes: wpCode.causes || [],
-    diagnosticSteps: (wpCode.diagnosticSteps || []).map((step, idx) => ({
-      step: step.step || idx + 1,
-      action: step.action,
-      expectedResult: step.expectedResult,
-      tools: step.tools || []
-    })),
-    solutions: (wpCode.solutions || []).map(sol => ({
-      difficulty: sol.difficulty,
-      timeEstimate: sol.timeEstimate,
-      solution: sol.solution,
-      tools: sol.tools || [],
-      parts: sol.parts || [],
-      cost: sol.cost || 'Varies'
-    })),
-    preventiveMeasures: wpCode.preventiveMeasures || [],
-    relatedCodes: wpCode.relatedCodes || [],
-    safetyWarnings: wpCode.safetyWarnings || [],
-    whenToCallExpert: wpCode.whenToCallExpert || 'If issue persists'
-  };
-}
-
 // Combine all error code sources into one comprehensive database
 const comprehensiveCodes: ErrorCode[] = (comprehensiveErrorCodes as any[]).map(convertComprehensiveCode);
 
