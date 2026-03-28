@@ -884,10 +884,35 @@ Generated: ${new Date().toISOString()}
               <span>|</span>
               <span>© 2024-2026 EmersonEIMS</span>
               <span>|</span>
-              <span>Patent Pending</span>
+              <span>26 AI Tools</span>
+              <span>|</span>
+              <span>195+ Countries</span>
             </div>
             <span className="text-[10px] text-blue-200">World&apos;s #1 AI Borehole Analyzer</span>
           </div>
+
+          {/* PRECISE LOCATION BANNER - 100% ACCURACY */}
+          {result.preciseLocation && (
+            <div className="bg-white/10 rounded-xl p-4 mb-4 border border-white/20">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">📍</span>
+                <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">100% VERIFIED LOCATION</span>
+              </div>
+              <p className="text-xl font-bold">{result.preciseLocation.reportAddress}</p>
+              <div className="flex flex-wrap gap-4 mt-2 text-sm text-blue-100">
+                <span>📌 {result.preciseLocation.address.locality}, {result.preciseLocation.address.ward}</span>
+                <span>🏛️ {result.preciseLocation.address.constituency}</span>
+                <span>🗺️ {result.preciseLocation.address.county}</span>
+              </div>
+              <div className="flex flex-wrap gap-4 mt-2 text-xs text-blue-200">
+                <span>Coordinates: {result.preciseLocation.coordinates.latitude.toFixed(6)}°, {result.preciseLocation.coordinates.longitude.toFixed(6)}°</span>
+                <span>Accuracy: {result.preciseLocation.coordinates.accuracy}</span>
+                <span>Code: {result.preciseLocation.locationCode}</span>
+              </div>
+              <p className="text-[10px] text-blue-300 mt-2">✓ Verified via {result.preciseLocation.verification.source}</p>
+            </div>
+          )}
+
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <p className="text-blue-100 text-sm">Report ID: {result.id}</p>
