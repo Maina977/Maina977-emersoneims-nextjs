@@ -2,14 +2,13 @@ import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
 const BuildMasterProHubV2 = dynamic(() => import('@/components/building/BuildMasterProHubV2'), {
-  ssr: false,
   loading: () => (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p className="text-white text-xl font-bold">Loading BuildMaster Pro™ V2...</p>
-        <p className="text-emerald-400 text-sm mt-2">WORLD'S #1 AI CONSTRUCTION ECOSYSTEM</p>
-        <p className="text-gray-500 text-xs mt-1">50+ AI Engines • 195+ Countries • 94.7% Accuracy</p>
+        <p className="text-emerald-400 text-sm mt-2">WORLD&apos;S #1 AI CONSTRUCTION ECOSYSTEM</p>
+        <p className="text-gray-500 text-xs mt-1">50+ AI Engines - 195+ Countries - 94.7% Accuracy</p>
       </div>
     </div>
   )

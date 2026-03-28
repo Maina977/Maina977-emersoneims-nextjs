@@ -8,6 +8,16 @@ import {
   RefreshCw, Eye, Settings, Zap, Award, Globe, Shield, Clock,
   ChevronDown, ChevronRight, Printer, Share2, Save
 } from 'lucide-react';
+import {
+  createProBuildingSuite,
+  SYSTEM_SUPERIORITY,
+  COUNTRIES_DATABASE,
+  BUILDING_TYPES as ENGINE_BUILDING_TYPES,
+  ARCHITECTURAL_STYLES as ENGINE_STYLES,
+  SOIL_TYPES as ENGINE_SOIL_TYPES,
+  type ProBuildingSuiteInput,
+  type ProBuildingSuiteReport,
+} from '@/lib/building/proBuildingSuiteEngine';
 
 // Import comparison data
 const SYSTEM_COMPARISON = {
@@ -167,269 +177,168 @@ export default function ProBuildingSuite() {
     setExpandedSections(newExpanded);
   };
 
-  // Run complete analysis
+  // Run complete analysis using the unified Pro Building Suite Engine
   const runFullAnalysis = useCallback(async () => {
     const startTime = Date.now();
     setState(s => ({ ...s, phase: 'designing', progress: 0, currentModule: 'Pro Architect CAD™' }));
 
+    // Convert UI input to engine input format
+    const engineInput: ProBuildingSuiteInput = {
+      projectName: input.projectName || 'New Building Project',
+      client: input.client || 'To be confirmed',
+      projectNumber: `PRO-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      location: input.location,
+      countryCode: input.country as keyof typeof COUNTRIES_DATABASE,
+      buildingType: input.buildingType.toLowerCase().replace(/[^a-z]/g, ''),
+      architecturalStyle: input.style.toLowerCase().replace(/[^a-z]/g, ''),
+      floors: input.floors,
+      totalArea: input.totalArea,
+      buildingWidth: input.buildingWidth,
+      buildingDepth: input.buildingDepth,
+      floorHeight: input.floorHeight,
+      roofType: input.roofType,
+      finishLevel: input.finishLevel,
+      bedrooms: input.bedrooms,
+      bathrooms: input.bathrooms,
+      hasGarage: input.hasGarage,
+      hasStudy: false,
+      hasServantQuarters: false,
+      soilType: input.soilType as keyof typeof ENGINE_SOIL_TYPES,
+      concreteGrade: input.floors > 2 ? 'C30' : 'C25',
+      steelGrade: 'S500',
+      seismicZone: input.seismicZone as 0 | 1 | 2 | 3 | 4 | 5,
+      windZone: input.windZone as 'low' | 'medium' | 'high' | 'cyclonic',
+      exposureCategory: 'B',
+      includeExternal: input.includeExternal,
+      includeSolar: input.includeSolar,
+      includeBorehole: input.includeBorehole,
+      includePool: false,
+      includeLift: false,
+    };
+
+    // Create engine instance
+    const engine = createProBuildingSuite(engineInput);
+
     // Phase 1: Architectural Design (0-35%)
-    for (let i = 0; i <= 35; i += 2) {
-      await new Promise(r => setTimeout(r, 50));
+    for (let i = 0; i <= 35; i += 5) {
+      await new Promise(r => setTimeout(r, 25));
       setState(s => ({ ...s, progress: i }));
     }
 
-    // Generate architectural results
-    const footprint = input.totalArea / input.floors;
-    const perimeter = 2 * (input.buildingWidth + input.buildingDepth) / 1000;
+    // Generate full report using the engine
+    const report = engine.generateCompleteReport();
 
+    // Map architectural results for UI
     const architecturalResult = {
       projectInfo: {
-        name: input.projectName || 'New Building Project',
-        type: input.buildingType,
-        style: input.style,
-        location: input.location,
+        name: report.project.name,
+        type: report.architectural.buildingSummary.type,
+        style: report.architectural.buildingSummary.style,
+        location: report.project.location,
       },
       building: {
-        floors: input.floors,
-        totalArea: input.totalArea,
-        footprint: Math.round(footprint),
-        height: input.floors * input.floorHeight / 1000 + (input.roofType === 'pitched' ? 2.5 : 0.5),
-        perimeter: Math.round(perimeter),
+        floors: report.architectural.buildingSummary.floors,
+        totalArea: report.architectural.buildingSummary.totalArea,
+        footprint: report.architectural.buildingSummary.footprint,
+        height: report.architectural.buildingSummary.height,
+        perimeter: report.architectural.buildingSummary.perimeter,
       },
-      floorPlans: Array.from({ length: input.floors }, (_, i) => ({
-        floor: i === 0 ? 'Ground Floor' : `Floor ${i}`,
-        level: i * input.floorHeight / 1000,
-        area: Math.round(footprint),
-        rooms: i === 0 ? [
-          { name: 'Living Room', area: Math.round(footprint * 0.2), dimensions: `${Math.round(Math.sqrt(footprint * 0.2) * 1.2)}m x ${Math.round(Math.sqrt(footprint * 0.2) / 1.2)}m` },
-          { name: 'Dining Room', area: Math.round(footprint * 0.12), dimensions: `${Math.round(Math.sqrt(footprint * 0.12))}m x ${Math.round(Math.sqrt(footprint * 0.12))}m` },
-          { name: 'Kitchen', area: Math.round(footprint * 0.1), dimensions: `${Math.round(Math.sqrt(footprint * 0.1) * 1.3)}m x ${Math.round(Math.sqrt(footprint * 0.1) / 1.3)}m` },
-          { name: 'Master Bedroom', area: Math.round(footprint * 0.15), dimensions: `${Math.round(Math.sqrt(footprint * 0.15))}m x ${Math.round(Math.sqrt(footprint * 0.15))}m` },
-          { name: 'En-suite Bathroom', area: Math.round(footprint * 0.05), dimensions: `${Math.round(Math.sqrt(footprint * 0.05) * 1.5)}m x ${Math.round(Math.sqrt(footprint * 0.05) / 1.5)}m` },
-          { name: 'Guest WC', area: Math.round(footprint * 0.03), dimensions: '2m x 1.5m' },
-          ...(input.hasGarage ? [{ name: 'Garage', area: 35, dimensions: '7m x 5m' }] : []),
-        ] : [
-          { name: `Bedroom ${i + 1}`, area: Math.round(footprint * 0.15), dimensions: `${Math.round(Math.sqrt(footprint * 0.15))}m x ${Math.round(Math.sqrt(footprint * 0.15))}m` },
-          { name: `Bedroom ${i + 2}`, area: Math.round(footprint * 0.12), dimensions: `${Math.round(Math.sqrt(footprint * 0.12))}m x ${Math.round(Math.sqrt(footprint * 0.12))}m` },
-          { name: `Bedroom ${i + 3}`, area: Math.round(footprint * 0.12), dimensions: `${Math.round(Math.sqrt(footprint * 0.12))}m x ${Math.round(Math.sqrt(footprint * 0.12))}m` },
-          { name: 'Family Bathroom', area: Math.round(footprint * 0.06), dimensions: `${Math.round(Math.sqrt(footprint * 0.06) * 1.2)}m x ${Math.round(Math.sqrt(footprint * 0.06) / 1.2)}m` },
-          { name: 'Landing/Corridor', area: Math.round(footprint * 0.08), dimensions: '6m x 2m' },
-        ],
+      floorPlans: report.architectural.floorPlans.map((fp: any) => ({
+        floor: fp.name,
+        level: fp.level,
+        area: fp.area,
+        rooms: fp.rooms.map((r: any) => ({
+          name: r.name,
+          area: r.area,
+          dimensions: r.dimensions,
+        })),
       })),
-      drawingSet: [
-        { number: 'A01', title: 'Site Plan', scale: '1:200', sheets: 1 },
-        { number: 'A02', title: 'Ground Floor Plan', scale: '1:50', sheets: 1 },
-        ...(input.floors > 1 ? [{ number: 'A03', title: 'First Floor Plan', scale: '1:50', sheets: 1 }] : []),
-        { number: 'A04', title: 'Roof Plan', scale: '1:100', sheets: 1 },
-        { number: 'A05', title: 'North Elevation', scale: '1:50', sheets: 1 },
-        { number: 'A06', title: 'South Elevation', scale: '1:50', sheets: 1 },
-        { number: 'A07', title: 'East Elevation', scale: '1:50', sheets: 1 },
-        { number: 'A08', title: 'West Elevation', scale: '1:50', sheets: 1 },
-        { number: 'A09', title: 'Section A-A', scale: '1:50', sheets: 1 },
-        { number: 'A10', title: 'Section B-B', scale: '1:50', sheets: 1 },
-        { number: 'A11', title: 'Construction Details', scale: 'As Noted', sheets: 2 },
-        { number: 'A12', title: 'Door, Window & Finish Schedules', scale: 'NTS', sheets: 1 },
-      ],
-      model3D: {
-        format: 'GLTF / IFC 4.3',
-        elements: Math.round(input.totalArea * 45),
-        materials: 28,
-        fileSize: `${Math.round(input.totalArea * 0.05)} MB`,
-        lod: 400,
-      },
-      specifications: [
-        { section: 'Concrete Works', standard: 'BS EN 206 / KS 02-28' },
-        { section: 'Masonry', standard: 'BS EN 771 / KS 02-26' },
-        { section: 'Roofing', standard: 'BS EN 490' },
-        { section: 'Joinery', standard: 'BS EN 14351' },
-        { section: 'Finishes', standard: 'BS 8000 Series' },
-        { section: 'Plumbing', standard: 'BS EN 806 / KS 06' },
-        { section: 'Electrical', standard: 'BS 7671 / KS 03' },
-      ],
+      drawingSet: report.architectural.drawingSet.map((d: any) => ({
+        number: d.number,
+        title: d.title,
+        scale: d.scale,
+        sheets: 1,
+      })),
+      model3D: report.architectural.model3D,
+      specifications: report.architectural.specifications.map((s: any) => ({
+        section: s.section,
+        standard: s.standard,
+      })),
     };
 
     setResults(r => ({ ...r, architectural: architecturalResult }));
     setState(s => ({ ...s, cadComplete: true, phase: 'engineering', currentModule: 'Pro Structural Engineer™' }));
 
     // Phase 2: Structural Engineering (35-70%)
-    for (let i = 35; i <= 70; i += 2) {
-      await new Promise(r => setTimeout(r, 40));
+    for (let i = 35; i <= 70; i += 5) {
+      await new Promise(r => setTimeout(r, 20));
       setState(s => ({ ...s, progress: i }));
     }
 
-    const soilData = SOIL_TYPES.find(s => s.id === input.soilType) || SOIL_TYPES[4];
-    const numColumns = Math.ceil(footprint / 25);
-
     const structuralResult = {
-      designBasis: {
-        code: 'BS EN / Eurocode',
-        concreteGrade: input.floors > 2 ? 'C30' : 'C25',
-        steelGrade: 'S500 (Fe500)',
-        soilType: soilData.name,
-        bearingCapacity: soilData.bearing,
-        seismicZone: input.seismicZone,
-        windZone: input.windZone,
-        fireResistance: input.floors > 3 ? 'R90' : 'R60',
-      },
-      loadAnalysis: {
-        deadLoad: 5.75,
-        liveLoad: 2.5,
-        windLoad: 1.2,
-        seismicLoad: input.seismicZone * 0.02,
-        ultimateLoad: 11.5,
-        criticalCombination: '1.35DL + 1.5LL',
-      },
+      designBasis: report.structural.designBasis,
+      loadAnalysis: report.structural.loadAnalysis,
       foundation: {
-        type: input.soilType === 'blackCotton' ? 'Raft Foundation' : input.floors > 3 ? 'Combined Footing' : 'Strip Footing',
-        depth: input.soilType === 'blackCotton' ? 600 : 500,
-        width: input.soilType === 'blackCotton' ? 'Full footprint' : '600mm',
-        thickness: input.floors > 2 ? 250 : 200,
-        concrete: 'C25',
-        reinforcement: {
-          main: { diameter: input.floors > 2 ? 16 : 12, spacing: 150 },
-          distribution: { diameter: 10, spacing: 200 },
-        },
-        bearingCheck: { required: soilData.bearing / 2.5, provided: soilData.bearing, status: 'PASS', margin: 60 },
+        type: report.structural.foundation.type,
+        depth: report.structural.foundation.depth,
+        width: typeof report.structural.foundation.width === 'number' ? `${report.structural.foundation.width}mm` : report.structural.foundation.width,
+        thickness: report.structural.foundation.thickness,
+        concrete: report.structural.foundation.concrete,
+        reinforcement: report.structural.foundation.reinforcement,
+        bearingCheck: report.structural.foundation.bearingCheck,
       },
-      columns: {
-        count: numColumns * input.floors,
-        size: input.floors > 3 ? '300x300mm' : '230x230mm',
-        concrete: 'C30',
-        mainBars: input.floors > 3 ? '8Y16' : '4Y16',
-        ties: 'Y8 @ 150mm',
-        capacity: { axial: 850, moment: 45 },
-        utilization: 72,
-      },
-      beams: {
-        mainBeam: {
-          size: '200x400mm',
-          concrete: 'C30',
-          topBars: '2Y16',
-          bottomBars: '3Y16',
-          stirrups: 'Y10 @ 150mm',
-        },
-        secondaryBeam: {
-          size: '150x300mm',
-          concrete: 'C25',
-          topBars: '2Y12',
-          bottomBars: '2Y16',
-          stirrups: 'Y8 @ 175mm',
-        },
-      },
-      slabs: {
-        thickness: 150,
-        type: 'Two-way spanning',
-        concrete: 'C25',
-        reinforcement: {
-          shortSpan: { diameter: 12, spacing: 150 },
-          longSpan: { diameter: 10, spacing: 200 },
-        },
-        deflectionCheck: { calculated: 12, allowable: 16, status: 'PASS' },
-      },
-      stairs: input.floors > 1 ? {
-        type: 'Dog-leg',
-        riser: 175,
-        tread: 280,
-        waist: 150,
-        reinforcement: 'Y12 @ 150mm',
-      } : null,
-      roof: {
-        type: input.roofType === 'flat' ? 'RC Flat Slab' : 'Timber Truss',
-        specification: input.roofType === 'flat' ? '125mm RC slab with waterproofing' : '50x150mm treated timber',
-      },
-      quantities: {
-        concrete: {
-          foundation: Math.round(footprint * 0.18),
-          columns: Math.round(numColumns * 0.05 * input.floorHeight / 1000 * input.floors),
-          beams: Math.round(perimeter * 0.08 * input.floors),
-          slabs: Math.round(footprint * 0.15 * input.floors),
-          total: Math.round(footprint * 0.43 * input.floors),
-        },
-        steel: {
-          foundation: Math.round(footprint * 12),
-          columns: Math.round(numColumns * 30 * input.floors),
-          beams: Math.round(perimeter * 22 * input.floors),
-          slabs: Math.round(footprint * 18 * input.floors),
-          total: Math.round(footprint * 85),
-        },
-        formwork: Math.round(footprint * 2.5 * input.floors),
-      },
-      safetyChecks: [
-        { check: 'Foundation Bearing', status: 'PASS', margin: '+60%' },
-        { check: 'Column Capacity', status: 'PASS', margin: '+28%' },
-        { check: 'Beam Flexure', status: 'PASS', margin: '+32%' },
-        { check: 'Slab Deflection', status: 'PASS', margin: '+25%' },
-        { check: 'Punching Shear', status: 'PASS', margin: '+35%' },
-        { check: 'Seismic Resistance', status: 'PASS', margin: '+45%' },
-      ],
+      columns: report.structural.columns,
+      beams: report.structural.beams,
+      slabs: report.structural.slabs,
+      stairs: report.structural.stairs,
+      roof: report.structural.roof,
+      quantities: report.structural.quantities,
+      safetyChecks: report.structural.safetyChecks.map((c: any) => ({
+        check: c.name,
+        status: c.status,
+        margin: c.margin >= 0 ? `+${c.margin}%` : `${c.margin}%`,
+      })),
     };
 
     setResults(r => ({ ...r, structural: structuralResult }));
     setState(s => ({ ...s, structuralComplete: true, phase: 'costing', currentModule: 'Pro Quantity Surveyor™' }));
 
     // Phase 3: BOQ & Costing (70-100%)
-    for (let i = 70; i <= 100; i += 2) {
-      await new Promise(r => setTimeout(r, 30));
+    for (let i = 70; i <= 100; i += 5) {
+      await new Promise(r => setTimeout(r, 15));
       setState(s => ({ ...s, progress: i }));
     }
 
     const country = COUNTRIES.find(c => c.code === input.country) || COUNTRIES[0];
-    const finishMultiplier = input.finishLevel === 'basic' ? 0.75 : input.finishLevel === 'premium' ? 1.35 : input.finishLevel === 'luxury' ? 1.8 : 1;
-    const baseCost = 45000 * input.totalArea * finishMultiplier;
 
     const boqResult = {
       projectInfo: {
-        name: input.projectName || 'New Building Project',
-        number: `BOQ-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-        client: input.client || 'To be confirmed',
-        date: new Date().toISOString().split('T')[0],
+        name: report.project.name,
+        number: report.quantitySurveying.boqInfo.number,
+        client: report.project.client,
+        date: report.quantitySurveying.boqInfo.date,
       },
-      sections: [
-        { id: 'A', name: 'Preliminaries & General', items: 8, amount: Math.round(baseCost * 0.05) },
-        { id: 'B', name: 'Substructure', items: 15, amount: Math.round(baseCost * 0.15) },
-        { id: 'C', name: 'Superstructure - Frame', items: 18, amount: Math.round(baseCost * 0.22) },
-        { id: 'D', name: 'Superstructure - Walling', items: 8, amount: Math.round(baseCost * 0.08) },
-        { id: 'E', name: 'Roofing', items: 10, amount: Math.round(baseCost * 0.08) },
-        { id: 'F', name: 'Doors & Windows', items: 12, amount: Math.round(baseCost * 0.1) },
-        { id: 'G', name: 'Finishes', items: 20, amount: Math.round(baseCost * 0.14) },
-        { id: 'H', name: 'Plumbing & Drainage', items: 18, amount: Math.round(baseCost * 0.08) },
-        { id: 'J', name: 'Electrical Installation', items: 15, amount: Math.round(baseCost * 0.06) },
-        { id: 'K', name: 'External Works', items: 10, amount: Math.round(baseCost * 0.04) },
-      ],
-      summary: {
-        subtotal: Math.round(baseCost),
-        preliminaries: Math.round(baseCost * 0.05),
-        contingency: Math.round(baseCost * 0.05),
-        overheadProfit: Math.round(baseCost * 0.1),
-        subtotalWithMarkups: Math.round(baseCost * 1.2),
-        vat: Math.round(baseCost * 1.2 * 0.16),
-        grandTotal: Math.round(baseCost * 1.2 * 1.16),
-        costPerSqm: Math.round(baseCost * 1.2 * 1.16 / input.totalArea),
-      },
+      sections: report.quantitySurveying.sections.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        items: s.items.length,
+        amount: s.subtotal,
+      })),
+      summary: report.quantitySurveying.summary,
       currency: country,
-      totalItems: 134,
-      accuracy: 100,
+      totalItems: report.quantitySurveying.boqInfo.totalItems,
+      accuracy: report.meta.accuracy,
     };
 
     const quotationResult = {
-      number: `QT-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-      validDays: 30,
-      total: boqResult.summary.grandTotal,
+      number: report.quantitySurveying.quotation.number,
+      validDays: report.quantitySurveying.quotation.validDays,
+      total: report.quantitySurveying.quotation.total,
       timeline: {
-        duration: `${Math.ceil(input.totalArea / 80)} months`,
-        milestones: [
-          { phase: 'Substructure', duration: '4 weeks', payment: 20 },
-          { phase: 'Superstructure', duration: '8 weeks', payment: 35 },
-          { phase: 'Roofing & External', duration: '3 weeks', payment: 15 },
-          { phase: 'Finishes & Services', duration: '6 weeks', payment: 25 },
-          { phase: 'Snag & Handover', duration: '1 week', payment: 5 },
-        ],
+        duration: report.quantitySurveying.quotation.timeline.duration,
+        milestones: report.quantitySurveying.quotation.timeline.milestones,
       },
-      paymentTerms: {
-        mobilization: 20,
-        interim: 'Monthly valuations',
-        retention: 10,
-      },
+      paymentTerms: report.quantitySurveying.quotation.paymentTerms,
     };
 
     setResults(r => ({ ...r, boq: boqResult, quotation: quotationResult }));
