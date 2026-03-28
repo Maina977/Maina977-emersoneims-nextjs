@@ -2,12 +2,11 @@
 // 🏛️ PRO BUILDING SUITE™ - WORLD'S #1 UNIFIED AI CONSTRUCTION PLATFORM
 // =============================================================================
 // COMPLETE INTEGRATION: Architecture + Structural + Quantity Surveying
-// BEATS: Autodesk Revit ($2,545/yr) | ArchiCAD ($4,295/yr) | Robot ($2,545/yr)
 // 99.8% ACCURACY | < 3 MINUTES | 195+ COUNTRIES | 100% BOQ
 // =============================================================================
 
 // =============================================================================
-// SYSTEM COMPARISON - WE ARE #1
+// SYSTEM CAPABILITIES
 // =============================================================================
 export const SYSTEM_SUPERIORITY = {
   proBuildingSuite: {
@@ -35,13 +34,6 @@ export const SYSTEM_SUPERIORITY = {
       safetyChecks: true,
     },
   },
-  competitors: [
-    { name: 'Autodesk Revit + Robot', price: '$5,090/year', accuracy: '85%', time: '4-8 hours', aiPowered: false },
-    { name: 'ArchiCAD + Solibri', price: '$4,295/year', accuracy: '88%', time: '3-5 hours', aiPowered: false },
-    { name: 'SketchUp Pro + Extensions', price: '$699/year', accuracy: '75%', time: '5-8 hours', aiPowered: false },
-    { name: 'Vectorworks Architect', price: '$2,045/year', accuracy: '82%', time: '4-6 hours', aiPowered: false },
-    { name: 'Chief Architect', price: '$2,695/year', accuracy: '80%', time: '3-5 hours', aiPowered: false },
-  ],
 };
 
 // =============================================================================

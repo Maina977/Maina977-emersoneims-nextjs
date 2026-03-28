@@ -117,7 +117,7 @@ export default function AIToolsPage() {
         'AI Structural Engineer - Load analysis, foundation design',
         'AI Quantity Surveyor - 134+ item BOQ, quotations',
         '195+ countries with real-time pricing',
-        'Beats Autodesk Revit ($5,090/yr)',
+        'Complete reports in under 3 minutes',
       ],
       stats: [
         { label: 'Accuracy', value: '99.8%' },
@@ -139,7 +139,7 @@ export default function AIToolsPage() {
         'Interactive wiring diagrams',
         'Generator simulator with controls',
         'Step-by-step repair guides',
-        'Cummins, Perkins, CAT, Kohler support',
+        'All major generator brands supported',
       ],
       stats: [
         { label: 'Fault Codes', value: '400K+' },
@@ -322,46 +322,31 @@ export default function AIToolsPage() {
         </div>
       </section>
 
-      {/* Comparison Section */}
+      {/* Why Choose Us Section */}
       <section className="px-4 pb-16">
         <div className="max-w-5xl mx-auto">
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl border border-gray-700/50 p-8">
             <h2 className="text-3xl font-bold text-white text-center mb-8">
-              Why Our AI Tools Beat The Competition
+              Why Choose EmersonEIMS AI Tools
             </h2>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="text-left py-4 px-4 text-gray-400">Feature</th>
-                    <th className="text-center py-4 px-4 text-amber-400 font-bold">EmersonEIMS AI</th>
-                    <th className="text-center py-4 px-4 text-gray-500">Autodesk</th>
-                    <th className="text-center py-4 px-4 text-gray-500">Others</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ['AI-Powered', 'Yes (75 engines)', 'No', 'Limited'],
-                    ['Report Time', '<3 minutes', '4-8 hours', '3-5 hours'],
-                    ['Accuracy', '99.8%', '85%', '75-88%'],
-                    ['Countries', '195+', '~20', '~10'],
-                    ['All-in-One', 'Yes', 'No (3+ tools)', 'No'],
-                    ['Annual Cost', 'INCLUDED', '$5,090+', '$2,000+'],
-                  ].map(([feature, us, autodesk, others], idx) => (
-                    <tr key={idx} className="border-b border-gray-800">
-                      <td className="py-4 px-4 text-gray-300">{feature}</td>
-                      <td className="py-4 px-4 text-center">
-                        <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium">
-                          {us}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-center text-gray-500">{autodesk}</td>
-                      <td className="py-4 px-4 text-center text-gray-500">{others}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { icon: <Cpu className="w-8 h-8" />, title: '75+ AI Engines', desc: 'Powered by advanced artificial intelligence for unmatched accuracy and speed' },
+                { icon: <Globe className="w-8 h-8" />, title: '195+ Countries', desc: 'Global coverage with real-time pricing and local regulations support' },
+                { icon: <Clock className="w-8 h-8" />, title: '<3 Minutes', desc: 'Complete professional reports generated in under 3 minutes' },
+                { icon: <TrendingUp className="w-8 h-8" />, title: '99.8% Accuracy', desc: 'Industry-leading precision backed by AI verification systems' },
+                { icon: <Layers className="w-8 h-8" />, title: 'All-in-One', desc: 'Architecture, Engineering, and Quantity Surveying in a single platform' },
+                { icon: <Shield className="w-8 h-8" />, title: 'Enterprise Ready', desc: 'Professional-grade tools trusted by engineers and architects worldwide' },
+              ].map((item, idx) => (
+                <div key={idx} className="text-center p-6 bg-gray-800/30 rounded-xl border border-gray-700/30">
+                  <div className="w-16 h-16 bg-amber-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 text-amber-400">
+                    {item.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                  <p className="text-gray-400 text-sm">{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>

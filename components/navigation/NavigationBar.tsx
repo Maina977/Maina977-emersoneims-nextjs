@@ -72,7 +72,7 @@ export default function NavigationBar({
       label: 'AI Tools',
       dropdown: [
         { label: 'All AI Tools', href: '/ai-tools', description: 'View all our AI-powered tools', icon: '🤖', badge: '75+ ENGINES' },
-        { label: 'Pro Building Suite™', href: '/solutions/building', description: 'AI Architecture + Structural + QS - Beats Autodesk Revit', icon: '🏛️', badge: '#1 WORLDWIDE' },
+        { label: 'Pro Building Suite™', href: '/solutions/building', description: 'AI Architecture + Structural + QS - Complete in 3 minutes', icon: '🏛️', badge: '#1 WORLDWIDE' },
         { label: 'Generator Oracle™', href: '/generator-oracle', description: '400,000+ fault codes, AI diagnostics, wiring diagrams', icon: '🔮', badge: 'AI-POWERED' },
         { label: 'Solar Genius Pro™', href: '/solutions/solar', description: 'AI solar design, sizing & optimization', icon: '☀️', badge: 'AI' },
         { label: 'AquaScan Pro™', href: '/solutions/borehole-pumps', description: 'AI water system diagnostics & optimization', icon: '💧', badge: 'AI' },

@@ -19,8 +19,8 @@ import {
   type ProBuildingSuiteReport,
 } from '@/lib/building/proBuildingSuiteEngine';
 
-// Import comparison data
-const SYSTEM_COMPARISON = {
+// System capabilities data
+const SYSTEM_CAPABILITIES = {
   proBuildingSuite: {
     name: 'Pro Building Suite™',
     modules: ['Pro Architect CAD', 'Pro Structural Engineer', 'Pro Quantity Surveyor'],
@@ -31,12 +31,6 @@ const SYSTEM_COMPARISON = {
     exportFormats: 12,
     price: 'Included',
   },
-  competitors: [
-    { name: 'Autodesk Revit + Robot', accuracy: '85%', time: '2-4 hours', price: '$5,090/year' },
-    { name: 'ArchiCAD + Solibri', accuracy: '88%', time: '3-5 hours', price: '$4,295/year' },
-    { name: 'SketchUp Pro', accuracy: '75%', time: '4-6 hours', price: '$299/year' },
-    { name: 'Vectorworks', accuracy: '82%', time: '3-4 hours', price: '$2,045/year' },
-  ],
 };
 
 // Types
@@ -657,34 +651,47 @@ export default function ProBuildingSuite() {
             </button>
           </div>
 
-          {/* Comparison Panel - Right column */}
+          {/* Features Panel - Right column */}
           <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <Award className="w-5 h-5 text-amber-400" />
-              vs Competition
+              Why Pro Building Suite™
             </h3>
-            <div className="space-y-4">
-              {SYSTEM_COMPARISON.competitors.map((comp, idx) => (
-                <div key={idx} className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-300 font-medium text-sm">{comp.name}</span>
-                    <span className="text-red-400 text-xs">{comp.price}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Accuracy: <span className="text-slate-400">{comp.accuracy}</span></span>
-                    <span className="text-slate-500">Time: <span className="text-slate-400">{comp.time}</span></span>
-                  </div>
+            <div className="space-y-3">
+              <div className="p-3 bg-gradient-to-r from-indigo-900/30 to-purple-900/30 rounded-lg border border-indigo-500/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-400" />
+                  <span className="text-indigo-300 font-medium text-sm">75+ AI Engines</span>
                 </div>
-              ))}
+                <p className="text-xs text-slate-400">Advanced AI for unmatched accuracy</p>
+              </div>
               <div className="p-3 bg-gradient-to-r from-emerald-900/30 to-green-900/30 rounded-lg border border-emerald-500/30">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-emerald-300 font-bold text-sm">Pro Building Suite™</span>
-                  <span className="text-emerald-400 text-xs font-bold">INCLUDED</span>
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span className="text-emerald-300 font-medium text-sm">99.8% Accuracy</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-emerald-400">Accuracy: <span className="font-bold">99.8%</span></span>
-                  <span className="text-emerald-400">Time: <span className="font-bold">&lt;3 min</span></span>
+                <p className="text-xs text-slate-400">Industry-leading precision</p>
+              </div>
+              <div className="p-3 bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-lg border border-amber-500/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                  <span className="text-amber-300 font-medium text-sm">&lt;3 Minutes</span>
                 </div>
+                <p className="text-xs text-slate-400">Complete reports instantly</p>
+              </div>
+              <div className="p-3 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-lg border border-cyan-500/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+                  <span className="text-cyan-300 font-medium text-sm">195+ Countries</span>
+                </div>
+                <p className="text-xs text-slate-400">Global coverage with local pricing</p>
+              </div>
+              <div className="p-3 bg-gradient-to-r from-pink-900/30 to-rose-900/30 rounded-lg border border-pink-500/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle2 className="w-4 h-4 text-pink-400" />
+                  <span className="text-pink-300 font-medium text-sm">All-in-One Platform</span>
+                </div>
+                <p className="text-xs text-slate-400">Architecture + Engineering + QS</p>
               </div>
             </div>
           </div>

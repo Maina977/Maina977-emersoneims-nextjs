@@ -16,14 +16,14 @@ const BuildMasterProHubV2 = dynamic(() => import('@/components/building/BuildMas
 
 export const metadata: Metadata = {
   title: 'BuildMaster Pro™ V2 | World\'s #1 AI Construction Platform | EmersonEIMS',
-  description: 'The world\'s most advanced AI construction ecosystem. 50+ AI engines, 195+ countries, 94.7% accuracy. Beats Autodesk, Procore, Buildots. NASA site analysis, generative design, 100% BOQ, risk prediction, carbon tracking.',
+  description: 'The world\'s most advanced AI construction ecosystem. 75+ AI engines, 195+ countries, 99.8% accuracy. Complete architecture, structural engineering, and quantity surveying in under 3 minutes.',
   keywords: [
     'AI construction', 'building cost estimator', 'quantity surveyor AI', 'BOQ generator',
     'construction planning', 'site analysis', '3D house design', 'building permits',
     'construction materials', 'Kenya construction', 'Africa building', 'real estate development',
-    'architect AI', 'engineering AI', 'construction ecosystem', 'better than Autodesk',
-    'better than Procore', 'generative design', 'BIM AI', 'construction risk prediction',
-    'carbon footprint construction', 'self-learning AI', 'NASA site analysis'
+    'architect AI', 'engineering AI', 'construction ecosystem', 'AI architecture',
+    'AI structural engineer', 'generative design', 'BIM AI', 'construction risk prediction',
+    'carbon footprint construction', 'self-learning AI', 'professional BOQ'
   ],
   openGraph: {
     title: 'BuildMaster Pro™ | Universal AI Construction Ecosystem',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'BuildMaster Pro™ | AI Construction Ecosystem',
-    description: 'The world\'s first universal AI construction platform - better than Autodesk.',
+    description: 'The world\'s most advanced AI construction platform with 75+ AI engines and 99.8% accuracy.',
   }
 };
 
