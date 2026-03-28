@@ -637,16 +637,27 @@ Generated: ${new Date().toISOString()}
   const renderLocationStep = () => (
     <div>
       <div className="flex items-center gap-4 mb-6">
-        {imagePreview && (
-          <img
-            src={imagePreview}
-            alt="Site preview"
-            className="w-32 h-32 object-cover rounded-lg shadow-md"
-          />
+        {images.length > 0 && (
+          <div className="flex gap-2">
+            {images.slice(0, 3).map((img, i) => (
+              <img
+                key={img.id}
+                src={img.preview}
+                alt={`Site ${i + 1}`}
+                className="w-20 h-20 object-cover rounded-lg shadow-md border-2 border-blue-300"
+              />
+            ))}
+            {images.length > 3 && (
+              <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-gray-600 font-bold">
+                +{images.length - 3}
+              </div>
+            )}
+          </div>
         )}
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Site Location</h2>
           <p className="text-gray-600">Provide the location details for accurate analysis</p>
+          <p className="text-sm text-blue-600 mt-1">{images.length} site image{images.length > 1 ? 's' : ''} uploaded</p>
         </div>
       </div>
 
