@@ -7,14 +7,15 @@ import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
 
-// Dynamic import for SolarGenius Pro to reduce initial bundle
-const SolarGeniusPro = dynamic(() => import('@/components/solar/SolarGeniusPro'), {
+// Dynamic import for SolarGenius Pro Hub - Complete 20+ Module Platform
+const SolarGeniusProHub = dynamic(() => import('@/components/solar/SolarGeniusProHub'), {
   loading: () => (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-white text-lg">Loading SolarGenius Pro™...</p>
-        <p className="text-gray-400 text-sm mt-2">World's Most Advanced Solar AI</p>
+        <div className="w-20 h-20 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-white text-xl font-bold">Loading SolarGenius Pro™</p>
+        <p className="text-amber-400 text-sm mt-2">26 AI Engines | 20+ Modules | 195+ Countries</p>
+        <p className="text-gray-500 text-xs mt-1">World's Most Advanced Solar Platform</p>
       </div>
     </div>
   ),
@@ -27,7 +28,7 @@ const SolarGeniusPro = dynamic(() => import('@/components/solar/SolarGeniusPro')
 // =====================================================
 
 const SOLAR_TABS = [
-  { id: 'ai-quotation', label: '⚡ AI Quotation', color: 'gradient' },
+  { id: 'ai-quotation', label: '☀️ SolarGenius Pro™', color: 'gradient' },
   { id: 'installation', label: '🔧 Installation', color: 'amber' },
   { id: 'maintenance', label: '🛠️ Maintenance', color: 'green' },
   { id: 'faults', label: '⚠️ Faults &amp; Diagnostics', color: 'red' },
@@ -464,15 +465,16 @@ export default function SolarSolutionHub() {
 
       <div className="mx-auto max-w-7xl px-6 py-12">
         <AnimatePresence mode="wait">
-          {/* AI QUOTATION SECTION - SOLARGENIUS PRO */}
+          {/* SOLARGENIUS PRO HUB - COMPLETE 20+ MODULE PLATFORM */}
           {activeTab === 'ai-quotation' && (
             <motion.div
               key="ai-quotation"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              className="-mx-6 -mt-12"
             >
-              <SolarGeniusPro />
+              <SolarGeniusProHub />
             </motion.div>
           )}
 
