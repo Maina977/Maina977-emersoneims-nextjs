@@ -39,11 +39,12 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Support',
+        title: 'Support & Maintenance',
         items: [
-          { href: '/generators/maintenance-companion', label: 'Maintenance Hub', icon: '🤖', desc: 'AI repair guides & diagnostics' },
+          { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🔧', desc: 'Complete maintenance center', badge: 'NEW' },
+          { href: '/maintenance-hub/generators', label: 'Generator Maintenance Hub', icon: '🛠️', desc: 'Engine Room Command Center' },
+          { href: '/generators/maintenance-companion', label: 'Maintenance Companion', icon: '🤖', desc: 'AI repair guides' },
           { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'Genuine & OEM parts' },
-          { href: '/fault-code-lookup', label: 'Fault Codes', icon: '🔍', desc: 'Troubleshooting guide' },
         ],
       },
     ],
@@ -72,38 +73,29 @@ const MEGA_MENUS = {
     ],
     cta: { href: '/contact', label: 'Free Consultation', phone: '+254782914717' },
   },
-  diagnostics: {
-    title: 'Diagnostic Tools',
-    description: 'Advanced diagnostic systems for power equipment',
+  aiPowerhouse: {
+    title: 'AI Powerhouse',
+    description: 'World-class AI-powered tools for professionals',
     sections: [
       {
-        title: 'Generator Oracle Suite',
+        title: 'AI Tools Suite',
         items: [
-          { href: '/generator-oracle', label: 'Generator Oracle', icon: '🔮', desc: '400,000+ codes, simulator, wiring diagrams' },
-          { href: '/generator-oracle/africa', label: 'Africa Edition', icon: '🌍', desc: 'Optimized for African technicians' },
-          { href: '/diagnostic-suite', label: 'Generator Diagnostic', icon: '⚡', desc: 'Real-time monitoring' },
+          { href: '/solutions/building', label: 'Pro Building Suite™', icon: '🏛️', desc: 'AI Architecture + Structural + QS - #1 WORLDWIDE', badge: '#1' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400,000+ fault codes, AI diagnostics', badge: 'AI' },
+          { href: '/solutions/solar', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI Engines, <3 min quotes - #1 WORLDWIDE', badge: '#1' },
+          { href: '/solutions/borehole-pumps', label: 'AquaScan Pro™', icon: '💧', desc: 'AI water system diagnostics', badge: 'AI' },
         ],
       },
       {
-        title: 'Advanced Tools',
+        title: 'AI Tools Hub',
         items: [
-          { href: '/diagnostic-cockpit', label: 'Diagnostic Cockpit', icon: '🎛️', desc: 'Aerospace-style control panel' },
-          { href: '/diagnostic-journey', label: 'Diagnostic Journey', icon: '🗺️', desc: 'Step-by-step diagnosis' },
-          { href: '/diagnostic-qa', label: 'Expert Q&A', icon: '💬', desc: 'AI-powered answers' },
+          { href: '/ai-tools', label: 'All AI Tools', icon: '🤖', desc: 'Central hub for all AI-powered tools' },
           { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive problem solver' },
-        ],
-      },
-      {
-        title: 'Support & Resources',
-        items: [
-          { href: '/guides/emergency-response', label: 'Emergency Guide', icon: '🚨', desc: 'What to do when power fails' },
           { href: '/resources', label: 'Learning Hub', icon: '📚', desc: 'All guides & resources' },
-          { href: '/fault-code-lookup', label: 'Fault Code Lookup', icon: '🔍', desc: 'Error code database' },
-          { href: '/faq', label: 'FAQ', icon: '❓', desc: 'Common questions answered' },
         ],
       },
     ],
-    cta: { href: '/contact', label: 'Get Support', phone: '+254 768 860 665' },
+    cta: { href: '/contact', label: 'Get Started', phone: '+254 768 860 665' },
   },
   services: {
     title: 'Our Services',
@@ -152,10 +144,9 @@ const MEGA_MENUS = {
 const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
-  { href: '/generators/maintenance-companion', label: '🛠️ MAINTENANCE HUB', type: 'link', featured: true },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
+  { key: 'aiPowerhouse', label: 'AI POWERHOUSE', type: 'mega', featured: true },
   { key: 'services', label: 'SERVICES', type: 'mega' },
-  { key: 'diagnostics', label: 'DIAGNOSTICS', type: 'mega' },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
