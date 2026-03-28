@@ -75,10 +75,57 @@ const SolarGeniusProHubV2: React.FC = () => {
   const [roofArea, setRoofArea] = useState(50);
   const [backupHours, setBackupHours] = useState(8);
   const [images, setImages] = useState<string[]>([]);
+  const [documents, setDocuments] = useState<{ name: string; type: string; data: string }[]>([]);
+  const [videoData, setVideoData] = useState<string | null>(null);
 
   // Refs
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const startTimeRef = useRef<number>(0);
+
+  // Handle image upload
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).slice(0, 5).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          setImages(prev => [...prev, ev.target!.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
+  // Handle PDF/document upload
+  const handleDocUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          setDocuments(prev => [...prev, { name: file.name, type: file.type, data: ev.target!.result as string }]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
+  // Handle video upload
+  const handleVideoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target?.result) {
+        setVideoData(ev.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   const country = GLOBAL_COUNTRY_DATABASE[countryCode] || GLOBAL_COUNTRY_DATABASE['KE'];
   const formatCurrency = (amount: number) => `${country.currencySymbol} ${amount.toLocaleString()}`;
@@ -337,6 +384,43 @@ const SolarGeniusProHubV2: React.FC = () => {
               />
             </div>
           )}
+
+          {/* File Upload Section */}
+          <div className="border-t border-slate-700 pt-4">
+            <label className="text-gray-400 text-sm mb-2 block">Upload Files (Optional)</label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="flex flex-col items-center gap-1 p-3 bg-slate-700/50 border border-slate-600 rounded-lg hover:border-amber-500/50 transition-all"
+              >
+                <span className="text-2xl">📷</span>
+                <span className="text-xs text-gray-400">Images</span>
+                {images.length > 0 && <span className="text-xs text-amber-400">{images.length} uploaded</span>}
+              </button>
+              <button
+                type="button"
+                onClick={() => docInputRef.current?.click()}
+                className="flex flex-col items-center gap-1 p-3 bg-slate-700/50 border border-slate-600 rounded-lg hover:border-blue-500/50 transition-all"
+              >
+                <span className="text-2xl">📄</span>
+                <span className="text-xs text-gray-400">PDF/BQ</span>
+                {documents.length > 0 && <span className="text-xs text-blue-400">{documents.length} uploaded</span>}
+              </button>
+              <button
+                type="button"
+                onClick={() => videoInputRef.current?.click()}
+                className="flex flex-col items-center gap-1 p-3 bg-slate-700/50 border border-slate-600 rounded-lg hover:border-green-500/50 transition-all"
+              >
+                <span className="text-2xl">🎥</span>
+                <span className="text-xs text-gray-400">Video</span>
+                {videoData && <span className="text-xs text-green-400">1 uploaded</span>}
+              </button>
+            </div>
+            <input ref={imageInputRef} type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
+            <input ref={docInputRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" multiple onChange={handleDocUpload} className="hidden" />
+            <input ref={videoInputRef} type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
+          </div>
 
           <button
             onClick={handleGenerateQuote}

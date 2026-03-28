@@ -339,6 +339,33 @@ const BoreholeAIAnalyzer: React.FC = () => {
     setLocation({ latitude: coords.lat, longitude: coords.lng });
   }, [region]);
 
+  // AUTO-DETECT GPS LOCATION ON COMPONENT MOUNT - NO USER INPUT NEEDED
+  React.useEffect(() => {
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          // Auto-detect region from coordinates
+          const detectedRegion = detectRegionFromCoordinates(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          if (detectedRegion) {
+            setRegion(detectedRegion);
+          }
+        },
+        () => {
+          // Silent fail - use default Nairobi coordinates
+          console.log('GPS not available, using default location');
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    }
+  }, []);
+
   // Handle multiple image uploads (up to 4)
   const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
