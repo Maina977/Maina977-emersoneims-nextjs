@@ -3,49 +3,46 @@
 /**
  * DeferredComponents - Non-critical UI loaded AFTER page is interactive
  *
- * PERFORMANCE OPTIMIZED:
- * - Staggered loading to prevent main thread blocking
- * - Connection-aware loading (skip heavy components on slow connections)
- * - requestIdleCallback for non-blocking execution
- * - Reduced motion support
+ * STREAMLINED VERSION - Removed annoying popups and heavy effects
+ * Only essential, non-intrusive components remain
  */
 
 import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TIER 1: Essential (load at 500ms) - Critical for conversions
+// TIER 1: Essential (load at 500ms) - Just WhatsApp button (non-intrusive)
 // ═══════════════════════════════════════════════════════════════════════════════
 const WhatsAppButton = dynamic(() => import('@/components/conversion/WhatsAppButton'), { ssr: false });
-const StickyCallBar = dynamic(() => import('@/components/conversion/StickyCallBar'), { ssr: false });
-const QuickQuoteWidget = dynamic(() => import('@/components/conversion/QuickQuoteWidget'), { ssr: false });
+// REMOVED: StickyCallBar - Too intrusive, blocks content
+// REMOVED: QuickQuoteWidget - Annoying floating widget
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TIER 2: Important (load at 2s) - Enhance UX
+// TIER 2: Important (load at 2s) - Keep stats counter only
 // ═══════════════════════════════════════════════════════════════════════════════
 const WebsiteStatsCounter = dynamic(() => import('@/components/social/WebsiteStatsCounter'), { ssr: false });
-const FloatingActionBubbles = dynamic(() => import('@/components/conversion/FloatingActionBubbles'), { ssr: false });
+// REMOVED: FloatingActionBubbles - Too many floating elements
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TIER 3: Nice-to-have (load at 4s) - AI and personalization
+// TIER 3: Nice-to-have (load at 4s) - DISABLED most annoying elements
 // ═══════════════════════════════════════════════════════════════════════════════
-const SallyAIAssistant = dynamic(() => import('@/components/ai/SallyAIAssistant'), { ssr: false });
-const UrgencyBar = dynamic(() => import('@/components/conversion/UrgencyBar'), { ssr: false });
-const ExitIntentPopup = dynamic(() => import('@/components/conversion/ExitIntentPopup'), { ssr: false });
-const IntelligentPersonalization = dynamic(() => import('@/components/ai/IntelligentPersonalization'), { ssr: false });
+// REMOVED: SallyAIAssistant - AI chat can be accessed from navbar
+// REMOVED: UrgencyBar - Fake urgency is annoying and hurts trust
+// REMOVED: ExitIntentPopup - These popups are extremely annoying
+// REMOVED: IntelligentPersonalization - Unnecessary popups
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TIER 4: Background (load at 6s) - SEO and analytics
+// TIER 4: Background (load at 6s) - SEO only (no visual impact)
 // ═══════════════════════════════════════════════════════════════════════════════
 const AdvancedSEO = dynamic(() => import('@/components/seo/AdvancedSEO').then(mod => ({ default: mod.default })), { ssr: false });
 const SEOEventTracker = dynamic(() => import('@/components/seo/AdvancedSEO').then(mod => ({ default: mod.SEOEventTracker })), { ssr: false });
 const ComprehensiveKenyaSEO = dynamic(() => import('@/components/seo/ComprehensiveKenyaSEO'), { ssr: false });
-const UltraSpeedOptimizer = dynamic(() => import('@/components/performance/UltraSpeedOptimizer'), { ssr: false });
+// REMOVED: UltraSpeedOptimizer - Not needed
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TIER 5: Optional (load at 8s) - Visual effects (skip on slow connections)
+// TIER 5: DISABLED - Custom cursors are gimmicky and hurt UX
 // ═══════════════════════════════════════════════════════════════════════════════
-const LiquidCursor = dynamic(() => import('@/components/awwwards/LiquidCursor'), { ssr: false });
+// REMOVED: LiquidCursor - Fancy but annoying, breaks native cursor expectations
 
 export default function DeferredComponents() {
   const [tier1, setTier1] = useState(false);
@@ -117,45 +114,29 @@ export default function DeferredComponents() {
 
   return (
     <>
-      {/* TIER 1: Essential conversion tools */}
+      {/* TIER 1: Essential - Just WhatsApp button (non-intrusive corner button) */}
       {tier1 && (
-        <>
-          <WhatsAppButton />
-          <StickyCallBar />
-          <QuickQuoteWidget />
-        </>
+        <WhatsAppButton />
       )}
 
-      {/* TIER 2: Important UX enhancements */}
+      {/* TIER 2: Stats counter (non-intrusive) */}
       {tier2 && (
-        <>
-          <WebsiteStatsCounter />
-          <FloatingActionBubbles />
-        </>
+        <WebsiteStatsCounter />
       )}
 
-      {/* TIER 3: AI and personalization */}
-      {tier3 && (
-        <>
-          <SallyAIAssistant />
-          <UrgencyBar />
-          <ExitIntentPopup />
-          <IntelligentPersonalization />
-        </>
-      )}
+      {/* TIER 3: DISABLED - All annoying popups removed */}
+      {/* No exit intent, no urgency bars, no floating AI assistants */}
 
-      {/* TIER 4: SEO and analytics */}
+      {/* TIER 4: SEO only (invisible to users) */}
       {tier4 && (
         <>
           <AdvancedSEO />
           <SEOEventTracker />
           <ComprehensiveKenyaSEO />
-          <UltraSpeedOptimizer />
         </>
       )}
 
-      {/* TIER 5: Visual effects (conditional) */}
-      {tier5 && <LiquidCursor />}
+      {/* TIER 5: DISABLED - No fancy cursors */}
     </>
   );
 }
