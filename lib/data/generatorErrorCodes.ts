@@ -13,7 +13,6 @@
  */
 
 import comprehensiveErrorCodes from '@/app/data/diagnostic/comprehensiveErrorCodes.json';
-import { WORDPRESS_FAULT_CODES, type WordPressFaultCode } from './wordpressFaultCodes';
 
 export interface ErrorCode {
   code: string;
@@ -1365,7 +1364,6 @@ function convertWordPressCode(wpCode: WordPressFaultCode): ErrorCode {
 
 // Combine all error code sources into one comprehensive database
 const comprehensiveCodes: ErrorCode[] = (comprehensiveErrorCodes as any[]).map(convertComprehensiveCode);
-const wordPressCodes: ErrorCode[] = WORDPRESS_FAULT_CODES.map(convertWordPressCode);
 
 // Create unified error code database - deduplicate by code+brand
 const codeMap = new Map<string, ErrorCode>();
@@ -1378,14 +1376,6 @@ GENERATOR_ERROR_CODES.forEach(code => {
 
 // Add comprehensive codes
 comprehensiveCodes.forEach(code => {
-  const key = `${code.brand}-${code.code}`.toLowerCase();
-  if (!codeMap.has(key)) {
-    codeMap.set(key, code);
-  }
-});
-
-// Add WordPress codes
-wordPressCodes.forEach(code => {
   const key = `${code.brand}-${code.code}`.toLowerCase();
   if (!codeMap.has(key)) {
     codeMap.set(key, code);
