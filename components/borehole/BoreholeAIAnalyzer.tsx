@@ -81,44 +81,107 @@ const ProgressBar: React.FC<{ value: number; max?: number; color?: string }> = (
 
 const BoreholeAIAnalyzer: React.FC = () => {
   const [step, setStep] = useState<'upload' | 'location' | 'analyzing' | 'results'>('upload');
-  const [imageData, setImageData] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  // Multiple images support (up to 4 for site comparison)
+  const [images, setImages] = useState<{ id: number; data: string; preview: string; label: string }[]>([]);
+  const [videoData, setVideoData] = useState<{ data: string; preview: string; name: string } | null>(null);
   const [location, setLocation] = useState<GeoCoordinates>({ latitude: -1.2921, longitude: 36.8219 });
   const [region, setRegion] = useState<string>('nairobi');
   const [result, setResult] = useState<BoreholeAssessmentResult | null>(null);
+  const [results, setResults] = useState<{ id: number; label: string; result: BoreholeAssessmentResult }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('summary');
+  const [selectedSite, setSelectedSite] = useState<number>(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const analyzer = useRef(new AIBoreholeAnalyzer());
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // Handle multiple image uploads (up to 4)
+  const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file (JPG, PNG, etc.)');
+    const newImages: { id: number; data: string; preview: string; label: string }[] = [];
+    const maxImages = 4;
+    const filesToProcess = Array.from(files).slice(0, maxImages - images.length);
+
+    if (images.length + filesToProcess.length > maxImages) {
+      setError(`Maximum ${maxImages} images allowed for comparison`);
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Image size must be less than 10MB');
+    filesToProcess.forEach((file, index) => {
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload image files only (JPG, PNG, etc.)');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        setError('Each image must be less than 10MB');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = e.target?.result as string;
+        const newImage = {
+          id: Date.now() + index,
+          data,
+          preview: data,
+          label: `Site ${images.length + newImages.length + 1}`,
+        };
+        newImages.push(newImage);
+
+        if (newImages.length === filesToProcess.length) {
+          setImages(prev => [...prev, ...newImages]);
+          setError(null);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }, [images.length]);
+
+  // Handle video upload (optional)
+  const handleVideoUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('video/')) {
+      setError('Please upload a video file (MP4, MOV, etc.)');
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      setError('Video size must be less than 100MB');
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = e.target?.result as string;
-      setImageData(data);
-      setImagePreview(data);
+      setVideoData({ data, preview: URL.createObjectURL(file), name: file.name });
       setError(null);
-      setStep('location');
     };
     reader.onerror = () => {
-      setError('Failed to read image file');
+      setError('Failed to read video file');
     };
     reader.readAsDataURL(file);
   }, []);
+
+  // Remove image
+  const removeImage = useCallback((id: number) => {
+    setImages(prev => prev.filter(img => img.id !== id));
+  }, []);
+
+  // Remove video
+  const removeVideo = useCallback(() => {
+    setVideoData(null);
+  }, []);
+
+  // Legacy single image support (for backwards compatibility)
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    handleImageUpload(event);
+  }, [handleImageUpload]);
 
   const handleGetLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -140,8 +203,8 @@ const BoreholeAIAnalyzer: React.FC = () => {
   }, []);
 
   const handleAnalyze = useCallback(async () => {
-    if (!imageData) {
-      setError('Please upload an image first');
+    if (images.length === 0) {
+      setError('Please upload at least one image');
       return;
     }
 
@@ -149,34 +212,63 @@ const BoreholeAIAnalyzer: React.FC = () => {
     setError(null);
 
     try {
-      // Simulate analysis time for better UX
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const allResults: { id: number; label: string; result: BoreholeAssessmentResult }[] = [];
 
-      const assessmentResult = await analyzer.current.analyzesite(
-        imageData,
-        location,
-        region
+      // Analyze each site
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+        // Simulate analysis time for better UX
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const assessmentResult = await analyzer.current.analyzesite(
+          img.data,
+          location,
+          region
+        );
+
+        allResults.push({
+          id: img.id,
+          label: img.label,
+          result: assessmentResult,
+        });
+      }
+
+      setResults(allResults);
+      // Set the best site (highest success probability) as default
+      const bestSite = allResults.reduce((best, current) =>
+        current.result.successProbability > best.result.successProbability ? current : best
       );
-
-      setResult(assessmentResult);
+      setResult(bestSite.result);
+      setSelectedSite(allResults.findIndex(r => r.id === bestSite.id));
       setStep('results');
     } catch (err) {
       setError('Analysis failed. Please try again.');
       setStep('location');
     }
-  }, [imageData, location, region]);
+  }, [images, location, region]);
 
   const handleReset = useCallback(() => {
     setStep('upload');
-    setImageData(null);
-    setImagePreview(null);
+    setImages([]);
+    setVideoData(null);
     setResult(null);
+    setResults([]);
     setError(null);
     setActiveTab('summary');
+    setSelectedSite(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    if (videoInputRef.current) {
+      videoInputRef.current.value = '';
+    }
   }, []);
+
+  // Switch between analyzed sites
+  const handleSiteChange = useCallback((index: number) => {
+    setSelectedSite(index);
+    setResult(results[index]?.result || null);
+  }, [results]);
 
   const generatePDFReport = useCallback(() => {
     if (!result) return;
@@ -275,45 +367,156 @@ Generated: ${new Date().toISOString()}
   // ============================================================================
 
   const renderUploadStep = () => (
-    <div className="text-center">
-      <div className="mb-8">
-        <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
+    <div>
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold mb-4">
+          <span>🌍</span> AquaScan Pro™ <span>|</span> 195+ Countries
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload Site Photo</h2>
-        <p className="text-gray-600 max-w-md mx-auto">
-          Upload a clear photo of your land for AI analysis. For best results, capture the terrain, vegetation, and any visible rock formations.
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload Site Photos for Analysis</h2>
+        <p className="text-gray-600 max-w-lg mx-auto">
+          Upload up to <strong>4 images</strong> of different areas to compare and identify the ideal drilling location. Video upload is optional.
         </p>
       </div>
 
-      <div
-        className="border-2 border-dashed border-gray-300 rounded-xl p-8 hover:border-blue-500 transition-colors cursor-pointer bg-gray-50"
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-        </svg>
-        <p className="text-lg font-medium text-gray-700">Click to upload or drag and drop</p>
-        <p className="text-sm text-gray-500 mt-2">JPG, PNG up to 10MB</p>
+      {/* Image Upload Section */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+            <span className="text-xl">📸</span> Site Photos ({images.length}/4)
+          </h3>
+          {images.length > 0 && (
+            <span className="text-sm text-green-600 font-medium">✓ {images.length} image{images.length > 1 ? 's' : ''} uploaded</span>
+          )}
+        </div>
+
+        {/* Uploaded Images Grid */}
+        {images.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            {images.map((img, index) => (
+              <div key={img.id} className="relative group">
+                <img
+                  src={img.preview}
+                  alt={img.label}
+                  className="w-full h-32 object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded font-bold">
+                  Site {index + 1}
+                </div>
+                <button
+                  onClick={() => removeImage(img.id)}
+                  className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Upload More Images */}
+        {images.length < 4 && (
+          <div
+            className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-blue-500 transition-colors cursor-pointer bg-gray-50"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <div className="flex flex-col items-center">
+              <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-lg font-medium text-gray-700">
+                {images.length === 0 ? 'Click to upload site photos' : 'Add more photos'}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">Up to 4 images for site comparison • JPG, PNG up to 10MB each</p>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg text-left">
-        <h3 className="font-semibold text-blue-800 mb-2">Tips for Best Results:</h3>
+      {/* Video Upload Section (Optional) */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+            <span className="text-xl">🎥</span> Site Video <span className="text-gray-400 text-sm font-normal">(Optional)</span>
+          </h3>
+          {videoData && (
+            <span className="text-sm text-green-600 font-medium">✓ Video uploaded</span>
+          )}
+        </div>
+
+        {videoData ? (
+          <div className="relative bg-gray-900 rounded-xl overflow-hidden">
+            <video
+              src={videoData.preview}
+              className="w-full h-48 object-cover"
+              controls
+            />
+            <div className="absolute top-2 left-2 bg-purple-500 text-white text-xs px-2 py-1 rounded font-bold">
+              {videoData.name}
+            </div>
+            <button
+              onClick={removeVideo}
+              className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded text-sm font-medium hover:bg-red-600"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <div
+            className="border-2 border-dashed border-purple-300 rounded-xl p-4 hover:border-purple-500 transition-colors cursor-pointer bg-purple-50"
+            onClick={() => videoInputRef.current?.click()}
+          >
+            <input
+              ref={videoInputRef}
+              type="file"
+              accept="video/*"
+              onChange={handleVideoUpload}
+              className="hidden"
+            />
+            <div className="flex items-center justify-center gap-4">
+              <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <div className="text-left">
+                <p className="font-medium text-gray-700">Upload a walkthrough video</p>
+                <p className="text-sm text-gray-500">MP4, MOV up to 100MB • Shows terrain and surroundings</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Continue Button */}
+      {images.length > 0 && (
+        <button
+          onClick={() => setStep('location')}
+          className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition-colors flex items-center justify-center gap-2"
+        >
+          Continue to Location Details
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </button>
+      )}
+
+      {/* Tips */}
+      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <h3 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+          <span>💡</span> Tips for Best Results:
+        </h3>
         <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Capture photos during daylight hours</li>
-          <li>• Include visible terrain features (slopes, valleys)</li>
-          <li>• Show vegetation patterns in the area</li>
-          <li>• If possible, photograph from an elevated position</li>
-          <li>• Include any visible rock outcrops or soil exposure</li>
+          <li>• <strong>Multiple sites:</strong> Upload photos of 2-4 different areas to compare drilling potential</li>
+          <li>• <strong>Daylight photos:</strong> Capture during daytime for accurate vegetation analysis</li>
+          <li>• <strong>Terrain features:</strong> Include slopes, valleys, and rock outcrops</li>
+          <li>• <strong>Video (optional):</strong> A 360° walkthrough helps AI understand the full site</li>
         </ul>
       </div>
     </div>
