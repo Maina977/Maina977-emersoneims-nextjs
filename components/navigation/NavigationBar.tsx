@@ -59,7 +59,6 @@ export default function NavigationBar({
       label: 'Services',
       dropdown: [
         { label: 'All Services', href: '/services', description: 'View all our services', icon: '🔧' },
-        { label: 'Universal Maintenance Hub', href: '/maintenance-hub', description: 'Complete maintenance center for all equipment', icon: '🛠️', badge: 'NEW' },
         { label: 'Generator Services', href: '/solutions/generators', description: 'Installation, repair & maintenance', icon: '⚡' },
         { label: 'Motor Rewinding', href: '/solutions/motor-rewinding', description: 'Professional motor services', icon: '🔄' },
         { label: 'UPS Systems', href: '/solutions/ups', description: 'Backup power solutions', icon: '🔋' },
@@ -69,22 +68,28 @@ export default function NavigationBar({
       ]
     },
     {
+      id: 'ai-tools',
+      label: 'AI Tools',
+      dropdown: [
+        { label: 'All AI Tools', href: '/ai-tools', description: 'View all our AI-powered tools', icon: '🤖', badge: '75+ ENGINES' },
+        { label: 'Pro Building Suite™', href: '/solutions/building', description: 'AI Architecture + Structural + QS - Beats Autodesk Revit', icon: '🏛️', badge: '#1 WORLDWIDE' },
+        { label: 'Generator Oracle™', href: '/generator-oracle', description: '400,000+ fault codes, AI diagnostics, wiring diagrams', icon: '🔮', badge: 'AI-POWERED' },
+        { label: 'Solar Genius Pro™', href: '/solutions/solar', description: 'AI solar design, sizing & optimization', icon: '☀️', badge: 'AI' },
+        { label: 'AquaScan Pro™', href: '/solutions/borehole-pumps', description: 'AI water system diagnostics & optimization', icon: '💧', badge: 'AI' },
+        { label: 'Fault Code Lookup', href: '/fault-code-lookup', description: 'Quick error code search - 400,000+ codes', icon: '🔍' },
+        { label: 'Diagnostic Suite', href: '/diagnostic-suite', description: 'Full diagnostic experience', icon: '📊' },
+        { label: 'Generator Oracle Africa', href: '/generator-oracle/africa', description: 'Optimized for African technicians', icon: '🌍' },
+        { label: 'Solar Sizing Calculator', href: '/solutions/solar-sizing', description: 'AI-powered solar system sizing', icon: '📐' },
+      ]
+    },
+    {
       id: 'solar',
       label: 'Solar',
       dropdown: [
         { label: 'Solar Solutions', href: '/solutions/solar', description: 'Complete solar power systems', icon: '☀️' },
-        { label: 'Solar Maintenance Hub', href: '/maintenance-hub/solar', description: 'Complete solar maintenance center with weather, sizing, troubleshooting', icon: '🔆', badge: 'COMPREHENSIVE' },
+        { label: 'Solar Genius Pro™', href: '/solutions/solar', description: 'AI-powered solar design & optimization', icon: '🔆', badge: 'AI' },
+        { label: 'Solar Maintenance Hub', href: '/maintenance-hub/solar', description: 'Complete solar maintenance center', icon: '🛠️' },
         { label: 'Solar Sizing Calculator', href: '/solutions/solar-sizing', description: 'Calculate your solar system needs', icon: '📐' },
-      ]
-    },
-    {
-      id: 'generator-oracle',
-      label: 'Generator Oracle',
-      dropdown: [
-        { label: 'Generator Oracle', href: '/generator-oracle', description: 'Complete diagnostic suite with 400,000+ fault codes, simulator, wiring diagrams', icon: '🔮', badge: 'AI-POWERED' },
-        { label: 'Africa Landing', href: '/generator-oracle/africa', description: 'Optimized for African technicians', icon: '🌍' },
-        { label: 'Fault Code Lookup', href: '/fault-code-lookup', description: 'Quick error code search', icon: '🔍' },
-        { label: 'Diagnostic Suite', href: '/diagnostic-suite', description: 'Full diagnostic experience', icon: '📊' },
       ]
     },
     {
@@ -92,16 +97,16 @@ export default function NavigationBar({
       label: 'Generators',
       dropdown: [
         { label: 'Bible of Generators', href: '/generators', description: 'Complete generator resource hub', icon: '📖', badge: 'COMPREHENSIVE' },
+        { label: 'Generator Maintenance Hub', href: '/maintenance-hub/generators', description: 'Engine Room Command Center', icon: '🛠️', badge: 'NEW' },
+        { label: 'Universal Maintenance Hub', href: '/maintenance-hub', description: 'Complete maintenance center for all equipment', icon: '🔧' },
         { label: 'New Generators', href: '/generators#new-generators', description: 'Cummins & Voltka lineup', icon: '⚡' },
         { label: 'Used Generators', href: '/generators/used', description: 'Certified pre-owned', icon: '🔄' },
         { label: 'Leasing Programs', href: '/generators/leasing', description: 'Flexible lease options', icon: '💰', badge: 'NEW' },
         { label: 'Rental', href: '/generators/rental', description: 'Short & long term rental', icon: '📅' },
         { label: 'Spare Parts', href: '/generators/spare-parts', description: '2,000+ OEM & aftermarket', icon: '🔧' },
-        { label: 'Maintenance', href: '/generators/maintenance', description: 'Service & repair', icon: '🛠️' },
+        { label: 'Maintenance & Service', href: '/generators/maintenance', description: 'Service & repair', icon: '🔩' },
         { label: 'Installation', href: '/generators/installation', description: 'Professional 8-phase installation', icon: '🏗️' },
         { label: 'Generator Systems Guide', href: '/generators/systems', description: 'Educational hub for all systems', icon: '📚' },
-        { label: 'AI Visual Diagnostic', href: '/generators#ai-diagnostic', description: '99.9% accuracy analysis', icon: '🤖', badge: 'AI' },
-        { label: 'Maintenance Hub', href: '/maintenance-hub/generators', description: 'Engine Room Command Center', icon: '📊' },
       ]
     },
     { id: 'calculators', label: 'Calculators', href: '/calculators' },
