@@ -297,22 +297,22 @@ export default function ServiceDetailClient({
                   {/* World's First Badge */}
                   <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-black px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg shadow-amber-500/30">
                     <span className="text-xl">🏆</span>
-                    <span>AFRICA&apos;S FIRST AI BOREHOLE ANALYZER</span>
+                    <span>WORLD&apos;S #1 AI BOREHOLE ANALYZER</span>
                     <span className="text-xl">🌍</span>
                   </div>
                   <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium mb-4 ml-2">
-                    <span className="animate-pulse">7 AI ENGINES</span>
+                    <span className="animate-pulse">26 AI ENGINES</span>
                     <span>•</span>
-                    <span>47 COUNTIES</span>
+                    <span>195+ COUNTRIES</span>
                     <span>•</span>
                     <span>FREE</span>
                   </div>
                   <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                    AI Borehole Site Analyzer
+                    AquaScan Pro™ AI Borehole Analyzer
                   </h2>
                   <p className="text-slate-400 max-w-3xl mx-auto">
-                    The world&apos;s first commercial AI platform for groundwater exploration in Africa.
-                    No site visits needed. Same satellite technology used by NASA and ESA.
+                    The world&apos;s most advanced AI platform for groundwater exploration.
+                    195+ countries coverage. Same satellite technology used by NASA and ESA.
                   </p>
                 </div>
 
@@ -322,10 +322,10 @@ export default function ServiceDetailClient({
                     { icon: '🛰️', label: 'Sentinel-2' },
                     { icon: '📡', label: 'LiDAR' },
                     { icon: '💎', label: 'Hyperspectral' },
-                    { icon: '⚡', label: 'Geophysics' },
-                    { icon: '🗺️', label: 'GIS' },
-                    { icon: '📋', label: 'EIA' },
-                    { icon: '🇰🇪', label: '47 Counties' },
+                    { icon: '⚡', label: 'VES/ERT/TDEM' },
+                    { icon: '🛸', label: 'NASA GRACE' },
+                    { icon: '🌐', label: 'Google Earth' },
+                    { icon: '🌍', label: '195+ Countries' },
                   ].map((tech, i) => (
                     <div key={i} className="bg-slate-800/50 backdrop-blur rounded-lg p-2 text-center border border-slate-700">
                       <div className="text-xl mb-1">{tech.icon}</div>

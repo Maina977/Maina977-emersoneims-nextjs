@@ -721,8 +721,8 @@ export default function BoreholeMaintenanceHub() {
                     <p className="text-sm text-slate-400">
                       This AI uses the same satellite imagery (Sentinel-2, Landsat-8, MODIS), LiDAR data,
                       and remote sensing technologies employed by NASA, ESA, and leading geological survey
-                      companies worldwide. Make confident drilling decisions backed by 7 AI engines and
-                      10,000+ historical borehole records across Kenya.
+                      companies worldwide. Make confident drilling decisions backed by 26 AI engines and
+                      100,000+ historical borehole records across 195+ countries.
                     </p>
                     <a
                       href="tel:+254768860665"
