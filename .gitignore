@@ -28,3 +28,6 @@ deployment-package/
 .vercel
 .env*.local
 .build-metadata.json
+
+.vercel
+.env*.local

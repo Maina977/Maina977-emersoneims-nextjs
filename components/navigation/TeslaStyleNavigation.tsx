@@ -89,6 +89,7 @@ const MEGA_MENUS = {
       {
         title: 'AI Tools Hub',
         items: [
+          { href: '/ai-tools/capabilities', label: 'All Capabilities', icon: '📊', desc: 'Full accuracy tables for all tools', badge: 'NEW' },
           { href: '/ai-tools', label: 'All AI Tools', icon: '🤖', desc: 'Central hub for all AI-powered tools' },
           { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive problem solver' },
           { href: '/resources', label: 'Learning Hub', icon: '📚', desc: 'All guides & resources' },
