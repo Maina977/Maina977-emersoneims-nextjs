@@ -159,6 +159,7 @@ export default function ProBuildingSuite() {
   // Active tab for results
   const [activeTab, setActiveTab] = useState<'architectural' | 'structural' | 'boq' | 'quotation'>('architectural');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['summary']));
+  const [error, setError] = useState<string | null>(null);
 
   // Toggle section expansion
   const toggleSection = (section: string) => {
@@ -173,11 +174,13 @@ export default function ProBuildingSuite() {
 
   // Run complete analysis using the unified Pro Building Suite Engine
   const runFullAnalysis = useCallback(async () => {
-    const startTime = Date.now();
-    setState(s => ({ ...s, phase: 'designing', progress: 0, currentModule: 'Pro Architect CAD™' }));
+    try {
+      setError(null);
+      const startTime = Date.now();
+      setState(s => ({ ...s, phase: 'designing', progress: 0, currentModule: 'Pro Architect CAD™' }));
 
-    // Convert UI input to engine input format
-    const engineInput: ProBuildingSuiteInput = {
+      // Convert UI input to engine input format
+      const engineInput: ProBuildingSuiteInput = {
       projectName: input.projectName || 'New Building Project',
       client: input.client || 'To be confirmed',
       projectNumber: `PRO-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
@@ -345,6 +348,11 @@ export default function ProBuildingSuite() {
       progress: 100,
       totalTime: (endTime - startTime) / 1000,
     }));
+    } catch (err) {
+      console.error('Pro Building Suite Analysis Error:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred during analysis. Please try again.');
+      setState(s => ({ ...s, phase: 'idle', progress: 0 }));
+    }
   }, [input]);
 
   // Format currency
@@ -355,6 +363,7 @@ export default function ProBuildingSuite() {
 
   // Reset
   const reset = () => {
+    setError(null);
     setState({
       phase: 'idle',
       progress: 0,
@@ -446,6 +455,23 @@ export default function ProBuildingSuite() {
           </div>
         </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-900/30 border border-red-500/50 rounded-xl p-4 flex items-center gap-3">
+          <AlertTriangle className="w-6 h-6 text-red-400 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-red-300 font-medium">Analysis Error</p>
+            <p className="text-red-400/80 text-sm">{error}</p>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="text-red-400 hover:text-white px-2"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Main Content */}
       {state.phase === 'idle' && (
