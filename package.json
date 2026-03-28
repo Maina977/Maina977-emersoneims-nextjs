@@ -24,6 +24,8 @@
     "start": "next start",
     "start:3010": "next start -p 3010",
     "start:3020": "next start -p 3020",
+    "deploy": "bash scripts/deploy.sh",
+    "deploy:force": "npx vercel deploy --prod --force",
     "cache:clear": "rimraf .next/cache",
     "cache:full-clear": "rimraf .next node_modules/.cache",
     "smoke:routes": "node ./scripts/probeRoutes.mjs",
