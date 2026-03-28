@@ -4,6 +4,9 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["cpt1"],
+  "git": {
+    "deploymentEnabled": false
+  },
   "functions": {
     "app/sitemap.xml/route.ts": {
       "maxDuration": 30
