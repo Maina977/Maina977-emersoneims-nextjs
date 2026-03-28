@@ -1269,9 +1269,7 @@ export default function GeneratorOracleModule() {
 
   const availableModels = useMemo(() => {
     if (!selectedBrand) return [];
-    const brand = Object.values(CONTROLLER_BRANDS).find(b =>
-      b.name.toLowerCase().includes(selectedBrand.toLowerCase())
-    );
+    const brand = CONTROLLER_BRANDS[selectedBrand as keyof typeof CONTROLLER_BRANDS];
     return brand?.models || [];
   }, [selectedBrand]);
 
@@ -1828,11 +1826,11 @@ export default function GeneratorOracleModule() {
                             {Object.entries(CONTROLLER_BRANDS).slice(0, 6).map(([key, brand]) => (
                               <motion.button
                                 key={key}
-                                onClick={() => handleBrandSelect(brand.name)}
+                                onClick={() => handleBrandSelect(key)}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 className={`p-2 rounded-lg text-center transition-all ${
-                                  selectedBrand === brand.name
+                                  selectedBrand === key
                                     ? 'bg-cyan-500/20 border border-cyan-500'
                                     : 'bg-slate-900/50 border border-slate-700 hover:border-cyan-500/50'
                                 }`}

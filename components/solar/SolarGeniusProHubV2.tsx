@@ -145,11 +145,27 @@ const SolarGeniusProHubV2: React.FC = () => {
       // Simulate 56 AI engine processing
       await new Promise(resolve => setTimeout(resolve, 2500));
 
+      // Use uploaded images if available, otherwise use coordinates
+      const inputData = images.length > 0
+        ? { type: 'image' as const, data: images, coordinates: { lat: -1.2921, lng: 36.8219 } }
+        : { type: 'coordinates' as const, data: 'auto', coordinates: { lat: -1.2921, lng: 36.8219 } };
+
+      // Estimate budget from monthly bill (12 months payback target)
+      const estimatedBudget = monthlyBill * 12 * 2;
+
       const result = await solarGeniusEngine.generateQuotation(
-        { type: 'coordinates', data: 'auto', coordinates: { lat: -1.2921, lng: 36.8219 } },
-        { name: 'Customer', email: '', phone: '', address: country.name },
+        inputData,
+        {
+          name: 'Customer',
+          email: '',
+          phone: '',
+          address: country.name,
+          roofArea: roofArea,
+          backupHours: backupHours,
+          monthlyConsumption: monthlyBill / (country.avgTariff || 25) // kWh estimate
+        },
         countryCode,
-        { systemType }
+        { systemType, budget: estimatedBudget }
       );
 
       clearInterval(progressInterval);
@@ -161,7 +177,7 @@ const SolarGeniusProHubV2: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
-  }, [countryCode, systemType, country.name]);
+  }, [countryCode, systemType, country.name, country.avgTariff, images, monthlyBill, roofArea, backupHours]);
 
   // ============================================================================
   // RENDER MODULES

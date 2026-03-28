@@ -16,8 +16,6 @@ import {
   type SiteAnalysis,
   AIQuantitySurveyor,
   AISiteAnalyzer,
-  AIPermitGenerator,
-  AIFinancialAnalyzer,
 } from '@/lib/building/buildMasterProEngine';
 import AIDesignStudioModule from './AIDesignStudioModule';
 import ProBuildingSuite from './ProBuildingSuite';
@@ -55,56 +53,63 @@ const BuildMasterProHubV2: React.FC = () => {
 
   // Run comprehensive analysis
   const runAnalysis = useCallback(async () => {
-    setIsAnalyzing(true);
-    setAnalysisProgress(0);
-    setActiveEngines([]);
+    try {
+      setIsAnalyzing(true);
+      setAnalysisProgress(0);
+      setActiveEngines([]);
 
-    // Simulate AI engines activating
-    const engineNames = AI_ENGINES.map(e => e.name);
-    for (let i = 0; i < engineNames.length; i++) {
-      await new Promise(r => setTimeout(r, 80));
-      setActiveEngines(prev => [...prev, engineNames[i]]);
-      setAnalysisProgress(Math.round((i / engineNames.length) * 100));
+      // Simulate AI engines activating
+      const engineNames = AI_ENGINES.map(e => e.name);
+      for (let i = 0; i < engineNames.length; i++) {
+        await new Promise(r => setTimeout(r, 80));
+        setActiveEngines(prev => [...prev, engineNames[i]]);
+        setAnalysisProgress(Math.round((i / engineNames.length) * 100));
+      }
+
+      // Run actual analysis
+      const siteAnalyzer = new AISiteAnalyzer();
+      const qsSurveyor = new AIQuantitySurveyor();
+
+      const [site, generatedDesigns, riskPredictions] = await Promise.all([
+        siteAnalyzer.analyzeFromCoordinates(coordinates.lat, coordinates.lng),
+        engineV2.designEngine.generateDesigns({
+          buildingType,
+          totalArea,
+          budget,
+          style,
+          prioritize: ['cost', 'energy', 'sustainability']
+        }, 5),
+        engineV2.riskEngine.predictDelays({
+          buildingType,
+          totalArea,
+          startDate: new Date(),
+          location: countryCode,
+          budget,
+          contractors: 5
+        })
+      ]);
+
+      const boq = qsSurveyor.generateBOQ(buildingType, totalArea, floors, countryCode, {
+        roofType: 'tiles',
+        wallType: 'blocks',
+        floorType: 'tiles',
+        windowType: 'aluminum',
+        finishLevel: 'standard'
+      });
+
+      setSiteAnalysis(site);
+      setBOQReport(boq);
+      setDesigns(generatedDesigns);
+      setRisks(riskPredictions);
+      setAnalysisProgress(100);
+    } catch (error) {
+      console.error('BuildMaster Pro Analysis Error:', error);
+      // Reset to allow retry
+      setAnalysisProgress(0);
+      setActiveEngines([]);
+    } finally {
+      setIsAnalyzing(false);
     }
-
-    // Run actual analysis
-    const siteAnalyzer = new AISiteAnalyzer();
-    const qsSurveyor = new AIQuantitySurveyor();
-    const financialAnalyzer = new AIFinancialAnalyzer();
-
-    const [site, generatedDesigns, riskPredictions] = await Promise.all([
-      siteAnalyzer.analyzeFromCoordinates(coordinates.lat, coordinates.lng),
-      engineV2.designEngine.generateDesigns({
-        buildingType,
-        totalArea,
-        budget,
-        style,
-        prioritize: ['cost', 'energy', 'sustainability']
-      }, 5),
-      engineV2.riskEngine.predictDelays({
-        buildingType,
-        totalArea,
-        startDate: new Date(),
-        location: countryCode,
-        budget,
-        contractors: 5
-      })
-    ]);
-
-    const boq = qsSurveyor.generateBOQ(buildingType, totalArea, floors, countryCode, {
-      roofType: 'tiles',
-      wallType: 'blocks',
-      floorType: 'tiles',
-      windowType: 'aluminum',
-      finishLevel: 'standard'
-    });
-
-    setSiteAnalysis(site);
-    setBOQReport(boq);
-    setDesigns(generatedDesigns);
-    setRisks(riskPredictions);
-    setAnalysisProgress(100);
-    setIsAnalyzing(false);
   }, [coordinates, buildingType, totalArea, floors, countryCode, budget, style]);
 
   // Navigation

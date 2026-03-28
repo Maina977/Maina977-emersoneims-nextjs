@@ -2131,26 +2131,40 @@ const _brandCodeCache: Map<string, ControllerFaultCode[]> = new Map();
 
 // Brand to loader function mapping for lazy loading
 const BRAND_LOADERS: Record<string, () => ControllerFaultCode[]> = {
+  // DSE / DeepSea Electronics
   'DSE': getDSEFaultCodes,
   'DeepSea': getDSEFaultCodes,
+  'DEEPSEA': getDSEFaultCodes,
+  // ComAp
   'COMAP': getComApFaultCodes,
   'ComAp': getComApFaultCodes,
+  // Woodward
   'WOODWARD': getWoodwardFaultCodes,
   'Woodward': getWoodwardFaultCodes,
+  // SmartGen
   'SMARTGEN': getSmartGenFaultCodes,
   'SmartGen': getSmartGenFaultCodes,
+  // CAT / PowerWizard
   'POWERWIZARD': getPowerWizardFaultCodes,
   'PowerWizard': getPowerWizardFaultCodes,
   'CAT': getPowerWizardFaultCodes,
+  'CAT_POWERWIZARD': getPowerWizardFaultCodes,
+  // Datakom
   'DATAKOM': getDatakomFaultCodes,
   'Datakom': getDatakomFaultCodes,
+  // Lovato
   'LOVATO': getLovatoFaultCodes,
   'Lovato': getLovatoFaultCodes,
+  // Siemens
   'SIEMENS': getSiemensFaultCodes,
   'Siemens': getSiemensFaultCodes,
+  // Enko
   'ENKO': getEnkoFaultCodes,
+  'Enko': getEnkoFaultCodes,
+  // VODIA / Volvo
   'VODIA': getVODIAFaultCodes,
   'Volvo': getVODIAFaultCodes,
+  'VOLVO': getVODIAFaultCodes,
 };
 
 /**
