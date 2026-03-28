@@ -82,8 +82,8 @@ const MEGA_MENUS = {
         items: [
           { href: '/solutions/building', label: 'Pro Building Suite™', icon: '🏛️', desc: 'AI Architecture + Structural + QS - #1 WORLDWIDE', badge: '#1' },
           { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400,000+ fault codes, AI diagnostics', badge: 'AI' },
-          { href: '/solutions/solar', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI Engines, <3 min quotes - #1 WORLDWIDE', badge: '#1' },
-          { href: '/solutions/borehole-pumps', label: 'AquaScan Pro™', icon: '💧', desc: 'AI water system diagnostics', badge: 'AI' },
+          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI Engines, <3 min quotes - #1 WORLDWIDE', badge: '#1' },
+          { href: '/aquascan-pro', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI Engines, NASA/Google Earth - #1 WORLDWIDE', badge: '#1' },
         ],
       },
       {
