@@ -5,7 +5,6 @@ import {
   BuildMasterProEngineV2,
   GLOBAL_COUNTRIES_EXTENDED,
   AI_ENGINES,
-  COMPETITIVE_ANALYSIS,
   MATERIALS_CATEGORIES,
   type RiskPrediction,
   type GeneratedDesign,
@@ -114,7 +113,6 @@ const BuildMasterProHubV2: React.FC = () => {
     { id: 'pro-suite', name: 'Pro Building Suite™', icon: '🏛️', highlight: true },
     { id: 'design-studio', name: 'AI Design Studio', icon: '✨' },
     { id: 'ai-engines', name: 'AI Engines (50+)', icon: '🤖' },
-    { id: 'competitive', name: 'vs Competition', icon: '🏆' },
     { id: 'site-analyzer', name: 'Site Analyzer', icon: '🛰️' },
     { id: 'generative-design', name: 'AI Design', icon: '🏗️' },
     { id: 'risk-prediction', name: 'Risk Predictor', icon: '⚠️' },
@@ -172,7 +170,7 @@ const BuildMasterProHubV2: React.FC = () => {
         </div>
 
         {/* Module Navigation */}
-        <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-1 overflow-x-auto pb-3" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(16, 185, 129, 0.5) rgb(30, 41, 59)' }}>
           {modules.map((module) => (
             <button
               key={module.id}
@@ -416,80 +414,6 @@ const BuildMasterProHubV2: React.FC = () => {
     </div>
   );
 
-  // Competitive Analysis Module
-  const renderCompetitive = () => (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">🏆 BuildMaster Pro vs Competition</h2>
-        <p className="text-emerald-400">Why we're the WORLD'S #1 AI Construction Platform</p>
-      </div>
-
-      {/* Comparison Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-700">
-              <th className="text-left p-4 text-white">Feature</th>
-              <th className="text-center p-4 text-emerald-400">BuildMaster Pro™</th>
-              <th className="text-center p-4 text-gray-400">Procore</th>
-              <th className="text-center p-4 text-gray-400">Autodesk</th>
-              <th className="text-center p-4 text-gray-400">Buildots</th>
-              <th className="text-center p-4 text-gray-400">Kreo</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { feature: 'AI Engines', us: '50+', procore: '10', autodesk: '15', buildots: '8', kreo: '5' },
-              { feature: 'Cost Prediction Accuracy', us: '94.7%', procore: '92%', autodesk: '88%', buildots: '-', kreo: '85%' },
-              { feature: 'Countries Supported', us: '195+', procore: '50', autodesk: '40', buildots: '25', kreo: '15' },
-              { feature: 'BIM Precision', us: '98.8%', procore: '-', autodesk: '95%', buildots: '-', kreo: '90%' },
-              { feature: 'Site Analysis', us: '✅ NASA + Google', procore: '❌', autodesk: '⚠️ Limited', buildots: '❌', kreo: '❌' },
-              { feature: 'Generative Design', us: '✅ 1000+ variations', procore: '❌', autodesk: '✅', buildots: '❌', kreo: '❌' },
-              { feature: '100% BOQ', us: '✅', procore: '⚠️', autodesk: '⚠️', buildots: '❌', kreo: '✅' },
-              { feature: 'Real-time Pricing', us: '✅ 195 countries', procore: '⚠️', autodesk: '❌', buildots: '❌', kreo: '⚠️' },
-              { feature: 'Risk Prediction', us: '✅ 2-4 weeks ahead', procore: '✅', autodesk: '⚠️', buildots: '✅', kreo: '❌' },
-              { feature: 'Solar Integration', us: '✅', procore: '❌', autodesk: '❌', buildots: '❌', kreo: '❌' },
-              { feature: 'Borehole Integration', us: '✅', procore: '❌', autodesk: '❌', buildots: '❌', kreo: '❌' },
-              { feature: 'Carbon Tracking', us: '✅', procore: '⚠️', autodesk: '✅', buildots: '❌', kreo: '❌' },
-              { feature: 'Self-Learning', us: '✅', procore: '✅', autodesk: '⚠️', buildots: '⚠️', kreo: '❌' },
-              { feature: 'Auto Permits', us: '✅', procore: '⚠️', autodesk: '❌', buildots: '❌', kreo: '❌' },
-            ].map((row, i) => (
-              <tr key={i} className="border-b border-slate-800">
-                <td className="p-4 text-white">{row.feature}</td>
-                <td className="p-4 text-center text-emerald-400 font-bold bg-emerald-500/10">{row.us}</td>
-                <td className="p-4 text-center text-gray-400">{row.procore}</td>
-                <td className="p-4 text-center text-gray-400">{row.autodesk}</td>
-                <td className="p-4 text-center text-gray-400">{row.buildots}</td>
-                <td className="p-4 text-center text-gray-400">{row.kreo}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Our Unique Advantages */}
-      <div className="bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 rounded-xl p-6">
-        <h3 className="text-xl font-bold text-white mb-4">🎯 Our Unique Advantages</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {[
-            'Only platform with integrated Solar + Borehole solutions',
-            '195+ countries with local currencies and building codes',
-            'NASA + Google Earth satellite site analysis',
-            '94.7% cost accuracy (beats Procore\'s 92%)',
-            '98.8% BIM precision (matches archBIM.cloud)',
-            'Self-learning AI that improves with every project',
-            'Complete carbon footprint tracking for ESG compliance',
-            'Automated permit generation with required documents',
-          ].map((advantage, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <span className="text-emerald-400">✅</span>
-              <span className="text-white">{advantage}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 
   // Generative Design Module
   const renderGenerativeDesign = () => (
@@ -918,7 +842,6 @@ const BuildMasterProHubV2: React.FC = () => {
         {activeModule === 'pro-suite' && <ProBuildingSuite />}
         {activeModule === 'design-studio' && <AIDesignStudioModule />}
         {activeModule === 'ai-engines' && renderAIEngines()}
-        {activeModule === 'competitive' && renderCompetitive()}
         {activeModule === 'site-analyzer' && renderPlaceholder('AI Site Analyzer', '🛰️')}
         {activeModule === 'generative-design' && renderGenerativeDesign()}
         {activeModule === 'risk-prediction' && renderRiskPrediction()}
