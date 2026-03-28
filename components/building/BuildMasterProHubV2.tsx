@@ -21,6 +21,7 @@ import {
   AIFinancialAnalyzer,
 } from '@/lib/building/buildMasterProEngine';
 import AIDesignStudioModule from './AIDesignStudioModule';
+import ProBuildingSuite from './ProBuildingSuite';
 
 // Initialize V2 Engine
 const engineV2 = new BuildMasterProEngineV2();
@@ -110,7 +111,8 @@ const BuildMasterProHubV2: React.FC = () => {
   // Navigation
   const modules = [
     { id: 'overview', name: 'Dashboard', icon: '🏠' },
-    { id: 'design-studio', name: 'AI Design Studio', icon: '✨', highlight: true },
+    { id: 'pro-suite', name: 'Pro Building Suite™', icon: '🏛️', highlight: true },
+    { id: 'design-studio', name: 'AI Design Studio', icon: '✨' },
     { id: 'ai-engines', name: 'AI Engines (50+)', icon: '🤖' },
     { id: 'competitive', name: 'vs Competition', icon: '🏆' },
     { id: 'site-analyzer', name: 'Site Analyzer', icon: '🛰️' },
@@ -913,6 +915,7 @@ const BuildMasterProHubV2: React.FC = () => {
       {renderNav()}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {activeModule === 'overview' && renderOverview()}
+        {activeModule === 'pro-suite' && <ProBuildingSuite />}
         {activeModule === 'design-studio' && <AIDesignStudioModule />}
         {activeModule === 'ai-engines' && renderAIEngines()}
         {activeModule === 'competitive' && renderCompetitive()}
