@@ -396,28 +396,28 @@ const SolarGeniusProHubV2: React.FC = () => {
             <div className="bg-slate-800/50 rounded-xl p-4">
               <h4 className="text-amber-400 font-bold mb-3">System Summary</h4>
               <div className="space-y-2 text-sm">
-                <p className="flex justify-between"><span className="text-gray-400">System Size:</span><span className="text-white font-bold">{quotation.systemDesign.totalCapacity} kW</span></p>
-                <p className="flex justify-between"><span className="text-gray-400">Panels:</span><span className="text-white font-bold">{quotation.systemDesign.numberOfPanels}x {quotation.systemDesign.panelWattage}W</span></p>
-                <p className="flex justify-between"><span className="text-gray-400">Annual Production:</span><span className="text-white font-bold">{quotation.systemDesign.annualProduction.toLocaleString()} kWh</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">System Size:</span><span className="text-white font-bold">{quotation.systemDesign.systemSize} kW</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">Panels:</span><span className="text-white font-bold">{quotation.systemDesign.panels.quantity}x {quotation.systemDesign.panels.spec.wattage}W</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">Annual Production:</span><span className="text-white font-bold">{Math.round(quotation.systemDesign.systemSize * country.avgSolarIrradiance * 365 * 0.8).toLocaleString()} kWh</span></p>
               </div>
             </div>
 
             <div className="bg-slate-800/50 rounded-xl p-4">
               <h4 className="text-green-400 font-bold mb-3">Financial Analysis</h4>
               <div className="space-y-2 text-sm">
-                <p className="flex justify-between"><span className="text-gray-400">Total Investment:</span><span className="text-white font-bold">{formatCurrency(quotation.pricing.total)}</span></p>
-                <p className="flex justify-between"><span className="text-gray-400">Annual Savings:</span><span className="text-white font-bold">{formatCurrency(quotation.financialAnalysis.annualSavings)}</span></p>
-                <p className="flex justify-between"><span className="text-gray-400">Payback Period:</span><span className="text-white font-bold">{quotation.financialAnalysis.paybackPeriod.toFixed(1)} years</span></p>
-                <p className="flex justify-between"><span className="text-gray-400">25-Year ROI:</span><span className="text-white font-bold">{quotation.financialAnalysis.roi25Year.toFixed(0)}%</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">Total Investment:</span><span className="text-white font-bold">{formatCurrency(quotation.financials.totalCost)}</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">Annual Savings:</span><span className="text-white font-bold">{formatCurrency(quotation.financials.annualSavings)}</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">Payback Period:</span><span className="text-white font-bold">{quotation.financials.paybackPeriod.toFixed(1)} years</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">25-Year ROI:</span><span className="text-white font-bold">{quotation.financials.roi25Year.toFixed(0)}%</span></p>
               </div>
             </div>
 
             <div className="bg-slate-800/50 rounded-xl p-4">
               <h4 className="text-blue-400 font-bold mb-3">Environmental Impact</h4>
               <div className="space-y-2 text-sm">
-                <p className="flex justify-between"><span className="text-gray-400">CO₂ Offset/Year:</span><span className="text-white font-bold">{(quotation.systemDesign.annualProduction * 0.5).toFixed(0)} kg</span></p>
-                <p className="flex justify-between"><span className="text-gray-400">Trees Equivalent:</span><span className="text-white font-bold">{Math.round(quotation.systemDesign.annualProduction * 0.02)} trees</span></p>
-                <p className="flex justify-between"><span className="text-gray-400">Homes Powered:</span><span className="text-white font-bold">{Math.round(quotation.systemDesign.annualProduction / 3000)} homes</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">CO₂ Offset/Year:</span><span className="text-white font-bold">{Math.round(quotation.systemDesign.systemSize * country.avgSolarIrradiance * 365 * 0.4)} kg</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">Trees Equivalent:</span><span className="text-white font-bold">{Math.round(quotation.systemDesign.systemSize * 10)} trees</span></p>
+                <p className="flex justify-between"><span className="text-gray-400">Homes Powered:</span><span className="text-white font-bold">{Math.round(quotation.systemDesign.systemSize / 5)} homes</span></p>
               </div>
             </div>
           </div>
