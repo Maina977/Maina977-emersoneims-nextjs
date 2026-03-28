@@ -353,8 +353,8 @@ const BoreholeAIAnalyzer: React.FC = () => {
             position.coords.latitude,
             position.coords.longitude
           );
-          if (detectedRegion) {
-            setRegion(detectedRegion);
+          if (detectedRegion && detectedRegion.name) {
+            setRegion(detectedRegion.name.toLowerCase().replace(/\s+/g, '-'));
           }
         },
         () => {
