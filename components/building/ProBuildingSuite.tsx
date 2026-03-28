@@ -76,14 +76,30 @@ interface Results {
   quotation: any;
 }
 
+// Building types mapped to engine IDs
 const BUILDING_TYPES = [
-  'Residential House', 'Apartment Block', 'Office Building', 'Retail/Commercial',
-  'Warehouse', 'School', 'Hospital', 'Hotel', 'Church', 'Industrial'
+  { id: 'residential', name: 'Residential House' },
+  { id: 'apartment', name: 'Apartment Block' },
+  { id: 'office', name: 'Office Building' },
+  { id: 'retail', name: 'Retail/Commercial' },
+  { id: 'warehouse', name: 'Warehouse' },
+  { id: 'school', name: 'School/Institution' },
+  { id: 'hospital', name: 'Hospital/Clinic' },
+  { id: 'hotel', name: 'Hotel/Guest House' },
+  { id: 'church', name: 'Church/Religious' },
+  { id: 'industrial', name: 'Industrial' },
 ];
 
+// Architectural styles mapped to engine IDs
 const ARCHITECTURAL_STYLES = [
-  'Modern Minimalist', 'Contemporary', 'Colonial', 'Mediterranean',
-  'Tropical', 'African Contemporary', 'Art Deco', 'Craftsman'
+  { id: 'modern', name: 'Modern Minimalist' },
+  { id: 'contemporary', name: 'Contemporary' },
+  { id: 'colonial', name: 'Colonial' },
+  { id: 'mediterranean', name: 'Mediterranean' },
+  { id: 'tropical', name: 'Tropical' },
+  { id: 'african', name: 'African Contemporary' },
+  { id: 'artdeco', name: 'Art Deco' },
+  { id: 'craftsman', name: 'Craftsman' },
 ];
 
 const SOIL_TYPES = [
@@ -116,8 +132,8 @@ export default function ProBuildingSuite() {
     projectName: '',
     client: '',
     location: 'Nairobi, Kenya',
-    buildingType: 'Residential House',
-    style: 'Modern Minimalist',
+    buildingType: 'residential',
+    style: 'modern',
     floors: 2,
     totalArea: 250,
     buildingWidth: 12000,
@@ -186,8 +202,8 @@ export default function ProBuildingSuite() {
       projectNumber: `PRO-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       location: input.location,
       countryCode: input.country as keyof typeof COUNTRIES_DATABASE,
-      buildingType: input.buildingType.toLowerCase().replace(/[^a-z]/g, ''),
-      architecturalStyle: input.style.toLowerCase().replace(/[^a-z]/g, ''),
+      buildingType: input.buildingType,
+      architecturalStyle: input.style,
       floors: input.floors,
       totalArea: input.totalArea,
       buildingWidth: input.buildingWidth,
@@ -528,7 +544,7 @@ export default function ProBuildingSuite() {
                     onChange={e => updateInput('buildingType', e.target.value)}
                     className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:border-indigo-500 focus:outline-none"
                   >
-                    {BUILDING_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                    {BUILDING_TYPES.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
                   </select>
                 </div>
 
@@ -540,7 +556,7 @@ export default function ProBuildingSuite() {
                     onChange={e => updateInput('style', e.target.value)}
                     className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:border-indigo-500 focus:outline-none"
                   >
-                    {ARCHITECTURAL_STYLES.map(style => <option key={style} value={style}>{style}</option>)}
+                    {ARCHITECTURAL_STYLES.map(style => <option key={style.id} value={style.id}>{style.name}</option>)}
                   </select>
                 </div>
 
