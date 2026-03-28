@@ -162,7 +162,7 @@ const SolarGeniusProHubV2: React.FC = () => {
           address: country.name,
           roofArea: roofArea,
           backupHours: backupHours,
-          monthlyConsumption: monthlyBill / (country.avgTariff || 25) // kWh estimate
+          monthlyConsumption: monthlyBill / (country.electricityRate || 25) // kWh estimate
         },
         countryCode,
         { systemType, budget: estimatedBudget }
@@ -177,7 +177,7 @@ const SolarGeniusProHubV2: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
-  }, [countryCode, systemType, country.name, country.avgTariff, images, monthlyBill, roofArea, backupHours]);
+  }, [countryCode, systemType, country.name, country.electricityRate, images, monthlyBill, roofArea, backupHours]);
 
   // ============================================================================
   // RENDER MODULES
