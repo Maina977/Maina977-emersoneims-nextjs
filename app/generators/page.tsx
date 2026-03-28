@@ -1815,11 +1815,6 @@ const FloatingUFOs = lazy(() => import('@/components/webgl/FloatingUFOs'));
 const InteractiveBlobs = lazy(() => import('@/components/webgl/InteractiveBlobs'));
 const AbstractFloatingShapes = lazy(() => import('@/components/webgl/AbstractFloatingShapes'));
 
-// Diagnostics Components (moved from diagnostics page)
-const HeroSection = lazy(() => import('@/components/diagnostics/HeroSection'));
-const RealTimeMonitor = lazy(() => import('@/components/diagnostics/RealTimeMonitor'));
-const DiagnosticMachine = lazy(() => import('@/components/diagnostics/DiagnosticMachine'));
-const MissionControlDiagnostics = lazy(() => import('@/components/diagnostics/MissionControlDiagnostics'));
 
 // Video Hero Component - Cinematic Hollywood Grade
 const VideoHero = () => {
@@ -2881,25 +2876,7 @@ export default function GeneratorPage() {
             </a>
           </div>
           
-          {/* Real-Time Monitor Preview */}
-          <Suspense fallback={<div className="h-40 bg-gray-900/50 rounded-xl animate-pulse my-6" />}>
-            <RealTimeMonitor />
-          </Suspense>
-
-          {/* Mission Control Preview */}
-          <div className="mt-10">
-            <Suspense fallback={<div className="h-[500px] bg-slate-900/30 rounded-2xl border border-slate-800 animate-pulse" />}>
-              <MissionControlDiagnostics />
-            </Suspense>
           </div>
-          
-          {/* Diagnostic Machine */}
-          <div className="mt-10">
-            <Suspense fallback={<div className="h-96 bg-gray-900/30 rounded-2xl border border-gray-800 animate-pulse" />}>
-              <DiagnosticMachine />
-            </Suspense>
-          </div>
-        </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════

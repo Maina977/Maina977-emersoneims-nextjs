@@ -57,11 +57,6 @@ const CaseStudiesSection = dynamic(
   { loading: () => <SectionSkeleton title="Case Studies" /> }
 );
 
-const DiagnosticModuleShowcase = dynamic(
-  () => import('@/components/sections/DiagnosticModuleShowcase'),
-  { loading: () => <SectionSkeleton title="Diagnostic Tools" /> }
-);
-
 const GeneratorOracleShowcase = dynamic(
   () => import('@/components/sections/GeneratorOracleShowcase'),
   { loading: () => <SectionSkeleton title="Generator Oracle" /> }
@@ -125,7 +120,6 @@ export default function HomePageClient() {
       <TrustBadgesSection />
       <CaseStudiesSection />
       <TestimonialsSection />
-      <DiagnosticModuleShowcase />
       <IndustryLeadingTrust />
       <LiveOperationsDashboard />
       <CompetitiveAdvantage />

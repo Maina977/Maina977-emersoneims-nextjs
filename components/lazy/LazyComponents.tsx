@@ -95,15 +95,6 @@ export const LazyProductConfigurator = dynamic(
 );
 
 // ============================================
-// LAZY LOADED CHART COMPONENTS (Heavy ~300KB+)
-// ============================================
-
-export const LazyServiceAnalytics = dynamic(
-  () => import('@/components/diagnostics/ServiceAnalytics'),
-  { ssr: false, loading: () => <ChartSkeleton /> }
-);
-
-// ============================================
 // LAZY LOADED MAP COMPONENTS (Heavy ~200KB+)
 // ============================================
 
