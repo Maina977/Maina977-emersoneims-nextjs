@@ -73,7 +73,7 @@ export default function NavigationBar({
       dropdown: [
         { label: 'Pro Building Suite™', href: '/solutions/building', description: 'AI Architecture + Structural + QS', icon: '🏛️', badge: '#1 WORLDWIDE' },
         { label: 'Generator Oracle™', href: '/generator-oracle', description: '400,000+ fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
-        { label: 'Solar Genius Pro™', href: '/solutions/solar', description: 'AI solar design & optimization', icon: '☀️', badge: 'AI' },
+        { label: 'Solar Genius Pro™', href: '/solutions/solar', description: '56 AI Engines, <3 min quotes', icon: '☀️', badge: '#1 WORLDWIDE' },
         { label: 'AquaScan Pro™', href: '/solutions/borehole-pumps', description: 'AI water system diagnostics', icon: '💧', badge: 'AI' },
       ]
     },

@@ -7,15 +7,15 @@ import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
 
-// Dynamic import for SolarGenius Pro Hub - Complete 20+ Module Platform
-const SolarGeniusProHub = dynamic(() => import('@/components/solar/SolarGeniusProHub'), {
+// Dynamic import for SolarGenius Pro Hub V2 - World's #1 Solar AI Platform
+const SolarGeniusProHub = dynamic(() => import('@/components/solar/SolarGeniusProHubV2'), {
   loading: () => (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center">
       <div className="text-center">
         <div className="w-20 h-20 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-white text-xl font-bold">Loading SolarGenius Pro™</p>
-        <p className="text-amber-400 text-sm mt-2">26 AI Engines | 20+ Modules | 195+ Countries</p>
-        <p className="text-gray-500 text-xs mt-1">World's Most Advanced Solar Platform</p>
+        <p className="text-white text-xl font-bold">Loading SolarGenius Pro™ V2</p>
+        <p className="text-amber-400 text-sm mt-2">56 AI Engines | 25+ Modules | 195+ Countries</p>
+        <p className="text-green-400 text-xs mt-1">#1 WORLDWIDE | IEEE/IEC CERTIFIED | &lt;3 MIN QUOTES</p>
       </div>
     </div>
   ),
