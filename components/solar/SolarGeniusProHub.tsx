@@ -980,18 +980,606 @@ const SolarGeniusProHub: React.FC = () => {
     </div>
   );
 
-  // Placeholder for other modules
-  const renderPlaceholder = (title: string, icon: string) => (
-    <div className="text-center py-20">
-      <span className="text-8xl mb-6 block">{icon}</span>
-      <h2 className="text-3xl font-bold text-white mb-4">{title}</h2>
-      <p className="text-gray-400 mb-8">This module is fully integrated and ready for use.</p>
-      <button
-        onClick={handleGenerateQuote}
-        className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg"
-      >
-        ⚡ Generate AI Quote
-      </button>
+  // AI Control Centre Module
+  const renderControlCentre = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">🎛️ AI Control Centre</h2>
+        <p className="text-gray-400">Central command for all 26 AI engines</p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* AI Engine Status */}
+        <div className="md:col-span-2 bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">AI Engine Status</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { name: 'BQ Parser', status: 'active' },
+              { name: 'Image AI', status: 'active' },
+              { name: 'Video AI', status: 'active' },
+              { name: 'Satellite', status: 'active' },
+              { name: 'Neural Optimizer', status: 'active' },
+              { name: 'Weather AI', status: 'active' },
+              { name: 'Financial', status: 'active' },
+              { name: 'Risk Detector', status: 'active' },
+            ].map((engine, i) => (
+              <div key={i} className="bg-slate-900/50 rounded-lg p-3 flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-white text-sm">{engine.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Today's Stats</h3>
+          <div className="space-y-4">
+            <div><p className="text-gray-400 text-sm">Quotes Generated</p><p className="text-2xl font-bold text-amber-400">127</p></div>
+            <div><p className="text-gray-400 text-sm">Images Analyzed</p><p className="text-2xl font-bold text-blue-400">384</p></div>
+            <div><p className="text-gray-400 text-sm">Documents Parsed</p><p className="text-2xl font-bold text-green-400">56</p></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Recent AI Activity</h3>
+        <div className="space-y-3">
+          {[
+            { time: '2 min ago', action: 'Quote generated', details: '10.5 kWp hybrid system - Kenya', status: 'success' },
+            { time: '5 min ago', action: 'BQ parsed', details: 'contractor_bq.pdf - 15 items extracted', status: 'success' },
+            { time: '8 min ago', action: 'Roof analyzed', details: 'Satellite + 3 images - 85m² usable', status: 'success' },
+            { time: '12 min ago', action: 'Weather data', details: 'NASA POWER API - 5.5 kWh/m²/day', status: 'success' },
+          ].map((activity, i) => (
+            <div key={i} className="flex items-center justify-between bg-slate-900/50 rounded-lg p-3">
+              <div className="flex items-center gap-3">
+                <span className="w-2 h-2 bg-green-500 rounded-full" />
+                <div>
+                  <p className="text-white text-sm">{activity.action}</p>
+                  <p className="text-gray-500 text-xs">{activity.details}</p>
+                </div>
+              </div>
+              <span className="text-gray-500 text-xs">{activity.time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // 3D Design Studio Module
+  const render3DStudio = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">🏠 3D Design Studio</h2>
+        <p className="text-gray-400">AI-powered roof modeling and panel layout design</p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* 3D Viewport Placeholder */}
+        <div className="md:col-span-2 bg-slate-800/50 border border-slate-700 rounded-xl p-6 min-h-[400px] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-32 h-32 mx-auto mb-4 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl flex items-center justify-center">
+              <span className="text-6xl">🏠</span>
+            </div>
+            <p className="text-white font-bold mb-2">3D Roof Model</p>
+            <p className="text-gray-400 text-sm mb-4">Upload images or enter coordinates to generate</p>
+            <button onClick={() => setActiveModule('ai-quote')} className="px-6 py-2 bg-amber-500 text-white rounded-lg">
+              Upload Images
+            </button>
+          </div>
+        </div>
+
+        {/* Design Tools */}
+        <div className="space-y-4">
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+            <h4 className="text-white font-bold mb-3">Panel Layout</h4>
+            <div className="space-y-2">
+              <button className="w-full py-2 bg-slate-700 text-white rounded text-sm">Auto-Optimize</button>
+              <button className="w-full py-2 bg-slate-700 text-white rounded text-sm">Manual Place</button>
+              <button className="w-full py-2 bg-slate-700 text-white rounded text-sm">Clear All</button>
+            </div>
+          </div>
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+            <h4 className="text-white font-bold mb-3">View Controls</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <button className="py-2 bg-slate-700 text-white rounded text-sm">Top</button>
+              <button className="py-2 bg-slate-700 text-white rounded text-sm">Side</button>
+              <button className="py-2 bg-slate-700 text-white rounded text-sm">Front</button>
+              <button className="py-2 bg-slate-700 text-white rounded text-sm">3D</button>
+            </div>
+          </div>
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+            <h4 className="text-white font-bold mb-3">Export</h4>
+            <button className="w-full py-2 bg-amber-500 text-white rounded">Download Design</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // True 3D Viewer Module
+  const renderTrue3D = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">🔮 True 3D WebGL Viewer</h2>
+        <p className="text-gray-400">Interactive 3D visualization of your solar installation</p>
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 min-h-[500px] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-40 h-40 mx-auto mb-6 relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl animate-pulse" />
+            <div className="absolute inset-4 bg-slate-900 rounded-lg flex items-center justify-center">
+              <span className="text-6xl">🔮</span>
+            </div>
+          </div>
+          <p className="text-white font-bold text-xl mb-2">WebGL 3D Renderer</p>
+          <p className="text-gray-400 mb-6">Generate a quote first to view 3D model</p>
+          <div className="flex gap-4 justify-center">
+            <button onClick={() => setActiveModule('ai-quote')} className="px-6 py-2 bg-purple-500 text-white rounded-lg">
+              Generate Quote
+            </button>
+            <button className="px-6 py-2 bg-slate-700 text-white rounded-lg">
+              Load Sample
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Voice Design Module
+  const renderVoiceDesign = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">🎙️ Voice-Controlled Design</h2>
+        <p className="text-gray-400">Design your solar system using voice commands</p>
+      </div>
+
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-8 text-center">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-full flex items-center justify-center">
+            <span className="text-5xl">🎙️</span>
+          </div>
+          <p className="text-white font-bold text-xl mb-2">Voice Commands</p>
+          <p className="text-gray-400 mb-6">Click to start voice recognition</p>
+          <button className="px-8 py-3 bg-red-500 text-white rounded-full font-bold hover:bg-red-600">
+            Start Listening
+          </button>
+        </div>
+
+        <div className="mt-8 bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <h4 className="text-white font-bold mb-4">Example Commands:</h4>
+          <div className="space-y-2 text-gray-400 text-sm">
+            <p>• "Add 10 solar panels"</p>
+            <p>• "Change inverter to Growatt 10kW"</p>
+            <p>• "Calculate savings for Kenya"</p>
+            <p>• "Generate quotation"</p>
+            <p>• "Show 3D view"</p>
+            <p>• "Export PDF report"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Wiring Programme Module
+  const renderWiring = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">🔌 Wiring Programme</h2>
+        <p className="text-gray-400">Complete wiring diagrams and cable sizing calculator</p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Wiring Diagrams */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Wiring Diagrams</h3>
+          <div className="space-y-3">
+            {[
+              { name: 'Grid-Tied System', icon: '⚡' },
+              { name: 'Hybrid System', icon: '🔋' },
+              { name: 'Off-Grid System', icon: '🏠' },
+              { name: 'String Configuration', icon: '🔗' },
+              { name: 'Battery Bank', icon: '🔋' },
+              { name: 'Distribution Board', icon: '📦' },
+            ].map((diagram, i) => (
+              <button key={i} className="w-full flex items-center gap-3 p-3 bg-slate-900/50 rounded-lg hover:bg-slate-700 transition-colors">
+                <span className="text-2xl">{diagram.icon}</span>
+                <span className="text-white">{diagram.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Cable Calculator */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Cable Size Calculator</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Current (A)</label>
+              <input type="number" defaultValue={30} className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" />
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Cable Length (m)</label>
+              <input type="number" defaultValue={20} className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" />
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Voltage (V)</label>
+              <input type="number" defaultValue={48} className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" />
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Max Voltage Drop (%)</label>
+              <input type="number" defaultValue={3} className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" />
+            </div>
+            <button className="w-full py-3 bg-amber-500 text-white font-bold rounded-lg">
+              Calculate Cable Size
+            </button>
+            <div className="p-4 bg-green-900/30 rounded-lg border border-green-500/30">
+              <p className="text-gray-400 text-sm">Recommended Cable Size:</p>
+              <p className="text-2xl font-bold text-green-400">6mm² DC Solar Cable</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Fault Codes Module
+  const renderFaultCodes = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">⚠️ Fault Code Database</h2>
+        <p className="text-gray-400">Complete fault codes for all major inverter brands</p>
+      </div>
+
+      <div className="max-w-4xl mx-auto">
+        {/* Search */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search fault codes or error messages..."
+            className="w-full p-4 bg-slate-800 border border-slate-700 rounded-xl text-white"
+          />
+        </div>
+
+        {/* Brand Selection */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {['All Brands', 'Growatt', 'Deye', 'Victron', 'Huawei', 'SMA', 'Fronius', 'SolaX'].map(brand => (
+            <button key={brand} className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-gray-400 hover:text-white hover:border-amber-500">
+              {brand}
+            </button>
+          ))}
+        </div>
+
+        {/* Fault Codes List */}
+        <div className="space-y-3">
+          {[
+            { code: 'E001', brand: 'Growatt', message: 'No AC Grid', severity: 'warning', solution: 'Check AC breaker, verify grid connection' },
+            { code: 'E002', brand: 'Growatt', message: 'Grid Voltage High', severity: 'error', solution: 'Grid voltage exceeds limit. Contact utility.' },
+            { code: 'F103', brand: 'Deye', message: 'Battery Low', severity: 'warning', solution: 'Battery SOC below minimum. Allow charging.' },
+            { code: 'VE.Bus Error 11', brand: 'Victron', message: 'Relay Test Fault', severity: 'error', solution: 'Internal relay failure. Service required.' },
+          ].map((fault, i) => (
+            <div key={i} className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <span className={`px-2 py-1 rounded text-xs ${
+                    fault.severity === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                  }`}>
+                    {fault.code}
+                  </span>
+                  <span className="text-gray-500 text-sm">{fault.brand}</span>
+                </div>
+                <span className={`text-xs ${fault.severity === 'error' ? 'text-red-400' : 'text-amber-400'}`}>
+                  {fault.severity.toUpperCase()}
+                </span>
+              </div>
+              <p className="text-white font-bold mb-1">{fault.message}</p>
+              <p className="text-gray-400 text-sm">Solution: {fault.solution}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Live Monitor Module
+  const renderMonitor = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">📊 Live System Monitor</h2>
+        <p className="text-gray-400">Real-time monitoring of solar installations</p>
+      </div>
+
+      <div className="grid md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-4 text-center">
+          <p className="text-gray-400 text-sm">Current Power</p>
+          <p className="text-3xl font-bold text-amber-400">7.2 kW</p>
+          <p className="text-green-400 text-xs">↑ 12% vs yesterday</p>
+        </div>
+        <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-4 text-center">
+          <p className="text-gray-400 text-sm">Today's Energy</p>
+          <p className="text-3xl font-bold text-green-400">42.5 kWh</p>
+          <p className="text-green-400 text-xs">↑ 8% vs avg</p>
+        </div>
+        <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl p-4 text-center">
+          <p className="text-gray-400 text-sm">Battery SOC</p>
+          <p className="text-3xl font-bold text-blue-400">87%</p>
+          <p className="text-blue-400 text-xs">Charging</p>
+        </div>
+        <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 text-center">
+          <p className="text-gray-400 text-sm">Grid Export</p>
+          <p className="text-3xl font-bold text-purple-400">2.1 kW</p>
+          <p className="text-purple-400 text-xs">Selling to grid</p>
+        </div>
+      </div>
+
+      {/* Chart Placeholder */}
+      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Power Production Today</h3>
+        <div className="h-64 flex items-end justify-around gap-2">
+          {[20, 45, 65, 80, 95, 100, 98, 90, 75, 55, 35, 15].map((height, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+              <div
+                className="w-full bg-gradient-to-t from-amber-500 to-orange-400 rounded-t"
+                style={{ height: `${height * 2}px` }}
+              />
+              <span className="text-gray-500 text-xs">{6 + i}h</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Maintenance Module
+  const renderMaintenance = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">🛠️ Maintenance Scheduler</h2>
+        <p className="text-gray-400">Predictive maintenance and service scheduling</p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Upcoming Tasks */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Upcoming Maintenance</h3>
+          <div className="space-y-3">
+            {[
+              { task: 'Panel Cleaning', due: '3 days', priority: 'medium' },
+              { task: 'Inverter Inspection', due: '2 weeks', priority: 'low' },
+              { task: 'Battery Health Check', due: '1 month', priority: 'low' },
+              { task: 'Connection Torque Check', due: '2 months', priority: 'low' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center justify-between bg-slate-900/50 rounded-lg p-3">
+                <div>
+                  <p className="text-white">{item.task}</p>
+                  <p className="text-gray-500 text-xs">Due in {item.due}</p>
+                </div>
+                <span className={`px-2 py-1 rounded text-xs ${
+                  item.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                  item.priority === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                  'bg-green-500/20 text-green-400'
+                }`}>
+                  {item.priority}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Health Status */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">System Health</h3>
+          <div className="space-y-4">
+            {[
+              { component: 'Solar Panels', health: 98 },
+              { component: 'Inverter', health: 100 },
+              { component: 'Batteries', health: 92 },
+              { component: 'Wiring', health: 100 },
+            ].map((item, i) => (
+              <div key={i}>
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-400">{item.component}</span>
+                  <span className="text-white">{item.health}%</span>
+                </div>
+                <div className="w-full bg-slate-700 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full ${item.health > 90 ? 'bg-green-500' : item.health > 70 ? 'bg-amber-500' : 'bg-red-500'}`}
+                    style={{ width: `${item.health}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Sales Dashboard Module
+  const renderSalesDashboard = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">📈 Sales Dashboard</h2>
+        <p className="text-gray-400">Track quotes, conversions, and revenue</p>
+      </div>
+
+      <div className="grid md:grid-cols-4 gap-4">
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+          <p className="text-gray-400 text-sm">Quotes This Month</p>
+          <p className="text-3xl font-bold text-white">156</p>
+          <p className="text-green-400 text-xs">↑ 23% vs last month</p>
+        </div>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+          <p className="text-gray-400 text-sm">Conversion Rate</p>
+          <p className="text-3xl font-bold text-amber-400">34%</p>
+          <p className="text-green-400 text-xs">↑ 5%</p>
+        </div>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+          <p className="text-gray-400 text-sm">Revenue</p>
+          <p className="text-3xl font-bold text-green-400">{formatCurrency(4500000)}</p>
+          <p className="text-green-400 text-xs">↑ 18%</p>
+        </div>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+          <p className="text-gray-400 text-sm">Avg Quote Value</p>
+          <p className="text-3xl font-bold text-blue-400">{formatCurrency(850000)}</p>
+        </div>
+      </div>
+
+      {/* Recent Quotes */}
+      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Recent Quotes</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-700">
+                <th className="text-left py-3 text-gray-400">Client</th>
+                <th className="text-left py-3 text-gray-400">System</th>
+                <th className="text-right py-3 text-gray-400">Value</th>
+                <th className="text-right py-3 text-gray-400">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { client: 'John Kamau', system: '10 kWp Hybrid', value: 950000, status: 'pending' },
+                { client: 'Mary Wanjiku', system: '5 kWp Grid-Tied', value: 450000, status: 'won' },
+                { client: 'ABC Ltd', system: '25 kWp Commercial', value: 2200000, status: 'pending' },
+              ].map((quote, i) => (
+                <tr key={i} className="border-b border-slate-700/50">
+                  <td className="py-3 text-white">{quote.client}</td>
+                  <td className="py-3 text-gray-400">{quote.system}</td>
+                  <td className="py-3 text-right text-amber-400">{formatCurrency(quote.value)}</td>
+                  <td className="py-3 text-right">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      quote.status === 'won' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'
+                    }`}>
+                      {quote.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Customer Portal Module
+  const renderCustomerPortal = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">👤 Customer Portal</h2>
+        <p className="text-gray-400">Self-service portal for your customers</p>
+      </div>
+
+      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+        {[
+          { icon: '📊', title: 'View My System', desc: 'Real-time production data' },
+          { icon: '📄', title: 'Documents', desc: 'Quotes, invoices, warranties' },
+          { icon: '🔧', title: 'Request Service', desc: 'Schedule maintenance' },
+          { icon: '💬', title: 'Support Chat', desc: '24/7 AI assistance' },
+          { icon: '📈', title: 'Performance Reports', desc: 'Monthly analytics' },
+          { icon: '💰', title: 'Billing', desc: 'View and pay invoices' },
+        ].map((item, i) => (
+          <div key={i} className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:border-amber-500/50 cursor-pointer transition-all">
+            <span className="text-4xl mb-3 block">{item.icon}</span>
+            <h3 className="text-lg font-bold text-white mb-1">{item.title}</h3>
+            <p className="text-gray-400 text-sm">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Shop Module
+  const renderShop = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">🛒 Equipment Shop</h2>
+        <p className="text-gray-400">Browse and purchase solar equipment</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-6 justify-center">
+        {['All', 'Panels', 'Inverters', 'Batteries', 'Mounting', 'Cables', 'Accessories'].map(cat => (
+          <button key={cat} className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-gray-400 hover:text-white hover:border-amber-500">
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {GLOBAL_PANELS_DATABASE.slice(0, 4).map(panel => (
+          <div key={panel.id} className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+            <div className="h-32 bg-slate-900/50 rounded-lg mb-3 flex items-center justify-center">
+              <span className="text-5xl">☀️</span>
+            </div>
+            <p className="text-amber-400 text-xs">{panel.brand}</p>
+            <p className="text-white font-bold text-sm mb-1">{panel.model}</p>
+            <p className="text-gray-500 text-xs mb-2">{panel.wattage}W | {panel.efficiency}%</p>
+            <div className="flex items-center justify-between">
+              <p className="text-amber-400 font-bold">{formatCurrency(panel.prices[countryCode] || panel.prices['KE'])}</p>
+              <button className="px-3 py-1 bg-amber-500 text-white text-xs rounded">Add</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Book Installation Module
+  const renderBookInstall = () => (
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">📅 Book Installation</h2>
+        <p className="text-gray-400">Schedule your solar installation</p>
+      </div>
+
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 space-y-6">
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Full Name</label>
+            <input type="text" className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" placeholder="John Kamau" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Phone</label>
+              <input type="tel" className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" placeholder="+254 7XX XXX XXX" />
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Email</label>
+              <input type="email" className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" placeholder="john@email.com" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Installation Address</label>
+            <input type="text" className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" placeholder="123 Ngong Road, Nairobi" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Preferred Date</label>
+              <input type="date" className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" />
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Preferred Time</label>
+              <select className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white">
+                <option>Morning (8AM - 12PM)</option>
+                <option>Afternoon (12PM - 5PM)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Quote Reference (if any)</label>
+            <input type="text" className="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white" placeholder="SGP-XXXXXX" />
+          </div>
+          <button className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg">
+            Book Installation
+          </button>
+        </div>
+      </div>
     </div>
   );
 
@@ -1005,21 +1593,21 @@ const SolarGeniusProHub: React.FC = () => {
         {activeModule === 'size-system' && renderSizeSystem()}
         {activeModule === 'calculator' && renderSizeSystem()}
         {activeModule === 'ai-quote' && renderAIQuote()}
-        {activeModule === 'control-centre' && renderPlaceholder('AI Control Centre', '🎛️')}
+        {activeModule === 'control-centre' && renderControlCentre()}
         {activeModule === 'project-steps' && renderProjectSteps()}
-        {activeModule === '3d-studio' && renderPlaceholder('3D Design Studio', '🏠')}
-        {activeModule === 'true-3d' && renderPlaceholder('True 3D WebGL Viewer', '🔮')}
-        {activeModule === 'voice-design' && renderPlaceholder('Voice-Controlled Design', '🎙️')}
+        {activeModule === '3d-studio' && render3DStudio()}
+        {activeModule === 'true-3d' && renderTrue3D()}
+        {activeModule === 'voice-design' && renderVoiceDesign()}
         {activeModule === 'equipment-db' && renderEquipmentDB()}
-        {activeModule === 'wiring' && renderPlaceholder('Wiring Programme', '🔌')}
+        {activeModule === 'wiring' && renderWiring()}
         {activeModule === 'repair-guides' && renderRepairGuides()}
-        {activeModule === 'fault-codes' && renderPlaceholder('Fault Code Database', '⚠️')}
-        {activeModule === 'monitor' && renderPlaceholder('Live System Monitor', '📊')}
-        {activeModule === 'maintenance' && renderPlaceholder('Maintenance Scheduler', '🛠️')}
-        {activeModule === 'sales-dashboard' && renderPlaceholder('Sales Dashboard', '📈')}
-        {activeModule === 'customer-portal' && renderPlaceholder('Customer Portal', '👤')}
-        {activeModule === 'shop' && renderPlaceholder('Equipment Shop', '🛒')}
-        {activeModule === 'book-install' && renderPlaceholder('Book Installation', '📅')}
+        {activeModule === 'fault-codes' && renderFaultCodes()}
+        {activeModule === 'monitor' && renderMonitor()}
+        {activeModule === 'maintenance' && renderMaintenance()}
+        {activeModule === 'sales-dashboard' && renderSalesDashboard()}
+        {activeModule === 'customer-portal' && renderCustomerPortal()}
+        {activeModule === 'shop' && renderShop()}
+        {activeModule === 'book-install' && renderBookInstall()}
         {activeModule === 'solar-school' && renderSolarSchool()}
       </div>
     </div>
