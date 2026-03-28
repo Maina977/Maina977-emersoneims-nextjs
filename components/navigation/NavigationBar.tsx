@@ -68,18 +68,13 @@ export default function NavigationBar({
       ]
     },
     {
-      id: 'ai-tools',
-      label: 'AI Tools',
+      id: 'ai-powerhouse',
+      label: 'AI Powerhouse',
       dropdown: [
-        { label: 'All AI Tools', href: '/ai-tools', description: 'View all our AI-powered tools', icon: '🤖', badge: '75+ ENGINES' },
-        { label: 'Pro Building Suite™', href: '/solutions/building', description: 'AI Architecture + Structural + QS - Complete in 3 minutes', icon: '🏛️', badge: '#1 WORLDWIDE' },
-        { label: 'Generator Oracle™', href: '/generator-oracle', description: '400,000+ fault codes, AI diagnostics, wiring diagrams', icon: '🔮', badge: 'AI-POWERED' },
-        { label: 'Solar Genius Pro™', href: '/solutions/solar', description: 'AI solar design, sizing & optimization', icon: '☀️', badge: 'AI' },
-        { label: 'AquaScan Pro™', href: '/solutions/borehole-pumps', description: 'AI water system diagnostics & optimization', icon: '💧', badge: 'AI' },
-        { label: 'Fault Code Lookup', href: '/fault-code-lookup', description: 'Quick error code search - 400,000+ codes', icon: '🔍' },
-        { label: 'Diagnostic Suite', href: '/diagnostic-suite', description: 'Full diagnostic experience', icon: '📊' },
-        { label: 'Generator Oracle Africa', href: '/generator-oracle/africa', description: 'Optimized for African technicians', icon: '🌍' },
-        { label: 'Solar Sizing Calculator', href: '/solutions/solar-sizing', description: 'AI-powered solar system sizing', icon: '📐' },
+        { label: 'Pro Building Suite™', href: '/solutions/building', description: 'AI Architecture + Structural + QS', icon: '🏛️', badge: '#1 WORLDWIDE' },
+        { label: 'Generator Oracle™', href: '/generator-oracle', description: '400,000+ fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
+        { label: 'Solar Genius Pro™', href: '/solutions/solar', description: 'AI solar design & optimization', icon: '☀️', badge: 'AI' },
+        { label: 'AquaScan Pro™', href: '/solutions/borehole-pumps', description: 'AI water system diagnostics', icon: '💧', badge: 'AI' },
       ]
     },
     {
@@ -87,7 +82,6 @@ export default function NavigationBar({
       label: 'Solar',
       dropdown: [
         { label: 'Solar Solutions', href: '/solutions/solar', description: 'Complete solar power systems', icon: '☀️' },
-        { label: 'Solar Genius Pro™', href: '/solutions/solar', description: 'AI-powered solar design & optimization', icon: '🔆', badge: 'AI' },
         { label: 'Solar Maintenance Hub', href: '/maintenance-hub/solar', description: 'Complete solar maintenance center', icon: '🛠️' },
         { label: 'Solar Sizing Calculator', href: '/solutions/solar-sizing', description: 'Calculate your solar system needs', icon: '📐' },
       ]
@@ -97,8 +91,8 @@ export default function NavigationBar({
       label: 'Generators',
       dropdown: [
         { label: 'Bible of Generators', href: '/generators', description: 'Complete generator resource hub', icon: '📖', badge: 'COMPREHENSIVE' },
-        { label: 'Generator Maintenance Hub', href: '/maintenance-hub/generators', description: 'Engine Room Command Center', icon: '🛠️', badge: 'NEW' },
-        { label: 'Universal Maintenance Hub', href: '/maintenance-hub', description: 'Complete maintenance center for all equipment', icon: '🔧' },
+        { label: 'Universal Maintenance Hub', href: '/maintenance-hub', description: 'Complete maintenance center for all equipment', icon: '🔧', badge: 'NEW' },
+        { label: 'Generator Maintenance Hub', href: '/maintenance-hub/generators', description: 'Engine Room Command Center', icon: '🛠️' },
         { label: 'New Generators', href: '/generators#new-generators', description: 'Cummins & Voltka lineup', icon: '⚡' },
         { label: 'Used Generators', href: '/generators/used', description: 'Certified pre-owned', icon: '🔄' },
         { label: 'Leasing Programs', href: '/generators/leasing', description: 'Flexible lease options', icon: '💰', badge: 'NEW' },
@@ -110,7 +104,6 @@ export default function NavigationBar({
       ]
     },
     { id: 'calculators', label: 'Calculators', href: '/calculators' },
-    { id: 'innovations', label: 'Innovations', href: '/innovations' },
     { id: 'case-studies', label: 'Case Studies', href: '/case-studies' },
     { id: 'contact', label: 'Contact', href: '/contact' },
   ];
