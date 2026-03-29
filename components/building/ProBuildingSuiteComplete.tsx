@@ -839,7 +839,7 @@ export default function ProBuildingSuiteComplete() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">{report.projectName}</h1>
-              <p className="text-emerald-400 text-sm">Quote #{report.id} | {report.totalArea}m² | {report.architecture.floorPlans.length} Floors</p>
+              <p className="text-emerald-400 text-sm">Quote #{report.id} | {report.architecture.floorPlans.reduce((sum, f) => sum + f.area, 0)}m² | {report.architecture.floorPlans.length} Floors</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -888,8 +888,8 @@ export default function ProBuildingSuiteComplete() {
 
             <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-2xl p-6">
               <h3 className="text-blue-400 font-medium mb-2">Building Area</h3>
-              <p className="text-4xl font-black text-white">{report.totalArea} <span className="text-xl">m²</span></p>
-              <p className="text-slate-400 text-sm mt-2">{report.architecture.floorPlans.length} floors × {Math.round(report.totalArea / report.architecture.floorPlans.length)}m²</p>
+              <p className="text-4xl font-black text-white">{report.architecture.floorPlans.reduce((sum, f) => sum + f.area, 0)} <span className="text-xl">m²</span></p>
+              <p className="text-slate-400 text-sm mt-2">{report.architecture.floorPlans.length} floors × {Math.round(report.architecture.floorPlans.reduce((sum, f) => sum + f.area, 0) / report.architecture.floorPlans.length)}m²</p>
             </div>
 
             <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-6">
