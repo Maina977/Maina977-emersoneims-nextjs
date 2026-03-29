@@ -1,22 +1,22 @@
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
-const BuildMasterProHubV2 = dynamic(() => import('@/components/building/BuildMasterProHubV2'), {
+const ProBuildingSuiteV3 = dynamic(() => import('@/components/building/ProBuildingSuiteV3'), {
   loading: () => (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-white text-xl font-bold">Loading BuildMaster Pro™ V2...</p>
-        <p className="text-emerald-400 text-sm mt-2">WORLD&apos;S #1 AI CONSTRUCTION ECOSYSTEM</p>
-        <p className="text-gray-500 text-xs mt-1">50+ AI Engines - 195+ Countries - 94.7% Accuracy</p>
+        <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-white text-xl font-bold">Loading Pro Building Suite™ V3...</p>
+        <p className="text-indigo-400 text-sm mt-2">WORLD&apos;S #1 AI CONSTRUCTION PLATFORM</p>
+        <p className="text-gray-500 text-xs mt-1">75+ AI Engines - 195+ Countries - 99.8% Accuracy</p>
       </div>
     </div>
   )
 });
 
 export const metadata: Metadata = {
-  title: 'BuildMaster Pro™ V2 | World\'s #1 AI Construction Platform | EmersonEIMS',
-  description: 'The world\'s most advanced AI construction ecosystem. 75+ AI engines, 195+ countries, 99.8% accuracy. Complete architecture, structural engineering, and quantity surveying in under 3 minutes.',
+  title: 'Pro Building Suite™ V3 | World\'s #1 AI Construction Platform | EmersonEIMS',
+  description: 'The world\'s most advanced AI construction platform. 75+ AI engines, 195+ countries, 99.8% accuracy. Complete architecture, structural engineering, and quantity surveying. Like Autodesk Revit but with AI.',
   keywords: [
     'AI construction', 'building cost estimator', 'quantity surveyor AI', 'BOQ generator',
     'construction planning', 'site analysis', '3D house design', 'building permits',
@@ -26,18 +26,18 @@ export const metadata: Metadata = {
     'carbon footprint construction', 'self-learning AI', 'professional BOQ'
   ],
   openGraph: {
-    title: 'BuildMaster Pro™ | Universal AI Construction Ecosystem',
-    description: 'AI-powered construction planning: site analysis, 3D design, 100% accurate BOQ, financial analysis, permits, and renewable energy integration.',
-    images: ['/images/buildmaster-pro-og.jpg'],
+    title: 'Pro Building Suite™ V3 | Universal AI Construction Platform',
+    description: 'AI-powered construction platform: 75+ AI engines for architecture, structural engineering, and quantity surveying with 99.8% accuracy.',
+    images: ['/images/pro-building-suite-og.jpg'],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BuildMaster Pro™ | AI Construction Ecosystem',
+    title: 'Pro Building Suite™ V3 | AI Construction Platform',
     description: 'The world\'s most advanced AI construction platform with 75+ AI engines and 99.8% accuracy.',
   }
 };
 
 export default function BuildingPage() {
-  return <BuildMasterProHubV2 />;
+  return <ProBuildingSuiteV3 />;
 }
