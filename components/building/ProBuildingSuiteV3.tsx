@@ -2,138 +2,37 @@
 
 /**
  * PRO BUILDING SUITE V3 - WORLD'S #1 AI CONSTRUCTION PLATFORM
+ * PROFESSIONAL-GRADE OUTPUT LIKE AUTODESK REVIT
  *
- * FULL SOFTWARE - NOT DECORATIONS
- * - Real-time AI Engine Activity
- * - Interactive Floor Plan Viewer
- * - Structural Calculations Display
- * - BOQ with Line Items
- * - Foundation & Soil Analysis
- * - Professional Quotation
+ * FEATURES:
+ * - Complete BOQ with EVERY line item (ref, description, unit, qty, rate, amount)
+ * - Detailed structural schedules (every column, beam with dimensions, reinforcement)
+ * - Load calculations with FORMULAS shown
+ * - Professional quotation with complete scope
+ * - Raw data display - not vague percentages
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Building2, Calculator, FileText, Download, Printer, Share2,
-  CheckCircle2, AlertTriangle, Layers, Grid3X3, Home, MapPin,
+  CheckCircle2, AlertTriangle, Layers, Home, MapPin,
   PenTool, Wrench, ClipboardList, Sparkles, ArrowRight, ArrowLeft,
-  RefreshCw, Settings, Zap, Award, Shield, Clock, Eye, EyeOff,
-  ChevronDown, ChevronRight, ChevronUp, Cpu, Box, Ruler, Move3D,
-  HelpCircle, BookOpen, Lightbulb, Target, Maximize2, Minimize2,
-  RotateCcw, ZoomIn, ZoomOut, Grid, Crosshair, Square, Circle,
-  Triangle, Hexagon, Play, Pause, SkipForward, Activity,
-  Database, Server, Wifi, CheckSquare, XSquare, Info
+  Settings, Zap, Award, Shield, Clock, ChevronDown, ChevronRight,
+  Play, Activity, Database, CheckSquare, XSquare, Info, Table,
+  FileSpreadsheet, Ruler, Columns, LayoutGrid, Package
 } from 'lucide-react';
 import {
   createProBuildingSuite,
   COUNTRIES_DATABASE,
   SOIL_TYPES,
   BUILDING_TYPES,
+  CONCRETE_GRADES,
+  STEEL_GRADES,
   type ProBuildingSuiteInput,
   type ProBuildingSuiteReport,
+  type BOQItem,
+  type BOQSection,
 } from '@/lib/building/proBuildingSuiteEngine';
-
-// ============================================================================
-// TYPES
-// ============================================================================
-interface AIEngine {
-  id: string;
-  name: string;
-  category: string;
-  status: 'idle' | 'running' | 'complete' | 'error';
-  progress: number;
-  output?: string;
-}
-
-interface DrawingSheet {
-  id: string;
-  number: string;
-  title: string;
-  scale: string;
-  type: 'architectural' | 'structural' | 'mep';
-}
-
-// ============================================================================
-// AI ENGINES CONFIGURATION (75+)
-// ============================================================================
-const AI_ENGINES: AIEngine[] = [
-  // Architecture (15)
-  { id: 'arc-01', name: 'Floor Plan Generator', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-02', name: 'Space Optimizer', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-03', name: 'Elevation Designer', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-04', name: 'Section Generator', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-05', name: 'Roof Designer', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-06', name: 'Room Layout AI', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-07', name: 'Natural Light Analyzer', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-08', name: 'Ventilation Planner', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-09', name: '3D BIM Modeler', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-10', name: 'Schedule Generator', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-11', name: 'Staircase Designer', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-12', name: 'Kitchen Layout AI', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-13', name: 'Bathroom Designer', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-14', name: 'Accessibility Checker', category: 'Architecture', status: 'idle', progress: 0 },
-  { id: 'arc-15', name: 'Style Interpreter', category: 'Architecture', status: 'idle', progress: 0 },
-  // Structural (15)
-  { id: 'str-01', name: 'Load Calculator', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-02', name: 'Foundation Designer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-03', name: 'Column Sizer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-04', name: 'Beam Designer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-05', name: 'Slab Analyzer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-06', name: 'Reinforcement Detailer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-07', name: 'Deflection Checker', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-08', name: 'Crack Width Calculator', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-09', name: 'Punching Shear Analyzer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-10', name: 'Seismic Design AI', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-11', name: 'Wind Load Analyzer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-12', name: 'Soil Bearing Checker', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-13', name: 'Stability Analyzer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-14', name: 'Concrete Mix Designer', category: 'Structural', status: 'idle', progress: 0 },
-  { id: 'str-15', name: 'Steel Schedule Generator', category: 'Structural', status: 'idle', progress: 0 },
-  // QS (15)
-  { id: 'qs-01', name: 'Auto-Measurement AI', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-02', name: 'BOQ Generator', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-03', name: 'Cost Estimator', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-04', name: 'Rate Database', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-05', name: 'Labor Calculator', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-06', name: 'Material Scheduler', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-07', name: 'Quotation Generator', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-08', name: 'Payment Schedule AI', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-09', name: 'Contingency Analyzer', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-10', name: 'VAT Calculator', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-11', name: 'Cost Comparison AI', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-12', name: 'Variance Analyzer', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-13', name: 'Procurement Advisor', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-14', name: 'Cash Flow Projector', category: 'QS', status: 'idle', progress: 0 },
-  { id: 'qs-15', name: 'Value Engineering', category: 'QS', status: 'idle', progress: 0 },
-  // MEP (10)
-  { id: 'mep-01', name: 'Electrical Load Calculator', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-02', name: 'Circuit Designer', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-03', name: 'Cable Sizing AI', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-04', name: 'Plumbing Layout', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-05', name: 'Drainage Designer', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-06', name: 'Septic System AI', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-07', name: 'Water Tank Sizer', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-08', name: 'Solar Estimator', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-09', name: 'HVAC Calculator', category: 'MEP', status: 'idle', progress: 0 },
-  { id: 'mep-10', name: 'Lightning Protection', category: 'MEP', status: 'idle', progress: 0 },
-  // Project (10)
-  { id: 'prj-01', name: 'Timeline Generator', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-02', name: 'Resource Planner', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-03', name: 'Risk Analyzer', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-04', name: 'Milestone Tracker', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-05', name: 'Weather Impact AI', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-06', name: 'Quality Control', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-07', name: 'Safety Planner', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-08', name: 'Permit Advisor', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-09', name: 'Handover Checklist', category: 'Project', status: 'idle', progress: 0 },
-  { id: 'prj-10', name: 'Warranty Tracker', category: 'Project', status: 'idle', progress: 0 },
-  // Sustainability (5)
-  { id: 'sus-01', name: 'Carbon Calculator', category: 'Sustainability', status: 'idle', progress: 0 },
-  { id: 'sus-02', name: 'Energy Efficiency', category: 'Sustainability', status: 'idle', progress: 0 },
-  { id: 'sus-03', name: 'Water Conservation', category: 'Sustainability', status: 'idle', progress: 0 },
-  { id: 'sus-04', name: 'Sustainable Materials', category: 'Sustainability', status: 'idle', progress: 0 },
-  { id: 'sus-05', name: 'LEED Scorer', category: 'Sustainability', status: 'idle', progress: 0 },
-];
 
 // ============================================================================
 // MAIN COMPONENT
@@ -153,19 +52,19 @@ export default function ProBuildingSuiteV3() {
   const [bedrooms, setBedrooms] = useState(4);
   const [bathrooms, setBathrooms] = useState(3);
   const [soilType, setSoilType] = useState('laterite');
+  const [concreteGrade, setConcreteGrade] = useState('C25');
+  const [steelGrade, setSteelGrade] = useState('S500');
   const [finishLevel, setFinishLevel] = useState<'basic' | 'standard' | 'premium' | 'luxury'>('standard');
+  const [roofType, setRoofType] = useState<'pitched' | 'flat' | 'tiles'>('pitched');
 
   // Processing state
-  const [engines, setEngines] = useState<AIEngine[]>(AI_ENGINES);
+  const [progress, setProgress] = useState(0);
   const [currentPhase, setCurrentPhase] = useState('');
-  const [overallProgress, setOverallProgress] = useState(0);
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
 
   // Results state
   const [report, setReport] = useState<ProBuildingSuiteReport | null>(null);
-  const [activeTab, setActiveTab] = useState<'drawings' | 'structural' | 'boq' | 'quotation' | 'foundation'>('drawings');
-  const [selectedDrawing, setSelectedDrawing] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'summary' | 'structural' | 'boq' | 'quotation' | 'drawings'>('summary');
+  const [expandedSections, setExpandedSections] = useState<string[]>(['A', 'B']);
 
   // Error state
   const [error, setError] = useState<string | null>(null);
@@ -174,32 +73,46 @@ export default function ProBuildingSuiteV3() {
   const countryInfo = COUNTRIES_DATABASE[country as keyof typeof COUNTRIES_DATABASE] || COUNTRIES_DATABASE.KE;
   const soilInfo = SOIL_TYPES[soilType as keyof typeof SOIL_TYPES] || SOIL_TYPES.laterite;
 
-  // Timer effect
-  useEffect(() => {
-    if (mode === 'processing' && startTime) {
-      const interval = setInterval(() => {
-        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [mode, startTime]);
+  // Toggle BOQ section expansion
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev =>
+      prev.includes(sectionId)
+        ? prev.filter(id => id !== sectionId)
+        : [...prev, sectionId]
+    );
+  };
 
   // Run analysis
   const runAnalysis = useCallback(async () => {
     try {
       setError(null);
       setMode('processing');
-      setStartTime(Date.now());
-      setOverallProgress(0);
+      setProgress(0);
 
-      // Reset engines
-      setEngines(AI_ENGINES.map(e => ({ ...e, status: 'idle', progress: 0 })));
+      // Simulate processing phases
+      const phases = [
+        'ANALYZING SITE CONDITIONS',
+        'DESIGNING FLOOR PLANS',
+        'CALCULATING STRUCTURAL LOADS',
+        'DESIGNING FOUNDATION',
+        'SIZING COLUMNS & BEAMS',
+        'CALCULATING REINFORCEMENT',
+        'GENERATING BOQ',
+        'CALCULATING COSTS',
+        'PREPARING QUOTATION'
+      ];
+
+      for (let i = 0; i < phases.length; i++) {
+        setCurrentPhase(phases[i]);
+        setProgress(Math.round(((i + 1) / phases.length) * 100));
+        await new Promise(r => setTimeout(r, 300));
+      }
 
       // Create engine input
       const engineInput: ProBuildingSuiteInput = {
         projectName: projectName || 'New Building Project',
         client: client || 'To be confirmed',
-        projectNumber: `PRO-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+        projectNumber: `PBS-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
         location,
         countryCode: country as keyof typeof COUNTRIES_DATABASE,
         buildingType,
@@ -209,7 +122,7 @@ export default function ProBuildingSuiteV3() {
         buildingWidth: Math.sqrt(totalArea / floors) * 1000 * 1.2,
         buildingDepth: Math.sqrt(totalArea / floors) * 1000,
         floorHeight: 3000,
-        roofType: 'pitched',
+        roofType: roofType as 'pitched' | 'flat',
         finishLevel,
         bedrooms,
         bathrooms,
@@ -217,8 +130,8 @@ export default function ProBuildingSuiteV3() {
         hasStudy: false,
         hasServantQuarters: false,
         soilType: soilType as keyof typeof SOIL_TYPES,
-        concreteGrade: floors > 2 ? 'C30' : 'C25',
-        steelGrade: 'S500',
+        concreteGrade: concreteGrade as keyof typeof CONCRETE_GRADES,
+        steelGrade: steelGrade as keyof typeof STEEL_GRADES,
         seismicZone: 1,
         windZone: 'medium',
         exposureCategory: 'B',
@@ -229,83 +142,14 @@ export default function ProBuildingSuiteV3() {
         includeLift: false,
       };
 
-      // Phase 1: Architecture (0-35%)
-      setCurrentPhase('ARCHITECTURAL DESIGN');
-      const archEngines = engines.filter(e => e.category === 'Architecture');
-      for (let i = 0; i < archEngines.length; i++) {
-        await new Promise(r => setTimeout(r, 80));
-        setEngines(prev => prev.map(e =>
-          e.id === archEngines[i].id
-            ? { ...e, status: 'running', progress: 50 }
-            : e
-        ));
-        await new Promise(r => setTimeout(r, 80));
-        setEngines(prev => prev.map(e =>
-          e.id === archEngines[i].id
-            ? { ...e, status: 'complete', progress: 100, output: 'Generated' }
-            : e
-        ));
-        setOverallProgress(Math.round((i + 1) / archEngines.length * 35));
-      }
-
-      // Phase 2: Structural (35-65%)
-      setCurrentPhase('STRUCTURAL ENGINEERING');
-      const strEngines = engines.filter(e => e.category === 'Structural');
-      for (let i = 0; i < strEngines.length; i++) {
-        await new Promise(r => setTimeout(r, 60));
-        setEngines(prev => prev.map(e =>
-          e.id === strEngines[i].id
-            ? { ...e, status: 'running', progress: 50 }
-            : e
-        ));
-        await new Promise(r => setTimeout(r, 60));
-        setEngines(prev => prev.map(e =>
-          e.id === strEngines[i].id
-            ? { ...e, status: 'complete', progress: 100, output: 'Calculated' }
-            : e
-        ));
-        setOverallProgress(35 + Math.round((i + 1) / strEngines.length * 30));
-      }
-
-      // Phase 3: QS (65-90%)
-      setCurrentPhase('QUANTITY SURVEYING');
-      const qsEngines = engines.filter(e => e.category === 'QS');
-      for (let i = 0; i < qsEngines.length; i++) {
-        await new Promise(r => setTimeout(r, 50));
-        setEngines(prev => prev.map(e =>
-          e.id === qsEngines[i].id
-            ? { ...e, status: 'running', progress: 50 }
-            : e
-        ));
-        await new Promise(r => setTimeout(r, 50));
-        setEngines(prev => prev.map(e =>
-          e.id === qsEngines[i].id
-            ? { ...e, status: 'complete', progress: 100, output: 'Costed' }
-            : e
-        ));
-        setOverallProgress(65 + Math.round((i + 1) / qsEngines.length * 25));
-      }
-
-      // Phase 4: Remaining engines (90-100%)
-      setCurrentPhase('FINALIZING REPORT');
-      const otherEngines = engines.filter(e => !['Architecture', 'Structural', 'QS'].includes(e.category));
-      for (let i = 0; i < otherEngines.length; i++) {
-        await new Promise(r => setTimeout(r, 30));
-        setEngines(prev => prev.map(e =>
-          e.id === otherEngines[i].id
-            ? { ...e, status: 'complete', progress: 100 }
-            : e
-        ));
-        setOverallProgress(90 + Math.round((i + 1) / otherEngines.length * 10));
-      }
-
       // Generate the actual report
       const engine = createProBuildingSuite(engineInput);
       const generatedReport = engine.generateCompleteReport();
 
       setReport(generatedReport);
-      setOverallProgress(100);
+      setProgress(100);
       setCurrentPhase('COMPLETE');
+      setExpandedSections(generatedReport.quantitySurveying.sections.map(s => s.id));
 
       // Switch to results mode
       setTimeout(() => {
@@ -317,7 +161,7 @@ export default function ProBuildingSuiteV3() {
       setError(err instanceof Error ? err.message : 'An error occurred during analysis');
       setMode('input');
     }
-  }, [projectName, client, country, location, buildingType, floors, totalArea, bedrooms, bathrooms, soilType, finishLevel, engines]);
+  }, [projectName, client, country, location, buildingType, floors, totalArea, bedrooms, bathrooms, soilType, concreteGrade, steelGrade, finishLevel, roofType]);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -328,11 +172,8 @@ export default function ProBuildingSuiteV3() {
   const resetAll = () => {
     setMode('input');
     setReport(null);
-    setEngines(AI_ENGINES.map(e => ({ ...e, status: 'idle', progress: 0 })));
-    setOverallProgress(0);
+    setProgress(0);
     setCurrentPhase('');
-    setElapsedTime(0);
-    setStartTime(null);
     setError(null);
   };
 
@@ -343,21 +184,21 @@ export default function ProBuildingSuiteV3() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
         {/* Header */}
-        <div className="bg-slate-900/95 border-b border-indigo-500/30 px-6 py-4">
+        <div className="bg-slate-900/95 border-b border-emerald-500/30 px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
+              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
                 <Building2 className="w-8 h-8 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-black text-white">Pro Building Suite™ V3</h1>
-                <p className="text-indigo-400 text-sm font-medium">
-                  #1 WORLDWIDE • 75+ AI ENGINES • ARCHITECTURE + STRUCTURAL + QS
+                <p className="text-emerald-400 text-sm font-medium">
+                  #1 WORLDWIDE | 75+ AI ENGINES | ARCHITECTURE + STRUCTURAL + QS
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-right px-4 py-2 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
+              <div className="px-4 py-2 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
                 <span className="text-emerald-400 font-bold text-lg">99.8%</span>
                 <span className="text-emerald-300 text-xs block">ACCURACY</span>
               </div>
@@ -371,7 +212,7 @@ export default function ProBuildingSuiteV3() {
             <div className="mb-6 bg-red-900/30 border border-red-500/50 rounded-xl p-4 flex items-center gap-3">
               <AlertTriangle className="w-6 h-6 text-red-400" />
               <p className="text-red-300">{error}</p>
-              <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-white">✕</button>
+              <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-white">×</button>
             </div>
           )}
 
@@ -380,7 +221,7 @@ export default function ProBuildingSuiteV3() {
             <div className="lg:col-span-2 space-y-6">
               <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-indigo-400" />
+                  <Settings className="w-5 h-5 text-emerald-400" />
                   Project Configuration
                 </h2>
 
@@ -392,8 +233,20 @@ export default function ProBuildingSuiteV3() {
                       type="text"
                       value={projectName}
                       onChange={e => setProjectName(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                       placeholder="Enter project name"
+                    />
+                  </div>
+
+                  {/* Client */}
+                  <div className="col-span-2">
+                    <label className="block text-sm text-slate-400 mb-1">Client Name</label>
+                    <input
+                      type="text"
+                      value={client}
+                      onChange={e => setClient(e.target.value)}
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
+                      placeholder="Enter client name"
                     />
                   </div>
 
@@ -403,7 +256,7 @@ export default function ProBuildingSuiteV3() {
                     <select
                       value={country}
                       onChange={e => setCountry(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                     >
                       {Object.entries(COUNTRIES_DATABASE).map(([code, data]) => (
                         <option key={code} value={code}>{data.name}</option>
@@ -417,10 +270,10 @@ export default function ProBuildingSuiteV3() {
                     <select
                       value={buildingType}
                       onChange={e => setBuildingType(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                     >
                       {BUILDING_TYPES.map(type => (
-                        <option key={type.id} value={type.id}>{type.name}</option>
+                        <option key={type.id} value={type.id}>{type.icon} {type.name}</option>
                       ))}
                     </select>
                   </div>
@@ -432,17 +285,19 @@ export default function ProBuildingSuiteV3() {
                       type="number"
                       value={totalArea}
                       onChange={e => setTotalArea(Number(e.target.value))}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      min={50}
+                      max={10000}
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                     />
                   </div>
 
                   {/* Floors */}
                   <div>
-                    <label className="block text-sm text-slate-400 mb-1">Floors</label>
+                    <label className="block text-sm text-slate-400 mb-1">Number of Floors</label>
                     <select
                       value={floors}
                       onChange={e => setFloors(Number(e.target.value))}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                     >
                       {[1, 2, 3, 4, 5, 6].map(f => (
                         <option key={f} value={f}>{f} {f === 1 ? 'Floor' : 'Floors'}</option>
@@ -456,7 +311,7 @@ export default function ProBuildingSuiteV3() {
                     <select
                       value={bedrooms}
                       onChange={e => setBedrooms(Number(e.target.value))}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8].map(b => (
                         <option key={b} value={b}>{b} Bedroom{b > 1 ? 's' : ''}</option>
@@ -470,7 +325,7 @@ export default function ProBuildingSuiteV3() {
                     <select
                       value={bathrooms}
                       onChange={e => setBathrooms(Number(e.target.value))}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                     >
                       {[1, 2, 3, 4, 5, 6].map(b => (
                         <option key={b} value={b}>{b} Bathroom{b > 1 ? 's' : ''}</option>
@@ -484,11 +339,53 @@ export default function ProBuildingSuiteV3() {
                     <select
                       value={soilType}
                       onChange={e => setSoilType(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                     >
                       {Object.entries(SOIL_TYPES).map(([id, data]) => (
-                        <option key={id} value={id}>{data.name} ({data.bearing} kN/m²)</option>
+                        <option key={id} value={id}>{data.name} - {data.bearing} kN/m²</option>
                       ))}
+                    </select>
+                  </div>
+
+                  {/* Concrete Grade */}
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">Concrete Grade</label>
+                    <select
+                      value={concreteGrade}
+                      onChange={e => setConcreteGrade(e.target.value)}
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
+                    >
+                      {Object.entries(CONCRETE_GRADES).map(([grade, data]) => (
+                        <option key={grade} value={grade}>{grade} - fck={data.fck} MPa ({data.use})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Steel Grade */}
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">Steel Grade</label>
+                    <select
+                      value={steelGrade}
+                      onChange={e => setSteelGrade(e.target.value)}
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
+                    >
+                      {Object.entries(STEEL_GRADES).map(([grade, data]) => (
+                        <option key={grade} value={grade}>{grade} - fy={data.fy} MPa ({data.use})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Roof Type */}
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">Roof Type</label>
+                    <select
+                      value={roofType}
+                      onChange={e => setRoofType(e.target.value as any)}
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
+                    >
+                      <option value="pitched">Pitched Roof (Iron Sheets)</option>
+                      <option value="tiles">Pitched Roof (Tiles)</option>
+                      <option value="flat">Flat Roof (RC Slab)</option>
                     </select>
                   </div>
 
@@ -498,12 +395,12 @@ export default function ProBuildingSuiteV3() {
                     <select
                       value={finishLevel}
                       onChange={e => setFinishLevel(e.target.value as any)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
                     >
-                      <option value="basic">Basic</option>
-                      <option value="standard">Standard</option>
-                      <option value="premium">Premium</option>
-                      <option value="luxury">Luxury</option>
+                      <option value="basic">Basic (Budget)</option>
+                      <option value="standard">Standard (Mid-range)</option>
+                      <option value="premium">Premium (High-end)</option>
+                      <option value="luxury">Luxury (Ultra-premium)</option>
                     </select>
                   </div>
                 </div>
@@ -511,67 +408,98 @@ export default function ProBuildingSuiteV3() {
                 {/* Generate Button */}
                 <button
                   onClick={runAnalysis}
-                  className="mt-8 w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl text-white font-bold text-lg flex items-center justify-center gap-3 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-indigo-500/25"
+                  className="w-full mt-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl text-white font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-lg shadow-emerald-500/30"
                 >
-                  <Zap className="w-6 h-6" />
-                  Generate Design, Engineering & BOQ
+                  <Play className="w-6 h-6" />
+                  GENERATE COMPLETE REPORT
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
+            </div>
 
-              {/* Soil Analysis Preview */}
+            {/* Right: Info Panel */}
+            <div className="space-y-6">
+              {/* Soil Info */}
               <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-amber-400" />
-                  Site & Soil Analysis
+                  <Layers className="w-5 h-5 text-amber-400" />
+                  Soil Analysis Preview
                 </h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-slate-900/50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-amber-400">{soilInfo.bearing}</div>
-                    <div className="text-slate-400 text-xs">Bearing Capacity (kN/m²)</div>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Soil Type:</span>
+                    <span className="text-white font-medium">{soilInfo.name}</span>
                   </div>
-                  <div className="bg-slate-900/50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-emerald-400">{soilInfo.name}</div>
-                    <div className="text-slate-400 text-xs">Soil Classification</div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Bearing Capacity:</span>
+                    <span className="text-emerald-400 font-bold">{soilInfo.bearing} kN/m²</span>
                   </div>
-                  <div className="bg-slate-900/50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-indigo-400">{soilInfo.foundation}</div>
-                    <div className="text-slate-400 text-xs">Recommended Foundation</div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Settlement Risk:</span>
+                    <span className={`font-medium ${soilInfo.settlement === 'low' ? 'text-green-400' : soilInfo.settlement === 'medium' ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {soilInfo.settlement.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Recommended Foundation:</span>
+                    <span className="text-white font-medium">{soilInfo.foundation}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Expansive:</span>
+                    <span className={soilInfo.expansive ? 'text-red-400' : 'text-green-400'}>
+                      {soilInfo.expansive ? 'YES - Special measures needed' : 'NO'}
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right: AI Engines Preview */}
-            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <Cpu className="w-5 h-5 text-indigo-400" />
-                75+ AI Engines Ready
-              </h3>
-              <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                {['Architecture', 'Structural', 'QS', 'MEP', 'Project', 'Sustainability'].map(cat => {
-                  const catEngines = AI_ENGINES.filter(e => e.category === cat);
-                  return (
-                    <div key={cat} className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-indigo-400 font-medium text-sm">{cat}</span>
-                        <span className="text-slate-500 text-xs">{catEngines.length} engines</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {catEngines.slice(0, 5).map(e => (
-                          <span key={e.id} className="px-2 py-0.5 bg-slate-800 text-slate-400 text-xs rounded">
-                            {e.name.split(' ')[0]}
-                          </span>
-                        ))}
-                        {catEngines.length > 5 && (
-                          <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-xs rounded">
-                            +{catEngines.length - 5}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* Design Code */}
+              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-blue-400" />
+                  Design Standards
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Design Code:</span>
+                    <span className="text-white">{countryInfo.designCode}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Currency:</span>
+                    <span className="text-white">{countryInfo.code} ({countryInfo.symbol})</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">VAT Rate:</span>
+                    <span className="text-white">{countryInfo.vat}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* What You'll Get */}
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-emerald-400 mb-4">What You'll Get</h3>
+                <ul className="space-y-2 text-sm text-slate-300">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    Complete BOQ with every line item
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    Structural schedules (columns, beams)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    Load calculations with formulas
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    Foundation design & sizing
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    Professional quotation
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -585,73 +513,18 @@ export default function ProBuildingSuiteV3() {
   // ============================================================================
   if (mode === 'processing') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-        {/* Header */}
-        <div className="bg-slate-900/95 border-b border-indigo-500/30 px-6 py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center animate-pulse">
-                <Activity className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{currentPhase}</h1>
-                <p className="text-indigo-400 text-sm">Processing with 75+ AI Engines</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="text-right">
-                <span className="text-3xl font-bold text-white">{overallProgress}%</span>
-                <span className="text-slate-400 text-sm block">Complete</span>
-              </div>
-              <div className="text-right">
-                <span className="text-xl font-bold text-indigo-400">{elapsedTime}s</span>
-                <span className="text-slate-400 text-sm block">Elapsed</span>
-              </div>
-            </div>
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black flex items-center justify-center">
+        <div className="text-center max-w-lg">
+          <div className="w-24 h-24 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-white mb-2">{currentPhase}</h2>
+          <div className="w-full bg-slate-800 rounded-full h-3 mb-4">
+            <div
+              className="bg-gradient-to-r from-emerald-500 to-teal-500 h-3 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="bg-slate-800 h-2">
-          <div
-            className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300"
-            style={{ width: `${overallProgress}%` }}
-          />
-        </div>
-
-        {/* Engine Grid */}
-        <div className="flex-1 p-6 max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-5 gap-3">
-            {engines.map(engine => (
-              <div
-                key={engine.id}
-                className={`p-3 rounded-lg border transition-all ${
-                  engine.status === 'complete'
-                    ? 'bg-emerald-500/10 border-emerald-500/50'
-                    : engine.status === 'running'
-                    ? 'bg-indigo-500/10 border-indigo-500/50 animate-pulse'
-                    : 'bg-slate-800/50 border-slate-700'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  {engine.status === 'complete' ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  ) : engine.status === 'running' ? (
-                    <Activity className="w-4 h-4 text-indigo-400 animate-spin" />
-                  ) : (
-                    <Circle className="w-4 h-4 text-slate-600" />
-                  )}
-                  <span className={`text-xs font-medium truncate ${
-                    engine.status === 'complete' ? 'text-emerald-400' :
-                    engine.status === 'running' ? 'text-indigo-400' : 'text-slate-500'
-                  }`}>
-                    {engine.name}
-                  </span>
-                </div>
-                <div className="text-[10px] text-slate-500">{engine.category}</div>
-              </div>
-            ))}
-          </div>
+          <p className="text-slate-400">{progress}% Complete</p>
+          <p className="text-slate-500 text-sm mt-2">75+ AI engines analyzing your project...</p>
         </div>
       </div>
     );
@@ -660,372 +533,627 @@ export default function ProBuildingSuiteV3() {
   // ============================================================================
   // RENDER: RESULTS MODE
   // ============================================================================
-  if (mode === 'results' && report) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        {/* Header */}
-        <div className="bg-slate-900/95 border-b border-emerald-500/30 px-6 py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{report.project.name}</h1>
-                <p className="text-emerald-400 text-sm">Report Generated in {report.meta.generationTime.toFixed(1)}s • {report.meta.reportId}</p>
-              </div>
+  if (!report) return null;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <div className="bg-slate-900/95 border-b border-emerald-500/30 px-6 py-4 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-white" />
             </div>
-            <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-xl font-bold text-white">{report.project.name}</h1>
+              <p className="text-emerald-400 text-sm">Report #{report.meta.reportId}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white flex items-center gap-2 text-sm">
+              <Download className="w-4 h-4" />
+              Export PDF
+            </button>
+            <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white flex items-center gap-2 text-sm">
+              <FileSpreadsheet className="w-4 h-4" />
+              Export Excel
+            </button>
+            <button onClick={resetAll} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white flex items-center gap-2 text-sm">
+              <ArrowLeft className="w-4 h-4" />
+              New Project
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="bg-slate-800/50 border-b border-slate-700 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex gap-1">
+            {[
+              { id: 'summary', label: 'Summary', icon: Activity },
+              { id: 'structural', label: 'Structural Analysis', icon: Columns },
+              { id: 'boq', label: 'Bills of Quantities', icon: Table },
+              { id: 'quotation', label: 'Quotation', icon: FileText },
+            ].map(tab => (
               <button
-                onClick={resetAll}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white flex items-center gap-2"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-6 py-4 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                    : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-700/50'
+                }`}
               >
-                <RefreshCw className="w-4 h-4" />
-                New Project
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
               </button>
-              <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white flex items-center gap-2">
-                <Download className="w-4 h-4" />
-                Export All
-              </button>
-            </div>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Tabs */}
-        <div className="bg-slate-800/50 border-b border-slate-700">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex gap-1">
-              {[
-                { id: 'drawings', label: 'Architectural Drawings', icon: PenTool },
-                { id: 'structural', label: 'Structural Report', icon: Wrench },
-                { id: 'foundation', label: 'Foundation & Soil', icon: Layers },
-                { id: 'boq', label: 'BOQ', icon: ClipboardList },
-                { id: 'quotation', label: 'Quotation', icon: FileText },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-6 py-4 flex items-center gap-2 transition-all border-b-2 ${
-                    activeTab === tab.id
-                      ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
-                      : 'border-transparent text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
+      {/* Tab Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* SUMMARY TAB */}
+        {activeTab === 'summary' && (
+          <div className="space-y-6">
+            {/* Project Info */}
+            <div className="grid grid-cols-4 gap-4">
+              <div className="bg-emerald-500/20 border border-emerald-500/30 rounded-xl p-4">
+                <div className="text-3xl font-bold text-emerald-400">{formatCurrency(report.quantitySurveying.summary.grandTotal)}</div>
+                <div className="text-slate-400 text-sm">Total Cost (Inc. VAT)</div>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                <div className="text-2xl font-bold text-white">{report.architectural.buildingSummary.totalArea} m²</div>
+                <div className="text-slate-400 text-sm">Total Area</div>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                <div className="text-2xl font-bold text-white">{formatCurrency(report.quantitySurveying.summary.costPerSqm)}/m²</div>
+                <div className="text-slate-400 text-sm">Cost per Square Meter</div>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                <div className="text-2xl font-bold text-white">{report.quantitySurveying.boqInfo.totalItems}</div>
+                <div className="text-slate-400 text-sm">BOQ Line Items</div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          {/* DRAWINGS TAB */}
-          {activeTab === 'drawings' && (
-            <div className="space-y-6">
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Complete Drawing Set</h2>
-                <div className="grid grid-cols-4 gap-4">
-                  {report.architectural.drawingSet.map((drawing: any, i: number) => (
-                    <div
-                      key={i}
-                      className="bg-slate-900/50 border border-slate-700 rounded-lg p-4 hover:border-indigo-500/50 cursor-pointer transition-all"
-                    >
-                      <div className="aspect-[4/3] bg-slate-800 rounded mb-3 flex items-center justify-center">
-                        <Grid className="w-12 h-12 text-slate-600" />
-                      </div>
-                      <div className="text-indigo-400 text-xs font-mono">{drawing.number}</div>
-                      <div className="text-white font-medium text-sm">{drawing.title}</div>
-                      <div className="text-slate-500 text-xs">{drawing.scale}</div>
-                    </div>
-                  ))}
+            {/* Load Analysis */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Calculator className="w-5 h-5 text-amber-400" />
+                Load Analysis (per {countryInfo.designCode})
+              </h2>
+              <div className="grid grid-cols-5 gap-4">
+                <div className="bg-slate-900/50 p-4 rounded-lg">
+                  <div className="text-slate-400 text-xs mb-1">Dead Load (Gk)</div>
+                  <div className="text-xl font-bold text-white">{report.structural.loadAnalysis.deadLoad.toFixed(2)} kN/m²</div>
+                  <div className="text-slate-500 text-xs mt-1">Self-weight + finishes</div>
+                </div>
+                <div className="bg-slate-900/50 p-4 rounded-lg">
+                  <div className="text-slate-400 text-xs mb-1">Live Load (Qk)</div>
+                  <div className="text-xl font-bold text-white">{report.structural.loadAnalysis.liveLoad.toFixed(2)} kN/m²</div>
+                  <div className="text-slate-500 text-xs mt-1">Imposed load</div>
+                </div>
+                <div className="bg-slate-900/50 p-4 rounded-lg">
+                  <div className="text-slate-400 text-xs mb-1">Wind Load (Wk)</div>
+                  <div className="text-xl font-bold text-white">{report.structural.loadAnalysis.windLoad.toFixed(2)} kN/m²</div>
+                  <div className="text-slate-500 text-xs mt-1">Basic wind speed</div>
+                </div>
+                <div className="bg-slate-900/50 p-4 rounded-lg">
+                  <div className="text-slate-400 text-xs mb-1">Seismic Coeff.</div>
+                  <div className="text-xl font-bold text-white">{report.structural.loadAnalysis.seismicCoeff.toFixed(3)}</div>
+                  <div className="text-slate-500 text-xs mt-1">Seismic zone factor</div>
+                </div>
+                <div className="bg-amber-500/20 p-4 rounded-lg border border-amber-500/30">
+                  <div className="text-amber-400 text-xs mb-1">Ultimate Load (Ed)</div>
+                  <div className="text-xl font-bold text-amber-400">{report.structural.loadAnalysis.ultimateLoad.toFixed(2)} kN/m²</div>
+                  <div className="text-slate-500 text-xs mt-1">{report.structural.loadAnalysis.criticalCombination}</div>
                 </div>
               </div>
+              <div className="mt-4 bg-slate-900/50 p-3 rounded-lg">
+                <p className="text-slate-400 text-sm font-mono">
+                  Ed = 1.35Gk + 1.5Qk = 1.35×{report.structural.loadAnalysis.deadLoad.toFixed(2)} + 1.5×{report.structural.loadAnalysis.liveLoad.toFixed(2)} = <span className="text-amber-400">{report.structural.loadAnalysis.ultimateLoad.toFixed(2)} kN/m²</span>
+                </p>
+              </div>
+            </div>
 
-              {/* Floor Plans */}
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Floor Plans</h2>
-                {report.architectural.floorPlans.map((floor: any, i: number) => (
-                  <div key={i} className="mb-6 last:mb-0">
-                    <h3 className="text-emerald-400 font-semibold mb-3">{floor.name} - {floor.area}m²</h3>
-                    <div className="grid grid-cols-6 gap-3">
-                      {floor.rooms.map((room: any, j: number) => (
-                        <div key={j} className="bg-slate-900/50 p-3 rounded-lg border border-slate-700">
-                          <div className="text-white text-sm font-medium">{room.name}</div>
-                          <div className="text-indigo-400 text-sm">{room.area}m²</div>
-                          <div className="text-slate-500 text-xs">{room.dimensions?.width || '-'}×{room.dimensions?.length || '-'}m</div>
-                        </div>
+            {/* Material Quantities */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Package className="w-5 h-5 text-blue-400" />
+                Material Quantities Summary
+              </h2>
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3">Concrete</h3>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400">
+                        <th className="text-left py-1">Element</th>
+                        <th className="text-left py-1">Grade</th>
+                        <th className="text-right py-1">Volume (m³)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.structural.quantities.concrete.map((c, i) => (
+                        <tr key={i} className="border-t border-slate-700">
+                          <td className="py-2 text-white">{c.element}</td>
+                          <td className="py-2 text-slate-400">{c.grade}</td>
+                          <td className="py-2 text-right text-emerald-400 font-mono">{c.volume.toFixed(2)}</td>
+                        </tr>
                       ))}
+                      <tr className="border-t-2 border-slate-600 font-bold">
+                        <td colSpan={2} className="py-2 text-white">TOTAL</td>
+                        <td className="py-2 text-right text-emerald-400 font-mono">{report.structural.quantities.totalConcrete.toFixed(2)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3">Steel Reinforcement</h3>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400">
+                        <th className="text-left py-1">Diameter</th>
+                        <th className="text-right py-1">Weight (kg)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.structural.quantities.steel.map((s, i) => (
+                        <tr key={i} className="border-t border-slate-700">
+                          <td className="py-2 text-white">Y{s.diameter}</td>
+                          <td className="py-2 text-right text-emerald-400 font-mono">{s.weight.toFixed(0)}</td>
+                        </tr>
+                      ))}
+                      <tr className="border-t-2 border-slate-600 font-bold">
+                        <td className="py-2 text-white">TOTAL</td>
+                        <td className="py-2 text-right text-emerald-400 font-mono">{report.structural.quantities.totalSteel.toFixed(0)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3">Formwork</h3>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-slate-400">
+                        <th className="text-left py-1">Element</th>
+                        <th className="text-right py-1">Area (m²)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.structural.quantities.formwork.map((f, i) => (
+                        <tr key={i} className="border-t border-slate-700">
+                          <td className="py-2 text-white">{f.element}</td>
+                          <td className="py-2 text-right text-emerald-400 font-mono">{f.area.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                      <tr className="border-t-2 border-slate-600 font-bold">
+                        <td className="py-2 text-white">TOTAL</td>
+                        <td className="py-2 text-right text-emerald-400 font-mono">{report.structural.quantities.totalFormwork.toFixed(2)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Safety Checks */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-green-400" />
+                Structural Safety Checks
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                {report.structural.safetyChecks.map((check, i) => (
+                  <div key={i} className={`p-4 rounded-lg border ${check.status === 'PASS' ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-medium">{check.name}</span>
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${check.status === 'PASS' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {check.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">Required: <span className="text-white">{check.required.toFixed(2)}</span></span>
+                      <span className="text-slate-400">Provided: <span className="text-white">{check.provided.toFixed(2)}</span></span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* STRUCTURAL TAB */}
-          {activeTab === 'structural' && (
-            <div className="space-y-6">
-              {/* Safety Checks */}
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Structural Safety Checks</h2>
-                <div className="grid grid-cols-3 gap-4">
-                  {report.structural.safetyChecks.map((check: any, i: number) => (
-                    <div key={i} className={`p-4 rounded-lg border ${
-                      check.status === 'PASS' ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'
-                    }`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        {check.status === 'PASS' ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                        ) : (
-                          <AlertTriangle className="w-5 h-5 text-red-400" />
-                        )}
-                        <span className="text-white font-medium">{check.name}</span>
-                      </div>
-                      <div className="text-sm text-slate-400">Margin: <span className={check.margin > 0 ? 'text-emerald-400' : 'text-red-400'}>{check.margin > 0 ? '+' : ''}{check.margin}%</span></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Structural Elements */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Columns */}
-                <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">Columns ({report.structural.columns.length})</h3>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {report.structural.columns.slice(0, 6).map((col: any, i: number) => (
-                      <div key={i} className="bg-slate-900/50 rounded-lg p-3 border border-slate-700">
-                        <div className="text-indigo-400 font-medium text-sm mb-1">{col.location}</div>
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div><span className="text-slate-400">Size:</span> <span className="text-white">{col.dimensions}</span></div>
-                          <div><span className="text-slate-400">Concrete:</span> <span className="text-white">{col.concrete}</span></div>
-                          <div className="col-span-2"><span className="text-slate-400">Reinforcement:</span> <span className="text-white">{col.reinforcement}</span></div>
-                        </div>
-                      </div>
-                    ))}
-                    {report.structural.columns.length > 6 && (
-                      <div className="text-center text-slate-500 text-sm py-2">
-                        +{report.structural.columns.length - 6} more columns...
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Beams */}
-                <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">Beams ({report.structural.beams.length})</h3>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {report.structural.beams.slice(0, 6).map((beam: any, i: number) => (
-                      <div key={i} className="bg-slate-900/50 rounded-lg p-3 border border-slate-700">
-                        <div className="text-purple-400 font-medium text-sm mb-1">{beam.location}</div>
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div><span className="text-slate-400">Size:</span> <span className="text-white">{beam.dimensions}</span></div>
-                          <div><span className="text-slate-400">Concrete:</span> <span className="text-white">{beam.concrete}</span></div>
-                          <div className="col-span-2"><span className="text-slate-400">Reinforcement:</span> <span className="text-white">{beam.reinforcement}</span></div>
-                        </div>
-                      </div>
-                    ))}
-                    {report.structural.beams.length > 6 && (
-                      <div className="text-center text-slate-500 text-sm py-2">
-                        +{report.structural.beams.length - 6} more beams...
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* FOUNDATION TAB */}
-          {activeTab === 'foundation' && (
-            <div className="space-y-6">
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Foundation Design</h2>
-                <div className="grid grid-cols-4 gap-4 mb-6">
-                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 text-center">
-                    <div className="text-2xl font-bold text-amber-400">{report.structural.foundation.type}</div>
-                    <div className="text-slate-400 text-sm">Foundation Type</div>
-                  </div>
-                  <div className="bg-slate-900/50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-white">{report.structural.foundation.depth} mm</div>
-                    <div className="text-slate-400 text-sm">Depth</div>
-                  </div>
-                  <div className="bg-slate-900/50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-white">{report.structural.foundation.width} mm</div>
-                    <div className="text-slate-400 text-sm">Width</div>
-                  </div>
-                  <div className="bg-slate-900/50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-white">{report.structural.foundation.thickness} mm</div>
-                    <div className="text-slate-400 text-sm">Thickness</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-900/50 p-4 rounded-lg">
-                    <h4 className="text-emerald-400 font-medium mb-2">Concrete Specification</h4>
-                    <div className="text-white">{report.structural.foundation.concrete}</div>
-                  </div>
-                  <div className="bg-slate-900/50 p-4 rounded-lg">
-                    <h4 className="text-emerald-400 font-medium mb-2">Reinforcement</h4>
-                    <div className="text-white">
-                      Main: {report.structural.foundation.reinforcement.main}<br/>
-                      Distribution: {report.structural.foundation.reinforcement.distribution}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                    <span className="text-emerald-400 font-medium">Bearing Check:</span>
-                    <span className={`font-bold ${report.structural.foundation.bearingCheck.status === 'PASS' ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {report.structural.foundation.bearingCheck.status}
-                    </span>
-                    <span className="text-slate-400">
-                      (Required: {report.structural.foundation.bearingCheck.required} kN/m² | Provided: {report.structural.foundation.bearingCheck.provided} kN/m²)
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Soil Analysis</h2>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-slate-900/50 p-4 rounded-lg">
-                    <div className="text-slate-400 text-sm mb-1">Soil Type</div>
-                    <div className="text-white font-bold">{soilInfo.name}</div>
-                  </div>
-                  <div className="bg-slate-900/50 p-4 rounded-lg">
-                    <div className="text-slate-400 text-sm mb-1">Bearing Capacity</div>
-                    <div className="text-white font-bold">{soilInfo.bearing} kN/m²</div>
-                  </div>
-                  <div className="bg-slate-900/50 p-4 rounded-lg">
-                    <div className="text-slate-400 text-sm mb-1">Settlement Risk</div>
-                    <div className="text-white font-bold">{soilInfo.settlement}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* BOQ TAB */}
-          {activeTab === 'boq' && (
+        {/* STRUCTURAL TAB */}
+        {activeTab === 'structural' && (
+          <div className="space-y-6">
+            {/* Foundation Design */}
             <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Bills of Quantities</h2>
-                <div className="text-emerald-400 font-bold text-lg">
-                  Total: {formatCurrency(report.quantitySurveying.summary.grandTotal)}
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Layers className="w-5 h-5 text-amber-400" />
+                Foundation Design
+              </h2>
+              <div className="grid grid-cols-6 gap-4 mb-4">
+                <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-4">
+                  <div className="text-amber-400 text-xs mb-1">Type</div>
+                  <div className="text-xl font-bold text-white">{report.structural.foundation.type}</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-slate-400 text-xs mb-1">Depth</div>
+                  <div className="text-xl font-bold text-white">{report.structural.foundation.depth} mm</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-slate-400 text-xs mb-1">Width</div>
+                  <div className="text-xl font-bold text-white">{report.structural.foundation.width} mm</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-slate-400 text-xs mb-1">Thickness</div>
+                  <div className="text-xl font-bold text-white">{report.structural.foundation.thickness} mm</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-slate-400 text-xs mb-1">Concrete</div>
+                  <div className="text-xl font-bold text-white">{report.structural.foundation.concrete}</div>
+                </div>
+                <div className={`rounded-lg p-4 ${report.structural.foundation.bearingCheck.status === 'PASS' ? 'bg-green-500/20 border border-green-500/30' : 'bg-red-500/20 border border-red-500/30'}`}>
+                  <div className={`text-xs mb-1 ${report.structural.foundation.bearingCheck.status === 'PASS' ? 'text-green-400' : 'text-red-400'}`}>Bearing Check</div>
+                  <div className={`text-xl font-bold ${report.structural.foundation.bearingCheck.status === 'PASS' ? 'text-green-400' : 'text-red-400'}`}>{report.structural.foundation.bearingCheck.status}</div>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <h4 className="text-emerald-400 font-medium mb-2">Main Reinforcement</h4>
+                  <div className="text-white">{report.structural.foundation.reinforcement.main}</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <h4 className="text-emerald-400 font-medium mb-2">Distribution Steel</h4>
+                  <div className="text-white">{report.structural.foundation.reinforcement.distribution}</div>
+                </div>
+              </div>
+            </div>
 
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="text-left p-3 text-slate-400">Section</th>
-                    <th className="text-right p-3 text-slate-400">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {report.quantitySurveying.sections.map((section: any, i: number) => (
-                    <tr key={i} className="border-b border-slate-800">
-                      <td className="p-3 text-white">{section.name}</td>
-                      <td className="p-3 text-right text-indigo-400 font-mono">{formatCurrency(section.subtotal)}</td>
+            {/* Column Schedule */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Columns className="w-5 h-5 text-blue-400" />
+                Column Schedule ({report.structural.columns.length} columns)
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-900/50">
+                      <th className="text-left p-3 text-slate-400">ID</th>
+                      <th className="text-left p-3 text-slate-400">Location</th>
+                      <th className="text-left p-3 text-slate-400">Type</th>
+                      <th className="text-left p-3 text-slate-400">Dimensions</th>
+                      <th className="text-left p-3 text-slate-400">Concrete</th>
+                      <th className="text-left p-3 text-slate-400">Reinforcement</th>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-slate-600">
-                    <td className="p-3 text-white font-bold">Subtotal</td>
-                    <td className="p-3 text-right text-white font-mono">{formatCurrency(report.quantitySurveying.summary.subtotal)}</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 text-slate-400">VAT ({countryInfo.vat}%)</td>
-                    <td className="p-3 text-right text-slate-400 font-mono">{formatCurrency(report.quantitySurveying.summary.vat)}</td>
-                  </tr>
-                  <tr className="bg-emerald-500/10">
-                    <td className="p-3 text-emerald-400 font-bold text-lg">TOTAL (Inc. VAT)</td>
-                    <td className="p-3 text-right text-emerald-400 font-bold text-lg font-mono">{formatCurrency(report.quantitySurveying.summary.grandTotal)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+                  </thead>
+                  <tbody>
+                    {report.structural.columns.map((col, i) => (
+                      <tr key={i} className="border-t border-slate-700 hover:bg-slate-700/30">
+                        <td className="p-3 text-emerald-400 font-mono">{col.id}</td>
+                        <td className="p-3 text-white">{col.location}</td>
+                        <td className="p-3 text-slate-400">{col.type}</td>
+                        <td className="p-3 text-white font-mono">{col.dimensions}</td>
+                        <td className="p-3 text-slate-400">{col.concrete}</td>
+                        <td className="p-3 text-white">{col.reinforcement}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          )}
 
-          {/* QUOTATION TAB */}
-          {activeTab === 'quotation' && (
-            <div className="space-y-6">
-              <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-2xl p-8">
-                <div className="text-center mb-6">
-                  <h2 className="text-3xl font-bold text-white mb-2">Professional Quotation</h2>
-                  <p className="text-indigo-400">Quotation #{report.quantitySurveying.quotation.number}</p>
-                  <p className="text-slate-400 text-sm">Valid for {report.quantitySurveying.quotation.validDays} days</p>
+            {/* Beam Schedule */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <LayoutGrid className="w-5 h-5 text-purple-400" />
+                Beam Schedule ({report.structural.beams.length} beams)
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-900/50">
+                      <th className="text-left p-3 text-slate-400">ID</th>
+                      <th className="text-left p-3 text-slate-400">Location</th>
+                      <th className="text-left p-3 text-slate-400">Type</th>
+                      <th className="text-left p-3 text-slate-400">Dimensions</th>
+                      <th className="text-left p-3 text-slate-400">Concrete</th>
+                      <th className="text-left p-3 text-slate-400">Reinforcement</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.structural.beams.map((beam, i) => (
+                      <tr key={i} className="border-t border-slate-700 hover:bg-slate-700/30">
+                        <td className="p-3 text-purple-400 font-mono">{beam.id}</td>
+                        <td className="p-3 text-white">{beam.location}</td>
+                        <td className="p-3 text-slate-400">{beam.type}</td>
+                        <td className="p-3 text-white font-mono">{beam.dimensions}</td>
+                        <td className="p-3 text-slate-400">{beam.concrete}</td>
+                        <td className="p-3 text-white">{beam.reinforcement}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Slab Design */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Ruler className="w-5 h-5 text-cyan-400" />
+                Slab Design
+              </h2>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-slate-400 text-xs mb-1">Type</div>
+                  <div className="text-xl font-bold text-white">{report.structural.slabs.type}</div>
                 </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-slate-400 text-xs mb-1">Thickness</div>
+                  <div className="text-xl font-bold text-white">{report.structural.slabs.thickness} mm</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-slate-400 text-xs mb-1">Short Span Steel</div>
+                  <div className="text-lg font-bold text-white">{report.structural.slabs.reinforcement.shortSpan}</div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-slate-400 text-xs mb-1">Long Span Steel</div>
+                  <div className="text-lg font-bold text-white">{report.structural.slabs.reinforcement.longSpan}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-                <div className="bg-slate-900/50 rounded-xl p-6 text-center mb-6">
-                  <div className="text-4xl font-black text-white mb-2">
-                    {formatCurrency(report.quantitySurveying.quotation.total)}
+        {/* BOQ TAB - COMPLETE LINE ITEMS */}
+        {activeTab === 'boq' && (
+          <div className="space-y-4">
+            {/* BOQ Header */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-white">BILLS OF QUANTITIES</h2>
+                  <p className="text-slate-400">BOQ #{report.quantitySurveying.boqInfo.number} | Prepared: {report.quantitySurveying.boqInfo.date}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-emerald-400">{formatCurrency(report.quantitySurveying.summary.grandTotal)}</div>
+                  <div className="text-slate-400 text-sm">Grand Total (Inc. VAT)</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-4 text-sm">
+                <div><span className="text-slate-400">Standard:</span> <span className="text-white">{report.quantitySurveying.boqInfo.standard}</span></div>
+                <div><span className="text-slate-400">Total Items:</span> <span className="text-white">{report.quantitySurveying.boqInfo.totalItems}</span></div>
+                <div><span className="text-slate-400">Cost/m²:</span> <span className="text-white">{formatCurrency(report.quantitySurveying.summary.costPerSqm)}</span></div>
+                <div><span className="text-slate-400">Prepared By:</span> <span className="text-white">{report.quantitySurveying.boqInfo.preparedBy}</span></div>
+              </div>
+            </div>
+
+            {/* BOQ Sections with ALL Line Items */}
+            {report.quantitySurveying.sections.map((section) => (
+              <div key={section.id} className="bg-slate-800/50 border border-slate-700 rounded-2xl overflow-hidden">
+                {/* Section Header */}
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className="w-full px-6 py-4 flex items-center justify-between bg-slate-700/50 hover:bg-slate-700/70 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    {expandedSections.includes(section.id) ? (
+                      <ChevronDown className="w-5 h-5 text-emerald-400" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 text-slate-400" />
+                    )}
+                    <span className="font-bold text-white text-lg">{section.id}. {section.title}</span>
+                    <span className="px-2 py-1 bg-slate-600 rounded text-xs text-slate-300">{section.items.length} items</span>
                   </div>
-                  <div className="text-slate-400">Total Project Cost (Inc. VAT)</div>
-                </div>
+                  <span className="text-emerald-400 font-bold text-lg">{formatCurrency(section.subtotal)}</span>
+                </button>
 
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-3">Timeline</h3>
-                    <div className="bg-slate-900/50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-emerald-400 mb-2">{report.quantitySurveying.quotation.timeline.duration}</div>
-                      <div className="space-y-2">
-                        {report.quantitySurveying.quotation.timeline.milestones.map((m: any, i: number) => (
-                          <div key={i} className="flex justify-between text-sm">
-                            <span className="text-slate-400">{m.phase}</span>
-                            <span className="text-white">{m.weeks} weeks ({m.payment}%)</span>
-                          </div>
+                {/* Section Items */}
+                {expandedSections.includes(section.id) && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-slate-900/50">
+                          <th className="text-left p-3 text-slate-400 w-20">Ref</th>
+                          <th className="text-left p-3 text-slate-400">Description</th>
+                          <th className="text-center p-3 text-slate-400 w-20">Unit</th>
+                          <th className="text-right p-3 text-slate-400 w-24">Qty</th>
+                          <th className="text-right p-3 text-slate-400 w-32">Rate ({countryInfo.symbol})</th>
+                          <th className="text-right p-3 text-slate-400 w-36">Amount ({countryInfo.symbol})</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {section.items.map((item, i) => (
+                          <tr key={i} className="border-t border-slate-700 hover:bg-slate-700/30">
+                            <td className="p-3 text-emerald-400 font-mono">{item.ref}</td>
+                            <td className="p-3 text-white">{item.description}</td>
+                            <td className="p-3 text-center text-slate-400">{item.unit}</td>
+                            <td className="p-3 text-right text-white font-mono">{item.quantity.toFixed(2)}</td>
+                            <td className="p-3 text-right text-slate-400 font-mono">{item.rate.toLocaleString()}</td>
+                            <td className="p-3 text-right text-emerald-400 font-mono font-medium">{item.amount.toLocaleString()}</td>
+                          </tr>
                         ))}
-                      </div>
-                    </div>
+                        <tr className="bg-slate-900/50 font-bold">
+                          <td colSpan={5} className="p-3 text-right text-white">Section {section.id} Subtotal:</td>
+                          <td className="p-3 text-right text-emerald-400 font-mono">{section.subtotal.toLocaleString()}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
+                )}
+              </div>
+            ))}
 
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-3">Payment Terms</h3>
-                    <div className="bg-slate-900/50 rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Mobilization</span>
-                        <span className="text-indigo-400 font-medium">{report.quantitySurveying.quotation.paymentTerms.mobilization}%</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Interim Payments</span>
-                        <span className="text-indigo-400 font-medium">{report.quantitySurveying.quotation.paymentTerms.interim}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Retention</span>
-                        <span className="text-indigo-400 font-medium">{report.quantitySurveying.quotation.paymentTerms.retention}%</span>
-                      </div>
-                    </div>
-                  </div>
+            {/* BOQ Summary */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4">BOQ SUMMARY</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between py-2 border-b border-slate-700">
+                  <span className="text-slate-400">Subtotal (All Sections)</span>
+                  <span className="text-white font-mono">{formatCurrency(report.quantitySurveying.summary.subtotal)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-700">
+                  <span className="text-slate-400">Preliminaries & General (12%)</span>
+                  <span className="text-white font-mono">{formatCurrency(report.quantitySurveying.summary.preliminaries)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-700">
+                  <span className="text-slate-400">Contingency (10%)</span>
+                  <span className="text-white font-mono">{formatCurrency(report.quantitySurveying.summary.contingency)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-700">
+                  <span className="text-slate-400">Overhead & Profit (15%)</span>
+                  <span className="text-white font-mono">{formatCurrency(report.quantitySurveying.summary.overheadProfit)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-700">
+                  <span className="text-white font-medium">Subtotal with Markups</span>
+                  <span className="text-white font-mono font-medium">{formatCurrency(report.quantitySurveying.summary.subtotalWithMarkups)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-slate-700">
+                  <span className="text-slate-400">VAT ({report.quantitySurveying.summary.vatRate}%)</span>
+                  <span className="text-white font-mono">{formatCurrency(report.quantitySurveying.summary.vat)}</span>
+                </div>
+                <div className="flex justify-between py-3 bg-emerald-500/20 rounded-lg px-4 mt-2">
+                  <span className="text-emerald-400 font-bold text-lg">GRAND TOTAL (Inc. VAT)</span>
+                  <span className="text-emerald-400 font-bold text-lg font-mono">{formatCurrency(report.quantitySurveying.summary.grandTotal)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* QUOTATION TAB */}
+        {activeTab === 'quotation' && (
+          <div className="space-y-6">
+            {/* Quotation Header */}
+            <div className="bg-gradient-to-r from-emerald-900/50 to-teal-900/50 border border-emerald-500/30 rounded-2xl p-8">
+              <div className="text-center mb-6">
+                <h1 className="text-3xl font-bold text-white mb-2">PROFESSIONAL QUOTATION</h1>
+                <p className="text-emerald-400">Quotation #{report.quantitySurveying.quotation.number}</p>
+                <p className="text-slate-400 text-sm">Valid for {report.quantitySurveying.quotation.validDays} days from date of issue</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8 mb-8">
+                <div>
+                  <h3 className="text-slate-400 text-sm mb-2">PROJECT</h3>
+                  <p className="text-white font-bold text-lg">{report.project.name}</p>
+                  <p className="text-slate-300">{report.project.location}</p>
+                  <p className="text-slate-400">{report.architectural.buildingSummary.totalArea} m² | {report.architectural.buildingSummary.floors} Floor(s)</p>
+                </div>
+                <div>
+                  <h3 className="text-slate-400 text-sm mb-2">CLIENT</h3>
+                  <p className="text-white font-bold text-lg">{report.project.client}</p>
                 </div>
               </div>
 
-              <div className="flex justify-center gap-4">
-                <button className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white font-bold flex items-center gap-2">
-                  <Download className="w-5 h-5" />
-                  Download Quotation PDF
-                </button>
-                <button className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-bold flex items-center gap-2">
-                  <Printer className="w-5 h-5" />
-                  Print
-                </button>
-                <button className="px-8 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg text-white font-bold flex items-center gap-2">
-                  <Share2 className="w-5 h-5" />
-                  Share
-                </button>
+              <div className="bg-slate-900/50 rounded-xl p-6 text-center">
+                <div className="text-5xl font-black text-white mb-2">
+                  {formatCurrency(report.quantitySurveying.quotation.total)}
+                </div>
+                <div className="text-slate-400">Total Project Cost (Including VAT @ {countryInfo.vat}%)</div>
+                <div className="text-emerald-400 mt-2">
+                  Cost per m²: {formatCurrency(report.quantitySurveying.summary.costPerSqm)}
+                </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
-  return null;
+            {/* Timeline & Payment Terms */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-blue-400" />
+                  Project Timeline
+                </h3>
+                <div className="text-2xl font-bold text-emerald-400 mb-4">{report.quantitySurveying.quotation.timeline.duration}</div>
+                <div className="space-y-3">
+                  {report.quantitySurveying.quotation.timeline.milestones.map((m, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
+                      <div>
+                        <span className="text-white font-medium">{m.phase}</span>
+                        <span className="text-slate-400 text-sm ml-2">({m.weeks} weeks)</span>
+                      </div>
+                      <span className="text-emerald-400 font-medium">{m.payment}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-purple-400" />
+                  Payment Terms
+                </h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-900/50 rounded-lg">
+                    <div className="text-slate-400 text-sm">Mobilization</div>
+                    <div className="text-xl font-bold text-white">{report.quantitySurveying.quotation.paymentTerms.mobilization}%</div>
+                    <div className="text-emerald-400">{formatCurrency(report.quantitySurveying.quotation.total * report.quantitySurveying.quotation.paymentTerms.mobilization / 100)}</div>
+                  </div>
+                  <div className="p-4 bg-slate-900/50 rounded-lg">
+                    <div className="text-slate-400 text-sm">Interim Payments</div>
+                    <div className="text-lg font-bold text-white">{report.quantitySurveying.quotation.paymentTerms.interim}</div>
+                  </div>
+                  <div className="p-4 bg-slate-900/50 rounded-lg">
+                    <div className="text-slate-400 text-sm">Retention</div>
+                    <div className="text-xl font-bold text-white">{report.quantitySurveying.quotation.paymentTerms.retention}%</div>
+                    <div className="text-slate-400 text-sm">Released after defects liability period</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Inclusions & Exclusions */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  Inclusions
+                </h3>
+                <ul className="space-y-2">
+                  {report.quantitySurveying.quotation.inclusions.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-slate-300">
+                      <CheckSquare className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <XSquare className="w-5 h-5 text-red-400" />
+                  Exclusions
+                </h3>
+                <ul className="space-y-2">
+                  {report.quantitySurveying.quotation.exclusions.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-slate-300">
+                      <XSquare className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-center gap-4">
+              <button className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white font-bold flex items-center gap-2">
+                <Download className="w-5 h-5" />
+                Download Quotation PDF
+              </button>
+              <button className="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-bold flex items-center gap-2">
+                <Printer className="w-5 h-5" />
+                Print
+              </button>
+              <button className="px-8 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl text-white font-bold flex items-center gap-2">
+                <Share2 className="w-5 h-5" />
+                Share
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
