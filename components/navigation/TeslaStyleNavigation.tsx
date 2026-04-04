@@ -103,14 +103,21 @@ const MEGA_MENUS = {
     description: 'Complete power and electrical solutions',
     sections: [
       {
+        title: 'Tools & Calculators',
+        items: [
+          { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, Load, Solar, UPS, AC, Motor sizing', badge: 'ALL-IN-ONE' },
+          { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🔧', desc: 'Interactive problem solver' },
+          { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🛠️', desc: 'All equipment maintenance center' },
+        ],
+      },
+      {
         title: 'Maintenance Hubs',
         items: [
-          { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🛠️', desc: 'All equipment maintenance center' },
           { href: '/maintenance-hub/generators', label: 'Generator Hub', icon: '⚡', desc: 'Generator maintenance & repair' },
           { href: '/maintenance-hub/motors', label: 'Motors Hub', icon: '🔄', desc: 'Motor rewinding & service' },
           { href: '/maintenance-hub/hvac', label: 'HVAC Hub', icon: '❄️', desc: 'AC & refrigeration' },
           { href: '/maintenance-hub/electrical', label: 'Electrical Hub', icon: '🔌', desc: 'Electrical systems' },
-          { href: '/solutions', label: 'All Solutions', icon: '💡', desc: 'View all our solutions' },
+          { href: '/maintenance-hub/solar', label: 'Solar Hub', icon: '☀️', desc: 'Solar system maintenance' },
         ],
       },
       {
@@ -119,14 +126,9 @@ const MEGA_MENUS = {
           { href: '/solutions/generators', label: 'Generator Services', icon: '⚡', desc: 'Sales & maintenance' },
           { href: '/solutions/ups', label: 'UPS Systems', icon: '🔋', desc: 'Backup power' },
           { href: '/solutions/controls', label: 'Control Systems', icon: '🎛️', desc: 'Automation & controls' },
-        ],
-      },
-      {
-        title: 'Electrical Services',
-        items: [
           { href: '/solutions/motor-rewinding', label: 'Motor Rewinding', icon: '🔄', desc: 'Motor repair' },
           { href: '/solutions/borehole-pumps', label: 'Borehole Pumps', icon: '💧', desc: 'Water solutions' },
-          { href: '/fabrication', label: 'Fabrication', icon: '🏭', desc: 'Custom builds' },
+          { href: '/solutions', label: 'All Solutions', icon: '💡', desc: 'View all our solutions' },
         ],
       },
     ],
@@ -151,6 +153,7 @@ const NAV_ITEMS = [
   { href: '/solar-genius-pro', label: 'SOLAR GENIUS PRO', type: 'link' },
   { href: '/pro-building-suite', label: 'PRO BUILDING SUITE', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
+  { href: '/calculators', label: 'CALCULATORS', type: 'link' },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
