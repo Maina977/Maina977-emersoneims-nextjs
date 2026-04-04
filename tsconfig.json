@@ -43,6 +43,8 @@
     "deployment-package/**",
     ".next/**",
     "out/**",
-    "scripts/**"
+    "scripts/**",
+    "components/building-modules/**",
+    "components/solar-modules/**"
   ]
 }

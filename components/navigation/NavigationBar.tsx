@@ -71,12 +71,15 @@ export default function NavigationBar({
       id: 'ai-powerhouse',
       label: 'AI Powerhouse',
       dropdown: [
-        { label: 'Pro Building Suite™', href: '/solutions/building', description: 'AI Architecture + Structural + QS', icon: '🏛️', badge: '#1 WORLDWIDE' },
+        { label: 'Pro Building Suite™', href: '/pro-building-suite', description: 'AI Architecture + Structural + QS', icon: '🏛️', badge: '#1 WORLDWIDE' },
         { label: 'Generator Oracle™', href: '/generator-oracle', description: '400,000+ fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
-        { label: 'Solar Genius Pro™', href: '/solutions/solar', description: '56 AI Engines, <3 min quotes', icon: '☀️', badge: '#1 WORLDWIDE' },
-        { label: 'AquaScan Pro™', href: '/solutions/borehole-pumps', description: 'AI water system diagnostics', icon: '💧', badge: 'AI' },
+        { label: 'Solar Genius Pro™', href: '/solar-genius-pro', description: '56 AI Engines, <3 min quotes', icon: '☀️', badge: '#1 WORLDWIDE' },
+        { label: 'AquaScan Pro™', href: '/aquascan-pro-v3', description: 'AI water system diagnostics', icon: '💧', badge: 'AI' },
       ]
     },
+    { id: 'aquascan', label: 'AquaScan Pro', href: '/aquascan-pro-v3' },
+    { id: 'solargeniuspro', label: 'Solar Genius Pro', href: '/solar-genius-pro' },
+    { id: 'probuildingsuite', label: 'Pro Building Suite', href: '/pro-building-suite' },
     {
       id: 'solar',
       label: 'Solar',
