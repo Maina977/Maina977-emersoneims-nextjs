@@ -18,6 +18,8 @@ import {
   EXIFExtractor,
   BatchUploadProcessor,
   ReportFormat,
+  SiteAutoDetector,
+  DetectedSite,
 } from '@/lib/borehole/aiBoreholeAnalyzer';
 import { PaymentModal } from '@/components/payment/PaymentGate';
 
@@ -190,16 +192,52 @@ export default function AquaScanProComplete() {
   const [isDragging, setIsDragging] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   const [batchFiles, setBatchFiles] = useState<File[]>([]);
+  // SITE AUTO-DETECTION STATE
+  const [detectedSite, setDetectedSite] = useState<DetectedSite | null>(null);
+  const [isDetectingSite, setIsDetectingSite] = useState(false);
 
   // Refs
   const analyzerRef = useRef<AIBoreholeAnalyzer | null>(null);
+  const siteDetectorRef = useRef<SiteAutoDetector | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Initialize analyzer
+  // Initialize analyzer and site detector
   useEffect(() => {
     analyzerRef.current = new AIBoreholeAnalyzer();
+    siteDetectorRef.current = new SiteAutoDetector();
   }, []);
+
+  // AUTO-DETECT site from image EXIF GPS data
+  const autoDetectSite = useCallback(async (file: File) => {
+    if (!siteDetectorRef.current) return;
+
+    setIsDetectingSite(true);
+    try {
+      // First try to detect from image EXIF
+      const detected = await siteDetectorRef.current.detectFromImage(file);
+
+      if (detected) {
+        setDetectedSite(detected);
+        // Update location from detected coordinates
+        setLocation({
+          latitude: detected.coordinates.latitude,
+          longitude: detected.coordinates.longitude,
+        });
+      } else {
+        // If no EXIF GPS, use manual coordinates and reverse geocode
+        const manualDetected = await siteDetectorRef.current.detectFromCoordinates(
+          location.latitude,
+          location.longitude
+        );
+        setDetectedSite(manualDetected);
+      }
+    } catch (error) {
+      console.error('Site detection failed:', error);
+    } finally {
+      setIsDetectingSite(false);
+    }
+  }, [location]);
 
   // Handle image upload
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -211,8 +249,10 @@ export default function AquaScanProComplete() {
         setImageData(event.target?.result as string);
       };
       reader.readAsDataURL(file);
+      // AUTO-DETECT SITE from image GPS
+      autoDetectSite(file);
     }
-  }, []);
+  }, [autoDetectSite]);
 
   // Handle drag and drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -226,8 +266,10 @@ export default function AquaScanProComplete() {
         setImageData(event.target?.result as string);
       };
       reader.readAsDataURL(file);
+      // AUTO-DETECT SITE from image GPS
+      autoDetectSite(file);
     }
-  }, []);
+  }, [autoDetectSite]);
 
   // Run analysis
   const runAnalysis = useCallback(async () => {
@@ -447,15 +489,124 @@ export default function AquaScanProComplete() {
                     alt="Uploaded terrain"
                     style={{
                       maxWidth: '100%',
-                      maxHeight: '300px',
+                      maxHeight: '250px',
                       borderRadius: '16px',
                       border: '2px solid #0EA5E9',
                       boxShadow: '0 0 30px rgba(14, 165, 233, 0.3)',
                     }}
                   />
-                  <p style={{ color: '#94A3B8', marginTop: '16px' }}>
+                  <p style={{ color: '#94A3B8', marginTop: '12px', fontSize: '14px' }}>
                     {imageFile?.name} • Click to change
                   </p>
+
+                  {/* SITE AUTO-DETECTION DISPLAY */}
+                  {isDetectingSite ? (
+                    <div style={{
+                      marginTop: '16px',
+                      padding: '16px',
+                      background: 'rgba(14, 165, 233, 0.1)',
+                      border: '1px solid rgba(14, 165, 233, 0.3)',
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                    }}>
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        border: '3px solid #0EA5E9',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                      }} />
+                      <span style={{ color: '#0EA5E9', fontWeight: 600 }}>
+                        🛰️ Detecting site location via GPS & Satellite...
+                      </span>
+                    </div>
+                  ) : detectedSite ? (
+                    <div style={{
+                      marginTop: '16px',
+                      padding: '20px',
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(14, 165, 233, 0.1))',
+                      border: '2px solid rgba(16, 185, 129, 0.5)',
+                      borderRadius: '16px',
+                      textAlign: 'left',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '24px' }}>📍</span>
+                        <span style={{
+                          background: 'linear-gradient(135deg, #10B981, #059669)',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '100px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                        }}>
+                          ✓ SITE AUTO-DETECTED
+                        </span>
+                        <span style={{ color: '#10B981', fontSize: '12px' }}>
+                          {detectedSite.verification.confidence}% confidence
+                        </span>
+                      </div>
+
+                      {/* Main Site Name - PROMINENT */}
+                      <div style={{
+                        fontSize: '22px',
+                        fontWeight: 700,
+                        color: 'white',
+                        marginBottom: '8px',
+                        lineHeight: 1.3,
+                      }}>
+                        {detectedSite.address.fullAddress}
+                      </div>
+
+                      {/* Detailed breakdown */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '12px' }}>
+                        {detectedSite.address.village && (
+                          <div style={{ color: '#94A3B8', fontSize: '13px' }}>
+                            <strong style={{ color: '#0EA5E9' }}>Village:</strong> {detectedSite.address.village}
+                          </div>
+                        )}
+                        {detectedSite.address.town && (
+                          <div style={{ color: '#94A3B8', fontSize: '13px' }}>
+                            <strong style={{ color: '#0EA5E9' }}>Town:</strong> {detectedSite.address.town}
+                          </div>
+                        )}
+                        {detectedSite.address.ward && (
+                          <div style={{ color: '#94A3B8', fontSize: '13px' }}>
+                            <strong style={{ color: '#0EA5E9' }}>Ward:</strong> {detectedSite.address.ward}
+                          </div>
+                        )}
+                        {detectedSite.address.county && (
+                          <div style={{ color: '#94A3B8', fontSize: '13px' }}>
+                            <strong style={{ color: '#0EA5E9' }}>County:</strong> {detectedSite.address.county}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Coordinates */}
+                      <div style={{
+                        marginTop: '12px',
+                        padding: '8px 12px',
+                        background: 'rgba(0,0,0,0.2)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}>
+                        <span style={{ color: '#64748B', fontSize: '12px' }}>
+                          📌 {detectedSite.coordinates.latitude.toFixed(6)}°, {detectedSite.coordinates.longitude.toFixed(6)}°
+                        </span>
+                        <span style={{ color: '#64748B', fontSize: '11px' }}>
+                          {detectedSite.locationCode}
+                        </span>
+                      </div>
+
+                      <div style={{ marginTop: '8px', fontSize: '11px', color: '#64748B' }}>
+                        🛰️ Verified via: {detectedSite.verification.source}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <>
@@ -715,6 +866,10 @@ export default function AquaScanProComplete() {
           90% { opacity: 1; }
           100% { top: 100%; opacity: 0; }
         }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
       `}</style>
     </div>
   );
@@ -858,6 +1013,55 @@ export default function AquaScanProComplete() {
         padding: '20px',
       }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          {/* SITE LOCATION BANNER - PROMINENT */}
+          {detectedSite && (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(14, 165, 233, 0.1))',
+              border: '2px solid rgba(16, 185, 129, 0.4)',
+              borderRadius: '20px',
+              padding: '20px 28px',
+              marginBottom: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '16px',
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '28px' }}>📍</span>
+                  <span style={{
+                    background: 'linear-gradient(135deg, #10B981, #059669)',
+                    color: 'white',
+                    padding: '4px 14px',
+                    borderRadius: '100px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                  }}>
+                    SITE IDENTIFIED
+                  </span>
+                </div>
+                <div style={{
+                  fontSize: '26px',
+                  fontWeight: 800,
+                  color: 'white',
+                  lineHeight: 1.2,
+                }}>
+                  {detectedSite.address.fullAddress}
+                </div>
+                <div style={{ color: '#94A3B8', fontSize: '13px', marginTop: '6px' }}>
+                  📌 {detectedSite.coordinates.latitude.toFixed(6)}°, {detectedSite.coordinates.longitude.toFixed(6)}° | {detectedSite.locationCode} | 🛰️ {detectedSite.verification.confidence}% verified
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ color: '#64748B', fontSize: '12px' }}>Verification Source</div>
+                <div style={{ color: '#10B981', fontSize: '14px', fontWeight: 600 }}>
+                  NASA Satellite + OpenStreetMap
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div style={{
             display: 'flex',
