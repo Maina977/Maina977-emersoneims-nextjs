@@ -192,7 +192,7 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({ analysisId, previe
         currency={previewData.cost_estimation?.currency || "KES"}
         reportId={previewData.report_id}
         analysisId={analysisId}
-        customerEmail="customer@example.com" // Get from user context
+        customerEmail="customer@example.com"
         customerPhone="254700000000"
         customerName="Customer Name"
       />
