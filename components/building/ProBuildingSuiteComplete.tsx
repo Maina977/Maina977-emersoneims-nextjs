@@ -1,16 +1,22 @@
 'use client';
 
 /**
- * PRO BUILDING SUITE - COMPLETE UI COMPONENT
- * BETTER THAN AUTODESK REVIT
+ * PRO BUILDING SUITE V4 - COMPLETE AI CONSTRUCTION PLATFORM
+ * 203+ CAPABILITIES - BETTER THAN AUTODESK REVIT
  *
  * Features:
- * - 3D Building Visualization
- * - Site Analysis with Maps
- * - Complete BOQ Display
- * - Structural Schedules
- * - Financial Charts
- * - Permit Documents
+ * - 3D Building Visualization with VR
+ * - Site Analysis with NASA/GIS Data
+ * - Complete BOQ Display (100% Materials)
+ * - Structural Schedules & Drawings
+ * - Financial Charts & Risk Analysis
+ * - Permit Documents & Compliance
+ * - Amenities: Pools, Gazebos, Theaters, Gyms, etc.
+ * - Landscaping: Lawns, Trees, Irrigation
+ * - Utilities: Solar ROI, Borehole, Generator
+ * - Marketplace: Supplier Matching, Contractor Bidding
+ * - Digital Twin: Lifecycle, Maintenance Prediction
+ * - Luxury Design Library: Marbella, Dubai, Hawaii
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
@@ -21,7 +27,8 @@ import {
   Activity, Table, DollarSign, TrendingUp, MapPin,
   Layers, Home, Box, Eye, RotateCw, Ruler, Columns,
   LayoutGrid, Package, Wrench, Zap, Droplets, TreePine,
-  FileSpreadsheet, ClipboardList, HardHat, Hammer, Sun, PenTool, Lock
+  FileSpreadsheet, ClipboardList, HardHat, Hammer, Sun, PenTool, Lock,
+  Waves, Car, Theater, Dumbbell, Flower2, Fence, BarChart3, Users, Cpu
 } from 'lucide-react';
 import { PaymentModal } from '@/components/payment/PaymentGate';
 import {
@@ -33,17 +40,37 @@ import {
   STEEL_GRADES,
   type ProBuildingReport
 } from '@/lib/building/proBuildingSuiteEngineV3';
+import {
+  amenitiesGenerator,
+  landscapingGenerator,
+  utilitiesGenerator,
+  riskPredictionEngine,
+  supplierMatcher,
+  digitalTwinManager,
+  luxuryDesignLibrary,
+  LUXURY_DESIGNS,
+  SUPPLIERS,
+  type PoolDesign,
+  type GazeboDesign,
+  type SolarSystem,
+  type BoreholeSystem,
+  type DelayPrediction,
+  type CostOverrunPrediction,
+  type LuxuryDesign
+} from '@/lib/building/proBuildingSuiteEngineV4';
 
 // ============================================================================
 // AI ENGINE DEFINITIONS
 // ============================================================================
 
 const AI_ENGINES = [
+  // Site Analysis (5)
   { id: 'site', name: 'GIS Site Analyzer', icon: MapPin, category: 'Analysis' },
   { id: 'terrain', name: 'NASA Terrain Analysis', icon: Layers, category: 'Analysis' },
   { id: 'soil', name: 'Soil Assessment AI', icon: Layers, category: 'Analysis' },
   { id: 'flood', name: 'Flood Risk Analyzer', icon: Droplets, category: 'Analysis' },
   { id: 'seismic', name: 'Seismic Assessment', icon: Activity, category: 'Analysis' },
+  // Design (5)
   { id: 'architect', name: '3D AI Architect', icon: PenTool, category: 'Design' },
   { id: 'floorplan', name: 'Floor Plan Generator', icon: LayoutGrid, category: 'Design' },
   { id: 'elevation', name: 'Elevation Designer', icon: Building2, category: 'Design' },
@@ -64,6 +91,18 @@ const AI_ENGINES = [
   { id: 'grid', name: 'Grid Integration', icon: Zap, category: 'Utilities' },
   { id: 'solar', name: 'Solar Integration', icon: Sun, category: 'Utilities' },
   { id: 'borehole', name: 'Borehole Integration', icon: Droplets, category: 'Utilities' },
+  // Amenities (4)
+  { id: 'pool', name: 'Pool Designer AI', icon: Waves, category: 'Amenities' },
+  { id: 'garage', name: 'Garage Planner', icon: Car, category: 'Amenities' },
+  { id: 'theater', name: 'Home Theater AI', icon: Theater, category: 'Amenities' },
+  { id: 'gym', name: 'Gym Designer', icon: Dumbbell, category: 'Amenities' },
+  // Landscaping (2)
+  { id: 'garden', name: 'Garden Designer', icon: Flower2, category: 'Landscaping' },
+  { id: 'fencing', name: 'Fencing Calculator', icon: Fence, category: 'Landscaping' },
+  // Risk & Marketplace (3)
+  { id: 'risk', name: 'Risk Predictor AI', icon: BarChart3, category: 'Risk' },
+  { id: 'supplier', name: 'Supplier Matcher', icon: Users, category: 'Marketplace' },
+  { id: 'lifecycle', name: 'Digital Twin AI', icon: Cpu, category: 'Lifecycle' },
 ];
 
 // ============================================================================
