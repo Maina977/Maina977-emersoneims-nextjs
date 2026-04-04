@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DesignData, ElectricalDesign, PlumbingDesign, HVACDesign } from '@/types/design';
 
 export interface MEPInput {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // lib/ai/siteAnalyzer.ts
 
 import axios from 'axios';

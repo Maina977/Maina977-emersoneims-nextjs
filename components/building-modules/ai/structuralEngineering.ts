@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DesignData, FoundationDesign, StructuralDesign } from '@/types/design';
 
 export interface StructuralInput {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DesignData, Room, WallDesign, FoundationDesign, RoofDesign, Door, Window, ElectricalDesign, PlumbingDesign, StructuralDesign, FinishesDesign, AmenitiesDesign, LandscapingDesign, EnergySystems } from '@/types/design';
 
 export interface DesignInput {

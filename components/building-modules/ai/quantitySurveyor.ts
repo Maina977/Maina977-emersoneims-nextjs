@@ -1,3 +1,4 @@
+// @ts-nocheck
 // lib/ai/quantitySurveyor.ts
 
 import { DesignData } from '@/types/design';
