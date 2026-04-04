@@ -2,8 +2,8 @@
 
 /**
  * ╔══════════════════════════════════════════════════════════════════════════════╗
- * ║   AQUASCAN PRO™ V3 - COMPLETE AI BOREHOLE ANALYZER                          ║
- * ║   All 115 AI Tools | Charts | Graphs | Maps | Comprehensive Reports         ║
+ * ║   AQUASCAN PRO™ V4 - FUTURISTIC AI BOREHOLE ANALYZER                        ║
+ * ║   115 AI Tools | Satellite | Water | Rock Mapping | Scientific Analysis     ║
  * ║   Copyright © 2024-2026 EmersonEIMS - All Rights Reserved                   ║
  * ╚══════════════════════════════════════════════════════════════════════════════╝
  */
@@ -14,772 +14,238 @@ import {
   BoreholeAssessmentResult,
   GeoCoordinates,
   detectRegionFromCoordinates,
+  ReportExportEngine,
+  EXIFExtractor,
+  BatchUploadProcessor,
+  ReportFormat,
 } from '@/lib/borehole/aiBoreholeAnalyzer';
 import { PaymentModal } from '@/components/payment/PaymentGate';
 
 // ============================================================================
 // 115 AI TOOLS - COMPLETE CAPABILITY LIST
 // ============================================================================
-const AI_ENGINES = [
-  // === TERRAIN ANALYSIS (4 tools) ===
-  { id: 1, name: 'Valley Detection AI', icon: '🏔️', category: 'Terrain' },
-  { id: 2, name: 'Drainage Pattern Analyzer', icon: '🌊', category: 'Terrain' },
-  { id: 3, name: 'Slope Classification', icon: '📐', category: 'Terrain' },
-  { id: 4, name: 'Flat Land Detector', icon: '🏜️', category: 'Terrain' },
-
-  // === SATELLITE ANALYSIS (28 tools) ===
-  { id: 5, name: 'NDVI Vegetation Index', icon: '🌿', category: 'Satellite' },
-  { id: 6, name: 'NDWI Water Index', icon: '💧', category: 'Satellite' },
-  { id: 7, name: 'NDMI Moisture Index', icon: '💦', category: 'Satellite' },
-  { id: 8, name: 'BSI Bare Soil Index', icon: '🟤', category: 'Satellite' },
-  { id: 9, name: 'Land Surface Temperature', icon: '🌡️', category: 'Satellite' },
-  { id: 10, name: 'Soil Moisture 0-10cm', icon: '🌱', category: 'Satellite' },
-  { id: 11, name: 'Soil Moisture 10-40cm', icon: '🪴', category: 'Satellite' },
-  { id: 12, name: 'Soil Moisture 40-100cm', icon: '🌳', category: 'Satellite' },
-  { id: 13, name: 'Soil Moisture 100-200cm', icon: '🌲', category: 'Satellite' },
-  { id: 14, name: 'Evapotranspiration Rate', icon: '☀️', category: 'Satellite' },
-  { id: 15, name: 'Urban Index Calculator', icon: '🏙️', category: 'Satellite' },
-  { id: 16, name: 'Albedo Reflectivity', icon: '✨', category: 'Satellite' },
-  { id: 17, name: 'LAI Leaf Area Index', icon: '🍃', category: 'Satellite' },
-  { id: 18, name: 'GPP Carbon Uptake', icon: '🌎', category: 'Satellite' },
-  { id: 19, name: 'Groundwater Anomaly', icon: '📉', category: 'Satellite' },
-  { id: 20, name: 'NASA GRACE Storage', icon: '🛸', category: 'Satellite' },
-  { id: 21, name: 'NASA GLDAS Recharge', icon: '🌍', category: 'Satellite' },
-  { id: 22, name: 'Google Earth Engine', icon: '🌐', category: 'Satellite' },
-  { id: 23, name: 'Sentinel-2 Processor', icon: '🛰️', category: 'Satellite' },
-  { id: 24, name: 'Landsat-8 Thermal', icon: '📡', category: 'Satellite' },
-  { id: 25, name: 'MODIS Data Fusion', icon: '🔭', category: 'Satellite' },
-  { id: 26, name: 'SPI Drought Index', icon: '🏜️', category: 'Satellite' },
-  { id: 27, name: 'SPEI Climate Index', icon: '📊', category: 'Satellite' },
-  { id: 28, name: 'VCI Vegetation Condition', icon: '🌾', category: 'Satellite' },
-  { id: 29, name: 'Surface Water Dynamics', icon: '🌊', category: 'Satellite' },
-  { id: 30, name: 'Land Cover Change', icon: '🗺️', category: 'Satellite' },
-  { id: 31, name: 'NDVI Time Series', icon: '📈', category: 'Satellite' },
-  { id: 32, name: 'NDWI Time Series', icon: '📉', category: 'Satellite' },
-
-  // === SOIL ANALYSIS (15 tools) ===
-  { id: 33, name: 'Sandy Soil Detector', icon: '🏖️', category: 'Soil' },
-  { id: 34, name: 'Clay Soil Analyzer', icon: '🟫', category: 'Soil' },
-  { id: 35, name: 'Loamy Soil Classifier', icon: '🌱', category: 'Soil' },
-  { id: 36, name: 'Rocky Terrain Scanner', icon: '🪨', category: 'Soil' },
-  { id: 37, name: 'Laterite Detection', icon: '🔴', category: 'Soil' },
-  { id: 38, name: 'Porosity Calculator', icon: '🕳️', category: 'Soil' },
-  { id: 39, name: 'Permeability Estimator', icon: '💨', category: 'Soil' },
-  { id: 40, name: 'Organic Matter Analyzer', icon: '🍂', category: 'Soil' },
-  { id: 41, name: 'Soil pH Predictor', icon: '🧪', category: 'Soil' },
-  { id: 42, name: 'Moisture Content AI', icon: '💧', category: 'Soil' },
-  { id: 43, name: 'Compaction Analyzer', icon: '🔨', category: 'Soil' },
-  { id: 44, name: 'SPT N-Value Calculator', icon: '📏', category: 'Soil' },
-  { id: 45, name: 'UCS Rock Strength', icon: '💪', category: 'Soil' },
-  { id: 46, name: 'Liquid Limit Tester', icon: '🌊', category: 'Soil' },
-  { id: 47, name: 'Plastic Limit Analyzer', icon: '🔬', category: 'Soil' },
-
-  // === WATER QUALITY (18 tools) ===
-  { id: 48, name: 'TDS Analyzer', icon: '💧', category: 'Water Quality' },
-  { id: 49, name: 'pH Level Predictor', icon: '🧪', category: 'Water Quality' },
-  { id: 50, name: 'Hardness Calculator', icon: '💎', category: 'Water Quality' },
-  { id: 51, name: 'Fluoride Detector', icon: '🦷', category: 'Water Quality' },
-  { id: 52, name: 'Iron Content Analyzer', icon: '🔩', category: 'Water Quality' },
-  { id: 53, name: 'Arsenic Risk Predictor', icon: '☠️', category: 'Water Quality' },
-  { id: 54, name: 'Nitrate Level Estimator', icon: '🌾', category: 'Water Quality' },
-  { id: 55, name: 'Chloride Analyzer', icon: '🧂', category: 'Water Quality' },
-  { id: 56, name: 'Sulfate Detector', icon: '⚗️', category: 'Water Quality' },
-  { id: 57, name: 'Calcium Calculator', icon: '🦴', category: 'Water Quality' },
-  { id: 58, name: 'Magnesium Analyzer', icon: '💊', category: 'Water Quality' },
-  { id: 59, name: 'Alkalinity Estimator', icon: '📊', category: 'Water Quality' },
-  { id: 60, name: 'Turbidity Predictor', icon: '🌫️', category: 'Water Quality' },
-  { id: 61, name: 'E.coli Risk Analyzer', icon: '🦠', category: 'Water Quality' },
-  { id: 62, name: 'Coliform Detector', icon: '🔬', category: 'Water Quality' },
-  { id: 63, name: 'Color Assessment', icon: '🎨', category: 'Water Quality' },
-  { id: 64, name: 'Odor Predictor', icon: '👃', category: 'Water Quality' },
-  { id: 65, name: 'Taste Analyzer', icon: '👅', category: 'Water Quality' },
-
-  // === CONTAMINATION (5 tools) ===
-  { id: 66, name: 'Sewage Contamination', icon: '🚽', category: 'Contamination' },
-  { id: 67, name: 'Industrial Pollution', icon: '🏭', category: 'Contamination' },
-  { id: 68, name: 'Agricultural Runoff', icon: '🌾', category: 'Contamination' },
-  { id: 69, name: 'Landfill Leachate', icon: '🗑️', category: 'Contamination' },
-  { id: 70, name: 'Mining Contamination', icon: '⛏️', category: 'Contamination' },
-
-  // === GEOPHYSICS (6 tools) ===
-  { id: 71, name: 'VES Survey Simulator', icon: '⚡', category: 'Geophysics' },
-  { id: 72, name: 'ERT Tomography Engine', icon: '🔌', category: 'Geophysics' },
-  { id: 73, name: 'TDEM Electromagnetic', icon: '🧲', category: 'Geophysics' },
-  { id: 74, name: 'Seismic Refraction AI', icon: '🌊', category: 'Geophysics' },
-  { id: 75, name: 'Gravity Survey Analyzer', icon: '⬇️', category: 'Geophysics' },
-  { id: 76, name: 'Magnetic Survey Engine', icon: '🧭', category: 'Geophysics' },
-
-  // === LIDAR & HYPERSPECTRAL (8 tools) ===
-  { id: 77, name: 'LiDAR Elevation Map', icon: '📊', category: 'LiDAR' },
-  { id: 78, name: 'Slope Gradient Analyzer', icon: '📐', category: 'LiDAR' },
-  { id: 79, name: 'TWI Water Accumulation', icon: '💧', category: 'LiDAR' },
-  { id: 80, name: 'Depression Detection', icon: '🕳️', category: 'LiDAR' },
-  { id: 81, name: 'Lineament Mapper', icon: '📏', category: 'LiDAR' },
-  { id: 82, name: 'Mineral Mapping', icon: '💎', category: 'Hyperspectral' },
-  { id: 83, name: 'Rock Type Identifier', icon: '🪨', category: 'Hyperspectral' },
-  { id: 84, name: 'Weathering Assessment', icon: '🌧️', category: 'Hyperspectral' },
-
-  // === HYDROLOGY (8 tools) ===
-  { id: 85, name: 'Aquifer Depth Estimator', icon: '📏', category: 'Hydrology' },
-  { id: 86, name: 'Yield Prediction Engine', icon: '💦', category: 'Hydrology' },
-  { id: 87, name: 'Peak Yield Calculator', icon: '📈', category: 'Hydrology' },
-  { id: 88, name: 'Sustainable Yield AI', icon: '♻️', category: 'Hydrology' },
-  { id: 89, name: 'Recovery Rate Analyzer', icon: '🔄', category: 'Hydrology' },
-  { id: 90, name: 'Drawdown Calculator', icon: '📉', category: 'Hydrology' },
-  { id: 91, name: 'Transmissivity Engine', icon: '🌊', category: 'Hydrology' },
-  { id: 92, name: 'Recharge Zone Mapper', icon: '🗺️', category: 'Hydrology' },
-
-  // === RISK ASSESSMENT (5 tools) ===
-  { id: 93, name: 'Geological Risk AI', icon: '🪨', category: 'Risk' },
-  { id: 94, name: 'Contamination Risk', icon: '☢️', category: 'Risk' },
-  { id: 95, name: 'Depth Risk Calculator', icon: '📏', category: 'Risk' },
-  { id: 96, name: 'Financial Risk Engine', icon: '💰', category: 'Risk' },
-  { id: 97, name: 'Technical Risk Analyzer', icon: '🔧', category: 'Risk' },
-
-  // === FINANCIAL (6 tools) ===
-  { id: 98, name: 'Total Cost Estimator', icon: '💵', category: 'Financial' },
-  { id: 99, name: 'ROI Calculator', icon: '📈', category: 'Financial' },
-  { id: 100, name: 'Payback Period AI', icon: '⏱️', category: 'Financial' },
-  { id: 101, name: 'NPV Calculator', icon: '💹', category: 'Financial' },
-  { id: 102, name: 'IRR Analyzer', icon: '📊', category: 'Financial' },
-  { id: 103, name: 'Sensitivity Analysis', icon: '🎯', category: 'Financial' },
-
-  // === GIS & MAPPING (6 tools) ===
-  { id: 104, name: 'GIS Spatial Analyzer', icon: '🗺️', category: 'GIS' },
-  { id: 105, name: 'Proximity Calculator', icon: '📍', category: 'GIS' },
-  { id: 106, name: 'Watershed Mapper', icon: '🌊', category: 'GIS' },
-  { id: 107, name: 'Catchment Analyzer', icon: '🏞️', category: 'GIS' },
-  { id: 108, name: 'Fault Proximity AI', icon: '⚠️', category: 'GIS' },
-  { id: 109, name: 'Stream Order Calculator', icon: '🏞️', category: 'GIS' },
-
-  // === CLIMATE & PERMITS (6 tools) ===
-  { id: 110, name: 'Climate Modeling Engine', icon: '🌦️', category: 'Climate' },
-  { id: 111, name: 'Rainfall Analyzer', icon: '🌧️', category: 'Climate' },
-  { id: 112, name: 'Drought Risk Predictor', icon: '☀️', category: 'Climate' },
-  { id: 113, name: 'EIA Assessment AI', icon: '📋', category: 'Permits' },
-  { id: 114, name: 'NEMA Permit Analyzer', icon: '📄', category: 'Permits' },
-  { id: 115, name: 'WRA License Calculator', icon: '📝', category: 'Permits' },
+const AI_TOOLS = [
+  // Terrain (4)
+  { id: 1, name: 'Valley Detection', icon: '🏔️', category: 'Terrain', color: '#10B981' },
+  { id: 2, name: 'Drainage Patterns', icon: '🌊', category: 'Terrain', color: '#10B981' },
+  { id: 3, name: 'Slope Analysis', icon: '📐', category: 'Terrain', color: '#10B981' },
+  { id: 4, name: 'Flat Land Scan', icon: '🏜️', category: 'Terrain', color: '#10B981' },
+  // Satellite (28)
+  { id: 5, name: 'NDVI Index', icon: '🌿', category: 'Satellite', color: '#0EA5E9' },
+  { id: 6, name: 'NDWI Water', icon: '💧', category: 'Satellite', color: '#0EA5E9' },
+  { id: 7, name: 'NDMI Moisture', icon: '💦', category: 'Satellite', color: '#0EA5E9' },
+  { id: 8, name: 'Bare Soil Index', icon: '🟤', category: 'Satellite', color: '#0EA5E9' },
+  { id: 9, name: 'Surface Temp', icon: '🌡️', category: 'Satellite', color: '#0EA5E9' },
+  { id: 10, name: 'Soil 0-10cm', icon: '🌱', category: 'Satellite', color: '#0EA5E9' },
+  { id: 11, name: 'Soil 10-40cm', icon: '🪴', category: 'Satellite', color: '#0EA5E9' },
+  { id: 12, name: 'Soil 40-100cm', icon: '🌳', category: 'Satellite', color: '#0EA5E9' },
+  { id: 13, name: 'Soil 100-200cm', icon: '🌲', category: 'Satellite', color: '#0EA5E9' },
+  { id: 14, name: 'Evapotranspiration', icon: '☀️', category: 'Satellite', color: '#0EA5E9' },
+  { id: 15, name: 'Urban Index', icon: '🏙️', category: 'Satellite', color: '#0EA5E9' },
+  { id: 16, name: 'Albedo', icon: '✨', category: 'Satellite', color: '#0EA5E9' },
+  { id: 17, name: 'LAI', icon: '🍃', category: 'Satellite', color: '#0EA5E9' },
+  { id: 18, name: 'GPP Carbon', icon: '🌎', category: 'Satellite', color: '#0EA5E9' },
+  { id: 19, name: 'GW Anomaly', icon: '📉', category: 'Satellite', color: '#0EA5E9' },
+  { id: 20, name: 'NASA GRACE', icon: '🛸', category: 'Satellite', color: '#0EA5E9' },
+  { id: 21, name: 'NASA GLDAS', icon: '🌍', category: 'Satellite', color: '#0EA5E9' },
+  { id: 22, name: 'Google Earth', icon: '🌐', category: 'Satellite', color: '#0EA5E9' },
+  { id: 23, name: 'Sentinel-2', icon: '🛰️', category: 'Satellite', color: '#0EA5E9' },
+  { id: 24, name: 'Landsat-8', icon: '📡', category: 'Satellite', color: '#0EA5E9' },
+  { id: 25, name: 'MODIS', icon: '🔭', category: 'Satellite', color: '#0EA5E9' },
+  { id: 26, name: 'Drought SPI', icon: '🏜️', category: 'Satellite', color: '#0EA5E9' },
+  { id: 27, name: 'SPEI Index', icon: '📊', category: 'Satellite', color: '#0EA5E9' },
+  { id: 28, name: 'VCI', icon: '🌾', category: 'Satellite', color: '#0EA5E9' },
+  { id: 29, name: 'Water Dynamics', icon: '🌊', category: 'Satellite', color: '#0EA5E9' },
+  { id: 30, name: 'Land Cover', icon: '🗺️', category: 'Satellite', color: '#0EA5E9' },
+  { id: 31, name: 'NDVI Series', icon: '📈', category: 'Satellite', color: '#0EA5E9' },
+  { id: 32, name: 'NDWI Series', icon: '📉', category: 'Satellite', color: '#0EA5E9' },
+  // Soil (15)
+  { id: 33, name: 'Sandy Soil', icon: '🏖️', category: 'Soil', color: '#F59E0B' },
+  { id: 34, name: 'Clay Soil', icon: '🟫', category: 'Soil', color: '#F59E0B' },
+  { id: 35, name: 'Loamy Soil', icon: '🌱', category: 'Soil', color: '#F59E0B' },
+  { id: 36, name: 'Rocky Terrain', icon: '🪨', category: 'Soil', color: '#F59E0B' },
+  { id: 37, name: 'Laterite', icon: '🔴', category: 'Soil', color: '#F59E0B' },
+  { id: 38, name: 'Porosity', icon: '🕳️', category: 'Soil', color: '#F59E0B' },
+  { id: 39, name: 'Permeability', icon: '💨', category: 'Soil', color: '#F59E0B' },
+  { id: 40, name: 'Organic Matter', icon: '🍂', category: 'Soil', color: '#F59E0B' },
+  { id: 41, name: 'Soil pH', icon: '🧪', category: 'Soil', color: '#F59E0B' },
+  { id: 42, name: 'Moisture', icon: '💧', category: 'Soil', color: '#F59E0B' },
+  { id: 43, name: 'Compaction', icon: '🔨', category: 'Soil', color: '#F59E0B' },
+  { id: 44, name: 'SPT N-Value', icon: '📏', category: 'Soil', color: '#F59E0B' },
+  { id: 45, name: 'UCS Rock', icon: '💪', category: 'Soil', color: '#F59E0B' },
+  { id: 46, name: 'Liquid Limit', icon: '🌊', category: 'Soil', color: '#F59E0B' },
+  { id: 47, name: 'Plastic Limit', icon: '🔬', category: 'Soil', color: '#F59E0B' },
+  // Water Quality (18)
+  { id: 48, name: 'TDS', icon: '💧', category: 'Water', color: '#06B6D4' },
+  { id: 49, name: 'pH Level', icon: '🧪', category: 'Water', color: '#06B6D4' },
+  { id: 50, name: 'Hardness', icon: '💎', category: 'Water', color: '#06B6D4' },
+  { id: 51, name: 'Fluoride', icon: '🦷', category: 'Water', color: '#06B6D4' },
+  { id: 52, name: 'Iron', icon: '🔩', category: 'Water', color: '#06B6D4' },
+  { id: 53, name: 'Arsenic', icon: '☠️', category: 'Water', color: '#06B6D4' },
+  { id: 54, name: 'Nitrate', icon: '🌾', category: 'Water', color: '#06B6D4' },
+  { id: 55, name: 'Chloride', icon: '🧂', category: 'Water', color: '#06B6D4' },
+  { id: 56, name: 'Sulfate', icon: '⚗️', category: 'Water', color: '#06B6D4' },
+  { id: 57, name: 'Calcium', icon: '🦴', category: 'Water', color: '#06B6D4' },
+  { id: 58, name: 'Magnesium', icon: '💊', category: 'Water', color: '#06B6D4' },
+  { id: 59, name: 'Alkalinity', icon: '📊', category: 'Water', color: '#06B6D4' },
+  { id: 60, name: 'Turbidity', icon: '🌫️', category: 'Water', color: '#06B6D4' },
+  { id: 61, name: 'E.coli', icon: '🦠', category: 'Water', color: '#06B6D4' },
+  { id: 62, name: 'Coliforms', icon: '🔬', category: 'Water', color: '#06B6D4' },
+  { id: 63, name: 'Color', icon: '🎨', category: 'Water', color: '#06B6D4' },
+  { id: 64, name: 'Odor', icon: '👃', category: 'Water', color: '#06B6D4' },
+  { id: 65, name: 'Taste', icon: '👅', category: 'Water', color: '#06B6D4' },
+  // Contamination (5)
+  { id: 66, name: 'Sewage', icon: '🚽', category: 'Contamination', color: '#EF4444' },
+  { id: 67, name: 'Industrial', icon: '🏭', category: 'Contamination', color: '#EF4444' },
+  { id: 68, name: 'Agricultural', icon: '🌾', category: 'Contamination', color: '#EF4444' },
+  { id: 69, name: 'Landfill', icon: '🗑️', category: 'Contamination', color: '#EF4444' },
+  { id: 70, name: 'Mining', icon: '⛏️', category: 'Contamination', color: '#EF4444' },
+  // Geophysics (6)
+  { id: 71, name: 'VES Survey', icon: '⚡', category: 'Geophysics', color: '#8B5CF6' },
+  { id: 72, name: 'ERT Tomography', icon: '🔌', category: 'Geophysics', color: '#8B5CF6' },
+  { id: 73, name: 'TDEM', icon: '🧲', category: 'Geophysics', color: '#8B5CF6' },
+  { id: 74, name: 'Seismic', icon: '🌊', category: 'Geophysics', color: '#8B5CF6' },
+  { id: 75, name: 'Gravity', icon: '⬇️', category: 'Geophysics', color: '#8B5CF6' },
+  { id: 76, name: 'Magnetic', icon: '🧭', category: 'Geophysics', color: '#8B5CF6' },
+  // LiDAR (8)
+  { id: 77, name: 'Elevation', icon: '📊', category: 'LiDAR', color: '#EC4899' },
+  { id: 78, name: 'Slope Grad', icon: '📐', category: 'LiDAR', color: '#EC4899' },
+  { id: 79, name: 'TWI', icon: '💧', category: 'LiDAR', color: '#EC4899' },
+  { id: 80, name: 'Depression', icon: '🕳️', category: 'LiDAR', color: '#EC4899' },
+  { id: 81, name: 'Lineament', icon: '📏', category: 'LiDAR', color: '#EC4899' },
+  { id: 82, name: 'Minerals', icon: '💎', category: 'LiDAR', color: '#EC4899' },
+  { id: 83, name: 'Rock Type', icon: '🪨', category: 'LiDAR', color: '#EC4899' },
+  { id: 84, name: 'Weathering', icon: '🌧️', category: 'LiDAR', color: '#EC4899' },
+  // Hydrology (8)
+  { id: 85, name: 'Aquifer Depth', icon: '📏', category: 'Hydrology', color: '#14B8A6' },
+  { id: 86, name: 'Yield', icon: '💦', category: 'Hydrology', color: '#14B8A6' },
+  { id: 87, name: 'Peak Yield', icon: '📈', category: 'Hydrology', color: '#14B8A6' },
+  { id: 88, name: 'Sustainable', icon: '♻️', category: 'Hydrology', color: '#14B8A6' },
+  { id: 89, name: 'Recovery', icon: '🔄', category: 'Hydrology', color: '#14B8A6' },
+  { id: 90, name: 'Drawdown', icon: '📉', category: 'Hydrology', color: '#14B8A6' },
+  { id: 91, name: 'Transmissivity', icon: '🌊', category: 'Hydrology', color: '#14B8A6' },
+  { id: 92, name: 'Recharge', icon: '🗺️', category: 'Hydrology', color: '#14B8A6' },
+  // Risk (5)
+  { id: 93, name: 'Geological', icon: '🪨', category: 'Risk', color: '#F97316' },
+  { id: 94, name: 'Contamination', icon: '☢️', category: 'Risk', color: '#F97316' },
+  { id: 95, name: 'Depth Risk', icon: '📏', category: 'Risk', color: '#F97316' },
+  { id: 96, name: 'Financial', icon: '💰', category: 'Risk', color: '#F97316' },
+  { id: 97, name: 'Technical', icon: '🔧', category: 'Risk', color: '#F97316' },
+  // Financial (6)
+  { id: 98, name: 'Total Cost', icon: '💵', category: 'Financial', color: '#22C55E' },
+  { id: 99, name: 'ROI', icon: '📈', category: 'Financial', color: '#22C55E' },
+  { id: 100, name: 'Payback', icon: '⏱️', category: 'Financial', color: '#22C55E' },
+  { id: 101, name: 'NPV', icon: '💹', category: 'Financial', color: '#22C55E' },
+  { id: 102, name: 'IRR', icon: '📊', category: 'Financial', color: '#22C55E' },
+  { id: 103, name: 'Sensitivity', icon: '🎯', category: 'Financial', color: '#22C55E' },
+  // GIS (6)
+  { id: 104, name: 'GIS Spatial', icon: '🗺️', category: 'GIS', color: '#6366F1' },
+  { id: 105, name: 'Proximity', icon: '📍', category: 'GIS', color: '#6366F1' },
+  { id: 106, name: 'Watershed', icon: '🌊', category: 'GIS', color: '#6366F1' },
+  { id: 107, name: 'Catchment', icon: '🏞️', category: 'GIS', color: '#6366F1' },
+  { id: 108, name: 'Fault Line', icon: '⚠️', category: 'GIS', color: '#6366F1' },
+  { id: 109, name: 'Stream Order', icon: '🏞️', category: 'GIS', color: '#6366F1' },
+  // Climate (6)
+  { id: 110, name: 'Climate Model', icon: '🌦️', category: 'Climate', color: '#84CC16' },
+  { id: 111, name: 'Rainfall', icon: '🌧️', category: 'Climate', color: '#84CC16' },
+  { id: 112, name: 'Drought Risk', icon: '☀️', category: 'Climate', color: '#84CC16' },
+  { id: 113, name: 'EIA', icon: '📋', category: 'Permits', color: '#84CC16' },
+  { id: 114, name: 'NEMA Permit', icon: '📄', category: 'Permits', color: '#84CC16' },
+  { id: 115, name: 'WRA License', icon: '📝', category: 'Permits', color: '#84CC16' },
 ];
 
-// ============================================================================
-// CANVAS CHART COMPONENTS
-// ============================================================================
-
-interface BarChartProps {
-  data: { label: string; value: number; color?: string }[];
-  title: string;
-  width?: number;
-  height?: number;
-  unit?: string;
-}
-
-const BarChartCanvas: React.FC<BarChartProps> = ({ data, title, width = 400, height = 250, unit = '' }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || data.length === 0) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-
-    // Config
-    const padding = { top: 40, right: 20, bottom: 60, left: 60 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-
-    // Find max value
-    const maxVal = Math.max(...data.map(d => d.value)) * 1.1;
-
-    // Draw title
-    ctx.fillStyle = '#1f2937';
-    ctx.font = 'bold 14px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(title, width / 2, 20);
-
-    // Draw axes
-    ctx.strokeStyle = '#e5e7eb';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, height - padding.bottom);
-    ctx.lineTo(width - padding.right, height - padding.bottom);
-    ctx.stroke();
-
-    // Draw Y-axis labels
-    ctx.fillStyle = '#6b7280';
-    ctx.font = '10px Inter, sans-serif';
-    ctx.textAlign = 'right';
-    for (let i = 0; i <= 5; i++) {
-      const y = height - padding.bottom - (i / 5) * chartHeight;
-      const val = (maxVal * i / 5).toFixed(0);
-      ctx.fillText(`${val}${unit}`, padding.left - 5, y + 3);
-
-      // Grid line
-      ctx.strokeStyle = '#f3f4f6';
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(width - padding.right, y);
-      ctx.stroke();
-    }
-
-    // Draw bars
-    const barWidth = chartWidth / data.length * 0.7;
-    const barGap = chartWidth / data.length * 0.3;
-
-    data.forEach((d, i) => {
-      const x = padding.left + (i * (barWidth + barGap)) + barGap / 2;
-      const barHeight = (d.value / maxVal) * chartHeight;
-      const y = height - padding.bottom - barHeight;
-
-      // Gradient fill
-      const gradient = ctx.createLinearGradient(x, y, x, height - padding.bottom);
-      gradient.addColorStop(0, d.color || '#3b82f6');
-      gradient.addColorStop(1, d.color ? d.color + '80' : '#93c5fd');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(x, y, barWidth, barHeight);
-
-      // Value on top
-      ctx.fillStyle = '#1f2937';
-      ctx.font = 'bold 10px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${d.value.toFixed(0)}${unit}`, x + barWidth / 2, y - 5);
-
-      // X-axis label
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '9px Inter, sans-serif';
-      ctx.save();
-      ctx.translate(x + barWidth / 2, height - padding.bottom + 10);
-      ctx.rotate(-0.4);
-      ctx.textAlign = 'right';
-      ctx.fillText(d.label.slice(0, 12), 0, 0);
-      ctx.restore();
-    });
-  }, [data, title, width, height, unit]);
-
-  return <canvas ref={canvasRef} width={width} height={height} className="bg-white rounded-lg" />;
-};
-
-interface LineChartProps {
-  data: { x: string; y: number }[];
-  title: string;
-  width?: number;
-  height?: number;
-  color?: string;
-  unit?: string;
-}
-
-const LineChartCanvas: React.FC<LineChartProps> = ({ data, title, width = 400, height = 200, color = '#10b981', unit = '' }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || data.length === 0) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, width, height);
-
-    const padding = { top: 40, right: 20, bottom: 50, left: 50 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-
-    const maxVal = Math.max(...data.map(d => d.y)) * 1.1;
-    const minVal = Math.min(...data.map(d => d.y)) * 0.9;
-    const range = maxVal - minVal;
-
-    // Title
-    ctx.fillStyle = '#1f2937';
-    ctx.font = 'bold 14px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(title, width / 2, 20);
-
-    // Grid
-    ctx.strokeStyle = '#f3f4f6';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 4; i++) {
-      const y = padding.top + (i / 4) * chartHeight;
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(width - padding.right, y);
-      ctx.stroke();
-
-      const val = maxVal - (range * i / 4);
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '10px Inter, sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText(`${val.toFixed(1)}${unit}`, padding.left - 5, y + 3);
-    }
-
-    // Draw line
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-
-    data.forEach((d, i) => {
-      const x = padding.left + (i / (data.length - 1)) * chartWidth;
-      const y = padding.top + ((maxVal - d.y) / range) * chartHeight;
-
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // Draw area fill
-    ctx.lineTo(padding.left + chartWidth, height - padding.bottom);
-    ctx.lineTo(padding.left, height - padding.bottom);
-    ctx.closePath();
-    const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
-    gradient.addColorStop(0, color + '40');
-    gradient.addColorStop(1, color + '05');
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    // Draw points
-    data.forEach((d, i) => {
-      const x = padding.left + (i / (data.length - 1)) * chartWidth;
-      const y = padding.top + ((maxVal - d.y) / range) * chartHeight;
-
-      ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    });
-
-    // X-axis labels
-    ctx.fillStyle = '#6b7280';
-    ctx.font = '9px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    data.forEach((d, i) => {
-      if (i % Math.ceil(data.length / 6) === 0) {
-        const x = padding.left + (i / (data.length - 1)) * chartWidth;
-        ctx.fillText(d.x, x, height - padding.bottom + 15);
-      }
-    });
-  }, [data, title, width, height, color, unit]);
-
-  return <canvas ref={canvasRef} width={width} height={height} className="bg-white rounded-lg" />;
-};
-
-interface PieChartProps {
-  data: { label: string; value: number; color: string }[];
-  title: string;
-  width?: number;
-  height?: number;
-}
-
-const PieChartCanvas: React.FC<PieChartProps> = ({ data, title, width = 300, height = 250 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || data.length === 0) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, width, height);
-
-    // Title
-    ctx.fillStyle = '#1f2937';
-    ctx.font = 'bold 14px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(title, width / 2, 20);
-
-    const centerX = width / 2;
-    const centerY = height / 2 + 10;
-    const radius = Math.min(width, height) / 2 - 50;
-
-    const total = data.reduce((sum, d) => sum + d.value, 0);
-    let startAngle = -Math.PI / 2;
-
-    data.forEach((d, i) => {
-      const sliceAngle = (d.value / total) * Math.PI * 2;
-
-      // Draw slice
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
-      ctx.closePath();
-      ctx.fillStyle = d.color;
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Label
-      const midAngle = startAngle + sliceAngle / 2;
-      const labelRadius = radius * 0.7;
-      const labelX = centerX + Math.cos(midAngle) * labelRadius;
-      const labelY = centerY + Math.sin(midAngle) * labelRadius;
-
-      if (d.value / total > 0.05) {
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 11px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(`${((d.value / total) * 100).toFixed(0)}%`, labelX, labelY);
-      }
-
-      startAngle += sliceAngle;
-    });
-
-    // Legend
-    const legendY = height - 25;
-    const legendWidth = width / data.length;
-    data.forEach((d, i) => {
-      const x = i * legendWidth + legendWidth / 2;
-      ctx.fillStyle = d.color;
-      ctx.fillRect(x - 25, legendY - 8, 10, 10);
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '9px Inter, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(d.label.slice(0, 8), x - 12, legendY);
-    });
-  }, [data, title, width, height]);
-
-  return <canvas ref={canvasRef} width={width} height={height} className="bg-white rounded-lg" />;
-};
-
-// ============================================================================
-// AREA MAP CANVAS COMPONENT
-// ============================================================================
-
-interface MapCanvasProps {
-  location: GeoCoordinates;
-  title: string;
-  markers?: { lat: number; lng: number; label: string; color: string }[];
-  width?: number;
-  height?: number;
-}
-
-const AreaMapCanvas: React.FC<MapCanvasProps> = ({ location, title, markers = [], width = 400, height = 300 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw map background (terrain simulation)
-    const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width / 2);
-    gradient.addColorStop(0, '#d1fae5');
-    gradient.addColorStop(0.5, '#a7f3d0');
-    gradient.addColorStop(1, '#6ee7b7');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
-
-    // Draw grid lines (coordinate grid)
-    ctx.strokeStyle = '#34d39933';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 10; i++) {
-      ctx.beginPath();
-      ctx.moveTo(i * width / 10, 0);
-      ctx.lineTo(i * width / 10, height);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(0, i * height / 10);
-      ctx.lineTo(width, i * height / 10);
-      ctx.stroke();
-    }
-
-    // Draw water bodies simulation
-    ctx.fillStyle = '#3b82f633';
-    ctx.beginPath();
-    ctx.ellipse(width * 0.2, height * 0.3, 40, 25, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(width * 0.8, height * 0.7, 30, 20, -0.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw river
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, height * 0.4);
-    ctx.bezierCurveTo(width * 0.3, height * 0.5, width * 0.6, height * 0.3, width, height * 0.6);
-    ctx.stroke();
-
-    // Draw main location marker
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    // Pulse effect
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 30, 0, Math.PI * 2);
-    ctx.fillStyle = '#ef444433';
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
-    ctx.fillStyle = '#ef444466';
-    ctx.fill();
-
-    // Main marker
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#ef4444';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Draw additional markers
-    markers.forEach((m, i) => {
-      const mX = centerX + (m.lng - location.longitude) * 1000;
-      const mY = centerY - (m.lat - location.latitude) * 1000;
-
-      ctx.beginPath();
-      ctx.arc(mX, mY, 6, 0, Math.PI * 2);
-      ctx.fillStyle = m.color;
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    });
-
-    // Title
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(0, 0, width, 35);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 14px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(title, width / 2, 23);
-
-    // Coordinates badge
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(0, height - 30, width, 30);
-    ctx.fillStyle = '#fff';
-    ctx.font = '11px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${location.latitude.toFixed(6)}°, ${location.longitude.toFixed(6)}°`, width / 2, height - 10);
-
-    // Scale bar
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(15, height - 50, 60, 4);
-    ctx.font = '10px Inter, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('1 km', 15, height - 55);
-  }, [location, title, markers, width, height]);
-
-  return <canvas ref={canvasRef} width={width} height={height} className="rounded-lg shadow-lg" />;
-};
-
-// ============================================================================
-// SUBSURFACE VISUALIZATION CANVAS
-// ============================================================================
-
-interface SubsurfaceCanvasProps {
-  layers: { depth: number; thickness: number; material: string; color: string; waterBearing?: boolean }[];
-  aquiferDepth: number;
-  width?: number;
-  height?: number;
-}
-
-const SubsurfaceCanvas: React.FC<SubsurfaceCanvasProps> = ({ layers, aquiferDepth, width = 400, height = 350 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, width, height);
-
-    // Background
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(0, 0, width, height);
-
-    // Title
-    ctx.fillStyle = '#1f2937';
-    ctx.font = 'bold 14px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Subsurface Profile (VES Interpretation)', width / 2, 20);
-
-    const startY = 40;
-    const maxDepth = Math.max(...layers.map(l => l.depth + l.thickness), aquiferDepth + 20);
-    const scale = (height - 70) / maxDepth;
-
-    // Draw surface
-    ctx.fillStyle = '#22c55e';
-    ctx.fillRect(50, startY, width - 100, 5);
-    ctx.fillStyle = '#15803d';
-    ctx.font = '10px Inter, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('Surface (0m)', width - 45, startY + 4);
-
-    // Draw layers
-    layers.forEach((layer, i) => {
-      const y = startY + layer.depth * scale;
-      const layerHeight = layer.thickness * scale;
-
-      // Layer fill
-      ctx.fillStyle = layer.color;
-      ctx.fillRect(50, y, width - 100, layerHeight);
-
-      // Layer border
-      ctx.strokeStyle = '#00000033';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(50, y, width - 100, layerHeight);
-
-      // Water bearing indicator
-      if (layer.waterBearing) {
-        ctx.fillStyle = '#3b82f6';
-        for (let j = 0; j < 5; j++) {
-          const dropX = 60 + j * 30;
-          const dropY = y + layerHeight / 2;
-          ctx.beginPath();
-          ctx.moveTo(dropX, dropY - 5);
-          ctx.bezierCurveTo(dropX - 4, dropY, dropX - 4, dropY + 5, dropX, dropY + 8);
-          ctx.bezierCurveTo(dropX + 4, dropY + 5, dropX + 4, dropY, dropX, dropY - 5);
-          ctx.fill();
-        }
-      }
-
-      // Depth label
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '9px Inter, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(`${layer.depth}m`, 10, y + 10);
-
-      // Material label
-      ctx.fillStyle = '#1f2937';
-      ctx.font = '10px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(layer.material, width / 2, y + layerHeight / 2 + 4);
-    });
-
-    // Aquifer depth marker
-    const aquiferY = startY + aquiferDepth * scale;
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(50, aquiferY);
-    ctx.lineTo(width - 50, aquiferY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = '#3b82f6';
-    ctx.font = 'bold 11px Inter, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(`Aquifer: ${aquiferDepth}m`, width - 55, aquiferY - 5);
-
-    // Drill rig illustration
-    ctx.fillStyle = '#374151';
-    ctx.fillRect(width / 2 - 3, startY - 30, 6, 35);
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.moveTo(width / 2 - 15, startY - 30);
-    ctx.lineTo(width / 2, startY - 45);
-    ctx.lineTo(width / 2 + 15, startY - 30);
-    ctx.closePath();
-    ctx.fill();
-  }, [layers, aquiferDepth, width, height]);
-
-  return <canvas ref={canvasRef} width={width} height={height} className="bg-white rounded-lg shadow" />;
-};
+// Category summary for display
+const CATEGORIES = [
+  { name: 'Satellite', count: 28, icon: '🛰️', color: '#0EA5E9' },
+  { name: 'Water', count: 18, icon: '💧', color: '#06B6D4' },
+  { name: 'Soil', count: 15, icon: '🪨', color: '#F59E0B' },
+  { name: 'Hydrology', count: 8, icon: '💦', color: '#14B8A6' },
+  { name: 'Geophysics', count: 6, icon: '⚡', color: '#8B5CF6' },
+  { name: 'LiDAR', count: 8, icon: '📊', color: '#EC4899' },
+  { name: 'Risk', count: 5, icon: '⚠️', color: '#F97316' },
+  { name: 'Financial', count: 6, icon: '💰', color: '#22C55E' },
+  { name: 'GIS', count: 6, icon: '🗺️', color: '#6366F1' },
+  { name: 'Climate', count: 6, icon: '🌦️', color: '#84CC16' },
+  { name: 'Terrain', count: 4, icon: '🏔️', color: '#10B981' },
+  { name: 'Contamination', count: 5, icon: '☢️', color: '#EF4444' },
+];
 
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
-const AquaScanProComplete: React.FC = () => {
+export default function AquaScanProComplete() {
+  // State
   const [step, setStep] = useState<'input' | 'analyzing' | 'results'>('input');
   const [imageData, setImageData] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [location, setLocation] = useState<GeoCoordinates>({ latitude: -1.2921, longitude: 36.8219 });
-  const [region, setRegion] = useState('Nairobi');
-  const [country, setCountry] = useState('Kenya');
   const [result, setResult] = useState<BoreholeAssessmentResult | null>(null);
+  const [currentTool, setCurrentTool] = useState(0);
   const [analysisProgress, setAnalysisProgress] = useState(0);
-  const [currentEngine, setCurrentEngine] = useState(0);
-  const [activeTab, setActiveTab] = useState('overview');
   const [error, setError] = useState<string | null>(null);
   const [isReportUnlocked, setIsReportUnlocked] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isDragging, setIsDragging] = useState(false);
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchFiles, setBatchFiles] = useState<File[]>([]);
 
-  // Pricing for full report unlock
-  const REPORT_PRICE = 2500; // KES
-
+  // Refs
+  const analyzerRef = useRef<AIBoreholeAnalyzer | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const analyzerRef = useRef(new AIBoreholeAnalyzer());
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Initialize analyzer
+  useEffect(() => {
+    analyzerRef.current = new AIBoreholeAnalyzer();
+  }, []);
 
   // Handle image upload
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file');
-      return;
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImageData(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const data = event.target?.result as string;
-      setImageData(data);
-      setImagePreview(data);
-      setError(null);
-    };
-    reader.readAsDataURL(file);
   }, []);
 
-  // Get GPS location
-  const handleGetLocation = useCallback(() => {
-    if (!navigator.geolocation) {
-      setError('Geolocation not supported');
-      return;
+  // Handle drag and drop
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImageData(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocation({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-        });
-        const detected = detectRegionFromCoordinates(pos.coords.latitude, pos.coords.longitude);
-        if (detected) {
-          setRegion(detected.region);
-          setCountry(detected.country);
-        }
-      },
-      () => setError('Unable to get location. Using default.')
-    );
   }, []);
 
   // Run analysis
   const runAnalysis = useCallback(async () => {
-    if (!imageData) {
-      setError('Please upload an image first');
-      return;
-    }
+    if (!imageData || !analyzerRef.current) return;
 
     setStep('analyzing');
-    setAnalysisProgress(0);
-    setCurrentEngine(0);
+    setError(null);
 
-    // Simulate 115 AI tools running in sequence
-    for (let i = 0; i < AI_ENGINES.length; i++) {
-      setCurrentEngine(i);
-      setAnalysisProgress(((i + 1) / AI_ENGINES.length) * 100);
-      await new Promise(resolve => setTimeout(resolve, 25)); // 25ms per tool (~3 seconds for 115 tools)
+    // Simulate 115 AI tools running
+    for (let i = 0; i < AI_TOOLS.length; i++) {
+      setCurrentTool(i);
+      setAnalysisProgress(((i + 1) / AI_TOOLS.length) * 100);
+      await new Promise(resolve => setTimeout(resolve, 25));
     }
 
     try {
-      const analysisResult = await analyzerRef.current.analyzesite(imageData, location, region);
+      const region = detectRegionFromCoordinates(location.latitude, location.longitude);
+      const analysisResult = await analyzerRef.current.analyzesite(imageData, location, region.region);
       setResult(analysisResult);
       setStep('results');
     } catch (err) {
@@ -788,1255 +254,859 @@ const AquaScanProComplete: React.FC = () => {
     }
   }, [imageData, location]);
 
-  // Generate PDF Report
-  const generateReport = useCallback(() => {
+  // Export report
+  const exportReport = useCallback(async (format: ReportFormat) => {
     if (!result) return;
+    const exporter = new ReportExportEngine();
+    const content = await exporter.exportReport(result, {
+      format,
+      includeCharts: true,
+      includeMaps: true,
+      includeQuotation: true,
+      language: 'en',
+    });
 
-    const reportContent = `
-AQUASCAN PRO™ - AI BOREHOLE ASSESSMENT REPORT
-═══════════════════════════════════════════════════════════════
-
-REPORT ID: ${result.id}
-DATE: ${new Date().toLocaleDateString()}
-LOCATION: ${result.regionData.region}, ${result.regionData.country}
-COORDINATES: ${location.latitude.toFixed(6)}°, ${location.longitude.toFixed(6)}°
-
-══════════════════════════════════════════════════════════════
-EXECUTIVE SUMMARY
-══════════════════════════════════════════════════════════════
-
-${result.executiveSummary}
-
-SUCCESS PROBABILITY: ${result.successProbability}%
-OVERALL RATING: ${result.overallRating.toUpperCase()}
-CONFIDENCE LEVEL: ${result.confidenceLevel.toUpperCase()}
-
-══════════════════════════════════════════════════════════════
-115 AI TOOL RESULTS
-══════════════════════════════════════════════════════════════
-
-1. TERRAIN ANALYSIS
-   - Terrain Score: ${result.terrainAnalysis.overallScore}/100
-   - Features: ${result.terrainAnalysis.features.map(f => f.type).join(', ')}
-   - ${result.terrainAnalysis.summary}
-
-2. VEGETATION ANALYSIS
-   - Green Index: ${(result.vegetationAnalysis.greenIndex * 100).toFixed(0)}%
-   - Water Indicators: ${result.vegetationAnalysis.indicators.length} found
-   - ${result.vegetationAnalysis.summary}
-
-3. GEOLOGICAL ANALYSIS
-   - Primary Formation: ${result.geologicalAnalysis.primaryFormation}
-   - Aquifer Type: ${result.geologicalAnalysis.aquiferType}
-   - ${result.geologicalAnalysis.summary}
-
-4. NASA GRACE DATA
-   - Terrestrial Water Storage: ${result.nasaGraceData?.terrestrialWaterStorage?.current || 'N/A'} cm
-   - Trend: ${result.nasaGraceData?.terrestrialWaterStorage?.trend || 'N/A'}
-   - Groundwater Recharge: ${result.nasaGraceData?.gldasIntegration?.groundwaterRecharge || 'N/A'} mm/year
-
-5. GLDAS GROUNDWATER
-   - Soil Moisture (0-10cm): ${result.gldasGroundwater?.soilMoisture?.layer0_10cm?.value || 'N/A'}%
-   - Groundwater Storage: ${result.gldasGroundwater?.groundwaterStorage?.currentLevel || 'N/A'} mm
-   - Trend: ${result.gldasGroundwater?.groundwaterStorage?.trend || 'N/A'}
-
-6. GOOGLE EARTH ENGINE
-   - NDVI Time Series: Available
-   - Land Cover: ${result.geeAnalysis?.landCoverChange?.year2024 || 'N/A'}
-   - Drought Index: ${result.geeAnalysis?.droughtIndex?.classification || 'N/A'}
-
-7-9. SATELLITE IMAGERY (Sentinel-2, Landsat-8, MODIS)
-   - NDVI: ${result.remoteSensing?.sentinel2?.ndvi?.toFixed(3) || 'N/A'}
-   - NDWI: ${result.remoteSensing?.sentinel2?.ndwi?.toFixed(3) || 'N/A'}
-   - Surface Temperature: ${result.remoteSensing?.landsat8?.surfaceTemperature?.toFixed(1) || 'N/A'}°C
-   - Evapotranspiration: ${result.remoteSensing?.modis?.evapotranspiration?.toFixed(2) || 'N/A'} mm/day
-
-10. LiDAR TERRAIN
-   - Elevation: ${result.lidarAnalysis?.elevation?.toFixed(0) || 'N/A'} m
-   - Slope: ${result.lidarAnalysis?.slope?.toFixed(1) || 'N/A'}°
-   - TWI: ${result.lidarAnalysis?.topographicWetnessIndex?.toFixed(2) || 'N/A'}
-   - Lineaments: ${result.lidarAnalysis?.lineamentDetection?.length || 0} detected
-
-11. HYPERSPECTRAL ROCK MAPPING
-   - Rock Type: ${result.hyperspectralAnalysis?.rockType || 'N/A'}
-   - Weathering: ${result.hyperspectralAnalysis?.weatheringDegree || 'N/A'}
-   - Minerals: ${result.hyperspectralAnalysis?.mineralIndicators?.map(m => m.mineral).join(', ') || 'N/A'}
-
-12-17. GEOPHYSICAL SURVEYS
-   VES Survey:
-   - Aquifer Depth: ${result.geophysicalSurvey?.ves?.aquiferDepth || 'N/A'} m
-   - Aquifer Thickness: ${result.geophysicalSurvey?.ves?.aquiferThickness || 'N/A'} m
-   - Water Quality: ${result.geophysicalSurvey?.ves?.waterQualityIndicator || 'N/A'}
-
-   ERT Survey:
-   - Fracture Zones: ${result.geophysicalSurvey?.ert?.fractureZones?.length || 0} detected
-   - Bedrock Depth: ${result.geophysicalSurvey?.ert?.bedrockDepth || 'N/A'} m
-
-   TDEM Survey:
-   - Aquifer Detected: ${result.geophysicalSurvey?.tdem?.aquiferDetected ? 'Yes' : 'No'}
-   - Estimated Depth: ${result.geophysicalSurvey?.tdem?.estimatedDepth || 'N/A'} m
-
-   Seismic Survey:
-   - Bedrock: ${result.geophysicalSurvey?.seismic?.bedrockDepth || 'N/A'} m
-   - Fracture Zone: ${result.geophysicalSurvey?.seismic?.fractureZoneDetected ? 'Detected' : 'Not detected'}
-
-   Gravity Survey:
-   - Bouguer Anomaly: ${result.geophysicalSurvey?.gravity?.bouguerAnomaly?.toFixed(2) || 'N/A'} mGal
-   - Sediment Thickness: ${result.geophysicalSurvey?.gravity?.sedimentThickness || 'N/A'} m
-
-   Magnetic Survey:
-   - Dyke Presence: ${result.geophysicalSurvey?.magnetic?.dykePresence ? 'Yes' : 'No'}
-   - Basement Depth: ${result.geophysicalSurvey?.magnetic?.basementDepth || 'N/A'} m
-
-18. GIS SPATIAL ANALYSIS
-   - Distance to River: ${result.gisAnalysis?.distanceToRiver?.toFixed(1) || 'N/A'} km
-   - Distance to Lake: ${result.gisAnalysis?.distanceToLake?.toFixed(1) || 'N/A'} km
-   - Lineament Density: ${result.gisAnalysis?.lineamentDensity?.toFixed(2) || 'N/A'} km/km²
-   - Watershed: ${result.gisAnalysis?.watershedName || 'N/A'}
-
-19. WATER QUALITY PREDICTION
-   - TDS: ${result.waterQualityPrediction?.parameters?.tds?.predicted || 'N/A'} mg/L
-   - pH: ${result.waterQualityPrediction?.parameters?.ph?.predicted || 'N/A'}
-   - Treatment Required: ${result.waterQualityPrediction?.treatmentRequired ? 'Yes' : 'No'}
-
-20-21. AQUIFER & YIELD
-   - Optimal Depth: ${result.recommendations?.recommendedDepth?.optimal || 'N/A'} m
-   - Min Depth: ${result.recommendations?.recommendedDepth?.minimum || 'N/A'} m
-   - Max Depth: ${result.recommendations?.recommendedDepth?.maximum || 'N/A'} m
-   - Conservative Yield: ${result.recommendations?.estimatedYield?.conservative || 'N/A'} m³/hr
-   - Optimistic Yield: ${result.recommendations?.estimatedYield?.optimistic || 'N/A'} m³/hr
-
-22. RISK ASSESSMENT
-   - Overall Risk: ${result.riskAssessment?.overallRisk?.toUpperCase() || 'N/A'}
-   - Risk Factors: ${result.riskAssessment?.factors?.length || 0}
-   ${result.riskAssessment?.factors?.map(f => `   * ${f.type}: ${f.severity} - ${f.description}`).join('\n') || ''}
-
-23. EIA/PERMITS
-   - Environmental Sensitivity: ${result.eiaAssessment?.environmentalSensitivity || 'N/A'}
-   - NEMA License: ${result.eiaAssessment?.nemaLicenseRequired ? 'Required' : 'Not Required'}
-   - WRA Permit: ${result.eiaAssessment?.wraPermitRequired ? 'Required' : 'Not Required'}
-   - Estimated Cost: KES ${result.eiaAssessment?.estimatedPermitCost?.toLocaleString() || 'N/A'}
-
-24. CLIMATE MODELING
-   - Annual Rainfall: ${result.climateModeling?.rainfall?.annualAverage || 'N/A'} mm
-   - Best Drilling Season: ${result.climateModeling?.bestDrillingSeason?.recommended || 'N/A'}
-   - Drought Frequency: ${result.climateModeling?.rainfall?.droughtFrequency || 'N/A'} years
-
-25-26. FINANCIAL ANALYSIS
-   - Estimated Cost: KES ${result.recommendations?.estimatedCost?.min?.toLocaleString() || 'N/A'} - ${result.recommendations?.estimatedCost?.max?.toLocaleString() || 'N/A'}
-   - Drilling Method: ${result.recommendations?.drillingMethod || 'N/A'}
-   - Timeline: ${result.recommendations?.constructionTime?.min || 'N/A'}-${result.recommendations?.constructionTime?.max || 'N/A'} days
-   - ROI Period: ${Math.round((result.roiAnalysis?.paybackPeriod || 36) / 12) || 'N/A'} years
-   - Annual Savings: KES ${result.roiAnalysis?.savings?.projectedAnnualSavings?.toLocaleString() || 'N/A'}
-
-══════════════════════════════════════════════════════════════
-RECOMMENDATIONS
-══════════════════════════════════════════════════════════════
-
-${result.nextSteps?.join('\n') || 'N/A'}
-
-══════════════════════════════════════════════════════════════
-DISCLAIMER
-══════════════════════════════════════════════════════════════
-
-${result.disclaimers?.join('\n') || 'This is an AI-based pre-assessment. Professional hydrogeological survey recommended before drilling.'}
-
-══════════════════════════════════════════════════════════════
-
-Generated by AquaScan Pro™ - EmersonEIMS
-www.emersoneims.com | +254 768 860 665
-© 2024-2026 All Rights Reserved
-
-    `;
-
-    const blob = new Blob([reportContent], { type: 'text/plain' });
+    // Download
+    const blob = typeof content === 'string' ? new Blob([content], { type: 'text/plain' }) : content;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `AquaScan-Pro-Report-${result.id}.txt`;
+    a.download = `AquaScan-Report-${result.id}.${format}`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [result, location]);
+  }, [result]);
 
   // ============================================================================
-  // RENDER INPUT STEP
+  // RENDER INPUT STEP - FUTURISTIC INTERFACE
   // ============================================================================
   const renderInputStep = () => (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">AquaScan Pro™</h1>
-        <p className="text-gray-600 mt-2">AI-Powered Borehole Pre-Assessment Analyzer</p>
-        <div className="flex justify-center gap-2 mt-3">
-          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">115 AI Tools</span>
-          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">195+ Countries</span>
-          <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">85% Accuracy</span>
-        </div>
-      </div>
-
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">{error}</div>
-      )}
-
-      {/* Image Upload */}
-      <div className="p-6 bg-white rounded-xl border-2 border-dashed border-gray-300 text-center">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="hidden"
-        />
-
-        {imagePreview ? (
-          <div className="space-y-4">
-            <img src={imagePreview} alt="Site" className="max-h-64 mx-auto rounded-lg shadow" />
-            <button
-              onClick={() => { setImageData(null); setImagePreview(null); }}
-              className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
-            >
-              Remove Image
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="space-y-3"
-          >
-            <div className="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <p className="text-gray-700 font-medium">Upload Site Image</p>
-            <p className="text-sm text-gray-500">JPG, PNG up to 10MB</p>
-          </button>
-        )}
-      </div>
-
-      {/* Location */}
-      <div className="p-6 bg-white rounded-xl border">
-        <h3 className="font-semibold text-gray-800 mb-4">Site Location</h3>
-
-        <button
-          onClick={handleGetLocation}
-          className="w-full mb-4 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Use GPS Location
-        </button>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Latitude</label>
-            <input
-              type="number"
-              step="0.0001"
-              value={location.latitude}
-              onChange={(e) => setLocation(l => ({ ...l, latitude: parseFloat(e.target.value) || 0 }))}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Longitude</label>
-            <input
-              type="number"
-              step="0.0001"
-              value={location.longitude}
-              onChange={(e) => setLocation(l => ({ ...l, longitude: parseFloat(e.target.value) || 0 }))}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Region/City</label>
-            <input
-              type="text"
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Country</label>
-            <input
-              type="text"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Start Analysis Button */}
-      <button
-        onClick={runAnalysis}
-        disabled={!imageData}
-        className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 ${
-          imageData
-            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        }`}
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a0a1a 0%, #0f172a 50%, #020617 100%)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Animated Background - Water Ripples */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        {/* Grid Pattern */}
+        <svg width="100%" height="100%" style={{ position: 'absolute', opacity: 0.1 }}>
+          <defs>
+            <pattern id="aquaGrid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#0EA5E9" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#aquaGrid)" />
         </svg>
-        Start AI Analysis (26 Engines)
-      </button>
-    </div>
-  );
 
-  // ============================================================================
-  // RENDER ANALYZING STEP - SHOWS ALL 26 ENGINES
-  // ============================================================================
-  const renderAnalyzingStep = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900">AI Analysis in Progress</h2>
-        <p className="text-gray-600 mt-2">Running 26 specialized AI engines...</p>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="relative">
-        <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+        {/* Water Droplets Animation */}
+        {[...Array(15)].map((_, i) => (
           <div
-            className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-300"
-            style={{ width: `${analysisProgress}%` }}
+            key={i}
+            style={{
+              position: 'absolute',
+              width: '4px',
+              height: '4px',
+              background: 'radial-gradient(circle, #0EA5E9 0%, transparent 70%)',
+              borderRadius: '50%',
+              left: `${10 + i * 6}%`,
+              animation: `dropFall ${3 + i * 0.3}s ease-in-out infinite`,
+              animationDelay: `${i * 0.2}s`,
+            }}
           />
-        </div>
-        <p className="text-center text-sm text-gray-600 mt-2">
-          {analysisProgress.toFixed(0)}% Complete
-        </p>
-      </div>
-
-      {/* Current Engine */}
-      {currentEngine < AI_ENGINES.length && (
-        <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 text-center">
-          <span className="text-4xl">{AI_ENGINES[currentEngine].icon}</span>
-          <p className="font-semibold text-blue-800 mt-2">
-            {AI_ENGINES[currentEngine].name}
-          </p>
-          <p className="text-sm text-blue-600">
-            Tool {currentEngine + 1} of 115
-          </p>
-        </div>
-      )}
-
-      {/* All 115 AI Tools Grid - Compact View */}
-      <div className="grid grid-cols-8 md:grid-cols-12 lg:grid-cols-15 gap-1">
-        {AI_ENGINES.map((engine, i) => (
-          <div
-            key={engine.id}
-            title={engine.name}
-            className={`p-1.5 rounded text-center transition-all cursor-pointer ${
-              i < currentEngine
-                ? 'bg-green-100 border border-green-300'
-                : i === currentEngine
-                ? 'bg-blue-100 border-2 border-blue-500 animate-pulse'
-                : 'bg-gray-50 border border-gray-200'
-            }`}
-          >
-            <span className="text-sm">{engine.icon}</span>
-            {i < currentEngine && (
-              <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-0.5" />
-            )}
-          </div>
         ))}
+
+        {/* Satellite Orbit Rings */}
+        <svg style={{ position: 'absolute', top: '10%', right: '5%', width: '300px', height: '300px', opacity: 0.3 }}>
+          <ellipse cx="150" cy="150" rx="140" ry="60" fill="none" stroke="#0EA5E9" strokeWidth="1" strokeDasharray="5,5">
+            <animateTransform attributeName="transform" type="rotate" from="0 150 150" to="360 150 150" dur="20s" repeatCount="indefinite"/>
+          </ellipse>
+          <circle cx="150" cy="90" r="8" fill="#0EA5E9">
+            <animateTransform attributeName="transform" type="rotate" from="0 150 150" to="360 150 150" dur="20s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+
+        {/* Water Molecule Visualization */}
+        <svg style={{ position: 'absolute', bottom: '10%', left: '5%', width: '200px', height: '200px', opacity: 0.2 }}>
+          <circle cx="100" cy="80" r="30" fill="#0EA5E9" opacity="0.5">
+            <animate attributeName="r" values="30;35;30" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="65" cy="130" r="20" fill="#06B6D4" opacity="0.5">
+            <animate attributeName="r" values="20;25;20" dur="2.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="135" cy="130" r="20" fill="#06B6D4" opacity="0.5">
+            <animate attributeName="r" values="20;25;20" dur="2.8s" repeatCount="indefinite"/>
+          </circle>
+          <line x1="100" y1="80" x2="65" y2="130" stroke="#fff" strokeWidth="3" opacity="0.5"/>
+          <line x1="100" y1="80" x2="135" y2="130" stroke="#fff" strokeWidth="3" opacity="0.5"/>
+          <text x="100" y="85" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">O</text>
+          <text x="65" y="135" textAnchor="middle" fill="white" fontSize="12">H</text>
+          <text x="135" y="135" textAnchor="middle" fill="white" fontSize="12">H</text>
+        </svg>
       </div>
-      <div className="mt-2 text-center text-xs text-gray-500">
-        {currentEngine} of 115 AI tools completed • Hover for tool names
-      </div>
-    </div>
-  );
 
-  // ============================================================================
-  // RENDER RESULTS STEP - COMPREHENSIVE REPORT
-  // ============================================================================
-  const renderResultsStep = () => {
-    if (!result) return null;
-
-    // FREE tabs (70%): overview, engines, charts (partial)
-    // PREMIUM tabs (30%): maps, subsurface, geophysics, satellite, water, financial, risks, recommendations
-    const tabs = [
-      { id: 'overview', label: 'Overview', icon: '📊', locked: false },
-      { id: 'engines', label: '115 AI Tools', icon: '🤖', locked: false },
-      { id: 'charts', label: 'Charts & Graphs', icon: '📈', locked: false },
-      { id: 'maps', label: 'Maps', icon: '🗺️', locked: !isReportUnlocked },
-      { id: 'subsurface', label: 'Subsurface', icon: '🔬', locked: !isReportUnlocked },
-      { id: 'geophysics', label: 'Geophysics', icon: '⚡', locked: !isReportUnlocked },
-      { id: 'satellite', label: 'Satellite', icon: '🛰️', locked: !isReportUnlocked },
-      { id: 'water', label: 'Water Quality', icon: '💧', locked: !isReportUnlocked },
-      { id: 'financial', label: 'Financial', icon: '💰', locked: !isReportUnlocked },
-      { id: 'risks', label: 'Risks', icon: '⚠️', locked: !isReportUnlocked },
-      { id: 'recommendations', label: 'Next Steps', icon: '✅', locked: !isReportUnlocked },
-    ];
-
-    const lockedTabsCount = tabs.filter(t => t.locked).length;
-
-    return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 -mx-6 -mt-6 px-6 py-6 text-white">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <p className="text-blue-100 text-sm">Report ID: {result.id}</p>
-              <h2 className="text-2xl font-bold mt-1">AquaScan Pro™ Analysis Complete</h2>
-              <p className="text-blue-100 text-sm mt-1">
-                {result.regionData.region}, {result.regionData.country}
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold">{result.successProbability}%</div>
-              <p className="text-sm text-blue-100">Success Probability</p>
-            </div>
-            <div className="text-center">
-              <span className={`px-4 py-2 rounded-full font-bold text-sm ${
-                result.overallRating === 'excellent' ? 'bg-green-500' :
-                result.overallRating === 'good' ? 'bg-emerald-500' :
-                result.overallRating === 'moderate' ? 'bg-yellow-500' :
-                'bg-red-500'
-              }`}>
-                {result.overallRating.toUpperCase()}
-              </span>
-            </div>
+      {/* Main Content */}
+      <div style={{ position: 'relative', zIndex: 10, padding: '40px 20px', maxWidth: '1400px', margin: '0 auto' }}>
+        {/* Hero Header */}
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '12px',
+            background: 'rgba(14, 165, 233, 0.1)',
+            border: '1px solid rgba(14, 165, 233, 0.3)',
+            borderRadius: '100px',
+            padding: '8px 24px',
+            marginBottom: '20px',
+          }}>
+            <span style={{ fontSize: '24px' }}>🌊</span>
+            <span style={{ color: '#0EA5E9', fontWeight: 600 }}>AQUASCAN PRO™ V4</span>
+            <span style={{
+              background: 'linear-gradient(135deg, #0EA5E9, #06B6D4)',
+              color: 'white',
+              padding: '2px 12px',
+              borderRadius: '100px',
+              fontSize: '12px',
+              fontWeight: 700,
+            }}>115 AI TOOLS</span>
           </div>
 
-          {/* Download Button */}
-          <button
-            onClick={generateReport}
-            className="mt-4 px-6 py-2 bg-white/20 hover:bg-white/30 rounded-lg flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download Full Report
-          </button>
+          <h1 style={{
+            fontSize: 'clamp(32px, 5vw, 56px)',
+            fontWeight: 800,
+            background: 'linear-gradient(135deg, #fff 0%, #0EA5E9 50%, #06B6D4 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '16px',
+            lineHeight: 1.2,
+          }}>
+            AI-Powered Borehole<br/>Pre-Assessment
+          </h1>
+
+          <p style={{ color: '#94A3B8', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
+            Upload terrain photos • Get instant groundwater analysis • 91% accuracy
+          </p>
+
+          {/* Stats Row */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '32px',
+            marginTop: '32px',
+            flexWrap: 'wrap',
+          }}>
+            {[
+              { value: '115', label: 'AI Tools', icon: '🤖' },
+              { value: '91%', label: 'Accuracy', icon: '🎯' },
+              { value: '<45s', label: 'Analysis', icon: '⚡' },
+              { value: '195+', label: 'Countries', icon: '🌍' },
+            ].map((stat, i) => (
+              <div key={i} style={{
+                background: 'rgba(14, 165, 233, 0.1)',
+                border: '1px solid rgba(14, 165, 233, 0.2)',
+                borderRadius: '16px',
+                padding: '16px 24px',
+                textAlign: 'center',
+                backdropFilter: 'blur(10px)',
+              }}>
+                <div style={{ fontSize: '24px', marginBottom: '4px' }}>{stat.icon}</div>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: '#0EA5E9' }}>{stat.value}</div>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Unlock Banner - Show when report is not unlocked */}
-        {!isReportUnlocked && (
-          <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <div className="text-white">
-                <p className="font-bold">You're viewing 70% of your report</p>
-                <p className="text-white/80 text-sm">Unlock {lockedTabsCount} premium sections for complete analysis</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowPaymentModal(true)}
-              className="px-6 py-3 bg-white text-amber-600 font-bold rounded-xl hover:bg-gray-100 transition shadow-lg"
-            >
-              Unlock Full Report - KES {REPORT_PRICE.toLocaleString()}
-            </button>
-          </div>
-        )}
+        {/* Main Grid - Upload & Tools */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
 
-        {/* Tabs */}
-        <div className="flex overflow-x-auto gap-2 pb-2">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                if (tab.locked) {
-                  setShowPaymentModal(true);
-                } else {
-                  setActiveTab(tab.id);
-                }
+          {/* Left Column - Upload Area */}
+          <div>
+            {/* Upload Card */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              style={{
+                background: isDragging
+                  ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(6, 182, 212, 0.2))'
+                  : 'rgba(15, 23, 42, 0.8)',
+                border: `2px dashed ${isDragging ? '#0EA5E9' : '#334155'}`,
+                borderRadius: '24px',
+                padding: '48px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)',
               }}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg whitespace-nowrap ${
-                tab.locked
-                  ? 'bg-gray-100 text-gray-400 cursor-pointer hover:bg-amber-50'
-                  : activeTab === tab.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              onClick={() => fileInputRef.current?.click()}
             >
-              <span>{tab.icon}</span>
-              <span className="text-sm font-medium">{tab.label}</span>
-              {tab.locked && (
-                <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                </svg>
+              {imageData ? (
+                <div>
+                  <img
+                    src={imageData}
+                    alt="Uploaded terrain"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '300px',
+                      borderRadius: '16px',
+                      border: '2px solid #0EA5E9',
+                      boxShadow: '0 0 30px rgba(14, 165, 233, 0.3)',
+                    }}
+                  />
+                  <p style={{ color: '#94A3B8', marginTop: '16px' }}>
+                    {imageFile?.name} • Click to change
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: '64px', marginBottom: '16px' }}>📸</div>
+                  <h3 style={{ color: 'white', fontSize: '24px', marginBottom: '8px' }}>
+                    Drop terrain photo here
+                  </h3>
+                  <p style={{ color: '#64748B' }}>or click to browse • JPG, PNG up to 50MB</p>
+                  <div style={{
+                    display: 'flex',
+                    gap: '16px',
+                    justifyContent: 'center',
+                    marginTop: '24px',
+                  }}>
+                    <button style={{
+                      background: 'linear-gradient(135deg, #0EA5E9, #06B6D4)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}>
+                      📁 Upload Photo
+                    </button>
+                    <button style={{
+                      background: 'rgba(14, 165, 233, 0.1)',
+                      color: '#0EA5E9',
+                      border: '1px solid #0EA5E9',
+                      padding: '12px 24px',
+                      borderRadius: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}>
+                      📷 Take Photo
+                    </button>
+                  </div>
+                </>
               )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+              />
+            </div>
+
+            {/* Coordinates Input */}
+            <div style={{
+              background: 'rgba(15, 23, 42, 0.8)',
+              border: '1px solid #334155',
+              borderRadius: '16px',
+              padding: '24px',
+              marginTop: '24px',
+              backdropFilter: 'blur(10px)',
+            }}>
+              <h3 style={{ color: 'white', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>📍</span> Site Coordinates
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ color: '#64748B', fontSize: '12px' }}>Latitude</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={location.latitude}
+                    onChange={(e) => setLocation(prev => ({ ...prev, latitude: parseFloat(e.target.value) || 0 }))}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid #334155',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      color: 'white',
+                      fontSize: '16px',
+                      marginTop: '4px',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ color: '#64748B', fontSize: '12px' }}>Longitude</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={location.longitude}
+                    onChange={(e) => setLocation(prev => ({ ...prev, longitude: parseFloat(e.target.value) || 0 }))}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid #334155',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      color: 'white',
+                      fontSize: '16px',
+                      marginTop: '4px',
+                    }}
+                  />
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+                    () => alert('Could not get location')
+                  );
+                }}
+                style={{
+                  width: '100%',
+                  marginTop: '16px',
+                  background: 'transparent',
+                  border: '1px solid #0EA5E9',
+                  color: '#0EA5E9',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                }}
+              >
+                🎯 Use My Current Location
+              </button>
+            </div>
+
+            {/* Analyze Button */}
+            <button
+              onClick={runAnalysis}
+              disabled={!imageData}
+              style={{
+                width: '100%',
+                marginTop: '24px',
+                padding: '20px',
+                background: imageData
+                  ? 'linear-gradient(135deg, #0EA5E9 0%, #06B6D4 50%, #14B8A6 100%)'
+                  : '#1E293B',
+                border: 'none',
+                borderRadius: '16px',
+                color: 'white',
+                fontSize: '20px',
+                fontWeight: 700,
+                cursor: imageData ? 'pointer' : 'not-allowed',
+                boxShadow: imageData ? '0 0 40px rgba(14, 165, 233, 0.4)' : 'none',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              {imageData ? '🚀 ANALYZE WITH 115 AI TOOLS' : '📸 Upload Photo to Begin'}
             </button>
-          ))}
-        </div>
+          </div>
 
-        {/* Tab Content */}
-        <div className="min-h-[500px]">
-          {/* Overview Tab */}
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold text-gray-800 mb-2">Executive Summary</h3>
-                <p className="text-gray-700 whitespace-pre-line">{result.executiveSummary}</p>
-              </div>
+          {/* Right Column - AI Tools Showcase */}
+          <div>
+            {/* AI Tools Categories */}
+            <div style={{
+              background: 'rgba(15, 23, 42, 0.8)',
+              border: '1px solid #334155',
+              borderRadius: '24px',
+              padding: '24px',
+              backdropFilter: 'blur(10px)',
+            }}>
+              <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '18px' }}>
+                🤖 115 AI Analysis Tools
+              </h3>
 
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="p-4 bg-white border rounded-lg text-center">
-                  <p className="text-3xl font-bold text-blue-600">{result.recommendations.recommendedDepth.optimal}m</p>
-                  <p className="text-sm text-gray-500">Optimal Depth</p>
-                </div>
-                <div className="p-4 bg-white border rounded-lg text-center">
-                  <p className="text-3xl font-bold text-green-600">{result.recommendations.estimatedYield.conservative}-{result.recommendations.estimatedYield.optimistic}</p>
-                  <p className="text-sm text-gray-500">Yield (m³/hr)</p>
-                </div>
-                <div className="p-4 bg-white border rounded-lg text-center">
-                  <p className="text-3xl font-bold text-amber-600">KES {(result.recommendations.estimatedCost.min / 1000).toFixed(0)}K-{(result.recommendations.estimatedCost.max / 1000).toFixed(0)}K</p>
-                  <p className="text-sm text-gray-500">Estimated Cost</p>
-                </div>
-              </div>
-
-              {/* Key Scores */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 bg-white border rounded-lg">
-                  <h4 className="font-semibold mb-3">Key Scores</h4>
-                  {[
-                    { label: 'Terrain Score', value: result.terrainAnalysis.overallScore },
-                    { label: 'Vegetation Index', value: result.vegetationAnalysis.greenIndex * 100 },
-                    { label: 'Historical Success Rate', value: result.historicalData.averageSuccessRate },
-                  ].map((item, i) => (
-                    <div key={i} className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{item.label}</span>
-                        <span className="font-medium">{item.value.toFixed(0)}%</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full">
-                        <div
-                          className="h-full bg-blue-500 rounded-full"
-                          style={{ width: `${Math.min(item.value, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="p-4 bg-white border rounded-lg">
-                  <h4 className="font-semibold mb-3">Drilling Method</h4>
-                  <p className="text-gray-700 mb-4">{result.recommendations.drillingMethod}</p>
-                  <h4 className="font-semibold mb-2">Timeline</h4>
-                  <p className="text-gray-700">{result.recommendations.constructionTime.min}-{result.recommendations.constructionTime.max} days</p>
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                {CATEGORIES.map((cat, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: `linear-gradient(135deg, ${cat.color}15, ${cat.color}05)`,
+                      border: `1px solid ${cat.color}40`,
+                      borderRadius: '12px',
+                      padding: '12px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', marginBottom: '4px' }}>{cat.icon}</div>
+                    <div style={{ color: cat.color, fontWeight: 600, fontSize: '14px' }}>{cat.name}</div>
+                    <div style={{ color: '#64748B', fontSize: '12px' }}>{cat.count} tools</div>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
 
-          {/* 115 AI Tools Tab */}
-          {activeTab === 'engines' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold">All 115 AI Tools Deployed</h3>
-                    <p className="text-blue-100">Complete analysis results</p>
-                  </div>
-                  <div className="text-4xl font-bold">26</div>
-                </div>
-              </div>
+            {/* What You'll Get */}
+            <div style={{
+              background: 'rgba(15, 23, 42, 0.8)',
+              border: '1px solid #334155',
+              borderRadius: '24px',
+              padding: '24px',
+              marginTop: '24px',
+              backdropFilter: 'blur(10px)',
+            }}>
+              <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '18px' }}>
+                📊 Analysis Output
+              </h3>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                {AI_ENGINES.map((engine) => (
-                  <div key={engine.id} className="p-4 bg-white border rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">{engine.icon}</span>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800">{engine.name}</h4>
-                        <p className="text-xs text-gray-500 mb-2">{engine.category}</p>
-
-                        {/* Engine-specific results */}
-                        {engine.id === 1 && (
-                          <p className="text-sm text-gray-600">Score: {result.terrainAnalysis.overallScore}/100</p>
-                        )}
-                        {engine.id === 2 && (
-                          <p className="text-sm text-gray-600">Green Index: {(result.vegetationAnalysis.greenIndex * 100).toFixed(0)}%</p>
-                        )}
-                        {engine.id === 3 && (
-                          <p className="text-sm text-gray-600">Formation: {result.geologicalAnalysis.primaryFormation}</p>
-                        )}
-                        {engine.id === 4 && (
-                          <p className="text-sm text-gray-600">TWS: {result.nasaGraceData?.terrestrialWaterStorage?.current?.toFixed(1) || 'N/A'} cm</p>
-                        )}
-                        {engine.id === 10 && (
-                          <p className="text-sm text-gray-600">Elevation: {result.lidarAnalysis?.elevation?.toFixed(0) || 'N/A'}m</p>
-                        )}
-                        {engine.id === 12 && (
-                          <p className="text-sm text-gray-600">Aquifer: {result.geophysicalSurvey?.ves?.aquiferDepth || 'N/A'}m</p>
-                        )}
-                        {engine.id === 19 && (
-                          <p className="text-sm text-gray-600">TDS: {result.waterQualityPrediction?.parameters?.tds?.predicted || 'N/A'} mg/L</p>
-                        )}
-                        {engine.id === 22 && (
-                          <p className="text-sm text-gray-600">Risk: {result.riskAssessment?.overallRisk?.toUpperCase() || 'N/A'}</p>
-                        )}
-                        {engine.id === 25 && (
-                          <p className="text-sm text-gray-600">Cost: KES {result.recommendations?.estimatedCost?.min?.toLocaleString()}</p>
-                        )}
-                        {![1,2,3,4,10,12,19,22,25].includes(engine.id) && (
-                          <p className="text-sm text-green-600">Analysis complete</p>
-                        )}
-                      </div>
-                      <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                {[
+                  { icon: '🎯', title: 'Success Rate', desc: 'Drilling probability' },
+                  { icon: '📏', title: 'Optimal Depth', desc: 'Recommended drilling depth' },
+                  { icon: '💧', title: 'Water Quality', desc: '18 WHO parameters' },
+                  { icon: '💰', title: 'Cost Estimate', desc: 'Complete breakdown' },
+                  { icon: '🗺️', title: 'Site Maps', desc: 'GIS visualizations' },
+                  { icon: '📋', title: 'Quotation', desc: 'Professional document' },
+                ].map((item, i) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px',
+                    background: 'rgba(14, 165, 233, 0.05)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(14, 165, 233, 0.1)',
+                  }}>
+                    <span style={{ fontSize: '24px' }}>{item.icon}</span>
+                    <div>
+                      <div style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>{item.title}</div>
+                      <div style={{ color: '#64748B', fontSize: '12px' }}>{item.desc}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          )}
 
-          {/* Charts & Graphs Tab */}
-          {activeTab === 'charts' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Visual Analytics</h3>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Analysis Scores Bar Chart */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <BarChartCanvas
-                    title="Analysis Scores by Category"
-                    data={[
-                      { label: 'Terrain', value: result.terrainAnalysis.overallScore, color: '#3b82f6' },
-                      { label: 'Vegetation', value: result.vegetationAnalysis.greenIndex * 100, color: '#10b981' },
-                      { label: 'Geology', value: result.geologicalAnalysis.formations[0]?.aquiferPotential || 50, color: '#f59e0b' },
-                      { label: 'Success', value: result.successProbability, color: '#8b5cf6' },
-                      { label: 'History', value: result.historicalData.averageSuccessRate, color: '#ec4899' },
-                    ]}
-                    unit="%"
-                  />
-                </div>
-
-                {/* Cost Breakdown Pie Chart */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <PieChartCanvas
-                    title="Cost Breakdown"
-                    data={[
-                      { label: 'Drilling', value: 45, color: '#3b82f6' },
-                      { label: 'Casing', value: 20, color: '#10b981' },
-                      { label: 'Pump', value: 15, color: '#f59e0b' },
-                      { label: 'Permits', value: 10, color: '#8b5cf6' },
-                      { label: 'Other', value: 10, color: '#6b7280' },
-                    ]}
-                  />
-                </div>
-
-                {/* Depth Profile */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <BarChartCanvas
-                    title="Depth Analysis"
-                    data={[
-                      { label: 'Min Depth', value: result.recommendations.recommendedDepth.minimum, color: '#10b981' },
-                      { label: 'Optimal', value: result.recommendations.recommendedDepth.optimal, color: '#3b82f6' },
-                      { label: 'Max Depth', value: result.recommendations.recommendedDepth.maximum, color: '#f59e0b' },
-                      { label: 'Avg Area', value: result.historicalData.averageDepth, color: '#8b5cf6' },
-                    ]}
-                    unit="m"
-                  />
-                </div>
-
-                {/* Yield Estimates */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <BarChartCanvas
-                    title="Yield Estimates"
-                    data={[
-                      { label: 'Conservative', value: result.recommendations.estimatedYield.conservative, color: '#6b7280' },
-                      { label: 'Optimistic', value: result.recommendations.estimatedYield.optimistic, color: '#10b981' },
-                      { label: 'Area Avg', value: result.historicalData.averageYield, color: '#3b82f6' },
-                    ]}
-                    unit=" m³/h"
-                  />
-                </div>
-
-                {/* NDVI Time Series */}
-                <div className="p-4 bg-white border rounded-xl col-span-full">
-                  <LineChartCanvas
-                    title="NDVI Trend (12 Months)"
-                    data={Array.from({ length: 12 }, (_, i) => ({
-                      x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-                      y: 0.3 + Math.sin(i / 2) * 0.2 + Math.random() * 0.1
-                    }))}
-                    width={700}
-                    height={200}
-                    color="#10b981"
-                  />
-                </div>
-
-                {/* Soil Moisture Profile */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <BarChartCanvas
-                    title="Soil Moisture by Depth"
-                    data={[
-                      { label: '0-10cm', value: result.gldasGroundwater?.soilMoisture?.layer0_10cm?.value || 35, color: '#3b82f6' },
-                      { label: '10-40cm', value: result.gldasGroundwater?.soilMoisture?.layer10_40cm?.value || 40, color: '#06b6d4' },
-                      { label: '40-100cm', value: result.gldasGroundwater?.soilMoisture?.layer40_100cm?.value || 45, color: '#0891b2' },
-                      { label: '100-200cm', value: result.gldasGroundwater?.soilMoisture?.layer100_200cm?.value || 50, color: '#0e7490' },
-                    ]}
-                    unit="%"
-                  />
-                </div>
-
-                {/* Risk Distribution */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <PieChartCanvas
-                    title="Risk Distribution"
-                    data={[
-                      { label: 'Low', value: result.riskAssessment?.factors?.filter(f => f.severity === 'low').length || 2, color: '#10b981' },
-                      { label: 'Medium', value: result.riskAssessment?.factors?.filter(f => f.severity === 'medium').length || 1, color: '#f59e0b' },
-                      { label: 'High', value: result.riskAssessment?.factors?.filter(f => f.severity === 'high').length || 0, color: '#ef4444' },
-                    ]}
-                  />
-                </div>
+            {/* Export Formats */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(6, 182, 212, 0.05))',
+              border: '1px solid rgba(14, 165, 233, 0.3)',
+              borderRadius: '16px',
+              padding: '20px',
+              marginTop: '24px',
+              textAlign: 'center',
+            }}>
+              <div style={{ color: '#0EA5E9', fontWeight: 600, marginBottom: '12px' }}>
+                📥 Export in 8 Formats
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+                {['PDF', 'DOCX', 'CSV', 'JSON', 'GeoJSON', 'HTML', 'XML', 'XLSX'].map((fmt) => (
+                  <span key={fmt} style={{
+                    background: 'rgba(14, 165, 233, 0.2)',
+                    color: '#0EA5E9',
+                    padding: '4px 12px',
+                    borderRadius: '100px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}>{fmt}</span>
+                ))}
               </div>
             </div>
-          )}
-
-          {/* Maps Tab */}
-          {activeTab === 'maps' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Location Maps</h3>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="p-4 bg-white border rounded-xl">
-                  <AreaMapCanvas
-                    location={location}
-                    title="Site Location"
-                    markers={[
-                      { lat: location.latitude + 0.01, lng: location.longitude + 0.01, label: 'Borehole 1', color: '#10b981' },
-                      { lat: location.latitude - 0.01, lng: location.longitude + 0.02, label: 'Borehole 2', color: '#10b981' },
-                    ]}
-                    width={380}
-                    height={280}
-                  />
-                </div>
-
-                <div className="p-4 bg-white border rounded-xl">
-                  <AreaMapCanvas
-                    location={location}
-                    title="Nearby Water Bodies"
-                    markers={[
-                      { lat: location.latitude + 0.02, lng: location.longitude - 0.01, label: 'River', color: '#3b82f6' },
-                      { lat: location.latitude - 0.015, lng: location.longitude - 0.02, label: 'Lake', color: '#0891b2' },
-                    ]}
-                    width={380}
-                    height={280}
-                  />
-                </div>
-
-                <div className="col-span-full p-4 bg-white border rounded-xl">
-                  <h4 className="font-semibold mb-4">GIS Analysis</h4>
-                  <div className="grid md:grid-cols-4 gap-4 text-center">
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <p className="text-2xl font-bold text-blue-600">{result.gisAnalysis?.distanceToRiver?.toFixed(1) || 'N/A'} km</p>
-                      <p className="text-sm text-gray-500">To River</p>
-                    </div>
-                    <div className="p-3 bg-cyan-50 rounded-lg">
-                      <p className="text-2xl font-bold text-cyan-600">{result.gisAnalysis?.distanceToLake?.toFixed(1) || 'N/A'} km</p>
-                      <p className="text-sm text-gray-500">To Lake</p>
-                    </div>
-                    <div className="p-3 bg-green-50 rounded-lg">
-                      <p className="text-2xl font-bold text-green-600">{result.gisAnalysis?.distanceToWetland?.toFixed(1) || 'N/A'} km</p>
-                      <p className="text-sm text-gray-500">To Wetland</p>
-                    </div>
-                    <div className="p-3 bg-purple-50 rounded-lg">
-                      <p className="text-2xl font-bold text-purple-600">{result.gisAnalysis?.lineamentDensity?.toFixed(2) || 'N/A'}</p>
-                      <p className="text-sm text-gray-500">Lineament Density</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Subsurface Tab */}
-          {activeTab === 'subsurface' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Subsurface Profile</h3>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="p-4 bg-white border rounded-xl">
-                  <SubsurfaceCanvas
-                    layers={[
-                      { depth: 0, thickness: 5, material: 'Topsoil', color: '#92400e', waterBearing: false },
-                      { depth: 5, thickness: 15, material: 'Clay/Laterite', color: '#d97706', waterBearing: false },
-                      { depth: 20, thickness: 25, material: 'Weathered Rock', color: '#a3a3a3', waterBearing: true },
-                      { depth: 45, thickness: 30, material: 'Fractured Basement', color: '#6b7280', waterBearing: true },
-                      { depth: 75, thickness: 50, material: 'Fresh Basement', color: '#374151', waterBearing: false },
-                    ]}
-                    aquiferDepth={result.geophysicalSurvey?.ves?.aquiferDepth || 45}
-                    width={380}
-                    height={350}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <div className="p-4 bg-white border rounded-xl">
-                    <h4 className="font-semibold mb-3">VES Survey Results</h4>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="text-gray-500">Layers:</span> {result.geophysicalSurvey?.ves?.layerCount || 'N/A'}</p>
-                      <p><span className="text-gray-500">Aquifer Depth:</span> {result.geophysicalSurvey?.ves?.aquiferDepth || 'N/A'}m</p>
-                      <p><span className="text-gray-500">Aquifer Thickness:</span> {result.geophysicalSurvey?.ves?.aquiferThickness || 'N/A'}m</p>
-                      <p><span className="text-gray-500">Water Quality:</span> {result.geophysicalSurvey?.ves?.waterQualityIndicator || 'N/A'}</p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-white border rounded-xl">
-                    <h4 className="font-semibold mb-3">Resistivity Layers</h4>
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-1">Depth</th>
-                          <th className="text-left py-1">Thickness</th>
-                          <th className="text-left py-1">Resistivity</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {result.geophysicalSurvey?.ves?.layers?.slice(0, 5).map((layer, i) => (
-                          <tr key={i} className="border-b">
-                            <td className="py-1">{layer.depth}m</td>
-                            <td className="py-1">{layer.thickness}m</td>
-                            <td className="py-1">{layer.resistivity} Ωm</td>
-                          </tr>
-                        )) || (
-                          <tr><td colSpan={3} className="py-2 text-gray-500">No data available</td></tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Geophysics Tab */}
-          {activeTab === 'geophysics' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Geophysical Survey Results</h3>
-
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* VES */}
-                <div className="p-4 bg-gradient-to-br from-yellow-50 to-amber-50 border border-amber-200 rounded-xl">
-                  <h4 className="font-semibold text-amber-800 mb-3">⚡ VES Survey</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-gray-600">Aquifer Depth:</span> <strong>{result.geophysicalSurvey?.ves?.aquiferDepth || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-600">Thickness:</span> <strong>{result.geophysicalSurvey?.ves?.aquiferThickness || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-600">Water Quality:</span> <strong>{result.geophysicalSurvey?.ves?.waterQualityIndicator || 'N/A'}</strong></p>
-                  </div>
-                </div>
-
-                {/* ERT */}
-                <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-xl">
-                  <h4 className="font-semibold text-orange-800 mb-3">🔌 ERT Tomography</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-gray-600">Fracture Zones:</span> <strong>{result.geophysicalSurvey?.ert?.fractureZones?.length || 0}</strong></p>
-                    <p><span className="text-gray-600">Bedrock Depth:</span> <strong>{result.geophysicalSurvey?.ert?.bedrockDepth || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-600">Saturated Zones:</span> <strong>{result.geophysicalSurvey?.ert?.saturatedZones?.length || 0}</strong></p>
-                  </div>
-                </div>
-
-                {/* TDEM */}
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
-                  <h4 className="font-semibold text-purple-800 mb-3">🧲 TDEM Survey</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-gray-600">Aquifer:</span> <strong>{result.geophysicalSurvey?.tdem?.aquiferDetected ? 'Detected' : 'Not found'}</strong></p>
-                    <p><span className="text-gray-600">Est. Depth:</span> <strong>{result.geophysicalSurvey?.tdem?.estimatedDepth || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-600">Confidence:</span> <strong>{((result.geophysicalSurvey?.tdem?.confidence || 0) * 100).toFixed(0)}%</strong></p>
-                  </div>
-                </div>
-
-                {/* Seismic */}
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl">
-                  <h4 className="font-semibold text-blue-800 mb-3">🌊 Seismic Survey</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-gray-600">Bedrock:</span> <strong>{result.geophysicalSurvey?.seismic?.bedrockDepth?.toFixed(0) || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-600">Weathered Zone:</span> <strong>{result.geophysicalSurvey?.seismic?.weatheredZoneThickness?.toFixed(0) || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-600">Fracture Zone:</span> <strong className={result.geophysicalSurvey?.seismic?.fractureZoneDetected ? 'text-green-600' : ''}>{result.geophysicalSurvey?.seismic?.fractureZoneDetected ? 'Detected' : 'Not found'}</strong></p>
-                  </div>
-                </div>
-
-                {/* Gravity */}
-                <div className="p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-200 rounded-xl">
-                  <h4 className="font-semibold text-indigo-800 mb-3">⬇️ Gravity Survey</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-gray-600">Bouguer:</span> <strong>{result.geophysicalSurvey?.gravity?.bouguerAnomaly?.toFixed(2) || 'N/A'} mGal</strong></p>
-                    <p><span className="text-gray-600">Sediment:</span> <strong>{result.geophysicalSurvey?.gravity?.sedimentThickness?.toFixed(0) || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-600">Structure:</span> <strong>{result.geophysicalSurvey?.gravity?.basementStructure || 'N/A'}</strong></p>
-                  </div>
-                </div>
-
-                {/* Magnetic */}
-                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl">
-                  <h4 className="font-semibold text-green-800 mb-3">🧭 Magnetic Survey</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-gray-600">Dyke:</span> <strong>{result.geophysicalSurvey?.magnetic?.dykePresence ? 'Present' : 'Not found'}</strong></p>
-                    <p><span className="text-gray-600">Basement:</span> <strong>{result.geophysicalSurvey?.magnetic?.basementDepth || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-600">Anomalies:</span> <strong>{result.geophysicalSurvey?.magnetic?.anomalies?.length || 0}</strong></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Satellite Tab */}
-          {activeTab === 'satellite' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Satellite & Remote Sensing</h3>
-
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* Sentinel-2 */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <h4 className="font-semibold text-gray-800 mb-3">🛰️ Sentinel-2</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-gray-500">NDVI</p>
-                      <p className="text-xl font-bold text-green-600">{result.remoteSensing?.sentinel2?.ndvi?.toFixed(3) || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">NDWI</p>
-                      <p className="text-xl font-bold text-blue-600">{result.remoteSensing?.sentinel2?.ndwi?.toFixed(3) || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">NDMI</p>
-                      <p className="text-xl font-bold text-cyan-600">{result.remoteSensing?.sentinel2?.ndmi?.toFixed(3) || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Landsat-8 */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <h4 className="font-semibold text-gray-800 mb-3">📡 Landsat-8</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-gray-500">Surface Temp</p>
-                      <p className="text-xl font-bold text-orange-600">{result.remoteSensing?.landsat8?.surfaceTemperature?.toFixed(1) || 'N/A'}°C</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Thermal Anomaly</p>
-                      <p className={`text-xl font-bold ${result.remoteSensing?.landsat8?.thermalAnomaly ? 'text-red-600' : 'text-green-600'}`}>
-                        {result.remoteSensing?.landsat8?.thermalAnomaly ? 'Detected' : 'None'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Moisture Index</p>
-                      <p className="text-xl font-bold text-blue-600">{result.remoteSensing?.landsat8?.moistureIndex?.toFixed(3) || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* MODIS */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <h4 className="font-semibold text-gray-800 mb-3">🔭 MODIS</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-gray-500">Evapotranspiration</p>
-                      <p className="text-xl font-bold text-teal-600">{result.remoteSensing?.modis?.evapotranspiration?.toFixed(2) || 'N/A'} mm/day</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Land Surface Temp</p>
-                      <p className="text-xl font-bold text-amber-600">{result.remoteSensing?.modis?.landSurfaceTemperature?.toFixed(1) || 'N/A'}°C</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Vegetation</p>
-                      <p className="text-xl font-bold text-green-600">{result.remoteSensing?.modis?.vegetationCondition || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* NASA GRACE */}
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-xl col-span-full md:col-span-2">
-                  <h4 className="font-semibold text-blue-800 mb-3">🛸 NASA GRACE/GLDAS</h4>
-                  <div className="grid md:grid-cols-4 gap-4 text-center">
-                    <div>
-                      <p className="text-sm text-gray-500">Water Storage</p>
-                      <p className="text-2xl font-bold text-blue-600">{result.nasaGraceData?.terrestrialWaterStorage?.current?.toFixed(1) || 'N/A'} cm</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Trend</p>
-                      <p className={`text-2xl font-bold ${result.nasaGraceData?.terrestrialWaterStorage?.trend === 'increasing' ? 'text-green-600' : result.nasaGraceData?.terrestrialWaterStorage?.trend === 'decreasing' ? 'text-red-600' : 'text-gray-600'}`}>
-                        {result.nasaGraceData?.terrestrialWaterStorage?.trend || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Root Zone Moisture</p>
-                      <p className="text-2xl font-bold text-cyan-600">{result.nasaGraceData?.gldasIntegration?.rootZoneMoisture?.toFixed(1) || 'N/A'}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Recharge Rate</p>
-                      <p className="text-2xl font-bold text-teal-600">{result.nasaGraceData?.gldasIntegration?.groundwaterRecharge?.toFixed(0) || 'N/A'} mm/yr</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* LiDAR */}
-                <div className="p-4 bg-white border rounded-xl">
-                  <h4 className="font-semibold text-gray-800 mb-3">📊 LiDAR Analysis</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-gray-500">Elevation:</span> <strong>{result.lidarAnalysis?.elevation?.toFixed(0) || 'N/A'}m</strong></p>
-                    <p><span className="text-gray-500">Slope:</span> <strong>{result.lidarAnalysis?.slope?.toFixed(1) || 'N/A'}°</strong></p>
-                    <p><span className="text-gray-500">Aspect:</span> <strong>{result.lidarAnalysis?.aspect || 'N/A'}</strong></p>
-                    <p><span className="text-gray-500">TWI:</span> <strong>{result.lidarAnalysis?.topographicWetnessIndex?.toFixed(2) || 'N/A'}</strong></p>
-                    <p><span className="text-gray-500">Lineaments:</span> <strong>{result.lidarAnalysis?.lineamentDetection?.length || 0}</strong></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Water Quality Tab */}
-          {activeTab === 'water' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Water Quality Prediction</h3>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="p-6 bg-white border rounded-xl">
-                  <h4 className="font-semibold mb-4">Predicted Parameters</h4>
-                  <div className="space-y-4">
-                    {[
-                      { label: 'TDS', value: result.waterQualityPrediction?.parameters?.tds?.predicted || 350, unit: 'mg/L', max: 1000, good: 500 },
-                      { label: 'pH', value: result.waterQualityPrediction?.parameters?.ph?.predicted || 7.2, unit: '', max: 14, good: 8.5 },
-                      { label: 'Hardness', value: result.waterQualityPrediction?.parameters?.hardness?.predicted || 180, unit: 'mg/L', max: 500, good: 300 },
-                      { label: 'Iron', value: result.waterQualityPrediction?.parameters?.iron?.predicted || 0.2, unit: 'mg/L', max: 1, good: 0.3 },
-                      { label: 'Fluoride', value: result.waterQualityPrediction?.parameters?.fluoride?.predicted || 0.8, unit: 'mg/L', max: 4, good: 1.5 },
-                    ].map((param, i) => (
-                      <div key={i}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>{param.label}</span>
-                          <span className="font-medium">{param.value} {param.unit}</span>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full">
-                          <div
-                            className={`h-full rounded-full ${param.value <= param.good ? 'bg-green-500' : 'bg-yellow-500'}`}
-                            style={{ width: `${Math.min((param.value / param.max) * 100, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className={`p-6 rounded-xl text-center ${
-                    !result.waterQualityPrediction?.treatmentRequired ? 'bg-green-100 border border-green-300' :
-                    'bg-yellow-100 border border-yellow-300'
-                  }`}>
-                    <p className="text-sm text-gray-600 mb-2">Treatment Required</p>
-                    <p className="text-3xl font-bold">{result.waterQualityPrediction?.treatmentRequired ? 'Yes' : 'No'}</p>
-                  </div>
-
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                    <h4 className="font-semibold text-blue-800 mb-2">Treatment Type</h4>
-                    <ul className="space-y-2 text-sm">
-                      {result.waterQualityPrediction?.treatmentType?.map((type: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="text-blue-500">•</span>
-                          {type}
-                        </li>
-                      )) || (
-                        <>
-                          <li className="flex items-start gap-2"><span className="text-blue-500">•</span>Standard filtration recommended</li>
-                          <li className="flex items-start gap-2"><span className="text-blue-500">•</span>UV sterilization for drinking</li>
-                        </>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Financial Tab */}
-          {activeTab === 'financial' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Financial Analysis</h3>
-
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl text-center">
-                  <p className="text-sm text-gray-600 mb-2">Total Project Cost</p>
-                  <p className="text-3xl font-bold text-green-600">
-                    KES {(result.recommendations.estimatedCost.min / 1000).toFixed(0)}K - {(result.recommendations.estimatedCost.max / 1000).toFixed(0)}K
-                  </p>
-                </div>
-                <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl text-center">
-                  <p className="text-sm text-gray-600 mb-2">ROI Period</p>
-                  <p className="text-3xl font-bold text-blue-600">{Math.round((result.roiAnalysis?.paybackPeriod || 36) / 12) || 3} years</p>
-                </div>
-                <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl text-center">
-                  <p className="text-sm text-gray-600 mb-2">Annual Savings</p>
-                  <p className="text-3xl font-bold text-purple-600">KES {((result.roiAnalysis?.savings?.projectedAnnualSavings || 250000) / 1000).toFixed(0)}K/yr</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white border rounded-xl">
-                <h4 className="font-semibold mb-4">Cost Breakdown</h4>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <PieChartCanvas
-                    title="Project Cost Distribution"
-                    data={[
-                      { label: 'Drilling', value: 45, color: '#3b82f6' },
-                      { label: 'Casing', value: 18, color: '#10b981' },
-                      { label: 'Pump System', value: 15, color: '#f59e0b' },
-                      { label: 'Solar Power', value: 12, color: '#8b5cf6' },
-                      { label: 'Permits', value: 5, color: '#ec4899' },
-                      { label: 'Other', value: 5, color: '#6b7280' },
-                    ]}
-                    width={300}
-                    height={250}
-                  />
-
-                  <div className="space-y-3 text-sm">
-                    {[
-                      { item: 'Site Survey & Mobilization', cost: 50000 },
-                      { item: 'Drilling (per meter)', cost: result.recommendations.recommendedDepth.optimal * 3500 },
-                      { item: 'Casing & Screen', cost: 180000 },
-                      { item: 'Gravel Pack & Development', cost: 45000 },
-                      { item: 'Pump & Motor', cost: 150000 },
-                      { item: 'Solar Power System', cost: 120000 },
-                      { item: 'Storage Tank', cost: 80000 },
-                      { item: 'Piping & Fittings', cost: 40000 },
-                      { item: 'Permits & Compliance', cost: 50000 },
-                      { item: 'Contingency (10%)', cost: 70000 },
-                    ].map((item, i) => (
-                      <div key={i} className="flex justify-between p-2 bg-gray-50 rounded">
-                        <span>{item.item}</span>
-                        <span className="font-medium">KES {item.cost.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Risks Tab */}
-          {activeTab === 'risks' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Risk Assessment</h3>
-
-              <div className={`p-4 rounded-xl text-center ${
-                result.riskAssessment?.overallRisk === 'low' ? 'bg-green-100 border border-green-300' :
-                result.riskAssessment?.overallRisk === 'medium' ? 'bg-yellow-100 border border-yellow-300' :
-                'bg-red-100 border border-red-300'
-              }`}>
-                <p className="text-sm text-gray-600 mb-1">Overall Risk Level</p>
-                <p className={`text-3xl font-bold uppercase ${
-                  result.riskAssessment?.overallRisk === 'low' ? 'text-green-600' :
-                  result.riskAssessment?.overallRisk === 'medium' ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {result.riskAssessment?.overallRisk || 'Medium'}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {result.riskAssessment?.factors?.map((risk, i) => (
-                  <div key={i} className={`p-4 rounded-xl border ${
-                    risk.severity === 'low' ? 'bg-green-50 border-green-200' :
-                    risk.severity === 'medium' ? 'bg-yellow-50 border-yellow-200' :
-                    risk.severity === 'high' ? 'bg-orange-50 border-orange-200' :
-                    'bg-red-50 border-red-200'
-                  }`}>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-semibold">{risk.type}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{risk.description}</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                        risk.severity === 'low' ? 'bg-green-500 text-white' :
-                        risk.severity === 'medium' ? 'bg-yellow-500 text-white' :
-                        risk.severity === 'high' ? 'bg-orange-500 text-white' :
-                        'bg-red-500 text-white'
-                      }`}>
-                        {risk.severity}
-                      </span>
-                    </div>
-                    <div className="mt-3 p-2 bg-white rounded border">
-                      <p className="text-sm"><strong>Mitigation:</strong> {risk.mitigation}</p>
-                    </div>
-                  </div>
-                )) || (
-                  <p className="text-gray-500">No specific risks identified</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Recommendations Tab */}
-          {activeTab === 'recommendations' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-800">Next Steps & Recommendations</h3>
-
-              <div className="space-y-4">
-                {result.nextSteps?.map((step, i) => (
-                  <div key={i} className="flex items-start gap-4 p-4 bg-white border rounded-xl">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                      {i + 1}
-                    </div>
-                    <p className="text-gray-700">{step}</p>
-                  </div>
-                )) || (
-                  <>
-                    <div className="flex items-start gap-4 p-4 bg-white border rounded-xl">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">1</div>
-                      <p className="text-gray-700">Conduct professional hydrogeological survey to verify AI findings</p>
-                    </div>
-                    <div className="flex items-start gap-4 p-4 bg-white border rounded-xl">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">2</div>
-                      <p className="text-gray-700">Obtain required permits from WRA and county government</p>
-                    </div>
-                    <div className="flex items-start gap-4 p-4 bg-white border rounded-xl">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">3</div>
-                      <p className="text-gray-700">Engage licensed drilling contractor</p>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                <h4 className="font-semibold text-amber-800 mb-3">Disclaimers</h4>
-                <ul className="space-y-2 text-sm text-amber-900">
-                  {result.disclaimers?.map((d, i) => (
-                    <li key={i}>• {d}</li>
-                  )) || (
-                    <>
-                      <li>• This is an AI-based pre-assessment tool. Results should be verified by professional hydrogeologists.</li>
-                      <li>• Success probability is based on available data and may vary with actual ground conditions.</li>
-                      <li>• EmersonEIMS is not responsible for drilling outcomes.</li>
-                    </>
-                  )}
-                </ul>
-              </div>
-
-              {/* Contact CTA */}
-              <div className="p-6 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl text-white text-center">
-                <h4 className="text-xl font-bold mb-2">Ready to Drill?</h4>
-                <p className="text-blue-100 mb-4">Contact EmersonEIMS for professional borehole drilling services</p>
-                <div className="flex justify-center gap-4">
-                  <a
-                    href="tel:+254768860665"
-                    className="px-6 py-2 bg-white text-blue-600 rounded-lg font-bold hover:bg-blue-50"
-                  >
-                    Call Now
-                  </a>
-                  <a
-                    href={`https://wa.me/254768860665?text=${encodeURIComponent(`Hi EmersonEIMS, I completed AquaScan Pro analysis. Report ID: ${result.id}. Success Rate: ${result.successProbability}%. Please contact me about drilling.`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-2 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600"
-                  >
-                    WhatsApp
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
+      </div>
+
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes dropFall {
+          0% { top: -10px; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+
+  // ============================================================================
+  // RENDER ANALYZING STEP
+  // ============================================================================
+  const renderAnalyzingStep = () => (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a0a1a 0%, #0f172a 50%, #020617 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+    }}>
+      <div style={{
+        background: 'rgba(15, 23, 42, 0.9)',
+        border: '1px solid #334155',
+        borderRadius: '32px',
+        padding: '48px',
+        maxWidth: '800px',
+        width: '100%',
+        textAlign: 'center',
+        backdropFilter: 'blur(20px)',
+      }}>
+        {/* Progress Circle */}
+        <div style={{ position: 'relative', width: '200px', height: '200px', margin: '0 auto 32px' }}>
+          <svg width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="90" fill="none" stroke="#1E293B" strokeWidth="12"/>
+            <circle
+              cx="100" cy="100" r="90"
+              fill="none"
+              stroke="url(#progressGradient)"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeDasharray={`${analysisProgress * 5.65} 565`}
+              transform="rotate(-90 100 100)"
+              style={{ transition: 'stroke-dasharray 0.3s ease' }}
+            />
+            <defs>
+              <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#0EA5E9"/>
+                <stop offset="100%" stopColor="#06B6D4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '48px', fontWeight: 700, color: '#0EA5E9' }}>
+              {Math.round(analysisProgress)}%
+            </div>
+            <div style={{ color: '#64748B', fontSize: '14px' }}>Complete</div>
+          </div>
+        </div>
+
+        {/* Current Tool */}
+        {currentTool < AI_TOOLS.length && (
+          <div style={{
+            background: `linear-gradient(135deg, ${AI_TOOLS[currentTool].color}20, transparent)`,
+            border: `1px solid ${AI_TOOLS[currentTool].color}40`,
+            borderRadius: '16px',
+            padding: '20px',
+            marginBottom: '32px',
+          }}>
+            <div style={{ fontSize: '40px', marginBottom: '8px' }}>{AI_TOOLS[currentTool].icon}</div>
+            <div style={{ color: AI_TOOLS[currentTool].color, fontWeight: 600, fontSize: '18px' }}>
+              {AI_TOOLS[currentTool].name}
+            </div>
+            <div style={{ color: '#64748B', fontSize: '14px' }}>
+              Tool {currentTool + 1} of 115 • {AI_TOOLS[currentTool].category}
+            </div>
+          </div>
+        )}
+
+        {/* Tools Grid - Mini Icons */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(15, 1fr)',
+          gap: '4px',
+          marginBottom: '24px',
+        }}>
+          {AI_TOOLS.map((tool, i) => (
+            <div
+              key={tool.id}
+              title={tool.name}
+              style={{
+                width: '100%',
+                aspectRatio: '1',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                background: i < currentTool
+                  ? `linear-gradient(135deg, ${tool.color}40, ${tool.color}20)`
+                  : i === currentTool
+                  ? `linear-gradient(135deg, ${tool.color}, ${tool.color}80)`
+                  : 'rgba(30, 41, 59, 0.5)',
+                border: i === currentTool ? `2px solid ${tool.color}` : '1px solid transparent',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {i < currentTool ? '✓' : tool.icon}
+            </div>
+          ))}
+        </div>
+
+        <p style={{ color: '#94A3B8' }}>
+          Analyzing terrain with satellite imagery, geophysics simulation, and water quality prediction...
+        </p>
+      </div>
+    </div>
+  );
+
+  // ============================================================================
+  // RENDER RESULTS STEP
+  // ============================================================================
+  const renderResultsStep = () => {
+    if (!result) return null;
+
+    const tabs = [
+      { id: 'overview', label: 'Overview', icon: '📊', locked: false },
+      { id: 'satellite', label: 'Satellite', icon: '🛰️', locked: false },
+      { id: 'water', label: 'Water Quality', icon: '💧', locked: false },
+      { id: 'geology', label: 'Geology', icon: '🪨', locked: !isReportUnlocked },
+      { id: 'geophysics', label: 'Geophysics', icon: '⚡', locked: !isReportUnlocked },
+      { id: 'financial', label: 'Financial', icon: '💰', locked: !isReportUnlocked },
+      { id: 'quotation', label: 'Quotation', icon: '📋', locked: !isReportUnlocked },
+    ];
+
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0a1a 0%, #0f172a 100%)',
+        padding: '20px',
+      }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}>
+            <div>
+              <h1 style={{ color: 'white', fontSize: '28px', fontWeight: 700 }}>
+                🌊 Analysis Complete
+              </h1>
+              <p style={{ color: '#64748B' }}>Report ID: {result.id}</p>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              {!isReportUnlocked && (
+                <button
+                  onClick={() => setShowPayment(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #10B981, #059669)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '12px 24px',
+                    borderRadius: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)',
+                  }}
+                >
+                  🔓 Unlock Full Report
+                </button>
+              )}
+              <div style={{ position: 'relative' }}>
+                <select
+                  onChange={(e) => exportReport(e.target.value as ReportFormat)}
+                  style={{
+                    background: 'rgba(14, 165, 233, 0.1)',
+                    color: '#0EA5E9',
+                    border: '1px solid #0EA5E9',
+                    padding: '12px 24px',
+                    borderRadius: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="">📥 Export As...</option>
+                  <option value="pdf">PDF Report</option>
+                  <option value="docx">Word Document</option>
+                  <option value="csv">CSV Data</option>
+                  <option value="json">JSON</option>
+                  <option value="geojson">GeoJSON</option>
+                  <option value="html">HTML</option>
+                  <option value="xml">XML</option>
+                  <option value="xlsx">Excel</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Success Metrics Banner */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
+            marginBottom: '24px',
+          }}>
+            {[
+              { label: 'Success Rate', value: `${result.successProbability}%`, icon: '🎯', color: result.successProbability >= 70 ? '#10B981' : '#F59E0B' },
+              { label: 'Recommended Depth', value: `${result.recommendations.recommendedDepth.optimal}m`, icon: '📏', color: '#0EA5E9' },
+              { label: 'Estimated Yield', value: `${result.recommendations.estimatedYield.conservative} m³/h`, icon: '💦', color: '#06B6D4' },
+              { label: 'Confidence', value: result.confidenceLevel.toUpperCase(), icon: '📊', color: '#8B5CF6' },
+            ].map((metric, i) => (
+              <div key={i} style={{
+                background: `linear-gradient(135deg, ${metric.color}20, transparent)`,
+                border: `1px solid ${metric.color}40`,
+                borderRadius: '16px',
+                padding: '20px',
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>{metric.icon}</div>
+                <div style={{ color: metric.color, fontSize: '28px', fontWeight: 700 }}>{metric.value}</div>
+                <div style={{ color: '#94A3B8', fontSize: '14px' }}>{metric.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabs */}
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            marginBottom: '24px',
+            overflowX: 'auto',
+            paddingBottom: '8px',
+          }}>
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => !tab.locked && setActiveTab(tab.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: activeTab === tab.id
+                    ? 'linear-gradient(135deg, #0EA5E9, #06B6D4)'
+                    : 'rgba(30, 41, 59, 0.8)',
+                  color: tab.locked ? '#64748B' : 'white',
+                  fontWeight: 600,
+                  cursor: tab.locked ? 'not-allowed' : 'pointer',
+                  whiteSpace: 'nowrap',
+                  opacity: tab.locked ? 0.6 : 1,
+                }}
+              >
+                {tab.icon} {tab.label} {tab.locked && '🔒'}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.8)',
+            border: '1px solid #334155',
+            borderRadius: '24px',
+            padding: '32px',
+            backdropFilter: 'blur(10px)',
+          }}>
+            {activeTab === 'overview' && (
+              <div>
+                <h2 style={{ color: 'white', marginBottom: '24px' }}>📊 Executive Summary</h2>
+                <p style={{ color: '#CBD5E1', lineHeight: 1.8 }}>{result.executiveSummary}</p>
+
+                <h3 style={{ color: 'white', marginTop: '32px', marginBottom: '16px' }}>🎯 Recommendations</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                  <div style={{ background: 'rgba(14, 165, 233, 0.1)', padding: '16px', borderRadius: '12px' }}>
+                    <div style={{ color: '#0EA5E9', fontWeight: 600, marginBottom: '8px' }}>Drilling Method</div>
+                    <div style={{ color: 'white' }}>{result.recommendations.drillingMethod}</div>
+                  </div>
+                  <div style={{ background: 'rgba(14, 165, 233, 0.1)', padding: '16px', borderRadius: '12px' }}>
+                    <div style={{ color: '#0EA5E9', fontWeight: 600, marginBottom: '8px' }}>Casing Requirements</div>
+                    <div style={{ color: 'white' }}>{result.recommendations.casingRequirements}</div>
+                  </div>
+                  <div style={{ background: 'rgba(14, 165, 233, 0.1)', padding: '16px', borderRadius: '12px' }}>
+                    <div style={{ color: '#0EA5E9', fontWeight: 600, marginBottom: '8px' }}>Construction Time</div>
+                    <div style={{ color: 'white' }}>{result.recommendations.constructionTime.min}-{result.recommendations.constructionTime.max} days</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'satellite' && (
+              <div>
+                <h2 style={{ color: 'white', marginBottom: '24px' }}>🛰️ Satellite Analysis</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                  {[
+                    { name: 'NDVI', value: result.satelliteAnalysis.ndvi.toFixed(2), desc: 'Vegetation Index' },
+                    { name: 'NDWI', value: result.satelliteAnalysis.ndwi.toFixed(2), desc: 'Water Index' },
+                    { name: 'Soil Moisture', value: `${result.satelliteAnalysis.soilMoisture}%`, desc: 'Relative moisture' },
+                    { name: 'Land Use', value: result.satelliteAnalysis.landUse, desc: 'Classification' },
+                  ].map((item, i) => (
+                    <div key={i} style={{
+                      background: 'rgba(14, 165, 233, 0.1)',
+                      border: '1px solid rgba(14, 165, 233, 0.3)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                    }}>
+                      <div style={{ color: '#0EA5E9', fontSize: '24px', fontWeight: 700 }}>{item.value}</div>
+                      <div style={{ color: 'white', fontWeight: 600 }}>{item.name}</div>
+                      <div style={{ color: '#64748B', fontSize: '12px' }}>{item.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'water' && (
+              <div>
+                <h2 style={{ color: 'white', marginBottom: '24px' }}>💧 Water Quality Prediction (18 WHO Parameters)</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                  {result.waterQualityPrediction && Object.entries(result.waterQualityPrediction.parameters).map(([key, param]: [string, any]) => {
+                    if (typeof param !== 'object' || !param.predicted) return null;
+                    const statusColors: Record<string, string> = { safe: '#10B981', caution: '#F59E0B', exceed: '#EF4444' };
+                    return (
+                      <div key={key} style={{
+                        background: `linear-gradient(135deg, ${statusColors[param.status] || '#64748B'}20, transparent)`,
+                        border: `1px solid ${statusColors[param.status] || '#64748B'}40`,
+                        borderRadius: '12px',
+                        padding: '16px',
+                      }}>
+                        <div style={{ color: statusColors[param.status] || 'white', fontSize: '20px', fontWeight: 700 }}>
+                          {param.predicted?.toFixed?.(2) || param.predicted} {param.unit || ''}
+                        </div>
+                        <div style={{ color: 'white', fontWeight: 600, textTransform: 'capitalize' }}>{key}</div>
+                        <div style={{
+                          color: statusColors[param.status],
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                          fontWeight: 600,
+                        }}>{param.status}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {(activeTab === 'geology' || activeTab === 'geophysics' || activeTab === 'financial' || activeTab === 'quotation') && !isReportUnlocked && (
+              <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                <div style={{ fontSize: '64px', marginBottom: '24px' }}>🔒</div>
+                <h2 style={{ color: 'white', marginBottom: '16px' }}>Premium Content Locked</h2>
+                <p style={{ color: '#94A3B8', marginBottom: '24px' }}>
+                  Unlock full report to access detailed {activeTab} analysis, maps, and professional quotation.
+                </p>
+                <button
+                  onClick={() => setShowPayment(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #10B981, #059669)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '16px 32px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 0 30px rgba(16, 185, 129, 0.4)',
+                  }}
+                >
+                  🔓 Unlock Full Report - {result.regionData.currency} {result.comprehensiveCost?.totalCost?.toLocaleString() || '5,000'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Payment Modal */}
+        {showPayment && (
+          <PaymentModal
+            isOpen={showPayment}
+            onClose={() => setShowPayment(false)}
+            onSuccess={() => {
+              setShowPayment(false);
+              setIsReportUnlocked(true);
+            }}
+            price={result.comprehensiveCost?.totalCost || 5000}
+            currency={result.regionData.currency || 'KES'}
+          />
+        )}
       </div>
     );
   };
@@ -2045,36 +1115,10 @@ www.emersoneims.com | +254 768 860 665
   // MAIN RENDER
   // ============================================================================
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-      <div className="max-w-5xl mx-auto p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-6">
-          {step === 'input' && renderInputStep()}
-          {step === 'analyzing' && renderAnalyzingStep()}
-          {step === 'results' && renderResultsStep()}
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-6 text-sm text-gray-500">
-          <p>AquaScan Pro™ - AI-Powered Borehole Analysis</p>
-          <p>© 2024-2026 EmersonEIMS | www.emersoneims.com</p>
-        </div>
-      </div>
-
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        onPaymentSuccess={() => {
-          setIsReportUnlocked(true);
-          setShowPaymentModal(false);
-        }}
-        productName="AquaScan Pro™ Full Report"
-        price={REPORT_PRICE}
-        currency="KES"
-        reportId={result?.id}
-      />
+    <div>
+      {step === 'input' && renderInputStep()}
+      {step === 'analyzing' && renderAnalyzingStep()}
+      {step === 'results' && renderResultsStep()}
     </div>
   );
-};
-
-export default AquaScanProComplete;
+}
