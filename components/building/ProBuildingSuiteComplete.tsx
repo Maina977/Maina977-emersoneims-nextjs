@@ -561,255 +561,482 @@ export default function ProBuildingSuiteComplete() {
   };
 
   // ============================================================================
-  // INPUT MODE
+  // INPUT MODE - FUTURISTIC INTERFACE
   // ============================================================================
   if (mode === 'input') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        <div className="bg-slate-900/95 border-b border-emerald-500/30 px-6 py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                <Building2 className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black text-white">Pro Building Suite</h1>
-                <p className="text-emerald-400 text-sm font-medium">
-                  25 AI ENGINES | ARCHITECTURE + STRUCTURAL + QS | BETTER THAN REVIT
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="px-4 py-2 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
-                <span className="text-emerald-400 font-bold text-lg">99.8%</span>
-                <span className="text-emerald-300 text-xs block">ACCURACY</span>
-              </div>
-            </div>
-          </div>
+      <div className="min-h-screen bg-black overflow-hidden relative">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/50 via-black to-cyan-950/50" />
+          {/* Animated Grid */}
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: `linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)`,
+            backgroundSize: '50px 50px',
+            animation: 'gridMove 20s linear infinite'
+          }} />
+          {/* Floating Orbs */}
+          <div className="absolute top-20 left-20 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-emerald-400" />
-                  Project Configuration
+        {/* Hero Section */}
+        <div className="relative z-10">
+          {/* Navigation Bar */}
+          <nav className="px-6 py-4 border-b border-emerald-500/20 backdrop-blur-xl bg-black/30">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/50 animate-pulse">
+                    <Building2 className="w-9 h-9 text-white" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center animate-bounce">
+                    <span className="text-[10px] font-bold text-white">AI</span>
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-3xl font-black bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                    PRO BUILDING SUITE
+                  </h1>
+                  <p className="text-emerald-400/80 text-sm font-medium tracking-wider">
+                    27 AI ENGINES • 203+ CAPABILITIES • #1 WORLDWIDE
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
+                  <span className="text-emerald-400 font-bold">LIVE</span>
+                </div>
+                <div className="px-6 py-3 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 rounded-xl border border-emerald-500/30 backdrop-blur-sm">
+                  <span className="text-4xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">99.8%</span>
+                  <span className="text-emerald-300/80 text-xs block text-center">ACCURACY</span>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          {/* Main Hero */}
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center mb-12">
+              {/* Left: Futuristic House Visualization */}
+              <div className="relative">
+                <div className="relative aspect-square max-w-lg mx-auto">
+                  {/* Glowing Ring */}
+                  <div className="absolute inset-0 rounded-full border-2 border-emerald-500/30 animate-spin" style={{ animationDuration: '20s' }} />
+                  <div className="absolute inset-4 rounded-full border border-cyan-500/20 animate-spin" style={{ animationDuration: '15s', animationDirection: 'reverse' }} />
+
+                  {/* 3D House SVG */}
+                  <div className="absolute inset-8 flex items-center justify-center">
+                    <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl" style={{ filter: 'drop-shadow(0 0 40px rgba(16, 185, 129, 0.5))' }}>
+                      {/* House Base */}
+                      <defs>
+                        <linearGradient id="houseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="50%" stopColor="#14b8a6" />
+                          <stop offset="100%" stopColor="#06b6d4" />
+                        </linearGradient>
+                        <linearGradient id="roofGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#065f46" />
+                          <stop offset="100%" stopColor="#064e3b" />
+                        </linearGradient>
+                        <filter id="glow">
+                          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                          <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                          </feMerge>
+                        </filter>
+                      </defs>
+                      {/* Ground */}
+                      <ellipse cx="100" cy="175" rx="80" ry="15" fill="#064e3b" opacity="0.5" />
+                      {/* House Body - 3D Effect */}
+                      <path d="M40 100 L40 160 L160 160 L160 100 Z" fill="url(#houseGrad)" filter="url(#glow)" />
+                      {/* 3D Side */}
+                      <path d="M160 100 L180 85 L180 145 L160 160 Z" fill="#059669" />
+                      {/* Roof */}
+                      <path d="M30 100 L100 50 L170 100 Z" fill="url(#roofGrad)" filter="url(#glow)" />
+                      <path d="M170 100 L100 50 L120 35 L190 85 Z" fill="#047857" />
+                      {/* Windows */}
+                      <rect x="55" y="110" width="25" height="30" fill="#0d9488" rx="2" className="animate-pulse" />
+                      <rect x="120" y="110" width="25" height="30" fill="#0d9488" rx="2" className="animate-pulse" style={{ animationDelay: '0.5s' }} />
+                      {/* Door */}
+                      <rect x="85" y="120" width="30" height="40" fill="#065f46" rx="2" />
+                      <circle cx="108" cy="140" r="3" fill="#fbbf24" />
+                      {/* Pool */}
+                      <ellipse cx="100" cy="185" rx="40" ry="8" fill="#0891b2" opacity="0.8">
+                        <animate attributeName="opacity" values="0.6;0.9;0.6" dur="2s" repeatCount="indefinite" />
+                      </ellipse>
+                    </svg>
+                  </div>
+
+                  {/* Floating Labels */}
+                  <div className="absolute top-10 right-0 px-3 py-1 bg-emerald-500/20 backdrop-blur-sm rounded-lg border border-emerald-500/30 animate-bounce" style={{ animationDelay: '0.2s' }}>
+                    <span className="text-emerald-400 text-xs font-bold">3D DESIGN</span>
+                  </div>
+                  <div className="absolute bottom-20 left-0 px-3 py-1 bg-cyan-500/20 backdrop-blur-sm rounded-lg border border-cyan-500/30 animate-bounce" style={{ animationDelay: '0.5s' }}>
+                    <span className="text-cyan-400 text-xs font-bold">AI POWERED</span>
+                  </div>
+                  <div className="absolute top-1/2 right-0 px-3 py-1 bg-teal-500/20 backdrop-blur-sm rounded-lg border border-teal-500/30 animate-bounce" style={{ animationDelay: '0.8s' }}>
+                    <span className="text-teal-400 text-xs font-bold">FULL BOQ</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Stats & Features */}
+              <div className="space-y-6">
+                <h2 className="text-5xl lg:text-6xl font-black text-white leading-tight">
+                  Design Your
+                  <span className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                    Dream Building
+                  </span>
                 </h2>
+                <p className="text-xl text-slate-400 max-w-md">
+                  The world&apos;s most advanced AI construction platform.
+                  Get instant 3D designs, complete BOQ, and professional quotations.
+                </p>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="block text-sm text-slate-400 mb-1">Project Name</label>
-                    <input
-                      type="text"
-                      value={projectName}
-                      onChange={e => setProjectName(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    />
+                {/* Stats Grid */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 backdrop-blur-sm border border-emerald-500/20 rounded-2xl p-4 text-center">
+                    <div className="text-3xl font-black text-emerald-400">27</div>
+                    <div className="text-xs text-emerald-300/70">AI ENGINES</div>
                   </div>
-
-                  <div className="col-span-2">
-                    <label className="block text-sm text-slate-400 mb-1">Client Name</label>
-                    <input
-                      type="text"
-                      value={client}
-                      onChange={e => setClient(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    />
+                  <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-4 text-center">
+                    <div className="text-3xl font-black text-cyan-400">203+</div>
+                    <div className="text-xs text-cyan-300/70">CAPABILITIES</div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Country</label>
-                    <select
-                      value={countryCode}
-                      onChange={e => setCountryCode(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      {Object.entries(COUNTRIES).map(([code, data]) => (
-                        <option key={code} value={code}>{data.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Building Type</label>
-                    <select
-                      value={buildingType}
-                      onChange={e => setBuildingType(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      {BUILDING_TYPES.map(type => (
-                        <option key={type.id} value={type.id}>{type.icon} {type.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Total Area (m²)</label>
-                    <input
-                      type="number"
-                      value={totalArea}
-                      onChange={e => setTotalArea(Number(e.target.value))}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Floors</label>
-                    <select
-                      value={floors}
-                      onChange={e => setFloors(Number(e.target.value))}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map(f => (
-                        <option key={f} value={f}>{f} Floor{f > 1 ? 's' : ''}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Bedrooms</label>
-                    <select
-                      value={bedrooms}
-                      onChange={e => setBedrooms(Number(e.target.value))}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map(b => (
-                        <option key={b} value={b}>{b} Bedroom{b > 1 ? 's' : ''}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Bathrooms</label>
-                    <select
-                      value={bathrooms}
-                      onChange={e => setBathrooms(Number(e.target.value))}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      {[1, 2, 3, 4, 5, 6].map(b => (
-                        <option key={b} value={b}>{b} Bathroom{b > 1 ? 's' : ''}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Soil Type</label>
-                    <select
-                      value={soilType}
-                      onChange={e => setSoilType(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      {Object.entries(SOIL_TYPES).map(([id, data]) => (
-                        <option key={id} value={id}>{data.name} ({data.bearing} kN/m²)</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Concrete Grade</label>
-                    <select
-                      value={concreteGrade}
-                      onChange={e => setConcreteGrade(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      {Object.entries(CONCRETE_GRADES).map(([grade, data]) => (
-                        <option key={grade} value={grade}>{grade} (fck={data.fck}MPa)</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Finish Level</label>
-                    <select
-                      value={finishLevel}
-                      onChange={e => setFinishLevel(e.target.value as any)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      <option value="basic">Basic</option>
-                      <option value="standard">Standard</option>
-                      <option value="premium">Premium</option>
-                      <option value="luxury">Luxury</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Style</label>
-                    <select
-                      value={style}
-                      onChange={e => setStyle(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      <option value="modern">Modern</option>
-                      <option value="contemporary">Contemporary</option>
-                      <option value="traditional">Traditional</option>
-                      <option value="colonial">Colonial</option>
-                    </select>
-                  </div>
-
-                  <div className="col-span-2 flex gap-6">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={includeSolar}
-                        onChange={e => setIncludeSolar(e.target.checked)}
-                        className="rounded"
-                      />
-                      <span className="text-slate-300">Include Solar System</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={includeBorehole}
-                        onChange={e => setIncludeBorehole(e.target.checked)}
-                        className="rounded"
-                      />
-                      <span className="text-slate-300">Include Borehole</span>
-                    </label>
+                  <div className="bg-gradient-to-br from-teal-500/10 to-teal-500/5 backdrop-blur-sm border border-teal-500/20 rounded-2xl p-4 text-center">
+                    <div className="text-3xl font-black text-teal-400">&lt;3min</div>
+                    <div className="text-xs text-teal-300/70">GENERATION</div>
                   </div>
                 </div>
-
-                <button
-                  onClick={generateReport}
-                  className="w-full mt-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl text-white font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-lg shadow-emerald-500/30"
-                >
-                  <Play className="w-6 h-6" />
-                  GENERATE COMPLETE REPORT
-                  <ArrowRight className="w-5 h-5" />
-                </button>
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Hammer className="w-5 h-5 text-emerald-400" />
-                  25 AI Engines
-                </h3>
-                <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
-                  {AI_ENGINES.map(engine => (
-                    <div key={engine.id} className="flex items-center gap-2 text-sm">
-                      <engine.icon className="w-4 h-4 text-emerald-400" />
-                      <span className="text-slate-300">{engine.name}</span>
+            {/* Report Preview Cards */}
+            <div className="grid lg:grid-cols-4 gap-4 mb-12">
+              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-4 hover:border-emerald-500/50 transition-all hover:scale-105 cursor-pointer group">
+                <div className="aspect-[4/3] bg-gradient-to-br from-emerald-500/20 to-teal-500/10 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                  <LayoutGrid className="w-12 h-12 text-emerald-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h4 className="text-white font-bold">Floor Plans</h4>
+                <p className="text-slate-400 text-xs">Auto-generated layouts</p>
+              </div>
+              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-2xl p-4 hover:border-cyan-500/50 transition-all hover:scale-105 cursor-pointer group">
+                <div className="aspect-[4/3] bg-gradient-to-br from-cyan-500/20 to-blue-500/10 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                  <Box className="w-12 h-12 text-cyan-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h4 className="text-white font-bold">3D Visualization</h4>
+                <p className="text-slate-400 text-xs">Interactive 3D models</p>
+              </div>
+              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-xl border border-teal-500/20 rounded-2xl p-4 hover:border-teal-500/50 transition-all hover:scale-105 cursor-pointer group">
+                <div className="aspect-[4/3] bg-gradient-to-br from-teal-500/20 to-green-500/10 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                  <FileSpreadsheet className="w-12 h-12 text-teal-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h4 className="text-white font-bold">Complete BOQ</h4>
+                <p className="text-slate-400 text-xs">100% material list</p>
+              </div>
+              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 backdrop-blur-xl border border-amber-500/20 rounded-2xl p-4 hover:border-amber-500/50 transition-all hover:scale-105 cursor-pointer group">
+                <div className="aspect-[4/3] bg-gradient-to-br from-amber-500/20 to-orange-500/10 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                  <Award className="w-12 h-12 text-amber-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h4 className="text-white font-bold">Permit Docs</h4>
+                <p className="text-slate-400 text-xs">Ready for submission</p>
+              </div>
+            </div>
+
+            {/* Main Form Section */}
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Configuration Form */}
+              <div className="lg:col-span-2">
+                <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/70 backdrop-blur-xl border border-emerald-500/20 rounded-3xl p-8 shadow-2xl shadow-emerald-500/10">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
+                      <Settings className="w-6 h-6 text-white" />
                     </div>
-                  ))}
+                    <div>
+                      <h2 className="text-2xl font-black text-white">Project Configuration</h2>
+                      <p className="text-emerald-400/70 text-sm">Configure your dream building</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Project Name</label>
+                      <input
+                        type="text"
+                        value={projectName}
+                        onChange={e => setProjectName(e.target.value)}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder-slate-500"
+                        placeholder="Enter project name..."
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Client Name</label>
+                      <input
+                        type="text"
+                        value={client}
+                        onChange={e => setClient(e.target.value)}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder-slate-500"
+                        placeholder="Enter client name..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Country</label>
+                      <select
+                        value={countryCode}
+                        onChange={e => setCountryCode(e.target.value)}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        {Object.entries(COUNTRIES).map(([code, data]) => (
+                          <option key={code} value={code}>{data.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Building Type</label>
+                      <select
+                        value={buildingType}
+                        onChange={e => setBuildingType(e.target.value)}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        {BUILDING_TYPES.map(type => (
+                          <option key={type.id} value={type.id}>{type.icon} {type.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Total Area (m²)</label>
+                      <input
+                        type="number"
+                        value={totalArea}
+                        onChange={e => setTotalArea(Number(e.target.value))}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Floors</label>
+                      <select
+                        value={floors}
+                        onChange={e => setFloors(Number(e.target.value))}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(f => (
+                          <option key={f} value={f}>{f} Floor{f > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Bedrooms</label>
+                      <select
+                        value={bedrooms}
+                        onChange={e => setBedrooms(Number(e.target.value))}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(b => (
+                          <option key={b} value={b}>{b} Bedroom{b > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Bathrooms</label>
+                      <select
+                        value={bathrooms}
+                        onChange={e => setBathrooms(Number(e.target.value))}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        {[1, 2, 3, 4, 5, 6].map(b => (
+                          <option key={b} value={b}>{b} Bathroom{b > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Soil Type</label>
+                      <select
+                        value={soilType}
+                        onChange={e => setSoilType(e.target.value)}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        {Object.entries(SOIL_TYPES).map(([id, data]) => (
+                          <option key={id} value={id}>{data.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Concrete Grade</label>
+                      <select
+                        value={concreteGrade}
+                        onChange={e => setConcreteGrade(e.target.value)}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        {Object.entries(CONCRETE_GRADES).map(([grade, data]) => (
+                          <option key={grade} value={grade}>{grade} (fck={data.fck}MPa)</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Finish Level</label>
+                      <select
+                        value={finishLevel}
+                        onChange={e => setFinishLevel(e.target.value as any)}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        <option value="basic">Basic</option>
+                        <option value="standard">Standard</option>
+                        <option value="premium">Premium</option>
+                        <option value="luxury">Luxury</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-2 font-medium">Architectural Style</label>
+                      <select
+                        value={style}
+                        onChange={e => setStyle(e.target.value)}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      >
+                        <option value="modern">Modern</option>
+                        <option value="contemporary">Contemporary</option>
+                        <option value="traditional">Traditional</option>
+                        <option value="colonial">Colonial</option>
+                        <option value="minimalist">Minimalist</option>
+                        <option value="mediterranean">Mediterranean</option>
+                      </select>
+                    </div>
+
+                    {/* Add-ons */}
+                    <div className="col-span-2 flex flex-wrap gap-4 pt-4 border-t border-emerald-500/20">
+                      <label className="flex items-center gap-3 cursor-pointer px-4 py-2 bg-emerald-500/10 rounded-xl border border-emerald-500/30 hover:bg-emerald-500/20 transition-all">
+                        <input
+                          type="checkbox"
+                          checked={includeSolar}
+                          onChange={e => setIncludeSolar(e.target.checked)}
+                          className="rounded border-emerald-500"
+                        />
+                        <Sun className="w-5 h-5 text-amber-400" />
+                        <span className="text-white font-medium">Solar System</span>
+                      </label>
+                      <label className="flex items-center gap-3 cursor-pointer px-4 py-2 bg-cyan-500/10 rounded-xl border border-cyan-500/30 hover:bg-cyan-500/20 transition-all">
+                        <input
+                          type="checkbox"
+                          checked={includeBorehole}
+                          onChange={e => setIncludeBorehole(e.target.checked)}
+                          className="rounded border-cyan-500"
+                        />
+                        <Droplets className="w-5 h-5 text-cyan-400" />
+                        <span className="text-white font-medium">Borehole</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Generate Button */}
+                  <button
+                    onClick={generateReport}
+                    className="w-full mt-8 py-5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-400 rounded-2xl text-white font-black text-xl flex items-center justify-center gap-4 transition-all shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <Play className="w-7 h-7" />
+                    GENERATE COMPLETE REPORT
+                    <ArrowRight className="w-6 h-6" />
+                  </button>
                 </div>
               </div>
 
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-emerald-400 mb-3">What You Get</h3>
-                <ul className="space-y-2 text-sm text-slate-300">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> 3D Building Design</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Complete 100% BOQ</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Structural Schedules</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Site Analysis</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Permit Documents</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Cost Charts</li>
-                </ul>
+              {/* Right Sidebar */}
+              <div className="space-y-6">
+                {/* AI Engines */}
+                <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/70 backdrop-blur-xl border border-emerald-500/20 rounded-3xl p-6">
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
+                      <Cpu className="w-5 h-5 text-white" />
+                    </div>
+                    27 AI Engines
+                  </h3>
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                    {AI_ENGINES.map((engine, i) => (
+                      <div
+                        key={engine.id}
+                        className="flex items-center gap-3 px-3 py-2 bg-emerald-500/5 hover:bg-emerald-500/10 rounded-lg transition-all group"
+                        style={{ animationDelay: `${i * 50}ms` }}
+                      >
+                        <engine.icon className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                        <span className="text-slate-300 text-sm group-hover:text-white transition-colors">{engine.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* What You Get */}
+                <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/5 backdrop-blur-xl border border-emerald-500/30 rounded-3xl p-6">
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-4">
+                    What You Get
+                  </h3>
+                  <ul className="space-y-3">
+                    {[
+                      { icon: Box, text: '3D Interactive Design' },
+                      { icon: FileSpreadsheet, text: 'Complete 100% BOQ' },
+                      { icon: Columns, text: 'Structural Schedules' },
+                      { icon: MapPin, text: 'NASA Site Analysis' },
+                      { icon: Award, text: 'Permit Documents' },
+                      { icon: BarChart3, text: 'Risk Analysis' },
+                      { icon: Users, text: 'Supplier Matching' },
+                      { icon: TrendingUp, text: 'Financial Charts' },
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-center gap-3 text-slate-300 hover:text-white transition-colors">
+                        <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                          <item.icon className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <span className="text-sm font-medium">{item.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Trust Badge */}
+                <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 backdrop-blur-xl border border-amber-500/30 rounded-3xl p-6 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/30">
+                    <Shield className="w-8 h-8 text-white" />
+                  </div>
+                  <h4 className="text-white font-bold text-lg">Trusted Worldwide</h4>
+                  <p className="text-amber-300/70 text-sm mt-1">10,000+ Buildings Designed</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Custom Styles */}
+        <style jsx>{`
+          @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+          }
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.5);
+          }
+        `}</style>
       </div>
     );
   }
