@@ -21,8 +21,9 @@ import {
   Activity, Table, DollarSign, TrendingUp, Plug, MapPin,
   Thermometer, CloudSun, Grid, Cable, Gauge, BookOpen,
   BarChart3, PieChart, LineChart, Cpu, Satellite, Wind,
-  Droplets, Leaf, Building2, Eye, RotateCw, Box, Layers
+  Droplets, Leaf, Building2, Eye, RotateCw, Box, Layers, Lock
 } from 'lucide-react';
+import { PaymentModal } from '@/components/payment/PaymentGate';
 import {
   solarGeniusProV3,
   COUNTRIES,
@@ -440,6 +441,11 @@ export default function SolarGeniusProComplete() {
   const [view3DAngle, setView3DAngle] = useState(30);
   const [showPanels3D, setShowPanels3D] = useState(true);
 
+  // Payment state
+  const [isReportUnlocked, setIsReportUnlocked] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const REPORT_PRICE = 3500; // KES for Solar quotation
+
   const country = COUNTRIES[countryCode] || COUNTRIES['KE'];
   const formatCurrency = (amount: number) => `${country.currencySymbol} ${amount.toLocaleString()}`;
 
@@ -744,16 +750,20 @@ export default function SolarGeniusProComplete() {
   // ============================================================================
   if (!quotation) return null;
 
+  // FREE tabs (70%): overview, 3d, equipment (partial)
+  // PREMIUM tabs (30%): electrical, production, financial, risk, education
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Eye },
-    { id: '3d', label: '3D Design', icon: Box },
-    { id: 'equipment', label: 'Equipment', icon: Table },
-    { id: 'electrical', label: 'Electrical', icon: Zap },
-    { id: 'production', label: 'Production', icon: Activity },
-    { id: 'financial', label: 'Financial', icon: DollarSign },
-    { id: 'risk', label: 'Risk Analysis', icon: Shield },
-    { id: 'education', label: 'Education', icon: BookOpen },
+    { id: 'overview', label: 'Overview', icon: Eye, locked: false },
+    { id: '3d', label: '3D Design', icon: Box, locked: false },
+    { id: 'equipment', label: 'Equipment', icon: Table, locked: false },
+    { id: 'electrical', label: 'Electrical', icon: Zap, locked: !isReportUnlocked },
+    { id: 'production', label: 'Production', icon: Activity, locked: !isReportUnlocked },
+    { id: 'financial', label: 'Financial', icon: DollarSign, locked: !isReportUnlocked },
+    { id: 'risk', label: 'Risk Analysis', icon: Shield, locked: !isReportUnlocked },
+    { id: 'education', label: 'Education', icon: BookOpen, locked: !isReportUnlocked },
   ];
+
+  const lockedTabsCount = tabs.filter(t => t.locked).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
@@ -782,21 +792,51 @@ export default function SolarGeniusProComplete() {
         </div>
       </div>
 
+      {/* Unlock Banner */}
+      {!isReportUnlocked && (
+        <div className="bg-gradient-to-r from-amber-600/20 via-orange-500/20 to-amber-600/20 border-b border-amber-500/30 px-6 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Lock className="w-5 h-5 text-amber-400" />
+              <span className="text-amber-100">
+                <strong>70% Report Preview</strong> — Unlock {lockedTabsCount} premium sections for full analysis
+              </span>
+            </div>
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="px-6 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg flex items-center gap-2 transition-all"
+            >
+              <Lock className="w-4 h-4" />
+              Unlock Full Report — {formatCurrency(REPORT_PRICE)}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="bg-slate-800/50 border-b border-slate-700 px-6">
         <div className="max-w-7xl mx-auto flex gap-1 overflow-x-auto">
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                if (tab.locked) {
+                  setShowPaymentModal(true);
+                } else {
+                  setActiveTab(tab.id);
+                }
+              }}
               className={`px-4 py-3 flex items-center gap-2 text-sm font-medium transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'text-amber-400 border-b-2 border-amber-400'
-                  : 'text-slate-400 hover:text-white'
+                tab.locked
+                  ? 'text-slate-500 cursor-pointer hover:text-amber-400'
+                  : activeTab === tab.id
+                    ? 'text-amber-400 border-b-2 border-amber-400'
+                    : 'text-slate-400 hover:text-white'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
+              {tab.locked ? <Lock className="w-4 h-4" /> : <tab.icon className="w-4 h-4" />}
               {tab.label}
+              {tab.locked && <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">PRO</span>}
             </button>
           ))}
         </div>
@@ -1296,6 +1336,19 @@ export default function SolarGeniusProComplete() {
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        price={REPORT_PRICE}
+        currency={country.currencySymbol}
+        productName="Solar Genius Pro Full Report"
+        onPaymentSuccess={() => {
+          setIsReportUnlocked(true);
+          setShowPaymentModal(false);
+        }}
+      />
     </div>
   );
 }

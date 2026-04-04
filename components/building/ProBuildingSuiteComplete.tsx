@@ -21,8 +21,9 @@ import {
   Activity, Table, DollarSign, TrendingUp, MapPin,
   Layers, Home, Box, Eye, RotateCw, Ruler, Columns,
   LayoutGrid, Package, Wrench, Zap, Droplets, TreePine,
-  FileSpreadsheet, ClipboardList, HardHat, Hammer, Sun, PenTool
+  FileSpreadsheet, ClipboardList, HardHat, Hammer, Sun, PenTool, Lock
 } from 'lucide-react';
+import { PaymentModal } from '@/components/payment/PaymentGate';
 import {
   proBuildingSuiteV3,
   COUNTRIES,
@@ -455,6 +456,11 @@ export default function ProBuildingSuiteComplete() {
   const [showStructure, setShowStructure] = useState(false);
   const [expandedBOQSections, setExpandedBOQSections] = useState<string[]>(['A', 'B']);
 
+  // Payment state
+  const [isReportUnlocked, setIsReportUnlocked] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const REPORT_PRICE = 5000; // KES for Building BOQ
+
   const country = COUNTRIES[countryCode] || COUNTRIES['KE'];
   const formatCurrency = (amount: number) => `${country.symbol} ${Math.round(amount).toLocaleString()}`;
 
@@ -817,16 +823,20 @@ export default function ProBuildingSuiteComplete() {
   // ============================================================================
   if (!report) return null;
 
+  // FREE tabs (70%): overview, 3d, site (partial)
+  // PREMIUM tabs (30%): structure, boq, materials, financial, permits
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Eye },
-    { id: '3d', label: '3D Design', icon: Box },
-    { id: 'site', label: 'Site Analysis', icon: MapPin },
-    { id: 'structure', label: 'Structural', icon: Columns },
-    { id: 'boq', label: 'BOQ', icon: FileSpreadsheet },
-    { id: 'materials', label: 'Materials', icon: Package },
-    { id: 'financial', label: 'Financial', icon: DollarSign },
-    { id: 'permits', label: 'Permits', icon: Award },
+    { id: 'overview', label: 'Overview', icon: Eye, locked: false },
+    { id: '3d', label: '3D Design', icon: Box, locked: false },
+    { id: 'site', label: 'Site Analysis', icon: MapPin, locked: false },
+    { id: 'structure', label: 'Structural', icon: Columns, locked: !isReportUnlocked },
+    { id: 'boq', label: 'BOQ', icon: FileSpreadsheet, locked: !isReportUnlocked },
+    { id: 'materials', label: 'Materials', icon: Package, locked: !isReportUnlocked },
+    { id: 'financial', label: 'Financial', icon: DollarSign, locked: !isReportUnlocked },
+    { id: 'permits', label: 'Permits', icon: Award, locked: !isReportUnlocked },
   ];
+
+  const lockedTabsCount = tabs.filter(t => t.locked).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
@@ -855,21 +865,51 @@ export default function ProBuildingSuiteComplete() {
         </div>
       </div>
 
+      {/* Unlock Banner */}
+      {!isReportUnlocked && (
+        <div className="bg-gradient-to-r from-emerald-600/20 via-teal-500/20 to-emerald-600/20 border-b border-emerald-500/30 px-6 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Lock className="w-5 h-5 text-emerald-400" />
+              <span className="text-emerald-100">
+                <strong>70% Report Preview</strong> — Unlock {lockedTabsCount} premium sections for full BOQ & permits
+              </span>
+            </div>
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-lg flex items-center gap-2 transition-all"
+            >
+              <Lock className="w-4 h-4" />
+              Unlock Full Report — {formatCurrency(REPORT_PRICE)}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="bg-slate-800/50 border-b border-slate-700 px-6">
         <div className="max-w-7xl mx-auto flex gap-1 overflow-x-auto">
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                if (tab.locked) {
+                  setShowPaymentModal(true);
+                } else {
+                  setActiveTab(tab.id);
+                }
+              }}
               className={`px-4 py-3 flex items-center gap-2 text-sm font-medium transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'text-emerald-400 border-b-2 border-emerald-400'
-                  : 'text-slate-400 hover:text-white'
+                tab.locked
+                  ? 'text-slate-500 cursor-pointer hover:text-emerald-400'
+                  : activeTab === tab.id
+                    ? 'text-emerald-400 border-b-2 border-emerald-400'
+                    : 'text-slate-400 hover:text-white'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
+              {tab.locked ? <Lock className="w-4 h-4" /> : <tab.icon className="w-4 h-4" />}
               {tab.label}
+              {tab.locked && <span className="text-xs bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">PRO</span>}
             </button>
           ))}
         </div>
@@ -1360,6 +1400,19 @@ export default function ProBuildingSuiteComplete() {
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        price={REPORT_PRICE}
+        currency={country.symbol}
+        productName="Pro Building Suite Full Report"
+        onPaymentSuccess={() => {
+          setIsReportUnlocked(true);
+          setShowPaymentModal(false);
+        }}
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   GeoCoordinates,
   detectRegionFromCoordinates,
 } from '@/lib/borehole/aiBoreholeAnalyzer';
+import { PaymentModal } from '@/components/payment/PaymentGate';
 
 // ============================================================================
 // 26 AI ENGINES - COMPLETE LIST
@@ -595,6 +596,11 @@ const AquaScanProComplete: React.FC = () => {
   const [currentEngine, setCurrentEngine] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
   const [error, setError] = useState<string | null>(null);
+  const [isReportUnlocked, setIsReportUnlocked] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Pricing for full report unlock
+  const REPORT_PRICE = 2500; // KES
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analyzerRef = useRef(new AIBoreholeAnalyzer());
@@ -1039,19 +1045,23 @@ www.emersoneims.com | +254 768 860 665
   const renderResultsStep = () => {
     if (!result) return null;
 
+    // FREE tabs (70%): overview, engines, charts (partial)
+    // PREMIUM tabs (30%): maps, subsurface, geophysics, satellite, water, financial, risks, recommendations
     const tabs = [
-      { id: 'overview', label: 'Overview', icon: '📊' },
-      { id: 'engines', label: '26 AI Engines', icon: '🤖' },
-      { id: 'charts', label: 'Charts & Graphs', icon: '📈' },
-      { id: 'maps', label: 'Maps', icon: '🗺️' },
-      { id: 'subsurface', label: 'Subsurface', icon: '🔬' },
-      { id: 'geophysics', label: 'Geophysics', icon: '⚡' },
-      { id: 'satellite', label: 'Satellite', icon: '🛰️' },
-      { id: 'water', label: 'Water Quality', icon: '💧' },
-      { id: 'financial', label: 'Financial', icon: '💰' },
-      { id: 'risks', label: 'Risks', icon: '⚠️' },
-      { id: 'recommendations', label: 'Next Steps', icon: '✅' },
+      { id: 'overview', label: 'Overview', icon: '📊', locked: false },
+      { id: 'engines', label: '26 AI Engines', icon: '🤖', locked: false },
+      { id: 'charts', label: 'Charts & Graphs', icon: '📈', locked: false },
+      { id: 'maps', label: 'Maps', icon: '🗺️', locked: !isReportUnlocked },
+      { id: 'subsurface', label: 'Subsurface', icon: '🔬', locked: !isReportUnlocked },
+      { id: 'geophysics', label: 'Geophysics', icon: '⚡', locked: !isReportUnlocked },
+      { id: 'satellite', label: 'Satellite', icon: '🛰️', locked: !isReportUnlocked },
+      { id: 'water', label: 'Water Quality', icon: '💧', locked: !isReportUnlocked },
+      { id: 'financial', label: 'Financial', icon: '💰', locked: !isReportUnlocked },
+      { id: 'risks', label: 'Risks', icon: '⚠️', locked: !isReportUnlocked },
+      { id: 'recommendations', label: 'Next Steps', icon: '✅', locked: !isReportUnlocked },
     ];
+
+    const lockedTabsCount = tabs.filter(t => t.locked).length;
 
     return (
       <div className="space-y-6">
@@ -1093,20 +1103,56 @@ www.emersoneims.com | +254 768 860 665
           </button>
         </div>
 
+        {/* Unlock Banner - Show when report is not unlocked */}
+        {!isReportUnlocked && (
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div className="text-white">
+                <p className="font-bold">You're viewing 70% of your report</p>
+                <p className="text-white/80 text-sm">Unlock {lockedTabsCount} premium sections for complete analysis</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="px-6 py-3 bg-white text-amber-600 font-bold rounded-xl hover:bg-gray-100 transition shadow-lg"
+            >
+              Unlock Full Report - KES {REPORT_PRICE.toLocaleString()}
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex overflow-x-auto gap-2 pb-2">
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                if (tab.locked) {
+                  setShowPaymentModal(true);
+                } else {
+                  setActiveTab(tab.id);
+                }
+              }}
               className={`flex items-center gap-1 px-4 py-2 rounded-lg whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                tab.locked
+                  ? 'bg-gray-100 text-gray-400 cursor-pointer hover:bg-amber-50'
+                  : activeTab === tab.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               <span>{tab.icon}</span>
               <span className="text-sm font-medium">{tab.label}</span>
+              {tab.locked && (
+                <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+              )}
             </button>
           ))}
         </div>
@@ -1900,6 +1946,20 @@ www.emersoneims.com | +254 768 860 665
           <p>© 2024-2026 EmersonEIMS | www.emersoneims.com</p>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onPaymentSuccess={() => {
+          setIsReportUnlocked(true);
+          setShowPaymentModal(false);
+        }}
+        productName="AquaScan Pro™ Full Report"
+        price={REPORT_PRICE}
+        currency="KES"
+        reportId={result?.id}
+      />
     </div>
   );
 };
