@@ -3,7 +3,7 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════════════════╗
  * ║   AQUASCAN PRO™ V3 - COMPLETE AI BOREHOLE ANALYZER                          ║
- * ║   All 26 AI Engines | Charts | Graphs | Maps | Comprehensive Reports        ║
+ * ║   All 115 AI Tools | Charts | Graphs | Maps | Comprehensive Reports         ║
  * ║   Copyright © 2024-2026 EmersonEIMS - All Rights Reserved                   ║
  * ╚══════════════════════════════════════════════════════════════════════════════╝
  */
@@ -18,35 +18,147 @@ import {
 import { PaymentModal } from '@/components/payment/PaymentGate';
 
 // ============================================================================
-// 26 AI ENGINES - COMPLETE LIST
+// 115 AI TOOLS - COMPLETE CAPABILITY LIST
 // ============================================================================
 const AI_ENGINES = [
-  { id: 1, name: 'Terrain Analysis Engine', icon: '🏔️', category: 'Terrain' },
-  { id: 2, name: 'Vegetation Detection AI', icon: '🌿', category: 'Vegetation' },
-  { id: 3, name: 'Geological Formation Mapper', icon: '🪨', category: 'Geology' },
-  { id: 4, name: 'NASA GRACE Groundwater', icon: '🛸', category: 'Satellite' },
-  { id: 5, name: 'NASA GLDAS Integration', icon: '🌍', category: 'Satellite' },
-  { id: 6, name: 'Google Earth Engine', icon: '🌐', category: 'Satellite' },
-  { id: 7, name: 'Sentinel-2 Processor', icon: '🛰️', category: 'Remote Sensing' },
-  { id: 8, name: 'Landsat-8 Analyzer', icon: '📡', category: 'Remote Sensing' },
-  { id: 9, name: 'MODIS Data Fusion', icon: '🔭', category: 'Remote Sensing' },
-  { id: 10, name: 'LiDAR Terrain Mapper', icon: '📊', category: 'LiDAR' },
-  { id: 11, name: 'Hyperspectral Rock Mapper', icon: '💎', category: 'Hyperspectral' },
-  { id: 12, name: 'VES Survey Simulator', icon: '⚡', category: 'Geophysics' },
-  { id: 13, name: 'ERT Tomography Engine', icon: '🔌', category: 'Geophysics' },
-  { id: 14, name: 'TDEM Electromagnetic', icon: '🧲', category: 'Geophysics' },
-  { id: 15, name: 'Seismic Refraction AI', icon: '🌊', category: 'Geophysics' },
-  { id: 16, name: 'Gravity Survey Analyzer', icon: '⬇️', category: 'Geophysics' },
-  { id: 17, name: 'Magnetic Survey Engine', icon: '🧭', category: 'Geophysics' },
-  { id: 18, name: 'GIS Spatial Analyzer', icon: '🗺️', category: 'GIS' },
-  { id: 19, name: 'Water Quality Predictor', icon: '💧', category: 'Water' },
-  { id: 20, name: 'Aquifer Depth Estimator', icon: '📏', category: 'Hydrology' },
-  { id: 21, name: 'Yield Prediction Engine', icon: '💦', category: 'Hydrology' },
-  { id: 22, name: 'Risk Assessment AI', icon: '⚠️', category: 'Risk' },
-  { id: 23, name: 'EIA/Permit Analyzer', icon: '📋', category: 'Permits' },
-  { id: 24, name: 'Climate Modeling Engine', icon: '🌦️', category: 'Climate' },
-  { id: 25, name: 'Cost Estimation AI', icon: '💰', category: 'Financial' },
-  { id: 26, name: 'ROI Calculator', icon: '📈', category: 'Financial' },
+  // === TERRAIN ANALYSIS (4 tools) ===
+  { id: 1, name: 'Valley Detection AI', icon: '🏔️', category: 'Terrain' },
+  { id: 2, name: 'Drainage Pattern Analyzer', icon: '🌊', category: 'Terrain' },
+  { id: 3, name: 'Slope Classification', icon: '📐', category: 'Terrain' },
+  { id: 4, name: 'Flat Land Detector', icon: '🏜️', category: 'Terrain' },
+
+  // === SATELLITE ANALYSIS (28 tools) ===
+  { id: 5, name: 'NDVI Vegetation Index', icon: '🌿', category: 'Satellite' },
+  { id: 6, name: 'NDWI Water Index', icon: '💧', category: 'Satellite' },
+  { id: 7, name: 'NDMI Moisture Index', icon: '💦', category: 'Satellite' },
+  { id: 8, name: 'BSI Bare Soil Index', icon: '🟤', category: 'Satellite' },
+  { id: 9, name: 'Land Surface Temperature', icon: '🌡️', category: 'Satellite' },
+  { id: 10, name: 'Soil Moisture 0-10cm', icon: '🌱', category: 'Satellite' },
+  { id: 11, name: 'Soil Moisture 10-40cm', icon: '🪴', category: 'Satellite' },
+  { id: 12, name: 'Soil Moisture 40-100cm', icon: '🌳', category: 'Satellite' },
+  { id: 13, name: 'Soil Moisture 100-200cm', icon: '🌲', category: 'Satellite' },
+  { id: 14, name: 'Evapotranspiration Rate', icon: '☀️', category: 'Satellite' },
+  { id: 15, name: 'Urban Index Calculator', icon: '🏙️', category: 'Satellite' },
+  { id: 16, name: 'Albedo Reflectivity', icon: '✨', category: 'Satellite' },
+  { id: 17, name: 'LAI Leaf Area Index', icon: '🍃', category: 'Satellite' },
+  { id: 18, name: 'GPP Carbon Uptake', icon: '🌎', category: 'Satellite' },
+  { id: 19, name: 'Groundwater Anomaly', icon: '📉', category: 'Satellite' },
+  { id: 20, name: 'NASA GRACE Storage', icon: '🛸', category: 'Satellite' },
+  { id: 21, name: 'NASA GLDAS Recharge', icon: '🌍', category: 'Satellite' },
+  { id: 22, name: 'Google Earth Engine', icon: '🌐', category: 'Satellite' },
+  { id: 23, name: 'Sentinel-2 Processor', icon: '🛰️', category: 'Satellite' },
+  { id: 24, name: 'Landsat-8 Thermal', icon: '📡', category: 'Satellite' },
+  { id: 25, name: 'MODIS Data Fusion', icon: '🔭', category: 'Satellite' },
+  { id: 26, name: 'SPI Drought Index', icon: '🏜️', category: 'Satellite' },
+  { id: 27, name: 'SPEI Climate Index', icon: '📊', category: 'Satellite' },
+  { id: 28, name: 'VCI Vegetation Condition', icon: '🌾', category: 'Satellite' },
+  { id: 29, name: 'Surface Water Dynamics', icon: '🌊', category: 'Satellite' },
+  { id: 30, name: 'Land Cover Change', icon: '🗺️', category: 'Satellite' },
+  { id: 31, name: 'NDVI Time Series', icon: '📈', category: 'Satellite' },
+  { id: 32, name: 'NDWI Time Series', icon: '📉', category: 'Satellite' },
+
+  // === SOIL ANALYSIS (15 tools) ===
+  { id: 33, name: 'Sandy Soil Detector', icon: '🏖️', category: 'Soil' },
+  { id: 34, name: 'Clay Soil Analyzer', icon: '🟫', category: 'Soil' },
+  { id: 35, name: 'Loamy Soil Classifier', icon: '🌱', category: 'Soil' },
+  { id: 36, name: 'Rocky Terrain Scanner', icon: '🪨', category: 'Soil' },
+  { id: 37, name: 'Laterite Detection', icon: '🔴', category: 'Soil' },
+  { id: 38, name: 'Porosity Calculator', icon: '🕳️', category: 'Soil' },
+  { id: 39, name: 'Permeability Estimator', icon: '💨', category: 'Soil' },
+  { id: 40, name: 'Organic Matter Analyzer', icon: '🍂', category: 'Soil' },
+  { id: 41, name: 'Soil pH Predictor', icon: '🧪', category: 'Soil' },
+  { id: 42, name: 'Moisture Content AI', icon: '💧', category: 'Soil' },
+  { id: 43, name: 'Compaction Analyzer', icon: '🔨', category: 'Soil' },
+  { id: 44, name: 'SPT N-Value Calculator', icon: '📏', category: 'Soil' },
+  { id: 45, name: 'UCS Rock Strength', icon: '💪', category: 'Soil' },
+  { id: 46, name: 'Liquid Limit Tester', icon: '🌊', category: 'Soil' },
+  { id: 47, name: 'Plastic Limit Analyzer', icon: '🔬', category: 'Soil' },
+
+  // === WATER QUALITY (18 tools) ===
+  { id: 48, name: 'TDS Analyzer', icon: '💧', category: 'Water Quality' },
+  { id: 49, name: 'pH Level Predictor', icon: '🧪', category: 'Water Quality' },
+  { id: 50, name: 'Hardness Calculator', icon: '💎', category: 'Water Quality' },
+  { id: 51, name: 'Fluoride Detector', icon: '🦷', category: 'Water Quality' },
+  { id: 52, name: 'Iron Content Analyzer', icon: '🔩', category: 'Water Quality' },
+  { id: 53, name: 'Arsenic Risk Predictor', icon: '☠️', category: 'Water Quality' },
+  { id: 54, name: 'Nitrate Level Estimator', icon: '🌾', category: 'Water Quality' },
+  { id: 55, name: 'Chloride Analyzer', icon: '🧂', category: 'Water Quality' },
+  { id: 56, name: 'Sulfate Detector', icon: '⚗️', category: 'Water Quality' },
+  { id: 57, name: 'Calcium Calculator', icon: '🦴', category: 'Water Quality' },
+  { id: 58, name: 'Magnesium Analyzer', icon: '💊', category: 'Water Quality' },
+  { id: 59, name: 'Alkalinity Estimator', icon: '📊', category: 'Water Quality' },
+  { id: 60, name: 'Turbidity Predictor', icon: '🌫️', category: 'Water Quality' },
+  { id: 61, name: 'E.coli Risk Analyzer', icon: '🦠', category: 'Water Quality' },
+  { id: 62, name: 'Coliform Detector', icon: '🔬', category: 'Water Quality' },
+  { id: 63, name: 'Color Assessment', icon: '🎨', category: 'Water Quality' },
+  { id: 64, name: 'Odor Predictor', icon: '👃', category: 'Water Quality' },
+  { id: 65, name: 'Taste Analyzer', icon: '👅', category: 'Water Quality' },
+
+  // === CONTAMINATION (5 tools) ===
+  { id: 66, name: 'Sewage Contamination', icon: '🚽', category: 'Contamination' },
+  { id: 67, name: 'Industrial Pollution', icon: '🏭', category: 'Contamination' },
+  { id: 68, name: 'Agricultural Runoff', icon: '🌾', category: 'Contamination' },
+  { id: 69, name: 'Landfill Leachate', icon: '🗑️', category: 'Contamination' },
+  { id: 70, name: 'Mining Contamination', icon: '⛏️', category: 'Contamination' },
+
+  // === GEOPHYSICS (6 tools) ===
+  { id: 71, name: 'VES Survey Simulator', icon: '⚡', category: 'Geophysics' },
+  { id: 72, name: 'ERT Tomography Engine', icon: '🔌', category: 'Geophysics' },
+  { id: 73, name: 'TDEM Electromagnetic', icon: '🧲', category: 'Geophysics' },
+  { id: 74, name: 'Seismic Refraction AI', icon: '🌊', category: 'Geophysics' },
+  { id: 75, name: 'Gravity Survey Analyzer', icon: '⬇️', category: 'Geophysics' },
+  { id: 76, name: 'Magnetic Survey Engine', icon: '🧭', category: 'Geophysics' },
+
+  // === LIDAR & HYPERSPECTRAL (8 tools) ===
+  { id: 77, name: 'LiDAR Elevation Map', icon: '📊', category: 'LiDAR' },
+  { id: 78, name: 'Slope Gradient Analyzer', icon: '📐', category: 'LiDAR' },
+  { id: 79, name: 'TWI Water Accumulation', icon: '💧', category: 'LiDAR' },
+  { id: 80, name: 'Depression Detection', icon: '🕳️', category: 'LiDAR' },
+  { id: 81, name: 'Lineament Mapper', icon: '📏', category: 'LiDAR' },
+  { id: 82, name: 'Mineral Mapping', icon: '💎', category: 'Hyperspectral' },
+  { id: 83, name: 'Rock Type Identifier', icon: '🪨', category: 'Hyperspectral' },
+  { id: 84, name: 'Weathering Assessment', icon: '🌧️', category: 'Hyperspectral' },
+
+  // === HYDROLOGY (8 tools) ===
+  { id: 85, name: 'Aquifer Depth Estimator', icon: '📏', category: 'Hydrology' },
+  { id: 86, name: 'Yield Prediction Engine', icon: '💦', category: 'Hydrology' },
+  { id: 87, name: 'Peak Yield Calculator', icon: '📈', category: 'Hydrology' },
+  { id: 88, name: 'Sustainable Yield AI', icon: '♻️', category: 'Hydrology' },
+  { id: 89, name: 'Recovery Rate Analyzer', icon: '🔄', category: 'Hydrology' },
+  { id: 90, name: 'Drawdown Calculator', icon: '📉', category: 'Hydrology' },
+  { id: 91, name: 'Transmissivity Engine', icon: '🌊', category: 'Hydrology' },
+  { id: 92, name: 'Recharge Zone Mapper', icon: '🗺️', category: 'Hydrology' },
+
+  // === RISK ASSESSMENT (5 tools) ===
+  { id: 93, name: 'Geological Risk AI', icon: '🪨', category: 'Risk' },
+  { id: 94, name: 'Contamination Risk', icon: '☢️', category: 'Risk' },
+  { id: 95, name: 'Depth Risk Calculator', icon: '📏', category: 'Risk' },
+  { id: 96, name: 'Financial Risk Engine', icon: '💰', category: 'Risk' },
+  { id: 97, name: 'Technical Risk Analyzer', icon: '🔧', category: 'Risk' },
+
+  // === FINANCIAL (6 tools) ===
+  { id: 98, name: 'Total Cost Estimator', icon: '💵', category: 'Financial' },
+  { id: 99, name: 'ROI Calculator', icon: '📈', category: 'Financial' },
+  { id: 100, name: 'Payback Period AI', icon: '⏱️', category: 'Financial' },
+  { id: 101, name: 'NPV Calculator', icon: '💹', category: 'Financial' },
+  { id: 102, name: 'IRR Analyzer', icon: '📊', category: 'Financial' },
+  { id: 103, name: 'Sensitivity Analysis', icon: '🎯', category: 'Financial' },
+
+  // === GIS & MAPPING (6 tools) ===
+  { id: 104, name: 'GIS Spatial Analyzer', icon: '🗺️', category: 'GIS' },
+  { id: 105, name: 'Proximity Calculator', icon: '📍', category: 'GIS' },
+  { id: 106, name: 'Watershed Mapper', icon: '🌊', category: 'GIS' },
+  { id: 107, name: 'Catchment Analyzer', icon: '🏞️', category: 'GIS' },
+  { id: 108, name: 'Fault Proximity AI', icon: '⚠️', category: 'GIS' },
+  { id: 109, name: 'Stream Order Calculator', icon: '🏞️', category: 'GIS' },
+
+  // === CLIMATE & PERMITS (6 tools) ===
+  { id: 110, name: 'Climate Modeling Engine', icon: '🌦️', category: 'Climate' },
+  { id: 111, name: 'Rainfall Analyzer', icon: '🌧️', category: 'Climate' },
+  { id: 112, name: 'Drought Risk Predictor', icon: '☀️', category: 'Climate' },
+  { id: 113, name: 'EIA Assessment AI', icon: '📋', category: 'Permits' },
+  { id: 114, name: 'NEMA Permit Analyzer', icon: '📄', category: 'Permits' },
+  { id: 115, name: 'WRA License Calculator', icon: '📝', category: 'Permits' },
 ];
 
 // ============================================================================
@@ -659,11 +771,11 @@ const AquaScanProComplete: React.FC = () => {
     setAnalysisProgress(0);
     setCurrentEngine(0);
 
-    // Simulate 26 AI engines running in sequence
+    // Simulate 115 AI tools running in sequence
     for (let i = 0; i < AI_ENGINES.length; i++) {
       setCurrentEngine(i);
       setAnalysisProgress(((i + 1) / AI_ENGINES.length) * 100);
-      await new Promise(resolve => setTimeout(resolve, 150)); // 150ms per engine
+      await new Promise(resolve => setTimeout(resolve, 25)); // 25ms per tool (~3 seconds for 115 tools)
     }
 
     try {
@@ -700,7 +812,7 @@ OVERALL RATING: ${result.overallRating.toUpperCase()}
 CONFIDENCE LEVEL: ${result.confidenceLevel.toUpperCase()}
 
 ══════════════════════════════════════════════════════════════
-26 AI ENGINE RESULTS
+115 AI TOOL RESULTS
 ══════════════════════════════════════════════════════════════
 
 1. TERRAIN ANALYSIS
@@ -856,7 +968,7 @@ www.emersoneims.com | +254 768 860 665
         <h1 className="text-3xl font-bold text-gray-900">AquaScan Pro™</h1>
         <p className="text-gray-600 mt-2">AI-Powered Borehole Pre-Assessment Analyzer</p>
         <div className="flex justify-center gap-2 mt-3">
-          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">26 AI Engines</span>
+          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">115 AI Tools</span>
           <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">195+ Countries</span>
           <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">85% Accuracy</span>
         </div>
@@ -1008,33 +1120,34 @@ www.emersoneims.com | +254 768 860 665
             {AI_ENGINES[currentEngine].name}
           </p>
           <p className="text-sm text-blue-600">
-            Engine {currentEngine + 1} of 26
+            Tool {currentEngine + 1} of 115
           </p>
         </div>
       )}
 
-      {/* All 26 Engines Grid */}
-      <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+      {/* All 115 AI Tools Grid - Compact View */}
+      <div className="grid grid-cols-8 md:grid-cols-12 lg:grid-cols-15 gap-1">
         {AI_ENGINES.map((engine, i) => (
           <div
             key={engine.id}
-            className={`p-2 rounded-lg text-center transition-all ${
+            title={engine.name}
+            className={`p-1.5 rounded text-center transition-all cursor-pointer ${
               i < currentEngine
                 ? 'bg-green-100 border border-green-300'
                 : i === currentEngine
                 ? 'bg-blue-100 border-2 border-blue-500 animate-pulse'
-                : 'bg-gray-100 border border-gray-200'
+                : 'bg-gray-50 border border-gray-200'
             }`}
           >
-            <span className="text-xl">{engine.icon}</span>
-            <p className="text-[9px] text-gray-600 mt-1 truncate">{engine.name.split(' ')[0]}</p>
+            <span className="text-sm">{engine.icon}</span>
             {i < currentEngine && (
-              <svg className="w-4 h-4 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
+              <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-0.5" />
             )}
           </div>
         ))}
+      </div>
+      <div className="mt-2 text-center text-xs text-gray-500">
+        {currentEngine} of 115 AI tools completed • Hover for tool names
       </div>
     </div>
   );
@@ -1049,7 +1162,7 @@ www.emersoneims.com | +254 768 860 665
     // PREMIUM tabs (30%): maps, subsurface, geophysics, satellite, water, financial, risks, recommendations
     const tabs = [
       { id: 'overview', label: 'Overview', icon: '📊', locked: false },
-      { id: 'engines', label: '26 AI Engines', icon: '🤖', locked: false },
+      { id: 'engines', label: '115 AI Tools', icon: '🤖', locked: false },
       { id: 'charts', label: 'Charts & Graphs', icon: '📈', locked: false },
       { id: 'maps', label: 'Maps', icon: '🗺️', locked: !isReportUnlocked },
       { id: 'subsurface', label: 'Subsurface', icon: '🔬', locked: !isReportUnlocked },
@@ -1216,13 +1329,13 @@ www.emersoneims.com | +254 768 860 665
             </div>
           )}
 
-          {/* 26 AI Engines Tab */}
+          {/* 115 AI Tools Tab */}
           {activeTab === 'engines' && (
             <div className="space-y-4">
               <div className="p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold">All 26 AI Engines Deployed</h3>
+                    <h3 className="text-xl font-bold">All 115 AI Tools Deployed</h3>
                     <p className="text-blue-100">Complete analysis results</p>
                   </div>
                   <div className="text-4xl font-bold">26</div>

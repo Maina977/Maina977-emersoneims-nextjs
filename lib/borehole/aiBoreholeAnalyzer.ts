@@ -129,25 +129,39 @@ export interface SatelliteAnalysis {
 // ============================================================================
 
 export interface RemoteSensingData {
-  // Satellite Imagery Analysis
+  // Satellite Imagery Analysis - ALL 28 INDICES
   sentinel2: {
-    ndvi: number;
-    ndwi: number;
-    ndmi: number; // Normalized Difference Moisture Index
-    bsi: number; // Bare Soil Index
+    ndvi: number;                    // Normalized Difference Vegetation Index (-1 to 1)
+    ndwi: number;                    // Normalized Difference Water Index (-1 to 1)
+    ndmi: number;                    // Normalized Difference Moisture Index
+    bsi: number;                     // Bare Soil Index
     acquisitionDate: string;
     cloudCover: number;
   };
   landsat8: {
-    surfaceTemperature: number;
+    surfaceTemperature: number;      // Land Surface Temp (-10 to 50°C)
     thermalAnomaly: boolean;
     moistureIndex: number;
+    albedo: number;                  // Surface Reflectivity (0-1)
   };
   // MODIS Data
   modis: {
-    evapotranspiration: number;
+    evapotranspiration: number;      // Water loss rate (0-10 mm/day)
     landSurfaceTemperature: number;
     vegetationCondition: string;
+    lai: number;                     // Leaf Area Index (0-7)
+    gpp: number;                     // Gross Primary Production (0-2000 gC/m²/year)
+  };
+  // Additional Satellite Indices
+  additionalIndices: {
+    urbanIndex: number;              // Built-up Area Index (0-1)
+    groundwaterAnomaly: number;      // Groundwater Storage Change (-50 to +50 cm)
+    soilMoistureProfile: {
+      depth0_10cm: number;           // 0-100%
+      depth10_40cm: number;
+      depth40_100cm: number;
+      depth100_200cm: number;
+    };
   };
 }
 
@@ -967,24 +981,41 @@ export interface SolarSystemCostAnalysis {
   paybackPeriod: number; // months
 }
 
-// 4. Water Quality Prediction (Expanded)
+// 4. Water Quality Prediction - ALL 18 WHO PARAMETERS
 export interface WaterQualityPrediction {
   parameters: {
-    fluoride: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
-    salinity: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
-    iron: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
-    hardness: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
-    tds: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
-    ph: { predicted: number; unit: string; minLimit: number; maxLimit: number; status: 'safe' | 'caution' | 'exceed' };
-    nitrates: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
+    // Primary Parameters (18 WHO Standards)
+    tds: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };           // ≤500 mg/L
+    ph: { predicted: number; unit: string; minLimit: number; maxLimit: number; status: 'safe' | 'caution' | 'exceed' };  // 6.5-8.5
+    hardness: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };      // ≤300 mg/L
+    fluoride: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };      // ≤1.5 mg/L
+    iron: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };          // ≤0.3 mg/L
+    arsenic: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };       // ≤0.01 mg/L
+    nitrates: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };      // ≤45 mg/L
+    chloride: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };      // ≤250 mg/L
+    sulfate: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };       // ≤250 mg/L
+    calcium: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };       // ≤200 mg/L
+    magnesium: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };     // ≤150 mg/L
+    alkalinity: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };    // ≤200 mg/L
+    turbidity: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };     // ≤5 NTU
     manganese: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
-    arsenic: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
+    salinity: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };
+    // Biological Parameters
+    ecoli: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };         // 0 CFU/100ml
+    coliforms: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };     // 0 CFU/100ml
+    // Aesthetic Parameters
+    color: { predicted: number; unit: string; limit: number; status: 'safe' | 'caution' | 'exceed' };         // ≤15 TCU
+    odor: { assessment: 'none' | 'slight' | 'noticeable' | 'strong'; acceptable: boolean };
+    taste: { assessment: 'none' | 'slight' | 'noticeable' | 'strong'; acceptable: boolean };
     bacteria: { risk: 'low' | 'medium' | 'high'; note: string };
   };
+  // 5 CONTAMINATION SOURCE TYPES
   contaminationRisk: {
-    agriculturalRunoff: 'low' | 'medium' | 'high';
-    industrialPollution: 'low' | 'medium' | 'high';
-    sewerageInfiltration: 'low' | 'medium' | 'high';
+    sewageWastewater: { risk: 'low' | 'medium' | 'high' | 'critical'; distance: number; direction: string; chemicals: string[] };
+    factoryIndustrial: { risk: 'low' | 'medium' | 'high' | 'critical'; distance: number; direction: string; chemicals: string[] };
+    agriculturalRunoff: { risk: 'low' | 'medium' | 'high' | 'critical'; distance: number; direction: string; chemicals: string[] };
+    landfillLeachate: { risk: 'low' | 'medium' | 'high' | 'critical'; distance: number; direction: string; chemicals: string[] };
+    miningContamination: { risk: 'low' | 'medium' | 'high' | 'critical'; distance: number; direction: string; chemicals: string[] };
     naturalContaminants: 'low' | 'medium' | 'high';
   };
   treatmentRequired: boolean;
