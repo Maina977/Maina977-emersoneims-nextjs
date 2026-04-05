@@ -376,6 +376,46 @@ class BuildingAPIService {
       }),
     });
   }
+
+  // ===========================================================================
+  // Floor Plan Generation (FREE AI)
+  // ===========================================================================
+
+  async generateFloorPlan(params: {
+    description: string;
+    bedrooms: number;
+    bathrooms: number;
+    floors: number;
+    totalArea: number;
+    style: string;
+    plotWidth?: number;
+    plotDepth?: number;
+    features?: string[];
+  }): Promise<any> {
+    return this.fetch('/api/building/floor-plan', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  // ===========================================================================
+  // 3D Model Generation (FREE)
+  // ===========================================================================
+
+  async generate3DModel(params: {
+    description: string;
+    bedrooms: number;
+    bathrooms: number;
+    floors: number;
+    totalArea: number;
+    style: string;
+    format?: 'threejs' | 'gltf';
+  }): Promise<any> {
+    return this.fetch('/api/building/model-3d', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
 }
 
 // =============================================================================
