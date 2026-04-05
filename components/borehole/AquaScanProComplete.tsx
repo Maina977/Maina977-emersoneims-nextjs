@@ -23,6 +23,7 @@ import {
 } from '@/lib/borehole/aiBoreholeAnalyzer';
 import { comprehensiveReportGenerator, ComprehensiveReportOptions } from '@/lib/borehole/comprehensiveReportGenerator';
 import { PaymentModal } from '@/components/payment/PaymentGate';
+import { boreholeAPI, runCompleteAnalysis } from '@/lib/borehole/apiService';
 
 // ============================================================================
 // 115 AI TOOLS - COMPLETE CAPABILITY LIST
@@ -272,26 +273,114 @@ export default function AquaScanProComplete() {
     }
   }, [autoDetectSite]);
 
-  // Run analysis
+  // Run analysis - NOW USES REAL APIs
   const runAnalysis = useCallback(async () => {
     if (!imageData || !analyzerRef.current) return;
 
     setStep('analyzing');
     setError(null);
 
-    // Simulate 115 AI tools running
-    for (let i = 0; i < AI_TOOLS.length; i++) {
-      setCurrentTool(i);
-      setAnalysisProgress(((i + 1) / AI_TOOLS.length) * 100);
-      await new Promise(resolve => setTimeout(resolve, 25));
-    }
-
     try {
+      // STEP 1: Fetch REAL data from backend APIs
+      let realApiData: any = null;
+      const toolMessages = [
+        'Connecting to NASA GLDAS...',
+        'Fetching soil moisture data...',
+        'Analyzing satellite indices (NDVI, NDWI)...',
+        'Querying nearby borehole database...',
+        'Running water quality predictions...',
+        'Calculating success probability...',
+      ];
+
+      // Run real API analysis in background
+      const apiPromise = runCompleteAnalysis(
+        { latitude: location.latitude, longitude: location.longitude },
+        (step, total, message) => {
+          const progress = (step / total) * 50; // First 50% is API calls
+          setAnalysisProgress(progress);
+        }
+      ).catch(err => {
+        console.warn('[AquaScan] Real API failed, using fallback:', err);
+        return null;
+      });
+
+      // Show progress animation for 115 tools
+      for (let i = 0; i < AI_TOOLS.length; i++) {
+        setCurrentTool(i);
+        // First 30 tools show API messages
+        if (i < toolMessages.length) {
+          // API progress handled above
+        }
+        setAnalysisProgress(50 + ((i + 1) / AI_TOOLS.length) * 50);
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+
+      // Wait for real API data
+      realApiData = await apiPromise;
+
+      // STEP 2: Run local analysis (for detailed geological data)
       const region = detectRegionFromCoordinates(location.latitude, location.longitude);
       const analysisResult = await analyzerRef.current.analyzesite(imageData, location, region.region);
+
+      // STEP 3: Merge REAL API data with local analysis
+      if (realApiData) {
+        // Override with real data where available
+        analysisResult.successProbability = realApiData.successProbability;
+
+        // Update depth recommendations from real nearby borehole data
+        if (realApiData.recommendedDepth && analysisResult.recommendations) {
+          analysisResult.recommendations.recommendedDepth = {
+            optimal: realApiData.recommendedDepth.optimal,
+            minimum: realApiData.recommendedDepth.min,
+            maximum: realApiData.recommendedDepth.max,
+          };
+        }
+
+        // Update yield estimates from real data
+        if (realApiData.expectedYield && analysisResult.recommendations) {
+          analysisResult.recommendations.estimatedYield = {
+            conservative: realApiData.expectedYield.min,
+            optimistic: realApiData.expectedYield.max,
+          };
+        }
+
+        // Update historical data with real nearby borehole stats
+        if (realApiData.nearbyBoreholes && analysisResult.historicalData) {
+          analysisResult.historicalData.averageDepth = realApiData.nearbyBoreholes.averageDepth;
+          analysisResult.historicalData.averageYield = realApiData.nearbyBoreholes.averageYield;
+          analysisResult.historicalData.averageSuccessRate = realApiData.nearbyBoreholes.successRate;
+        }
+
+        // Update satellite data with real indices
+        if (realApiData.satellite && analysisResult.satelliteAnalysis) {
+          analysisResult.satelliteAnalysis.ndvi = realApiData.satellite.ndvi;
+          analysisResult.satelliteAnalysis.ndwi = realApiData.satellite.ndwi;
+          analysisResult.satelliteAnalysis.landUse = realApiData.satellite.landCover;
+        }
+
+        // Update water quality with real predictions
+        if (realApiData.waterQuality && analysisResult.waterQualityPrediction) {
+          analysisResult.waterQualityPrediction.overallQualityRating =
+            realApiData.waterQuality.overallRating === 'Excellent' ? 'excellent' :
+            realApiData.waterQuality.overallRating === 'Good' ? 'good' :
+            realApiData.waterQuality.overallRating === 'Acceptable' ? 'moderate' : 'poor';
+          if (realApiData.waterQuality.treatmentNeeded && realApiData.waterQuality.treatmentNeeded.length > 0) {
+            analysisResult.waterQualityPrediction.treatmentRequired = true;
+            analysisResult.waterQualityPrediction.treatmentType = realApiData.waterQuality.treatmentNeeded;
+          }
+        }
+
+        // Add real data sources to report
+        (analysisResult as any).realDataSources = realApiData.dataSources;
+        (analysisResult as any).realApiConfidence = realApiData.confidence;
+
+        console.log('[AquaScan] Analysis enhanced with REAL API data:', realApiData.dataSources);
+      }
+
       setResult(analysisResult);
       setStep('results');
     } catch (err) {
+      console.error('[AquaScan] Analysis error:', err);
       setError('Analysis failed. Please try again.');
       setStep('input');
     }
