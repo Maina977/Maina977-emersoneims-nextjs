@@ -2,11 +2,11 @@
 
 /**
  * SOLAR GENIUS PRO - AI Solar Design Page
- * Uses SolarGeniusProComplete component with 70/30 payment gate
+ * Stunning Futuristic Interface with 3D Solar World Visualization
  */
 
-import SolarGeniusProComplete from '@/components/solar/SolarGeniusProComplete';
+import SolarGeniusProFuturistic from '@/components/solar/SolarGeniusProFuturistic';
 
 export default function SolarGeniusProPage() {
-  return <SolarGeniusProComplete />;
+  return <SolarGeniusProFuturistic />;
 }
