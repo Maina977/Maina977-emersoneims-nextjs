@@ -21,6 +21,7 @@ import {
   SiteAutoDetector,
   DetectedSite,
 } from '@/lib/borehole/aiBoreholeAnalyzer';
+import { comprehensiveReportGenerator, ComprehensiveReportOptions } from '@/lib/borehole/comprehensiveReportGenerator';
 import { PaymentModal } from '@/components/payment/PaymentGate';
 
 // ============================================================================
@@ -317,6 +318,48 @@ export default function AquaScanProComplete() {
     a.click();
     URL.revokeObjectURL(url);
   }, [result]);
+
+  // ============================================================================
+  // GENERATE FULL 14-PAGE COMPREHENSIVE REPORT
+  // ============================================================================
+  const generateFullReport = useCallback(() => {
+    if (!result) return;
+
+    const options: ComprehensiveReportOptions = {
+      includeImages: true,
+      includeMaps: true,
+      includeCharts: true,
+      includeQuotation: true,
+      companyName: 'EmersonEIMS Engineering',
+      companyAddress: 'Westlands Business Park, Nairobi, Kenya',
+      companyPhone: '+254 700 123 456',
+      companyEmail: 'info@emersoneims.com',
+      clientName: 'Valued Client',
+      clientPhone: '+254 7XX XXX XXX',
+      clientEmail: 'client@email.com',
+      siteImage: imageData || undefined,
+    };
+
+    const htmlReport = comprehensiveReportGenerator.generateFullReport(result, detectedSite, options);
+
+    // Create blob and download
+    const blob = new Blob([htmlReport], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+
+    // Open in new window for print/PDF
+    const printWindow = window.open(url, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.document.title = `AquaScan Pro Report - ${result.id}`;
+        // Auto-trigger print dialog for PDF save
+        setTimeout(() => {
+          printWindow.print();
+        }, 1000);
+      };
+    }
+
+    URL.revokeObjectURL(url);
+  }, [result, detectedSite, imageData]);
 
   // ============================================================================
   // RENDER INPUT STEP - FUTURISTIC INTERFACE
@@ -1095,6 +1138,35 @@ export default function AquaScanProComplete() {
                   🔓 Unlock Full Report
                 </button>
               )}
+              {/* GENERATE FULL 14-PAGE REPORT BUTTON */}
+              <button
+                onClick={generateFullReport}
+                style={{
+                  background: 'linear-gradient(135deg, #8B5CF6, #A855F7)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 0 25px rgba(139, 92, 246, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 0 35px rgba(139, 92, 246, 0.7)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 0 25px rgba(139, 92, 246, 0.5)';
+                }}
+              >
+                <span style={{ fontSize: '18px' }}>📄</span>
+                Generate Full Report (14 Pages)
+              </button>
               <div style={{ position: 'relative' }}>
                 <select
                   onChange={(e) => exportReport(e.target.value as ReportFormat)}
@@ -1303,12 +1375,14 @@ export default function AquaScanProComplete() {
           <PaymentModal
             isOpen={showPayment}
             onClose={() => setShowPayment(false)}
-            onSuccess={() => {
+            onPaymentSuccess={() => {
               setShowPayment(false);
               setIsReportUnlocked(true);
             }}
+            productName="AquaScan Pro Full Report"
             price={result.comprehensiveCost?.totalCost || 5000}
             currency={result.regionData.currency || 'KES'}
+            reportId={result.id}
           />
         )}
       </div>

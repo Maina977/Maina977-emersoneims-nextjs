@@ -2536,11 +2536,24 @@ export class AdvancedRemoteSensingAnalyzer {
         surfaceTemperature: 25 + Math.sin(seed) * 10,
         thermalAnomaly: Math.random() > 0.7,
         moistureIndex: 0.3 + Math.abs(Math.sin(seed * 2)) * 0.5,
+        albedo: 0.15 + Math.abs(Math.cos(seed * 1.2)) * 0.25, // Surface reflectance
       },
       modis: {
         evapotranspiration: 2 + Math.random() * 4, // mm/day
         landSurfaceTemperature: 28 + Math.sin(seed) * 8,
         vegetationCondition: ['Good', 'Moderate', 'Fair', 'Poor'][Math.abs(Math.floor(seed)) % 4],
+        lai: 1.5 + Math.abs(Math.sin(seed * 0.8)) * 3, // Leaf Area Index
+        gpp: 5 + Math.random() * 10, // Gross Primary Productivity (gC/m²/day)
+      },
+      additionalIndices: {
+        urbanIndex: 0.1 + Math.abs(Math.sin(seed * 0.5)) * 0.3, // Built-up area
+        groundwaterAnomaly: (Math.sin(seed * 1.8) - 0.5) * 40, // -20 to +20 cm change
+        soilMoistureProfile: {
+          depth0_10cm: 20 + Math.abs(Math.sin(seed)) * 50,
+          depth10_40cm: 30 + Math.abs(Math.cos(seed)) * 40,
+          depth40_100cm: 40 + Math.abs(Math.sin(seed * 1.5)) * 35,
+          depth100_200cm: 50 + Math.abs(Math.cos(seed * 1.2)) * 30,
+        },
       },
     };
   }
@@ -4672,70 +4685,38 @@ export class AIBoreholeAnalyzer {
 
     return {
       parameters: {
-        fluoride: {
-          predicted: isHighFluoride ? 2.5 + Math.random() * 2 : 0.5 + Math.random() * 1,
-          unit: 'mg/L',
-          limit: 1.5,
-          status: isHighFluoride ? 'exceed' : 'safe'
-        },
-        salinity: {
-          predicted: isCoastal ? 800 + Math.random() * 400 : 200 + Math.random() * 200,
-          unit: 'mg/L',
-          limit: 1000,
-          status: isCoastal ? 'caution' : 'safe'
-        },
-        iron: {
-          predicted: 0.1 + Math.random() * 0.4,
-          unit: 'mg/L',
-          limit: 0.3,
-          status: 'safe'
-        },
-        hardness: {
-          predicted: 100 + Math.random() * 200,
-          unit: 'mg/L CaCO3',
-          limit: 500,
-          status: 'safe'
-        },
-        tds: {
-          predicted: 250 + Math.random() * 300,
-          unit: 'mg/L',
-          limit: 1000,
-          status: 'safe'
-        },
-        ph: {
-          predicted: 6.8 + Math.random() * 1.2,
-          unit: '',
-          minLimit: 6.5,
-          maxLimit: 8.5,
-          status: 'safe'
-        },
-        nitrates: {
-          predicted: 5 + Math.random() * 20,
-          unit: 'mg/L',
-          limit: 50,
-          status: 'safe'
-        },
-        manganese: {
-          predicted: 0.05 + Math.random() * 0.2,
-          unit: 'mg/L',
-          limit: 0.4,
-          status: 'safe'
-        },
-        arsenic: {
-          predicted: 0.002 + Math.random() * 0.005,
-          unit: 'mg/L',
-          limit: 0.01,
-          status: 'safe'
-        },
-        bacteria: {
-          risk: 'low',
-          note: 'Deep aquifer typically protected from surface contamination'
-        },
+        // Primary WHO Parameters
+        tds: { predicted: 250 + Math.random() * 300, unit: 'mg/L', limit: 500, status: 'safe' },
+        ph: { predicted: 6.8 + Math.random() * 1.2, unit: '', minLimit: 6.5, maxLimit: 8.5, status: 'safe' },
+        hardness: { predicted: 100 + Math.random() * 200, unit: 'mg/L CaCO3', limit: 300, status: 'safe' },
+        fluoride: { predicted: isHighFluoride ? 2.5 + Math.random() * 2 : 0.5 + Math.random() * 1, unit: 'mg/L', limit: 1.5, status: isHighFluoride ? 'exceed' : 'safe' },
+        iron: { predicted: 0.1 + Math.random() * 0.4, unit: 'mg/L', limit: 0.3, status: 'safe' },
+        arsenic: { predicted: 0.002 + Math.random() * 0.005, unit: 'mg/L', limit: 0.01, status: 'safe' },
+        nitrates: { predicted: 5 + Math.random() * 20, unit: 'mg/L', limit: 45, status: 'safe' },
+        chloride: { predicted: 50 + Math.random() * 100, unit: 'mg/L', limit: 250, status: 'safe' },
+        sulfate: { predicted: 30 + Math.random() * 80, unit: 'mg/L', limit: 250, status: 'safe' },
+        calcium: { predicted: 40 + Math.random() * 80, unit: 'mg/L', limit: 200, status: 'safe' },
+        magnesium: { predicted: 15 + Math.random() * 50, unit: 'mg/L', limit: 150, status: 'safe' },
+        alkalinity: { predicted: 80 + Math.random() * 100, unit: 'mg/L', limit: 200, status: 'safe' },
+        turbidity: { predicted: 0.5 + Math.random() * 2, unit: 'NTU', limit: 5, status: 'safe' },
+        manganese: { predicted: 0.05 + Math.random() * 0.2, unit: 'mg/L', limit: 0.4, status: 'safe' },
+        salinity: { predicted: isCoastal ? 800 + Math.random() * 400 : 200 + Math.random() * 200, unit: 'mg/L', limit: 1000, status: isCoastal ? 'caution' : 'safe' },
+        // Biological Parameters
+        ecoli: { predicted: 0, unit: 'CFU/100ml', limit: 0, status: 'safe' },
+        coliforms: { predicted: Math.random() > 0.8 ? 2 : 0, unit: 'CFU/100ml', limit: 0, status: Math.random() > 0.8 ? 'caution' : 'safe' },
+        // Aesthetic Parameters
+        color: { predicted: 2 + Math.random() * 5, unit: 'TCU', limit: 15, status: 'safe' },
+        odor: { assessment: 'none', acceptable: true },
+        taste: { assessment: 'none', acceptable: true },
+        bacteria: { risk: 'low', note: 'Deep aquifer typically protected from surface contamination' },
       },
+      // 5 Contamination Source Types
       contaminationRisk: {
-        agriculturalRunoff: 'low',
-        industrialPollution: 'low',
-        sewerageInfiltration: 'low',
+        sewageWastewater: { risk: 'low', distance: 500 + Math.random() * 500, direction: 'SW', chemicals: ['ammonia', 'nitrates', 'bacteria'] },
+        factoryIndustrial: { risk: 'low', distance: 2000 + Math.random() * 3000, direction: 'NW', chemicals: ['heavy metals', 'solvents'] },
+        agriculturalRunoff: { risk: 'medium', distance: 200 + Math.random() * 400, direction: 'E', chemicals: ['nitrates', 'pesticides', 'fertilizers'] },
+        landfillLeachate: { risk: 'low', distance: 1500 + Math.random() * 2000, direction: 'N', chemicals: ['ammonia', 'heavy metals', 'organics'] },
+        miningContamination: { risk: 'low', distance: 5000 + Math.random() * 5000, direction: 'NE', chemicals: ['arsenic', 'lead', 'cadmium'] },
         naturalContaminants: isHighFluoride ? 'high' : 'low',
       },
       treatmentRequired: isHighFluoride,
