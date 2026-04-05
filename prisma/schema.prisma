@@ -1,0 +1,425 @@
+// =============================================================================
+// EMERSONEIMS PRO BUILDING SUITE - DATABASE SCHEMA
+// PostgreSQL with Prisma ORM
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// USER & AUTHENTICATION
+// =============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  phone         String?
+  company       String?
+  role          UserRole  @default(CLIENT)
+  passwordHash  String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  projects      BuildingProject[]
+  quotations    Quotation[]
+  payments      Payment[]
+  sessions      Session[]
+
+  @@index([email])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  ADMIN
+  ENGINEER
+  ARCHITECT
+  CONTRACTOR
+  CLIENT
+}
+
+// =============================================================================
+// BUILDING PROJECTS
+// =============================================================================
+
+model BuildingProject {
+  id              String        @id @default(cuid())
+  projectNumber   String        @unique
+  name            String
+  description     String?
+  status          ProjectStatus @default(DRAFT)
+
+  // Location
+  latitude        Float
+  longitude       Float
+  address         String?
+  county          String?
+  country         String        @default("KE")
+
+  // Building Specifications
+  buildingType    String
+  floors          Int
+  totalArea       Float         // sqm
+  plotSize        Float?        // sqm
+
+  // Design
+  width           Float?
+  depth           Float?
+  height          Float?
+  roofType        String?
+  finishLevel     String        @default("standard")
+
+  // Site Analysis Data
+  siteAnalysis    Json?
+
+  // Structural Design
+  structuralDesign Json?
+
+  // BOQ & Costs
+  boqData         Json?
+  totalCost       Float?
+  currency        String        @default("KES")
+
+  // Amenities & Features
+  amenities       Json?
+  landscaping     Json?
+  utilities       Json?
+
+  // Documents
+  documents       Document[]
+
+  // Relations
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  quotations      Quotation[]
+  payments        Payment[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([projectNumber])
+  @@index([status])
+}
+
+enum ProjectStatus {
+  DRAFT
+  SITE_ANALYSIS
+  DESIGN
+  BOQ_GENERATED
+  QUOTED
+  APPROVED
+  IN_CONSTRUCTION
+  COMPLETED
+  CANCELLED
+}
+
+// =============================================================================
+// QUOTATIONS
+// =============================================================================
+
+model Quotation {
+  id              String          @id @default(cuid())
+  quotationNumber String          @unique
+
+  // Project Reference
+  projectId       String
+  project         BuildingProject @relation(fields: [projectId], references: [id])
+
+  // Client
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+
+  // Pricing
+  subtotal        Float
+  vat             Float
+  discount        Float           @default(0)
+  total           Float
+  currency        String          @default("KES")
+
+  // Details
+  items           Json            // Array of line items
+  terms           String?
+  validity        Int             @default(30) // days
+
+  // Status
+  status          QuotationStatus @default(DRAFT)
+  sentAt          DateTime?
+  acceptedAt      DateTime?
+  rejectedAt      DateTime?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+// =============================================================================
+// PAYMENTS
+// =============================================================================
+
+model Payment {
+  id              String        @id @default(cuid())
+
+  // Reference
+  projectId       String?
+  project         BuildingProject? @relation(fields: [projectId], references: [id])
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+
+  // Payment Details
+  amount          Float
+  currency        String        @default("KES")
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+
+  // Provider Details
+  provider        String        // mpesa, flutterwave, paystack, stripe
+  providerRef     String?       // External reference
+  checkoutId      String?       // Checkout request ID
+
+  // Metadata
+  phoneNumber     String?
+  description     String?
+  metadata        Json?
+
+  // Timestamps
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([providerRef])
+  @@index([status])
+}
+
+enum PaymentMethod {
+  MPESA
+  CARD
+  BANK_TRANSFER
+  MOBILE_MONEY
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+// =============================================================================
+// DOCUMENTS
+// =============================================================================
+
+model Document {
+  id              String          @id @default(cuid())
+
+  // Reference
+  projectId       String
+  project         BuildingProject @relation(fields: [projectId], references: [id])
+
+  // Document Details
+  type            DocumentType
+  name            String
+  description     String?
+  fileUrl         String
+  fileSize        Int?
+  mimeType        String?
+
+  // Metadata
+  metadata        Json?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([projectId])
+  @@index([type])
+}
+
+enum DocumentType {
+  SITE_REPORT
+  STRUCTURAL_DRAWING
+  ARCHITECTURAL_DRAWING
+  BOQ
+  QUOTATION
+  PERMIT
+  CONTRACT
+  INVOICE
+  RECEIPT
+  PHOTO
+  OTHER
+}
+
+// =============================================================================
+// SUPPLIERS
+// =============================================================================
+
+model Supplier {
+  id              String          @id @default(cuid())
+  name            String
+  category        String[]
+  location        String
+  county          String?
+  country         String          @default("KE")
+
+  // Contact
+  email           String?
+  phone           String?
+  website         String?
+
+  // Business
+  rating          Float           @default(0)
+  verified        Boolean         @default(false)
+  leadTimeDays    Int             @default(7)
+  paymentTerms    String[]
+  minOrder        Float?
+  maxOrder        Float?
+  priceLevel      PriceLevel      @default(STANDARD)
+  certifications  String[]
+
+  // Prices
+  prices          SupplierPrice[]
+
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([category])
+  @@index([location])
+  @@index([verified])
+}
+
+enum PriceLevel {
+  BUDGET
+  STANDARD
+  PREMIUM
+}
+
+model SupplierPrice {
+  id              String    @id @default(cuid())
+  supplierId      String
+  supplier        Supplier  @relation(fields: [supplierId], references: [id])
+
+  material        String
+  unit            String
+  price           Float
+  currency        String    @default("KES")
+
+  validFrom       DateTime  @default(now())
+  validUntil      DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([supplierId])
+  @@index([material])
+  @@unique([supplierId, material])
+}
+
+// =============================================================================
+// MATERIAL PRICES (Market Data)
+// =============================================================================
+
+model MaterialPrice {
+  id              String    @id @default(cuid())
+  material        String
+  country         String
+  region          String?
+
+  price           Float
+  unit            String
+  currency        String
+
+  source          String?   // Where the price came from
+  confidence      Float     @default(0.8)
+
+  validFrom       DateTime  @default(now())
+  validUntil      DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([material, country])
+  @@index([country])
+}
+
+// =============================================================================
+// SITE ANALYSIS CACHE
+// =============================================================================
+
+model SiteAnalysisCache {
+  id              String    @id @default(cuid())
+
+  // Location (rounded for caching)
+  latRounded      Float
+  lngRounded      Float
+
+  // Cached Data
+  elevation       Json?
+  soil            Json?
+  climate         Json?
+  flood           Json?
+  seismic         Json?
+
+  // Metadata
+  fetchedAt       DateTime  @default(now())
+  expiresAt       DateTime
+
+  @@unique([latRounded, lngRounded])
+  @@index([expiresAt])
+}
+
+// =============================================================================
+// AUDIT LOG
+// =============================================================================
+
+model AuditLog {
+  id              String    @id @default(cuid())
+
+  userId          String?
+  action          String
+  entity          String
+  entityId        String?
+
+  oldData         Json?
+  newData         Json?
+
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
