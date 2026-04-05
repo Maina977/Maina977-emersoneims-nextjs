@@ -149,11 +149,21 @@ async function main() {
   ];
 
   for (const supplier of suppliers) {
-    await prisma.supplier.upsert({
+    // Use findFirst + create/update pattern for compatibility
+    const existing = await prisma.supplier.findFirst({
       where: { name: supplier.name },
-      update: supplier,
-      create: supplier,
     });
+
+    if (existing) {
+      await prisma.supplier.update({
+        where: { id: existing.id },
+        data: supplier,
+      });
+    } else {
+      await prisma.supplier.create({
+        data: supplier,
+      });
+    }
   }
 
   console.log(`✅ Seeded ${suppliers.length} suppliers`);
