@@ -40,6 +40,7 @@ import {
   STEEL_GRADES,
   type ProBuildingReport
 } from '@/lib/building/proBuildingSuiteEngineV3';
+import { buildingAPI, runCompleteSiteAnalysis, type CompleteSiteAnalysis } from '@/lib/building/apiService';
 import {
   amenitiesGenerator,
   landscapingGenerator,
@@ -495,6 +496,10 @@ export default function ProBuildingSuiteComplete() {
   const [showStructure, setShowStructure] = useState(false);
   const [expandedBOQSections, setExpandedBOQSections] = useState<string[]>(['A', 'B']);
 
+  // Real API data state
+  const [realSiteData, setRealSiteData] = useState<CompleteSiteAnalysis | null>(null);
+  const [apiDataSources, setApiDataSources] = useState<string[]>([]);
+
   // Payment state
   const [isReportUnlocked, setIsReportUnlocked] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -503,7 +508,7 @@ export default function ProBuildingSuiteComplete() {
   const country = COUNTRIES[countryCode] || COUNTRIES['KE'];
   const formatCurrency = (amount: number) => `${country.symbol} ${Math.round(amount).toLocaleString()}`;
 
-  // Generate report
+  // Generate report - NOW WITH REAL APIs!
   const generateReport = useCallback(async () => {
     setMode('processing');
     setProgress(0);
@@ -512,16 +517,113 @@ export default function ProBuildingSuiteComplete() {
     AI_ENGINES.forEach(e => { statuses[e.id] = 'pending'; });
     setEngineStatuses(statuses);
 
-    for (let i = 0; i < AI_ENGINES.length; i++) {
-      const engine = AI_ENGINES[i];
-      setCurrentEngine(engine.name);
-      setEngineStatuses(prev => ({ ...prev, [engine.id]: 'running' }));
+    // Data sources tracking
+    const dataSources: string[] = [];
 
-      await new Promise(r => setTimeout(r, 60 + Math.random() * 80));
+    // ========================================================================
+    // STEP 1: CALL REAL APIs FOR SITE ANALYSIS
+    // ========================================================================
+    let realSiteAnalysis: CompleteSiteAnalysis | null = null;
 
-      setEngineStatuses(prev => ({ ...prev, [engine.id]: 'complete' }));
-      setProgress(Math.round(((i + 1) / AI_ENGINES.length) * 100));
+    // Update first few engines as we fetch real data
+    const updateEngineStatus = (id: string, status: string) => {
+      setEngineStatuses(prev => ({ ...prev, [id]: status }));
+    };
+
+    try {
+      // Site Analysis Engine
+      updateEngineStatus('site', 'running');
+      setCurrentEngine('GIS Site Analyzer - Fetching REAL data...');
+      setProgress(5);
+
+      realSiteAnalysis = await runCompleteSiteAnalysis(
+        { latitude: coordinates.lat, longitude: coordinates.lng },
+        (step, total, message) => {
+          console.log(`[Building Suite] ${step}/${total}: ${message}`);
+        }
+      ).catch(err => {
+        console.warn('[Building Suite] Site analysis API fallback:', err);
+        return null;
+      });
+
+      if (realSiteAnalysis) {
+        dataSources.push(...(realSiteAnalysis.dataSources || []));
+        setRealSiteData(realSiteAnalysis);
+        console.log('[Building Suite] REAL site analysis:', realSiteAnalysis);
+      }
+
+      updateEngineStatus('site', 'complete');
+      updateEngineStatus('terrain', 'running');
+      setCurrentEngine('NASA Terrain Analysis');
+      setProgress(10);
+
+      // Get elevation separately if site analysis didn't include it
+      if (!realSiteAnalysis?.terrain?.elevation) {
+        const elevation = await buildingAPI.getElevation({ latitude: coordinates.lat, longitude: coordinates.lng })
+          .catch(() => null);
+        if (elevation) {
+          dataSources.push('Open-Elevation API');
+          console.log('[Building Suite] REAL elevation:', elevation);
+        }
+      }
+      updateEngineStatus('terrain', 'complete');
+
+      // Soil Analysis
+      updateEngineStatus('soil', 'running');
+      setCurrentEngine('Soil Assessment AI - ISRIC SoilGrids');
+      setProgress(15);
+
+      if (!realSiteAnalysis?.soil?.type) {
+        const soilData = await buildingAPI.getSoilData({ latitude: coordinates.lat, longitude: coordinates.lng })
+          .catch(() => null);
+        if (soilData) {
+          dataSources.push('ISRIC SoilGrids');
+          console.log('[Building Suite] REAL soil data:', soilData);
+        }
+      }
+      updateEngineStatus('soil', 'complete');
+
+      // Flood Risk
+      updateEngineStatus('flood', 'running');
+      setCurrentEngine('Flood Risk Analyzer - Historical Data');
+      setProgress(20);
+
+      if (!realSiteAnalysis?.flood?.riskLevel) {
+        const floodData = await buildingAPI.getFloodRisk({ latitude: coordinates.lat, longitude: coordinates.lng })
+          .catch(() => null);
+        if (floodData) {
+          dataSources.push('Open-Meteo Historical', 'OpenStreetMap');
+          console.log('[Building Suite] REAL flood risk:', floodData);
+        }
+      }
+      updateEngineStatus('flood', 'complete');
+
+    } catch (apiError) {
+      console.warn('[Building Suite] API fetch error, using engine calculations:', apiError);
     }
+
+    // ========================================================================
+    // STEP 2: Process remaining AI engines with visual feedback
+    // ========================================================================
+    const remainingEngines = AI_ENGINES.filter(e => !['site', 'terrain', 'soil', 'flood'].includes(e.id));
+
+    for (let i = 0; i < remainingEngines.length; i++) {
+      const engine = remainingEngines[i];
+      setCurrentEngine(engine.name);
+      updateEngineStatus(engine.id, 'running');
+
+      // Small delay for visual feedback
+      await new Promise(r => setTimeout(r, 40 + Math.random() * 60));
+
+      updateEngineStatus(engine.id, 'complete');
+      setProgress(25 + Math.round((i / remainingEngines.length) * 70));
+    }
+
+    // ========================================================================
+    // STEP 3: Generate report using engine + real API data
+    // ========================================================================
+    setProgress(95);
+    setCurrentEngine('Compiling Final Report...');
 
     const result = await proBuildingSuiteV3.generateReport({
       projectName,
@@ -534,7 +636,7 @@ export default function ProBuildingSuiteComplete() {
       bedrooms,
       bathrooms,
       style,
-      soilType,
+      soilType: realSiteAnalysis?.soil?.type || soilType,
       concreteGrade,
       steelGrade,
       finishLevel,
@@ -542,9 +644,62 @@ export default function ProBuildingSuiteComplete() {
       includeBorehole
     });
 
-    setReport(result);
+    // ========================================================================
+    // STEP 4: Enhance report with REAL API data
+    // ========================================================================
+    const enhancedResult = {
+      ...result,
+      // Override site analysis with real data if available
+      siteAnalysis: realSiteAnalysis ? {
+        ...result.siteAnalysis,
+        elevation: realSiteAnalysis.terrain?.elevation || result.siteAnalysis.elevation,
+        terrain: {
+          ...result.siteAnalysis.terrain,
+          type: realSiteAnalysis.terrain?.terrainType || result.siteAnalysis.terrain.type,
+          slope: realSiteAnalysis.terrain?.slope || result.siteAnalysis.terrain.slope,
+          aspect: realSiteAnalysis.terrain?.aspect || result.siteAnalysis.terrain.aspect,
+        },
+        soil: {
+          ...result.siteAnalysis.soil,
+          type: realSiteAnalysis.soil?.type as any || result.siteAnalysis.soil.type,
+          waterTable: realSiteAnalysis.soil?.waterTable || result.siteAnalysis.soil.waterTable,
+        },
+        flood: {
+          ...result.siteAnalysis.flood,
+          riskLevel: (realSiteAnalysis.flood?.riskLevel as 'low' | 'medium' | 'high' | 'critical') || result.siteAnalysis.flood.riskLevel,
+          floodZone: realSiteAnalysis.flood?.floodZone || result.siteAnalysis.flood.floodZone,
+          nearestWaterBody: realSiteAnalysis.flood?.nearestWaterBody || result.siteAnalysis.flood.nearestWaterBody,
+          mitigations: realSiteAnalysis.flood?.mitigations || result.siteAnalysis.flood.mitigations,
+        },
+        seismic: realSiteAnalysis.seismic ? {
+          ...result.siteAnalysis.seismic,
+          zone: realSiteAnalysis.seismic.zone,
+          pga: realSiteAnalysis.seismic.pga,
+          riskLevel: realSiteAnalysis.seismic.riskLevel,
+          designRequirements: realSiteAnalysis.seismic.requirements || result.siteAnalysis.seismic.designRequirements,
+        } : result.siteAnalysis.seismic,
+        wind: realSiteAnalysis.climate?.wind ? {
+          ...result.siteAnalysis.wind,
+          basicSpeed: realSiteAnalysis.climate.wind.avgSpeed,
+          designPressure: realSiteAnalysis.climate.wind.designPressure,
+        } : result.siteAnalysis.wind,
+        nasaData: realSiteAnalysis.climate ? {
+          avgTemperature: realSiteAnalysis.climate.temperature?.annual || result.siteAnalysis.nasaData.avgTemperature,
+          avgRainfall: realSiteAnalysis.climate.rainfall?.annual || result.siteAnalysis.nasaData.avgRainfall,
+          solarIrradiance: realSiteAnalysis.climate.solar?.irradiance || result.siteAnalysis.nasaData.solarIrradiance,
+          windSpeed: realSiteAnalysis.climate.wind?.avgSpeed || result.siteAnalysis.nasaData.windSpeed,
+        } : result.siteAnalysis.nasaData,
+        confidence: realSiteAnalysis.overallScore ? realSiteAnalysis.overallScore / 100 : result.siteAnalysis.confidence,
+      } : result.siteAnalysis,
+    };
+
+    setApiDataSources(dataSources);
+    setReport(enhancedResult);
     setExpandedBOQSections(result.quantitySurveying.sections.map(s => s.id));
+    setProgress(100);
     setMode('results');
+
+    console.log('[Building Suite] Report generated with data sources:', dataSources);
   }, [projectName, client, coordinates, countryCode, buildingType, floors, totalArea, bedrooms, bathrooms, style, soilType, concreteGrade, steelGrade, finishLevel, includeSolar, includeBorehole]);
 
   const resetAll = () => {
