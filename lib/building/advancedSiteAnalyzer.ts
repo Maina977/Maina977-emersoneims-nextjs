@@ -493,9 +493,10 @@ export class AdvancedSiteAnalyzer {
   // Terrain Analysis using NASA SRTM + Google Earth Engine
   async analyzeTerrain(coordinates: { lat: number; lng: number }): Promise<TerrainAnalysis> {
     await this.simulateAPICall(500);
+    const { lat, lng } = coordinates;
 
-    const elevation = 1500 + Math.random() * 500;
-    const slope = Math.random() * 25;
+    const elevation = 1500 + getValueInRange(lat, lng, 'terrain-elev', 0, 500);
+    const slope = getValueInRange(lat, lng, 'terrain-slope', 0, 25);
     const aspects = ['North', 'Northeast', 'East', 'Southeast', 'South', 'Southwest', 'West', 'Northwest'];
     const terrainTypes = ['Flat Plain', 'Gentle Slope', 'Rolling Hills', 'Steep Slope', 'Ridge', 'Valley', 'Plateau'];
 
@@ -505,27 +506,30 @@ export class AdvancedSiteAnalyzer {
     else if (slope < 25) excavationDifficulty = 'Difficult';
     else excavationDifficulty = 'Very Difficult';
 
+    const viewCount = 1 + getIntInRange(lat, lng, 'terrain-views', 0, 2);
+
     return {
       elevation: Math.round(elevation),
       slope: Math.round(slope * 10) / 10,
-      aspect: aspects[Math.floor(Math.random() * aspects.length)],
-      terrainType: terrainTypes[Math.floor(Math.random() * terrainTypes.length)],
-      roughnessIndex: Math.round(Math.random() * 100) / 100,
-      accessibility: Math.random() > 0.3 ? 'Good' : 'Moderate',
+      aspect: selectFromArray(lat, lng, 'terrain-aspect', aspects),
+      terrainType: selectFromArray(lat, lng, 'terrain-type', terrainTypes),
+      roughnessIndex: Math.round(getValueInRange(lat, lng, 'terrain-rough', 0, 1) * 100) / 100,
+      accessibility: getBooleanWithProbability(lat, lng, 'terrain-access', 0.7) ? 'Good' : 'Moderate',
       excavationDifficulty,
       cutFillVolume: {
-        cut: Math.round(Math.random() * 500),
-        fill: Math.round(Math.random() * 300),
-        net: Math.round(Math.random() * 200 - 100)
+        cut: Math.round(getValueInRange(lat, lng, 'terrain-cut', 0, 500)),
+        fill: Math.round(getValueInRange(lat, lng, 'terrain-fill', 0, 300)),
+        net: Math.round(getValueInRange(lat, lng, 'terrain-net', -100, 100))
       },
-      drainageDirection: aspects[Math.floor(Math.random() * aspects.length)],
-      viewshed: ['City View', 'Mountain View', 'Open Sky'].slice(0, Math.floor(Math.random() * 3) + 1)
+      drainageDirection: selectFromArray(lat, lng, 'terrain-drain', aspects),
+      viewshed: ['City View', 'Mountain View', 'Open Sky'].slice(0, viewCount)
     };
   }
 
   // Soil Analysis using ISRIC SoilGrids + FAO
   async analyzeSoil(coordinates: { lat: number; lng: number }): Promise<SoilAnalysis> {
     await this.simulateAPICall(600);
+    const { lat, lng } = coordinates;
 
     const soilTypes = [
       { type: 'Sandy Loam', class: 'Arenosol', bearing: 200, drainage: 'Well Drained' },
@@ -537,7 +541,7 @@ export class AdvancedSiteAnalyzer {
       { type: 'Rocky', class: 'Leptosol', bearing: 400, drainage: 'Excessive' }
     ];
 
-    const selected = soilTypes[Math.floor(Math.random() * soilTypes.length)];
+    const selected = selectFromArray(lat, lng, 'soil-type', soilTypes);
     const isProblematic = selected.type === 'Black Cotton' || selected.type === 'Clay Loam';
 
     const treatments: string[] = [];
@@ -555,25 +559,25 @@ export class AdvancedSiteAnalyzer {
       soilType: selected.type,
       soilClass: selected.class,
       texture: {
-        sand: Math.round(20 + Math.random() * 60),
-        silt: Math.round(10 + Math.random() * 40),
-        clay: Math.round(10 + Math.random() * 50)
+        sand: Math.round(20 + getValueInRange(lat, lng, 'soil-sand', 0, 60)),
+        silt: Math.round(10 + getValueInRange(lat, lng, 'soil-silt', 0, 40)),
+        clay: Math.round(10 + getValueInRange(lat, lng, 'soil-clay', 0, 50))
       },
-      bearingCapacity: selected.bearing + Math.round(Math.random() * 50 - 25),
-      shearStrength: Math.round(30 + Math.random() * 50),
+      bearingCapacity: selected.bearing + Math.round(getValueInRange(lat, lng, 'soil-bearing', -25, 25)),
+      shearStrength: Math.round(30 + getValueInRange(lat, lng, 'soil-shear', 0, 50)),
       permeability: selected.drainage === 'Well Drained' ? 'High' : selected.drainage === 'Excessive' ? 'Very High' : 'Low',
       drainageClass: selected.drainage,
-      waterTableDepth: Math.round(5 + Math.random() * 20),
+      waterTableDepth: Math.round(5 + getValueInRange(lat, lng, 'soil-watertable', 0, 20)),
       plasticity: {
-        liquid: Math.round(25 + Math.random() * 30),
-        plastic: Math.round(15 + Math.random() * 20),
-        index: Math.round(10 + Math.random() * 15)
+        liquid: Math.round(25 + getValueInRange(lat, lng, 'soil-liquid', 0, 30)),
+        plastic: Math.round(15 + getValueInRange(lat, lng, 'soil-plastic', 0, 20)),
+        index: Math.round(10 + getValueInRange(lat, lng, 'soil-index', 0, 15))
       },
       compressibility: isProblematic ? 'High' : 'Low',
       expansivity: selected.type === 'Black Cotton' ? 'Very High' : selected.type === 'Clay Loam' ? 'High' : 'Low',
-      corrosivity: Math.random() > 0.7 ? 'Moderate' : 'Low',
-      organicContent: Math.round(Math.random() * 5 * 10) / 10,
-      ph: Math.round((5.5 + Math.random() * 2.5) * 10) / 10,
+      corrosivity: getBooleanWithProbability(lat, lng, 'soil-corrosive', 0.3) ? 'Moderate' : 'Low',
+      organicContent: Math.round(getValueInRange(lat, lng, 'soil-organic', 0, 5) * 10) / 10,
+      ph: Math.round((5.5 + getValueInRange(lat, lng, 'soil-ph', 0, 2.5)) * 10) / 10,
       foundationRecommendation: isProblematic ? 'Pile Foundation' : 'Strip/Raft Foundation',
       treatmentRequired: treatments
     };
@@ -582,8 +586,9 @@ export class AdvancedSiteAnalyzer {
   // Flood Risk Analysis using Global Flood Database + HydroSHEDS
   async analyzeFloodRisk(coordinates: { lat: number; lng: number }): Promise<FloodRiskAnalysis> {
     await this.simulateAPICall(700);
+    const { lat, lng } = coordinates;
 
-    const riskLevel = Math.random();
+    const riskLevel = getValueInRange(lat, lng, 'flood-risk', 0, 1);
     let zone: string;
     let level: 'Very Low' | 'Low' | 'Moderate' | 'High' | 'Very High';
 
@@ -615,22 +620,25 @@ export class AdvancedSiteAnalyzer {
       restrictions.push('Foundation engineering review required');
     }
 
+    // Deterministic filtering of historical floods
+    const historicalFloods = [
+      { year: 2020, severity: 'Minor', depth: 0.3 },
+      { year: 2018, severity: 'Moderate', depth: 0.8 },
+      { year: 2015, severity: 'Major', depth: 1.5 }
+    ].filter((_, i) => getBooleanWithProbability(lat, lng, `flood-hist-${i}`, 0.6));
+
     return {
       floodZone: zone,
       riskLevel: level,
-      historicalFloods: [
-        { year: 2020, severity: 'Minor', depth: 0.3 },
-        { year: 2018, severity: 'Moderate', depth: 0.8 },
-        { year: 2015, severity: 'Major', depth: 1.5 }
-      ].filter(() => Math.random() > 0.4),
+      historicalFloods,
       returnPeriod: {
-        '10yr': Math.round(0.1 + Math.random() * 0.5 * 10) / 10,
-        '50yr': Math.round(0.5 + Math.random() * 1 * 10) / 10,
-        '100yr': Math.round(1 + Math.random() * 1.5 * 10) / 10
+        '10yr': Math.round((0.1 + getValueInRange(lat, lng, 'flood-10yr', 0, 0.5)) * 10) / 10,
+        '50yr': Math.round((0.5 + getValueInRange(lat, lng, 'flood-50yr', 0, 1)) * 10) / 10,
+        '100yr': Math.round((1 + getValueInRange(lat, lng, 'flood-100yr', 0, 1.5)) * 10) / 10
       },
-      riverProximity: Math.round(100 + Math.random() * 5000),
+      riverProximity: Math.round(100 + getValueInRange(lat, lng, 'flood-river', 0, 5000)),
       drainageBasin: 'Nairobi River Basin',
-      upstreamCatchment: Math.round(50 + Math.random() * 500),
+      upstreamCatchment: Math.round(50 + getValueInRange(lat, lng, 'flood-catchment', 0, 500)),
       flashFloodRisk: level === 'High' || level === 'Very High' ? 'High' : 'Low',
       tsunamiRisk: 'None',
       stormSurgeRisk: 'None',
@@ -643,32 +651,40 @@ export class AdvancedSiteAnalyzer {
   // Geological Analysis using USGS + Local Geological Surveys
   async analyzeGeology(coordinates: { lat: number; lng: number }): Promise<GeologicalAnalysis> {
     await this.simulateAPICall(500);
+    const { lat, lng } = coordinates;
 
     const bedrockTypes = ['Granite', 'Basalt', 'Limestone', 'Sandstone', 'Schist', 'Gneiss'];
     const seismicZones = ['Zone I (Low)', 'Zone II (Moderate)', 'Zone III (High)', 'Zone IV (Very High)'];
 
-    const selectedRock = bedrockTypes[Math.floor(Math.random() * bedrockTypes.length)];
-    const selectedZone = seismicZones[Math.floor(Math.random() * seismicZones.length)];
+    const selectedRock = selectFromArray(lat, lng, 'geo-rock', bedrockTypes);
+    const selectedZone = selectFromArray(lat, lng, 'geo-seismic', seismicZones);
+
+    // Deterministic landslide risk calculation
+    const landslideVal = getValueInRange(lat, lng, 'geo-landslide', 0, 1);
+    let landslideRisk: 'Low' | 'Moderate' | 'High';
+    if (landslideVal > 0.8) landslideRisk = 'High';
+    else if (landslideVal > 0.5) landslideRisk = 'Moderate';
+    else landslideRisk = 'Low';
 
     return {
       bedrockType: selectedRock,
-      bedrockDepth: Math.round(5 + Math.random() * 30),
+      bedrockDepth: Math.round(5 + getValueInRange(lat, lng, 'geo-depth', 0, 30)),
       geologicalAge: 'Precambrian (2.5+ billion years)',
       tectonicSetting: 'East African Rift System',
-      faultProximity: Math.round(5 + Math.random() * 50),
+      faultProximity: Math.round(5 + getValueInRange(lat, lng, 'geo-fault', 0, 50)),
       seismicZone: selectedZone,
-      peakGroundAcceleration: Math.round((0.05 + Math.random() * 0.3) * 100) / 100,
-      liquefactionRisk: Math.random() > 0.7 ? 'Moderate' : 'Low',
-      landslideRisk: Math.random() > 0.8 ? 'High' : Math.random() > 0.5 ? 'Moderate' : 'Low',
-      subsidence: Math.random() > 0.9 ? 'Moderate Risk' : 'Stable',
-      karstTerrain: selectedRock === 'Limestone' && Math.random() > 0.7,
-      miningHistory: Math.random() > 0.9 ? 'Historical quarry nearby' : 'None recorded',
+      peakGroundAcceleration: Math.round((0.05 + getValueInRange(lat, lng, 'geo-pga', 0, 0.3)) * 100) / 100,
+      liquefactionRisk: getBooleanWithProbability(lat, lng, 'geo-liquefaction', 0.3) ? 'Moderate' : 'Low',
+      landslideRisk,
+      subsidence: getBooleanWithProbability(lat, lng, 'geo-subsidence', 0.1) ? 'Moderate Risk' : 'Stable',
+      karstTerrain: selectedRock === 'Limestone' && getBooleanWithProbability(lat, lng, 'geo-karst', 0.3),
+      miningHistory: getBooleanWithProbability(lat, lng, 'geo-mining', 0.1) ? 'Historical quarry nearby' : 'None recorded',
       groundwaterQuality: {
-        salinity: Math.random() > 0.3 ? 'Low (<500 ppm)' : 'Moderate (500-1500 ppm)',
-        hardness: Math.random() > 0.5 ? 'Moderate' : 'Hard',
-        iron: Math.random() > 0.6 ? 'Low' : 'Elevated',
-        fluoride: Math.random() > 0.7 ? 'Low' : 'Elevated',
-        contamination: Math.random() > 0.9 ? 'Suspected' : 'Not detected'
+        salinity: getBooleanWithProbability(lat, lng, 'gw-salinity', 0.7) ? 'Low (<500 ppm)' : 'Moderate (500-1500 ppm)',
+        hardness: getBooleanWithProbability(lat, lng, 'gw-hardness', 0.5) ? 'Moderate' : 'Hard',
+        iron: getBooleanWithProbability(lat, lng, 'gw-iron', 0.6) ? 'Low' : 'Elevated',
+        fluoride: getBooleanWithProbability(lat, lng, 'gw-fluoride', 0.7) ? 'Low' : 'Elevated',
+        contamination: getBooleanWithProbability(lat, lng, 'gw-contam', 0.1) ? 'Suspected' : 'Not detected'
       }
     };
   }
@@ -676,9 +692,10 @@ export class AdvancedSiteAnalyzer {
   // Climate Analysis using NASA POWER + WorldClim
   async analyzeClimate(coordinates: { lat: number; lng: number }): Promise<ClimateAnalysis> {
     await this.simulateAPICall(400);
+    const { lat, lng } = coordinates;
 
     const climateZones = ['Tropical Savanna', 'Tropical Highland', 'Semi-Arid', 'Humid Subtropical'];
-    const selectedZone = climateZones[Math.floor(Math.random() * climateZones.length)];
+    const selectedZone = selectFromArray(lat, lng, 'climate-zone', climateZones);
 
     const recommendations: string[] = [];
     if (selectedZone.includes('Tropical')) {
@@ -696,31 +713,31 @@ export class AdvancedSiteAnalyzer {
     return {
       climateZone: selectedZone,
       avgTemperature: {
-        annual: Math.round(18 + Math.random() * 8),
-        summer: Math.round(22 + Math.random() * 10),
-        winter: Math.round(14 + Math.random() * 6)
+        annual: Math.round(18 + getValueInRange(lat, lng, 'temp-annual', 0, 8)),
+        summer: Math.round(22 + getValueInRange(lat, lng, 'temp-summer', 0, 10)),
+        winter: Math.round(14 + getValueInRange(lat, lng, 'temp-winter', 0, 6))
       },
       extremeTemperatures: {
-        max: Math.round(32 + Math.random() * 8),
-        min: Math.round(8 + Math.random() * 6)
+        max: Math.round(32 + getValueInRange(lat, lng, 'temp-max', 0, 8)),
+        min: Math.round(8 + getValueInRange(lat, lng, 'temp-min', 0, 6))
       },
-      annualRainfall: Math.round(600 + Math.random() * 800),
+      annualRainfall: Math.round(600 + getValueInRange(lat, lng, 'rainfall', 0, 800)),
       rainySeasons: ['March-May (Long Rains)', 'October-December (Short Rains)'],
       drySeasons: ['January-February', 'June-September'],
       humidity: {
-        annual: Math.round(60 + Math.random() * 20),
-        max: Math.round(80 + Math.random() * 15),
-        min: Math.round(40 + Math.random() * 15)
+        annual: Math.round(60 + getValueInRange(lat, lng, 'humid-annual', 0, 20)),
+        max: Math.round(80 + getValueInRange(lat, lng, 'humid-max', 0, 15)),
+        min: Math.round(40 + getValueInRange(lat, lng, 'humid-min', 0, 15))
       },
       windSpeed: {
-        avg: Math.round((2 + Math.random() * 4) * 10) / 10,
-        max: Math.round((15 + Math.random() * 15) * 10) / 10,
+        avg: Math.round((2 + getValueInRange(lat, lng, 'wind-avg', 0, 4)) * 10) / 10,
+        max: Math.round((15 + getValueInRange(lat, lng, 'wind-max', 0, 15)) * 10) / 10,
         direction: 'Southeast'
       },
-      solarIrradiance: Math.round((4.5 + Math.random() * 2) * 10) / 10,
-      sunHours: Math.round(6 + Math.random() * 3),
-      frostDays: selectedZone.includes('Highland') ? Math.round(Math.random() * 10) : 0,
-      hailRisk: Math.random() > 0.8 ? 'Moderate' : 'Low',
+      solarIrradiance: Math.round((4.5 + getValueInRange(lat, lng, 'solar-irr', 0, 2)) * 10) / 10,
+      sunHours: Math.round(6 + getValueInRange(lat, lng, 'sun-hours', 0, 3)),
+      frostDays: selectedZone.includes('Highland') ? Math.round(getValueInRange(lat, lng, 'frost', 0, 10)) : 0,
+      hailRisk: getBooleanWithProbability(lat, lng, 'hail', 0.2) ? 'Moderate' : 'Low',
       cycloneRisk: 'None',
       droughtRisk: selectedZone.includes('Semi-Arid') ? 'High' : 'Moderate',
       designRecommendations: recommendations
@@ -730,20 +747,21 @@ export class AdvancedSiteAnalyzer {
   // Vegetation Analysis using Sentinel-2 NDVI + Google Earth Engine
   async analyzeVegetation(coordinates: { lat: number; lng: number }): Promise<VegetationAnalysis> {
     await this.simulateAPICall(400);
+    const { lat, lng } = coordinates;
 
-    const ndvi = Math.random() * 0.8 + 0.1;
+    const ndvi = getValueInRange(lat, lng, 'veg-ndvi', 0.1, 0.9);
     const vegetationTypes = ['Grassland', 'Shrubland', 'Woodland', 'Forest', 'Agricultural', 'Urban Vegetation'];
-    const densities = ['Sparse', 'Moderate', 'Dense'];
+    const densities: ('Sparse' | 'Moderate' | 'Dense')[] = ['Sparse', 'Moderate', 'Dense'];
 
     return {
       ndvi: Math.round(ndvi * 100) / 100,
-      vegetationType: vegetationTypes[Math.floor(Math.random() * vegetationTypes.length)],
-      vegetationDensity: densities[Math.floor(Math.random() * densities.length)],
-      treeCount: Math.round(Math.random() * 50),
-      protectedSpecies: Math.random() > 0.8 ? ['Indigenous Fig Tree', 'Croton'] : [],
-      clearingRequired: Math.round(Math.random() * 2000),
-      environmentalImpact: Math.random() > 0.7 ? 'Moderate' : 'Low',
-      landscapingPotential: Math.random() > 0.5 ? 'Excellent' : 'Good',
+      vegetationType: selectFromArray(lat, lng, 'veg-type', vegetationTypes),
+      vegetationDensity: selectFromArray(lat, lng, 'veg-density', densities),
+      treeCount: Math.round(getValueInRange(lat, lng, 'veg-trees', 0, 50)),
+      protectedSpecies: getBooleanWithProbability(lat, lng, 'veg-protected', 0.2) ? ['Indigenous Fig Tree', 'Croton'] : [],
+      clearingRequired: Math.round(getValueInRange(lat, lng, 'veg-clearing', 0, 2000)),
+      environmentalImpact: getBooleanWithProbability(lat, lng, 'veg-impact', 0.3) ? 'Moderate' : 'Low',
+      landscapingPotential: getBooleanWithProbability(lat, lng, 'veg-landscape', 0.5) ? 'Excellent' : 'Good',
       erosionProtection: ndvi > 0.5 ? 'Good' : 'Moderate'
     };
   }
@@ -751,51 +769,54 @@ export class AdvancedSiteAnalyzer {
   // Infrastructure Analysis using OpenStreetMap + Government APIs
   async analyzeInfrastructure(coordinates: { lat: number; lng: number }): Promise<InfrastructureAnalysis> {
     await this.simulateAPICall(600);
+    const { lat, lng } = coordinates;
+
+    const providerCount = 1 + getIntInRange(lat, lng, 'infra-providers', 0, 2);
 
     return {
       roadAccess: {
-        type: Math.random() > 0.5 ? 'Tarmac' : 'Murram',
-        distance: Math.round(Math.random() * 500),
-        condition: Math.random() > 0.3 ? 'Good' : 'Fair',
-        widthAdequate: Math.random() > 0.2
+        type: getBooleanWithProbability(lat, lng, 'road-tarmac', 0.5) ? 'Tarmac' : 'Murram',
+        distance: Math.round(getValueInRange(lat, lng, 'road-dist', 0, 500)),
+        condition: getBooleanWithProbability(lat, lng, 'road-good', 0.7) ? 'Good' : 'Fair',
+        widthAdequate: getBooleanWithProbability(lat, lng, 'road-width', 0.8)
       },
       powerGrid: {
-        distance: Math.round(Math.random() * 2000),
-        voltage: Math.random() > 0.5 ? '415V (3-Phase)' : '240V (Single Phase)',
-        capacity: Math.random() > 0.7 ? 'Adequate' : 'Limited',
-        connectionCost: Math.round(50000 + Math.random() * 200000)
+        distance: Math.round(getValueInRange(lat, lng, 'power-dist', 0, 2000)),
+        voltage: getBooleanWithProbability(lat, lng, 'power-3phase', 0.5) ? '415V (3-Phase)' : '240V (Single Phase)',
+        capacity: getBooleanWithProbability(lat, lng, 'power-cap', 0.7) ? 'Adequate' : 'Limited',
+        connectionCost: Math.round(50000 + getValueInRange(lat, lng, 'power-cost', 0, 200000))
       },
       waterSupply: {
-        type: Math.random() > 0.5 ? 'Municipal' : 'Borehole Required',
-        distance: Math.round(Math.random() * 1000),
-        pressure: Math.random() > 0.5 ? 'Adequate' : 'Low',
-        quality: Math.random() > 0.3 ? 'Good' : 'Treatment Required'
+        type: getBooleanWithProbability(lat, lng, 'water-municipal', 0.5) ? 'Municipal' : 'Borehole Required',
+        distance: Math.round(getValueInRange(lat, lng, 'water-dist', 0, 1000)),
+        pressure: getBooleanWithProbability(lat, lng, 'water-pressure', 0.5) ? 'Adequate' : 'Low',
+        quality: getBooleanWithProbability(lat, lng, 'water-quality', 0.7) ? 'Good' : 'Treatment Required'
       },
       sewer: {
-        available: Math.random() > 0.4,
-        distance: Math.round(Math.random() * 500),
-        type: Math.random() > 0.5 ? 'Trunk Sewer' : 'Septic Required'
+        available: getBooleanWithProbability(lat, lng, 'sewer-avail', 0.6),
+        distance: Math.round(getValueInRange(lat, lng, 'sewer-dist', 0, 500)),
+        type: getBooleanWithProbability(lat, lng, 'sewer-trunk', 0.5) ? 'Trunk Sewer' : 'Septic Required'
       },
       telecom: {
-        fiberAvailable: Math.random() > 0.3,
-        mobileSignal: Math.random() > 0.2 ? 'Excellent (4G/5G)' : 'Good (4G)',
-        providers: ['Safaricom', 'Airtel', 'Telkom'].slice(0, Math.floor(Math.random() * 3) + 1)
+        fiberAvailable: getBooleanWithProbability(lat, lng, 'fiber', 0.7),
+        mobileSignal: getBooleanWithProbability(lat, lng, 'signal-5g', 0.8) ? 'Excellent (4G/5G)' : 'Good (4G)',
+        providers: ['Safaricom', 'Airtel', 'Telkom'].slice(0, providerCount)
       },
       gasSupply: {
-        available: Math.random() > 0.8,
+        available: getBooleanWithProbability(lat, lng, 'gas', 0.2),
         type: 'LPG Only'
       },
       publicTransport: {
-        busStop: Math.round(100 + Math.random() * 1000),
-        trainStation: Math.round(1000 + Math.random() * 10000),
-        airport: Math.round(10000 + Math.random() * 50000)
+        busStop: Math.round(100 + getValueInRange(lat, lng, 'bus-dist', 0, 1000)),
+        trainStation: Math.round(1000 + getValueInRange(lat, lng, 'train-dist', 0, 10000)),
+        airport: Math.round(10000 + getValueInRange(lat, lng, 'airport-dist', 0, 50000))
       },
       amenities: {
-        hospital: Math.round(500 + Math.random() * 5000),
-        school: Math.round(200 + Math.random() * 2000),
-        shopping: Math.round(300 + Math.random() * 3000),
-        police: Math.round(500 + Math.random() * 3000),
-        fireStation: Math.round(1000 + Math.random() * 5000)
+        hospital: Math.round(500 + getValueInRange(lat, lng, 'hosp-dist', 0, 5000)),
+        school: Math.round(200 + getValueInRange(lat, lng, 'school-dist', 0, 2000)),
+        shopping: Math.round(300 + getValueInRange(lat, lng, 'shop-dist', 0, 3000)),
+        police: Math.round(500 + getValueInRange(lat, lng, 'police-dist', 0, 3000)),
+        fireStation: Math.round(1000 + getValueInRange(lat, lng, 'fire-dist', 0, 5000))
       }
     };
   }
@@ -803,9 +824,10 @@ export class AdvancedSiteAnalyzer {
   // Environmental Analysis
   async analyzeEnvironmental(coordinates: { lat: number; lng: number }): Promise<EnvironmentalAnalysis> {
     await this.simulateAPICall(400);
+    const { lat, lng } = coordinates;
 
     const permits: string[] = [];
-    const eiaRequired = Math.random() > 0.6;
+    const eiaRequired = getBooleanWithProbability(lat, lng, 'env-eia', 0.4);
     if (eiaRequired) {
       permits.push('Environmental Impact Assessment (EIA)');
       permits.push('NEMA License');
@@ -813,26 +835,27 @@ export class AdvancedSiteAnalyzer {
     permits.push('Water Abstraction Permit (if borehole)');
 
     return {
-      airQuality: Math.random() > 0.3 ? 'Good' : 'Moderate',
-      noiseLevel: Math.random() > 0.5 ? 'Low (<55 dB)' : 'Moderate (55-70 dB)',
-      lightPollution: Math.random() > 0.5 ? 'Low' : 'Moderate',
-      industrialProximity: Math.round(1000 + Math.random() * 10000),
-      wasteDisposal: Math.random() > 0.5 ? 'Municipal Collection' : 'Private Arrangement',
-      protectedAreas: Math.random() > 0.9 ? ['Nairobi National Park Buffer Zone'] : [],
-      wetlands: Math.random() > 0.85,
-      wildlifeCorridors: Math.random() > 0.9,
+      airQuality: getBooleanWithProbability(lat, lng, 'env-air', 0.7) ? 'Good' : 'Moderate',
+      noiseLevel: getBooleanWithProbability(lat, lng, 'env-noise', 0.5) ? 'Low (<55 dB)' : 'Moderate (55-70 dB)',
+      lightPollution: getBooleanWithProbability(lat, lng, 'env-light', 0.5) ? 'Low' : 'Moderate',
+      industrialProximity: Math.round(1000 + getValueInRange(lat, lng, 'env-indust', 0, 10000)),
+      wasteDisposal: getBooleanWithProbability(lat, lng, 'env-waste', 0.5) ? 'Municipal Collection' : 'Private Arrangement',
+      protectedAreas: getBooleanWithProbability(lat, lng, 'env-protected', 0.1) ? ['Nairobi National Park Buffer Zone'] : [],
+      wetlands: getBooleanWithProbability(lat, lng, 'env-wetland', 0.15),
+      wildlifeCorridors: getBooleanWithProbability(lat, lng, 'env-wildlife', 0.1),
       environmentalPermits: permits,
       eiaRequired,
-      carbonSequestration: Math.round(Math.random() * 50)
+      carbonSequestration: Math.round(getValueInRange(lat, lng, 'env-carbon', 0, 50))
     };
   }
 
   // Legal Analysis
   async analyzeLegal(coordinates: { lat: number; lng: number }, plotSize: number): Promise<LegalAnalysis> {
     await this.simulateAPICall(300);
+    const { lat, lng } = coordinates;
 
     const zonings = ['Residential R1', 'Residential R2', 'Commercial C1', 'Mixed Use MU1', 'Agricultural A1'];
-    const selectedZoning = zonings[Math.floor(Math.random() * zonings.length)];
+    const selectedZoning = selectFromArray(lat, lng, 'legal-zoning', zonings);
 
     const allowedUses = selectedZoning.includes('Residential')
       ? ['Single Family', 'Duplex', 'Apartments (max 4 floors)']
@@ -851,12 +874,12 @@ export class AdvancedSiteAnalyzer {
         rear: selectedZoning.includes('Commercial') ? 3 : 2,
         sides: selectedZoning.includes('Commercial') ? 3 : 1.5
       },
-      easements: Math.random() > 0.7 ? ['Power Line Easement (5m)'] : [],
-      rightOfWay: Math.random() > 0.8 ? ['Road Reserve (3m)'] : [],
-      encumbrances: Math.random() > 0.9 ? ['Mortgage Registered'] : [],
-      titleStatus: Math.random() > 0.1 ? 'Freehold - Clear' : 'Leasehold - 99 years',
-      disputes: Math.random() > 0.95,
-      historicalProtection: Math.random() > 0.95
+      easements: getBooleanWithProbability(lat, lng, 'legal-easement', 0.3) ? ['Power Line Easement (5m)'] : [],
+      rightOfWay: getBooleanWithProbability(lat, lng, 'legal-row', 0.2) ? ['Road Reserve (3m)'] : [],
+      encumbrances: getBooleanWithProbability(lat, lng, 'legal-encumb', 0.1) ? ['Mortgage Registered'] : [],
+      titleStatus: getBooleanWithProbability(lat, lng, 'legal-freehold', 0.9) ? 'Freehold - Clear' : 'Leasehold - 99 years',
+      disputes: getBooleanWithProbability(lat, lng, 'legal-dispute', 0.05),
+      historicalProtection: getBooleanWithProbability(lat, lng, 'legal-historic', 0.05)
     };
   }
 

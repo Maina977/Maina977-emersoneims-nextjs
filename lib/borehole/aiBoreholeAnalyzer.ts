@@ -2402,7 +2402,7 @@ export class AIVegetationAnalyzer {
       if (indicator && !indicators.find(ind => ind.type === indicator.type)) {
         indicators.push({
           ...indicator,
-          confidence: indicator.confidence * (0.7 + Math.random() * 0.3),
+          confidence: indicator.confidence * (0.7 + (hash % 30) / 100),
         });
       }
     }
@@ -2876,27 +2876,32 @@ export class NASAGRACEAnalyzer {
 
     for (let i = 0; i < 20; i++) {
       years.push(currentYear - 20 + i);
-      baseValue += (Math.random() - 0.5) * 10 + (Math.sin(seed + i) > 0 ? 2 : -3);
+      const yearlyVariation = Math.sin(seed * 0.1 + i * 0.5) * 10;
+      baseValue += yearlyVariation + (Math.sin(seed + i) > 0 ? 2 : -3);
       waterStorageValues.push(baseValue);
     }
 
     const trendDirection = waterStorageValues[19] > waterStorageValues[0] ? 'increasing' : 'decreasing';
     const depletionRate = (waterStorageValues[0] - waterStorageValues[19]) / 20;
 
+    // Deterministic trend based on coordinates
+    const trendTypes: ('stable' | 'increasing' | 'decreasing')[] = ['stable', 'increasing', 'decreasing'];
+    const trendIndex = Math.abs(Math.floor(seed * 10)) % 3;
+
     return {
       terrestrialWaterStorage: {
         current: 80 + Math.sin(seed) * 40,
-        anomaly: -10 + Math.random() * 20,
-        trend: Math.random() > 0.5 ? 'stable' : (Math.random() > 0.5 ? 'increasing' : 'decreasing'),
+        anomaly: -10 + (Math.abs(seed * 100) % 20),
+        trend: trendTypes[trendIndex],
         lastUpdated: new Date().toISOString().split('T')[0],
       },
       gldasIntegration: {
-        soilMoisture0_10cm: 15 + Math.random() * 25,
-        soilMoisture10_40cm: 20 + Math.random() * 30,
-        soilMoisture40_100cm: 25 + Math.random() * 35,
-        soilMoisture100_200cm: 30 + Math.random() * 40,
-        rootZoneMoisture: 22 + Math.random() * 28,
-        groundwaterRecharge: 50 + Math.random() * 150,
+        soilMoisture0_10cm: 15 + (Math.abs(seed * 11) % 25),
+        soilMoisture10_40cm: 20 + (Math.abs(seed * 12) % 30),
+        soilMoisture40_100cm: 25 + (Math.abs(seed * 13) % 35),
+        soilMoisture100_200cm: 30 + (Math.abs(seed * 14) % 40),
+        rootZoneMoisture: 22 + (Math.abs(seed * 15) % 28),
+        groundwaterRecharge: 50 + (Math.abs(seed * 16) % 150),
       },
       historicalTrend: {
         years,
@@ -2930,20 +2935,21 @@ export class GEEAnalyzer {
 
       ndviTimeSeries.push({
         date: date.toISOString().split('T')[0],
-        value: 0.35 + rainySeasonBoost + Math.sin(seed + i) * 0.15 + Math.random() * 0.1,
+        value: 0.35 + rainySeasonBoost + Math.sin(seed + i) * 0.15 + (Math.abs(seed * (i + 1) * 7) % 10) / 100,
       });
       ndwiTimeSeries.push({
         date: date.toISOString().split('T')[0],
-        value: 0.15 + rainySeasonBoost * 0.8 + Math.cos(seed + i) * 0.1 + Math.random() * 0.08,
+        value: 0.15 + rainySeasonBoost * 0.8 + Math.cos(seed + i) * 0.1 + (Math.abs(seed * (i + 1) * 9) % 8) / 100,
       });
     }
 
     const landCoverTypes = ['Cropland', 'Grassland', 'Forest', 'Shrubland', 'Built-up', 'Barren'];
     const lc2020 = landCoverTypes[Math.abs(Math.floor(seed)) % landCoverTypes.length];
-    const lc2024 = Math.random() > 0.7 ? landCoverTypes[(Math.abs(Math.floor(seed)) + 1) % landCoverTypes.length] : lc2020;
+    const hasChanged = (Math.abs(Math.floor(seed * 100)) % 10) > 7;
+    const lc2024 = hasChanged ? landCoverTypes[(Math.abs(Math.floor(seed)) + 1) % landCoverTypes.length] : lc2020;
 
-    // Drought classification
-    const spi = -2 + Math.random() * 4;
+    // Drought classification - deterministic based on seed
+    const spi = -2 + (Math.abs(seed * 17) % 400) / 100;
     let droughtClass: GEEAnalysis['droughtIndex']['classification'];
     if (spi < -2) droughtClass = 'extreme_drought';
     else if (spi < -1.5) droughtClass = 'severe_drought';
@@ -2958,18 +2964,18 @@ export class GEEAnalyzer {
         year2020: lc2020,
         year2024: lc2024,
         changeType: lc2020 === lc2024 ? 'No change' : `${lc2020} → ${lc2024}`,
-        changePercentage: lc2020 === lc2024 ? 0 : 5 + Math.random() * 25,
+        changePercentage: lc2020 === lc2024 ? 0 : 5 + (Math.abs(seed * 18) % 25),
       },
       droughtIndex: {
         spi,
-        spei: spi + (Math.random() - 0.5) * 0.5,
-        vci: 30 + Math.random() * 60,
+        spei: spi + ((Math.abs(seed * 19) % 50) - 25) / 100,
+        vci: 30 + (Math.abs(seed * 20) % 60),
         classification: droughtClass,
       },
       surfaceWaterDynamics: {
-        permanentWater: Math.random() * 5,
-        seasonalWater: 2 + Math.random() * 15,
-        waterChangeIntensity: Math.random() * 100,
+        permanentWater: (Math.abs(seed * 21) % 50) / 10,
+        seasonalWater: 2 + (Math.abs(seed * 22) % 15),
+        waterChangeIntensity: (Math.abs(seed * 23) % 100),
       },
     };
   }
@@ -3419,17 +3425,17 @@ export class GISIntegrationAnalyzer {
       distanceToRiver: 0.5 + Math.abs(Math.sin(seed)) * 10,
       distanceToLake: 5 + Math.abs(Math.cos(seed)) * 50,
       distanceToWetland: 2 + Math.abs(Math.sin(seed * 2)) * 15,
-      distanceToExistingBorehole: 0.2 + Math.random() * 5,
+      distanceToExistingBorehole: 0.2 + (Math.abs(seed * 24) % 50) / 10,
       landCoverClass: landCoverClasses[Math.abs(Math.floor(seed)) % landCoverClasses.length],
       landUseZone: landUseZones[Math.abs(Math.floor(seed * 1.5)) % landUseZones.length],
-      protectedArea: Math.random() > 0.9,
+      protectedArea: (Math.abs(Math.floor(seed * 25)) % 10) > 8,
       watershedName: watersheds[Math.abs(Math.floor(seed / 10)) % watersheds.length],
       drainageBasin: watersheds[Math.abs(Math.floor(seed / 10)) % watersheds.length],
       streamOrder: 1 + Math.abs(Math.floor(seed)) % 5,
       catchmentArea: 10 + Math.abs(Math.sin(seed)) * 500,
       lineamentDensity: 0.5 + Math.abs(Math.cos(seed)) * 2,
       lineamentIntersections: Math.abs(Math.floor(seed)) % 5,
-      faultProximity: 0.5 + Math.random() * 20,
+      faultProximity: 0.5 + (Math.abs(seed * 26) % 200) / 10,
     };
   }
 }
@@ -3553,15 +3559,16 @@ export class HistoricalDataAnalyzer {
     const boreholes: HistoricalBoreholeData[] = [];
 
     for (let i = 0; i < numBoreholes; i++) {
-      const success = Math.random() > 0.25;
+      const boreholeSeed = seed * (i + 1);
+      const success = (Math.abs(Math.floor(boreholeSeed * 27)) % 100) > 25;
       boreholes.push({
-        distance: 0.5 + Math.random() * radius,
-        depth: 50 + Math.random() * 200,
-        yield: success ? 2 + Math.random() * 15 : 0.5,
+        distance: 0.5 + (Math.abs(boreholeSeed * 28) % (radius * 10)) / 10,
+        depth: 50 + (Math.abs(boreholeSeed * 29) % 200),
+        yield: success ? 2 + (Math.abs(boreholeSeed * 30) % 150) / 10 : 0.5,
         waterQuality: success ?
-          (['excellent', 'good', 'moderate'] as const)[Math.floor(Math.random() * 3)] :
+          (['excellent', 'good', 'moderate'] as const)[Math.abs(Math.floor(boreholeSeed * 31)) % 3] :
           'poor',
-        year: 2015 + Math.floor(Math.random() * 9),
+        year: 2015 + Math.abs(Math.floor(boreholeSeed * 32)) % 9,
         success,
       });
     }
@@ -3964,7 +3971,8 @@ export class AIBoreholeAnalyzer {
     const multiplier = regionData.costMultiplier || 1;
 
     // Generate quotation number
-    const quotationNumber = `AQS-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const seedStr = Math.abs(Math.floor(recommendations.recommendedDepth.optimal * regionData.costMultiplier * 1000)).toString(36).substring(0, 4);
+    const quotationNumber = `AQS-${Date.now().toString(36).toUpperCase()}-${seedStr.toUpperCase()}`;
 
     // Line items with detailed breakdown
     const lineItems: ProfessionalQuotation['lineItems'] = {
@@ -4539,8 +4547,9 @@ export class AIBoreholeAnalyzer {
   }
 
   private generateId(): string {
-    return 'BHA-' + Date.now().toString(36).toUpperCase() + '-' +
-           Math.random().toString(36).substring(2, 6).toUpperCase();
+    const timestamp = Date.now();
+    const suffix = Math.abs(timestamp % 1296).toString(36).padStart(4, '0');
+    return 'BHA-' + timestamp.toString(36).toUpperCase() + '-' + suffix.toUpperCase();
   }
 
   // ============================================================================
@@ -4548,26 +4557,31 @@ export class AIBoreholeAnalyzer {
   // ============================================================================
 
   generatePhotoImageVerification(location: GeoCoordinates, imageData: string): PhotoImageVerification {
+    const lat = location.latitude;
+    const lng = location.longitude;
+    const seed = lat * 100 + lng * 10;
+    const daysAgo = Math.abs(Math.floor(seed * 33)) % 30;
+
     return {
       imageId: 'IMG-' + Date.now().toString(36).toUpperCase(),
       timestamp: new Date(),
       gpsCoordinates: location,
-      altitude: 1200 + Math.random() * 800,
+      altitude: 1200 + getValueInRange(lat, lng, 'altitude-verify', 0, 800),
       satelliteOverlay: {
         source: 'Sentinel2',
-        imageDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        imageDate: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         resolution: '10m',
       },
       verification: {
         locationMatch: true,
-        confidence: 94 + Math.random() * 5,
+        confidence: 94 + getValueInRange(lat, lng, 'verify-confidence', 0, 5),
         nearestLandmark: 'Verified via NASA/Google Earth',
-        distanceToLandmark: Math.random() * 2,
+        distanceToLandmark: getValueInRange(lat, lng, 'landmark-dist', 0, 2),
       },
       nasaEarthData: {
         terrainType: 'Agricultural/Rural',
-        elevationVerified: 1200 + Math.random() * 800,
-        vegetationIndex: 0.3 + Math.random() * 0.5,
+        elevationVerified: 1200 + getValueInRange(lat, lng, 'elev-verify', 0, 800),
+        vegetationIndex: 0.3 + getValueInRange(lat, lng, 'veg-index-verify', 0, 0.5),
       },
     };
   }
@@ -4791,40 +4805,57 @@ export class AIBoreholeAnalyzer {
     const isHighFluoride = regionData.waterQualityNotes?.toLowerCase().includes('fluoride');
     const isCoastal = regionData.geologicalZone?.toLowerCase().includes('coast');
 
+    // Create deterministic seed from region name
+    let seed = 0;
+    const regionName = regionData.region || 'default';
+    for (let i = 0; i < regionName.length; i++) {
+      seed = ((seed << 5) - seed) + regionName.charCodeAt(i);
+      seed |= 0;
+    }
+    seed = Math.abs(seed);
+
+    // Helper function for deterministic values
+    const det = (offset: number, min: number, max: number) => {
+      const range = max - min;
+      return min + ((seed * offset) % (range * 100)) / 100;
+    };
+
+    const hasColiforms = (seed % 10) > 7;
+
     return {
       parameters: {
         // Primary WHO Parameters
-        tds: { predicted: 250 + Math.random() * 300, unit: 'mg/L', limit: 500, status: 'safe' },
-        ph: { predicted: 6.8 + Math.random() * 1.2, unit: '', minLimit: 6.5, maxLimit: 8.5, status: 'safe' },
-        hardness: { predicted: 100 + Math.random() * 200, unit: 'mg/L CaCO3', limit: 300, status: 'safe' },
-        fluoride: { predicted: isHighFluoride ? 2.5 + Math.random() * 2 : 0.5 + Math.random() * 1, unit: 'mg/L', limit: 1.5, status: isHighFluoride ? 'exceed' : 'safe' },
-        iron: { predicted: 0.1 + Math.random() * 0.4, unit: 'mg/L', limit: 0.3, status: 'safe' },
-        arsenic: { predicted: 0.002 + Math.random() * 0.005, unit: 'mg/L', limit: 0.01, status: 'safe' },
-        nitrates: { predicted: 5 + Math.random() * 20, unit: 'mg/L', limit: 45, status: 'safe' },
-        chloride: { predicted: 50 + Math.random() * 100, unit: 'mg/L', limit: 250, status: 'safe' },
-        sulfate: { predicted: 30 + Math.random() * 80, unit: 'mg/L', limit: 250, status: 'safe' },
-        calcium: { predicted: 40 + Math.random() * 80, unit: 'mg/L', limit: 200, status: 'safe' },
-        magnesium: { predicted: 15 + Math.random() * 50, unit: 'mg/L', limit: 150, status: 'safe' },
-        alkalinity: { predicted: 80 + Math.random() * 100, unit: 'mg/L', limit: 200, status: 'safe' },
-        turbidity: { predicted: 0.5 + Math.random() * 2, unit: 'NTU', limit: 5, status: 'safe' },
-        manganese: { predicted: 0.05 + Math.random() * 0.2, unit: 'mg/L', limit: 0.4, status: 'safe' },
-        salinity: { predicted: isCoastal ? 800 + Math.random() * 400 : 200 + Math.random() * 200, unit: 'mg/L', limit: 1000, status: isCoastal ? 'caution' : 'safe' },
+        tds: { predicted: 250 + det(34, 0, 300), unit: 'mg/L', limit: 500, status: 'safe' },
+        ph: { predicted: 6.8 + det(35, 0, 1.2), unit: '', minLimit: 6.5, maxLimit: 8.5, status: 'safe' },
+        hardness: { predicted: 100 + det(36, 0, 200), unit: 'mg/L CaCO3', limit: 300, status: 'safe' },
+        fluoride: { predicted: isHighFluoride ? 2.5 + det(37, 0, 2) : 0.5 + det(37, 0, 1), unit: 'mg/L', limit: 1.5, status: isHighFluoride ? 'exceed' : 'safe' },
+        iron: { predicted: 0.1 + det(38, 0, 0.4), unit: 'mg/L', limit: 0.3, status: 'safe' },
+        arsenic: { predicted: 0.002 + det(39, 0, 0.005), unit: 'mg/L', limit: 0.01, status: 'safe' },
+        nitrates: { predicted: 5 + det(40, 0, 20), unit: 'mg/L', limit: 45, status: 'safe' },
+        chloride: { predicted: 50 + det(41, 0, 100), unit: 'mg/L', limit: 250, status: 'safe' },
+        sulfate: { predicted: 30 + det(42, 0, 80), unit: 'mg/L', limit: 250, status: 'safe' },
+        calcium: { predicted: 40 + det(43, 0, 80), unit: 'mg/L', limit: 200, status: 'safe' },
+        magnesium: { predicted: 15 + det(44, 0, 50), unit: 'mg/L', limit: 150, status: 'safe' },
+        alkalinity: { predicted: 80 + det(45, 0, 100), unit: 'mg/L', limit: 200, status: 'safe' },
+        turbidity: { predicted: 0.5 + det(46, 0, 2), unit: 'NTU', limit: 5, status: 'safe' },
+        manganese: { predicted: 0.05 + det(47, 0, 0.2), unit: 'mg/L', limit: 0.4, status: 'safe' },
+        salinity: { predicted: isCoastal ? 800 + det(48, 0, 400) : 200 + det(48, 0, 200), unit: 'mg/L', limit: 1000, status: isCoastal ? 'caution' : 'safe' },
         // Biological Parameters
         ecoli: { predicted: 0, unit: 'CFU/100ml', limit: 0, status: 'safe' },
-        coliforms: { predicted: Math.random() > 0.8 ? 2 : 0, unit: 'CFU/100ml', limit: 0, status: Math.random() > 0.8 ? 'caution' : 'safe' },
+        coliforms: { predicted: hasColiforms ? 2 : 0, unit: 'CFU/100ml', limit: 0, status: hasColiforms ? 'caution' : 'safe' },
         // Aesthetic Parameters
-        color: { predicted: 2 + Math.random() * 5, unit: 'TCU', limit: 15, status: 'safe' },
+        color: { predicted: 2 + det(49, 0, 5), unit: 'TCU', limit: 15, status: 'safe' },
         odor: { assessment: 'none', acceptable: true },
         taste: { assessment: 'none', acceptable: true },
         bacteria: { risk: 'low', note: 'Deep aquifer typically protected from surface contamination' },
       },
       // 5 Contamination Source Types
       contaminationRisk: {
-        sewageWastewater: { risk: 'low', distance: 500 + Math.random() * 500, direction: 'SW', chemicals: ['ammonia', 'nitrates', 'bacteria'] },
-        factoryIndustrial: { risk: 'low', distance: 2000 + Math.random() * 3000, direction: 'NW', chemicals: ['heavy metals', 'solvents'] },
-        agriculturalRunoff: { risk: 'medium', distance: 200 + Math.random() * 400, direction: 'E', chemicals: ['nitrates', 'pesticides', 'fertilizers'] },
-        landfillLeachate: { risk: 'low', distance: 1500 + Math.random() * 2000, direction: 'N', chemicals: ['ammonia', 'heavy metals', 'organics'] },
-        miningContamination: { risk: 'low', distance: 5000 + Math.random() * 5000, direction: 'NE', chemicals: ['arsenic', 'lead', 'cadmium'] },
+        sewageWastewater: { risk: 'low', distance: 500 + det(50, 0, 500), direction: 'SW', chemicals: ['ammonia', 'nitrates', 'bacteria'] },
+        factoryIndustrial: { risk: 'low', distance: 2000 + det(51, 0, 3000), direction: 'NW', chemicals: ['heavy metals', 'solvents'] },
+        agriculturalRunoff: { risk: 'medium', distance: 200 + det(52, 0, 400), direction: 'E', chemicals: ['nitrates', 'pesticides', 'fertilizers'] },
+        landfillLeachate: { risk: 'low', distance: 1500 + det(53, 0, 2000), direction: 'N', chemicals: ['ammonia', 'heavy metals', 'organics'] },
+        miningContamination: { risk: 'low', distance: 5000 + det(54, 0, 5000), direction: 'NE', chemicals: ['arsenic', 'lead', 'cadmium'] },
         naturalContaminants: isHighFluoride ? 'high' : 'low',
       },
       treatmentRequired: isHighFluoride,
@@ -4931,7 +4962,7 @@ export class AIBoreholeAnalyzer {
       },
       waterTable: {
         staticLevel: regionData.averageWaterTable,
-        seasonalVariation: 5 + Math.random() * 10,
+        seasonalVariation: 5 + (regionData.averageWaterTable % 10),
         trend: 'stable',
       },
       diagramLegend: [
@@ -4998,9 +5029,18 @@ export class AIBoreholeAnalyzer {
   }
 
   generateClimateModeling(regionData: KenyaCountyData): ClimateSeasonalModeling {
+    // Create deterministic seed from region name
+    let seed = 0;
+    const regionName = regionData.region || 'default';
+    for (let i = 0; i < regionName.length; i++) {
+      seed = ((seed << 5) - seed) + regionName.charCodeAt(i);
+      seed |= 0;
+    }
+    seed = Math.abs(seed);
+
     return {
       rainfall: {
-        annualAverage: 800 + Math.random() * 600,
+        annualAverage: 800 + (seed % 600),
         rainySeasons: [
           { name: 'Long Rains', months: 'March-May', avgRainfall: 350 },
           { name: 'Short Rains', months: 'October-December', avgRainfall: 250 },
@@ -5013,10 +5053,10 @@ export class AIBoreholeAnalyzer {
         lastDroughtYear: 2022,
       },
       rechargeAnalysis: {
-        rechargeRate: 50 + Math.random() * 100,
+        rechargeRate: 50 + ((seed * 55) % 100),
         rechargePotential: 'medium',
         primaryRechargeSource: 'Rainfall infiltration',
-        rechargeAreaDistance: 5 + Math.random() * 15,
+        rechargeAreaDistance: 5 + ((seed * 56) % 15),
       },
       seasonalWaterTable: {
         wetSeasonLevel: regionData.averageWaterTable - 5,
@@ -5084,10 +5124,12 @@ export class AIBoreholeAnalyzer {
     historicalCount: number,
     terrainCount: number
   ): ConfidenceMetrics {
-    const geological = { score: 75 + Math.random() * 20, dataSource: 'Kenya Geological Survey + Satellite Analysis', reliability: 'High' };
-    const terrain = { score: 70 + Math.random() * 25, dataSource: 'LiDAR + SRTM DEM', reliability: 'High' };
-    const vegetation = { score: 65 + Math.random() * 25, dataSource: 'Sentinel-2 NDVI/NDWI', reliability: 'Medium-High' };
-    const satellite = { score: 80 + Math.random() * 15, dataSource: 'Sentinel-2, Landsat-8, MODIS', reliability: 'High' };
+    // Use input counts as seed for deterministic variation
+    const seed = vegetationCount * 17 + historicalCount * 23 + terrainCount * 31;
+    const geological = { score: 75 + (seed % 20), dataSource: 'Kenya Geological Survey + Satellite Analysis', reliability: 'High' };
+    const terrain = { score: 70 + ((seed * 2) % 25), dataSource: 'LiDAR + SRTM DEM', reliability: 'High' };
+    const vegetation = { score: 65 + ((seed * 3) % 25), dataSource: 'Sentinel-2 NDVI/NDWI', reliability: 'Medium-High' };
+    const satellite = { score: 80 + ((seed * 4) % 15), dataSource: 'Sentinel-2, Landsat-8, MODIS', reliability: 'High' };
     const historical = { score: historicalCount > 5 ? 85 : historicalCount > 2 ? 70 : 50, dataSource: 'WRA Borehole Database + Local Records', reliability: historicalCount > 5 ? 'High' : 'Medium' };
     const dataDensity = { score: 60 + (vegetationCount + historicalCount + terrainCount) * 3, nearbyDataPoints: historicalCount, reliability: historicalCount > 3 ? 'High' : 'Medium' };
 
@@ -5145,20 +5187,27 @@ export class AIBoreholeAnalyzer {
   }
 
   generateNearbyBoreholeMap(location: GeoCoordinates, historicalData: HistoricalBoreholeData[]): NearbyBoreholeMapData {
-    const boreholes = historicalData.map((bh, index) => ({
-      id: `BH-${index + 1}`,
-      coordinates: {
-        latitude: location.latitude + (Math.random() - 0.5) * 0.05,
-        longitude: location.longitude + (Math.random() - 0.5) * 0.05,
-      },
-      distance: bh.distance,
-      depth: bh.depth,
-      yield: bh.yield,
-      successRate: bh.success ? 100 : 0,
-      waterQuality: bh.waterQuality,
-      year: bh.year,
-      status: bh.success ? 'active' as const : 'abandoned' as const,
-    }));
+    const boreholes = historicalData.map((bh, index) => {
+      // Deterministic offset based on index and location
+      const seed = location.latitude * 100 + location.longitude * 10 + index * 7;
+      const latOffset = ((Math.sin(seed * 0.1) * 0.025));
+      const lngOffset = ((Math.cos(seed * 0.1) * 0.025));
+
+      return {
+        id: `BH-${index + 1}`,
+        coordinates: {
+          latitude: location.latitude + latOffset,
+          longitude: location.longitude + lngOffset,
+        },
+        distance: bh.distance,
+        depth: bh.depth,
+        yield: bh.yield,
+        successRate: bh.success ? 100 : 0,
+        waterQuality: bh.waterQuality,
+        year: bh.year,
+        status: bh.success ? 'active' as const : 'abandoned' as const,
+      };
+    });
 
     return {
       boreholes,
@@ -5184,6 +5233,18 @@ export class AIBoreholeAnalyzer {
 
   generateGLDASAnalysis(location: GeoCoordinates, regionData: KenyaCountyData): GLDASGroundwaterAnalysis {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const lat = location.latitude;
+    const lng = location.longitude;
+    const seed = lat * 100 + lng * 10;
+
+    // Deterministic helper
+    const det = (offset: number, min: number, max: number) => {
+      const range = max - min;
+      return min + (Math.abs(seed * offset) % (range * 100)) / 100;
+    };
+
+    const trendTypes: ('stable' | 'decreasing')[] = ['stable', 'decreasing'];
+    const trendIndex = Math.abs(Math.floor(seed * 57)) % 2;
 
     return {
       datasetInfo: {
@@ -5193,44 +5254,44 @@ export class AIBoreholeAnalyzer {
         lastUpdate: new Date().toISOString().split('T')[0],
       },
       groundwaterStorage: {
-        currentLevel: 180 + Math.random() * 100,
+        currentLevel: 180 + det(58, 0, 100),
         monthlyAverage: 200,
         annualAverage: 195,
-        trend: Math.random() > 0.5 ? 'stable' : 'decreasing',
-        anomaly: -5 + Math.random() * 20,
-        percentile: 45 + Math.random() * 30,
+        trend: trendTypes[trendIndex],
+        anomaly: -5 + det(59, 0, 20),
+        percentile: 45 + det(60, 0, 30),
       },
       soilMoisture: {
-        layer0_10cm: { value: 15 + Math.random() * 20, status: 'normal' },
-        layer10_40cm: { value: 20 + Math.random() * 15, status: 'normal' },
-        layer40_100cm: { value: 25 + Math.random() * 15, status: 'wet' },
-        layer100_200cm: { value: 30 + Math.random() * 10, status: 'wet' },
-        rootZoneMoisture: 22 + Math.random() * 10,
+        layer0_10cm: { value: 15 + det(61, 0, 20), status: 'normal' },
+        layer10_40cm: { value: 20 + det(62, 0, 15), status: 'normal' },
+        layer40_100cm: { value: 25 + det(63, 0, 15), status: 'wet' },
+        layer100_200cm: { value: 30 + det(64, 0, 10), status: 'wet' },
+        rootZoneMoisture: 22 + det(65, 0, 10),
       },
       evapotranspiration: {
-        actual: 3 + Math.random() * 2,
-        potential: 5 + Math.random() * 2,
-        ratio: 0.6 + Math.random() * 0.3,
-        monthlyTotal: 90 + Math.random() * 40,
+        actual: 3 + det(66, 0, 2),
+        potential: 5 + det(67, 0, 2),
+        ratio: 0.6 + det(68, 0, 0.3),
+        monthlyTotal: 90 + det(69, 0, 40),
       },
       runoff: {
-        surface: 5 + Math.random() * 10,
-        subsurface: 10 + Math.random() * 15,
-        total: 15 + Math.random() * 20,
-        infiltrationRate: 20 + Math.random() * 30,
+        surface: 5 + det(70, 0, 10),
+        subsurface: 10 + det(71, 0, 15),
+        total: 15 + det(72, 0, 20),
+        infiltrationRate: 20 + det(73, 0, 30),
       },
       snowWaterEquivalent: 0,
       monthlyTimeSeries: months.map((month, i) => ({
         month,
-        groundwaterStorage: 150 + Math.sin(i / 2) * 50 + Math.random() * 20,
-        soilMoisture: 20 + Math.sin((i + 3) / 2) * 15 + Math.random() * 5,
-        precipitation: i >= 2 && i <= 4 ? 150 + Math.random() * 100 : (i >= 9 && i <= 11 ? 80 + Math.random() * 60 : 20 + Math.random() * 30),
-        evapotranspiration: 80 + Math.random() * 40,
+        groundwaterStorage: 150 + Math.sin(i / 2) * 50 + (Math.abs(seed * (i + 74)) % 20),
+        soilMoisture: 20 + Math.sin((i + 3) / 2) * 15 + (Math.abs(seed * (i + 75)) % 5),
+        precipitation: i >= 2 && i <= 4 ? 150 + (Math.abs(seed * (i + 76)) % 100) : (i >= 9 && i <= 11 ? 80 + (Math.abs(seed * (i + 77)) % 60) : 20 + (Math.abs(seed * (i + 78)) % 30)),
+        evapotranspiration: 80 + (Math.abs(seed * (i + 79)) % 40),
       })),
       rechargeIndicators: {
-        estimatedRecharge: 50 + Math.random() * 100,
-        rechargeEfficiency: 10 + Math.random() * 20,
-        rechargeZoneProximity: 2 + Math.random() * 8,
+        estimatedRecharge: 50 + det(80, 0, 100),
+        rechargeEfficiency: 10 + det(81, 0, 20),
+        rechargeZoneProximity: 2 + det(82, 0, 8),
         aquiferVulnerability: regionData.averageWaterTable < 50 ? 'high' : regionData.averageWaterTable < 100 ? 'moderate' : 'low',
       },
     };
@@ -5277,13 +5338,13 @@ export class AIBoreholeAnalyzer {
       },
       chemicalProperties: {
         ph: { value: isVolcanic ? 6.2 : 6.8, classification: 'neutral' },
-        electricalConductivity: 0.3 + Math.random() * 0.4,
-        organicCarbon: 2 + Math.random() * 2,
+        electricalConductivity: 0.3 + getValueInRange(location.latitude, location.longitude, 'soil-ec', 0, 0.4),
+        organicCarbon: 2 + getValueInRange(location.latitude, location.longitude, 'soil-oc', 0, 2),
         cationExchangeCapacity: isVolcanic ? 15 : isClay ? 45 : 25,
-        basesSaturation: 60 + Math.random() * 20,
-        nitrogenContent: 0.15 + Math.random() * 0.1,
-        phosphorusContent: 10 + Math.random() * 20,
-        potassiumContent: 0.5 + Math.random() * 0.5,
+        basesSaturation: 60 + getValueInRange(location.latitude, location.longitude, 'soil-bs', 0, 20),
+        nitrogenContent: 0.15 + getValueInRange(location.latitude, location.longitude, 'soil-n', 0, 0.1),
+        phosphorusContent: 10 + getValueInRange(location.latitude, location.longitude, 'soil-p', 0, 20),
+        potassiumContent: 0.5 + getValueInRange(location.latitude, location.longitude, 'soil-k', 0, 0.5),
       },
       depthProfile: [
         { horizon: 'A (Topsoil)', depthFrom: 0, depthTo: 30, color: '#4A3728', texture: 'Loam', structure: 'Granular', rootDensity: 'abundant', waterBearing: false },
@@ -5310,17 +5371,20 @@ export class AIBoreholeAnalyzer {
   generateWeatherAnalysis(location: GeoCoordinates, regionData: KenyaCountyData): WeatherAnalysis {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const isHighland = regionData.averageWaterTable < 60;
+    const lat = location.latitude;
+    const lng = location.longitude;
+    const windDirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
     return {
       currentConditions: {
-        temperature: isHighland ? 18 + Math.random() * 8 : 25 + Math.random() * 8,
-        humidity: 50 + Math.random() * 30,
-        pressure: 1013 + Math.random() * 10,
-        windSpeed: 5 + Math.random() * 15,
-        windDirection: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)],
-        cloudCover: Math.random() * 60,
-        visibility: 8 + Math.random() * 12,
-        uvIndex: 6 + Math.random() * 5,
+        temperature: isHighland ? 18 + getValueInRange(lat, lng, 'temp-h', 0, 8) : 25 + getValueInRange(lat, lng, 'temp-l', 0, 8),
+        humidity: 50 + getValueInRange(lat, lng, 'humidity', 0, 30),
+        pressure: 1013 + getValueInRange(lat, lng, 'pressure', 0, 10),
+        windSpeed: 5 + getValueInRange(lat, lng, 'wind-speed', 0, 15),
+        windDirection: selectFromArray(lat, lng, 'wind-dir', windDirs),
+        cloudCover: getValueInRange(lat, lng, 'cloud', 0, 60),
+        visibility: 8 + getValueInRange(lat, lng, 'visibility', 0, 12),
+        uvIndex: 6 + getValueInRange(lat, lng, 'uv', 0, 5),
         weatherDescription: 'Partly Cloudy',
         weatherIcon: '⛅',
       },
@@ -5335,16 +5399,16 @@ export class AIBoreholeAnalyzer {
       rainfallAnalysis: {
         monthlyData: months.map((month, i) => ({
           month,
-          rainfall: i >= 2 && i <= 4 ? 150 + Math.random() * 100 : (i >= 9 && i <= 11 ? 80 + Math.random() * 60 : 20 + Math.random() * 30),
-          rainyDays: i >= 2 && i <= 4 ? 15 + Math.floor(Math.random() * 10) : (i >= 9 && i <= 11 ? 10 + Math.floor(Math.random() * 8) : 2 + Math.floor(Math.random() * 5)),
+          rainfall: i >= 2 && i <= 4 ? 150 + getIntInRange(lat, lng, `rain-${i}`, 0, 100) : (i >= 9 && i <= 11 ? 80 + getIntInRange(lat, lng, `rain-${i}`, 0, 60) : 20 + getIntInRange(lat, lng, `rain-${i}`, 0, 30)),
+          rainyDays: i >= 2 && i <= 4 ? 15 + getIntInRange(lat, lng, `days-${i}`, 0, 10) : (i >= 9 && i <= 11 ? 10 + getIntInRange(lat, lng, `days-${i}`, 0, 8) : 2 + getIntInRange(lat, lng, `days-${i}`, 0, 5)),
           intensity: i >= 2 && i <= 4 ? 'heavy' : (i >= 9 && i <= 11 ? 'moderate' : 'light'),
         })),
         annualTotal: isHighland ? 1200 : 800,
-        longRainsTotal: 400 + Math.random() * 200,
-        shortRainsTotal: 200 + Math.random() * 100,
+        longRainsTotal: 400 + getIntInRange(lat, lng, 'long-rains', 0, 200),
+        shortRainsTotal: 200 + getIntInRange(lat, lng, 'short-rains', 0, 100),
         droughtRisk: isHighland ? 'low' : 'moderate',
         lastDroughtYear: 2022,
-        reliabilityIndex: 65 + Math.random() * 20,
+        reliabilityIndex: 65 + getIntInRange(lat, lng, 'rain-reliability', 0, 20),
       },
       temperaturePatterns: {
         monthlyData: months.map((month, i) => ({
@@ -5359,8 +5423,8 @@ export class AIBoreholeAnalyzer {
         frostRisk: isHighland && regionData.region.includes('Nyandarua'),
       },
       waterBalance: {
-        monthlyEvaporation: months.map(() => 100 + Math.random() * 50),
-        annualEvaporation: 1400 + Math.random() * 200,
+        monthlyEvaporation: months.map((_, i) => 100 + getIntInRange(lat, lng, `evap-${i}`, 0, 50)),
+        annualEvaporation: 1400 + getIntInRange(lat, lng, 'annual-evap', 0, 200),
         potentialEvapotranspiration: 1500,
         waterDeficit: isHighland ? 200 : 600,
         waterSurplus: isHighland ? 400 : 50,
@@ -5393,15 +5457,15 @@ export class AIBoreholeAnalyzer {
         satellite: {
           url: `https://earthengine.googleapis.com/v1/projects/earthengine-public/maps/COPERNICUS_S2_SR/${location.latitude},${location.longitude}`,
           source: 'Sentinel2',
-          date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          cloudCover: 5 + Math.random() * 15,
+          date: new Date(Date.now() - getIntInRange(location.latitude, location.longitude, 'sat-days', 1, 30) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          cloudCover: 5 + getValueInRange(location.latitude, location.longitude, 'sat-cloud', 0, 15),
         },
         elevation: {
-          minElevation: 1200 + Math.random() * 300,
-          maxElevation: 1500 + Math.random() * 500,
+          minElevation: 1200 + getIntInRange(location.latitude, location.longitude, 'elev-min', 0, 300),
+          maxElevation: 1500 + getIntInRange(location.latitude, location.longitude, 'elev-max', 0, 500),
           contourInterval: 20,
-          slope: 2 + Math.random() * 8,
-          aspect: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)],
+          slope: 2 + getValueInRange(location.latitude, location.longitude, 'slope', 0, 8),
+          aspect: selectFromArray(location.latitude, location.longitude, 'aspect', ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),
         },
         landUse: [
           { type: 'Agriculture', percentage: 45, color: '#90EE90' },
@@ -5419,11 +5483,11 @@ export class AIBoreholeAnalyzer {
         },
         hydrology: {
           rivers: [
-            { name: 'Seasonal Stream 1', distance: 0.5 + Math.random() * 2, flow: 'Intermittent' },
-            { name: 'River ' + regionData.region, distance: 2 + Math.random() * 5, flow: 'Perennial' },
+            { name: 'Seasonal Stream 1', distance: 0.5 + getValueInRange(location.latitude, location.longitude, 'stream-dist', 0, 2), flow: 'Intermittent' },
+            { name: 'River ' + regionData.region, distance: 2 + getValueInRange(location.latitude, location.longitude, 'river-dist', 0, 5), flow: 'Perennial' },
           ],
           lakes: [],
-          wetlands: Math.random() > 0.7 ? [{ name: 'Local Wetland', distance: 1 + Math.random() * 3, type: 'Seasonal' }] : [],
+          wetlands: getBooleanWithProbability(location.latitude, location.longitude, 'has-wetland', 0.3) ? [{ name: 'Local Wetland', distance: 1 + getValueInRange(location.latitude, location.longitude, 'wetland-dist2', 0, 3), type: 'Seasonal' }] : [],
           watershedBoundary: [
             { latitude: location.latitude + 0.015, longitude: location.longitude - 0.01 },
             { latitude: location.latitude + 0.01, longitude: location.longitude + 0.015 },
@@ -5449,13 +5513,13 @@ export class AIBoreholeAnalyzer {
         constituency: regionData.region + ' Constituency',
       },
       statistics: {
-        totalArea: 4 + Math.random() * 2,
-        cultivatedArea: 1.5 + Math.random(),
-        forestArea: 0.3 + Math.random() * 0.5,
-        builtUpArea: 0.5 + Math.random() * 0.3,
-        waterBodies: 0.1 + Math.random() * 0.1,
-        averageElevation: 1350 + Math.random() * 300,
-        populationDensity: 200 + Math.random() * 300,
+        totalArea: 4 + getValueInRange(location.latitude, location.longitude, 'total-area', 0, 2),
+        cultivatedArea: 1.5 + getValueInRange(location.latitude, location.longitude, 'cult-area', 0, 1),
+        forestArea: 0.3 + getValueInRange(location.latitude, location.longitude, 'forest-area', 0, 0.5),
+        builtUpArea: 0.5 + getValueInRange(location.latitude, location.longitude, 'built-area', 0, 0.3),
+        waterBodies: 0.1 + getValueInRange(location.latitude, location.longitude, 'water-area', 0, 0.1),
+        averageElevation: 1350 + getIntInRange(location.latitude, location.longitude, 'avg-elev', 0, 300),
+        populationDensity: 200 + getIntInRange(location.latitude, location.longitude, 'pop-density', 0, 300),
       },
       legend: [
         { item: 'Proposed Site', color: '#FF0000', description: 'Your borehole location' },
