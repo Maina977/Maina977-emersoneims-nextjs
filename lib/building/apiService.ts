@@ -416,6 +416,28 @@ class BuildingAPIService {
       body: JSON.stringify(params),
     });
   }
+
+  // ===========================================================================
+  // Comprehensive Report - ALL 10 OUTPUTS (FREE)
+  // ===========================================================================
+
+  async generateComprehensiveReport(params: {
+    description: string;
+    bedrooms: number;
+    bathrooms: number;
+    floors: number;
+    totalArea: number;
+    style: string;
+    location?: string;
+    coordinates?: { lat: number; lng: number };
+    clientName?: string;
+    currency?: string;
+  }): Promise<any> {
+    return this.fetch('/api/building/comprehensive-report', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
 }
 
 // =============================================================================
