@@ -505,12 +505,27 @@ export default function ProBuildingSuiteComplete() {
 
   // Get current location
   const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    const btn = document.getElementById('buildingLocationBtn');
+    if (btn) btn.textContent = '📍 Getting Location...';
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        console.log('[Building Suite] GPS Location obtained:', pos.coords);
+        if (btn) btn.textContent = '✅ Location Set!';
+        setTimeout(() => { if (btn) btn.textContent = '🎯 Use My Current GPS Location'; }, 2000);
+        console.log('[Building Suite] GPS Location:', pos.coords);
       },
-      (err) => alert('Could not get location. Please enable location services.')
+      (error) => {
+        if (btn) btn.textContent = '🎯 Use My Current GPS Location';
+        if (error.code === 1) alert('Location access denied. Please allow location in browser settings.');
+        else if (error.code === 2) alert('Location unavailable. Please try again.');
+        else alert('Location request timed out. Please try again.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   };
 
@@ -968,11 +983,12 @@ export default function ProBuildingSuiteComplete() {
                     )}
                   </div>
                   <button
+                    id="buildingLocationBtn"
                     onClick={getCurrentLocation}
-                    className="w-full mt-4 py-3 bg-emerald-500/20 border border-emerald-500/50 rounded-xl text-emerald-400 font-medium hover:bg-emerald-500/30 transition-all flex items-center justify-center gap-2"
+                    className="w-full mt-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white font-bold hover:from-emerald-400 hover:to-teal-400 transition-all flex items-center justify-center gap-2"
                   >
                     <MapPin className="w-5 h-5" />
-                    Use My Current GPS Location
+                    🎯 Use My Current GPS Location
                   </button>
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>

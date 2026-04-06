@@ -841,27 +841,49 @@ export default function AquaScanProComplete() {
               </div>
               <button
                 onClick={() => {
+                  if (!navigator.geolocation) {
+                    alert('Geolocation is not supported by your browser');
+                    return;
+                  }
+                  // Show loading feedback
+                  const btn = document.getElementById('locationBtn');
+                  if (btn) btn.textContent = '📍 Getting Location...';
+
                   navigator.geolocation.getCurrentPosition(
                     (pos) => {
                       const newLoc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
                       setLocation(newLoc);
-                      // Also run analysis if image is already uploaded
-                      if (imageData && analyzerRef.current) {
-                        runAnalysis();
+                      if (btn) btn.textContent = '✅ Location Set!';
+                      setTimeout(() => {
+                        if (btn) btn.textContent = '🎯 Use My Current Location';
+                      }, 2000);
+                      console.log('[AquaScan] GPS Location:', newLoc);
+                    },
+                    (error) => {
+                      if (btn) btn.textContent = '🎯 Use My Current Location';
+                      if (error.code === 1) {
+                        alert('Location access denied. Please allow location access in your browser settings.');
+                      } else if (error.code === 2) {
+                        alert('Location unavailable. Please try again.');
+                      } else {
+                        alert('Location request timed out. Please try again.');
                       }
                     },
-                    () => alert('Could not get location. Please enable location services.')
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
                   );
                 }}
+                id="locationBtn"
                 style={{
                   width: '100%',
                   marginTop: '16px',
-                  background: 'transparent',
-                  border: '1px solid #0EA5E9',
-                  color: '#0EA5E9',
-                  padding: '10px',
-                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)',
+                  border: 'none',
+                  color: 'white',
+                  padding: '14px',
+                  borderRadius: '12px',
                   cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '16px',
                 }}
               >
                 🎯 Use My Current Location
