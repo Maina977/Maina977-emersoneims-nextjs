@@ -5,7 +5,7 @@
   "framework": "nextjs",
   "regions": ["cpt1"],
   "git": {
-    "deploymentEnabled": false
+    "deploymentEnabled": true
   },
   "functions": {
     "app/sitemap.xml/route.ts": {
