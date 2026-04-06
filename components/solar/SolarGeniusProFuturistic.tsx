@@ -748,26 +748,28 @@ export default function SolarGeniusProFuturistic() {
                 Start AI Quote
               </button>
 
-              <button
+              <a
+                href="/solar-design-studio"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
                   padding: '16px 32px',
                   borderRadius: '14px',
-                  border: '2px solid rgba(71, 85, 105, 0.5)',
-                  background: 'rgba(15, 23, 42, 0.6)',
+                  border: '2px solid rgba(16, 185, 129, 0.5)',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2))',
                   backdropFilter: 'blur(10px)',
-                  color: 'white',
+                  color: '#10b981',
                   fontSize: '16px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
+                  textDecoration: 'none',
                 }}
               >
-                <Play size={20} />
-                Watch Demo
-              </button>
+                <Grid size={20} />
+                Design Studio
+              </a>
             </div>
 
             {/* Quick Stats */}
