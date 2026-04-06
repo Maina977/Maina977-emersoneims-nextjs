@@ -419,6 +419,7 @@ const PieChartComponent: React.FC<{
 export default function SolarGeniusProComplete() {
   // Mode
   const [mode, setMode] = useState<'input' | 'processing' | 'results'>('input');
+  const [error, setError] = useState<string | null>(null);
 
   // Input state
   const [countryCode, setCountryCode] = useState('KE');
@@ -495,9 +496,11 @@ export default function SolarGeniusProComplete() {
 
   // Generate quotation with REAL API CALLS
   const generateQuotation = useCallback(async () => {
+    setError(null);
     setMode('processing');
     setProgress(0);
 
+    try {
     // Initialize engine statuses
     const statuses: Record<string, 'pending' | 'running' | 'complete'> = {};
     AI_ENGINES.forEach(e => { statuses[e.id] = 'pending'; });
@@ -647,6 +650,11 @@ export default function SolarGeniusProComplete() {
 
     setQuotation(result);
     setMode('results');
+    } catch (err) {
+      console.error('[SolarGenius] Error:', err);
+      setError('Generation failed. Please try again.');
+      setMode('input');
+    }
   }, [coordinates, systemType, monthlyBill, roofArea, backupHours, countryCode, panelBrand, inverterBrand, batteryBrand]);
 
   const resetAll = () => {

@@ -873,6 +873,41 @@ export default function AquaScanProComplete() {
             >
               {imageData ? '🚀 ANALYZE WITH 115 AI TOOLS' : '📸 Upload Photo to Begin'}
             </button>
+
+            {/* Error Display */}
+            {error && (
+              <div style={{
+                marginTop: '16px',
+                padding: '16px',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                borderRadius: '12px',
+                color: '#FCA5A5',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+              }}>
+                <span style={{ fontSize: '20px' }}>⚠️</span>
+                <div>
+                  <strong style={{ display: 'block', marginBottom: '4px' }}>Analysis Error</strong>
+                  {error}
+                </div>
+                <button
+                  onClick={() => setError(null)}
+                  style={{
+                    marginLeft: 'auto',
+                    background: 'none',
+                    border: 'none',
+                    color: '#FCA5A5',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right Column - AI Tools Showcase */}
