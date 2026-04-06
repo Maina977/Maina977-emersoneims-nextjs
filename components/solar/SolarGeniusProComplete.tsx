@@ -436,6 +436,17 @@ export default function SolarGeniusProComplete() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Auto-detect location on load
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {},
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+  }, []);
+
   // Handle file upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -455,29 +466,6 @@ export default function SolarGeniusProComplete() {
     }
   };
 
-  // GPS state
-  const [gpsStatus, setGpsStatus] = useState<'idle' | 'loading' | 'success'>('idle');
-
-  // Get current location
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation not supported');
-      return;
-    }
-    setGpsStatus('loading');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGpsStatus('success');
-        setTimeout(() => setGpsStatus('idle'), 2000);
-      },
-      (error) => {
-        setGpsStatus('idle');
-        alert(error.code === 1 ? 'Location denied. Allow in browser.' : 'Location failed.');
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  };
 
   // Processing state
   const [progress, setProgress] = useState(0);
@@ -736,19 +724,7 @@ export default function SolarGeniusProComplete() {
                     </div>
                   )}
                 </div>
-                <button
-                  onClick={getCurrentLocation}
-                  disabled={gpsStatus === 'loading'}
-                  className={`w-full mt-4 py-3 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-2 ${
-                    gpsStatus === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
-                    gpsStatus === 'loading' ? 'bg-gradient-to-r from-yellow-500 to-amber-500 cursor-wait' :
-                    'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400'
-                  }`}
-                >
-                  <MapPin className="w-5 h-5" />
-                  {gpsStatus === 'loading' ? '📍 Getting Location...' : gpsStatus === 'success' ? '✅ Location Set!' : '🎯 Use My Current GPS Location'}
-                </button>
-              </div>
+                              </div>
 
               <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
