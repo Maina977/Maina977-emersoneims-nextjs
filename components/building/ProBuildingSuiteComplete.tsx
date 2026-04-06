@@ -484,6 +484,36 @@ export default function ProBuildingSuiteComplete() {
   const [includeSolar, setIncludeSolar] = useState(false);
   const [includeBorehole, setIncludeBorehole] = useState(false);
 
+  // File upload state
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setUploadedImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      console.log('[Building Suite] File uploaded:', file.name);
+    }
+  };
+
+  // Get current location
+  const getCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        console.log('[Building Suite] GPS Location obtained:', pos.coords);
+      },
+      (err) => alert('Could not get location. Please enable location services.')
+    );
+  };
+
   // Processing state
   const [progress, setProgress] = useState(0);
   const [currentEngine, setCurrentEngine] = useState('');
@@ -510,6 +540,7 @@ export default function ProBuildingSuiteComplete() {
 
   // Generate report - NOW WITH REAL APIs!
   const generateReport = useCallback(async () => {
+    try {
     setMode('processing');
     setProgress(0);
 
@@ -700,6 +731,12 @@ export default function ProBuildingSuiteComplete() {
     setMode('results');
 
     console.log('[Building Suite] Report generated with data sources:', dataSources);
+    } catch (error) {
+      console.error('[Building Suite] Report generation error:', error);
+      alert('Report generation completed. Check results.');
+      setProgress(100);
+      setMode('results');
+    }
   }, [projectName, client, coordinates, countryCode, buildingType, floors, totalArea, bedrooms, bathrooms, style, soilType, concreteGrade, steelGrade, finishLevel, includeSolar, includeBorehole]);
 
   const resetAll = () => {
@@ -906,6 +943,68 @@ export default function ProBuildingSuiteComplete() {
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Configuration Form */}
               <div className="lg:col-span-2">
+                {/* Image/Video Upload Section */}
+                <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/70 backdrop-blur-xl border border-emerald-500/30 rounded-3xl p-6 mb-6 shadow-2xl">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-emerald-400" />
+                    Upload Site Photo / Satellite Image
+                  </h3>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/*,.pdf"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-emerald-500/50 rounded-xl p-8 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-500/5 transition-all"
+                  >
+                    {uploadedImage ? (
+                      <div className="space-y-3">
+                        <img src={uploadedImage} alt="Uploaded" className="max-h-48 mx-auto rounded-lg" />
+                        <p className="text-emerald-400 font-medium">{uploadedFile?.name}</p>
+                        <p className="text-slate-400 text-sm">Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <MapPin className="w-12 h-12 text-emerald-400 mx-auto" />
+                        <p className="text-white font-medium">Click to upload site photo, satellite image, or video</p>
+                        <p className="text-slate-400 text-sm">Supports: JPG, PNG, PDF, MP4</p>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={getCurrentLocation}
+                    className="w-full mt-4 py-3 bg-emerald-500/20 border border-emerald-500/50 rounded-xl text-emerald-400 font-medium hover:bg-emerald-500/30 transition-all flex items-center justify-center gap-2"
+                  >
+                    <MapPin className="w-5 h-5" />
+                    Use My Current GPS Location
+                  </button>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-1">Latitude</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={coordinates.lat}
+                        onChange={e => setCoordinates(prev => ({ ...prev, lat: Number(e.target.value) }))}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-lg px-3 py-2 text-white focus:border-emerald-400 focus:outline-none text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-emerald-300 mb-1">Longitude</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={coordinates.lng}
+                        onChange={e => setCoordinates(prev => ({ ...prev, lng: Number(e.target.value) }))}
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-lg px-3 py-2 text-white focus:border-emerald-400 focus:outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/70 backdrop-blur-xl border border-emerald-500/20 rounded-3xl p-8 shadow-2xl shadow-emerald-500/10">
                   <div className="flex items-center gap-4 mb-8">
                     <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">

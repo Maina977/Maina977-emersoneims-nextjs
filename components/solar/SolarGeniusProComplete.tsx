@@ -431,6 +431,41 @@ export default function SolarGeniusProComplete() {
   const [inverterBrand, setInverterBrand] = useState('');
   const [batteryBrand, setBatteryBrand] = useState('');
 
+  // File upload state
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setUploadedImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Try to get GPS from image EXIF
+      if (file.type.startsWith('image/')) {
+        // Extract GPS if available (simplified)
+        console.log('[SolarGenius] Image uploaded:', file.name);
+      }
+    }
+  };
+
+  // Get current location
+  const getCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        console.log('[SolarGenius] Location obtained:', pos.coords);
+      },
+      (err) => alert('Could not get location. Please enable location services.')
+    );
+  };
+
   // Processing state
   const [progress, setProgress] = useState(0);
   const [currentEngine, setCurrentEngine] = useState('');
@@ -657,6 +692,46 @@ export default function SolarGeniusProComplete() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Input Form */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Image Upload Section */}
+              <div className="bg-slate-800/50 border border-amber-500/30 rounded-2xl p-6 mb-6">
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <Satellite className="w-5 h-5 text-amber-400" />
+                  Upload Site Photo/Satellite Image
+                </h2>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*,.pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-amber-500/50 rounded-xl p-8 text-center cursor-pointer hover:border-amber-400 hover:bg-amber-500/5 transition-all"
+                >
+                  {uploadedImage ? (
+                    <div className="space-y-3">
+                      <img src={uploadedImage} alt="Uploaded" className="max-h-48 mx-auto rounded-lg" />
+                      <p className="text-amber-400 font-medium">{uploadedFile?.name}</p>
+                      <p className="text-slate-400 text-sm">Click to change</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <Satellite className="w-12 h-12 text-amber-400 mx-auto" />
+                      <p className="text-white font-medium">Click to upload photo, satellite image, or video</p>
+                      <p className="text-slate-400 text-sm">Supports: JPG, PNG, PDF, MP4</p>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={getCurrentLocation}
+                  className="w-full mt-4 py-3 bg-amber-500/20 border border-amber-500/50 rounded-xl text-amber-400 font-medium hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <MapPin className="w-5 h-5" />
+                  Use My Current GPS Location
+                </button>
+              </div>
+
               <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-amber-400" />

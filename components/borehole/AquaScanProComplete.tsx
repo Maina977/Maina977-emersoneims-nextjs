@@ -842,8 +842,15 @@ export default function AquaScanProComplete() {
               <button
                 onClick={() => {
                   navigator.geolocation.getCurrentPosition(
-                    (pos) => setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-                    () => alert('Could not get location')
+                    (pos) => {
+                      const newLoc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+                      setLocation(newLoc);
+                      // Also run analysis if image is already uploaded
+                      if (imageData && analyzerRef.current) {
+                        runAnalysis();
+                      }
+                    },
+                    () => alert('Could not get location. Please enable location services.')
                   );
                 }}
                 style={{
