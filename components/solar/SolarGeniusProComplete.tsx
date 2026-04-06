@@ -455,29 +455,27 @@ export default function SolarGeniusProComplete() {
     }
   };
 
+  // GPS state
+  const [gpsStatus, setGpsStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+
   // Get current location
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      alert('Geolocation not supported');
       return;
     }
-    const btn = document.getElementById('solarLocationBtn');
-    if (btn) btn.textContent = '📍 Getting Location...';
-
+    setGpsStatus('loading');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        if (btn) btn.textContent = '✅ Location Set!';
-        setTimeout(() => { if (btn) btn.textContent = '🎯 Use My Current GPS Location'; }, 2000);
-        console.log('[SolarGenius] GPS Location:', pos.coords);
+        setGpsStatus('success');
+        setTimeout(() => setGpsStatus('idle'), 2000);
       },
       (error) => {
-        if (btn) btn.textContent = '🎯 Use My Current GPS Location';
-        if (error.code === 1) alert('Location access denied. Please allow location in browser settings.');
-        else if (error.code === 2) alert('Location unavailable. Please try again.');
-        else alert('Location request timed out. Please try again.');
+        setGpsStatus('idle');
+        alert(error.code === 1 ? 'Location denied. Allow in browser.' : 'Location failed.');
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
@@ -739,12 +737,16 @@ export default function SolarGeniusProComplete() {
                   )}
                 </div>
                 <button
-                  id="solarLocationBtn"
                   onClick={getCurrentLocation}
-                  className="w-full mt-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl text-white font-bold hover:from-amber-400 hover:to-orange-400 transition-all flex items-center justify-center gap-2"
+                  disabled={gpsStatus === 'loading'}
+                  className={`w-full mt-4 py-3 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-2 ${
+                    gpsStatus === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                    gpsStatus === 'loading' ? 'bg-gradient-to-r from-yellow-500 to-amber-500 cursor-wait' :
+                    'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400'
+                  }`}
                 >
                   <MapPin className="w-5 h-5" />
-                  🎯 Use My Current GPS Location
+                  {gpsStatus === 'loading' ? '📍 Getting Location...' : gpsStatus === 'success' ? '✅ Location Set!' : '🎯 Use My Current GPS Location'}
                 </button>
               </div>
 

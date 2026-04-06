@@ -197,6 +197,7 @@ export default function AquaScanProComplete() {
   // SITE AUTO-DETECTION STATE
   const [detectedSite, setDetectedSite] = useState<DetectedSite | null>(null);
   const [isDetectingSite, setIsDetectingSite] = useState(false);
+  const [gpsStatus, setGpsStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   // Refs
   const analyzerRef = useRef<AIBoreholeAnalyzer | null>(null);
@@ -845,48 +846,40 @@ export default function AquaScanProComplete() {
                     alert('Geolocation is not supported by your browser');
                     return;
                   }
-                  // Show loading feedback
-                  const btn = document.getElementById('locationBtn');
-                  if (btn) btn.textContent = '📍 Getting Location...';
-
+                  setGpsStatus('loading');
                   navigator.geolocation.getCurrentPosition(
                     (pos) => {
-                      const newLoc = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
-                      setLocation(newLoc);
-                      if (btn) btn.textContent = '✅ Location Set!';
-                      setTimeout(() => {
-                        if (btn) btn.textContent = '🎯 Use My Current Location';
-                      }, 2000);
-                      console.log('[AquaScan] GPS Location:', newLoc);
+                      setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+                      setGpsStatus('success');
+                      setTimeout(() => setGpsStatus('idle'), 2000);
                     },
                     (error) => {
-                      if (btn) btn.textContent = '🎯 Use My Current Location';
-                      if (error.code === 1) {
-                        alert('Location access denied. Please allow location access in your browser settings.');
-                      } else if (error.code === 2) {
-                        alert('Location unavailable. Please try again.');
-                      } else {
-                        alert('Location request timed out. Please try again.');
-                      }
+                      setGpsStatus('error');
+                      setTimeout(() => setGpsStatus('idle'), 2000);
+                      alert(error.code === 1 ? 'Location denied. Allow in browser settings.' : 'Location failed. Try again.');
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                   );
                 }}
-                id="locationBtn"
+                disabled={gpsStatus === 'loading'}
                 style={{
                   width: '100%',
                   marginTop: '16px',
-                  background: 'linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)',
+                  background: gpsStatus === 'success' ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' :
+                             gpsStatus === 'loading' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' :
+                             'linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)',
                   border: 'none',
                   color: 'white',
                   padding: '14px',
                   borderRadius: '12px',
-                  cursor: 'pointer',
+                  cursor: gpsStatus === 'loading' ? 'wait' : 'pointer',
                   fontWeight: 600,
                   fontSize: '16px',
                 }}
               >
-                🎯 Use My Current Location
+                {gpsStatus === 'loading' ? '📍 Getting Location...' :
+                 gpsStatus === 'success' ? '✅ Location Set!' :
+                 '🎯 Use My Current Location'}
               </button>
             </div>
 
