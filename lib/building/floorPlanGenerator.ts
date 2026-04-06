@@ -486,8 +486,9 @@ export class AIFloorPlanGenerator {
             'Authorization': `Bearer ${this.groqApiKey}`,
             'Content-Type': 'application/json',
           },
+          signal: AbortSignal.timeout(8000), // 8 second timeout - fallback to local if slow
           body: JSON.stringify({
-            model: 'llama3-70b-8192',
+            model: 'llama-3.1-8b-instant', // Faster model
             messages: [
               {
                 role: 'system',
