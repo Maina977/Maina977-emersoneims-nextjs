@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
-const ProBuildingSuiteV3 = dynamic(() => import('@/components/building/ProBuildingSuiteV3'), {
+const ProBuildingSuiteV3 = dynamic(() => import('@/components/building/ProBuildingSuiteComplete'), {
   loading: () => (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black flex items-center justify-center">
       <div className="text-center">

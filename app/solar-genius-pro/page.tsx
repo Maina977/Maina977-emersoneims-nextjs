@@ -2,11 +2,11 @@
 
 /**
  * SOLAR GENIUS PRO - AI Solar Design Page
- * Stunning Futuristic Interface with 3D Solar World Visualization
+ * Complete version with file upload, GPS, 24 AI engines
  */
 
-import SolarGeniusProFuturistic from '@/components/solar/SolarGeniusProFuturistic';
+import SolarGeniusProComplete from '@/components/solar/SolarGeniusProComplete';
 
 export default function SolarGeniusProPage() {
-  return <SolarGeniusProFuturistic />;
+  return <SolarGeniusProComplete />;
 }
