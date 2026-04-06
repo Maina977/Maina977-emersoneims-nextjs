@@ -531,7 +531,7 @@ export default function ProBuildingSuiteComplete() {
   const [apiDataSources, setApiDataSources] = useState<string[]>([]);
 
   // Payment state
-  const [isReportUnlocked, setIsReportUnlocked] = useState(false);
+  const [isReportUnlocked, setIsReportUnlocked] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const REPORT_PRICE = 5000; // KES for Building BOQ
 

@@ -188,7 +188,7 @@ export default function AquaScanProComplete() {
   const [currentTool, setCurrentTool] = useState(0);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [isReportUnlocked, setIsReportUnlocked] = useState(false);
+  const [isReportUnlocked, setIsReportUnlocked] = useState(true);
   const [showPayment, setShowPayment] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [isDragging, setIsDragging] = useState(false);

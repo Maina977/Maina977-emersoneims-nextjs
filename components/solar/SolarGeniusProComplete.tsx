@@ -478,7 +478,7 @@ export default function SolarGeniusProComplete() {
   const [showPanels3D, setShowPanels3D] = useState(true);
 
   // Payment state
-  const [isReportUnlocked, setIsReportUnlocked] = useState(false);
+  const [isReportUnlocked, setIsReportUnlocked] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const REPORT_PRICE = 3500; // KES for Solar quotation
 
