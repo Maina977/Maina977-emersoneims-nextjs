@@ -540,7 +540,6 @@ export default function ProBuildingSuiteComplete() {
 
   // Generate report - NOW WITH REAL APIs!
   const generateReport = useCallback(async () => {
-    try {
     setMode('processing');
     setProgress(0);
 
@@ -731,12 +730,6 @@ export default function ProBuildingSuiteComplete() {
     setMode('results');
 
     console.log('[Building Suite] Report generated with data sources:', dataSources);
-    } catch (error) {
-      console.error('[Building Suite] Report generation error:', error);
-      alert('Report generation completed. Check results.');
-      setProgress(100);
-      setMode('results');
-    }
   }, [projectName, client, coordinates, countryCode, buildingType, floors, totalArea, bedrooms, bathrooms, style, soilType, concreteGrade, steelGrade, finishLevel, includeSolar, includeBorehole]);
 
   const resetAll = () => {
