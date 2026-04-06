@@ -79,7 +79,7 @@ import {
   calculateExpectedYield,
   predictWaterQuality,
   calculateSuccessProbability,
-  KENYA_GEOLOGICAL_ZONES
+  // Note: KENYA_GEOLOGICAL_ZONES is defined locally as GLOBAL_GEOLOGICAL_DATABASE alias
 } from '@/lib/utils/deterministicCalculations';
 
 /**
