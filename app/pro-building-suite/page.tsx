@@ -3,8 +3,8 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-const ProBuildingSuiteComplete = dynamic(
-  () => import('@/components/building/ProBuildingSuiteComplete'),
+const ProBuildingSuiteIntegrated = dynamic(
+  () => import('@/components/building/ProBuildingSuiteIntegrated'),
   {
     ssr: false,
     loading: () => (
@@ -12,7 +12,7 @@ const ProBuildingSuiteComplete = dynamic(
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-emerald-400 text-lg">Loading Pro Building Suite...</p>
-          <p className="text-gray-500 text-sm mt-2">27 AI Engines Initializing</p>
+          <p className="text-gray-500 text-sm mt-2">Initializing 10 AI-Powered Outputs</p>
         </div>
       </div>
     )
@@ -27,7 +27,7 @@ export default function ProBuildingSuitePage() {
           <div className="animate-pulse text-emerald-400">Loading...</div>
         </div>
       }>
-        <ProBuildingSuiteComplete />
+        <ProBuildingSuiteIntegrated />
       </Suspense>
     </main>
   );
