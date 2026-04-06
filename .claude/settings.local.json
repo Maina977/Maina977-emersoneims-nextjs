@@ -42,7 +42,9 @@
       "Bash(npm list @next/bundle-analyzer 2>/dev/null || echo \"Bundle analyzer not installed\")",
       "Bash(npm run:*)",
       "Bash(cp:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(taskkill /F /PID 6200)",
+      "Bash(rm -rf .next/dev/lock)"
     ]
   }
 }

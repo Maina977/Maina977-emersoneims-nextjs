@@ -465,6 +465,7 @@ const PieChart: React.FC<{
 export default function ProBuildingSuiteComplete() {
   // Mode
   const [mode, setMode] = useState<'input' | 'processing' | 'results'>('input');
+  const [error, setError] = useState<string | null>(null);
 
   // Input state
   const [projectName, setProjectName] = useState('My Building Project');
@@ -541,8 +542,11 @@ export default function ProBuildingSuiteComplete() {
 
   // Generate report - NOW WITH REAL APIs!
   const generateReport = useCallback(async () => {
+    setError(null);
     setMode('processing');
     setProgress(0);
+
+    try {
 
     const statuses: Record<string, string> = {};
     AI_ENGINES.forEach(e => { statuses[e.id] = 'pending'; });
@@ -731,6 +735,11 @@ export default function ProBuildingSuiteComplete() {
     setMode('results');
 
     console.log('[Building Suite] Report generated with data sources:', dataSources);
+    } catch (err) {
+      console.error('[Building Suite] Error:', err);
+      setError('Report generation failed. Please try again.');
+      setMode('input');
+    }
   }, [projectName, client, coordinates, countryCode, buildingType, floors, totalArea, bedrooms, bathrooms, style, soilType, concreteGrade, steelGrade, finishLevel, includeSolar, includeBorehole]);
 
   const resetAll = () => {
@@ -1191,6 +1200,23 @@ export default function ProBuildingSuiteComplete() {
                     GENERATE COMPLETE REPORT
                     <ArrowRight className="w-6 h-6" />
                   </button>
+
+                  {/* Error Display */}
+                  {error && (
+                    <div className="mt-4 p-4 bg-red-500/15 border border-red-500/40 rounded-xl text-red-300 text-sm flex items-center gap-3">
+                      <span className="text-xl">⚠️</span>
+                      <div className="flex-1">
+                        <strong className="block mb-1">Generation Error</strong>
+                        {error}
+                      </div>
+                      <button
+                        onClick={() => setError(null)}
+                        className="text-red-300 hover:text-white text-lg"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
