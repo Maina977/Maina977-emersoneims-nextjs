@@ -136,22 +136,34 @@ export default function ProBuildingSuiteIntegrated() {
     }
 
     try {
-      const result = await buildingAPI.generateComprehensiveReport({
-        description,
-        bedrooms,
-        bathrooms,
-        floors,
-        totalArea,
-        style,
-        location,
-        clientName: clientName || 'Client',
-      });
+      // Add timeout wrapper
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out - server is processing, please try again')), 55000)
+      );
+
+      const result = await Promise.race([
+        buildingAPI.generateComprehensiveReport({
+          description,
+          bedrooms,
+          bathrooms,
+          floors,
+          totalArea,
+          style,
+          location,
+          clientName: clientName || 'Client',
+        }),
+        timeoutPromise
+      ]) as any;
+
+      if (!result || !result.projectInfo) {
+        throw new Error('Invalid response from server');
+      }
 
       setReport(result);
       setMode('results');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to generate report:', error);
-      alert('Failed to generate report. Please try again.');
+      alert(`Failed: ${error.message || 'Unknown error'}. Please try again.`);
       setMode('input');
     }
   }, [description, bedrooms, bathrooms, floors, totalArea, style, location, clientName]);
