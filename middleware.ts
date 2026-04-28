@@ -201,6 +201,23 @@ const ALLOWED_ADMIN_PATHS = [
   '/admin/analytics', // Our real-time analytics dashboard
 ];
 
+// Paths that should be exempt from the malicious-User-Agent check.
+// `BLOCKED_USER_AGENTS` includes generic clients like `curl`, `wget`,
+// `python-requests` etc. — those are useful for monitoring/health checks
+// against the embedded Flask Pro Building Suite, so we don't want to
+// fake-403 them on this path. Real malicious-pattern + rate-limit checks
+// still apply.
+const UA_BOT_CHECK_EXEMPT_PATHS = [
+  '/pro-building-suite',
+];
+
+function isUaBotCheckExempt(pathname: string): boolean {
+  for (const exempt of UA_BOT_CHECK_EXEMPT_PATHS) {
+    if (pathname === exempt || pathname.startsWith(`${exempt}/`)) return true;
+  }
+  return false;
+}
+
 function containsMaliciousPattern(url: string): boolean {
   // First, check if it's a legitimate admin path
   for (const allowed of ALLOWED_ADMIN_PATHS) {
@@ -350,16 +367,20 @@ export function middleware(request: NextRequest) {
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 1. MALICIOUS BOT DETECTION
+  //    Skipped for paths that legitimately need to be reachable by simple HTTP
+  //    clients (curl/wget/monitoring), e.g. the Pro Building Suite embed.
   // ─────────────────────────────────────────────────────────────────────────────
-  if (isMaliciousBot(userAgent)) {
+  if (!isUaBotCheckExempt(pathname) && isMaliciousBot(userAgent)) {
     console.log(`🚫 BLOCKED: Malicious bot from ${clientIP} - UA: ${userAgent.substring(0, 50)}`);
     return new NextResponse('Access Denied', { status: 403 });
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 1.5. HEADLESS BROWSER DETECTION
+  //      Same exemption applies: monitoring tooling on /pro-building-suite
+  //      should not be fake-403'd as headless.
   // ─────────────────────────────────────────────────────────────────────────────
-  if (isHeadlessBrowser(request)) {
+  if (!isUaBotCheckExempt(pathname) && isHeadlessBrowser(request)) {
     console.log(`🚫 BLOCKED: Headless browser from ${clientIP} - UA: ${userAgent.substring(0, 50)}`);
     return new NextResponse('Access Denied', { status: 403 });
   }

@@ -190,6 +190,11 @@ const nextConfig: NextConfig = {
   // Headers for security and performance
   async headers() {
     // Content Security Policy - Comprehensive protection
+    //
+    // NOTE: `upgrade-insecure-requests` is intentionally OMITTED from the global CSP.
+    // It would silently rewrite http:// subresources (e.g. http://127.0.0.1:5000)
+    // to https://, which breaks any local HTTP iframe such as the Flask-based
+    // Pro Building Suite embed running on port 5000.
     const ContentSecurityPolicy = `
       default-src 'self';
       script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.app;
@@ -203,8 +208,33 @@ const nextConfig: NextConfig = {
       form-action 'self';
       frame-ancestors 'self';
       frame-src 'self' https://www.google.com https://maps.google.com https://*.google.com https://www.openstreetmap.org https://*.openstreetmap.org https://www.youtube.com https://player.vimeo.com;
-      upgrade-insecure-requests;
     `.replace(/\s{2,}/g, ' ').trim();
+
+    // /pro-building-suite is designed to optionally embed an external Flask suite
+    // (typically http://127.0.0.1:5000 in local dev, or a configured remote URL).
+    // The global CSP is too restrictive for that use case, so this route gets:
+    //   - frame-src widened to include localhost/127.0.0.1 dev ports + the EIMS hosts
+    //   - Cross-Origin-Embedder-Policy relaxed to `unsafe-none` so a cross-origin
+    //     iframe is not blocked by COEP: credentialless requirements
+    //   - Cross-Origin-Opener-Policy loosened to allow the embedded popup flows
+    //     the suite uses
+    //
+    // Order matters in next.config headers(): more specific rules must come AFTER
+    // the catch-all `/(.*)` so they override it.
+    const proBuildingSuiteCsp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.app https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+      "img-src 'self' blob: data: https: http:",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app http://127.0.0.1:5000 http://localhost:5000 ws://127.0.0.1:5000 ws://localhost:5000",
+      "media-src 'self' blob: https:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      "frame-src 'self' http://127.0.0.1:5000 http://localhost:5000 http://127.0.0.1:3000 http://localhost:3000 http://127.0.0.1:3010 http://localhost:3010 https://www.emersoneims.com https://emersoneims.com https://*.emersoneims.com https://www.google.com https://www.youtube.com https://player.vimeo.com",
+    ].join('; ');
 
     return [
       {
@@ -346,6 +376,32 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=0, s-maxage=3600, stale-while-revalidate=60',
+          },
+        ],
+      },
+      // ═══════════════════════════════════════════════════════════════════
+      // /pro-building-suite — must come LAST so it overrides the catch-all
+      // `/(.*)` rule above for this specific page. We relax CSP frame-src,
+      // COEP and COOP only on this path so the Flask suite iframe can load.
+      // ═══════════════════════════════════════════════════════════════════
+      {
+        source: '/pro-building-suite',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: proBuildingSuiteCsp,
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'unsafe-none',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'cross-origin',
           },
         ],
       },
