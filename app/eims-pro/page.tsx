@@ -1,14 +1,5 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-import EmbedRouteLoading from '@/components/building-suite/EmbedRouteLoading';
-
-const BuildingSuiteEmbed = dynamic(
-  () => import('@/components/building-suite/BuildingSuiteEmbed'),
-  {
-    ssr: false,
-    loading: () => <EmbedRouteLoading />,
-  },
-);
+import EimsProClient from './EimsProClient';
 
 export const metadata: Metadata = {
   title: 'EIMS PRO | Emerson EIMS',
@@ -21,5 +12,5 @@ export const metadata: Metadata = {
 };
 
 export default function EimsProPage() {
-  return <BuildingSuiteEmbed />;
+  return <EimsProClient />;
 }

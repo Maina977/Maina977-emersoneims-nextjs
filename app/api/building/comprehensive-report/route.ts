@@ -19,8 +19,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { comprehensiveReportGenerator } from '@/lib/building/comprehensiveReportGenerator';
-import { floorPlanRenderer } from '@/lib/building/floorPlanGenerator';
+import { comprehensiveReportGenerator } from '@/lib/building/building/comprehensiveReportGenerator';
+import { floorPlanRenderer } from '@/lib/building/building/floorPlanGenerator';
 
 // Vercel timeout config
 export const maxDuration = 60;

@@ -15,7 +15,7 @@ import {
   floorPlanRenderer,
   type GenerationInput,
   type BuildingPlan
-} from '@/lib/building/floorPlanGenerator';
+} from '@/lib/building/building/floorPlanGenerator';
 
 // =============================================================================
 // POST - Generate Floor Plan from Description
