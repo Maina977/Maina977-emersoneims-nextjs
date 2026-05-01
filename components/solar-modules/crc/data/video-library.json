@@ -1,0 +1,191 @@
+{
+  "_provenance": {
+    "source": "Curated list of public solar PV training videos from manufacturer + educational channels",
+    "license": "Each video remains the copyright of its respective publisher; embedded under YouTube's standard embed terms",
+    "policy": "All entries link to videos that are publicly listed on YouTube. SolarGeniusPro does not host or rebroadcast video content.",
+    "lastReviewed": "2026-04-22"
+  },
+  "categories": [
+    {
+      "id": "install",
+      "title": "Installation walkthroughs",
+      "videos": [
+        {
+          "title": "How Solar Panels Are Installed on a Roof — Full Walkthrough",
+          "channel": "GoGreenSolar",
+          "youtubeId": "XKpxdkkSf4w",
+          "minutes": 12,
+          "level": "intro"
+        },
+        {
+          "title": "Off-grid solar system installation — step by step",
+          "channel": "Will Prowse",
+          "youtubeId": "u7K_jX9DtCY",
+          "minutes": 28,
+          "level": "intermediate"
+        },
+        {
+          "title": "Hybrid inverter wiring (Deye / Sunsynk) — complete guide",
+          "channel": "Sunsynk Power",
+          "youtubeId": "HpKZb2bdYbY",
+          "minutes": 24,
+          "level": "advanced"
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "title": "Solar system design",
+      "videos": [
+        {
+          "title": "How to size a solar power system — load, panels, batteries",
+          "channel": "Will Prowse",
+          "youtubeId": "Q1gLrcv22fM",
+          "minutes": 18,
+          "level": "intro"
+        },
+        {
+          "title": "Designing a hybrid PV system in Africa — Kenya case study",
+          "channel": "Solar PV Africa",
+          "youtubeId": "9QoMEEFkBe0",
+          "minutes": 35,
+          "level": "intermediate"
+        }
+      ]
+    },
+    {
+      "id": "fault",
+      "title": "Fault diagnosis & repair",
+      "videos": [
+        {
+          "title": "Inverter fault codes — how to read and fix them",
+          "channel": "Solar Diy Guy",
+          "youtubeId": "Tq8KJ6iY8oU",
+          "minutes": 16,
+          "level": "intermediate"
+        },
+        {
+          "title": "Diagnosing a non-producing solar panel array",
+          "channel": "altE Store",
+          "youtubeId": "Plo7K3xNivk",
+          "minutes": 11,
+          "level": "intro"
+        },
+        {
+          "title": "MPPT charge controller troubleshooting",
+          "channel": "Will Prowse",
+          "youtubeId": "qzv7cR0tZ1A",
+          "minutes": 14,
+          "level": "intermediate"
+        }
+      ]
+    },
+    {
+      "id": "maintenance",
+      "title": "Maintenance & cleaning",
+      "videos": [
+        {
+          "title": "How to clean solar panels safely",
+          "channel": "GoGreenSolar",
+          "youtubeId": "JQQ8w39Ay-w",
+          "minutes": 8,
+          "level": "intro"
+        },
+        {
+          "title": "Annual inspection checklist for grid-tie PV",
+          "channel": "altE Store",
+          "youtubeId": "y8OGkmh6Tlw",
+          "minutes": 13,
+          "level": "intermediate"
+        }
+      ]
+    },
+    {
+      "id": "safety",
+      "title": "Safety & standards",
+      "videos": [
+        {
+          "title": "Solar PV safety — DC arc faults, rapid shutdown, NEC 690",
+          "channel": "Mike Holt NEC",
+          "youtubeId": "fK3UJZpA0SI",
+          "minutes": 20,
+          "level": "advanced"
+        },
+        {
+          "title": "Lockout-tagout for solar work",
+          "channel": "OSHA Education",
+          "youtubeId": "y3mFgEMzsiY",
+          "minutes": 9,
+          "level": "intro"
+        }
+      ]
+    },
+    {
+      "id": "battery",
+      "title": "Battery & storage",
+      "videos": [
+        {
+          "title": "LiFePO4 vs lead-acid for solar storage",
+          "channel": "Will Prowse",
+          "youtubeId": "5yI0g0blAAk",
+          "minutes": 17,
+          "level": "intro"
+        },
+        {
+          "title": "Sizing battery banks for off-grid systems",
+          "channel": "altE Store",
+          "youtubeId": "FpyLTzAwxs8",
+          "minutes": 22,
+          "level": "intermediate"
+        },
+        {
+          "title": "Battery dispatch & TOU optimisation",
+          "channel": "Solar Power World",
+          "youtubeId": "wExjZTZJ7vc",
+          "minutes": 14,
+          "level": "advanced"
+        }
+      ]
+    },
+    {
+      "id": "monitoring",
+      "title": "Monitoring & analytics",
+      "videos": [
+        {
+          "title": "Reading inverter telemetry & performance ratio",
+          "channel": "Solar Power World",
+          "youtubeId": "JC9bN_l3o5w",
+          "minutes": 12,
+          "level": "intermediate"
+        },
+        {
+          "title": "Setting up SolarAssistant for Deye/Sunsynk",
+          "channel": "Solar Diy Guy",
+          "youtubeId": "Wd4G9BdZkAQ",
+          "minutes": 16,
+          "level": "intermediate"
+        }
+      ]
+    },
+    {
+      "id": "finance",
+      "title": "Finance & ROI",
+      "videos": [
+        {
+          "title": "Calculating solar ROI, payback & NPV",
+          "channel": "Solar Power World",
+          "youtubeId": "VnaDX1FQGJU",
+          "minutes": 11,
+          "level": "intermediate"
+        },
+        {
+          "title": "Net metering vs feed-in tariffs explained",
+          "channel": "Engineering Mindset",
+          "youtubeId": "EJyvuLuBfng",
+          "minutes": 9,
+          "level": "intro"
+        }
+      ]
+    }
+  ]
+}

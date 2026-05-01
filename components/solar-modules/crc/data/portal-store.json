@@ -1,0 +1,120 @@
+{
+  "issued": {
+    "ca4919efba0b890e": {
+      "projectId": "PRJ-1",
+      "clientName": "Jane",
+      "exp": 1784642614,
+      "issuedAt": 1776866614682
+    },
+    "4c0f35ec931cc977": {
+      "projectId": "PRJ-2",
+      "clientName": "X",
+      "exp": 1784642614,
+      "issuedAt": 1776866614688
+    },
+    "c5e291638e938433": {
+      "projectId": "PRJ-3",
+      "clientName": "Y",
+      "exp": 1784642614,
+      "issuedAt": 1776866614690
+    },
+    "d117f49aea42f1fb": {
+      "projectId": "PRJ-1",
+      "clientName": "Jane",
+      "exp": 1784642801,
+      "issuedAt": 1776866801693
+    },
+    "3512afeae04d557a": {
+      "projectId": "PRJ-2",
+      "clientName": "X",
+      "exp": 1784642801,
+      "issuedAt": 1776866801699
+    },
+    "df962efe10a65aca": {
+      "projectId": "PRJ-3",
+      "clientName": "Y",
+      "exp": 1784642801,
+      "issuedAt": 1776866801703
+    },
+    "548e60a5cebb937f": {
+      "projectId": "PRJ-1",
+      "clientName": "Jane",
+      "exp": 1784644016,
+      "issuedAt": 1776868016924
+    },
+    "453f668509f65853": {
+      "projectId": "PRJ-2",
+      "clientName": "X",
+      "exp": 1784644016,
+      "issuedAt": 1776868016929
+    },
+    "1b2903e44b1b8d68": {
+      "projectId": "PRJ-3",
+      "clientName": "Y",
+      "exp": 1784644016,
+      "issuedAt": 1776868016933
+    },
+    "0dbdf3cec1f9727d": {
+      "projectId": "PRJ-1",
+      "clientName": "Jane",
+      "exp": 1784644148,
+      "issuedAt": 1776868148472
+    },
+    "b7da287aa958d76d": {
+      "projectId": "PRJ-2",
+      "clientName": "X",
+      "exp": 1784644148,
+      "issuedAt": 1776868148560
+    },
+    "92befcdb009f9f90": {
+      "projectId": "PRJ-3",
+      "clientName": "Y",
+      "exp": 1784644148,
+      "issuedAt": 1776868148571
+    },
+    "764a22a88201e4b8": {
+      "projectId": "PRJ-1",
+      "clientName": "Jane",
+      "exp": 1784644904,
+      "issuedAt": 1776868904558
+    },
+    "8e63e057f23bbbda": {
+      "projectId": "PRJ-2",
+      "clientName": "X",
+      "exp": 1784644904,
+      "issuedAt": 1776868904643
+    },
+    "51e11b7837c3c6c1": {
+      "projectId": "PRJ-3",
+      "clientName": "Y",
+      "exp": 1784644904,
+      "issuedAt": 1776868904646
+    },
+    "906c548a6d422274": {
+      "projectId": "PRJ-1",
+      "clientName": "Jane",
+      "exp": 1784645846,
+      "issuedAt": 1776869846082
+    },
+    "2b38723ea68da1ef": {
+      "projectId": "PRJ-2",
+      "clientName": "X",
+      "exp": 1784645846,
+      "issuedAt": 1776869846220
+    },
+    "b3762dca4a827bef": {
+      "projectId": "PRJ-3",
+      "clientName": "Y",
+      "exp": 1784645846,
+      "issuedAt": 1776869846225
+    }
+  },
+  "revoked": {
+    "c5e291638e938433": 1776866614692,
+    "df962efe10a65aca": 1776866801704,
+    "1b2903e44b1b8d68": 1776868016935,
+    "92befcdb009f9f90": 1776868148587,
+    "51e11b7837c3c6c1": 1776868904648,
+    "b3762dca4a827bef": 1776869846227
+  }
+}

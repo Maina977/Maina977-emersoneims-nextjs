@@ -1,0 +1,222 @@
+/* Wiring Diagram AI Styling */
+
+.wiring-diagram-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.diagram-header {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.diagram-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.8em;
+  color: #667eea;
+}
+
+.diagram-header p {
+  margin: 0;
+  color: #666;
+}
+
+.diagram-tools {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-primary-large {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.btn-secondary:hover {
+  background: #f9f9f9;
+}
+
+.btn-primary-large {
+  padding: 16px 32px;
+  font-size: 1.1em;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin-top: 15px;
+}
+
+.btn-primary-large:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.diagram-viewer {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.diagram-viewer svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.watermark-message {
+  background: linear-gradient(135deg, #ffe8e8 0%, #fff0f0 100%);
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.message-box {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.message-box h3 {
+  color: #d32f2f;
+  margin: 0 0 10px 0;
+  font-size: 1.3em;
+}
+
+.message-box p {
+  color: #666;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.message-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+  text-align: left;
+}
+
+.message-box li {
+  padding: 8px 0;
+  color: #666;
+  border-bottom: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.message-box li:last-child {
+  border-bottom: none;
+}
+
+.diagram-legend {
+  background: white;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.diagram-legend h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.1em;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend-item div {
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.legend-item span {
+  font-size: 0.95em;
+  color: #555;
+}
+
+.safety-notice {
+  background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+  border-left: 4px solid #ff8c00;
+  padding: 20px;
+  border-radius: 6px;
+  color: #cc7700;
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+
+/* Print styles */
+@media print {
+  .diagram-tools,
+  .watermark-message,
+  .safety-notice {
+    display: none;
+  }
+
+  .diagram-viewer {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .diagram-tools {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+
+  .legend-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .wiring-diagram-container {
+    padding: 12px;
+  }
+}

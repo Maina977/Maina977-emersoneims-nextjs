@@ -1,0 +1,64 @@
+{
+  "standards": [
+    {
+      "id": "IEC-62548",
+      "name": "Photovoltaic (PV) arrays - Design requirements",
+      "version": "2023",
+      "organization": "IEC",
+      "applicable": true,
+      "sections": [
+        {
+          "clause": "7.2",
+          "requirement": "Maximum DC voltage shall not exceed 1000V",
+          "type": "mandatory"
+        },
+        {
+          "clause": "8.3",
+          "requirement": "Overcurrent protection required on each PV string",
+          "type": "mandatory"
+        },
+        {
+          "clause": "9.2",
+          "requirement": "Visible disconnect means required",
+          "type": "mandatory"
+        }
+      ]
+    },
+    {
+      "id": "IEC-60364",
+      "name": "Low-voltage electrical installations",
+      "version": "2023",
+      "organization": "IEC",
+      "applicable": true,
+      "sections": []
+    },
+    {
+      "id": "NEC-2023",
+      "name": "National Electrical Code",
+      "version": "2023",
+      "organization": "NFPA",
+      "applicable": false,
+      "sections": []
+    }
+  ],
+  "certifications": [
+    {
+      "id": "KEBS",
+      "name": "Kenya Bureau of Standards",
+      "country": "Kenya",
+      "required": true
+    },
+    {
+      "id": "NERC",
+      "name": "Nigerian Electricity Regulatory Commission",
+      "country": "Nigeria",
+      "required": true
+    },
+    {
+      "id": "NERSA",
+      "name": "National Energy Regulator of South Africa",
+      "country": "South Africa",
+      "required": true
+    }
+  ]
+}

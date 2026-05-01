@@ -18,7 +18,13 @@ interface TeslaStyleNavigationProps {
 
 const HEAVY_APP_ROUTES = new Set<string>([
   '/aquascan-pro-v3',
+  '/aquascan-pro-v3/reports',
+  '/aquascan-pro-v3/compare',
   '/solar-genius-pro',
+  '/solar-genius-pro/solar-dashboard',
+  '/solar-genius-pro/design-studio',
+  '/solar-genius-pro/fault-codes',
+  '/solar-genius-pro/calculator-advanced',
   '/pro-building-suite',
   '/eims-pro',
   '/diagnostics',
@@ -80,15 +86,17 @@ const MEGA_MENUS = {
         items: [
           { href: '/solar', label: 'Solar Overview', icon: '☀️', desc: 'Complete solutions' },
           { href: '/solutions/solar', label: 'Commercial Solar', icon: '🏢', desc: 'Business & industrial' },
-          { href: '/solar-design-studio', label: 'Design Studio', icon: '🎨', desc: 'Plan your system' },
+          { href: '/solar-genius-pro/design-studio', label: 'AI Design Studio', icon: '🎨', desc: 'Leaflet map · real irradiance', badge: 'NEW' },
           { href: '/solutions/solar-sizing', label: 'System Sizing', icon: '📐', desc: 'Right-size every kWh' },
         ],
       },
       {
-        title: 'AI & Calculators',
+        title: 'Solar Genius Pro Suite',
         items: [
           { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '🧠', desc: '56 AI engines · <3 min quotes', badge: '#1' },
-          { href: '/solar-genius-pro-tools', label: 'Solar Genius Tools', icon: '🛠️', desc: 'Pro toolkit' },
+          { href: '/solar-genius-pro/solar-dashboard', label: 'Site & System Dashboard', icon: '📡', desc: 'NASA + OSM live data', badge: 'NEW' },
+          { href: '/solar-genius-pro/calculator-advanced', label: 'Solar System Calculator', icon: '⚡', desc: 'Size, cost & payback', badge: 'NEW' },
+          { href: '/solar-genius-pro/fault-codes', label: 'Fault Codes AI', icon: '🔍', desc: '1,200+ inverter codes', badge: 'NEW' },
           { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, load, payback' },
         ],
       },
@@ -122,6 +130,14 @@ const MEGA_MENUS = {
           { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400,000+ fault codes', badge: 'AI' },
           { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI engines · <3 min quotes', badge: '#1' },
           { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI engines · NASA + Google Earth', badge: '#1' },
+        ],
+      },
+      {
+        title: 'AquaScan Pro Suite',
+        items: [
+          { href: '/aquascan-pro-v3', label: 'Borehole Analyzer', icon: '🔬', desc: 'AI-powered site analysis' },
+          { href: '/aquascan-pro-v3/reports', label: 'Reports & Downloads', icon: '📄', desc: 'View & export reports', badge: 'NEW' },
+          { href: '/aquascan-pro-v3/compare', label: 'Site Comparison', icon: '⚖️', desc: 'Compare up to 3 sites', badge: 'NEW' },
         ],
       },
       {

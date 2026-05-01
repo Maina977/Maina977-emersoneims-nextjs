@@ -1,0 +1,90 @@
+{
+  "panels": [
+    {
+      "id": "panel_001",
+      "brand": "JA Solar",
+      "model": "JAM54S30-485",
+      "wattage": 485,
+      "efficiency": 21.5,
+      "dimensions": { "width": 1.7, "height": 1.0, "depth": 0.035 },
+      "weight": 24.5,
+      "warranty": 25,
+      "price": 12500,
+      "currency": "KES",
+      "inStock": true
+    },
+    {
+      "id": "panel_002",
+      "brand": "Longi",
+      "model": "LR5-54HPH-540M",
+      "wattage": 540,
+      "efficiency": 21.8,
+      "dimensions": { "width": 1.8, "height": 1.1, "depth": 0.035 },
+      "weight": 26.5,
+      "warranty": 25,
+      "price": 13800,
+      "currency": "KES",
+      "inStock": true
+    },
+    {
+      "id": "panel_003",
+      "brand": "Trina",
+      "model": "TSM-455DE09",
+      "wattage": 455,
+      "efficiency": 20.9,
+      "dimensions": { "width": 1.7, "height": 1.0, "depth": 0.035 },
+      "weight": 23.8,
+      "warranty": 25,
+      "price": 11500,
+      "currency": "KES",
+      "inStock": true
+    }
+  ],
+  "inverters": [
+    {
+      "id": "inv_001",
+      "brand": "Deye",
+      "model": "SUN-6K-SG01LP1",
+      "power": 6000,
+      "efficiency": 97.5,
+      "mpptChannels": 2,
+      "voltageRange": { "min": 150, "max": 500 },
+      "ipRating": "IP65",
+      "warranty": 10,
+      "price": 95000,
+      "currency": "KES",
+      "inStock": true
+    },
+    {
+      "id": "inv_002",
+      "brand": "Solis",
+      "model": "S5-GR1P5K",
+      "power": 5000,
+      "efficiency": 97.2,
+      "mpptChannels": 2,
+      "voltageRange": { "min": 120, "max": 500 },
+      "ipRating": "IP65",
+      "warranty": 10,
+      "price": 78000,
+      "currency": "KES",
+      "inStock": true
+    }
+  ],
+  "batteries": [
+    {
+      "id": "bat_001",
+      "brand": "Dyness",
+      "model": "BX51100",
+      "capacity": 5.12,
+      "voltage": 51.2,
+      "chemistry": "LFP",
+      "cycleLife": 6000,
+      "depthOfDischarge": 90,
+      "efficiency": 97,
+      "warranty": 10,
+      "price": 185000,
+      "currency": "KES",
+      "inStock": true
+    }
+  ]
+}

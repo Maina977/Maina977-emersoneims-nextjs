@@ -1,0 +1,35 @@
+{
+  "lastUpdated": "2024-04-03T00:00:00Z",
+  "currency": "KES",
+  "components": {
+    "panels": [
+      { "brand": "JA Solar", "model": "485W", "price": 12500, "trend": "stable" },
+      { "brand": "Longi", "model": "540W", "price": 13800, "trend": "down" },
+      { "brand": "Trina", "model": "455W", "price": 11500, "trend": "stable" },
+      { "brand": "Canadian Solar", "model": "410W", "price": 9800, "trend": "down" }
+    ],
+    "inverters": [
+      { "brand": "Deye", "model": "6kW", "price": 95000, "trend": "stable" },
+      { "brand": "Solis", "model": "5kW", "price": 78000, "trend": "down" },
+      { "brand": "Growatt", "model": "6kW", "price": 85000, "trend": "stable" },
+      { "brand": "Huawei", "model": "6kW", "price": 105000, "trend": "up" }
+    ],
+    "batteries": [
+      { "brand": "Dyness", "model": "5.12kWh", "price": 185000, "trend": "down" },
+      { "brand": "Pylontech", "model": "3.55kWh", "price": 125000, "trend": "stable" },
+      { "brand": "BYD", "model": "10.24kWh", "price": 350000, "trend": "stable" },
+      { "brand": "LG", "model": "9.8kWh", "price": 420000, "trend": "up" }
+    ],
+    "installation": {
+      "residential": 15000,
+      "commercial": 12000,
+      "industrial": 10000
+    },
+    "services": {
+      "design": 25000,
+      "engineering": 35000,
+      "permit": 10000,
+      "commissioning": 15000
+    }
+  }
+}
