@@ -386,7 +386,7 @@ export default async function RootLayout({
           @font-face{font-family:Inter;font-style:normal;font-weight:400 700;font-display:swap;src:local('Inter'),local('Inter-Regular')}
           /* Navigation skeleton for instant render */
           nav{min-height:64px}
-          /* Hero opt-in: pages add `.hero-full` to first section to fill viewport */
+          /* Hero opt-in: pages add the hero-full class to first section to fill viewport */
           main#main-content>section.hero-full:first-child{min-height:100vh}
           /* Compensate fixed navbar so non-hero pages do not sit under it */
           main#main-content{padding-top:64px}
