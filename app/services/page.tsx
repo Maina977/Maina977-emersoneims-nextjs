@@ -160,9 +160,18 @@ export default function ServicesPage() {
   return (
     <div className="bg-gradient-to-b from-slate-900 via-slate-950 to-black text-white">
       {/* ── Hero ──────────────────────────────────────────────────── */}
-      <section className="px-4 pt-6 pb-10 sm:pt-8 sm:pb-14 border-b border-slate-800/60">
-        <div className="max-w-7xl mx-auto">
-          <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-400">
+      <section className="relative px-4 pt-8 pb-12 sm:pt-10 sm:pb-16 border-b border-slate-800/60 overflow-hidden">
+        {/* Ambient decoration */}
+        <div
+          aria-hidden="true"
+          className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"
+        />
+        <div className="relative max-w-7xl mx-auto">
+          <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-400">
             <ol className="flex items-center gap-2">
               <li>
                 <Link href="/" className="hover:text-cyan-400 transition-colors">
@@ -174,41 +183,53 @@ export default function ServicesPage() {
             </ol>
           </nav>
 
-          <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-end">
+          <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-end">
             <div>
-              <span className="inline-block px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-400 text-xs font-medium mb-3">
-                {ALL_SERVICES.length} Services · {ORDERED_CATEGORIES.length}{' '}
-                Categories
-              </span>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3">
-                Power Solutions for Every Need
-              </h1>
-              <p className="text-base sm:text-lg text-slate-300 max-w-3xl">
-                Generators, solar, electrical, HVAC, water and waste systems —
-                organised so every sub-service sits under its parent category
-                for fast navigation. Backed by our{' '}
-                <span className="text-amber-400 font-semibold">
-                  3-Year Warranty
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-300 text-xs font-medium mb-4">
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
+                {ALL_SERVICES.length} Services across{' '}
+                {ORDERED_CATEGORIES.length} Categories
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight mb-4">
+                <span className="bg-gradient-to-r from-white via-cyan-100 to-amber-200 bg-clip-text text-transparent">
+                  Power solutions for every need
                 </span>
-                .
+              </h1>
+              <p className="text-base sm:text-lg text-slate-300/90 max-w-3xl leading-relaxed">
+                Generators, solar, electrical, HVAC, water and waste systems —
+                organised by category so every sub-service sits under its
+                parent for fast navigation. Backed by our{' '}
+                <span className="text-amber-400 font-semibold">
+                  3-Year Cummins Warranty
+                </span>{' '}
+                and 24/7 nationwide support.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 lg:flex-col lg:items-stretch lg:min-w-[220px]">
               <a
                 href={`tel:${BUSINESS_CONTACT.phoneIntl}`}
-                className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-shadow"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-shadow"
               >
-                Call {BUSINESS_CONTACT.phoneDisplay}
+                <span aria-hidden="true">📞</span>
+                <span>{BUSINESS_CONTACT.phoneDisplay}</span>
               </a>
               <a
                 href={BUSINESS_CONTACT.whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-5 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors"
               >
-                WhatsApp
+                <span aria-hidden="true">💬</span>
+                <span>WhatsApp Us</span>
               </a>
+              <Link
+                href="/booking"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-600 text-slate-200 text-sm font-semibold rounded-lg hover:bg-slate-800/60 transition-colors"
+              >
+                <span aria-hidden="true">📅</span>
+                <span>Book a site visit</span>
+              </Link>
             </div>
           </div>
         </div>

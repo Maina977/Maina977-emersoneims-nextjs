@@ -1,21 +1,16 @@
-'use client';
-
-// ULTRA-FAST GLOBAL LOADING - Instant perceived performance
+// MINIMAL GLOBAL LOADING — slim top progress bar only.
+// Replaces the previous full-viewport "Loading..." overlay that
+// briefly hid the SSR'd page content during streaming hand-off and
+// made the site appear broken to users.
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="relative">
-        {/* Pulsing Logo Placeholder */}
-        <div className="w-32 h-32 rounded-full bg-gradient-to-r from-cyan-500/20 to-amber-500/20 animate-pulse" />
-
-        {/* Spinning Ring */}
-        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-cyan-500 animate-spin" />
-
-        {/* Loading Text */}
-        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-          <span className="text-white/60 text-sm font-medium">Loading...</span>
-        </div>
-      </div>
+    <div
+      role="status"
+      aria-label="Loading"
+      className="fixed inset-x-0 top-0 z-[60] h-[3px] bg-cyan-500/20 overflow-hidden pointer-events-none"
+    >
+      <div className="h-full w-1/3 bg-gradient-to-r from-cyan-400 via-amber-400 to-cyan-400 animate-[loading-bar_1.2s_ease-in-out_infinite]" />
+      <style>{`@keyframes loading-bar{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}`}</style>
     </div>
   );
 }
