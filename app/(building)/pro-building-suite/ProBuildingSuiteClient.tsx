@@ -55,7 +55,7 @@ export default function ProBuildingSuiteClient() {
         </div>
       )}
       <iframe
-        src="/eims-building-suite/index.html"
+        src="/eims-building-suite.html"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={() => setLoaded(true)}
         allow="accelerometer; autoplay; clipboard-read; clipboard-write; encrypted-media; fullscreen; geolocation; microphone; payment *; web-share"
