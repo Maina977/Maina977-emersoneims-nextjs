@@ -9,8 +9,22 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/pro-building-suite',
   },
+  other: {
+    // Hint browser to start fetching the wizard shell + Three.js CDN immediately
+    'link-prefetch': '/eims-building-suite.html',
+  },
 };
 
 export default function ProBuildingSuitePage() {
-  return <ProBuildingSuiteClient />;
+  return (
+    <>
+      {/* Speed up wizard: warm CDN connections + prefetch the shell */}
+      <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+      <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+      <link rel="prefetch" href="/eims-building-suite.html" as="document" />
+      <ProBuildingSuiteClient />
+    </>
+  );
 }

@@ -17,7 +17,7 @@ export default function ProBuildingSuiteClient() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setLoaded(true), 12000); // safety hide
+    const t = window.setTimeout(() => setLoaded(true), 6000); // safety hide (wizard typically ready in 2-3s)
     return () => window.clearTimeout(t);
   }, []);
 
@@ -58,6 +58,9 @@ export default function ProBuildingSuiteClient() {
         src="/eims-building-suite.html"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={() => setLoaded(true)}
+        loading="eager"
+        // @ts-expect-error fetchpriority is a valid HTML attr but not yet typed in React 19
+        fetchpriority="high"
         allow="accelerometer; autoplay; clipboard-read; clipboard-write; encrypted-media; fullscreen; geolocation; microphone; payment *; web-share"
         style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
       />
