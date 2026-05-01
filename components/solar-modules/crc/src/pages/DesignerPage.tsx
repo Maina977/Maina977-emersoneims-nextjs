@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useSolarStore } from '../services/store';
 import { autoDesign, equipment } from '../services/api';
 
@@ -96,7 +96,7 @@ const DesignerPage: React.FC = () => {
   const updateFinancial = useSolarStore(s => s.updateFinancial);
   const saveProject = useSolarStore(s => s.saveProject);
   const loadProject = useSolarStore(s => s.loadProject);
-  const nav = useNavigate();
+  const router = useRouter();
 
   const [consumption, setConsumption] = useState<number>(0);
   const [autonomyDays, setAutonomyDays] = useState(1);
@@ -232,13 +232,13 @@ const DesignerPage: React.FC = () => {
           <Btn onClick={runAutoDesign} disabled={loading}>
             {loading ? 'Designing…' : '🤖 Run auto-design'}
           </Btn>
-          <Btn $variant="ghost" onClick={() => nav('/wiring')} disabled={metrics.systemSizeKw === 0}>
+          <Btn $variant="ghost" onClick={() => router.push('/solar-genius-pro/design-studio')} disabled={metrics.systemSizeKw === 0}>
             → Wiring diagram
           </Btn>
-          <Btn $variant="ghost" onClick={() => nav('/viewer-3d')} disabled={metrics.panelCount === 0}>
+          <Btn $variant="ghost" onClick={() => router.push('/solar-genius-pro/design-studio')} disabled={metrics.panelCount === 0}>
             → 3D viewer
           </Btn>
-          <Btn $variant="ghost" onClick={() => nav('/report')} disabled={metrics.systemSizeKw === 0}>
+          <Btn $variant="ghost" onClick={() => router.push('/solar-genius-pro')} disabled={metrics.systemSizeKw === 0}>
             → Generate proposal
           </Btn>
         </div>

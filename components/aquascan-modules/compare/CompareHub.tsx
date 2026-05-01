@@ -16,7 +16,6 @@ const DEMO_SITES = [
 
 export default function CompareHub() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
   const selectedSites = DEMO_SITES.filter(s => selectedIds.includes(s.id));
 
   const winner = selectedSites.length > 0
@@ -46,26 +45,20 @@ export default function CompareHub() {
           Select up to 3 sites to compare borehole viability, yield, water quality and cost.
         </p>
 
-        {/* Site Selector */}
         <div style={{ background: 'white', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', marginBottom: '1.5rem', overflow: 'hidden' }}>
           <SiteSelector sites={DEMO_SITES} onSelect={setSelectedIds} maxSelections={3} />
         </div>
 
         {selectedSites.length >= 2 ? (
           <>
-            {/* Winner */}
             {winner && (
               <div style={{ marginBottom: '1.5rem' }}>
                 <WinnerHighlight winner={winner} metrics={winnerMetrics} />
               </div>
             )}
-
-            {/* Table */}
             <div style={{ background: 'white', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', marginBottom: '1.5rem', overflow: 'hidden' }}>
               <ComparisonTable sites={selectedSites} />
             </div>
-
-            {/* Charts */}
             <div style={{ background: 'white', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
               <ComparisonChart sites={chartSites} />
             </div>

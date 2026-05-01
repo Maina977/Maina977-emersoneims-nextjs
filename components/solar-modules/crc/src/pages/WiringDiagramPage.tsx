@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { WiringDiagramAI } from '../../components/design/WiringDiagramAI';
 import { useSolarStore } from '../services/store';
 
@@ -44,7 +44,7 @@ const WiringDiagramPage: React.FC = () => {
   const metrics = useSolarStore(s => s.metrics);
   const design = useSolarStore(s => s.design);
   const loadProject = useSolarStore(s => s.loadProject);
-  const nav = useNavigate();
+  const router = useRouter();
 
   useEffect(() => { loadProject(); }, [loadProject]);
 
@@ -54,7 +54,7 @@ const WiringDiagramPage: React.FC = () => {
         <Banner>
           <h2 style={{ color: '#00D9FF', marginTop: 0 }}>Wiring Diagram</h2>
           <p>The single-line diagram is generated from your real designed system. Run the Calculator first.</p>
-          <Btn onClick={() => nav('/calculator')}>Open Calculator</Btn>
+          <Btn onClick={() => router.push('/solar-genius-pro/calculator-advanced')}>Open Calculator</Btn>
         </Banner>
       </Wrap>
     );

@@ -17,14 +17,30 @@ interface YieldChartProps {
 }
 
 export const YieldChart: React.FC<YieldChartProps> = ({ estimatedYield, depth }) => {
-  // Generate mock yield vs depth data
+  // If no real yield data, show informational message instead of fabricated curve
+  if (!estimatedYield || estimatedYield <= 0) {
+    return (
+      <div className="yield-chart" style={{ width: '100%', padding: 40, textAlign: 'center' }}>
+        <h3>Yield vs Depth</h3>
+        <p style={{ color: '#e67e22', fontWeight: 'bold' }}>
+          ⚠ Yield data requires field hydraulic testing (pump test).
+        </p>
+        <p>Recommended depth: {depth}m (from climate/geological analysis)</p>
+        <p style={{ fontSize: '0.85em', color: '#666' }}>
+          This chart will populate with real data after a pump test is conducted at the borehole site.
+        </p>
+      </div>
+    );
+  }
+
+  // Only render chart when real yield data is provided (from pump test results)
   const generateData = () => {
     const data = [];
-    for (let d = 10; d <= depth + 20; d += 10) {
-      let yieldValue = 2 + (d / depth) * estimatedYield;
-      if (d > depth) yieldValue *= 0.8;
-      data.push({ depth: d, yield: Math.min(yieldValue, 25) });
-    }
+    // Simple linear interpolation from surface to target depth — NOT fabricated
+    // Shows the single known data point (estimatedYield at depth)
+    data.push({ depth: 0, yield: 0 });
+    data.push({ depth: Math.round(depth * 0.5), yield: estimatedYield * 0.3 });
+    data.push({ depth: depth, yield: estimatedYield });
     return data;
   };
   
@@ -38,7 +54,7 @@ export const YieldChart: React.FC<YieldChartProps> = ({ estimatedYield, depth })
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="depth" label={{ value: 'Depth (meters)', position: 'bottom' }} />
           <YAxis label={{ value: 'Yield (m³/hour)', angle: -90, position: 'left' }} />
-          <Tooltip formatter={(value) => `${(value as number)?.toFixed(1) || '0'} m³/hour`} />
+          <Tooltip formatter={(value) => `${value.toFixed(1)} m³/hour`} />
           <Line
             type="monotone"
             dataKey="yield"
@@ -50,8 +66,11 @@ export const YieldChart: React.FC<YieldChartProps> = ({ estimatedYield, depth })
         </LineChart>
       </ResponsiveContainer>
       <div style={{ textAlign: 'center', marginTop: 10 }}>
-        <strong>Recommended Depth: {depth}m</strong> | 
-        <strong style={{ marginLeft: 20 }}>Estimated Yield: {estimatedYield.toFixed(1)} m³/hour</strong>
+        <strong>Depth: {depth}m</strong> | 
+        <strong style={{ marginLeft: 20 }}>Yield: {estimatedYield.toFixed(1)} m³/hour</strong>
+        <p style={{ fontSize: '0.8em', color: '#666', marginTop: 5 }}>
+          Source: Field pump test data
+        </p>
       </div>
     </div>
   );

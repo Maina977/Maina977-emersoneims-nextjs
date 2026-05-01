@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+﻿import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FiArrowRight, FiZap, FiTrendingUp, FiTarget, FiBarChart2, FiActivity } from 'react-icons/fi';

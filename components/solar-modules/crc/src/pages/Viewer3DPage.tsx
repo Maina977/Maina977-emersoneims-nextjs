@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo } from 'react';
+﻿import React, { useEffect, useMemo } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { True3DViewer } from '../../components/design/True3DViewer';
 import { useSolarStore } from '../services/store';
 
@@ -51,7 +51,7 @@ const Viewer3DPage: React.FC = () => {
   const metrics = useSolarStore(s => s.metrics);
   const design = useSolarStore(s => s.design);
   const loadProject = useSolarStore(s => s.loadProject);
-  const nav = useNavigate();
+  const router = useRouter();
 
   useEffect(() => { loadProject(); }, [loadProject]);
 
@@ -83,7 +83,7 @@ const Viewer3DPage: React.FC = () => {
             {site.lat == null ? 'Step 1: Assess a site on Mission Control. ' : ''}
             {metrics.panelCount === 0 ? 'Step 2: Run Solar Calculator to size the array.' : ''}
           </p>
-          <Btn onClick={() => nav(site.lat == null ? '/dashboard' : '/calculator')}>
+          <Btn onClick={() => router.push(site.lat == null ? '/solar-genius-pro/solar-dashboard' : '/calculator')}>
             {site.lat == null ? 'Go to Mission Control' : 'Open Calculator'}
           </Btn>
         </Banner>

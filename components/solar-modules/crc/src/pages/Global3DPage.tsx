@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
+﻿import React, { useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import * as THREE from 'three';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Advanced3DVisualizationMap } from '../../components/calculator/Advanced3DVisualizationMap';
 import { useSolarStore } from '../services/store';
 
@@ -46,7 +46,7 @@ const Global3DPage: React.FC = () => {
   const metrics = useSolarStore(s => s.metrics);
   const design = useSolarStore(s => s.design);
   const loadProject = useSolarStore(s => s.loadProject);
-  const nav = useNavigate();
+  const router = useRouter();
 
   useEffect(() => { loadProject(); }, [loadProject]);
 
@@ -80,7 +80,7 @@ const Global3DPage: React.FC = () => {
         <Banner>
           <h2 style={{ color: '#00D9FF', marginTop: 0 }}>Global 3D Map</h2>
           <p>Geo-positioned 3D visualisation needs an assessed site. Open Mission Control and enter the address.</p>
-          <Btn onClick={() => nav('/dashboard')}>Go to Mission Control</Btn>
+          <Btn onClick={() => router.push('/solar-genius-pro/solar-dashboard')}>Go to Mission Control</Btn>
         </Banner>
       </Wrap>
     );
