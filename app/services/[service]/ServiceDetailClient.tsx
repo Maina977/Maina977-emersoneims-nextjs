@@ -156,6 +156,16 @@ export default function ServiceDetailClient({
                   >
                     {service.primaryCTA}
                   </Link>
+                  {/* Sizing / engineering calculator for this service */}
+                  <Link
+                    href={`/diagnostics?service=${service.slug}#calculator`}
+                    prefetch={false}
+                    className="px-6 py-3 border-2 border-amber-500/60 text-amber-300 font-semibold rounded-lg hover:bg-amber-500/10 transition-all flex items-center gap-2"
+                    aria-label={`Open ${service.shortName} calculator`}
+                  >
+                    <span aria-hidden="true">🧮</span>
+                    <span>Open {service.shortName} Calculator</span>
+                  </Link>
                 </div>
               </motion.div>
             </div>

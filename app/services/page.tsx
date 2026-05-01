@@ -73,14 +73,43 @@ const ORDERED_CATEGORIES = [...SERVICE_CATEGORIES].sort(
     (CATEGORY_META[a.id]?.order ?? 99) - (CATEGORY_META[b.id]?.order ?? 99),
 );
 
+/**
+ * SERVICE → CALCULATOR map.
+ * Every entry below points at a calculator that lives under
+ * `/diagnostics` (the legacy "diagnostic" hub). The deep link
+ * `/diagnostics?service=<slug>#calculator` pre-selects the
+ * matching service and scrolls to its Advanced Calculator.
+ *
+ * Keep these slugs in sync with `lib/services/allServices.ts`.
+ */
+const SERVICE_CALCULATOR_SLUGS: ReadonlySet<string> = new Set([
+  'cummins-generators',
+  'generator-repairs',
+  'ats-changeover',
+  'distribution-boards',
+  'solar-energy',
+  'motor-rewinding',
+  'ac-installation',
+  'ups-systems',
+  'borehole-pumps',
+  'hospital-incinerators',
+]);
+
+function calculatorHref(slug: string): string | null {
+  return SERVICE_CALCULATOR_SLUGS.has(slug)
+    ? `/diagnostics?service=${slug}#calculator`
+    : null;
+}
+
 function ServiceCard({ service }: { service: Service }) {
+  const calcHref = calculatorHref(service.slug);
   return (
-    <Link
-      href={`/services/${service.slug}`}
-      prefetch={false}
-      className="group block h-full bg-slate-800/40 border border-slate-700/70 rounded-xl overflow-hidden hover:border-cyan-500/60 hover:bg-slate-800/70 transition-colors duration-200"
-    >
-      <div className="p-5">
+    <div className="group h-full bg-slate-800/40 border border-slate-700/70 rounded-xl overflow-hidden hover:border-cyan-500/60 hover:bg-slate-800/70 transition-colors duration-200 flex flex-col">
+      <Link
+        href={`/services/${service.slug}`}
+        prefetch={false}
+        className="block p-5 flex-1"
+      >
         <div className="flex items-start gap-3 mb-3">
           <span className="text-3xl leading-none" aria-hidden="true">
             {service.icon}
@@ -111,8 +140,18 @@ function ServiceCard({ service }: { service: Service }) {
         <div className="text-xs font-medium text-cyan-400 group-hover:text-cyan-300">
           View details →
         </div>
-      </div>
-    </Link>
+      </Link>
+      {calcHref && (
+        <Link
+          href={calcHref}
+          prefetch={false}
+          className="block px-5 py-2.5 border-t border-slate-700/70 bg-slate-900/40 text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-slate-900/70 transition-colors"
+          aria-label={`Open ${service.name} calculator`}
+        >
+          🧮 Open {service.shortName} Calculator →
+        </Link>
+      )}
+    </div>
   );
 }
 

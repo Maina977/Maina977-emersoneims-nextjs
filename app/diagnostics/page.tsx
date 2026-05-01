@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -367,6 +367,35 @@ export default function UniversalDiagnosticPage() {
   const [selectedService, setSelectedService] = useState(NINE_SERVICES[0]);
   const [expandedQA, setExpandedQA] = useState<number | null>(null);
 
+  // Deep-link: /diagnostics?service=<id> pre-selects that service's calculator.
+  // Aliases below let /services cards link via their own slug names.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const requested = new URLSearchParams(window.location.search).get('service');
+    if (!requested) return;
+    const SERVICE_ALIASES: Record<string, string> = {
+      'cummins-generators': 'generators',
+      'generator-repairs': 'generators',
+      'ats-changeover': 'generators',
+      'distribution-boards': 'high-voltage',
+      'solar-energy': 'solar',
+      'ac-installation': 'ac',
+      'ups-systems': 'ups',
+      'borehole-pumps': 'borehole',
+      'hospital-incinerators': 'incinerators',
+    };
+    const targetId = SERVICE_ALIASES[requested] ?? requested;
+    const match = NINE_SERVICES.find((s) => s.id === targetId);
+    if (match) {
+      setSelectedService(match);
+      // Scroll to calculator anchor if present
+      requestAnimationFrame(() => {
+        const el = document.getElementById('calculator');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white font-mono">
       {/* Header */}
@@ -443,7 +472,7 @@ export default function UniversalDiagnosticPage() {
             </div>
 
             {/* Advanced Calculator - Full Width */}
-            <div className="mb-6">
+            <div id="calculator" className="mb-6 scroll-mt-32">
               <h3 className="text-lg font-bold text-cyan-400 border-b border-gray-700 pb-2 mb-4">
                 🧮 ADVANCED PROFESSIONAL CALCULATOR
               </h3>
