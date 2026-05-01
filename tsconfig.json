@@ -47,6 +47,7 @@
     "components/building-modules/**",
     "components/solar-modules/**",
     "components/aquascan-modules/**",
+    "components/building/solar-modules/**",
     "external/**"
   ]
 }

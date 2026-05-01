@@ -32,7 +32,7 @@ import {
   type ProBuildingSuiteReport,
   type BOQItem,
   type BOQSection,
-} from '@/lib/building/proBuildingSuiteEngine';
+} from '@/lib/building/building/proBuildingSuiteEngine';
 
 // ============================================================================
 // MAIN COMPONENT

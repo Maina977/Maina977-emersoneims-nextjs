@@ -25,7 +25,7 @@ import {
   TrendingUp, AlertTriangle, CheckCircle2, Play, ArrowLeft, Shield,
   Lightbulb, PipetteIcon, Wrench, Users, Phone, BarChart3, Cpu
 } from 'lucide-react';
-import { buildingAPI } from '@/lib/building/apiService';
+import { buildingAPI } from '@/lib/building/building/apiService';
 
 // =============================================================================
 // TYPES

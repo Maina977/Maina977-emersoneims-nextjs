@@ -39,8 +39,8 @@ import {
   CONCRETE_GRADES,
   STEEL_GRADES,
   type ProBuildingReport
-} from '@/lib/building/proBuildingSuiteEngineV3';
-import { buildingAPI, runCompleteSiteAnalysis, type CompleteSiteAnalysis } from '@/lib/building/apiService';
+} from '@/lib/building/building/proBuildingSuiteEngineV3';
+import { buildingAPI, runCompleteSiteAnalysis, type CompleteSiteAnalysis } from '@/lib/building/building/apiService';
 import {
   amenitiesGenerator,
   landscapingGenerator,
@@ -58,7 +58,7 @@ import {
   type DelayPrediction,
   type CostOverrunPrediction,
   type LuxuryDesign
-} from '@/lib/building/proBuildingSuiteEngineV4';
+} from '@/lib/building/building/proBuildingSuiteEngineV4';
 
 // ============================================================================
 // AI ENGINE DEFINITIONS

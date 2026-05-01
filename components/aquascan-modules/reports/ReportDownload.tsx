@@ -31,22 +31,13 @@ export const ReportDownload: React.FC<ReportDownloadProps> = ({ reportId, report
         blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         filename = `borehole_report_${reportId}.csv`;
       } else {
-        // For PDF/DOCX: delegate to the standalone analyzer's reportGenerator
-        // which uses real jsPDF/docx libraries
-        try {
-          const { generateReport } = await import('../../ai-borehole-analyzer/src/reportGenerator');
-          const result = await generateReport(reportData as any, format as 'pdf' | 'docx');
-          blob = result.blob;
-          filename = result.filename || `borehole_report_${reportId}.${format}`;
-        } catch {
-          // If reportGenerator import fails, generate a real structured document
-          if (format === 'pdf') {
-            blob = generateBasicPDF(reportData ?? {}, reportId);
-            filename = `borehole_report_${reportId}.pdf`;
-          } else {
-            blob = generateBasicDocx(reportData ?? {}, reportId);
-            filename = `borehole_report_${reportId}.docx`;
-          }
+        // For PDF/DOCX: use built-in structured generators (jsPDF/docx not bundled here)
+        if (format === 'pdf') {
+          blob = generateBasicPDF(reportData ?? {}, reportId);
+          filename = `borehole_report_${reportId}.pdf`;
+        } else {
+          blob = generateBasicDocx(reportData ?? {}, reportId);
+          filename = `borehole_report_${reportId}.docx`;
         }
       }
 

@@ -15,7 +15,7 @@ import {
   COUNTRIES_DATABASE,
   SOIL_TYPES as ENGINE_SOIL_TYPES,
   type ProBuildingSuiteInput,
-} from '@/lib/building/proBuildingSuiteEngine';
+} from '@/lib/building/building/proBuildingSuiteEngine';
 
 // System capabilities metadata (75+ AI engines across 6 categories)
 

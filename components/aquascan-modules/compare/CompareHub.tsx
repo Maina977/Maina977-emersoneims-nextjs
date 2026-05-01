@@ -60,7 +60,7 @@ export default function CompareHub() {
               <ComparisonTable sites={selectedSites} />
             </div>
             <div style={{ background: 'white', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-              <ComparisonChart sites={chartSites} />
+              <ComparisonChart sites={chartSites} chartType="bar" />
             </div>
           </>
         ) : (

@@ -14,7 +14,7 @@ import {
   type InfrastructureAnalysis,
   type EnvironmentalAnalysis,
   type LegalAnalysis,
-} from '@/lib/building/advancedSiteAnalyzer';
+} from '@/lib/building/building/advancedSiteAnalyzer';
 
 interface AnalysisResults {
   terrain: TerrainAnalysis;

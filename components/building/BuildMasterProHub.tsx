@@ -13,7 +13,7 @@ import {
   type DesignPlan,
   type FinancialAnalysis,
   type PermitRequirement
-} from '@/lib/building/buildMasterProEngine';
+} from '@/lib/building/building/buildMasterProEngine';
 
 // Module Types
 type ModuleId =

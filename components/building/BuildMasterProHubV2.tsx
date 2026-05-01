@@ -8,7 +8,7 @@ import {
   MATERIALS_CATEGORIES,
   type RiskPrediction,
   type GeneratedDesign,
-} from '@/lib/building/buildMasterProEngineV2';
+} from '@/lib/building/building/buildMasterProEngineV2';
 import {
   BUILDING_MATERIALS_DB,
   BUILDING_TYPES_DB,
@@ -16,7 +16,7 @@ import {
   type SiteAnalysis,
   AIQuantitySurveyor,
   AISiteAnalyzer,
-} from '@/lib/building/buildMasterProEngine';
+} from '@/lib/building/building/buildMasterProEngine';
 import AIDesignStudioModule from './AIDesignStudioModule';
 import ProBuildingSuite from './ProBuildingSuite';
 
