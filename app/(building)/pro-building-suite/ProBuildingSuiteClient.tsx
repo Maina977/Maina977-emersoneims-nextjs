@@ -1,20 +1,66 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import EmbedRouteLoading from '@/components/building-suite/EmbedRouteLoading';
+/**
+ * PRO BUILDING SUITE — NEW INTERACTIVE WIZARD
+ *
+ * Mounts the full 540 KB "Global Construction Intelligence Platform" UI
+ * (28 countries, BIM, 3D, drawings, BOQ, permits, frame analysis, etc.)
+ * from G:\EMERSONEIMS BUILDING SUITE PRO\interactive_wizard.html as a
+ * SAME-ORIGIN iframe so its embedded fetch() calls to /api/* reach the
+ * Next.js API routes we are progressively porting from the original Flask
+ * backend (lib/building/wizardApi/*).
+ */
 
-// Native Next.js Pro Building Suite — replaces the legacy iframe that targeted
-// http://127.0.0.1:5000 (a local Flask app that doesn't exist on Vercel).
-// This is the same 203+ capability UI that already serves /solutions/building,
-// and it is fully self-contained: no Python backend required.
-const ProBuildingSuiteComplete = dynamic(
-  () => import('@/components/building/ProBuildingSuiteComplete'),
-  {
-    ssr: false,
-    loading: () => <EmbedRouteLoading />,
-  },
-);
+import { useEffect, useState } from 'react';
 
 export default function ProBuildingSuiteClient() {
-  return <ProBuildingSuiteComplete />;
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setLoaded(true), 12000); // safety hide
+    return () => window.clearTimeout(t);
+  }, []);
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 4rem)', background: '#0a0e27' }}>
+      {!loaded && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#64b5f6',
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              border: '3px solid rgba(100,181,246,0.25)',
+              borderTopColor: '#64b5f6',
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite',
+            }}
+          />
+          <p style={{ marginTop: 16, fontSize: 14, fontWeight: 600 }}>Loading Building Suite Pro…</p>
+          <p style={{ marginTop: 4, fontSize: 12, opacity: 0.7 }}>
+            Global Construction Intelligence Platform · 28 Countries
+          </p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      )}
+      <iframe
+        src="/eims-building-suite/index.html"
+        title="EMERSON EIMS Building Suite Pro"
+        onLoad={() => setLoaded(true)}
+        allow="accelerometer; autoplay; clipboard-read; clipboard-write; encrypted-media; fullscreen; geolocation; microphone; payment *; web-share"
+        style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
+      />
+    </div>
+  );
 }
