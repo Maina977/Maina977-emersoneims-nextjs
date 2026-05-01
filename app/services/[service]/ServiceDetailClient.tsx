@@ -7,11 +7,17 @@
  * Phone: +254768860665 | WhatsApp: +254768860665
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Service } from '@/lib/services/allServices';
+import type { ServiceDiagnostics } from '@/lib/services/serviceDiagnostics';
+import type { ServiceBible } from '@/lib/services/serviceBibles';
+import ServiceDiagnosticsPanel from '@/components/services/ServiceDiagnosticsPanel';
+import ServiceBiblePanel from '@/components/services/ServiceBiblePanel';
+import ServiceWidgetsPanel from '@/components/services/ServiceWidgetsPanel';
+import { SERVICE_WIDGETS } from '@/lib/services/serviceWidgets';
 
 // Dynamic import for AI Borehole Analyzer (only loads when needed)
 const BoreholeAIAnalyzer = dynamic(
@@ -42,24 +48,50 @@ interface ServiceDetailClientProps {
     address: string;
     hours: { weekday: string; saturday: string; emergency: string };
   };
+  diagnostics: ServiceDiagnostics | null;
+  bible: ServiceBible | null;
 }
+
+type TabId = 'overview' | 'pricing' | 'faq' | 'ai-analyzer' | 'calculator' | 'bible';
 
 export default function ServiceDetailClient({
   service,
   relatedServices,
   category,
   trustBadges,
-  contact
+  contact,
+  diagnostics,
+  bible,
 }: ServiceDetailClientProps) {
   // Check if this is a borehole-related service
   const isBoreholeService = service.slug?.includes('borehole') ||
                             service.name?.toLowerCase().includes('borehole') ||
                             service.category === 'water';
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'pricing' | 'faq' | 'ai-analyzer'>(
+  const hasDiagnostics = diagnostics !== null;
+  const hasBible = bible !== null;
+
+  const [activeTab, setActiveTab] = useState<TabId>(
     isBoreholeService ? 'ai-analyzer' : 'overview'
   );
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+  // Deep-link: /services/<slug>#calculator opens the embedded calculator tab.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.hash === '#calculator' && hasDiagnostics) {
+      setActiveTab('calculator');
+      requestAnimationFrame(() => {
+        document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    if (window.location.hash === '#bible' && hasBible) {
+      setActiveTab('bible');
+      requestAnimationFrame(() => {
+        document.getElementById('bible')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [hasDiagnostics, hasBible]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black">
@@ -156,16 +188,33 @@ export default function ServiceDetailClient({
                   >
                     {service.primaryCTA}
                   </Link>
-                  {/* Sizing / engineering calculator for this service */}
-                  <Link
-                    href={`/diagnostics?service=${service.slug}#calculator`}
-                    prefetch={false}
-                    className="px-6 py-3 border-2 border-amber-500/60 text-amber-300 font-semibold rounded-lg hover:bg-amber-500/10 transition-all flex items-center gap-2"
-                    aria-label={`Open ${service.shortName} calculator`}
-                  >
-                    <span aria-hidden="true">🧮</span>
-                    <span>Open {service.shortName} Calculator</span>
-                  </Link>
+                  {/* In-page sizing / engineering calculator */}
+                  {hasDiagnostics && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                      className="px-6 py-3 border-2 border-amber-500/60 text-amber-300 font-semibold rounded-lg hover:bg-amber-500/10 transition-all flex items-center gap-2"
+                      aria-label={`Open ${service.shortName} calculator`}
+                    >
+                      <span aria-hidden="true">🧮</span>
+                      <span>Open {service.shortName} Calculator</span>
+                    </button>
+                  )}
+                  {hasBible && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        document.getElementById('bible')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                      className="px-6 py-3 border-2 border-emerald-500/60 text-emerald-300 font-semibold rounded-lg hover:bg-emerald-500/10 transition-all flex items-center gap-2"
+                      aria-label={`Read ${service.shortName} technical bible`}
+                    >
+                      <span aria-hidden="true">📖</span>
+                      <span>Read Technical Bible</span>
+                    </button>
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -262,21 +311,29 @@ export default function ServiceDetailClient({
               // AI Analyzer tab only for borehole services
               ...(isBoreholeService ? [{ id: 'ai-analyzer', label: 'AI Site Analyzer', badge: 'NEW' }] : []),
               { id: 'overview', label: 'Overview' },
+              ...(hasBible ? [{ id: 'bible', label: 'Technical Bible', badge: 'PRO' }] : []),
+              ...(hasDiagnostics ? [{ id: 'calculator', label: 'Calculator & Diagnostics', badge: 'TOOLS' }] : []),
               { id: 'pricing', label: 'Pricing' },
               { id: 'faq', label: 'FAQ' }
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                onClick={() => setActiveTab(tab.id as TabId)}
                 className={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
                   activeTab === tab.id
                     ? tab.id === 'ai-analyzer'
                       ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white'
-                      : 'bg-cyan-500 text-white'
+                      : tab.id === 'calculator'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-black'
+                        : tab.id === 'bible'
+                          ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-black'
+                          : 'bg-cyan-500 text-white'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
                 {tab.id === 'ai-analyzer' && <span>🤖</span>}
+                {tab.id === 'calculator' && <span>🧮</span>}
+                {tab.id === 'bible' && <span>📖</span>}
                 {tab.label}
                 {'badge' in tab && tab.badge && (
                   <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
@@ -392,6 +449,39 @@ export default function ServiceDetailClient({
           </motion.div>
         )}
 
+        {activeTab === 'calculator' && diagnostics && (
+          <motion.div
+            key="calculator"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ServiceDiagnosticsPanel
+              serviceShortName={service.shortName}
+              diagnostics={diagnostics}
+              contactPhone={contact.phoneIntl}
+              contactWhatsapp={contact.whatsappUrl}
+            />
+          </motion.div>
+        )}
+
+        {activeTab === 'bible' && bible && (
+          <motion.div
+            key="bible"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ServiceBiblePanel
+              bible={bible}
+              contactPhoneDisplay={contact.phoneDisplay}
+              contactWhatsappUrl={contact.whatsappUrl}
+            />
+          </motion.div>
+        )}
+
         {activeTab === 'overview' && (
           <motion.div
             key="overview"
@@ -400,81 +490,10 @@ export default function ServiceDetailClient({
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Benefits Section */}
-            <section className="py-16 px-4">
-              <div className="max-w-7xl mx-auto">
-                <h2 className="text-3xl font-bold text-white mb-8">
-                  Why Choose Our {service.shortName}?
-                </h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {service.benefits.map((benefit, idx) => (
-                    <div
-                      key={idx}
-                      className="p-6 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-cyan-500/50 transition-all"
-                    >
-                      <div className="text-4xl mb-4">{benefit.icon}</div>
-                      <h3 className="text-lg font-bold text-white mb-2">{benefit.title}</h3>
-                      <p className="text-slate-400">{benefit.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Long Description */}
-            <section className="py-16 px-4 bg-slate-900/50">
-              <div className="max-w-4xl mx-auto">
-                <div className="prose prose-invert prose-lg">
-                  {service.longDescription.split('\n\n').map((paragraph, idx) => (
-                    <p key={idx} className="text-slate-300 mb-6 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Features Grid */}
-            <section className="py-16 px-4">
-              <div className="max-w-7xl mx-auto">
-                <h2 className="text-3xl font-bold text-white mb-8">
-                  Features & Capabilities
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {service.features.map((feature, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl text-center"
-                    >
-                      <span className="text-cyan-400">&#10003;</span>
-                      <span className="ml-2 text-slate-300 text-sm">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Target Customers */}
-            <section className="py-16 px-4 bg-slate-900/50">
-              <div className="max-w-7xl mx-auto">
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Who This Service Is For
-                </h2>
-                <p className="text-slate-400 mb-8">
-                  Our {service.shortName.toLowerCase()} serve a wide range of industries and applications
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {service.targetCustomers.map((customer, idx) => (
-                    <span
-                      key={idx}
-                      className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-full text-slate-300"
-                    >
-                      {customer}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </section>
+            {/* NOTE: Why-Choose, Long-Description, Features and Who-For sections
+                were moved OUTSIDE this tab (rendered always-visible after
+                </AnimatePresence>) so they remain visible even when the
+                default tab is AI-Analyzer (e.g. borehole pages). */}
 
             {/* Stats */}
             <section className="py-16 px-4">
@@ -490,35 +509,7 @@ export default function ServiceDetailClient({
               </div>
             </section>
 
-            {/* Testimonials */}
-            {service.testimonials.length > 0 && (
-              <section className="py-16 px-4 bg-slate-900/50">
-                <div className="max-w-7xl mx-auto">
-                  <h2 className="text-3xl font-bold text-white mb-8">
-                    What Our Clients Say
-                  </h2>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {service.testimonials.map((testimonial, idx) => (
-                      <div
-                        key={idx}
-                        className="p-6 bg-slate-800/50 border border-slate-700 rounded-xl"
-                      >
-                        <div className="flex gap-1 mb-4">
-                          {[...Array(testimonial.rating)].map((_, i) => (
-                            <span key={i} className="text-amber-400">&#9733;</span>
-                          ))}
-                        </div>
-                        <p className="text-slate-300 mb-4 italic">"{testimonial.quote}"</p>
-                        <div>
-                          <div className="font-semibold text-white">{testimonial.name}</div>
-                          <div className="text-sm text-slate-400">{testimonial.company}, {testimonial.location}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
+            {/* Testimonials section removed per requirement: no fake/synthetic client quotes. */}
           </motion.div>
         )}
 
@@ -685,6 +676,216 @@ export default function ServiceDetailClient({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ====================================================================
+           ALWAYS-VISIBLE SECTIONS (render regardless of active tab so the
+           default AI-Analyzer tab on borehole pages does not hide content)
+           ==================================================================== */}
+
+      {/* Why Choose — always visible */}
+      <section id="why-choose" className="py-16 px-4 scroll-mt-32 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-white">
+                Why Choose Our {service.shortName}?
+              </h2>
+              <p className="text-slate-400 mt-2 text-sm">
+                Tap any card to jump straight to the matching section on this page — no other pages, no extra clicks.
+              </p>
+            </div>
+            {hasBible && (
+              <a href="#bible" className="text-emerald-300 text-sm font-semibold hover:text-emerald-200 underline-offset-4 hover:underline">
+                Open Technical Bible →
+              </a>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {service.benefits.map((benefit, idx) => {
+              const jumpTargets = hasBible
+                ? ['#bible-intro', '#bible-brands', '#bible-install', '#bible-repair', '#bible-roi', '#bible-quality']
+                : hasDiagnostics
+                ? ['#calculator', '#troubleshooting']
+                : ['#features'];
+              const target = jumpTargets[idx % jumpTargets.length];
+              const targetLabel = hasBible
+                ? ['Engineering brief', 'Top 10 brands', 'Installation phases', 'Repair manual', 'ROI tables', 'Quality checks'][idx % 6]
+                : hasDiagnostics
+                ? ['Open calculator', 'Troubleshoot Q&A'][idx % 2]
+                : 'See features';
+              return (
+                <a
+                  key={idx}
+                  href={target}
+                  className="group p-6 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-cyan-500/60 hover:bg-slate-800 transition-all flex flex-col"
+                >
+                  <div className="text-4xl mb-4" aria-hidden="true">{benefit.icon}</div>
+                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">{benefit.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed flex-1">{benefit.description}</p>
+                  <div className="mt-4 text-xs text-cyan-400 font-semibold flex items-center gap-1">
+                    {targetLabel} <span className="transition-transform group-hover:translate-x-1">→</span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Long description — always visible */}
+      <section className="py-16 px-4 bg-slate-900/50 border-t border-slate-800">
+        <div className="max-w-4xl mx-auto">
+          <div className="prose prose-invert prose-lg">
+            {service.longDescription.split('\n\n').map((paragraph, idx) => (
+              <p key={idx} className="text-slate-300 mb-6 leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features & Capabilities — always visible */}
+      <section id="features" className="py-16 px-4 scroll-mt-32 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-white">Features &amp; Capabilities</h2>
+              <p className="text-slate-400 mt-2 text-sm">
+                {service.features.length} engineered capabilities — each opens the matching technical content on this page.
+              </p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {hasDiagnostics && (
+                <a href="#calculator" className="px-3 py-1.5 text-xs font-bold rounded-full border border-amber-500/60 text-amber-300 hover:bg-amber-500/10">🧮 Calculator</a>
+              )}
+              {hasBible && (
+                <>
+                  <a href="#bible-parts" className="px-3 py-1.5 text-xs font-bold rounded-full border border-cyan-500/60 text-cyan-300 hover:bg-cyan-500/10">🧰 Parts Manual</a>
+                  <a href="#bible-repair" className="px-3 py-1.5 text-xs font-bold rounded-full border border-emerald-500/60 text-emerald-300 hover:bg-emerald-500/10">🛠️ Repair Manual</a>
+                  <a href="#bible-errors" className="px-3 py-1.5 text-xs font-bold rounded-full border border-red-500/60 text-red-300 hover:bg-red-500/10">⚠️ Error Codes</a>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {service.features.map((feature, idx) => {
+              const featureTargets = hasBible
+                ? ['#bible-install', '#bible-parts', '#bible-repair', '#bible-errors', '#bible-quality', '#bible-diagrams', '#bible-brands', '#bible-roi']
+                : hasDiagnostics
+                ? ['#calculator', '#troubleshooting']
+                : ['#why-choose'];
+              const target = featureTargets[idx % featureTargets.length];
+              const sectionLabel = hasBible
+                ? ['Installation', 'Parts list', 'Repair steps', 'Error codes', 'Quality checks', 'Diagrams', 'Brand specs', 'ROI'][idx % 8]
+                : hasDiagnostics
+                ? ['Calculator', 'Diagnostic Q&A'][idx % 2]
+                : 'Details';
+              return (
+                <a
+                  key={idx}
+                  href={target}
+                  className="group p-5 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-cyan-500/60 hover:bg-slate-800 transition-all flex flex-col gap-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="shrink-0 w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 flex items-center justify-center text-sm font-bold">
+                      {idx + 1}
+                    </span>
+                    <span className="text-slate-100 text-sm font-semibold leading-snug">{feature}</span>
+                  </div>
+                  <div className="text-[11px] uppercase tracking-wider text-cyan-400 font-bold flex items-center gap-1 mt-auto">
+                    {sectionLabel} <span className="transition-transform group-hover:translate-x-1">→</span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Who This Service Is For — always visible */}
+      <section id="who-for" className="py-16 px-4 bg-slate-900/50 scroll-mt-32 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-white mb-3">Who This Service Is For</h2>
+          <p className="text-slate-400 mb-8 text-sm md:text-base">
+            {service.targetCustomers.length} industries we serve across Kenya — tap a card to message us about that specific use-case.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {service.targetCustomers.map((customer, idx) => {
+              const useCase = service.useCases[idx % Math.max(service.useCases.length, 1)];
+              const waText = encodeURIComponent(
+                `Hello, I am from a ${customer} and I need a quote for ${service.name}.`
+              );
+              return (
+                <a
+                  key={idx}
+                  href={`https://wa.me/${contact.whatsappUrl.split('/').pop()?.split('?')[0] || '254768860665'}?text=${waText}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-5 bg-slate-800/60 border border-slate-700 rounded-xl hover:border-emerald-500/60 hover:bg-slate-800 transition-all flex flex-col"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-2xl" aria-hidden="true">{category?.icon ?? '🏢'}</span>
+                    <h3 className="text-white font-bold text-base group-hover:text-emerald-300 transition-colors">{customer}</h3>
+                  </div>
+                  {useCase && (
+                    <p className="text-slate-400 text-xs leading-relaxed flex-1">Typical project: {useCase}</p>
+                  )}
+                  <div className="mt-4 text-[11px] uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1">
+                    💬 WhatsApp us <span className="transition-transform group-hover:translate-x-1">→</span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a href={`tel:${contact.phoneIntl}`} className="px-5 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm">
+              📞 Call {contact.phoneDisplay}
+            </a>
+            <a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-500 text-white font-semibold text-sm">
+              💬 WhatsApp
+            </a>
+            {hasDiagnostics && (
+              <a href="#calculator" className="px-5 py-2.5 rounded-lg border border-amber-500/60 text-amber-300 hover:bg-amber-500/10 font-semibold text-sm">
+                🧮 Open Calculator
+              </a>
+            )}
+            {hasBible && (
+              <a href="#bible" className="px-5 py-2.5 rounded-lg border border-emerald-500/60 text-emerald-300 hover:bg-emerald-500/10 font-semibold text-sm">
+                📖 Read Technical Bible
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Always-visible Interactive Engineering Widgets (per-service) */}
+      {SERVICE_WIDGETS[service.slug] && (
+        <ServiceWidgetsPanel slug={service.slug} serviceName={service.shortName} />
+      )}
+
+      {/* Always-visible Calculator & Diagnostics section */}
+      {diagnostics && (
+        <section className="border-t border-slate-800 bg-slate-950">
+          <ServiceDiagnosticsPanel
+            serviceShortName={service.shortName}
+            diagnostics={diagnostics}
+            contactPhone={contact.phoneIntl}
+            contactWhatsapp={contact.whatsappUrl}
+          />
+        </section>
+      )}
+
+      {/* Always-visible Technical Bible section */}
+      {bible && (
+        <section className="border-t border-slate-800 bg-gradient-to-b from-slate-950 to-slate-900">
+          <ServiceBiblePanel
+            bible={bible}
+            contactPhoneDisplay={contact.phoneDisplay}
+            contactWhatsappUrl={contact.whatsappUrl}
+          />
+        </section>
+      )}
 
       {/* Related Services */}
       {relatedServices.length > 0 && (

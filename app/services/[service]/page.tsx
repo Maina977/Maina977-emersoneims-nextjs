@@ -18,6 +18,8 @@ import {
   BUSINESS_CONTACT,
   SERVICE_CATEGORIES
 } from '@/lib/services/allServices';
+import { getServiceDiagnostics } from '@/lib/services/serviceDiagnostics';
+import { getServiceBible } from '@/lib/services/serviceBibles';
 
 // Import client components
 import ServiceDetailClient from './ServiceDetailClient';
@@ -160,6 +162,8 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   const relatedServices = getRelatedServices(serviceSlug);
   const category = SERVICE_CATEGORIES.find(c => c.id === service.category);
+  const diagnostics = getServiceDiagnostics(service.slug);
+  const bible = getServiceBible(service.slug);
   const structuredData = generateStructuredData(service);
 
   return (
@@ -176,6 +180,8 @@ export default async function ServiceDetailPage({ params }: Props) {
         category={category}
         trustBadges={TRUST_BADGES}
         contact={BUSINESS_CONTACT}
+        diagnostics={diagnostics}
+        bible={bible}
       />
     </>
   );

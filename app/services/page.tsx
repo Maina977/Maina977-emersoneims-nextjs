@@ -98,7 +98,7 @@ const SERVICE_CALCULATOR_SLUGS: ReadonlySet<string> = new Set([
 
 function calculatorHref(slug: string): string | null {
   return SERVICE_CALCULATOR_SLUGS.has(slug)
-    ? `/diagnostics?service=${slug}#calculator`
+    ? `/services/${slug}#calculator`
     : null;
 }
 
