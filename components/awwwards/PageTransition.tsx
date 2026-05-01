@@ -135,12 +135,15 @@ export default function PageTransition({ children }: PageTransitionProps) {
     <AnimatePresence mode="wait">
       <motion.div
         key={pathname}
-        initial="initial"
+        // initial={false} ⇒ the very first paint of the page is rendered
+        // at the `animate` state directly, so SSR HTML is visible
+        // immediately. Page-to-page transitions still animate because
+        // AnimatePresence supplies a fresh component per route change.
+        initial={false}
         animate="animate"
         exit="exit"
         variants={variants[currentVariant]}
         transition={transitionConfig.smooth}
-        className="min-h-screen"
       >
         {children}
       </motion.div>
