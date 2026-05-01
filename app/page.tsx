@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 
 function StaticHeroFallback() {
   return (
-    <section className="relative min-h-screen bg-black overflow-hidden content-auto">
+    <section className="hero-full relative min-h-screen bg-black overflow-hidden content-auto">
       {/* Static hero image - loads INSTANTLY with optimized loading */}
       <div className="absolute inset-0">
         <Image

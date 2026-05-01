@@ -19,7 +19,6 @@ import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
-import WebsiteStatsCounter from '@/components/social/WebsiteStatsCounter';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PERFORMANCE: All non-critical components loaded AFTER page is interactive
@@ -387,8 +386,13 @@ export default async function RootLayout({
           @font-face{font-family:Inter;font-style:normal;font-weight:400 700;font-display:swap;src:local('Inter'),local('Inter-Regular')}
           /* Navigation skeleton for instant render */
           nav{min-height:64px}
-          /* Hero section skeleton */
-          main>section:first-child{min-height:100vh}
+          /* Hero opt-in: pages add `.hero-full` to first section to fill viewport */
+          main#main-content>section.hero-full:first-child{min-height:100vh}
+          /* Compensate fixed navbar so non-hero pages do not sit under it */
+          main#main-content{padding-top:64px}
+          @media(min-width:1024px){main#main-content{padding-top:72px}}
+          /* Pages that own a full-viewport hero opt out of the offset */
+          main#main-content:has(>section.hero-full:first-child){padding-top:0}
           /* Button focus states for accessibility */
           button:focus-visible,a:focus-visible{outline:2px solid #0EA5E9;outline-offset:2px}
           /* Reduce motion for users who prefer it */

@@ -11,9 +11,11 @@ import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TIER 1: Essential (load at 500ms) - Just WhatsApp button (non-intrusive)
+// TIER 1: Essential (load at 500ms) - REMOVED duplicate WhatsApp button.
+// ClientWhatsApp (chat/) is already mounted by ClientSideComponents → keeping
+// only one floating WhatsApp button site-wide.
 // ═══════════════════════════════════════════════════════════════════════════════
-const WhatsAppButton = dynamic(() => import('@/components/conversion/WhatsAppButton'), { ssr: false });
+// REMOVED: WhatsAppButton (was conflicting with chat/ClientWhatsApp)
 // REMOVED: StickyCallBar - Too intrusive, blocks content
 // REMOVED: QuickQuoteWidget - Annoying floating widget
 
@@ -114,15 +116,9 @@ export default function DeferredComponents() {
 
   return (
     <>
-      {/* TIER 1: Essential - Just WhatsApp button (non-intrusive corner button) */}
-      {tier1 && (
-        <WhatsAppButton />
-      )}
+      {/* TIER 1: REMOVED — ClientWhatsApp from ClientSideComponents covers this */}
 
-      {/* TIER 2: Stats counter (non-intrusive) */}
-      {tier2 && (
-        <WebsiteStatsCounter />
-      )}
+      {/* TIER 2: REMOVED stats counter — was overlapping page content */}
 
       {/* TIER 3: DISABLED - All annoying popups removed */}
       {/* No exit intent, no urgency bars, no floating AI assistants */}
