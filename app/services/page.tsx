@@ -120,7 +120,7 @@ function ServiceCard({ service }: { service: Service }) {
               {service.name}
             </h3>
             <p className="text-xs text-amber-400/80 mt-0.5">
-              From {service.startingPrice}
+              {service.startingPrice}
             </p>
           </div>
         </div>
