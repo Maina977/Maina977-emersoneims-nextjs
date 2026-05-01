@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+// HashRouter used instead of BrowserRouter so the Solar SPA can mount inside Next.js
+// without conflicting with the host app's URL/routing. All internal nav uses #/...
+import { HashRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 import { FiMenu, FiX, FiBarChart2, FiGrid, FiBox, FiTrendingUp, FiSettings, FiStar, FiClipboard, FiTool, FiCpu, FiZap, FiAlertTriangle, FiLayout, FiEye, FiHexagon, FiActivity, FiCheckSquare, FiGlobe, FiSearch, FiBell, FiUser, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
