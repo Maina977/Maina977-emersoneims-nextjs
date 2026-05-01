@@ -1,7 +1,5 @@
-'use client';
-
 /**
- * Services Index Page — EmersonEIMS
+ * Services Index Page — EmersonEIMS (Server Component for instant SSR)
  *
  * Layout principles (per user requirements):
  *  • No huge gap below navbar (hero starts tight under the fixed nav).
@@ -9,6 +7,9 @@
  *    under UPS, every Generator sub-service sits under Generator, etc.
  *  • Each category has an anchor id for direct linking
  *    (/services#cat-power, /services#cat-renewable, …).
+ *  • No `'use client'` — this is a static page; rendering server-side
+ *    skips the loading.tsx fallback that previously made the page look
+ *    broken while the bundle downloaded.
  */
 
 import Link from 'next/link';
