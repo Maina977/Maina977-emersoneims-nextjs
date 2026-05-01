@@ -1,0 +1,315 @@
+// ============================================
+// SOLARGENIUS PRO DATABASE SCHEMA
+// PostgreSQL with multi-tenancy support
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Tenant table (multi-tenancy)
+model Tenant {
+  id              String    @id @default(cuid())
+  name            String
+  subdomain       String    @unique
+  customDomain    String?
+  plan            PlanType  @default(FREE)
+  status          TenantStatus @default(ACTIVE)
+  settings        Json
+  quotas          Json
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  trialEndsAt     DateTime?
+  
+  users           User[]
+  projects        Project[]
+  designs         Design[]
+  quotes          Quote[]
+  
+  @@index([subdomain])
+  @@index([status])
+}
+
+// User table
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  password        String
+  name            String
+  role            UserRole  @default(CLIENT)
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  mfaEnabled      Boolean   @default(false)
+  mfaSecret       String?
+  lastLogin       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  projects        Project[]
+  designs         Design[]
+  quotes          Quote[]
+  
+  @@index([email])
+  @@index([tenantId])
+}
+
+// Project table
+model Project {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  status          ProjectStatus @default(DRAFT)
+  location        Json?
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  ownerId         String
+  owner           User      @relation(fields: [ownerId], references: [id])
+  budget          Float?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  designs         Design[]
+  quotes          Quote[]
+  
+  @@index([tenantId])
+  @@index([ownerId])
+  @@index([status])
+}
+
+// Design table
+model Design {
+  id              String    @id @default(cuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id])
+  name            String
+  systemKw        Float
+  panelCount      Int
+  panelModel      String
+  inverterModel   String
+  batteryModel    String?
+  batteryKwh      Float?
+  roofType        String?
+  roofPitch       Float?
+  orientation     String?
+  shadingLoss     Float?
+  annualYield     Float?
+  configuration   Json       // Panel positions, string configuration
+  createdBy       String
+  creator         User      @relation(fields: [createdBy], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  quotes          Quote[]
+  
+  @@index([projectId])
+  @@index([createdBy])
+}
+
+// Quote table
+model Quote {
+  id              String    @id @default(cuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id])
+  designId        String
+  design          Design    @relation(fields: [designId], references: [id])
+  quoteNumber     String    @unique
+  totalAmount     Float
+  currency        String    @default("KES")
+  status          QuoteStatus @default(DRAFT)
+  components      Json       // Bill of materials
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentReference String?
+  validUntil      DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([projectId])
+  @@index([quoteNumber])
+  @@index([status])
+}
+
+// Report table
+model Report {
+  id              String    @id @default(cuid())
+  quoteId         String
+  quote           Quote     @relation(fields: [quoteId], references: [id])
+  type            ReportType
+  fileUrl         String
+  fileSize        Int
+  generatedBy     String
+  createdAt       DateTime  @default(now())
+  
+  @@index([quoteId])
+  @@index([type])
+}
+
+// Digital Twin table
+model DigitalTwin {
+  id              String    @id @default(cuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id])
+  name            String
+  siteModel       Json
+  systemModel     Json
+  weatherModel    Json
+  simulations     Json[]
+  status          String    @default("active")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([projectId])
+}
+
+// Audit Log table
+model AuditLog {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  tenantId        String
+  action          String
+  entity          String
+  entityId        String?
+  details         Json?
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([tenantId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+// Notification table
+model Notification {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  title           String
+  message         String
+  type            NotificationType
+  read            Boolean   @default(false)
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+// API Key table (for API access)
+model ApiKey {
+  id              String    @id @default(cuid())
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  name            String
+  key             String    @unique
+  permissions     Json
+  lastUsed        DateTime?
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  
+  @@index([tenantId])
+  @@index([key])
+}
+
+// Payment Transaction table
+model PaymentTransaction {
+  id              String    @id @default(cuid())
+  quoteId         String
+  quote           Quote     @relation(fields: [quoteId], references: [id])
+  amount          Float
+  currency        String    @default("KES")
+  method          PaymentMethod
+  reference       String    @unique
+  status          TransactionStatus @default(PENDING)
+  metadata        Json?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  
+  @@index([quoteId])
+  @@index([reference])
+  @@index([status])
+}
+
+// Enums
+enum PlanType {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  TRIAL
+  CANCELLED
+}
+
+enum UserRole {
+  ADMIN
+  ENGINEER
+  CLIENT
+  TECHNICIAN
+  VIEWER
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ReportType {
+  ENGINEERING
+  ELECTRICAL
+  FINANCIAL
+  DRAWINGS
+  BOQ
+  QUOTATION
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum PaymentMethod {
+  MPESA
+  FLUTTERWAVE
+  PAYSTACK
+  BANK_TRANSFER
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}

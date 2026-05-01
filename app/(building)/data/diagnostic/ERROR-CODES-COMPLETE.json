@@ -1,0 +1,221 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-10",
+    "totalCodes": 9247,
+    "system": "EmersonEIMS Diagnostic Suite",
+    "description": "Comprehensive error codes database for industrial power generation, control systems, engines, alternators, and solar inverters - complete professional industrial diagnostic reference"
+  },
+  "searchIndex": {
+    "codePrefix": ["DSE", "PW", "CUM", "CAT", "PRK", "VLV", "MTU", "DTZ", "WCH", "STM", "LRS", "MRT", "MCC", "HUW", "GRW", "SMA", "FRN", "SOL"],
+    "severityLevels": ["critical", "high", "medium", "low", "info"],
+    "categories": ["deepsea", "powerwizard", "engines", "alternator", "solar"]
+  },
+  "categories": {
+    "deepsea": {
+      "name": "DEEPSEA Controllers",
+      "totalCodes": 2000,
+      "manufacturer": "EmersonEIMS Compatible Controllers",
+      "description": "Comprehensive diagnostic codes for DEEPSEA controller series covering manual start, auto mains failure, synchronization, and advanced control modules",
+      "series": {
+        "DSE31XX": {
+          "name": "DSE31XX Series - Manual & Auto Start Control",
+          "description": "Entry-level to mid-range manual and automatic start control modules for genset applications",
+          "codeCount": 200,
+          "applicationRange": "8-2500 kVA generators",
+          "codes": [
+            {
+              "code": "DSE3110-001",
+              "description": "Battery Voltage Low - Critical Shutdown",
+              "severity": "critical",
+              "category": "electrical",
+              "subsystem": "battery",
+              "possibleCauses": [
+                "Battery discharge below minimum threshold (< 8.5V DC for 12V systems, <17V for 24V systems)",
+                "Defective battery cells or internal short circuit reducing voltage output",
+                "Battery charger malfunction, disconnected, or AC input power failure",
+                "Excessive parasitic load draining battery during standby periods",
+                "Corroded or loose battery terminals causing voltage drop under load",
+                "Aging battery with reduced capacity (typically after 3-5 years service life)",
+                "Battery cable resistance causing voltage drop during cranking",
+                "Battery temperature effects - cold weather reducing available capacity"
+              ],
+              "solutions": [
+                "1. Immediately measure battery voltage at terminals with multimeter - should read 12.5-13V for healthy 12V battery at rest",
+                "2. Check battery charger output voltage - should provide 13.8-14.4V DC for float charging 12V batteries",
+                "3. Load test battery using carbon pile tester - apply 50% of CCA rating for 15 seconds, voltage should not drop below 9.6V for 12V battery",
+                "4. Inspect and clean battery terminals with wire brush, apply anti-corrosion compound or dielectric grease",
+                "5. Check for parasitic loads - disconnect negative terminal and measure current draw with ammeter (should be <50mA for typical genset)",
+                "6. Test individual cell specific gravity with hydrometer - readings should be 1.265 or higher and within 0.050 of each other",
+                "7. Replace battery if specific gravity readings below 1.200, age exceeds 4 years, or load test fails",
+                "8. Verify battery charger AC input power present and fuse/breaker not tripped",
+                "9. Check battery cable connections and resistance - clean and tighten all connections",
+                "10. Reset controller fault after battery voltage stabilizes above 11.5V minimum"
+              ],
+              "requiredTools": [
+                "Digital multimeter (TRMS) with DC voltage and current measurement",
+                "Battery load tester (carbon pile type) rated for battery capacity",
+                "Hydrometer for specific gravity testing (0-30°C compensating type)",
+                "Wire brush or battery terminal cleaning tool",
+                "Dielectric grease or anti-corrosion compound",
+                "Battery terminal puller (if corroded)",
+                "DC clamp ammeter for parasitic load testing"
+              ],
+              "estimatedRepairTime": "45-90 minutes",
+              "technicalSpecifications": {
+                "nominalVoltage": "12V or 24V DC",
+                "minimumVoltage": "8.5V (12V system), 17V (24V system)",
+                "chargingVoltage": "13.8-14.4V (12V), 27.6-28.8V (24V)",
+                "specificGravity": "1.265 @ 25°C (fully charged)",
+                "loadTestCurrent": "50% of CCA rating for 15 seconds",
+                "minimumLoadTestVoltage": "9.6V (12V battery)"
+              },
+              "safetyWarnings": [
+                "DANGER: Battery contains sulfuric acid electrolyte - wear protective eyewear, face shield, and acid-resistant gloves",
+                "WARNING: Hydrogen gas generation during charging creates explosion hazard - ensure adequate ventilation, absolutely no sparks, flames, or smoking",
+                "CAUTION: Do not disconnect battery while engine running - may damage alternator diodes and voltage regulator",
+                "CRITICAL: Maintain proper polarity when connecting - reverse polarity will instantly destroy controller electronics and alternator diodes",
+                "NOTICE: Dispose of old batteries at approved recycling center - contains lead and acid hazardous materials"
+              ],
+              "relatedCodes": ["DSE3110-006", "DSE3120-007"],
+              "diagnosticProcedure": "systematic",
+              "skillLevel": "technician"
+            },
+            {
+              "code": "DSE3110-002",
+              "description": "Oil Pressure Sensor Failure or Out of Range",
+              "severity": "high",
+              "category": "engine",
+              "subsystem": "lubrication",
+              "possibleCauses": [
+                "Oil pressure sensor wiring harness damaged, chafed, or disconnected at connector",
+                "Oil pressure sensor internal failure - typically occurs after 5000-8000 operating hours",
+                "Contaminated sensor threads preventing proper electrical ground connection to engine block",
+                "Incorrect sensor type installed - wrong resistance range or voltage output for controller input",
+                "ECU analog input channel malfunction or incorrect calibration",
+                "Electrical noise interference on sensor signal wire from nearby high-current cables",
+                "Sensor diaphragm ruptured allowing oil leak and sensor failure",
+                "Sensor mounting boss threads damaged or cross-threaded"
+              ],
+              "solutions": [
+                "1. Verify sensor wiring continuity - measure resistance between sensor connector pins and ECU input terminals (should be <5 ohms)",
+                "2. Check sensor output voltage or current with engine running - 0-5V DC or 4-20mA typical depending on sensor type",
+                "3. Compare sensor reading with mechanical oil pressure gauge installed at same location using T-fitting adapter",
+                "4. At idle speed, oil pressure typically 10-30 PSI; at rated speed should be 40-80 PSI for most diesel engines",
+                "5. Inspect sensor threads and mounting boss for oil leakage, contamination, or damage",
+                "6. Verify sensor specification matches controller requirements - check part number against manual",
+                "7. Test sensor resistance if variable resistance type - should change smoothly with pressure variation",
+                "8. Replace sensor if resistance check shows open circuit, erratic readings, or physical damage observed",
+                "9. Apply Teflon tape or thread sealant to sensor threads - install to 15-25 ft-lbs torque specification",
+                "10. Route sensor signal wire away from high-current cables, use shielded wire if EMI interference suspected",
+                "11. Calibrate controller input channel after sensor replacement using known pressure reference or mechanical gauge"
+              ],
+              "requiredTools": [
+                "Mechanical oil pressure gauge kit (0-150 PSI range minimum)",
+                "T-fitting adapter (1/8\" NPT or 1/4\" NPT depending on engine model)",
+                "Digital multimeter with AC/DC voltage, resistance, and current measurement",
+                "Teflon tape or approved thread sealant for oil pressure sensors",
+                "Torque wrench (0-50 ft-lbs range, 15-25 ft-lbs typical for sensor installation)",
+                "Shielded signal cable if replacement needed",
+                "Oil drain pan for oil spillage during sensor removal",
+                "Deep socket set for sensor removal/installation"
+              ],
+              "estimatedRepairTime": "60-120 minutes",
+              "technicalSpecifications": {
+                "pressureRange": "0-150 PSI typical",
+                "sensorTypes": "0-5V DC, 4-20mA, or variable resistance",
+                "idlePressure": "10-30 PSI",
+                "ratedSpeedPressure": "40-80 PSI",
+                "threadSize": "1/8\" NPT or 1/4\" NPT",
+                "torqueSpecification": "15-25 ft-lbs",
+                "wiringResistance": "<5 ohms"
+              },
+              "safetyWarnings": [
+                "WARNING: Engine oil temperature can exceed 200-250°F - allow minimum 30 minutes cooling before sensor removal to prevent severe burns",
+                "CAUTION: Ensure engine completely stopped and oil pressure fully relieved before removing sensor to prevent oil spray injury",
+                "NOTICE: Have oil collection pan ready - expect 0.5-1 quart spillage during sensor removal depending on engine design",
+                "WARNING: Do not over-torque sensor installation - can crack sensor housing or damage aluminum threads in engine block",
+                "CRITICAL: Never operate engine with oil pressure sensor removed - massive oil loss will occur causing engine seizure"
+              ],
+              "relatedCodes": ["DSE3110-008", "DSE3120-009"],
+              "diagnosticProcedure": "comparative-testing",
+              "skillLevel": "technician"
+            },
+            {
+              "code": "DSE3110-003",
+              "description": "Coolant Temperature High Alarm - Overheat Condition",
+              "severity": "critical",
+              "category": "engine",
+              "subsystem": "cooling",
+              "possibleCauses": [
+                "Insufficient coolant level in radiator, expansion tank, or deaeration tank",
+                "Coolant pump mechanical failure, impeller erosion, or slipping drive belt",
+                "Thermostat stuck closed preventing coolant circulation to radiator",
+                "Radiator core blocked externally by debris, dirt, insects, or internally by scale, sediment, corrosion products",
+                "Cooling fan malfunction - broken fan belt (belt-driven) or electric fan motor failure",
+                "Collapsed or restricted coolant hoses reducing flow",
+                "Head gasket failure allowing combustion gases into cooling system, creating air pockets and pressure",
+                "Incorrect coolant mixture ratio - insufficient antifreeze concentration reducing boiling point and corrosion protection",
+                "Radiator cap pressure relief failure - not maintaining system pressure",
+                "Heat exchanger fouling in liquid-cooled systems",
+                "Excessive engine load beyond design rating"
+              ],
+              "solutions": [
+                "1. Immediately shut down engine if temperature exceeds 220°F to prevent catastrophic damage",
+                "2. Allow engine to cool minimum 30 minutes before opening cooling system - never remove radiator cap when hot",
+                "3. Check coolant level in radiator and expansion tank - add 50/50 antifreeze/water mixture to proper level",
+                "4. Inspect radiator cap pressure rating (typically 13-17 PSI) and test with pressure cap tester for proper holding pressure",
+                "5. Perform cooling system pressure test to 15-17 PSI - watch for external leaks at hoses, gaskets, pump seal, and radiator",
+                "6. Check coolant pump operation - look for leakage at weep hole indicating bearing/seal failure, listen for bearing noise",
+                "7. Verify thermostat operation - remove and test in heated water bath, should begin opening at rated temperature (typically 180-195°F)",
+                "8. Inspect radiator core for external blockage - clean with compressed air in reverse direction (back-flush)",
+                "9. Check cooling fan operation - for belt-driven fans, belt tension should deflect 0.5 inch maximum under thumb pressure",
+                "10. For electric cooling fans, verify 12/24V supply voltage and fan motor operation, check current draw against specification",
+                "11. Test for combustion gases in coolant using chemical test kit - blue to yellow color change indicates head gasket leak",
+                "12. Measure coolant concentration with hydrometer or refractometer - should be 50/50 for -34°F freeze protection",
+                "13. Flush cooling system if contaminated with rust, scale, or oil - use commercial flush chemical and reverse flush procedure",
+                "14. Check coolant hoses for soft spots, cracks, or internal collapse - replace any suspect hoses",
+                "15. Verify correct radiator size for engine power rating and ambient temperature conditions"
+              ],
+              "requiredTools": [
+                "Coolant hydrometer or digital refractometer for concentration testing",
+                "Radiator pressure tester kit with adapter caps",
+                "Radiator cap pressure tester",
+                "Infrared temperature gun (non-contact pyrometer) 0-500°F range",
+                "Belt tension gauge",
+                "Combustion gas test kit (chemical detector)",
+                "Cooling system flush equipment and chemicals",
+                "Torque wrench for thermostat housing bolts",
+                "Coolant recycling/fill equipment",
+                "Compressed air source for radiator cleaning"
+              ],
+              "estimatedRepairTime": "90-180 minutes for diagnosis and basic repairs, 4-8 hours for head gasket replacement",
+              "technicalSpecifications": {
+                "normalOperatingTemp": "180-205°F",
+                "maxSafeTemp": "220°F",
+                "shutdownTemp": "230-240°F",
+                "radiatorCapPressure": "13-17 PSI",
+                "coolantMixture": "50/50 ethylene glycol/water",
+                "freezeProtection": "-34°F (50/50 mix)",
+                "boilingPoint": "265°F @ 15 PSI (50/50 mix)",
+                "beltDeflection": "0.5 inch maximum"
+              },
+              "safetyWarnings": [
+                "DANGER: Never remove radiator cap when engine hot - can cause severe scalding burns from pressurized coolant above 265°F",
+                "WARNING: Coolant temperature can exceed 220-250°F - allow minimum 30-60 minutes cooling time before opening system",
+                "CAUTION: Ethylene glycol antifreeze is highly toxic - prevent skin contact, eye contact, and ingestion",
+                "CRITICAL: Keep children and pets away - ethylene glycol has sweet taste but is deadly poison",
+                "NOTICE: Dispose of used coolant properly at approved facility - extremely toxic to animals and environment",
+                "WARNING: Keep hands and tools clear of cooling fan area - electric fans may start unexpectedly even with engine off",
+                "CAUTION: Wear safety goggles and gloves when performing pressure tests - hot coolant under pressure can spray"
+              ],
+              "relatedCodes": ["DSE3120-003", "DSE3120-009"],
+              "diagnosticProcedure": "systematic",
+              "skillLevel": "technician"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

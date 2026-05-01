@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Pre-commit: Running validation checks..."
+
+# TypeScript type check
+echo "  → TypeScript type checking..."
+npx tsc --noEmit
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript errors found. Fix them before committing."
+  exit 1
+fi
+
+# Vite build check
+echo "  → Vite build check..."
+cd ai-borehole-analyzer && npx vite build --logLevel error 2>&1
+BUILD_EXIT=$?
+cd ..
+if [ $BUILD_EXIT -ne 0 ]; then
+  echo "❌ Build failed. Fix errors before committing."
+  exit 1
+fi
+
+# Python init.py check (if backend files changed)
+BACKEND_CHANGED=$(git diff --cached --name-only -- backend/ | head -1)
+if [ -n "$BACKEND_CHANGED" ]; then
+  echo "  → Checking Python package structure..."
+  BAD_INIT=$(find backend/app -name 'init.py' -not -name '__init__.py' 2>/dev/null | head -5)
+  if [ -n "$BAD_INIT" ]; then
+    echo "❌ Found init.py files that should be __init__.py:"
+    echo "$BAD_INIT"
+    exit 1
+  fi
+fi
+
+echo "✅ All pre-commit checks passed."

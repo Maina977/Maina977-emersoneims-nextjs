@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nairobi Aquifer",
+        "type": "confined",
+        "yield": "high",
+        "depth_range": [30, 80]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [36.7, -1.4],
+          [36.9, -1.4],
+          [36.9, -1.2],
+          [36.7, -1.2],
+          [36.7, -1.4]
+        ]]
+      }
+    }
+  ]
+}

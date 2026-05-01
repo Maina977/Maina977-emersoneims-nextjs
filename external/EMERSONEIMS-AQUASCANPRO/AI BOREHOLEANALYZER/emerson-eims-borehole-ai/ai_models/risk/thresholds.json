@@ -1,0 +1,12 @@
+{
+  "low_risk_threshold": 0.3,
+  "medium_risk_threshold": 0.5,
+  "high_risk_threshold": 0.7,
+  "critical_risk_threshold": 0.85,
+  "contamination_severity": {
+    "low": 0.3,
+    "medium": 0.5,
+    "high": 0.7,
+    "critical": 0.85
+  }
+}

@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5500.0 -5500.0 26874.5 22338.9" width="900" height="748" style="background:#fff;font-family:Arial,sans-serif" data-bim-storey="sty_38f609e157">
+<style>
+      .wall-ext { fill:#222; stroke:#000; stroke-width:6; }
+      .wall-int { fill:#444; stroke:#000; stroke-width:3; }
+      .slab     { fill:#f5f5f0; stroke:#bbb; stroke-width:1; }
+      .space    { stroke:#888; stroke-width:1; opacity:0.55; }
+      .door-line   { stroke:#000; stroke-width:5; }
+      .door-arc    { fill:none; stroke:#666; stroke-width:2; stroke-dasharray:4,3; }
+      .window-line { stroke:#1565c0; stroke-width:3; }
+      .window-mid  { stroke:#1565c0; stroke-width:1; }
+      .label    { font-size:90px; font-weight:600; fill:#222; }
+      .sublabel { font-size:68px; font-weight:400; fill:#666; }
+      /* Dimension chain styling (architects use thinner lines + crossed ticks) */
+      .dim-line   { stroke:#666; stroke-width:1.2; fill:none; }
+      .dim-tick   { stroke:#666; stroke-width:1.2; }
+      .dim-cross  { stroke:#666; stroke-width:1.2; }
+      .dim-text   { font-size:62px; fill:#333; text-anchor:middle; font-weight:500; }
+      .dim-text-overall { font-size:76px; fill:#0c2461; font-weight:700; text-anchor:middle; }
+      /* Grid system (Revit-style coloured letter/number bubbles) */
+      .grid-line  { stroke:#c62828; stroke-width:1; stroke-dasharray:18,8,3,8; opacity:0.7; }
+      .grid-bubble{ fill:#fff; stroke:#c62828; stroke-width:2.5; }
+      .grid-text  { font-size:80px; fill:#c62828; font-weight:700; text-anchor:middle; dominant-baseline:central; }
+      /* Door / window mark callouts */
+      .mark-leader{ stroke:#1565c0; stroke-width:1.2; fill:none; }
+      .mark-bubble-door  { fill:#fff3e0; stroke:#e65100; stroke-width:2; }
+      .mark-bubble-window{ fill:#e3f2fd; stroke:#1565c0; stroke-width:2; }
+      .mark-text  { font-size:54px; font-weight:700; text-anchor:middle; dominant-baseline:central; }
+      .mark-door  { fill:#e65100; }
+      .mark-window{ fill:#1565c0; }
+      /* Section reference markers */
+      .sec-line   { stroke:#000; stroke-width:2; stroke-dasharray:30,12,4,12; }
+      .sec-bubble { fill:#000; stroke:#000; }
+      .sec-text   { font-size:80px; fill:#fff; font-weight:700; text-anchor:middle; dominant-baseline:central; }
+      .title-bg { fill:#0c2461; }
+      .title-tx { font-size:78px; fill:#fff; font-weight:700; }
+      .title-sub{ font-size:60px; fill:#bbdefb; }
+    </style>
+<g transform="translate(0,11338.9) scale(1,-1)">
+<polygon class="slab" points="0.0,0.0 15874.5,0.0 15874.5,11338.9 0.0,11338.9" data-element-id="slb_cdc8ad2d38"/>
+<polygon class="space" fill="#fff3e0" points="0.0,0.0 1763.8,0.0 1763.8,11338.9 0.0,11338.9" data-element-id="spc_82ea5171bf"/>
+<polygon class="space" fill="#fff9c4" points="1763.8,0.0 3527.7,0.0 3527.7,11338.9 1763.8,11338.9" data-element-id="spc_df2b6e0a89"/>
+<polygon class="space" fill="#fce4ec" points="3527.7,0.0 5291.5,0.0 5291.5,11338.9 3527.7,11338.9" data-element-id="spc_d297a6a796"/>
+<polygon class="space" fill="#e3f2fd" points="5291.5,0.0 7055.3,0.0 7055.3,11338.9 5291.5,11338.9" data-element-id="spc_6d18ff843b"/>
+<polygon class="space" fill="#e3f2fd" points="7055.3,0.0 8819.2,0.0 8819.2,11338.9 7055.3,11338.9" data-element-id="spc_0adf53f812"/>
+<polygon class="space" fill="#e3f2fd" points="8819.2,0.0 10583.0,0.0 10583.0,11338.9 8819.2,11338.9" data-element-id="spc_7b8005569e"/>
+<polygon class="space" fill="#e0f7fa" points="10583.0,0.0 12346.8,0.0 12346.8,11338.9 10583.0,11338.9" data-element-id="spc_e07b4c3934"/>
+<polygon class="space" fill="#e0f7fa" points="12346.8,0.0 14110.7,0.0 14110.7,11338.9 12346.8,11338.9" data-element-id="spc_59bac6f6db"/>
+<polygon class="space" fill="#f5f5f5" points="14110.7,0.0 15874.5,0.0 15874.5,11338.9 14110.7,11338.9" data-element-id="spc_787869fdf8"/>
+<path class="wall-ext" d="M 0.0 131.5 L 15874.5 131.5 L 15874.5 -131.5 L 0.0 -131.5 Z" data-element-id="wal_d59f93cd6b" data-type="EXT_200_INS_50"/>
+<path class="wall-ext" d="M 15743.0 0.0 L 15743.0 11338.9 L 16006.0 11338.9 L 16006.0 0.0 Z" data-element-id="wal_7210a87a6e" data-type="EXT_200_INS_50"/>
+<path class="wall-ext" d="M 15874.5 11207.4 L 0.0 11207.4 L 0.0 11470.4 L 15874.5 11470.4 Z" data-element-id="wal_f66748d720" data-type="EXT_200_INS_50"/>
+<path class="wall-ext" d="M 131.5 11338.9 L 131.5 0.0 L -131.5 0.0 L -131.5 11338.9 Z" data-element-id="wal_01708a303a" data-type="EXT_200_INS_50"/>
+<path class="wall-int" d="M 1707.3 0.0 L 1707.3 11338.9 L 1820.3 11338.9 L 1820.3 0.0 Z" data-element-id="wal_f118eb452a" data-type="INT_100"/>
+<path class="wall-int" d="M 3471.2 0.0 L 3471.2 11338.9 L 3584.2 11338.9 L 3584.2 0.0 Z" data-element-id="wal_244bb9254d" data-type="INT_100"/>
+<path class="wall-int" d="M 5235.0 0.0 L 5235.0 11338.9 L 5348.0 11338.9 L 5348.0 0.0 Z" data-element-id="wal_65d868ecdb" data-type="INT_100"/>
+<path class="wall-int" d="M 6998.8 0.0 L 6998.8 11338.9 L 7111.8 11338.9 L 7111.8 0.0 Z" data-element-id="wal_7d00f4f139" data-type="INT_100"/>
+<path class="wall-int" d="M 8762.7 0.0 L 8762.7 11338.9 L 8875.7 11338.9 L 8875.7 0.0 Z" data-element-id="wal_f70799c3aa" data-type="INT_100"/>
+<path class="wall-int" d="M 10526.5 0.0 L 10526.5 11338.9 L 10639.5 11338.9 L 10639.5 0.0 Z" data-element-id="wal_c9b2f2e220" data-type="INT_100"/>
+<path class="wall-int" d="M 12290.3 0.0 L 12290.3 11338.9 L 12403.3 11338.9 L 12403.3 0.0 Z" data-element-id="wal_1addffb67f" data-type="INT_100"/>
+<path class="wall-int" d="M 14054.2 0.0 L 14054.2 11338.9 L 14167.2 11338.9 L 14167.2 0.0 Z" data-element-id="wal_40aa6cd47f" data-type="INT_100"/>
+<line class="door-line" x1="-118.1" y1="0.0" x2="-118.1" y2="1000.0" data-element-id="opn_cd41faf149" data-kind="door"/><path class="door-arc" d="M -118.1 1000.0 A 1000.0 1000.0 0 0 1 881.9 0.0"/>
+<line class="window-line" x1="-2018.1" y1="50.0" x2="381.9" y2="50.0" data-element-id="opn_7bc4564330" data-kind="window"/><line class="window-mid" x1="-2018.1" y1="0.0" x2="381.9" y2="0.0"/><line class="window-line" x1="-2018.1" y1="-50.0" x2="381.9" y2="-50.0"/>
+<line class="window-line" x1="1145.8" y1="50.0" x2="2645.8" y2="50.0" data-element-id="opn_c516985d60" data-kind="window"/><line class="window-mid" x1="1145.8" y1="0.0" x2="2645.8" y2="0.0"/><line class="window-line" x1="1145.8" y1="-50.0" x2="2645.8" y2="-50.0"/>
+<line class="window-line" x1="2909.6" y1="50.0" x2="4409.6" y2="50.0" data-element-id="opn_d5a2845121" data-kind="window"/><line class="window-mid" x1="2909.6" y1="0.0" x2="4409.6" y2="0.0"/><line class="window-line" x1="2909.6" y1="-50.0" x2="4409.6" y2="-50.0"/>
+<line class="window-line" x1="11201.1" y1="11288.9" x2="9701.1" y2="11288.9" data-element-id="opn_9a8afc60f4" data-kind="window"/><line class="window-mid" x1="11201.1" y1="11338.9" x2="9701.1" y2="11338.9"/><line class="window-line" x1="11201.1" y1="11388.9" x2="9701.1" y2="11388.9"/>
+<line class="window-line" x1="9437.3" y1="11288.9" x2="7937.3" y2="11288.9" data-element-id="opn_7adbad378e" data-kind="window"/><line class="window-mid" x1="9437.3" y1="11338.9" x2="7937.3" y2="11338.9"/><line class="window-line" x1="9437.3" y1="11388.9" x2="7937.3" y2="11388.9"/>
+<line class="window-line" x1="7673.4" y1="11288.9" x2="6173.4" y2="11288.9" data-element-id="opn_866a8753c3" data-kind="window"/><line class="window-mid" x1="7673.4" y1="11338.9" x2="6173.4" y2="11338.9"/><line class="window-line" x1="7673.4" y1="11388.9" x2="6173.4" y2="11388.9"/>
+<line class="window-line" x1="5909.6" y1="11288.9" x2="4409.6" y2="11288.9" data-element-id="opn_428745c737" data-kind="window"/><line class="window-mid" x1="5909.6" y1="11338.9" x2="4409.6" y2="11338.9"/><line class="window-line" x1="5909.6" y1="11388.9" x2="4409.6" y2="11388.9"/>
+<line class="window-line" x1="4145.8" y1="11288.9" x2="2645.8" y2="11288.9" data-element-id="opn_003072e372" data-kind="window"/><line class="window-mid" x1="4145.8" y1="11338.9" x2="2645.8" y2="11338.9"/><line class="window-line" x1="4145.8" y1="11388.9" x2="2645.8" y2="11388.9"/>
+<g transform="translate(881.9,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Living</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<g transform="translate(2645.8,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Kitchen</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<g transform="translate(4409.6,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Dining</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<g transform="translate(6173.4,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Bedroom 1</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<g transform="translate(7937.3,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Bedroom 2</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<g transform="translate(9701.1,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Bedroom 3</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<g transform="translate(11464.9,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Bathroom 1</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<g transform="translate(13228.8,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Bathroom 2</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<g transform="translate(14992.6,5669.5) scale(1,-1)"><text class="label" text-anchor="middle"><tspan x="0" dy="-8">Corridor</tspan><tspan x="0" dy="14" class="sublabel">20.0 m²</tspan></text></g>
+<line class="grid-line" x1="0.0" y1="-6700.0" x2="0.0" y2="18038.9"/>
+<circle class="grid-bubble" cx="0.0" cy="18398.9" r="360"/><g transform="translate(0.0,18398.9) scale(1,-1)"><text class="grid-text">A</text></g>
+<circle class="grid-bubble" cx="0.0" cy="-7060.0" r="360"/><g transform="translate(0.0,-7060.0) scale(1,-1)"><text class="grid-text">A</text></g>
+<line class="grid-line" x1="15870.0" y1="-6700.0" x2="15870.0" y2="18038.9"/>
+<circle class="grid-bubble" cx="15870.0" cy="18398.9" r="360"/><g transform="translate(15870.0,18398.9) scale(1,-1)"><text class="grid-text">B</text></g>
+<circle class="grid-bubble" cx="15870.0" cy="-7060.0" r="360"/><g transform="translate(15870.0,-7060.0) scale(1,-1)"><text class="grid-text">B</text></g>
+<line class="grid-line" x1="-6700.0" y1="0.0" x2="22574.5" y2="0.0"/>
+<circle class="grid-bubble" cx="-7060.0" cy="0.0" r="360"/><g transform="translate(-7060.0,0.0) scale(1,-1)"><text class="grid-text">1</text></g>
+<circle class="grid-bubble" cx="22934.5" cy="0.0" r="360"/><g transform="translate(22934.5,0.0) scale(1,-1)"><text class="grid-text">1</text></g>
+<line class="grid-line" x1="-6700.0" y1="11340.0" x2="22574.5" y2="11340.0"/>
+<circle class="grid-bubble" cx="-7060.0" cy="11340.0" r="360"/><g transform="translate(-7060.0,11340.0) scale(1,-1)"><text class="grid-text">2</text></g>
+<circle class="grid-bubble" cx="22934.5" cy="11340.0" r="360"/><g transform="translate(22934.5,11340.0) scale(1,-1)"><text class="grid-text">2</text></g>
+<line class="dim-line" x1="-820.0" y1="-7100.0" x2="0.0" y2="-7100.0"/>
+<line class="dim-cross" x1="-910.0" y1="-7190.0" x2="-730.0" y2="-7010.0"/>
+<line class="dim-cross" x1="-90.0" y1="-7190.0" x2="90.0" y2="-7010.0"/>
+<g transform="translate(-410.0,-7210.0) scale(1,-1)"><text class="dim-text">0.82</text></g>
+<line class="dim-line" x1="0.0" y1="-7100.0" x2="380.0" y2="-7100.0"/>
+<line class="dim-cross" x1="-90.0" y1="-7190.0" x2="90.0" y2="-7010.0"/>
+<line class="dim-cross" x1="290.0" y1="-7190.0" x2="470.0" y2="-7010.0"/>
+<g transform="translate(190.0,-7210.0) scale(1,-1)"><text class="dim-text">0.38</text></g>
+<line class="dim-line" x1="380.0" y1="-7100.0" x2="1760.0" y2="-7100.0"/>
+<line class="dim-cross" x1="290.0" y1="-7190.0" x2="470.0" y2="-7010.0"/>
+<line class="dim-cross" x1="1670.0" y1="-7190.0" x2="1850.0" y2="-7010.0"/>
+<g transform="translate(1070.0,-7210.0) scale(1,-1)"><text class="dim-text">1.38</text></g>
+<line class="dim-line" x1="1760.0" y1="-7100.0" x2="1900.0" y2="-7100.0"/>
+<line class="dim-cross" x1="1670.0" y1="-7190.0" x2="1850.0" y2="-7010.0"/>
+<line class="dim-cross" x1="1810.0" y1="-7190.0" x2="1990.0" y2="-7010.0"/>
+<g transform="translate(1830.0,-7210.0) scale(1,-1)"><text class="dim-text">0.14</text></g>
+<line class="dim-line" x1="1900.0" y1="-7100.0" x2="3530.0" y2="-7100.0"/>
+<line class="dim-cross" x1="1810.0" y1="-7190.0" x2="1990.0" y2="-7010.0"/>
+<line class="dim-cross" x1="3440.0" y1="-7190.0" x2="3620.0" y2="-7010.0"/>
+<g transform="translate(2715.0,-7210.0) scale(1,-1)"><text class="dim-text">1.63</text></g>
+<line class="dim-line" x1="3530.0" y1="-7100.0" x2="3660.0" y2="-7100.0"/>
+<line class="dim-cross" x1="3440.0" y1="-7190.0" x2="3620.0" y2="-7010.0"/>
+<line class="dim-cross" x1="3570.0" y1="-7190.0" x2="3750.0" y2="-7010.0"/>
+<g transform="translate(3595.0,-7210.0) scale(1,-1)"><text class="dim-text">0.13</text></g>
+<line class="dim-line" x1="3660.0" y1="-7100.0" x2="5290.0" y2="-7100.0"/>
+<line class="dim-cross" x1="3570.0" y1="-7190.0" x2="3750.0" y2="-7010.0"/>
+<line class="dim-cross" x1="5200.0" y1="-7190.0" x2="5380.0" y2="-7010.0"/>
+<g transform="translate(4475.0,-7210.0) scale(1,-1)"><text class="dim-text">1.63</text></g>
+<line class="dim-line" x1="5290.0" y1="-7100.0" x2="7060.0" y2="-7100.0"/>
+<line class="dim-cross" x1="5200.0" y1="-7190.0" x2="5380.0" y2="-7010.0"/>
+<line class="dim-cross" x1="6970.0" y1="-7190.0" x2="7150.0" y2="-7010.0"/>
+<g transform="translate(6175.0,-7210.0) scale(1,-1)"><text class="dim-text">1.77</text></g>
+<line class="dim-line" x1="7060.0" y1="-7100.0" x2="8820.0" y2="-7100.0"/>
+<line class="dim-cross" x1="6970.0" y1="-7190.0" x2="7150.0" y2="-7010.0"/>
+<line class="dim-cross" x1="8730.0" y1="-7190.0" x2="8910.0" y2="-7010.0"/>
+<g transform="translate(7940.0,-7210.0) scale(1,-1)"><text class="dim-text">1.76</text></g>
+<line class="dim-line" x1="8820.0" y1="-7100.0" x2="10580.0" y2="-7100.0"/>
+<line class="dim-cross" x1="8730.0" y1="-7190.0" x2="8910.0" y2="-7010.0"/>
+<line class="dim-cross" x1="10490.0" y1="-7190.0" x2="10670.0" y2="-7010.0"/>
+<g transform="translate(9700.0,-7210.0) scale(1,-1)"><text class="dim-text">1.76</text></g>
+<line class="dim-line" x1="10580.0" y1="-7100.0" x2="12350.0" y2="-7100.0"/>
+<line class="dim-cross" x1="10490.0" y1="-7190.0" x2="10670.0" y2="-7010.0"/>
+<line class="dim-cross" x1="12260.0" y1="-7190.0" x2="12440.0" y2="-7010.0"/>
+<g transform="translate(11465.0,-7210.0) scale(1,-1)"><text class="dim-text">1.77</text></g>
+<line class="dim-line" x1="12350.0" y1="-7100.0" x2="14110.0" y2="-7100.0"/>
+<line class="dim-cross" x1="12260.0" y1="-7190.0" x2="12440.0" y2="-7010.0"/>
+<line class="dim-cross" x1="14020.0" y1="-7190.0" x2="14200.0" y2="-7010.0"/>
+<g transform="translate(13230.0,-7210.0) scale(1,-1)"><text class="dim-text">1.76</text></g>
+<line class="dim-line" x1="14110.0" y1="-7100.0" x2="15870.0" y2="-7100.0"/>
+<line class="dim-cross" x1="14020.0" y1="-7190.0" x2="14200.0" y2="-7010.0"/>
+<line class="dim-cross" x1="15780.0" y1="-7190.0" x2="15960.0" y2="-7010.0"/>
+<g transform="translate(14990.0,-7210.0) scale(1,-1)"><text class="dim-text">1.76</text></g>
+<line class="dim-line" x1="-820.0" y1="-8100.0" x2="5290.0" y2="-8100.0"/>
+<line class="dim-cross" x1="-910.0" y1="-8190.0" x2="-730.0" y2="-8010.0"/>
+<line class="dim-cross" x1="5200.0" y1="-8190.0" x2="5380.0" y2="-8010.0"/>
+<g transform="translate(2235.0,-8210.0) scale(1,-1)"><text class="dim-text">6.11</text></g>
+<line class="dim-line" x1="5290.0" y1="-8100.0" x2="15870.0" y2="-8100.0"/>
+<line class="dim-cross" x1="5200.0" y1="-8190.0" x2="5380.0" y2="-8010.0"/>
+<line class="dim-cross" x1="15780.0" y1="-8190.0" x2="15960.0" y2="-8010.0"/>
+<g transform="translate(10580.0,-8210.0) scale(1,-1)"><text class="dim-text">10.58</text></g>
+<line class="dim-line" x1="-820.0" y1="-9300.0" x2="15870.0" y2="-9300.0"/>
+<line class="dim-cross" x1="-910.0" y1="-9390.0" x2="-730.0" y2="-9210.0"/>
+<line class="dim-cross" x1="15780.0" y1="-9390.0" x2="15960.0" y2="-9210.0"/>
+<g transform="translate(7525.0,-9410.0) scale(1,-1)"><text class="dim-text-overall">16.69 m</text></g>
+<line class="dim-line" x1="22974.5" y1="0.0" x2="22974.5" y2="11340.0"/>
+<line class="dim-cross" x1="22884.5" y1="-90.0" x2="23064.5" y2="90.0"/>
+<line class="dim-cross" x1="22884.5" y1="11250.0" x2="23064.5" y2="11430.0"/>
+<g transform="translate(23194.5,5670.0) scale(1,-1) rotate(90)"><text class="dim-text">11.34</text></g>
+<line class="dim-line" x1="25174.5" y1="0.0" x2="25174.5" y2="11340.0"/>
+<line class="dim-cross" x1="25084.5" y1="-90.0" x2="25264.5" y2="90.0"/>
+<line class="dim-cross" x1="25084.5" y1="11250.0" x2="25264.5" y2="11430.0"/>
+<g transform="translate(25394.5,5670.0) scale(1,-1) rotate(90)"><text class="dim-text-overall">11.34 m</text></g>
+<line class="mark-leader" x1="381.9" y1="0.0" x2="381.9" y2="1400.0"/>
+<circle class="mark-bubble-door" cx="381.9" cy="1400.0" r="380"/><g transform="translate(381.9,1400.0) scale(1,-1)"><text class="mark-text mark-door">D-001</text></g>
+<line class="mark-leader" x1="3395.8" y1="11338.9" x2="3395.8" y2="9938.9"/>
+<circle class="mark-bubble-window" cx="3395.8" cy="9938.9" r="380"/><g transform="translate(3395.8,9938.9) scale(1,-1)"><text class="mark-text mark-window">W-001</text></g>
+<line class="mark-leader" x1="5159.6" y1="11338.9" x2="5159.6" y2="9938.9"/>
+<circle class="mark-bubble-window" cx="5159.6" cy="9938.9" r="380"/><g transform="translate(5159.6,9938.9) scale(1,-1)"><text class="mark-text mark-window">W-002</text></g>
+<line class="mark-leader" x1="8687.3" y1="11338.9" x2="8687.3" y2="9938.9"/>
+<circle class="mark-bubble-window" cx="8687.3" cy="9938.9" r="380"/><g transform="translate(8687.3,9938.9) scale(1,-1)"><text class="mark-text mark-window">W-003</text></g>
+<line class="mark-leader" x1="-818.1" y1="0.0" x2="-818.1" y2="1400.0"/>
+<circle class="mark-bubble-window" cx="-818.1" cy="1400.0" r="380"/><g transform="translate(-818.1,1400.0) scale(1,-1)"><text class="mark-text mark-window">W-004</text></g>
+<line class="mark-leader" x1="6923.4" y1="11338.9" x2="6923.4" y2="9938.9"/>
+<circle class="mark-bubble-window" cx="6923.4" cy="9938.9" r="380"/><g transform="translate(6923.4,9938.9) scale(1,-1)"><text class="mark-text mark-window">W-005</text></g>
+<line class="mark-leader" x1="10451.1" y1="11338.9" x2="10451.1" y2="9938.9"/>
+<circle class="mark-bubble-window" cx="10451.1" cy="9938.9" r="380"/><g transform="translate(10451.1,9938.9) scale(1,-1)"><text class="mark-text mark-window">W-006</text></g>
+<line class="mark-leader" x1="1895.8" y1="0.0" x2="1895.8" y2="1400.0"/>
+<circle class="mark-bubble-window" cx="1895.8" cy="1400.0" r="380"/><g transform="translate(1895.8,1400.0) scale(1,-1)"><text class="mark-text mark-window">W-007</text></g>
+<line class="mark-leader" x1="3659.6" y1="0.0" x2="3659.6" y2="1400.0"/>
+<circle class="mark-bubble-window" cx="3659.6" cy="1400.0" r="380"/><g transform="translate(3659.6,1400.0) scale(1,-1)"><text class="mark-text mark-window">W-008</text></g>
+<line class="sec-line" x1="-6100.0" y1="5669.5" x2="21974.5" y2="5669.5"/>
+<circle class="sec-bubble" cx="-6100.0" cy="5669.5" r="380"/><g transform="translate(-6100.0,5669.5) scale(1,-1)"><text class="sec-text">A-A</text></g>
+<circle class="sec-bubble" cx="21974.5" cy="5669.5" r="380"/><g transform="translate(21974.5,5669.5) scale(1,-1)"><text class="sec-text">A-A</text></g>
+</g>
+<g transform="translate(-5500.0,17138.9)"><rect class="title-bg" x="0" y="0" width="26874.507866387543" height="240"/><text class="title-tx" x="40" y="120">AnnotTest</text><text class="title-sub" x="40" y="200">Storey 1  ·  GFA 180.0 m²  ·  modern</text><text class="title-sub" x="26834.507866387543" y="120" text-anchor="end">EMERSON EIMS</text><text class="title-sub" x="26834.507866387543" y="200" text-anchor="end">BIM model · schema v1</text></g>
+</svg>

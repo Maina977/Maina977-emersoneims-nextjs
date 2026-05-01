@@ -1,27 +1,20 @@
 'use client';
 
-/**
- * AquaScan Pro V3 - Complete AI Borehole Analyzer
- * All 26 AI Engines | Charts | Graphs | Maps | Comprehensive Reports
- */
-
 import dynamic from 'next/dynamic';
+import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
 
 const AquaScanProComplete = dynamic(
   () => import('@/components/borehole/AquaScanProComplete'),
   {
     ssr: false,
-    loading: () => (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading AquaScan Pro V3...</p>
-        </div>
-      </div>
-    )
+    loading: () => <ToolLoadingState name="AquaScan Pro" />,
   }
 );
 
 export default function AquaScanProV3Page() {
-  return <AquaScanProComplete />;
+  return (
+    <ToolAppShell label="aquascan-pro-v3">
+      <AquaScanProComplete />
+    </ToolAppShell>
+  );
 }

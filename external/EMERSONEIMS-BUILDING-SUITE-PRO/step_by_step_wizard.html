@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMERSON EIMS - Professional Step-by-Step Wizard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            border-bottom: 3px solid #0f3460;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        /* SIDEBAR - PHASE NAVIGATOR */
+        .sidebar {
+            width: 280px;
+            background: #f0f0f0;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .phase-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .phase-nav-item {
+            padding: 12px 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .phase-nav-item:hover {
+            background: #f5f5f5;
+            border-color: #0f3460;
+        }
+
+        .phase-nav-item.active {
+            background: #0f3460;
+            color: white;
+            border-color: #0f3460;
+            font-weight: 600;
+        }
+
+        .phase-number {
+            background: #e0e0e0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .phase-nav-item.active .phase-number {
+            background: #42a5f5;
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        /* PHASE VIEW */
+        .phase-view {
+            display: none;
+        }
+
+        .phase-view.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .phase-header {
+            border-bottom: 3px solid #0f3460;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+        }
+
+        .phase-header h2 {
+            font-size: 28px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .phase-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* SECTIONS */
+        .section {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: #0f3460;
+            border-radius: 2px;
+        }
+
+        /* METHODOLOGY */
+        .methodology {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .method-step {
+            padding: 12px 15px;
+            background: #f9f9f9;
+            border-left: 3px solid #0f3460;
+            border-radius: 3px;
+        }
+
+        .method-step-num {
+            font-size: 11px;
+            color: #0f3460;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .method-step-text {
+            font-size: 13px;
+            color: #333;
+            margin-top: 4px;
+        }
+
+        /* PARAMETERS */
+        .parameters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .parameter {
+            background: #f0f7ff;
+            border: 1px solid #bbdefb;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .parameter-label {
+            font-size: 11px;
+            color: #0f3460;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .parameter-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f3460;
+        }
+
+        .parameter-unit {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* RESULTS */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e1f5fe 100%);
+            border: 1px solid #81d4fa;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #0f3460;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f3460;
+        }
+
+        .result-confidence {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        /* FINDINGS */
+        .findings {
+            background: #fffbea;
+            border-left: 4px solid #ffa726;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .findings-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e65100;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .findings-text {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* WHY IT MATTERS */
+        .importance {
+            background: #f3e5f5;
+            border-left: 4px solid #ab47bc;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .importance-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #6a1b9a;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .importance-text {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* COST */
+        .cost-section {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            border: 1px solid #a5d6a7;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .cost-label {
+            font-size: 12px;
+            color: #2e7d32;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .cost-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+
+        /* Q&A SECTION */
+        .qa-section {
+            background: #f5f5f5;
+        }
+
+        .qa-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .qa-item:last-child {
+            border-bottom: none;
+        }
+
+        .qa-question {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f3460;
+            margin-bottom: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .qa-toggle {
+            width: 20px;
+            height: 20px;
+            background: #0f3460;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .qa-answer {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+            margin-top: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 3px;
+            border-left: 2px solid #0f3460;
+            padding-left: 12px;
+            display: none;
+        }
+
+        .qa-answer.visible {
+            display: block;
+        }
+
+        /* VERIFICATION */
+        .verification {
+            background: #e0f2f1;
+            border: 1px solid #4db6ac;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .verification-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #00695c;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .verification-checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .verification-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .verification-check {
+            color: #00695c;
+            font-weight: 700;
+        }
+
+        /* NAVIGATION */
+        .navigation {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: 1px solid #0f3460;
+            background: white;
+            color: #0f3460;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #f5f5f5;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #0f3460;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1a5a8a;
+        }
+
+        .progress {
+            font-size: 13px;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0f3460;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⬢ EMERSON EIMS - PROFESSIONAL BUILDING DESIGN WIZARD</h1>
+        <p>Step-by-step professional consulting approach | Every decision is transparent and justified</p>
+    </div>
+
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-title">13-Step Building Process</div>
+            <ul class="phase-nav" id="phaseNav"></ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content" id="mainContent"></div>
+    </div>
+
+    <script>
+        // Phase definitions
+        const phases = [
+            {
+                id: 'phase_1',
+                number: 1,
+                name: 'Satellite Site Analysis',
+                description: 'GPS-based land assessment and site characterization'
+            },
+            {
+                id: 'phase_2',
+                number: 2,
+                name: 'Geotechnical Investigation',
+                description: 'Soil classification, bearing capacity, and foundation requirements'
+            },
+            {
+                id: 'phase_3',
+                number: 3,
+                name: 'Foundation & Structural Design',
+                description: 'Structural calculations and foundation specifications'
+            },
+            {
+                id: 'phase_4',
+                number: 4,
+                name: 'Floor Plans & Layout',
+                description: 'Optimized room layout and building efficiency'
+            },
+            {
+                id: 'phase_5',
+                number: 5,
+                name: 'Electrical Systems Design',
+                description: 'Load calculation and electrical infrastructure'
+            },
+            {
+                id: 'phase_6',
+                number: 6,
+                name: 'Plumbing & Water Systems',
+                description: 'Water supply and sanitation design'
+            },
+            {
+                id: 'phase_7',
+                number: 7,
+                name: 'Bill of Quantities',
+                description: '2,147 building materials with specifications'
+            },
+            {
+                id: 'phase_8',
+                number: 8,
+                name: 'Infrastructure Analysis',
+                description: 'Solar, borehole, and utility systems'
+            },
+            {
+                id: 'phase_9',
+                number: 9,
+                name: 'Landscape Design',
+                description: 'External spaces and environmental design'
+            },
+            {
+                id: 'phase_10',
+                number: 10,
+                name: 'Permits & Compliance',
+                description: 'Regulatory requirements and approvals'
+            },
+            {
+                id: 'phase_11',
+                number: 11,
+                name: '3D Visualization',
+                description: 'Building model and visualization'
+            },
+            {
+                id: 'phase_12',
+                number: 12,
+                name: 'Financial Analysis & Costing',
+                description: 'Complete project cost breakdown'
+            },
+            {
+                id: 'phase_13',
+                number: 13,
+                name: 'Project Integration',
+                description: 'Final delivery and coordination'
+            }
+        ];
+
+        // Current phase
+        let currentPhase = 0;
+        let projectData = null;
+
+        // Initialize sidebar
+        function initSidebar() {
+            const nav = document.getElementById('phaseNav');
+            nav.innerHTML = phases.map((p, i) => `
+                <li class="phase-nav-item ${i === 0 ? 'active' : ''}" onclick="selectPhase(${i})">
+                    <span class="phase-number">${p.number}</span>
+                    <span>${p.name}</span>
+                </li>
+            `).join('');
+        }
+
+        // Select phase
+        function selectPhase(index) {
+            currentPhase = index;
+            updateView();
+        }
+
+        // Generate phase content
+        function generatePhaseContent(phase) {
+            switch(phase.number) {
+                case 1: return generatePhase1();
+                case 2: return generatePhase2();
+                case 3: return generatePhase3();
+                case 12: return generatePhase12();
+                default: return generateGenericPhase(phase);
+            }
+        }
+
+        // Phase 1: Satellite Analysis
+        function generatePhase1() {
+            return `
+                <div class="phase-header">
+                    <h2>Phase 1: Satellite Site Analysis</h2>
+                    <p>GPS-based land assessment and environmental characterization</p>
+                </div>
+
+                <!-- METHODOLOGY -->
+                <div class="section">
+                    <div class="section-title">How We Analyze Your Site</div>
+                    <div class="methodology">
+                        <div class="method-step">
+                            <div class="method-step-num">Step 1: GPS Positioning</div>
+                            <div class="method-step-text">Satellite imagery and GPS coordinates identify exact site boundaries, topography, and geographic context</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 2: Water Resource Analysis</div>
+                            <div class="method-step-text">Determine water table depth and underground water availability for borehole and water system planning</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 3: Soil Type Classification</div>
+                            <div class="method-step-text">Identify soil composition (clay, sand, rock, loam) to inform foundation and drainage design</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 4: Vegetation & Terrain</div>
+                            <div class="method-step-text">Map existing vegetation (45-65% typical) and slope angle (2-15° typical) for landscape and drainage</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 5: Risk Assessment</div>
+                            <div class="method-step-text">Evaluate environmental hazards: flooding zones, landslide risk, geological faults</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PARAMETERS ANALYZED -->
+                <div class="section">
+                    <div class="section-title">What We Measure</div>
+                    <div class="parameters-grid">
+                        <div class="parameter">
+                            <div class="parameter-label">Water Table Depth</div>
+                            <div class="parameter-value">5.2 <span class="parameter-unit">meters</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Soil Type</div>
+                            <div class="parameter-value">Clay-Loam <span class="parameter-unit"></span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Vegetation Coverage</div>
+                            <div class="parameter-value">45% <span class="parameter-unit"></span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Slope Angle</div>
+                            <div class="parameter-value">8.7° <span class="parameter-unit"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINDINGS -->
+                <div class="section">
+                    <div class="section-title">Analysis Findings</div>
+                    
+                    <div class="results-grid">
+                        <div class="result-box">
+                            <div class="result-label">Water Availability</div>
+                            <div class="result-value">Moderate</div>
+                            <div class="result-confidence">Confidence: 92% | Borehole depth: 10-12m recommended</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Foundation Suitability</div>
+                            <div class="result-value">Good</div>
+                            <div class="result-confidence">Confidence: 89% | Clay-loam provides stable bearing</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Drainage Potential</div>
+                            <div class="result-value">Good</div>
+                            <div class="result-confidence">Slope of 8.7° enables natural drainage</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Environmental Risk</div>
+                            <div class="result-value">Low</div>
+                            <div class="result-confidence">No flooding zones detected | Stable geology</div>
+                        </div>
+                    </div>
+
+                    <div class="findings">
+                        <div class="findings-title">Key Findings Report</div>
+                        <div class="findings-text">
+                            Site is suitable for residential development. Clay-loam soil provides good bearing capacity. Water table at 5.2m allows for reliable borehole installation. Moderate slope (8.7°) aids drainage design. Low environmental risk. Recommended actions: Phase 2 Geotechnical Investigation to confirm bearing capacity values.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WHY IT MATTERS -->
+                <div class="section">
+                    <div class="section-title">Why This Phase is Critical</div>
+                    <div class="importance">
+                        <div class="importance-title">Impact on Project</div>
+                        <div class="importance-text">
+                            Site analysis determines foundation design, drainage systems, water supply feasibility, and project costs. A 1-meter difference in water table depth can change borehole costs by 200K KES. Incorrect soil classification could require foundation redesign during construction, adding 500K-2M KES in costs and 2-4 weeks delay. This phase prevents costly mistakes before construction.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COST -->
+                <div class="section">
+                    <div class="cost-section">
+                        <div class="cost-label">Phase 1 Cost: Satellite Analysis</div>
+                        <div class="cost-value">45,000 KES</div>
+                        <div style="font-size: 12px; color: #2e7d32; margin-top: 8px;">Includes: GPS survey, satellite imagery, initial soil assessment, water table analysis, environmental risk report</div>
+                    </div>
+                </div>
+
+                <!-- Q&A -->
+                <div class="section">
+                    <div class="section-title">Common Questions</div>
+                    <div class="qa-section">
+                        ${generateQA([
+                            {q: "Why do we need satellite analysis before anything else?", a: "Site analysis is the foundation for ALL subsequent phases. Foundation design, drainage, water systems, and costing all depend on accurate site data. Wrong site assessment = wrong design = expensive mistakes."},
+                            {q: "How accurate is the water table depth measurement?", a: "Satellite + GPS provides 92% confidence. Phase 2 (Geotechnical) refines this with physical drilling. For critical projects, test boreholes (additional 20K KES) confirm exact depth."},
+                            {q: "What if soil type is different than expected?", a: "Earth moving costs increase ~50% for poor soils. Borehole costs increase if water is deeper. Phase 2 investigation prevents surprises. Early detection saves 10-20% on foundation costs."},
+                            {q: "How do slope and drainage affect costs?", a: "Poor drainage requires additional drainage systems (+150K KES typical). Steep slopes require retaining walls (+200-500K KES). 8.7° slope is ideal - no additional drainage costs needed."},
+                            {q: "When do we move to Phase 2?", a: "After Phase 1 findings are reviewed and approved. If site conditions are acceptable, proceed immediately. If concerns exist, recommend additional site investigation (+15-20 days)."}
+                        ])}
+                    </div>
+                </div>
+
+                <!-- VERIFICATION -->
+                <div class="section">
+                    <div class="verification">
+                        <div class="verification-title">Phase 1 Verification Checklist</div>
+                        <div class="verification-checklist">
+                            <div class="verification-item"><span class="verification-check">✓</span> GPS coordinates confirmed</div>
+                            <div class="verification-item"><span class="verification-check">✓</span> Water table depth verified (5.2m)</div>
+                            <div class="verification-item"><span class="verification-check">✓</span> Soil types identified</div>
+                            <div class="verification-item"><span class="verification-check">✓</span> Environmental hazards assessed</div>
+                            <div class="verification-item"><span class="verification-check">✓</span> Drainage feasibility confirmed</div>
+                            <div class="verification-item"><span class="verification-check">✓</span> Report generated and approved</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NAVIGATION -->
+                <div class="navigation">
+                    <button class="btn" disabled>← Previous Phase</button>
+                    <button class="btn btn-primary" onclick="selectPhase(1)">Next Phase: Geotechnical →</button>
+                </div>
+
+                <div class="progress">
+                    <strong>Progress: Phase 1 of 13 (7.7%)</strong>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 7.7%"></div></div>
+                </div>
+            `;
+        }
+
+        // Phase 2: Geotechnical
+        function generatePhase2() {
+            return `
+                <div class="phase-header">
+                    <h2>Phase 2: Geotechnical Investigation</h2>
+                    <p>Soil classification, bearing capacity analysis, and foundation requirements</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">What We Do in This Phase</div>
+                    <div class="methodology">
+                        <div class="method-step">
+                            <div class="method-step-num">Step 1: Soil Boring & Sampling</div>
+                            <div class="method-step-text">3-5 test boreholes to 10m depth collect soil samples for laboratory analysis</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 2: Laboratory Testing</div>
+                            <div class="method-step-text">Triaxial compression, bearing capacity, settlement analysis per BS 1377 standards</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 3: Bearing Capacity Calculation</div>
+                            <div class="method-step-text">Using Terzaghi formula: qult = cNc + qNq + 0.5γBNγ</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 4: Settlement Prediction</div>
+                            <div class="method-step-text">Calculate differential settlement and total settlement for design loads</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 5: Foundation Recommendation</div>
+                            <div class="method-step-text">Based on soil capacity, recommend footing type and depth</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Test Results</div>
+                    <div class="parameters-grid">
+                        <div class="parameter">
+                            <div class="parameter-label">Bearing Capacity</div>
+                            <div class="parameter-value">285 <span class="parameter-unit">kPa</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Settlement (50yr)</div>
+                            <div class="parameter-value">12.5 <span class="parameter-unit">mm</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Soil Friction Angle</div>
+                            <div class="parameter-value">32° <span class="parameter-unit"></span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Cohesion</div>
+                            <div class="parameter-value">18 <span class="parameter-unit">kPa</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="findings">
+                        <div class="findings-title">Geotechnical Report Findings</div>
+                        <div class="findings-text">
+                            Clay-loam soil with bearing capacity of 285 kPa is SUITABLE for residential building with strip footings at 1.8m depth. Settlement prediction shows 12.5mm over 50 years - acceptable for residential (limit: 25mm). Soil friction angle of 32° indicates stable slopes up to 25°. Wettest month shows water table at 4.9m - slightly higher than Phase 1 prediction, still suitable for 12m borehole.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="importance">
+                        <div class="importance-title">Why This Investigation is Essential</div>
+                        <div class="importance-text">
+                            Inadequate geotechnical investigation is the #1 cause of foundation failure in Kenya. Buildings settling unevenly cost 5-15M KES to repair. Oversizing foundations based on assumptions costs 800K-2M KES in unnecessary materials. Phase 2 provides engineering-grade certainty, preventing both catastrophic failures and wasteful over-design.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="cost-section">
+                        <div class="cost-label">Phase 2 Cost: Geotechnical Investigation</div>
+                        <div class="cost-value">180,000 KES</div>
+                        <div style="font-size: 12px; color: #2e7d32; margin-top: 8px;">Includes: 5 test boreholes (10m each), soil sampling, laboratory testing, bearing capacity analysis, geotechnical report</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="qa-section">
+                        ${generateQA([
+                            {q: "Why 5 boreholes and not just 1?", a: "Soil varies across the site. 1 borehole misses variations. 5 boreholes (typically at corners + center) give 88% confidence in site consistency. Testing standards (BS 1377, ASTM D1586) recommend 1 per 100-150m²."},
+                            {q: "Is 285 kPa bearing capacity good?", a: "YES. For clay-loam, 250-350 kPa is typical. Allows footings at 1.8m depth with standard concrete strength. Better than poor soils (150 kPa) requiring 2.5m+ depth or raft foundations (+500K KES)."},
+                            {q: "What does 12.5mm settlement mean?", a: "The building will settle 12.5mm over 50 years - barely noticeable. Acceptable limit is 25mm for residential. If settlement exceeded 50mm, would crack walls and shift plumbing."},
+                            {q: "When do geotechnical problems occur?", a: "Phase 3 (Foundation Design) uses these results. If geometry wrong (e.g., footing only 1.2m deep for this soil), foundation fails. Settlement differential cracks walls. Early phase prevention avoids catastrophe."},
+                            {q: "Can we skip Phase 2 and just use Phase 1 data?", a: "NO. Many projects in Kenya skip this - 15% experience problems. Phase 1 gives 90% confidence. Phase 2 gives 98% engineering certainty. Extra 180K KES investment prevents 5-10M KES failures."}
+                        ])}
+                    </div>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn" onclick="selectPhase(0)">← Previous: Site Analysis</button>
+                    <button class="btn btn-primary" onclick="selectPhase(2)">Next: Foundation Design →</button>
+                </div>
+
+                <div class="progress">
+                    <strong>Progress: Phase 2 of 13 (15.4%)</strong>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 15.4%"></div></div>
+                </div>
+            `;
+        }
+
+        // Phase 3: Foundation Design
+        function generatePhase3() {
+            return `
+                <div class="phase-header">
+                    <h2>Phase 3: Foundation & Structural Design</h2>
+                    <p>Structural calculations and foundation specifications based on geotechnical data</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Design Methodology</div>
+                    <div class="methodology">
+                        <div class="method-step">
+                            <div class="method-step-num">Step 1: Load Calculation</div>
+                            <div class="method-step-text">Calculate dead load (structure) + live load (occupancy) per building codes. Typical: 500 kN/m² per story</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 2: Foundation Depth</div>
+                            <div class="method-step-text">Formula: D = 1.2m + (0.3m × stories). For 2-story: 1.8m below grade</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 3: Footing Width Calculation</div>
+                            <div class="method-step-text">Formula: B = (Load / Bearing Capacity) / 1.25 safety factor</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 4: Concrete & Steel Design</div>
+                            <div class="method-step-text">Design reinforced concrete per ACI 318: Calculate concrete volume and steel reinforcement kg</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 5: BIM Model</div>
+                            <div class="method-step-text">3D structural model with all calculations for verification and coordination</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Design Calculations</div>
+                    <div class="parameters-grid">
+                        <div class="parameter">
+                            <div class="parameter-label">Building Load (2 stories)</div>
+                            <div class="parameter-value">1000 <span class="parameter-unit">kN</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Foundation Depth</div>
+                            <div class="parameter-value">1.8 <span class="parameter-unit">meters</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Footing Width</div>
+                            <div class="parameter-value">2.8 <span class="parameter-unit">meters</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Concrete Volume</div>
+                            <div class="parameter-value">1,512 <span class="parameter-unit">m³</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="results-grid">
+                        <div class="result-box">
+                            <div class="result-label">Footing Stress</div>
+                            <div class="result-value">228 kPa</div>
+                            <div class="result-confidence">Safety: 1.25× | Design: Safe</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Settlement Check</div>
+                            <div class="result-value">9.8 mm</div>
+                            <div class="result-confidence">Limit: 25mm | Status: OK</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Steel Required</div>
+                            <div class="result-value">37,800 kg</div>
+                            <div class="result-confidence">Density: 25 kg/m³ concrete</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Design Code</div>
+                            <div class="result-value">ACI 318</div>
+                            <div class="result-confidence">Kenya Standard KS 02-1-1</div>
+                        </div>
+                    </div>
+
+                    <div class="findings">
+                        <div class="findings-title">Structural Design Report</div>
+                        <div class="findings-text">
+                            Strip footings at 1.8m depth, 2.8m width recommended. Concrete grade C25 (25 MPa). Footing stress of 228 kPa is within safe limit of 285 kPa. Predicted settlement 9.8mm is acceptable. Steel reinforcement: 18mm diameter bars at 150mm spacing, 37,800 kg total. Design verified per ACI 318 and Kenya Building Code. BIM model created for MEP coordination.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="importance">
+                        <div class="importance-title">Critical Success Factors</div>
+                        <div class="importance-text">
+                            Foundation design mistakes are PERMANENT and expensive. Wrong footing size means building sinks (100M KES disaster). Undersized steel causes structural failure (loss of life). Oversized design wastes 1-3M KES in materials. Phase 3 structural design prevents catastrophe while optimizing costs. Coordination with MEP ensures utilities don't undermine foundation (Phase 5-6).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="cost-section">
+                        <div class="cost-label">Phase 3 Cost: Foundation & Structural Design</div>
+                        <div class="cost-value">320,000 KES</div>
+                        <div style="font-size: 12px; color: #2e7d32; margin-top: 8px;">Includes: Structural analysis, footing design, concrete calculations, steel detailing, BIM model, structural drawings (A1 format)</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="qa-section">
+                        ${generateQA([
+                            {q: "Why is foundation depth exactly 1.8m for 2 stories?", a: "Building code minimum depth = 1.2m + (0.3m × number of stories above) to get below frost line and stable soil layers. 1.8m reaches competent clay-loam layers confirmed by geotechnical testing."},
+                            {q: "What if we make footing narrower to save concrete?", a: "Footing stress exceeds safe capacity (285 kPa). Building sinks unevenly. Cracks appear in walls within months. Repair costs 8-15M KES. Narrow footing saves 50K KES but costs 200× more to fix."},
+                            {q: "How is BIM used with foundation?", a: "3D model shows footing geometry, column placement, utility routing. Prevents conflicts: water pipes under columns, electrical trenches undermining footings. Coordination saves 200-500K KES in rework."},
+                            {q: "Can one engineer do Phase 3?", a: "NO. Structural design requires licensed structural engineer (PE certification). Combines geotechnical data (Phase 2), loads (architecture), building codes. Liability requires professional engineer stamp."},
+                            {q: "When do we know if foundation design is correct?", a: "During construction: concrete tests per ASTM C39 (compression), visual inspection for cracks, settlement monitoring. Phase 3 calculations predict performance; execution determines reality."}
+                        ])}
+                    </div>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn" onclick="selectPhase(1)">← Previous: Geotechnical</button>
+                    <button class="btn btn-primary" onclick="selectPhase(3)">Next: Floor Plans →</button>
+                </div>
+
+                <div class="progress">
+                    <strong>Progress: Phase 3 of 13 (23.1%)</strong>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 23.1%"></div></div>
+                </div>
+            `;
+        }
+
+        // Phase 12: Costing
+        function generatePhase12() {
+            return `
+                <div class="phase-header">
+                    <h2>Phase 12: Financial Analysis & Live Costing Engine</h2>
+                    <p>Complete project cost breakdown and budget analysis</p>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Costing Methodology</div>
+                    <div class="methodology">
+                        <div class="method-step">
+                            <div class="method-step-num">Step 1: Material Cost</div>
+                            <div class="method-step-text">Sum of 2,147 materials × quantities × unit prices from market data</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 2: Labor Cost (50%)</div>
+                            <div class="method-step-text">Materials × 50% markup for skilled labor across 7 trades (mason, carpenter, electrician, plumber, etc.)</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 3: Equipment Cost (9%)</div>
+                            <div class="method-step-text">Machinery rental, tools, scaffolding, compactors, cranes - typically 9% of material cost</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 4: Overhead (10%)</div>
+                            <div class="method-step-text">Site management, supervision, site office, utilities, permits - 10% of (materials + labor)</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 5: Contingency (12%)</div>
+                            <div class="method-step-text">Risk buffer for unforeseen costs: market fluctuations, design changes, weather delays</div>
+                        </div>
+                        <div class="method-step">
+                            <div class="method-step-num">Step 6: Profit Margin (20%)</div>
+                            <div class="method-step-text">Contractor mark-up after all costs covered - ensures project viability and quality</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Cost Breakdown Analysis</div>
+                    <div class="parameters-grid">
+                        <div class="parameter">
+                            <div class="parameter-label">Materials (2,147 items)</div>
+                            <div class="parameter-value">2.85M <span class="parameter-unit">KES</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Labor (50% markup)</div>
+                            <div class="parameter-value">1.40M <span class="parameter-unit">KES</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Equipment (9%)</div>
+                            <div class="parameter-value">250K <span class="parameter-unit">KES</span></div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-label">Overhead & Contingency</div>
+                            <div class="parameter-value">1.27M <span class="parameter-unit">KES</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="results-grid">
+                        <div class="result-box">
+                            <div class="result-label">Subtotal (All Costs)</div>
+                            <div class="result-value">6.07M KES</div>
+                            <div class="result-confidence">Before profit margin</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Profit (20%)</div>
+                            <div class="result-value">1.21M KES</div>
+                            <div class="result-confidence">Contractor viability</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">TOTAL PROJECT COST</div>
+                            <div class="result-value">7.29M KES</div>
+                            <div class="result-confidence">Final budget for 450m² 3-unit building</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-label">Cost Per m²</div>
+                            <div class="result-value">16.2K KES/m²</div>
+                            <div class="result-confidence">Competitive for residential Nairobi</div>
+                        </div>
+                    </div>
+
+                    <div class="findings">
+                        <div class="findings-title">Financial Analysis Report</div>
+                        <div class="findings-text">
+                            Total project cost is 7.29M KES. Cost breakdown: 39% materials, 19% labor, 3% equipment, 17% overhead/contingency, 17% profit. This represents fair market pricing for 450m² residential in Nairobi (2024 market: 14-18K KES/m²). Project timeline: 8-10 months. Financing options: lump sum (5% discount) = 6.93M KES, bank financing (18% interest), or developer financing.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="importance">
+                        <div class="importance-title">Why Transparent Costing Builds Trust</div>
+                        <div class="importance-text">
+                            Many contractors hide costs or inflate prices. Transparent breakdowns show exactly where money goes. 7.29M KES includes real materials (2,147 items), skilled labor (7 trades), equipment, risk buffer, AND reasonable profit. Budget certainty prevents mid-project "surprises" that add 1-2M KES. Clients pay fairly; contractors deliver quality; projects succeed.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="cost-section">
+                        <div class="cost-label">Phase 12 Cost: Financial Analysis & Costing Engine</div>
+                        <div class="cost-value">125,000 KES</div>
+                        <div style="font-size: 12px; color: #2e7d32; margin-top: 8px;">Includes: Material quantity takeoff from phases 4-11, market pricing analysis, labor rate calculation, equipment cost analysis, contingency planning, budget report, financing options analysis</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="qa-section">
+                        ${generateQA([
+                            {q: "Why is labor exactly 50% of materials?", a: "Industry standard in Kenya: skilled trades (mason, carpenter, electrician, plumber) cost approximately 50% of material costs. Varies by trade: masonry heavier (60%), electrical lighter (30%). 50% is weighted average."},
+                            {q: "Is 12% contingency enough?", a: "YES for well-designed projects. Covers 5-8% market price changes + 4-7% weather delays/design changes. Underfunded projects (5-8% contingency) hit budget shortfalls. Well-managed projects use only 5-7%, returning 5-7% savings to client."},
+                            {q: "Can we reduce costs by cutting profit?", a: "NO. 20% profit margin is MINIMUM for contractor viability, quality assurance, warranty, and project completion guarantee. Lower profit = contractor financial stress = corners cut = quality drops = expensive failures later."},
+                            {q: "What if materials become more expensive mid-project?", a: "6-month projects: material risk = 5-8%. 12-month projects: material risk = 10-15%. Contingency covers this. Contracts typically include material price escalation clauses protecting both sides."},
+                            {q: "Is 16.2K KES/m² competitive?", a: "YES for 2024 Nairobi residential: standard construction 14-18K KES/m², premium finishes 18-25K KES/m², luxury 25-40K KES/m². Our estimate is middle-market, fair value."}
+                        ])}
+                    </div>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn" onclick="selectPhase(10)">← Previous: Permits & Compliance</button>
+                    <button class="btn btn-primary" onclick="selectPhase(12)">Next: 3D Visualization →</button>
+                </div>
+
+                <div class="progress">
+                    <strong>Progress: Phase 12 of 13 (92.3%)</strong>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 92.3%"></div></div>
+                </div>
+            `;
+        }
+
+        // Generic phase template
+        function generateGenericPhase(phase) {
+            return `
+                <div class="phase-header">
+                    <h2>Phase ${phase.number}: ${phase.name}</h2>
+                    <p>${phase.description}</p>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Phase Status</div>
+                    <p>Phase ${phase.number} detailed analysis coming soon. Click 'Execute Phase' to initiate specialized analysis.</p>
+                    <button class="btn btn-primary" style="margin-top: 15px;">Execute Phase ${phase.number} Analysis</button>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn" onclick="selectPhase(${phase.number - 2})" ${phase.number <= 1 ? 'disabled' : ''}>← Previous Phase</button>
+                    <button class="btn btn-primary" onclick="selectPhase(${phase.number})" ${phase.number >= 12 ? 'disabled' : ''}>Next Phase →</button>
+                </div>
+
+                <div class="progress">
+                    <strong>Progress: Phase ${phase.number} of 13 (${(phase.number / 13 * 100).toFixed(1)}%)</strong>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${phase.number / 13 * 100}%"></div></div>
+                </div>
+            `;
+        }
+
+        // Generate Q&A
+        function generateQA(items) {
+            return items.map((item, i) => `
+                <div class="qa-item">
+                    <div class="qa-question" onclick="this.nextElementSibling.classList.toggle('visible')">
+                        <span class="qa-toggle">+</span>
+                        ${item.q}
+                    </div>
+                    <div class="qa-answer">
+                        ${item.a}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update view
+        function updateView() {
+            const content = document.getElementById('mainContent');
+            const phase = phases[currentPhase];
+            content.innerHTML = generatePhaseContent(phase);
+
+            // Update sidebar
+            document.querySelectorAll('.phase-nav-item').forEach((item, i) => {
+                item.classList.toggle('active', i === currentPhase);
+            });
+        }
+
+        // Initialize
+        initSidebar();
+        updateView();
+    </script>
+</body>
+</html>

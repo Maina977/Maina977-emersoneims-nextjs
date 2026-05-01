@@ -1,0 +1,38 @@
+# Editor / OS noise
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.idea/
+.vscode/
+
+# Git + local-only archive folder must not ship in image
+.git/
+.gitignore
+.gitattributes
+_ARCHIVE_*/
+backups/
+
+# Local data — must NEVER ship in image
+uploads/
+eims.db
+eims.db-*
+*.log
+*.jsonl
+
+# Tests / docs not needed in runtime image
+tests/__pycache__/
+*.md
+!README_EIMS_BSP.md
+
+# CI scratch
+.coverage
+htmlcov/
+.pytest_cache/
+.github/
+
+# Local secrets
+.env
+.env.*
+!.env.example

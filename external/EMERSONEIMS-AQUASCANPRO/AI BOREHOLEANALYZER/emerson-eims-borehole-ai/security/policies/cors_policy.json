@@ -1,0 +1,11 @@
+{
+  "allow_origins": [
+    "http://localhost:3000",
+    "https://app.borehole-ai.com",
+    "https://borehole-ai.com"
+  ],
+  "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  "allow_headers": ["Authorization", "Content-Type"],
+  "expose_headers": ["X-Total-Count"],
+  "max_age": 3600
+}

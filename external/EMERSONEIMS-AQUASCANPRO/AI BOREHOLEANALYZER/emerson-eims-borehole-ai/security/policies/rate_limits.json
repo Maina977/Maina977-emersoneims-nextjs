@@ -1,0 +1,18 @@
+{
+  "default": {
+    "requests": 100,
+    "period": 60
+  },
+  "authenticated": {
+    "requests": 500,
+    "period": 60
+  },
+  "premium": {
+    "requests": 2000,
+    "period": 60
+  },
+  "analysis_endpoint": {
+    "requests": 50,
+    "period": 3600
+  }
+}

@@ -1,0 +1,960 @@
+﻿{
+    "currency":  "KES",
+    "phases":  {
+                   "phase_1":  {
+                                   "data":  {
+                                                "analysis_method":  "regional_data_model",
+                                                "climate_zone":  "tropical",
+                                                "data_source":  "EIMS Regional Database + GPS Coordinates",
+                                                "land_use":  "residential",
+                                                "nearby_structures":  "survey_required",
+                                                "slope_angle":  8.02,
+                                                "soil_type":  "clay",
+                                                "suitability_pct":  90,
+                                                "vegetation_coverage":  0.65,
+                                                "water_table_depth":  3.5,
+                                                "water_table_note":  "Regional estimate from climate/soil model -- verify with on-site geotechnical survey before design.",
+                                                "water_table_source":  "regional_estimate"
+                                            },
+                                   "name":  "Site Analysis"
+                               },
+                   "phase_10":  {
+                                    "data":  {
+                                                 "building_code":  "Kenya Building Code 2020",
+                                                 "building_code_compliance":  "REQUIRES_VERIFICATION",
+                                                 "estimated_fees_usd":  352,
+                                                 "estimated_timeline_days":  45,
+                                                 "jurisdiction":  "Kenya",
+                                                 "permits_required":  6,
+                                                 "required_documents":  [
+                                                                            "Architectural drawings (stamped)",
+                                                                            "Structural calculations (engineer-certified)",
+                                                                            "MEP plans",
+                                                                            "Site plan",
+                                                                            "Land ownership / title deed",
+                                                                            "Survey plan"
+                                                                        ],
+                                                 "setback_compliance":  {
+                                                                            "front_m":  5,
+                                                                            "rear_m":  3,
+                                                                            "side_m":  2
+                                                                        }
+                                             },
+                                    "name":  "Permits \u0026 Compliance"
+                                },
+                   "phase_11":  {
+                                    "data":  {
+                                                 "model_endpoint":  "/api/drawings/3d-model",
+                                                 "status":  "ready"
+                                             },
+                                    "name":  "3D Visualization"
+                                },
+                   "phase_12":  {
+                                    "data":  {
+                                                 "contingency":  1054425.74,
+                                                 "contractor_profit":  1739802.46,
+                                                 "cost_per_sqm":  60629.48,
+                                                 "currency":  "KES",
+                                                 "equipment_cost":  658244.7,
+                                                 "fx_from_usd":  130.0,
+                                                 "fx_note":  "Indicative rate — verify with central bank before tender.",
+                                                 "labor_cost":  925656.62,
+                                                 "labor_multiplier":  0.25,
+                                                 "material_cost":  8228058.8,
+                                                 "overhead":  732297.23,
+                                                 "payment_options":  [
+                                                                         {
+                                                                             "discount_percent":  5,
+                                                                             "option":  "lump_sum",
+                                                                             "total":  12671561.27
+                                                                         },
+                                                                         {
+                                                                             "down_payment_percent":  30,
+                                                                             "monthly":  38903.92,
+                                                                             "option":  "bank_financing_20_years"
+                                                                         },
+                                                                         {
+                                                                             "down_payment_percent":  20,
+                                                                             "monthly":  88923.24,
+                                                                             "option":  "developer_financing_10_years"
+                                                                         }
+                                                                     ],
+                                                 "region":  "Kenya",
+                                                 "subtotal":  11598683.09,
+                                                 "total_project_cost":  13338485.55
+                                             },
+                                    "name":  "Live Costing"
+                                },
+                   "phase_13":  {
+                                    "data":  {
+                                                 "export_formats":  [
+                                                                        "IFC2x3",
+                                                                        "FBX",
+                                                                        "DXF",
+                                                                        "PDF",
+                                                                        "XLSX"
+                                                                    ],
+                                                 "status":  "complete"
+                                             },
+                                    "name":  "Integration Layer"
+                                },
+                   "phase_2":  {
+                                   "data":  {
+                                                "bearing_capacity_kPa":  150,
+                                                "excavation_depth":  2.8,
+                                                "recommended_foundation":  "STRIP",
+                                                "settlement_mm":  40,
+                                                "slope_stability":  "stable",
+                                                "soil_classification":  "CH",
+                                                "water_table_depth":  3.5
+                                            },
+                                   "name":  "Geotechnical Design"
+                               },
+                   "phase_3":  {
+                                   "data":  {
+                                                "bearing_capacity_kPa":  150,
+                                                "bim_ready":  true,
+                                                "concrete_volume_m3":  42.9,
+                                                "design_standard":  "BS 8004 / Eurocode 7",
+                                                "footing_width_m":  1.82,
+                                                "foundation_depth_m":  1.3,
+                                                "foundation_type":  "PAD",
+                                                "reinforcement_steel_kg":  3861.0,
+                                                "safety_factor":  3.0,
+                                                "soil_type":  "clay",
+                                                "total_building_load_kN":  1650.0,
+                                                "water_table_factor":  "standard"
+                                            },
+                                   "name":  "Foundation Design"
+                               },
+                   "phase_4":  {
+                                   "data":  {
+                                                "area_efficiency_percent":  80.0,
+                                                "area_per_unit":  220.0,
+                                                "bathrooms":  3,
+                                                "building_code_compliance":  true,
+                                                "cost_per_sqm_estimate":  "calculated_in_costing_phase",
+                                                "floor_count":  2,
+                                                "rooms":  {
+                                                              "bathrooms":  3,
+                                                              "bedrooms":  4,
+                                                              "extra_rooms":  0,
+                                                              "kitchen":  1,
+                                                              "living_areas":  1
+                                                          },
+                                                "style":  "modern",
+                                                "total_area_sqm":  220.0
+                                            },
+                                   "name":  "Floor Plans"
+                               },
+                   "phase_5":  {
+                                   "data":  {
+                                                "design_standard":  "BS 7671 / IEC 60364",
+                                                "distribution_boards":  1,
+                                                "diversity_factor":  0.6,
+                                                "earthing_system":  "TN-S",
+                                                "fixed_appliance_circuits":  3,
+                                                "lighting_circuits":  2,
+                                                "lighting_points":  12,
+                                                "main_current_A":  24.5,
+                                                "max_demand_kW":  5.63,
+                                                "socket_circuits":  2,
+                                                "socket_outlets":  12,
+                                                "supply_type":  "single-phase 230V",
+                                                "total_circuits":  7,
+                                                "total_connected_load_kW":  9.38
+                                            },
+                                   "name":  "Electrical Design"
+                               },
+                   "phase_6":  {
+                                   "data":  {
+                                                "cold_water_pipes":  11,
+                                                "daily_demand_liters":  900,
+                                                "design_standard":  "BS EN 12056 / BS 6700",
+                                                "hot_water_pipes":  7,
+                                                "hot_water_storage_liters":  240,
+                                                "main_supply_pipe_mm":  32,
+                                                "peak_hourly_liters":  90,
+                                                "soil_stacks":  1,
+                                                "storage_tank_liters":  1000,
+                                                "total_fixture_units":  34.5,
+                                                "total_occupants":  6,
+                                                "waste_outlets":  10,
+                                                "water_heater_kW":  9.6
+                                            },
+                                   "name":  "Plumbing Design"
+                               },
+                   "phase_7":  {
+                                   "data":  {
+                                                "calculation_basis":  {
+                                                                          "bedrooms_per_unit":  4,
+                                                                          "ext_wall_area_m2":  251.7,
+                                                                          "footprint_m2":  110.0,
+                                                                          "perimeter_m":  42.0,
+                                                                          "stories":  2,
+                                                                          "total_area_m2":  220.0,
+                                                                          "total_concrete_m3":  142.4,
+                                                                          "units":  1
+                                                                      },
+                                                "currency":  "USD",
+                                                "items":  [
+                                                              {
+                                                                  "amount":  8889.3,
+                                                                  "category":  "structural",
+                                                                  "description":  "Portland Cement (50kg)",
+                                                                  "item_no":  1,
+                                                                  "quantity":  1045.8,
+                                                                  "rate":  8.5,
+                                                                  "unit":  "bag"
+                                                              },
+                                                              {
+                                                                  "amount":  5112.37,
+                                                                  "category":  "structural",
+                                                                  "description":  "Reinforcement Steel Y12 (12mm)",
+                                                                  "item_no":  2,
+                                                                  "quantity":  5809.51,
+                                                                  "rate":  0.88,
+                                                                  "unit":  "kg"
+                                                              },
+                                                              {
+                                                                  "amount":  4574.99,
+                                                                  "category":  "structural",
+                                                                  "description":  "Reinforcement Steel Y16 (16mm)",
+                                                                  "item_no":  3,
+                                                                  "quantity":  5083.32,
+                                                                  "rate":  0.9,
+                                                                  "unit":  "kg"
+                                                              },
+                                                              {
+                                                                  "amount":  3086.31,
+                                                                  "category":  "structural",
+                                                                  "description":  "Reinforcement Steel Y10 (10mm)",
+                                                                  "item_no":  4,
+                                                                  "quantity":  3630.95,
+                                                                  "rate":  0.85,
+                                                                  "unit":  "kg"
+                                                              },
+                                                              {
+                                                                  "amount":  336.42,
+                                                                  "category":  "structural",
+                                                                  "description":  "Binding Wire (gauge 18)",
+                                                                  "item_no":  5,
+                                                                  "quantity":  224.28,
+                                                                  "rate":  1.5,
+                                                                  "unit":  "kg"
+                                                              },
+                                                              {
+                                                                  "amount":  323.4,
+                                                                  "category":  "structural",
+                                                                  "description":  "BRC Mesh A142 (4.8m×2.4m)",
+                                                                  "item_no":  6,
+                                                                  "quantity":  11.55,
+                                                                  "rate":  28.0,
+                                                                  "unit":  "sheet"
+                                                              },
+                                                              {
+                                                                  "amount":  1762.75,
+                                                                  "category":  "structural",
+                                                                  "description":  "Fine River Sand",
+                                                                  "item_no":  7,
+                                                                  "quantity":  70.51,
+                                                                  "rate":  25.0,
+                                                                  "unit":  "m³"
+                                                              },
+                                                              {
+                                                                  "amount":  4512.64,
+                                                                  "category":  "structural",
+                                                                  "description":  "Coarse Aggregate (20mm)",
+                                                                  "item_no":  8,
+                                                                  "quantity":  141.02,
+                                                                  "rate":  32.0,
+                                                                  "unit":  "m³"
+                                                              },
+                                                              {
+                                                                  "amount":  2935.8,
+                                                                  "category":  "structural",
+                                                                  "description":  "Concrete Blocks 200mm (8\")",
+                                                                  "item_no":  9,
+                                                                  "quantity":  2935.8,
+                                                                  "rate":  1.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  2290.47,
+                                                                  "category":  "structural",
+                                                                  "description":  "Concrete Blocks 100mm (4\")",
+                                                                  "item_no":  10,
+                                                                  "quantity":  3523.8,
+                                                                  "rate":  0.65,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  3213.1,
+                                                                  "category":  "structural",
+                                                                  "description":  "Formwork Plywood 18mm",
+                                                                  "item_no":  11,
+                                                                  "quantity":  146.05,
+                                                                  "rate":  22.0,
+                                                                  "unit":  "sheet"
+                                                              },
+                                                              {
+                                                                  "amount":  3129.28,
+                                                                  "category":  "structural",
+                                                                  "description":  "Timber 50×100mm (Softwood)",
+                                                                  "item_no":  12,
+                                                                  "quantity":  1117.6,
+                                                                  "rate":  2.8,
+                                                                  "unit":  "m"
+                                                              },
+                                                              {
+                                                                  "amount":  31.75,
+                                                                  "category":  "structural",
+                                                                  "description":  "DPC Polythene (1000 gauge)",
+                                                                  "item_no":  13,
+                                                                  "quantity":  26.46,
+                                                                  "rate":  1.2,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  435.6,
+                                                                  "category":  "structural",
+                                                                  "description":  "Hardcore / Murram",
+                                                                  "item_no":  14,
+                                                                  "quantity":  24.2,
+                                                                  "rate":  18.0,
+                                                                  "unit":  "m³"
+                                                              },
+                                                              {
+                                                                  "amount":  693.0,
+                                                                  "category":  "structural",
+                                                                  "description":  "Anti-termite Chemical",
+                                                                  "item_no":  15,
+                                                                  "quantity":  57.75,
+                                                                  "rate":  12.0,
+                                                                  "unit":  "litre"
+                                                              },
+                                                              {
+                                                                  "amount":  392.7,
+                                                                  "category":  "structural",
+                                                                  "description":  "Waterproof Membrane",
+                                                                  "item_no":  16,
+                                                                  "quantity":  46.2,
+                                                                  "rate":  8.5,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  106.08,
+                                                                  "category":  "structural",
+                                                                  "description":  "Precast Concrete Lintel (1200mm)",
+                                                                  "item_no":  17,
+                                                                  "quantity":  13.26,
+                                                                  "rate":  8.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  112.48,
+                                                                  "category":  "electrical",
+                                                                  "description":  "Copper Wire 2.5mm² (single core)",
+                                                                  "item_no":  18,
+                                                                  "quantity":  173.04,
+                                                                  "rate":  0.65,
+                                                                  "unit":  "m"
+                                                              },
+                                                              {
+                                                                  "amount":  46.81,
+                                                                  "category":  "electrical",
+                                                                  "description":  "Copper Wire 1.5mm² (single core)",
+                                                                  "item_no":  19,
+                                                                  "quantity":  104.03,
+                                                                  "rate":  0.45,
+                                                                  "unit":  "m"
+                                                              },
+                                                              {
+                                                                  "amount":  70.35,
+                                                                  "category":  "electrical",
+                                                                  "description":  "PVC Conduit 20mm",
+                                                                  "item_no":  20,
+                                                                  "quantity":  140.7,
+                                                                  "rate":  0.5,
+                                                                  "unit":  "m"
+                                                              },
+                                                              {
+                                                                  "amount":  42.42,
+                                                                  "category":  "electrical",
+                                                                  "description":  "Switch 1-Gang 1-Way",
+                                                                  "item_no":  21,
+                                                                  "quantity":  12.12,
+                                                                  "rate":  3.5,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  78.78,
+                                                                  "category":  "electrical",
+                                                                  "description":  "Socket Outlet 13A Double",
+                                                                  "item_no":  22,
+                                                                  "quantity":  12.12,
+                                                                  "rate":  6.5,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  97.92,
+                                                                  "category":  "electrical",
+                                                                  "description":  "LED Downlight 9W",
+                                                                  "item_no":  23,
+                                                                  "quantity":  12.24,
+                                                                  "rate":  8.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  26.26,
+                                                                  "category":  "electrical",
+                                                                  "description":  "Circuit Breaker MCB 20A",
+                                                                  "item_no":  24,
+                                                                  "quantity":  4.04,
+                                                                  "rate":  6.5,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  25.25,
+                                                                  "category":  "electrical",
+                                                                  "description":  "RCCB/ELCB 40A 30mA",
+                                                                  "item_no":  25,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  25.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  65.65,
+                                                                  "category":  "electrical",
+                                                                  "description":  "Distribution Board 12-Way",
+                                                                  "item_no":  26,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  65.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  15.15,
+                                                                  "category":  "electrical",
+                                                                  "description":  "Earth Rod (1.5m Copper)",
+                                                                  "item_no":  27,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  15.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  109.08,
+                                                                  "category":  "electrical",
+                                                                  "description":  "Smoke Detector",
+                                                                  "item_no":  28,
+                                                                  "quantity":  6.06,
+                                                                  "rate":  18.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  71.82,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "PPR Pipe 20mm (Hot/Cold)",
+                                                                  "item_no":  29,
+                                                                  "quantity":  39.9,
+                                                                  "rate":  1.8,
+                                                                  "unit":  "m"
+                                                              },
+                                                              {
+                                                                  "amount":  75.6,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "PVC Pipe 110mm (4m)",
+                                                                  "item_no":  30,
+                                                                  "quantity":  6.3,
+                                                                  "rate":  12.0,
+                                                                  "unit":  "length"
+                                                              },
+                                                              {
+                                                                  "amount":  17.32,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "PVC Pipe 50mm (4m)",
+                                                                  "item_no":  31,
+                                                                  "quantity":  3.15,
+                                                                  "rate":  5.5,
+                                                                  "unit":  "length"
+                                                              },
+                                                              {
+                                                                  "amount":  171.7,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Toilet (Close-Coupled)",
+                                                                  "item_no":  32,
+                                                                  "quantity":  2.02,
+                                                                  "rate":  85.0,
+                                                                  "unit":  "set"
+                                                              },
+                                                              {
+                                                                  "amount":  112.2,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Washbasin (Pedestal)",
+                                                                  "item_no":  33,
+                                                                  "quantity":  2.04,
+                                                                  "rate":  55.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  90.9,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Shower Mixer Valve",
+                                                                  "item_no":  34,
+                                                                  "quantity":  2.02,
+                                                                  "rate":  45.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  70.7,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Shower Head (Rain 200mm)",
+                                                                  "item_no":  35,
+                                                                  "quantity":  2.02,
+                                                                  "rate":  35.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  60.6,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Basin Mixer Tap",
+                                                                  "item_no":  36,
+                                                                  "quantity":  2.02,
+                                                                  "rate":  30.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  65.65,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Kitchen Sink (SS Double Bowl)",
+                                                                  "item_no":  37,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  65.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  40.4,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Kitchen Mixer Tap",
+                                                                  "item_no":  38,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  40.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  202.0,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Water Tank (Polyethylene 2000L)",
+                                                                  "item_no":  39,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  200.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  151.5,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Water Heater (50L Electric)",
+                                                                  "item_no":  40,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  150.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  30.6,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Floor Drain (SS 150mm)",
+                                                                  "item_no":  41,
+                                                                  "quantity":  5.1,
+                                                                  "rate":  6.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  50.5,
+                                                                  "category":  "plumbing",
+                                                                  "description":  "Inspection Chamber Cover (450mm)",
+                                                                  "item_no":  42,
+                                                                  "quantity":  2.02,
+                                                                  "rate":  25.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  4356.0,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Ceramic Floor Tile 600×600mm",
+                                                                  "item_no":  43,
+                                                                  "quantity":  242.0,
+                                                                  "rate":  18.0,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  528.0,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Ceramic Wall Tile 300×600mm",
+                                                                  "item_no":  44,
+                                                                  "quantity":  35.2,
+                                                                  "rate":  15.0,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  315.0,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Tile Adhesive (20kg)",
+                                                                  "item_no":  45,
+                                                                  "quantity":  52.5,
+                                                                  "rate":  6.0,
+                                                                  "unit":  "bag"
+                                                              },
+                                                              {
+                                                                  "amount":  130.2,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Tile Grout (5kg)",
+                                                                  "item_no":  46,
+                                                                  "quantity":  32.55,
+                                                                  "rate":  4.0,
+                                                                  "unit":  "bag"
+                                                              },
+                                                              {
+                                                                  "amount":  154.0,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Interior Emulsion Paint (20L)",
+                                                                  "item_no":  47,
+                                                                  "quantity":  4.4,
+                                                                  "rate":  35.0,
+                                                                  "unit":  "can"
+                                                              },
+                                                              {
+                                                                  "amount":  148.5,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Exterior Weather Paint (20L)",
+                                                                  "item_no":  48,
+                                                                  "quantity":  3.3,
+                                                                  "rate":  45.0,
+                                                                  "unit":  "can"
+                                                              },
+                                                              {
+                                                                  "amount":  92.4,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Primer/Undercoat (20L)",
+                                                                  "item_no":  49,
+                                                                  "quantity":  3.3,
+                                                                  "rate":  28.0,
+                                                                  "unit":  "can"
+                                                              },
+                                                              {
+                                                                  "amount":  1751.76,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Cement Plaster (Wall 15mm)",
+                                                                  "item_no":  50,
+                                                                  "quantity":  389.28,
+                                                                  "rate":  4.5,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  2851.2,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Gypsum Board Ceiling (9.5mm)",
+                                                                  "item_no":  51,
+                                                                  "quantity":  237.6,
+                                                                  "rate":  12.0,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  321.3,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Flush Door Leaf (900×2100)",
+                                                                  "item_no":  52,
+                                                                  "quantity":  7.14,
+                                                                  "rate":  45.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  249.9,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Timber Door Frame (900×2100)",
+                                                                  "item_no":  53,
+                                                                  "quantity":  7.14,
+                                                                  "rate":  35.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  121.2,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Security Steel Door",
+                                                                  "item_no":  54,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  120.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  127.26,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Door Lock Set (Mortise)",
+                                                                  "item_no":  55,
+                                                                  "quantity":  7.07,
+                                                                  "rate":  18.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  56.56,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Door Hinges (3\" Stainless, pair)",
+                                                                  "item_no":  56,
+                                                                  "quantity":  14.14,
+                                                                  "rate":  4.0,
+                                                                  "unit":  "pair"
+                                                              },
+                                                              {
+                                                                  "amount":  489.5,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Aluminum Window Frame",
+                                                                  "item_no":  57,
+                                                                  "quantity":  8.9,
+                                                                  "rate":  55.0,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  72.56,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Float Glass 4mm (Clear)",
+                                                                  "item_no":  58,
+                                                                  "quantity":  9.07,
+                                                                  "rate":  8.0,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  47.25,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Putty / Wall Filler (5kg)",
+                                                                  "item_no":  59,
+                                                                  "quantity":  9.45,
+                                                                  "rate":  5.0,
+                                                                  "unit":  "bag"
+                                                              },
+                                                              {
+                                                                  "amount":  252.0,
+                                                                  "category":  "finishes",
+                                                                  "description":  "Granite Countertop (25mm)",
+                                                                  "item_no":  60,
+                                                                  "quantity":  3.15,
+                                                                  "rate":  80.0,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  724.5,
+                                                                  "category":  "external",
+                                                                  "description":  "Roofing Sheet (Box Profile 3m)",
+                                                                  "item_no":  61,
+                                                                  "quantity":  48.3,
+                                                                  "rate":  15.0,
+                                                                  "unit":  "sheet"
+                                                              },
+                                                              {
+                                                                  "amount":  57.75,
+                                                                  "category":  "external",
+                                                                  "description":  "Ridge Cap",
+                                                                  "item_no":  62,
+                                                                  "quantity":  11.55,
+                                                                  "rate":  5.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  58.8,
+                                                                  "category":  "external",
+                                                                  "description":  "Guttering (PVC 100mm, 3m)",
+                                                                  "item_no":  63,
+                                                                  "quantity":  7.35,
+                                                                  "rate":  8.0,
+                                                                  "unit":  "length"
+                                                              },
+                                                              {
+                                                                  "amount":  25.2,
+                                                                  "category":  "external",
+                                                                  "description":  "Downpipe (PVC 75mm, 3m)",
+                                                                  "item_no":  64,
+                                                                  "quantity":  4.2,
+                                                                  "rate":  6.0,
+                                                                  "unit":  "length"
+                                                              },
+                                                              {
+                                                                  "amount":  176.4,
+                                                                  "category":  "external",
+                                                                  "description":  "Fascia Board (225mm Timber)",
+                                                                  "item_no":  65,
+                                                                  "quantity":  44.1,
+                                                                  "rate":  4.0,
+                                                                  "unit":  "m"
+                                                              },
+                                                              {
+                                                                  "amount":  519.75,
+                                                                  "category":  "external",
+                                                                  "description":  "Concrete Paving Block (60mm)",
+                                                                  "item_no":  66,
+                                                                  "quantity":  34.65,
+                                                                  "rate":  15.0,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  433.0,
+                                                                  "category":  "external",
+                                                                  "description":  "Topsoil",
+                                                                  "item_no":  67,
+                                                                  "quantity":  17.32,
+                                                                  "rate":  25.0,
+                                                                  "unit":  "m³"
+                                                              },
+                                                              {
+                                                                  "amount":  242.0,
+                                                                  "category":  "external",
+                                                                  "description":  "Grass Sod / Turf",
+                                                                  "item_no":  68,
+                                                                  "quantity":  60.5,
+                                                                  "rate":  4.0,
+                                                                  "unit":  "m²"
+                                                              },
+                                                              {
+                                                                  "amount":  2642.22,
+                                                                  "category":  "external",
+                                                                  "description":  "Perimeter Wall Block (200mm)",
+                                                                  "item_no":  69,
+                                                                  "quantity":  2201.85,
+                                                                  "rate":  1.2,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  505.0,
+                                                                  "category":  "external",
+                                                                  "description":  "Septic Tank (Prefab 3000L)",
+                                                                  "item_no":  70,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  500.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  202.0,
+                                                                  "category":  "external",
+                                                                  "description":  "Soakaway Pit (Precast Rings)",
+                                                                  "item_no":  71,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  200.0,
+                                                                  "unit":  "set"
+                                                              },
+                                                              {
+                                                                  "amount":  60.6,
+                                                                  "category":  "external",
+                                                                  "description":  "Manhole Cover (Heavy Duty)",
+                                                                  "item_no":  72,
+                                                                  "quantity":  2.02,
+                                                                  "rate":  30.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  1414.0,
+                                                                  "category":  "mep_hvac",
+                                                                  "description":  "Split AC Unit (12000 BTU)",
+                                                                  "item_no":  73,
+                                                                  "quantity":  4.04,
+                                                                  "rate":  350.0,
+                                                                  "unit":  "set"
+                                                              },
+                                                              {
+                                                                  "amount":  212.1,
+                                                                  "category":  "mep_hvac",
+                                                                  "description":  "Ceiling Fan (1200mm)",
+                                                                  "item_no":  74,
+                                                                  "quantity":  6.06,
+                                                                  "rate":  35.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  60.6,
+                                                                  "category":  "mep_hvac",
+                                                                  "description":  "Exhaust Fan (200mm)",
+                                                                  "item_no":  75,
+                                                                  "quantity":  3.03,
+                                                                  "rate":  20.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  45.45,
+                                                                  "category":  "mep_hvac",
+                                                                  "description":  "Fire Extinguisher (CO2 5kg)",
+                                                                  "item_no":  76,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  45.0,
+                                                                  "unit":  "piece"
+                                                              },
+                                                              {
+                                                                  "amount":  121.2,
+                                                                  "category":  "mep_hvac",
+                                                                  "description":  "Water Pump (0.75kW)",
+                                                                  "item_no":  77,
+                                                                  "quantity":  1.01,
+                                                                  "rate":  120.0,
+                                                                  "unit":  "piece"
+                                                              }
+                                                          ],
+                                                "items_by_category":  {
+                                                                          "electrical":  11,
+                                                                          "external":  12,
+                                                                          "finishes":  18,
+                                                                          "mep_hvac":  5,
+                                                                          "plumbing":  14,
+                                                                          "structural":  17
+                                                                      },
+                                                "material_items":  77,
+                                                "method":  "quantity_takeoff_from_dimensions",
+                                                "total_material_cost":  63292.76,
+                                                "waste_factor_applied":  true
+                                            },
+                                   "name":  "BOQ"
+                               },
+                   "phase_8":  {
+                                   "data":  {
+                                                "borehole_system":  {
+                                                                        "depth_meters":  8,
+                                                                        "estimated_cost_usd":  440,
+                                                                        "estimated_yield_lpm":  15,
+                                                                        "feasibility":  "high",
+                                                                        "pump_kw":  3
+                                                                    },
+                                                "estimated_annual_saving_usd":  818.04,
+                                                "grid_option":  {
+                                                                    "connection_cost_usd":  260,
+                                                                    "monthly_tariff_estimate_usd":  33
+                                                                },
+                                                "recommendation":  "solar_grid_hybrid",
+                                                "solar_system":  {
+                                                                     "annual_generation_kWh":  6817.0,
+                                                                     "battery_kWh":  6.6,
+                                                                     "estimated_cost_usd":  5137,
+                                                                     "estimated_irradiance":  1900,
+                                                                     "npv_25yr_usd":  8048.0,
+                                                                     "panels_count":  11,
+                                                                     "panels_kw":  4.4,
+                                                                     "payback_years":  6.3,
+                                                                     "roi_years":  6.3,
+                                                                     "system_efficiency":  0.867,
+                                                                     "tariff_per_kwh":  0.12,
+                                                                     "tilt_factor":  0.941
+                                                                 }
+                                            },
+                                   "name":  "Infrastructure"
+                               },
+                   "phase_9":  {
+                                   "data":  {
+                                                "estimated_cost_usd":  759,
+                                                "garden_area_m2":  33.0,
+                                                "hardscape_area_m2":  22.0,
+                                                "irrigation_system":  true,
+                                                "lawn_area_m2":  77.0,
+                                                "maintenance_monthly_usd":  15,
+                                                "plants_count":  264,
+                                                "recommended_style":  "tropical_lush"
+                                            },
+                                   "name":  "Landscape Design"
+                               }
+               },
+    "project_id":  "592f0afc-4471-4620-8e3e-3eff20d55c1c",
+    "sessionId":  "592f0afc-4471-4620-8e3e-3eff20d55c1c",
+    "success":  true,
+    "total_cost":  13338485.55
+}

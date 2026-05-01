@@ -1,0 +1,1140 @@
+EMERSON EIMS
+ BUILDING SUITE PRO
+ Audit Villa Nakuru
+ Location: Nakuru, Kenya
+ Total Area: 220 m² | Units: 1 | Storeys: 2
+ Architectural Style: Modern
+ Date: 27 April 2026
+PROJECT INFORMATION
+Project ID
+801a3e22-9494-465a-bc32-286348c13036
+Location
+Nakuru, Kenya
+Total Area
+220 m²
+Units / Apartments
+1
+Storeys
+2
+Bedrooms per Unit
+4
+Foundation Type
+Strip + Ground Beam
+Style
+Modern
+Report Generated
+2026-04-27 03:39
+
+TABLE OF CONTENTS
+1. Validation Engine — Audit Trail
+2. Design Brief & Design Criteria (incl. EC1 design loads)
+3. Structural Design Calculations (Slab · Beam · Column · Foundation)
+4. Bar Bending Schedule (BS 8666)
+5. MEP Design — Electrical, Plumbing & Drainage
+6. Bill of Quantities (KQS-2025)
+7. Statutory Compliance Pack & Professional Certification
+8. Project Summary & Phase Data
+9. Site Plan
+10. Architectural Floor Plan
+11. Building Elevations (North & East)
+12. Building Cross Section
+13. Structural Layout — Columns, Beams & Foundation
+14. MEP Layout — Electrical
+15. MEP Layout — Plumbing
+16. Cost Summary
+
+VALIDATION ENGINE — AUDIT TRAIL
+1 auto-correction(s) applied with code citation:
+Field
+Original
+Auto-corrected to
+Reason / Code citation
+Foundation
+(unspecified)
+strip + ground beam
+2-storey → strip + ground beam (BS 8004 §7)
+ Compliance Status: AUTO-CORRECTED
+
+1. DESIGN BRIEF & DESIGN CRITERIA
+Item
+Value
+Project name
+Audit Villa Nakuru
+Location
+Nakuru, Kenya
+Total floor area
+220.0 m²
+No. of storeys / floor count
+2 (single source of truth)
+Dwelling units
+1
+Bedrooms / unit
+4
+Architectural style
+Modern
+Foundation
+STRIP + GROUND BEAM
+Currency
+KES
+Plot / LR No.
+LR No. NAK/47/8901
+Coordinates (lat,lng)
+-0.303,36.08
+Title Deed
+Title Deed NAK/4567
+Architect (BORAQS)
+Arch. J. Mwangi BORAQS A/2341
+Structural Engineer (EBK)
+Eng. P. Otieno EBK PE/5678
+Quantity Surveyor (BORAQS)
+QS L. Wanjiru BORAQS QS/4421
+Client
+Mr. K. Mwangi
+Design loads (BS EN 1991-1-1 Cat A — residential):
+Action
+Value (kN/m²)
+Reference
+Permanent action gk (slab + finishes + partitions)
+7.00
+EC1 Table 6.1
+Variable action qk
+2.00
+EC1 Table 6.2 Cat A
+Design ULS w = 1.35 gk + 1.5 qk
+12.45
+EC0 §6.4.3.2
+Design SLS w = gk + qk
+9.00
+EC0 §6.5.3
+
+2. STRUCTURAL DESIGN CALCULATIONS
+Calculations to BS EN 1992-1-1 (EC2) using fck = 30 MPa, fyk = 500 MPa, cover per exposure class XC1 internal / XC3
+external. All members hand-verified against simplified Eurocode 2 design rules; final detailing to be reviewed by the
+Structural Engineer of Record (EBK-registered) before issue for construction.
+2.1 Slab design (one/two-way RC slab)
+Parameter
+Value
+Short span Lx
+9.57 m
+Long span Ly
+11.49 m
+Behaviour
+Two-way
+Slab thickness h
+370 mm (span/depth = 26)
+Effective depth d
+339.0 mm
+Cover
+25 mm (XC1)
+Design moment M
+70.76 kN·m / m
+As required
+505.0 mm² / m
+As minimum (EC2 §9.3.1.1)
+481.0 mm² / m
+As provided
+505.0 mm² / m
+Reinforcement
+T12 @ 200 c/c BW
+2.2 Beam design (simply-supported RC beam)
+Parameter
+Value
+Clear span L
+5.74 m
+Beam section b × h
+237 × 475 mm
+Effective depth d
+429.0 mm
+Cover
+30 mm
+Service load w
+62.41 kN/m
+Design moment M
+257.5 kN·m
+Design shear V
+179.3 kN
+As required (tension)
+1452.0 mm²
+Main steel
+8 no. T16 bot · 4 no. T16 top
+Shear links
+T8 @ 300 c/c
+2.3 Column design (axially loaded RC column)
+Parameter
+Value
+Axial load N (ULS)
+619.0 kN
+Section
+225 × 225 mm
+Concrete grade
+C25/30 (fck = 30 MPa)
+Steel grade
+fyk = 500 MPa
+Steel ratio ρ
+0.020 (2.0 %)
+As required
+1012.0 mm²
+Main steel
+6 no. T16
+Links
+T8 @ 192 c/c
+2.4 Foundation design (per BS 8004 / EN 1997-1)
+
+Parameter
+Value
+Foundation type
+STRIP + GROUND BEAM
+Plan size
+B = 1040 mm wide × Df = 1200 mm deep
+Thickness
+300 mm
+Concrete grade
+C25/30
+Cover
+75 mm (XC2 ground contact)
+Safe bearing pressure (presumed)
+150 kPa
+Column load to foundation
+619.0 kN
+Reinforcement
+T12 @ 150 c/c BW bottom + T10 @ 200 distribution top
+■ The bearing pressure shown is a BS 8004 Table 1 *presumed* value pending a site investigation. A signed Geotechnical Investigation
+Report (boreholes, SPT, allowable bearing capacity) must be obtained from a geotechnical engineer before construction. EIMS records this
+gap honestly rather than fabricating SPT values.
+
+3. BAR BENDING SCHEDULE (BS 8666)
+Schedule of all reinforcement bars with mark, diameter, shape code, length per bar, number off, total length and weight. Steel
+grade 500B. Bend radii and bar shapes comply with BS 8666:2020 Table 2. Quantities to be verified by the Engineer before
+cutting and bending.
+Bar Mark
+Dia.
+Shape Code
+Length per bar (m)
+No. off
+Total length (m)
+Weight (kg)
+S1
+T12
+00
+15.13
+148
+2239.59
+1988.8
+B1-bot
+T16
+00
+6.24
+108
+674.41
+1064.9
+B1-top
+T16
+37
+6.24
+36
+224.80
+355.0
+B1-link
+T8
+51
+0.87
+342
+298.91
+118.1
+C1
+T16
+00
+3.50
+54
+189.00
+298.4
+C1-link
+T8
+51
+0.60
+162
+97.20
+38.4
+F1
+T12
+00
+3.00
+108
+324.00
+287.7
+TOTAL
+4151.3
+Total reinforcement steel: 4,151 kg ≈ 4.15 tonnes
+
+4. MEP DESIGN — ELECTRICAL, PLUMBING & DRAINAGE
+Electrical design per IEC 60364 / KS IEC 60364. Plumbing & sanitary drainage per BS EN 12056-2 and Kenya NCC Building
+Code §EHS. Septic tank to NEMA EIA Regulations 2003.
+4.1 Electrical load schedule
+Load description
+Value
+Lighting (LED) @ 5 W/m²
+1100 W
+Small power sockets @ 25 W/m²
+5500 W
+Cooker / hob (per unit)
+6000 W
+Water heaters
+6000 W
+Air conditioning (split units)
+6000 W
+TOTAL CONNECTED LOAD
+24,600 W
+Diversity factor
+0.65
+DESIGN MAXIMUM DEMAND
+15,990 W (16.8 kVA)
+Main breaker (single phase 230 V)
+75 A
+4.2 Final-circuit schedule
+Circuit
+Load
+Cable
+Protection
+RCD
+L1-Ln (Lighting)
+1100 W
+1.5 mm² T+E
+10 A B-curve MCB
+—
+P1-Pn (Sockets)
+5500 W
+2.5 mm² T+E
+20 A B-curve MCB
+30 mA RCD
+C (Cooker)
+6000 W
+6 mm² T+E
+32 A B-curve MCB
+—
+W (2× water heater)
+6000 W
+4 mm² T+E
+25 A B-curve MCB
+30 mA RCD
+A1-A4 (AC splits)
+6000 W
+2.5 mm² T+E
+16 A C-curve MCB
+—
+4.3 Single-line diagram (text representation)
+KPLC supply ■ kWh meter ■ Main isolator 75 A ■ Main DB (Type-B SPD)
+■■ Lighting circuits L1…Ln (1.5 mm² · 10 A)
+■■ Socket circuits P1…Pn (2.5 mm² · 20 A · 30 mA RCD)
+■■ Cooker C (6 mm² · 32 A)
+■■ Water heaters W (4 mm² · 25 A · 30 mA RCD)
+■■ AC splits A1…An (2.5 mm² · 16 A)
+■■ Earth busbar ■ copper earth-rod ≤ 1 Ω
+4.4 Plumbing fixture schedule
+Fixture
+Qty
+Water Closet (WC)
+2
+Wash-Hand Basin
+2
+Shower / Bath
+2
+Kitchen Sink
+1
+Laundry Sink
+1
+External Bib Tap
+2
+4.5 Drainage gradient table (BS EN 12056-2)
+Pipe
+Slope range
+Min fall
+100 mm soil pipe (WC)
+1:40 to 1:80
+≥ 1.00 m fall per 1 m
+75 mm waste
+1:40
+0.025 m / m
+
+50 mm waste
+1:40
+0.025 m / m
+32 mm WHB / sink
+1:20
+0.050 m / m
+4.6 Septic tank & soak-pit sizing
+Parameter
+Value
+Design occupancy
+8 persons (BS 8233 — bedrooms × 2)
+Daily wastewater flow (180 L/p/d)
+1,440 L/day
+Septic tank volume (3-day retention)
+4.32 m³
+Suggested tank dimensions
+2.5 × 1.2 × 1.44 m (L×W×D)
+Soak-pit area (porous soil, 30 L/m²/d)
+48.0 m²
+Soak-pit diameter (circular)
+7.82 m
+■ Final septic-system geometry must be confirmed by an on-site percolation test. A NEMA Environmental Impact Assessment (EIA) project
+report is required for systems > 50 persons or sites near surface watercourses.
+
+5. BILL OF QUANTITIES (KQS-2025)
+Contractor-grade BOQ in KES, structured by trade per the Kenya Quantity Surveyors Standard Method of Measurement.
+Rates are KQS-2025 indicative urban rates; tenderers shall price all items. All quantities to be verified on site.
+A — PRELIMINARIES
+Description
+Unit
+Qty
+Rate
+Amount
+Site mobilisation, hoarding, signage
+item
+1.00
+KSh 180,000
+KSh 180,000
+Insurance & NCA Levy
+item
+1.00
+KSh 220,000
+KSh 220,000
+Site office + storage
+item
+1.00
+KSh 95,000
+KSh 95,000
+Trade subtotal
+<b>KSh 495,000</b>
+B — SUBSTRUCTURE
+Description
+Unit
+Qty
+Rate
+Amount
+Site clearance & strip topsoil
+m²
+286.00
+KSh 120
+KSh 34,320
+Bulk excavation foundation trenches
+m³
+66.00
+KSh 650
+KSh 42,900
+Hardcore filling 200 mm
+m²
+220.00
+KSh 850
+KSh 187,000
+Lean concrete blinding 50 mm
+m³
+11.00
+KSh 14,000
+KSh 154,000
+RC foundation C25/30
+m³
+66.00
+KSh 26,000
+KSh 1,716,000
+Trade subtotal
+<b>KSh 2,134,220</b>
+C — SUPERSTRUCTURE
+Description
+Unit
+Qty
+Rate
+Amount
+RC columns C25/30
+m³
+3.19
+KSh 32,500
+KSh 103,655
+RC beams C25/30
+m³
+23.28
+KSh 30,500
+KSh 710,070
+RC suspended slabs C25/30
+m³
+162.80
+KSh 28,500
+KSh 4,639,800
+Reinforcement bars (BBS)
+kg
+4,151.30
+KSh 165
+KSh 684,964
+Formwork to soffits & sides
+m²
+1,135.62
+KSh 1,450
+KSh 1,646,652
+200 mm machine-cut block walling
+m²
+355.98
+KSh 1,800
+KSh 640,760
+Plaster both sides
+m²
+711.96
+KSh 1,100
+KSh 783,151
+Trade subtotal
+<b>KSh 9,209,052</b>
+D — ROOFING
+Description
+Unit
+Qty
+Rate
+Amount
+Timber roof trusses & purlins
+m²
+220.00
+KSh 2,200
+KSh 484,000
+0.6 mm box-profile coloured iron sheet
+m²
+231.00
+KSh 1,450
+KSh 334,950
+9 mm gypsum ceiling on softwood brandering
+m²
+440.00
+KSh 1,850
+KSh 814,000
+Trade subtotal
+<b>KSh 1,632,950</b>
+E — FINISHES
+Description
+Unit
+Qty
+Rate
+Amount
+Floor ceramic / porcelain tiling
+m²
+374.00
+KSh 2,400
+KSh 897,600
+Wall tiling (wet areas)
+m²
+79.20
+KSh 2,200
+KSh 174,240
+Internal paint (Crown / Plascon emulsion)
+m²
+569.56
+KSh 520
+KSh 296,173
+External paint (weather-shield)
+m²
+284.78
+KSh 720
+KSh 205,043
+
+Trade subtotal
+<b>KSh 1,573,056</b>
+F — JOINERY
+Description
+Unit
+Qty
+Rate
+Amount
+Internal flush doors with hardware
+each
+7.00
+KSh 18,000
+KSh 126,000
+External main doors hardwood
+each
+2.00
+KSh 42,000
+KSh 84,000
+Aluminium-framed sliding windows
+m²
+33.00
+KSh 9,500
+KSh 313,500
+Trade subtotal
+<b>KSh 523,500</b>
+G — ELECTRICAL
+Description
+Unit
+Qty
+Rate
+Amount
+Mains supply, DB, MCB, RCDs (per IEC 60364)
+item
+1.00
+KSh 165,000
+KSh 165,000
+Lighting points & circuits (~1100 W)
+point
+39.60
+KSh 2,200
+KSh 87,120
+Socket outlets (~5500 W)
+point
+26.40
+KSh 2,400
+KSh 63,360
+Trade subtotal
+<b>KSh 315,480</b>
+H — PLUMBING
+Description
+Unit
+Qty
+Rate
+Amount
+Cold + hot water reticulation, all fixtures
+item
+1.00
+KSh 285,000
+KSh 285,000
+Septic tank + soak-pit (4.32 m³ + Ø7.82 m)
+item
+1.00
+KSh 195,000
+KSh 195,000
+Stormwater drainage & rain-water disposal
+item
+1.00
+KSh 145,000
+KSh 145,000
+Trade subtotal
+<b>KSh 625,000</b>
+Cost summary
+Item
+Amount
+A — PRELIMINARIES
+KSh 495,000
+B — SUBSTRUCTURE
+KSh 2,134,220
+C — SUPERSTRUCTURE
+KSh 9,209,052
+D — ROOFING
+KSh 1,632,950
+E — FINISHES
+KSh 1,573,056
+F — JOINERY
+KSh 523,500
+G — ELECTRICAL
+KSh 315,480
+H — PLUMBING
+KSh 625,000
+Subtotal of works
+KSh 16,508,258
+Contingency 7.5 %
+KSh 1,238,119
+Professional fees 8 % (Architect + Engineer + QS)
+KSh 1,320,661
+Sub-total before VAT
+KSh 19,067,038
+VAT 16 %
+KSh 3,050,726
+GRAND TOTAL
+KSh 22,117,764
+Cost per m² (KES)
+KSh 100,535 / m²
+
+6. STATUTORY COMPLIANCE PACK
+All approvals required under Kenyan law before construction. The contractor and professional team shall ensure each item is
+closed prior to mobilisation.
+Approval
+Authority / Statute
+Documents required
+1. County Planning Approval
+County Govt (Building Plans Section)
+Stamped architectural & structural drawings, location plan, ownership docs, NCA Reg.
+2. NCA Project Registration
+National Construction Authority Act 2011
+NCA-1 form, contractor registration certificate, levy 0.5 % of contract sum.
+3. NEMA Project Report (PR)
+EMCA 1999, EIA Regs 2003
+Required for projects > 5 ha or near watercourses; PR submitted to NEMA county office.
+4. Public Health Approval
+Public Health Act Cap. 242
+Septic system & water supply review by County Public Health Office.
+5. EPRA / KPLC Energy Connection
+EPRA Regulations
+Electrical drawings & wayleave application; final inspection by EPRA-registered Class C electrician.
+6. Fire Safety Certificate
+County Fire Marshal
+Means-of-escape, extinguisher schedule, hydrant layout (NFPA 241 / Kenya Fire Code).
+7. DOSHS Notification
+OSHA 2007 §41
+Notification before commencement; site safety plan, induction registers, ISO 45001.
+6.1 Professional certification (signature pages)
+Role
+Name & Reg. No.
+Signature & Stamp
+Date
+Architect (BORAQS)
+Arch. J. Mwangi BORAQS A/2341
+[ Wet signature + official stamp ]
+Date: ________
+Structural Engineer (EBK)
+Eng. P. Otieno EBK PE/5678
+[ Wet signature + official stamp ]
+Date: ________
+Quantity Surveyor (BORAQS)
+QS L. Wanjiru BORAQS QS/4421
+[ Wet signature + official stamp ]
+Date: ________
+Site Manager / Contractor (NCA)
+— to be appointed before mobilisation —
+[ Wet signature + official stamp ]
+Date: ________
+Client / Developer
+Mr. K. Mwangi
+[ Signature ]
+Date: ________
+■■ Wet signatures & official practice stamps are mandatory. Submission to County Government Building Plans Section requires each
+professional listed above to sign and stamp this page (and every drawing sheet) IN PERSON, in indelible ink, using the practising stamp
+issued by their licensing board. Digital signatures, typed names and image scans are NOT acceptable for statutory plan approval.
+I certify that the design has been carried out in accordance with the relevant codes applicable to Kenya (including the Eurocodes / British
+Standards referenced in §2) and that I take professional responsibility for the section of work corresponding to my registration.
+6.2 Required annexures (attach before submission)
+The items below must be ATTACHED as certified copies to the submission pack. Tick each box once the document has been
+collected and verified by the project lead. Submissions with missing annexures are rejected at intake.
+Annexure
+Notes
+[ ]
+Title deed / land ownership document
+Certified copy from registry
+[ ]
+Survey / mutation drawing
+Stamped by Licensed Land Surveyor
+[ ]
+Architectural drawings (stamped)
+Each sheet stamped by BORAQS-registered architect
+[ ]
+Structural drawings & calculations
+Stamped by EBK-registered engineer
+[ ]
+BOQ & cost plan
+Stamped by BORAQS
+[ ]
+Soil investigation report (boreholes/SPT/lab)
+Mandatory before foundation works
+[ ]
+Contractor registration certificate
+NCA registration
+[ ]
+Builder's All-Risk insurance
+Cover >= contract sum, valid for project duration
+[ ]
+Public-liability insurance
+Cover >= KSh 10 M (or local equivalent)
+[ ]
+Workmen's compensation policy
+Per applicable labour law
+[ ]
+Environmental Project Report (NEMA/EIA)
+If site near watercourse / > 5 ha
+[ ]
+Fire-safety report & extinguisher schedule
+Stamped by registered fire-safety consultant
+[ ]
+Public-health approval (septic / sewer)
+Public Health Officer sign-off
+[ ]
+Energy / utility connection application
+Power, water, telecoms wayleave
+[ ]
+Site safety plan & DOSHS notification
+Per OSH Act 2007 §41 (or local equivalent)
+
+8. PROJECT SUMMARY
+Phase phase_1: Site Analysis
+water_table_depth
+3.5
+water_table_source
+regional_estimate
+water_table_note
+Regional estimate from climate/soil model -- verify with on-site geotechnical su
+soil_type
+clay
+vegetation_coverage
+0.65
+slope_angle
+8.02
+suitability_pct
+90
+nearby_structures
+survey_required
+land_use
+residential
+climate_zone
+tropical
+analysis_method
+regional_data_model
+data_source
+EIMS Regional Database + GPS Coordinates
+Phase phase_2: Geotechnical Design
+bearing_capacity_kPa
+150
+soil_classification
+CH
+recommended_foundation
+STRIP
+settlement_mm
+40
+slope_stability
+stable
+water_table_depth
+3.5
+excavation_depth
+2.8
+Phase phase_3: Foundation Design
+foundation_type
+STRIP + GROUND BEAM
+foundation_depth_m
+1.3
+footing_width_m
+1.82
+total_building_load_kN
+1650.0
+bearing_capacity_kPa
+150
+safety_factor
+3.0
+concrete_volume_m3
+42.9
+reinforcement_steel_kg
+3861.0
+soil_type
+clay
+water_table_factor
+standard
+design_standard
+BS 8004 / Eurocode 7
+bim_ready
+True
+Phase phase_4: Floor Plans
+floor_count
+2
+total_area_sqm
+220.0
+bathrooms
+3
+rooms
+{'bedrooms': 4, 'bathrooms': 3, 'living_areas': 1, 'kitchen': 1, 'extra_rooms': 
+
+style
+modern
+area_per_unit
+220.0
+building_code_compliance
+True
+area_efficiency_percent
+80.0
+cost_per_sqm_estimate
+calculated_in_costing_phase
+Phase phase_5: Electrical Design
+design_standard
+IEC 60364 / KS IEC 60364
+connected_load_kW
+24.6
+diversity_factor
+0.65
+design_demand_kW
+15.99
+design_demand_kVA
+16.8
+main_breaker_A
+75
+power_factor
+0.95
+occupants
+8
+lighting_W
+1100.0
+sockets_W
+5500.0
+cooker_W
+6000
+water_heater_W
+6000
+Phase phase_6: Plumbing & Drainage Design
+design_standard
+BS 8233 occupancy + BS EN 12056 drainage
+occupants
+8
+daily_water_L
+1440
+septic_volume_m3
+4.32
+septic_dim
+2.5 × 1.2 × 1.44 m (L×W×D)
+soak_pit_area_m2
+48.0
+soak_pit_diameter_m
+7.82
+fixture_units
+{'Water Closet (WC)': 2, 'Wash-Hand Basin': 2, 'Shower / Bath': 2, 'Kitchen Sink
+stormwater_note
+Roof catchment 220 m² — gutter sized per Kenya NCC (rainfall 50 mm/h design inte
+note
+Single canonical plumbing design — supersedes legacy MEPDesigner output.
+Phase phase_7: BOQ — KQS-2025
+currency
+KES
+subtotal
+16508258.0
+contingency_7_5pct
+1238119.35
+professional_fees_8pct
+1320660.64
+sub_before_vat
+19067037.99
+vat_16pct
+3050726.08
+grand_total
+22117764.07
+cost_per_m2
+100535.29
+sections_count
+8
+note
+BOQ §5 is the single source of truth for cost. Phase 12 mirrors this total.
+Phase phase_8: Infrastructure
+
+solar_system
+{'panels_kw': 4.4, 'panels_count': 11, 'battery_kWh': 6.6, 'estimated_cost_usd':
+borehole_system
+{'depth_meters': 8, 'estimated_yield_lpm': 15, 'pump_kw': 3, 'estimated_cost_usd
+grid_option
+{'connection_cost_usd': 260, 'monthly_tariff_estimate_usd': 33}
+recommendation
+solar_grid_hybrid
+estimated_annual_saving_usd
+818.04
+Phase phase_9: Landscape Design
+lawn_area_m2
+77.0
+hardscape_area_m2
+22.0
+garden_area_m2
+33.0
+plants_count
+264
+irrigation_system
+True
+recommended_style
+tropical_lush
+estimated_cost_usd
+759
+maintenance_monthly_usd
+15
+Phase phase_10: Permits & Compliance
+jurisdiction
+Kenya
+building_code
+Kenya Building Code 2020
+building_code_compliance
+REQUIRES_VERIFICATION
+permits_required
+6
+estimated_timeline_days
+45
+estimated_fees_usd
+352
+setback_compliance
+{'front_m': 5, 'side_m': 2, 'rear_m': 3}
+required_documents
+['Architectural drawings (stamped)', 'Structural calculations (engineer-certifie
+Phase phase_11: 3D Visualization
+status
+ready
+model_endpoint
+/api/drawings/3d-model
+Phase phase_12: Live Costing — reconciled to BOQ
+currency
+KES
+symbol
+KSh 
+grand_total
+22117764.07
+cost_per_m2
+100535.29
+subtotal
+16508258.0
+contingency_7_5pct
+1238119.35
+professional_fees_8pct
+1320660.64
+sub_before_vat
+19067037.99
+vat_16pct
+3050726.08
+reconciled_with
+Section 5 BOQ (canonical)
+note
+Phase 12 is mathematically identical to BOQ §5 grand total — no method discrepan
+Phase phase_13: Integration Layer
+
+status
+complete
+export_formats
+['IFC2x3', 'FBX', 'DXF', 'PDF', 'XLSX']
+
+9. SITE PLAN
+Site layout showing building footprint, access roads, setbacks and landscaping. Area: 220 m²
+SITE PLAN - Nakuru, Kenya | Plot: 30m×25m
+N
+SITE BOUNDARY
+FRONT SETBACK 5m
+PROPOSED BUILDING
+220.0m² | 18m × 12m
+DRIVEWAY
+PARKING
+T
+T
+T
+ACCESS ROAD
+30m
+25m
+EMERSON EIMS | SITE PLAN
+Location: Nakuru, Kenya | 2026-04-27 | SP-001
+Plot: 30×25m
+Setbacks: F=5m S=2m R=3m
+
+10. ARCHITECTURAL FLOOR PLAN
+Ground floor layout — 1 unit(s), 4 bedrooms, showing room dimensions, doors, windows and circulation.
+FLOOR PLAN - 220.0m² | 1 Units | 2 Storey(s)
+N
+Living Room
+29.7 m²
+Kitchen
+24.3 m²
+Bedroom 1
+23.1 m²
+Bedroom 2
+12.6 m²
+Bedroom 3
+10.5 m²
+Bathroom
+10.8 m²
+Corridor
+9.0 m²
+ENTRY
+UNIT 1
+12.0m
+10.0m
+EMERSON EIMS BUILDING SUITE PRO
+Floor Plan | Scale 1:50 | 2026-04-27 | Drawing: FP-001
+Area: 220.0m² | 1 Units × 4 Bed
+IFC Ready | BIM Level 2
+
+11. BUILDING ELEVATIONS
+4a. NORTH ELEVATION
+Front view showing 2 storey(s), window/door openings, roof profile and floor levels.
+NORTH ELEVATION - 2 Stories | Style: Modern
+GROUND LEVEL ±0.000
++3.000
++6.000
+6.0m
+10.5m
+EMERSON EIMS | NORTH ELEVATION
+Scale 1:50 | 2026-04-27 | Drawing: EL-N01
+Stories: 2 | Height: 6.0m
+Style: Modern | IFC Ready
+4b. EAST ELEVATION
+Side view showing building depth, roof slope and storey heights.
+EAST ELEVATION - 2 Stories | Style: Modern
+GROUND LEVEL ±0.000
++3.000
++6.000
+6.0m
+10.5m
+EMERSON EIMS | EAST ELEVATION
+Scale 1:50 | 2026-04-27 | Drawing: EL-E01
+Stories: 2 | Height: 6.0m
+Style: Modern | IFC Ready
+
+12. BUILDING CROSS SECTION
+Vertical cut through building showing floor slabs, storey heights (2 floors), foundation depth, roof structure and structural members.
+CROSS SECTION A-A | 2 Stories
+FOUNDATION - C25/30
+GL ±0.000
+FLOOR 1 (FFL +0.150)
++0.000
+FLOOR 2 (FFL +3.150)
++3.000
+6.0m
+EMERSON EIMS | BUILDING SECTION A-A
+2026-04-27 | SEC-001 | Scale 1:50
+
+13. STRUCTURAL LAYOUT
+Column grid, beam layout and foundation pads. Foundation type: Strip + Ground Beam. All dimensions in metres. Concrete grade C25/30,
+Steel Y16.
+STRUCTURAL LAYOUT - Strip + Ground Beam Foundation | 2F | Grid 4.5m×4.5m
+A
+B
+C
+D
+1
+2
+3
+4
+LEGEND
+RC Column 300×300
+RC Beam 250×400
+Strip + Ground Beam
+Rebar (4T16)
+13.5m
+EMERSON EIMS | STRUCTURAL LAYOUT
+Grid: 4.5m × 4.5m | Columns: 16 | 2026-04-27 | STR-001
+Concrete: C25/30 | Steel: Y16
+Foundation: Strip + Ground Beam | FOS ≥ 3.0
+
+14. MEP LAYOUT — ELECTRICAL
+Electrical distribution layout showing DB positions, circuit runs, socket/light points and earthing.
+ELECTRICAL LAYOUT - 220.0m² | 1 Units
+DB
+SOLAR PANELS
+LEGEND
+Light Point
+Socket Outlet
+Switch
+Distribution Board
+Main Circuit
+EMERSON EIMS | ELECTRICAL LAYOUT
+Scale 1:50 | 2026-04-27 | ELECTRICAL-001
+
+15. MEP LAYOUT — PLUMBING
+Plumbing layout showing supply/drain runs, fixture locations, water heater and main shutoff valve.
+PLUMBING LAYOUT - 220.0m² | 1 Units
+COLD WATER MAIN
+TO SEPTIC/SEWER
+WC
+SHR
+SINK
+TANK
+LEGEND
+Cold Water
+Hot Water
+Waste/Drain
+Fixture (WC/Basin)
+EMERSON EIMS | PLUMBING LAYOUT
+Scale 1:50 | 2026-04-27 | PLUMBING-001
+
+16. COST SUMMARY
+Item
+Amount (KES)
+Grand Total
+KSh 22,117,764.07
+Cost Per M2
+KSh 100,535.29
+Subtotal
+KSh 16,508,258.00
+Contingency 7 5Pct
+KSh 1,238,119.35
+Professional Fees 8Pct
+KSh 1,320,660.64
+Sub Before Vat
+KSh 19,067,037.99
+Vat 16Pct
+KSh 3,050,726.08
+This report was generated by EMERSON EIMS Building Suite Pro. All drawings are indicative and must be verified by a licensed engineer
+before construction.

@@ -1,0 +1,8 @@
+﻿Solar PV BOQ — sample
+14 x JA Solar 485W mono panels
+1 Deye SUN-6K-SG04LP1 6kW hybrid inverter
+2 BYD B-Box 5.12 kWh LiFePO4 battery
+1 lot DC isolators 1000V
+1 lot 6mm2 solar cable, 50m
+1 SPD Type 2 DC
+1 set mounting rails for 14 panels

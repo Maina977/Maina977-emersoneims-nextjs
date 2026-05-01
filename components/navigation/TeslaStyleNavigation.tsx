@@ -16,35 +16,56 @@ interface TeslaStyleNavigationProps {
   activeSection?: string;
 }
 
-// Mega Menu Data - Professional Structure
+const HEAVY_APP_ROUTES = new Set<string>([
+  '/aquascan-pro-v3',
+  '/solar-genius-pro',
+  '/pro-building-suite',
+  '/eims-pro',
+  '/diagnostics',
+]);
+
+function prefetchForHref(href: string) {
+  return !HEAVY_APP_ROUTES.has(href);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mega Menu Data — every section trimmed to a single screen, no duplicates
+// across menus. Maintenance Hubs live under SERVICES; AI tools under
+// AI POWERHOUSE; case studies / coverage under RESOURCES.
+// ─────────────────────────────────────────────────────────────────────────────
 const MEGA_MENUS = {
   generators: {
     title: 'Generator Solutions',
-    description: 'Complete power solutions from sales to maintenance',
+    description: 'Sales, service & support — from spec to lifecycle',
     sections: [
       {
-        title: 'Products',
+        title: 'Buy & Lease',
         items: [
-          { href: '/generators', label: 'All Generators', icon: '⚡', desc: 'Browse our full range' },
-          { href: '/generators/used', label: 'Used Generators', icon: '♻️', desc: 'Quality pre-owned units' },
-          { href: '/brands', label: 'Generator Brands', icon: '🏷️', desc: 'Cummins, Perkins, CAT & more' },
+          { href: '/generators', label: 'All Generators', icon: '⚡', desc: 'Full lineup' },
+          { href: '/generators/used', label: 'Used Generators', icon: '♻️', desc: 'Certified pre-owned' },
+          { href: '/generators/leasing', label: 'Leasing Programs', icon: '💰', desc: 'Flexible terms' },
+          { href: '/generators/rental', label: 'Rental', icon: '📦', desc: '7.5kVA – 2MVA' },
+          { href: '/brands', label: 'Brands', icon: '🏷️', desc: 'Cummins, Perkins, CAT' },
         ],
       },
       {
-        title: 'Services',
+        title: 'Service & Parts',
         items: [
-          { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: '8-phase professional setup' },
-          { href: '/generators/maintenance', label: 'Maintenance', icon: '🛠️', desc: '32 common issues solved' },
-          { href: '/generators/rental', label: 'Rental', icon: '📦', desc: '7.5kVA to 2MVA' },
+          { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: '8-phase setup' },
+          { href: '/generators/maintenance', label: 'Maintenance', icon: '🛠️', desc: 'Preventive & repair' },
+          { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'OEM & aftermarket' },
+          { href: '/generator-parts', label: 'Parts Catalog', icon: '📦', desc: '1,560+ SKUs' },
+          { href: '/generators/systems', label: 'Systems Guide', icon: '📚', desc: 'Educational hub' },
         ],
       },
       {
-        title: 'Support & Maintenance',
+        title: 'Diagnostics & AI',
         items: [
-          { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🔧', desc: 'Complete maintenance center', badge: 'NEW' },
-          { href: '/maintenance-hub/generators', label: 'Generator Maintenance Hub', icon: '🛠️', desc: 'Engine Room Command Center' },
-          { href: '/generators/maintenance-companion', label: 'Maintenance Companion', icon: '🤖', desc: 'AI repair guides' },
-          { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'Genuine & OEM parts' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400k+ fault codes', badge: 'AI' },
+          { href: '/maintenance-hub/generators', label: 'Maintenance Hub', icon: '🏭', desc: 'Engine room HQ' },
+          { href: '/generators/maintenance-companion', label: 'Repair Companion', icon: '🤖', desc: 'AI step-by-step' },
+          { href: '/generator-problems', label: 'Common Problems', icon: '⚠️', desc: 'Diagnose & resolve' },
+          { href: '/faults', label: 'Fault Code Library', icon: '📖', desc: '400,000+ codes' },
         ],
       },
     ],
@@ -55,105 +76,161 @@ const MEGA_MENUS = {
     description: 'Clean energy for homes, businesses & industries',
     sections: [
       {
-        title: 'Systems',
+        title: 'Systems & Design',
         items: [
           { href: '/solar', label: 'Solar Overview', icon: '☀️', desc: 'Complete solutions' },
           { href: '/solutions/solar', label: 'Commercial Solar', icon: '🏢', desc: 'Business & industrial' },
-          { href: '/solutions/solar-sizing', label: 'System Sizing', icon: '📐', desc: 'Calculate your needs' },
+          { href: '/solar-design-studio', label: 'Design Studio', icon: '🎨', desc: 'Plan your system' },
+          { href: '/solutions/solar-sizing', label: 'System Sizing', icon: '📐', desc: 'Right-size every kWh' },
         ],
       },
       {
-        title: 'Maintenance & Support',
+        title: 'AI & Calculators',
         items: [
-          { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🔆', desc: 'Complete solar diagnostics & repair' },
-          { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Nationwide coverage' },
-          { href: '/solar#calculator', label: 'ROI Calculator', icon: '💰', desc: 'See your savings' },
+          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '🧠', desc: '56 AI engines · <3 min quotes', badge: '#1' },
+          { href: '/solar-genius-pro-tools', label: 'Solar Genius Tools', icon: '🛠️', desc: 'Pro toolkit' },
+          { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, load, payback' },
+        ],
+      },
+      {
+        title: 'Service & Coverage',
+        items: [
+          { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🔆', desc: 'Diagnostics & repair' },
+          { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Nationwide service' },
+          { href: '/locations', label: 'Service Locations', icon: '🗺️', desc: 'Find a branch' },
+          { href: '/booking', label: 'Book a Site Visit', icon: '📅', desc: 'Schedule today' },
         ],
       },
     ],
-    cta: { href: '/contact', label: 'Free Consultation', phone: '+254782914717' },
+    cta: { href: '/contact', label: 'Free Consultation', phone: '+254 782 914 717' },
   },
   aiPowerhouse: {
     title: 'AI Powerhouse',
-    description: 'World-class AI-powered tools for professionals',
+    description: 'World-class AI tools for engineers and operators',
     sections: [
       {
-        title: 'AI Tools Suite',
+        title: 'Live Workspaces',
         items: [
-          { href: '/pro-building-suite', label: 'Pro Building Suite™', icon: '🏛️', desc: 'AI Architecture + Structural + QS - #1 WORLDWIDE', badge: '#1' },
-          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400,000+ fault codes, AI diagnostics', badge: 'AI' },
-          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI Engines, <3 min quotes - #1 WORLDWIDE', badge: '#1' },
-          { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI Engines, NASA/Google Earth - #1 WORLDWIDE', badge: '#1' },
+          { href: '/eims-pro', label: 'EIMS PRO', icon: '🏛️', desc: 'Live engineering workspace', badge: 'LIVE' },
+          { href: '/solutions/building', label: 'Pro Building Suite™', icon: '📐', desc: 'AI architecture, structural & BOQ', badge: 'AI' },
+          { href: '/diagnostics', label: 'Diagnostics Hub™', icon: '🔧', desc: '9-service Q&A & telemetry', badge: 'HOT' },
         ],
       },
       {
-        title: 'AI Tools Hub',
+        title: 'Flagship AI Tools',
         items: [
-          { href: '/ai-tools/capabilities', label: 'All Capabilities', icon: '📊', desc: 'Full accuracy tables for all tools', badge: 'NEW' },
-          { href: '/ai-tools', label: 'All AI Tools', icon: '🤖', desc: 'Central hub for all AI-powered tools' },
-          { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive problem solver' },
-          { href: '/resources', label: 'Learning Hub', icon: '📚', desc: 'All guides & resources' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400,000+ fault codes', badge: 'AI' },
+          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI engines · <3 min quotes', badge: '#1' },
+          { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI engines · NASA + Google Earth', badge: '#1' },
+        ],
+      },
+      {
+        title: 'Hub & Capabilities',
+        items: [
+          { href: '/ai-tools', label: 'All AI Tools', icon: '🤖', desc: 'Central hub' },
+          { href: '/ai-tools/capabilities', label: 'Capabilities Matrix', icon: '📊', desc: 'Accuracy tables', badge: 'NEW' },
+          { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive solver' },
+          { href: '/generator-oracle/tools', label: 'Oracle Tools', icon: '🧰', desc: 'Pro toolkit' },
         ],
       },
     ],
     cta: { href: '/contact', label: 'Get Started', phone: '+254 768 860 665' },
   },
   services: {
-    title: 'Our Services',
-    description: 'Complete power and electrical solutions',
+    title: 'Services & Maintenance',
+    description: 'Complete power, electrical and mechanical services',
     sections: [
       {
-        title: 'Tools & Calculators',
+        title: 'Power Solutions',
         items: [
-          { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, Load, Solar, UPS, AC, Motor sizing', badge: 'ALL-IN-ONE' },
-          { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🔧', desc: 'Interactive problem solver' },
-          { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🛠️', desc: 'All equipment maintenance center' },
+          { href: '/solutions', label: 'All Solutions', icon: '💡', desc: 'View everything' },
+          { href: '/solutions/generators', label: 'Generator Services', icon: '⚡', desc: 'Sales & service' },
+          { href: '/solutions/ups', label: 'UPS Systems', icon: '🔋', desc: 'Backup power' },
+          { href: '/solutions/controls', label: 'Controls & Automation', icon: '🎛️', desc: 'Industrial controls' },
+          { href: '/solutions/motor-rewinding', label: 'Motor Rewinding', icon: '🔄', desc: 'Motor repair' },
+          { href: '/solutions/borehole-pumps', label: 'Borehole Pumps', icon: '💧', desc: 'Water systems' },
+          { href: '/solutions/ac', label: 'AC & Refrigeration', icon: '❄️', desc: 'Cooling' },
+          { href: '/fabrication', label: 'Fabrication', icon: '🏭', desc: 'Custom metalwork' },
         ],
       },
       {
         title: 'Maintenance Hubs',
         items: [
-          { href: '/maintenance-hub/generators', label: 'Generator Hub', icon: '⚡', desc: 'Generator maintenance & repair' },
-          { href: '/maintenance-hub/motors', label: 'Motors Hub', icon: '🔄', desc: 'Motor rewinding & service' },
-          { href: '/maintenance-hub/hvac', label: 'HVAC Hub', icon: '❄️', desc: 'AC & refrigeration' },
-          { href: '/maintenance-hub/electrical', label: 'Electrical Hub', icon: '🔌', desc: 'Electrical systems' },
-          { href: '/maintenance-hub/solar', label: 'Solar Hub', icon: '☀️', desc: 'Solar system maintenance' },
+          { href: '/maintenance-hub', label: 'Universal Hub', icon: '🛠️', desc: 'All equipment' },
+          { href: '/maintenance-hub/generators', label: 'Generators', icon: '⚡', desc: 'Engine room HQ' },
+          { href: '/maintenance-hub/solar', label: 'Solar', icon: '☀️', desc: 'PV diagnostics' },
+          { href: '/maintenance-hub/motors', label: 'Motors', icon: '🔄', desc: 'Rewinding & service' },
+          { href: '/maintenance-hub/hvac', label: 'HVAC', icon: '❄️', desc: 'AC & refrigeration' },
+          { href: '/maintenance-hub/electrical', label: 'Electrical', icon: '🔌', desc: 'Power systems' },
+          { href: '/maintenance-hub/borehole', label: 'Borehole', icon: '💧', desc: 'Pumps & water' },
+          { href: '/maintenance-hub/welding', label: 'Welding', icon: '🔥', desc: 'Welding services' },
         ],
       },
       {
-        title: 'Power Solutions',
+        title: 'Tools & Booking',
         items: [
-          { href: '/solutions/generators', label: 'Generator Services', icon: '⚡', desc: 'Sales & maintenance' },
-          { href: '/solutions/ups', label: 'UPS Systems', icon: '🔋', desc: 'Backup power' },
-          { href: '/solutions/controls', label: 'Control Systems', icon: '🎛️', desc: 'Automation & controls' },
-          { href: '/solutions/motor-rewinding', label: 'Motor Rewinding', icon: '🔄', desc: 'Motor repair' },
-          { href: '/solutions/borehole-pumps', label: 'Borehole Pumps', icon: '💧', desc: 'Water solutions' },
-          { href: '/solutions', label: 'All Solutions', icon: '💡', desc: 'View all our solutions' },
+          { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI · load · solar', badge: 'ALL-IN-ONE' },
+          { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive solver' },
+          { href: '/booking', label: 'Book a Service', icon: '📅', desc: 'Schedule a visit' },
+          { href: '/products', label: 'Products', icon: '🛒', desc: 'Catalog & pricing' },
+          { href: '/sectors', label: 'Sectors We Serve', icon: '🏢', desc: 'Industry coverage' },
         ],
       },
     ],
-    cta: { href: '/booking', label: 'Book Now', phone: '+254782914717' },
+    cta: { href: '/booking', label: 'Book Now', phone: '+254 782 914 717' },
+  },
+  resources: {
+    title: 'Resources & Insights',
+    description: 'Knowledge, stories, and nationwide coverage',
+    sections: [
+      {
+        title: 'Knowledge',
+        items: [
+          { href: '/blog', label: 'Blog', icon: '📝', desc: 'Latest articles' },
+          { href: '/knowledge-base', label: 'Knowledge Base', icon: '📚', desc: 'Guides & how-tos' },
+          { href: '/technical-bible', label: 'Technical Bible', icon: '📖', desc: 'Deep reference' },
+          { href: '/resources', label: 'Learning Hub', icon: '🎓', desc: 'All resources' },
+          { href: '/faq', label: 'FAQ', icon: '❓', desc: 'Quick answers' },
+        ],
+      },
+      {
+        title: 'Showcase',
+        items: [
+          { href: '/case-studies', label: 'Case Studies', icon: '📊', desc: 'Real outcomes' },
+          { href: '/case-study/hospital-blackout', label: 'Hospital Blackout', icon: '🏥', desc: 'Featured case' },
+          { href: '/gallery', label: 'Gallery', icon: '🖼️', desc: 'Project photos' },
+          { href: '/innovations', label: 'Innovations', icon: '💡', desc: 'R&D & breakthroughs' },
+          { href: '/industries', label: 'Industries', icon: '🏭', desc: 'Sectors served' },
+        ],
+      },
+      {
+        title: 'Coverage & Careers',
+        items: [
+          { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Kenya nationwide' },
+          { href: '/locations', label: 'Service Locations', icon: '🗺️', desc: 'Branch finder' },
+          { href: '/kenya', label: 'Kenya Hub', icon: '🇰🇪', desc: 'Country-wide' },
+          { href: '/careers', label: 'Careers', icon: '💼', desc: 'Join the team' },
+          { href: '/guides/emergency-response', label: 'Emergency Guide', icon: '🚨', desc: '24/7 response' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Talk to an Expert', phone: '+254 768 860 665' },
   },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PROFESSIONAL NAVBAR - 8 Items (Industry Standard)
-// All pages accessible via mega menus or direct links
-// ═══════════════════════════════════════════════════════════════════════════════
-// BRANDS → Inside GENERATORS mega menu > Products
-// SOLUTIONS → Inside SERVICES mega menu > Solutions (+ direct link)
-// GALLERY → Inside SERVICES mega menu > Company
+// PROFESSIONAL NAVBAR - 8 top-level items
+// All AI tools live inside the AI POWERHOUSE mega menu (no duplicates).
+// All site pages reachable through one of: GENERATORS, SOLAR, AI POWERHOUSE,
+// SERVICES, RESOURCES, ABOUT, CONTACT.
 // ═══════════════════════════════════════════════════════════════════════════════
 const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
   { key: 'aiPowerhouse', label: 'AI POWERHOUSE', type: 'mega', featured: true },
-  { href: '/aquascan-pro-v3', label: 'AQUASCAN PRO', type: 'link' },
-  { href: '/solar-genius-pro', label: 'SOLAR GENIUS PRO', type: 'link' },
-  { href: '/pro-building-suite', label: 'PRO BUILDING SUITE', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
-  { href: '/calculators', label: 'CALCULATORS', type: 'link' },
+  { key: 'resources', label: 'RESOURCES', type: 'mega' },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
@@ -212,34 +289,33 @@ export default function TeslaStyleNavigation({
     <>
       <nav
         data-active-section={activeSection}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? 'bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/30'
-            : 'bg-gradient-to-b from-black/90 via-black/70 to-transparent'
+            ? 'bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20'
+            : 'bg-gradient-to-b from-black/85 via-black/60 to-transparent'
         }`}
       >
-        <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-16 py-4">
-          <div className="flex items-center justify-between gap-8">
-            {/* Logo - Large & Clear */}
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-6 h-16 lg:h-[72px]">
+            {/* Logo — slim, professional */}
             <Link
               href="/"
-              aria-label="Emerson EiMS - Reliable Power. Without Limits."
-              className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-lg group"
+              aria-label="Emerson EiMS — Reliable Power. Without Limits."
+              className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-md"
             >
               <Image
                 src="/images/logo-tagline.png"
-                alt="EmersonEIMS - Reliable Power. Without Limits."
-                width={320}
-                height={80}
+                alt="EmersonEIMS — Reliable Power. Without Limits."
+                width={240}
+                height={60}
                 priority
-                quality={100}
-                sizes="(max-width: 640px) 180px, (max-width: 768px) 220px, (max-width: 1024px) 280px, 320px"
-                className="h-16 sm:h-[72px] lg:h-20 xl:h-24 w-auto object-contain brightness-110 contrast-105 drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)] transition-all duration-300 group-hover:scale-105 group-hover:brightness-125"
+                sizes="(max-width: 640px) 120px, (max-width: 1024px) 150px, 180px"
+                className="h-9 sm:h-10 lg:h-11 w-auto object-contain transition-opacity duration-200 hover:opacity-90"
               />
             </Link>
 
-            {/* Desktop Navigation - Properly Spaced */}
-            <div className="hidden lg:flex items-center gap-2 xl:gap-3 flex-1 justify-end">
+            {/* Desktop Navigation — clean, evenly spaced */}
+            <div className="hidden lg:flex items-center flex-1 justify-end gap-1 xl:gap-2">
               {NAV_ITEMS.map((item) =>
                 item.type === 'mega' && item.key ? (
                   <div
@@ -249,48 +325,61 @@ export default function TeslaStyleNavigation({
                     onMouseLeave={handleMegaLeave}
                   >
                     <button
-                      className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 rounded-lg flex items-center gap-1.5 whitespace-nowrap ${
+                      className={`relative px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${
                         activeMega === item.key
-                          ? 'text-white bg-white/10 border border-white/20'
-                          : 'text-white/80 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
+                          ? 'text-white'
+                          : (item as { featured?: boolean }).featured
+                            ? 'text-amber-300 hover:text-amber-200'
+                            : 'text-white/75 hover:text-white'
                       }`}
                     >
                       {item.label}
+                      {(item as { featured?: boolean }).featured && (
+                        <span className="ml-0.5 inline-block w-1 h-1 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
+                      )}
                       <svg
-                        className={`w-3.5 h-3.5 transition-transform duration-300 ${activeMega === item.key ? 'rotate-180' : ''}`}
+                        className={`w-3 h-3 transition-transform duration-200 ${activeMega === item.key ? 'rotate-180' : ''}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                       </svg>
+                      <span
+                        className={`absolute left-3 right-3 -bottom-px h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent transition-opacity duration-200 ${
+                          activeMega === item.key ? 'opacity-100' : 'opacity-0'
+                        }`}
+                      />
                     </button>
                   </div>
                 ) : (
                   <Link
                     key={item.href}
                     href={item.href!}
-                    className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 whitespace-nowrap rounded-lg border ${
-                      (item as { featured?: boolean }).featured
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-400/50 hover:from-cyan-400 hover:to-blue-400 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 animate-pulse hover:animate-none'
-                        : 'text-white/80 hover:text-white hover:bg-white/5 border-transparent hover:border-white/10'
-                    }`}
+                    prefetch={prefetchForHref(item.href!)}
+                    className="px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 whitespace-nowrap rounded-md text-white/75 hover:text-white"
                   >
                     {item.label}
                   </Link>
                 )
               )}
 
-              {/* Language Switcher with Clear Separation */}
-              <div className="ml-4 pl-4 border-l border-white/20">
+              {/* Divider + Language Switcher + CTA */}
+              <div className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
                 <LanguageSwitcher />
+                <a
+                  href="tel:+254768860665"
+                  className="px-4 py-2 text-[11px] xl:text-[12px] font-bold tracking-[0.08em] uppercase rounded-md bg-amber-500 text-black hover:bg-amber-400 transition-colors duration-200 whitespace-nowrap"
+                >
+                  Get Quote
+                </a>
               </div>
             </div>
 
-            {/* Mobile Menu Button - Better Positioned */}
+            {/* Mobile Menu Button */}
             <button
               type="button"
-              className="lg:hidden relative p-3 text-white/90 hover:text-white transition-colors rounded-xl hover:bg-white/10 border border-transparent hover:border-white/20"
+              className="lg:hidden relative p-2 text-white/90 hover:text-white transition-colors rounded-md hover:bg-white/10"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
@@ -334,11 +423,11 @@ export default function TeslaStyleNavigation({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="absolute left-0 right-0 bg-gray-900/98 backdrop-blur-xl border-b border-white/10 shadow-2xl"
+              className="absolute left-0 right-0 bg-gray-950/98 backdrop-blur-xl border-b border-white/10 shadow-2xl"
               onMouseEnter={() => handleMegaEnter(activeMega)}
               onMouseLeave={handleMegaLeave}
             >
-              <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8">
+              <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {(() => {
                   const menu = MEGA_MENUS[activeMega as keyof typeof MEGA_MENUS];
                   return (
@@ -354,6 +443,7 @@ export default function TeslaStyleNavigation({
                               <li key={item.href}>
                                 <Link
                                   href={item.href}
+                                  prefetch={prefetchForHref(item.href)}
                                   className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300"
                                   onClick={() => setActiveMega(null)}
                                 >
@@ -471,6 +561,7 @@ export default function TeslaStyleNavigation({
                                     <Link
                                       key={subItem.href}
                                       href={subItem.href}
+                                      prefetch={prefetchForHref(subItem.href)}
                                       onClick={() => setIsMenuOpen(false)}
                                       className="flex items-center gap-3 px-4 py-2.5 text-white/60 hover:text-white rounded-lg hover:bg-white/5 transition-all"
                                     >
@@ -488,12 +579,9 @@ export default function TeslaStyleNavigation({
                       <Link
                         key={item.href}
                         href={item.href!}
+                        prefetch={prefetchForHref(item.href!)}
                         onClick={() => setIsMenuOpen(false)}
-                        className={`block px-4 py-3 rounded-xl transition-all ${
-                          (item as { featured?: boolean }).featured
-                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold border border-cyan-400/50 shadow-lg shadow-cyan-500/30'
-                            : 'text-white/80 hover:text-white hover:bg-white/5'
-                        }`}
+                        className="block px-4 py-3 rounded-xl text-sm font-semibold tracking-wide uppercase text-white/80 hover:text-white hover:bg-white/5 transition-colors"
                       >
                         {item.label}
                       </Link>

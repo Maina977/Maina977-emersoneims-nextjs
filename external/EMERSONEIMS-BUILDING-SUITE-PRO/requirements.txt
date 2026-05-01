@@ -1,0 +1,14 @@
+Flask>=3.0,<4.0
+Flask-Cors>=4.0,<6.0
+reportlab>=4.0,<5.0
+openpyxl>=3.1,<4.0
+svglib>=1.5,<2.0
+ezdxf>=1.1,<2.0
+requests>=2.31,<3.0
+waitress>=3.0,<4.0
+# Domain extensions (sprint 5 — shadow study, interior palette)
+pysolar>=0.11,<1.0
+colorthief>=0.2.1,<1.0
+Pillow>=10.0,<13.0
+# EIMS Copilot — conversational interface to the building lifecycle
+anthropic>=0.40,<1.0

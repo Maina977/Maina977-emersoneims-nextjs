@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EmersonEIMS — Generator Solutions (2–2000 kVA)</title>
+  <meta name="description" content="EmersonEIMS turnkey generator solutions: design, supply, install and maintain diesel generator systems for homes, hospitals, hotels, industries and remote sites." />
+  <style>
+    /* Minimal inline styles for Kadence Custom HTML Block */
+    body{font-family:Arial,Helvetica,sans-serif;color:#0b1220;margin:0;background:#f8fafc;}
+    .ee-container{max-width:1100px;margin:0 auto;padding:28px;}
+    .hero{display:flex;flex-wrap:wrap;gap:20px;align-items:center;padding:28px 0;}
+    .hero-left{flex:1;min-width:320px;}
+    .hero-right{width:420px;}
+    h1{font-size:34px;margin:6px 0;color:#022047;}
+    p.lead{color:#475569;}
+    .btn{display:inline-block;background:#0a6cff;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:700}
+    .btn-ghost{border:1px solid #cbd5e1;color:#022047;background:#fff;padding:10px 16px;border-radius:8px;text-decoration:none}
+    .card{background:#fff;border:1px solid #e6eef8;padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(2,32,71,0.04)}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+    .small{color:#64748b;font-size:14px;}
+    .calc input,.calc select{width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:14px}
+    .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .result{background:#eef6ff;border-left:4px solid #0a6cff;padding:12px;border-radius:8px;font-weight:700}
+    footer{margin-top:32px;padding:18px 0;text-align:center;color:#94a3b8}
+    @media(max-width:900px){.grid-3{grid-template-columns:1fr} .hero-right{width:100%} .calc-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="ee-container">
+    <header style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#0a6cff,#0074d9);color:white;display:flex;align-items:center;justify-content:center;font-weight:800">E</div>
+        <div>
+          <div style="font-weight:800;color:#022047">EmersonEIMS</div>
+          <div class="small">Power Solutions & Engineering</div>
+        </div>
+      </div>
+      <nav style="display:flex;gap:12px">
+        <a href="#solutions" class="small">Solutions</a>
+        <a href="#calculator" class="small">Sizing Tool</a>
+        <a href="#services" class="small">Services</a>
+        <a href="#contact" class="small">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="solutions">
+        <div class="hero-left">
+          <div style="display:inline-block;background:#f0f9ff;color:#0369a1;padding:6px 10px;border-radius:999px;font-weight:700;margin-bottom:12px">Reliable Power • 2 kVA – 2000 kVA</div>
+          <h1>Reliable Power. Engineered for East Africa.</h1>
+          <p class="lead">When the grid falters, EmersonEIMS ensures your critical operations remain online. From homes and clinics to hotels, factories, and remote camps, our turnkey generator solutions deliver dependable, efficient power exactly where you need it.</p>
+          <div style="margin-top:18px">
+            <a href="#contact" class="btn">Request a Free Site Assessment</a>
+            <a href="#downloads" class="btn-ghost" style="margin-left:8px">Download PDFs</a>
+          </div>
+          <div class="small" style="margin-top:10px">24/7 support • On-site commissioning • AMC packages</div>
+        </div>
+
+        <div class="hero-right card">
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+            <div style="width:68px;height:68px;border-radius:8px;background:linear-gradient(135deg,#071b33,#083056);display:flex;align-items:center;justify-content:center;color:#0a6cff;font-weight:800">GEN</div>
+            <div>
+              <div style="font-weight:800">Design My Power System</div>
+              <div class="small">Interactive sizing & fuel estimator — get an instant recommendation</div>
+            </div>
+          </div>
+
+          <div class="calc" id="calculator">
+            <div class="calc-grid">
+              <div>
+                <label class="small">Total Continuous Load (kW)</label>
+                <input id="kw" type="number" value="50" />
+              </div>
+              <div>
+                <label class="small">Power Factor</label>
+                <input id="pf" type="number" step="0.01" value="0.8" />
+              </div>
+              <div>
+                <label class="small">Motor Start Headroom (%)</label>
+                <select id="motor">
+                  <option value="0">0% (no motors)</option>
+                  <option value="0.25" selected>25% (light motor startup)</option>
+                  <option value="0.5">50% (multiple motors)</option>
+                  <option value="1">100% (heavy starting demand)</option>
+                </select>
+              </div>
+              <div>
+                <label class="small">Runtime per Day (hrs)</label>
+                <input id="hours" type="number" value="8" />
+              </div>
+              <div>
+                <label class="small">Specific Fuel Consumption (L/kWh)</label>
+                <input id="sfc" type="number" step="0.01" value="0.25" />
+              </div>
+              <div>
+                <label class="small">Diesel Price (per L)</label>
+                <input id="price" type="number" value="200" />
+              </div>
+            </div>
+
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+              <button class="btn" onclick="runCalc()">Get Recommendation</button>
+              <button class="btn-ghost" onclick="resetCalc()">Reset</button>
+              <a class="btn-ghost" id="downloadPdfBtn" style="margin-left:auto" href="#">Download Spec (PDF)</a>
+            </div>
+
+            <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="card">
+                <div style="font-weight:800">Recommended Unit</div>
+                <div id="recKVA" style="margin-top:8px;font-size:20px;color:#0a6cff;font-weight:800">—</div>
+                <div class="small" style="margin-top:6px">Suggested kVA (rounded to nearest standard size), duty recommendation, and note about paralleling.</div>
+              </div>
+
+              <div class="result card">
+                <div style="font-weight:800">Estimated Fuel Use & Cost</div>
+                <div id="fuelEst" style="margin-top:8px">—</div>
+                <div class="small" style="margin-top:6px;color:#0b1220">Daily fuel and cost estimate based on provided runtime and diesel price.</div>
+              </div>
+            </div>
+
+            <div style="margin-top:10px" class="card small">
+              <div style="font-weight:800">Quick Notes</div>
+              <ul style="margin-top:6px">
+                <li>Standby rating recommended for intermittent outages; choose prime rating for continuous operation.</li>
+                <li>We include 10–25% growth margin by default during final design unless otherwise requested.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 style="color:#022047">Generator Ranges & Typical Applications</h2>
+        <div class="grid-3">
+          <div class="card">
+            <div style="font-weight:800">2–10 kVA</div>
+            <div class="small" style="margin-top:6px">Homes, kiosks, small offices. Compact portable and inverter-compatible units available.</div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800">15–50 kVA</div>
+            <div class="small" style="margin-top:6px">Retail, schools, small clinics, light workshops. Silent canopies available for urban sites.</div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800">60–150 kVA</div>
+            <div class="small" style="margin-top:6px">Hospitals, data closets, restaurants and medium industries — reliable standby and prime configurations.</div>
+          </div>
+        </div>
+
+        <div style="height:16px"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div style="font-weight:800">200–500 kVA</div>
+            <div class="small" style="margin-top:6px">Large hotels, factories and commercial buildings — containerised and canopy options.</div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800">600–2000 kVA</div>
+            <div class="small" style="margin-top:6px">Industrial parks, mining, telecom hubs — multi-set paralleling solutions and turnkey installations.</div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800">Hybrid Systems</div>
+            <div class="small" style="margin-top:6px">Integrate diesel with batteries and solar for reduced fuel costs and improved runtime during extended outages.</div>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-top:18px" id="services">
+        <h2 style="color:#022047">Maintenance & Service Plans</h2>
+        <div class="grid-3">
+          <div class="card">
+            <div style="font-weight:800">Bronze</div>
+            <div class="small" style="margin-top:6px">Quarterly inspections, oil & filter checks. Ideal for light-use applications.</div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800">Silver</div>
+            <div class="small" style="margin-top:6px">Bi-monthly checks, battery care and fuel tests. Great for commercial sites.</div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800">Gold</div>
+            <div class="small" style="margin-top:6px">Monthly full diagnostics, 24/7 priority support and load-bank testing for critical infrastructure.</div>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-top:18px">
+        <h2 style="color:#022047">Frequently Asked Questions</h2>
+        <div class="card" style="margin-bottom:8px">
+          <div style="font-weight:800">How quickly can we install a generator?</div>
+          <div class="small" style="margin-top:6px">Small units can be installed in days. Larger containerised systems depend on site readiness and logistics — we provide a clear schedule during the proposal stage.</div>
+        </div>
+        <div class="card" style="margin-bottom:8px">
+          <div style="font-weight:800">Do you offer remote monitoring?</div>
+          <div class="small" style="margin-top:6px">Yes. EmersonEIMS supplies telemetry and performance dashboards to track runtime, fuel levels and alerts.</div>
+        </div>
+
+        <div id="contact" class="card" style="margin-top:12px">
+          <div style="font-weight:800">Get a Free Load Assessment</div>
+          <div class="small" style="margin-top:8px">Tell us about your site and we'll produce a customized recommendation and budget estimate.</div>
+          <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <input id="leadName" placeholder="Company / Name" style="padding:10px;border-radius:8px;border:1px solid #e6eef8" />
+            <input id="leadContact" placeholder="Phone or Email" style="padding:10px;border-radius:8px;border:1px solid #e6eef8" />
+            <button class="btn" onclick="submitLead()">Request Assessment</button>
+          </div>
+          <div class="small" style="margin-top:8px">Or email us at <strong>sales@emersoneims.example</strong> or call +254 700 000 000</div>
+        </div>
+      </section>
+
+      <section id="downloads" style="margin-top:18px">
+        <h2 style="color:#022047">Downloads & Asset Pack</h2>
+        <div class="grid-3">
+          <div class="card">
+            <div style="font-weight:800">Sizing Guide & Specs</div>
+            <div class="small" style="margin-top:6px">Practical one-page spec sheet for quick quotes.</div>
+            <a class="btn" href="files/Sizing_Guide_and_Specs.pdf" download style="margin-top:8px;display:inline-block">Download PDF</a>
+          </div>
+          <div class="card">
+            <div style="font-weight:800">Hero Video Storyboard</div>
+            <div class="small" style="margin-top:6px">Storyboard, shot list and production brief for hero video production.</div>
+            <a class="btn" href="files/Hero_Video_Storyboard_and_Asset_Pack.pdf" download style="margin-top:8px;display:inline-block">Download PDF</a>
+          </div>
+          <div class="card">
+            <div style="font-weight:800">3D Model Spec</div>
+            <div class="small" style="margin-top:6px">glTF spec, LODs and hotspots JSON (see asset pack).</div>
+            <a class="btn" href="#" style="margin-top:8px;display:inline-block" onclick="alert('3D model files should be uploaded to your media library; use the provided spec from the EmersonEIMS asset pack.')">View Note</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="small">© EmersonEIMS — Power Solutions & Engineering</div>
+    </footer>
+  </div>
+
+  <script>
+    // Standard sizes for rounding
+    const standardSizes = [2,3,5,6,8,10,15,20,25,30,40,50,60,75,100,125,150,200,250,300,350,400,500,600,750,1000,1500,2000];
+
+    function roundToStandard(kva){
+      for(let i=0;i<standardSizes.length;i++){ const s = standardSizes[i]; if(kva <= s) return s; }
+      return standardSizes[standardSizes.length-1];
+    }
+
+    function runCalc(){
+      const kw = parseFloat(document.getElementById('kw').value) || 0;
+      const pf = parseFloat(document.getElementById('pf').value) || 0.8;
+      const motor = parseFloat(document.getElementById('motor').value) || 0;
+      const hours = parseFloat(document.getElementById('hours').value) || 0;
+      const sfc = parseFloat(document.getElementById('sfc').value) || 0.25;
+      const price = parseFloat(document.getElementById('price').value) || 0;
+      const adjustedKW = kw * (1 + motor);
+      const recommendedKVA = adjustedKW / pf;
+      const roundedKVA = roundToStandard(Math.ceil(recommendedKVA));
+      const fuelPerHr = kw * sfc;
+      const dailyFuel = fuelPerHr * hours;
+      const dailyCost = dailyFuel * price;
+      document.getElementById('recKVA').innerText = roundedKVA + ' kVA';
+      document.getElementById('fuelEst').innerText = fuelPerHr.toFixed(2) + ' L/hr • ' + dailyFuel.toFixed(2) + ' L/day • ' + dailyCost.toLocaleString() + ' cost/day';
+      window._lastCalc = { kw,pf,motor,hours,sfc,price,roundedKVA,fuelPerHr,dailyFuel,dailyCost };
+      document.getElementById('downloadPdfBtn').href = '#';
+      document.getElementById('downloadPdfBtn').onclick = function(e){ e.preventDefault(); downloadSpecAsText(); };
+    }
+
+    function resetCalc(){
+      document.getElementById('kw').value = 50;
+      document.getElementById('pf').value = 0.8;
+      document.getElementById('motor').value = 0.25;
+      document.getElementById('hours').value = 8;
+      document.getElementById('sfc').value = 0.25;
+      document.getElementById('price').value = 200;
+      runCalc();
+    }
+
+    function downloadSpecAsText(){
+      const data = window._lastCalc || {};
+      const text = `EmersonEIMS - Sizing Results\\n\\n` + JSON.stringify(data, null, 2);
+      const blob = new Blob([text], {type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download='EmersonEIMS_Sizing_Result.txt'; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function submitLead(){
+      const name = document.getElementById('leadName').value.trim();
+      const contact = document.getElementById('leadContact').value.trim();
+      if(!name || !contact){ alert('Please enter your name/company and contact info.'); return; }
+      const payload = { name, contact, timestamp:new Date().toISOString(), calc: window._lastCalc || null };
+      try{
+        const res = await fetch('/api/leads', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        if(res.ok){ alert('Thanks — our team will contact you within 24 hours.'); document.getElementById('leadName').value=''; document.getElementById('leadContact').value=''; }
+        else{ alert('Lead submission failed. Please contact sales directly.'); }
+      } catch(err){ console.error(err); alert('Network or server error. Consider configuring /api/leads or forwarding to Zapier.'); }
+    }
+
+    // initialize
+    resetCalc();
+  </script>
+</body>
+</html>

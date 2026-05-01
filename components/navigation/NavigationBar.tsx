@@ -55,6 +55,11 @@ export default function NavigationBar({
   const navItems: NavItem[] = [
     { id: 'home', label: 'Home', href: '/' },
     {
+      id: 'eimspro',
+      label: 'EIMS PRO',
+      href: '/eims-pro',
+    },
+    {
       id: 'services',
       label: 'Services',
       dropdown: [
@@ -71,7 +76,8 @@ export default function NavigationBar({
       id: 'ai-powerhouse',
       label: 'AI Powerhouse',
       dropdown: [
-        { label: 'Pro Building Suite™', href: '/pro-building-suite', description: 'AI Architecture + Structural + QS', icon: '🏛️', badge: '#1 WORLDWIDE' },
+        { label: 'EIMS PRO (live workspace)', href: '/eims-pro', description: 'Embedded Flask UI — default http://127.0.0.1:5000', icon: '🏛️', badge: 'LIVE' },
+        { label: 'Pro Building Suite™ (full AI)', href: '/solutions/building', description: 'In-browser AI architecture, structural & BOQ reports', icon: '📐', badge: 'AI' },
         { label: 'Generator Oracle™', href: '/generator-oracle', description: '400,000+ fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
         { label: 'Solar Genius Pro™', href: '/solar-genius-pro', description: '56 AI Engines, <3 min quotes', icon: '☀️', badge: '#1 WORLDWIDE' },
         { label: 'AquaScan Pro™', href: '/aquascan-pro-v3', description: 'AI water system diagnostics', icon: '💧', badge: 'AI' },
@@ -79,7 +85,7 @@ export default function NavigationBar({
     },
     { id: 'aquascan', label: 'AquaScan Pro', href: '/aquascan-pro-v3' },
     { id: 'solargeniuspro', label: 'Solar Genius Pro', href: '/solar-genius-pro' },
-    { id: 'probuildingsuite', label: 'Pro Building Suite', href: '/pro-building-suite' },
+    { id: 'probuildingsuite', label: 'EIMS PRO', href: '/eims-pro' },
     {
       id: 'solar',
       label: 'Solar',

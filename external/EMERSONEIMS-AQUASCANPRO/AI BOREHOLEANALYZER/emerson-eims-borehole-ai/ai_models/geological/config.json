@@ -1,0 +1,11 @@
+{
+  "model_name": "geological_cnn_attention",
+  "version": "1.0.0",
+  "input_shape": [224, 224, 3],
+  "output_classes": 12,
+  "batch_size": 32,
+  "learning_rate": 0.001,
+  "epochs": 100,
+  "optimizer": "adam",
+  "loss": "categorical_crossentropy"
+}

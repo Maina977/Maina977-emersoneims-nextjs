@@ -65,7 +65,6 @@ function StaticHeroFallback() {
           fetchPriority="high"
           className="object-cover"
           sizes="100vw"
-          quality={85}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black" />
       </div>

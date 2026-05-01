@@ -1,0 +1,10 @@
+{
+  "bamboo": 0.9,
+  "lush_grass": 0.8,
+  "dry_vegetation": 0.3,
+  "trees": 0.7,
+  "shrubs": 0.5,
+  "crops": 0.6,
+  "wetland_plants": 0.85,
+  "riverine_vegetation": 0.8
+}

@@ -1,0 +1,1790 @@
+{
+  "version": "3.0.0",
+  "lastUpdated": "2026-01-10",
+  "totalParts": 1560,
+  "categories": [
+    {
+      "id": "generators",
+      "name": "Generator Parts",
+      "icon": "⚡",
+      "description": "Comprehensive generator components for all major brands",
+      "subcategories": [
+        {
+          "id": "filters",
+          "name": "Filters - Oil, Fuel, Air, Hydraulic, Coolant",
+          "description": "Complete filtration systems for all engine brands",
+          "parts": [
+            {
+              "partNo": "LF9009",
+              "name": "Oil Filter - Cummins 6BT/6CT",
+              "brand": "Fleetguard",
+              "category": "Oil Filter",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "25 micron",
+                "height": "142mm",
+                "threadSize": "3/4-16 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1850,
+                "bulkPrice": 1650,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 350,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "cummins", "6bt", "fleetguard"]
+            },
+            {
+              "partNo": "LF3977",
+              "name": "Oil Filter - Cummins 4BT/ISBe",
+              "brand": "Fleetguard",
+              "category": "Oil Filter",
+              "compatibility": ["4BT3.9", "4BTA3.9", "ISBe4", "ISBe6"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "25 micron",
+                "height": "128mm",
+                "threadSize": "3/4-16 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1750,
+                "bulkPrice": 1550,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 420,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "cummins", "4bt", "isbe"]
+            },
+            {
+              "partNo": "2654403",
+              "name": "Oil Filter - Perkins 1104C/1106C",
+              "brand": "Perkins",
+              "category": "Oil Filter",
+              "compatibility": ["1104C-44", "1104C-44T", "1106C-E66T"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "22 micron",
+                "height": "135mm",
+                "threadSize": "M20x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1950,
+                "bulkPrice": 1750,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 380,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "perkins", "1104c", "1106c"]
+            },
+            {
+              "partNo": "2654407",
+              "name": "Oil Filter - Perkins 403/404 Series",
+              "brand": "Perkins",
+              "category": "Oil Filter",
+              "compatibility": ["403C-15", "403D-15", "404C-22", "404D-22"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "25 micron",
+                "height": "98mm",
+                "threadSize": "M20x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1650,
+                "bulkPrice": 1450,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 285,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "perkins", "403", "404"]
+            },
+            {
+              "partNo": "1R-0739",
+              "name": "Oil Filter - CAT 3054/3056",
+              "brand": "Caterpillar",
+              "category": "Oil Filter",
+              "compatibility": ["3054C", "3054E", "3056E", "C4.4"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "20 micron",
+                "height": "145mm",
+                "threadSize": "1-12 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2150,
+                "bulkPrice": 1950,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 295,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "cat", "3054", "3056"]
+            },
+            {
+              "partNo": "1R-0750",
+              "name": "Oil Filter - CAT C6.6/C7.1",
+              "brand": "Caterpillar",
+              "category": "Oil Filter",
+              "compatibility": ["C6.6", "C7.1", "C9.3"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "20 micron",
+                "height": "152mm",
+                "threadSize": "1-12 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2350,
+                "bulkPrice": 2150,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 245,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "cat", "c6.6", "c7.1"]
+            },
+            {
+              "partNo": "23390-0L041",
+              "name": "Oil Filter - Volvo Penta D5",
+              "brand": "Volvo",
+              "category": "Oil Filter",
+              "compatibility": ["D5A", "D5B", "D7A", "D7B"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "25 micron",
+                "height": "138mm",
+                "threadSize": "3/4-16 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2250,
+                "bulkPrice": 2050,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 185,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "volvo", "penta", "d5"]
+            },
+            {
+              "partNo": "15600-25010",
+              "name": "Oil Filter - SDMO Kohler",
+              "brand": "Kohler",
+              "category": "Oil Filter",
+              "compatibility": ["KD350", "KD440", "KD477"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "30 micron",
+                "height": "95mm",
+                "threadSize": "3/4-16 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1450,
+                "bulkPrice": 1250,
+                "minimumOrder": 15
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 225,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "sdmo", "kohler"]
+            },
+            {
+              "partNo": "15400-PLM-A01",
+              "name": "Oil Filter - Honda GX Series",
+              "brand": "Honda",
+              "category": "Oil Filter",
+              "compatibility": ["GX160", "GX200", "GX240", "GX270", "GX390"],
+              "specifications": {
+                "filterType": "Cartridge",
+                "micronRating": "30 micron",
+                "height": "65mm",
+                "diameter": "78mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 850,
+                "bulkPrice": 750,
+                "minimumOrder": 20
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 450,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "honda", "gx", "small-engine"]
+            },
+            {
+              "partNo": "751-10950",
+              "name": "Oil Filter - Lister Petter",
+              "brand": "Lister Petter",
+              "category": "Oil Filter",
+              "compatibility": ["LPW2", "LPW3", "LPW4", "LPWS Series"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "25 micron",
+                "height": "115mm",
+                "threadSize": "3/4-16 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1650,
+                "bulkPrice": 1450,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 165,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "lister", "petter", "lpw"]
+            },
+            {
+              "partNo": "2992544",
+              "name": "Oil Filter - Iveco NEF Series",
+              "brand": "Iveco",
+              "category": "Oil Filter",
+              "compatibility": ["NEF45", "NEF67", "N45", "N67"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "22 micron",
+                "height": "148mm",
+                "threadSize": "M20x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2150,
+                "bulkPrice": 1950,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 145,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "iveco", "nef"]
+            },
+            {
+              "partNo": "51.05504-0107",
+              "name": "Oil Filter - MAN D2066/D2676",
+              "brand": "MAN",
+              "category": "Oil Filter",
+              "compatibility": ["D2066", "D2676", "D0834", "D0836"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "20 micron",
+                "height": "165mm",
+                "threadSize": "M27x2.0"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2850,
+                "bulkPrice": 2650,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "man", "d2066"]
+            },
+            {
+              "partNo": "D638-002-02",
+              "name": "Oil Filter - Weichai WP10/WP12",
+              "brand": "Weichai",
+              "category": "Oil Filter",
+              "compatibility": ["WP10", "WP12", "WD615"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "25 micron",
+                "height": "155mm",
+                "threadSize": "M20x1.5"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1950,
+                "bulkPrice": 1750,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 210,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "oil", "weichai", "wp10", "wp12"]
+            },
+            {
+              "partNo": "FF5320",
+              "name": "Fuel Filter - Cummins 6BT/6CT",
+              "brand": "Fleetguard",
+              "category": "Fuel Filter",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "10 micron",
+                "height": "158mm",
+                "waterSeparator": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2350,
+                "bulkPrice": 2150,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 385,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "fuel", "cummins", "6bt", "water-separator"]
+            },
+            {
+              "partNo": "FS19532",
+              "name": "Fuel Filter - Cummins ISBe/QSB",
+              "brand": "Fleetguard",
+              "category": "Fuel Filter",
+              "compatibility": ["ISBe4", "ISBe6", "QSB4.5", "QSB6.7"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "5 micron",
+                "height": "175mm",
+                "waterSeparator": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2650,
+                "bulkPrice": 2450,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 295,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "fuel", "cummins", "isbe", "qsb"]
+            },
+            {
+              "partNo": "26560201",
+              "name": "Fuel Filter - Perkins 1104C/1106C",
+              "brand": "Perkins",
+              "category": "Fuel Filter",
+              "compatibility": ["1104C-44", "1104C-44T", "1106C-E66T"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "10 micron",
+                "height": "145mm",
+                "waterSeparator": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2450,
+                "bulkPrice": 2250,
+                "minimumOrder": 12
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 340,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "fuel", "perkins", "1104c", "1106c"]
+            },
+            {
+              "partNo": "4587259",
+              "name": "Fuel Filter - Perkins 403/404 Series",
+              "brand": "Perkins",
+              "category": "Fuel Filter",
+              "compatibility": ["403C-15", "403D-15", "404C-22", "404D-22"],
+              "specifications": {
+                "filterType": "Cartridge",
+                "micronRating": "10 micron",
+                "height": "98mm",
+                "waterSeparator": "No"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1850,
+                "bulkPrice": 1650,
+                "minimumOrder": 15
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 265,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "fuel", "perkins", "403", "404"]
+            },
+            {
+              "partNo": "1R-0750",
+              "name": "Fuel Filter - CAT 3054/3056",
+              "brand": "Caterpillar",
+              "category": "Fuel Filter",
+              "compatibility": ["3054C", "3054E", "3056E", "C4.4"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "10 micron",
+                "height": "142mm",
+                "waterSeparator": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2850,
+                "bulkPrice": 2650,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 225,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "fuel", "cat", "3054", "3056"]
+            },
+            {
+              "partNo": "326-1644",
+              "name": "Fuel Filter - CAT C6.6/C7.1",
+              "brand": "Caterpillar",
+              "category": "Fuel Filter",
+              "compatibility": ["C6.6", "C7.1", "C9.3"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "5 micron",
+                "height": "168mm",
+                "waterSeparator": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3150,
+                "bulkPrice": 2950,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 185,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "fuel", "cat", "c6.6", "c7.1"]
+            },
+            {
+              "partNo": "21707134",
+              "name": "Fuel Filter - Volvo Penta D5",
+              "brand": "Volvo",
+              "category": "Fuel Filter",
+              "compatibility": ["D5A", "D5B", "D7A", "D7B"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "10 micron",
+                "height": "152mm",
+                "waterSeparator": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2950,
+                "bulkPrice": 2750,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 145,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "fuel", "volvo", "penta", "d5"]
+            },
+            {
+              "partNo": "17210-ZE3-505",
+              "name": "Air Filter - Honda GX Series",
+              "brand": "Honda",
+              "category": "Air Filter",
+              "compatibility": ["GX160", "GX200", "GX240", "GX270", "GX390"],
+              "specifications": {
+                "filterType": "Foam & Paper Element",
+                "height": "85mm",
+                "diameter": "95mm",
+                "cleanable": "Yes"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 650,
+                "bulkPrice": 550,
+                "minimumOrder": 20
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 520,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "air", "honda", "gx", "foam"]
+            },
+            {
+              "partNo": "AF25454",
+              "name": "Air Filter - Cummins 6BT/6CT",
+              "brand": "Fleetguard",
+              "category": "Air Filter",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "filterType": "Panel Type",
+                "height": "280mm",
+                "width": "185mm",
+                "depth": "65mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3850,
+                "bulkPrice": 3550,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 235,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "air", "cummins", "6bt", "panel"]
+            },
+            {
+              "partNo": "AF26207",
+              "name": "Air Filter - Cummins ISBe/QSB",
+              "brand": "Fleetguard",
+              "category": "Air Filter",
+              "compatibility": ["ISBe4", "ISBe6", "QSB4.5", "QSB6.7"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "295mm",
+                "outerDiameter": "195mm",
+                "innerDiameter": "135mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4250,
+                "bulkPrice": 3950,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 185,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "air", "cummins", "isbe", "qsb"]
+            },
+            {
+              "partNo": "26510362",
+              "name": "Air Filter - Perkins 1104C/1106C",
+              "brand": "Perkins",
+              "category": "Air Filter",
+              "compatibility": ["1104C-44", "1104C-44T", "1106C-E66T"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "265mm",
+                "outerDiameter": "175mm",
+                "innerDiameter": "125mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3950,
+                "bulkPrice": 3650,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 245,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "air", "perkins", "1104c", "1106c"]
+            },
+            {
+              "partNo": "135326206",
+              "name": "Air Filter - Perkins 403/404 Series",
+              "brand": "Perkins",
+              "category": "Air Filter",
+              "compatibility": ["403C-15", "403D-15", "404C-22", "404D-22"],
+              "specifications": {
+                "filterType": "Panel Type",
+                "height": "185mm",
+                "width": "145mm",
+                "depth": "55mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2850,
+                "bulkPrice": 2550,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 195,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "air", "perkins", "403", "404"]
+            },
+            {
+              "partNo": "360-8960",
+              "name": "Air Filter - CAT 3054/3056",
+              "brand": "Caterpillar",
+              "category": "Air Filter",
+              "compatibility": ["3054C", "3054E", "3056E", "C4.4"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "275mm",
+                "outerDiameter": "185mm",
+                "innerDiameter": "130mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4550,
+                "bulkPrice": 4250,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 165,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "air", "cat", "3054", "3056"]
+            },
+            {
+              "partNo": "479-8989",
+              "name": "Air Filter - CAT C6.6/C7.1",
+              "brand": "Caterpillar",
+              "category": "Air Filter",
+              "compatibility": ["C6.6", "C7.1", "C9.3"],
+              "specifications": {
+                "filterType": "Radial Seal",
+                "height": "305mm",
+                "outerDiameter": "205mm",
+                "innerDiameter": "145mm"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 5250,
+                "bulkPrice": 4950,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 125,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "air", "cat", "c6.6", "c7.1"]
+            },
+            {
+              "partNo": "WG1540820001",
+              "name": "Hydraulic Filter - Weichai WP10",
+              "brand": "Weichai",
+              "category": "Hydraulic Filter",
+              "compatibility": ["WP10", "WP12", "WD615"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "micronRating": "15 micron",
+                "height": "165mm",
+                "flowRate": "150 LPM"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2650,
+                "bulkPrice": 2450,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 145,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "hydraulic", "weichai", "wp10"]
+            },
+            {
+              "partNo": "HF6553",
+              "name": "Hydraulic Filter - Cummins/Perkins",
+              "brand": "Fleetguard",
+              "category": "Hydraulic Filter",
+              "compatibility": ["Universal - High Flow"],
+              "specifications": {
+                "filterType": "Cartridge",
+                "micronRating": "10 micron",
+                "height": "195mm",
+                "flowRate": "200 LPM"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3850,
+                "bulkPrice": "3550",
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 185,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "hydraulic", "universal", "high-flow"]
+            },
+            {
+              "partNo": "WF2054",
+              "name": "Coolant Filter - Cummins 6BT/6CT",
+              "brand": "Fleetguard",
+              "category": "Coolant Filter",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6CT8.3", "6CTA8.3"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "scaAdditive": "Yes",
+                "height": "165mm",
+                "threadSize": "1-12 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 2850,
+                "bulkPrice": 2650,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 225,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "coolant", "cummins", "6bt", "sca"]
+            },
+            {
+              "partNo": "WF2073",
+              "name": "Coolant Filter - Cummins ISBe/QSB",
+              "brand": "Fleetguard",
+              "category": "Coolant Filter",
+              "compatibility": ["ISBe4", "ISBe6", "QSB4.5", "QSB6.7"],
+              "specifications": {
+                "filterType": "Spin-On",
+                "scaAdditive": "Yes",
+                "height": "178mm",
+                "threadSize": "1-12 UNF"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 3150,
+                "bulkPrice": 2950,
+                "minimumOrder": 8
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 185,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "6 months",
+              "tags": ["filter", "coolant", "cummins", "isbe", "qsb"]
+            }
+          ]
+        },
+        {
+          "id": "pistons-rings",
+          "name": "Pistons & Piston Rings",
+          "description": "Complete piston assemblies and ring sets for all engine brands",
+          "parts": [
+            {
+              "partNo": "3802263",
+              "name": "Piston Kit - Cummins 6BT5.9",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6BTAA5.9"],
+              "specifications": {
+                "bore": "102mm",
+                "compressionHeight": "78mm",
+                "pinDiameter": "38mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 15500,
+                "bulkPrice": 14000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["engine", "piston", "cummins", "6bt", "power-assembly"]
+            },
+            {
+              "partNo": "3802429",
+              "name": "Piston Kit - Cummins 4BT3.9",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "bore": "102mm",
+                "compressionHeight": "78mm",
+                "pinDiameter": "38mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 14500,
+                "bulkPrice": 13000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["engine", "piston", "cummins", "4bt"]
+            },
+            {
+              "partNo": "3804905",
+              "name": "Piston Kit - Cummins 6CT8.3",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["6CT8.3", "6CTA8.3", "6CTAA8.3"],
+              "specifications": {
+                "bore": "114mm",
+                "compressionHeight": "85mm",
+                "pinDiameter": "42mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 18500,
+                "bulkPrice": 17000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "cummins", "6ct", "heavy-duty"]
+            },
+            {
+              "partNo": "4089968",
+              "name": "Piston Kit - Cummins ISBe",
+              "brand": "Cummins",
+              "category": "Piston",
+              "compatibility": ["ISBe4", "ISBe6", "QSB4.5", "QSB6.7"],
+              "specifications": {
+                "bore": "107mm",
+                "compressionHeight": "80mm",
+                "pinDiameter": "40mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 17500,
+                "bulkPrice": 16000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "cummins", "isbe", "qsb"]
+            },
+            {
+              "partNo": "U5MK8269",
+              "name": "Piston Kit - Perkins 1104C",
+              "brand": "Perkins",
+              "category": "Piston",
+              "compatibility": ["1104C-44", "1104C-44T", "1104C-E44T"],
+              "specifications": {
+                "bore": "105mm",
+                "compressionHeight": "75.5mm",
+                "pinDiameter": "42mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 16500,
+                "bulkPrice": 15000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 36,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "perkins", "1104c"]
+            },
+            {
+              "partNo": "U5MW0211",
+              "name": "Piston Kit - Perkins 1106C",
+              "brand": "Perkins",
+              "category": "Piston",
+              "compatibility": ["1106C-E66T", "1106C-70T", "1106D-70T"],
+              "specifications": {
+                "bore": "105mm",
+                "compressionHeight": "75.5mm",
+                "pinDiameter": "42mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 17000,
+                "bulkPrice": 15500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "perkins", "1106c"]
+            },
+            {
+              "partNo": "4115P015",
+              "name": "Piston Kit - Perkins 403/404 Series",
+              "brand": "Perkins",
+              "category": "Piston",
+              "compatibility": ["403C-15", "403D-15", "404C-22", "404D-22"],
+              "specifications": {
+                "bore": "84mm",
+                "compressionHeight": "65mm",
+                "pinDiameter": "32mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 12500,
+                "bulkPrice": 11000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "perkins", "403", "404"]
+            },
+            {
+              "partNo": "3066209",
+              "name": "Piston Kit - Perkins 1103 Series",
+              "brand": "Perkins",
+              "category": "Piston",
+              "compatibility": ["1103A-33T", "1103C-33T", "1103D-33T"],
+              "specifications": {
+                "bore": "105mm",
+                "compressionHeight": "75mm",
+                "pinDiameter": "41mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 15500,
+                "bulkPrice": 14000,
+                "minimumOrder": 3
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 22,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "perkins", "1103"]
+            },
+            {
+              "partNo": "265-0772",
+              "name": "Piston Kit - CAT 3054/3056",
+              "brand": "Caterpillar",
+              "category": "Piston",
+              "compatibility": ["3054C", "3054E", "3056E", "C4.4"],
+              "specifications": {
+                "bore": "94mm",
+                "compressionHeight": "72mm",
+                "pinDiameter": "38mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 18500,
+                "bulkPrice": 17000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "cat", "3054", "3056"]
+            },
+            {
+              "partNo": "320-0912",
+              "name": "Piston Kit - CAT C6.6",
+              "brand": "Caterpillar",
+              "category": "Piston",
+              "compatibility": ["C6.6", "C6.6T", "C6.6TA"],
+              "specifications": {
+                "bore": "105mm",
+                "compressionHeight": "78mm",
+                "pinDiameter": "42mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 21500,
+                "bulkPrice": 20000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 24,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "cat", "c6.6"]
+            },
+            {
+              "partNo": "353-6147",
+              "name": "Piston Kit - CAT C7.1",
+              "brand": "Caterpillar",
+              "category": "Piston",
+              "compatibility": ["C7.1", "C7.1T"],
+              "specifications": {
+                "bore": "110mm",
+                "compressionHeight": "82mm",
+                "pinDiameter": "45mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 24500,
+                "bulkPrice": 23000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "cat", "c7.1"]
+            },
+            {
+              "partNo": "20714796",
+              "name": "Piston Kit - Volvo Penta D5",
+              "brand": "Volvo",
+              "category": "Piston",
+              "compatibility": ["D5A", "D5B", "D7A", "D7B"],
+              "specifications": {
+                "bore": "102mm",
+                "compressionHeight": "75mm",
+                "pinDiameter": "40mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 19500,
+                "bulkPrice": 18000,
+                "minimumOrder": 5
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 22,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "volvo", "penta", "d5"]
+            },
+            {
+              "partNo": "13101-ZE3-000",
+              "name": "Piston Kit - Honda GX390",
+              "brand": "Honda",
+              "category": "Piston",
+              "compatibility": ["GX390", "GX340"],
+              "specifications": {
+                "bore": "88mm",
+                "compressionHeight": "52mm",
+                "pinDiameter": "20mm",
+                "ringGrooves": "2",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4850,
+                "bulkPrice": 4350,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 85,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "honda", "gx390", "small-engine"]
+            },
+            {
+              "partNo": "13101-ZE2-000",
+              "name": "Piston Kit - Honda GX270",
+              "brand": "Honda",
+              "category": "Piston",
+              "compatibility": ["GX270", "GX240"],
+              "specifications": {
+                "bore": "77mm",
+                "compressionHeight": "48mm",
+                "pinDiameter": "18mm",
+                "ringGrooves": "2",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 4250,
+                "bulkPrice": 3850,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 72,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "honda", "gx270", "small-engine"]
+            },
+            {
+              "partNo": "751-41140",
+              "name": "Piston Kit - Lister Petter LPW3",
+              "brand": "Lister Petter",
+              "category": "Piston",
+              "compatibility": ["LPW3", "LPWS3"],
+              "specifications": {
+                "bore": "98.48mm",
+                "compressionHeight": "70mm",
+                "pinDiameter": "38mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 14500,
+                "bulkPrice": 13000,
+                "minimumOrder": 3
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "lister", "petter", "lpw3"]
+            },
+            {
+              "partNo": "751-41240",
+              "name": "Piston Kit - Lister Petter LPW4",
+              "brand": "Lister Petter",
+              "category": "Piston",
+              "compatibility": ["LPW4", "LPWS4"],
+              "specifications": {
+                "bore": "98.48mm",
+                "compressionHeight": "70mm",
+                "pinDiameter": "38mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 14500,
+                "bulkPrice": 13000,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 24,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "lister", "petter", "lpw4"]
+            },
+            {
+              "partNo": "504026106",
+              "name": "Piston Kit - Iveco NEF67",
+              "brand": "Iveco",
+              "category": "Piston",
+              "compatibility": ["NEF67", "N67"],
+              "specifications": {
+                "bore": "104mm",
+                "compressionHeight": "77mm",
+                "pinDiameter": "42mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 19500,
+                "bulkPrice": 18000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 22,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "iveco", "nef67"]
+            },
+            {
+              "partNo": "51.02500-6447",
+              "name": "Piston Kit - MAN D2066",
+              "brand": "MAN",
+              "category": "Piston",
+              "compatibility": ["D2066", "D2676"],
+              "specifications": {
+                "bore": "126mm",
+                "compressionHeight": "95mm",
+                "pinDiameter": "52mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 28500,
+                "bulkPrice": 26500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 18,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1 Week"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "man", "d2066", "heavy-duty"]
+            },
+            {
+              "partNo": "612600030051",
+              "name": "Piston Kit - Weichai WP10",
+              "brand": "Weichai",
+              "category": "Piston",
+              "compatibility": ["WP10", "WD615"],
+              "specifications": {
+                "bore": "126mm",
+                "compressionHeight": "90mm",
+                "pinDiameter": "50mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 16500,
+                "bulkPrice": "15000",
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "weichai", "wp10"]
+            },
+            {
+              "partNo": "612630020089",
+              "name": "Piston Kit - Weichai WP12",
+              "brand": "Weichai",
+              "category": "Piston",
+              "compatibility": ["WP12", "WD12"],
+              "specifications": {
+                "bore": "126mm",
+                "compressionHeight": "92mm",
+                "pinDiameter": "52mm",
+                "ringGrooves": "3",
+                "material": "Aluminum Alloy"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 17500,
+                "bulkPrice": 16000,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston", "weichai", "wp12"]
+            },
+            {
+              "partNo": "3802421",
+              "name": "Piston Ring Set - Cummins 6BT STD",
+              "brand": "Cummins",
+              "category": "Piston Ring",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6BTAA5.9"],
+              "specifications": {
+                "bore": "102mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (6 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 54,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "cummins", "6bt", "std"]
+            },
+            {
+              "partNo": "3802422",
+              "name": "Piston Ring Set - Cummins 6BT 0.25mm",
+              "brand": "Cummins",
+              "category": "Piston Ring",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6BTAA5.9"],
+              "specifications": {
+                "bore": "102.25mm (0.25mm OS)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (6 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "cummins", "6bt", "oversize"]
+            },
+            {
+              "partNo": "3802423",
+              "name": "Piston Ring Set - Cummins 6BT 0.50mm",
+              "brand": "Cummins",
+              "category": "Piston Ring",
+              "compatibility": ["6BT5.9", "6BTA5.9", "6BTAA5.9"],
+              "specifications": {
+                "bore": "102.50mm (0.50mm OS)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (6 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "cummins", "6bt", "oversize"]
+            },
+            {
+              "partNo": "3802430",
+              "name": "Piston Ring Set - Cummins 4BT STD",
+              "brand": "Cummins",
+              "category": "Piston Ring",
+              "compatibility": ["4BT3.9", "4BTA3.9"],
+              "specifications": {
+                "bore": "102mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (4 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 6500,
+                "bulkPrice": 5800,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "cummins", "4bt", "std"]
+            },
+            {
+              "partNo": "4089979",
+              "name": "Piston Ring Set - Cummins ISBe STD",
+              "brand": "Cummins",
+              "category": "Piston Ring",
+              "compatibility": ["ISBe4", "ISBe6", "QSB4.5", "QSB6.7"],
+              "specifications": {
+                "bore": "107mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "PVD Coating",
+                "material": "Cast Iron",
+                "quantity": "1 Set (6 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 9500,
+                "bulkPrice": 8500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 48,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "cummins", "isbe", "qsb"]
+            },
+            {
+              "partNo": "U5MK0378",
+              "name": "Piston Ring Set - Perkins 1104C STD",
+              "brand": "Perkins",
+              "category": "Piston Ring",
+              "compatibility": ["1104C-44", "1104C-44T", "1104C-E44T"],
+              "specifications": {
+                "bore": "105mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (4 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 7500,
+                "bulkPrice": 6800,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 42,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "perkins", "1104c", "std"]
+            },
+            {
+              "partNo": "U5MW0268",
+              "name": "Piston Ring Set - Perkins 1106C STD",
+              "brand": "Perkins",
+              "category": "Piston Ring",
+              "compatibility": ["1106C-E66T", "1106C-70T", "1106D-70T"],
+              "specifications": {
+                "bore": "105mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (6 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 10500,
+                "bulkPrice": 9500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 36,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "perkins", "1106c", "std"]
+            },
+            {
+              "partNo": "4115P017",
+              "name": "Piston Ring Set - Perkins 403/404 STD",
+              "brand": "Perkins",
+              "category": "Piston Ring",
+              "compatibility": ["403C-15", "403D-15", "404C-22", "404D-22"],
+              "specifications": {
+                "bore": "84mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (3-4 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 5500,
+                "bulkPrice": 4950,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "perkins", "403", "404"]
+            },
+            {
+              "partNo": "265-0776",
+              "name": "Piston Ring Set - CAT 3054 STD",
+              "brand": "Caterpillar",
+              "category": "Piston Ring",
+              "compatibility": ["3054C", "3054E", "3056E", "C4.4"],
+              "specifications": {
+                "bore": "94mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (4 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 8500,
+                "bulkPrice": 7800,
+                "minimumOrder": 4
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 32,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "cat", "3054", "std"]
+            },
+            {
+              "partNo": "320-0916",
+              "name": "Piston Ring Set - CAT C6.6 STD",
+              "brand": "Caterpillar",
+              "category": "Piston Ring",
+              "compatibility": ["C6.6", "C6.6T", "C6.6TA"],
+              "specifications": {
+                "bore": "105mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "PVD Coating",
+                "material": "Cast Iron",
+                "quantity": "1 Set (6 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 12500,
+                "bulkPrice": 11500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 28,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "cat", "c6.6", "std"]
+            },
+            {
+              "partNo": "13010-ZE3-000",
+              "name": "Piston Ring Set - Honda GX390 STD",
+              "brand": "Honda",
+              "category": "Piston Ring",
+              "compatibility": ["GX390", "GX340"],
+              "specifications": {
+                "bore": "88mm (STD)",
+                "rings": "2 Rings",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (1 Cylinder)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1850,
+                "bulkPrice": 1650,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 95,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "honda", "gx390", "small-engine"]
+            },
+            {
+              "partNo": "13010-ZE2-000",
+              "name": "Piston Ring Set - Honda GX270 STD",
+              "brand": "Honda",
+              "category": "Piston Ring",
+              "compatibility": ["GX270", "GX240"],
+              "specifications": {
+                "bore": "77mm (STD)",
+                "rings": "2 Rings",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (1 Cylinder)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 1650,
+                "bulkPrice": 1450,
+                "minimumOrder": 10
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 82,
+                "location": "Nairobi Warehouse",
+                "leadTime": "Same Day"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "honda", "gx270", "small-engine"]
+            },
+            {
+              "partNo": "612600030051-R",
+              "name": "Piston Ring Set - Weichai WP10 STD",
+              "brand": "Weichai",
+              "category": "Piston Ring",
+              "compatibility": ["WP10", "WD615"],
+              "specifications": {
+                "bore": "126mm (STD)",
+                "rings": "3 Rings per Cylinder",
+                "topRing": "Chrome Plated",
+                "material": "Cast Iron",
+                "quantity": "1 Set (6 Cylinders)"
+              },
+              "pricing": {
+                "currency": "KES",
+                "retailPrice": 9500,
+                "bulkPrice": 8500,
+                "minimumOrder": 6
+              },
+              "inventory": {
+                "stock": "In Stock",
+                "quantity": 38,
+                "location": "Nairobi Warehouse",
+                "leadTime": "1-2 Days"
+              },
+              "warranty": "12 months",
+              "tags": ["piston-ring", "weichai", "wp10", "std"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

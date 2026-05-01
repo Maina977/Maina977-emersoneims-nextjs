@@ -196,14 +196,13 @@ const nextConfig: NextConfig = {
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       img-src 'self' blob: data: https: http:;
       font-src 'self' https://fonts.gstatic.com data:;
-      connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app;
+      connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app http://127.0.0.1:5000 http://localhost:5000 ws://127.0.0.1:5000 ws://localhost:5000;
       media-src 'self' blob: https:;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
       frame-ancestors 'self';
-      frame-src 'self' https://www.google.com https://maps.google.com https://*.google.com https://www.openstreetmap.org https://*.openstreetmap.org https://www.youtube.com https://player.vimeo.com;
-      upgrade-insecure-requests;
+      frame-src 'self' https://www.google.com https://maps.google.com https://*.google.com https://www.openstreetmap.org https://*.openstreetmap.org https://www.youtube.com https://player.vimeo.com https://www.emersoneims.com https://emersoneims.com https://*.emersoneims.com http://127.0.0.1:5000 http://localhost:5000;
     `.replace(/\s{2,}/g, ' ').trim();
 
     return [
@@ -349,6 +348,41 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Embed pages: relax cross-origin isolation so a cross-port Flask iframe can load.
+      {
+        source: '/pro-building-suite',
+        headers: [
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'unsafe-none',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'cross-origin',
+          },
+        ],
+      },
+      {
+        source: '/eims-pro',
+        headers: [
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'unsafe-none',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'cross-origin',
+          },
+        ],
+      },
     ];
   },
 
@@ -377,6 +411,11 @@ const nextConfig: NextConfig = {
       {
         source: '/solar-kenya',
         destination: '/solar',
+        permanent: true,
+      },
+      {
+        source: '/aquascan-pro',
+        destination: '/aquascan-pro-v3',
         permanent: true,
       },
       {

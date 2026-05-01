@@ -1,21 +1,21 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'AquaScan Pro V3 - AI Borehole Analyzer | EmersonEIMS',
-  description: 'The world\'s most advanced AI-powered borehole pre-assessment analyzer. 26 AI engines, NASA GRACE/GLDAS integration, comprehensive charts, graphs, and maps. 195+ countries coverage.',
-  keywords: 'borehole drilling, groundwater analysis, AI borehole, water well, Kenya drilling, AquaScan Pro, EmersonEIMS, NASA GRACE, GLDAS, geophysical survey',
+  title: 'AquaScan Pro V3 | AI borehole, satellite, water & reports | EmersonEIMS',
+  description:
+    'AquaScan Pro: satellite indices, GLDAS, water quality, nearby boreholes, and full site analysis. Uses EmersonEIMS /api/borehole and payment/notification routes — one integrated stack.',
+  alternates: { canonical: `${siteUrl}/aquascan-pro-v3` },
   openGraph: {
-    title: 'AquaScan Pro V3 - AI Borehole Analyzer',
-    description: '26 AI Engines | Charts & Graphs | NASA Integration | 195+ Countries',
+    title: 'AquaScan Pro V3 | EmersonEIMS',
+    url: `${siteUrl}/aquascan-pro-v3`,
     type: 'website',
-    siteName: 'EmersonEIMS',
   },
+  robots: { index: true, follow: true },
 };
 
-export default function AquaScanProV3Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return children;
+export default function AquaScanProV3Layout({ children }: { children: ReactNode }) {
+  return <>{children}</>;
 }

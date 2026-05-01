@@ -1,0 +1,78 @@
+# ============ CORE WEB FRAMEWORK ============
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+fastapi-cors==0.0.6
+
+# ============ DATABASE ============
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
+geoalchemy2==0.14.1
+
+# ============ GEOSPATIAL ============
+shapely==2.0.2
+rasterio==1.3.9
+xarray==2023.12.0
+geopandas==0.14.1
+fiona==1.9.6
+pyproj==3.6.1
+
+# ============ SATELLITE & DATA ACQUISITION ============
+earthengine-api==0.1.391
+
+# ============ SCIENTIFIC COMPUTING ============
+numpy==1.26.3
+scipy==1.12.0
+scikit-learn==1.4.0
+scikit-image==0.22.0
+matplotlib==3.8.3
+pandas==2.2.0
+
+# ============ MACHINE LEARNING ============
+tensorflow==2.18.0
+torch==2.2.0
+xgboost==2.0.3
+shap==0.44.0
+
+# ============ ASYNC & TASK QUEUE ============
+celery==5.3.4
+redis==5.0.1
+kombu==5.3.4
+
+# ============ IMAGE PROCESSING ============
+pillow==10.1.0
+opencv-python==4.8.1.78
+
+# ============ UTILITIES ============
+python-dotenv==1.0.0
+requests==2.31.0
+aiohttp==3.9.1
+httpx==0.25.2
+orjson==3.9.10
+
+# ============ SECURITY & AUTH ============
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+cryptography==41.0.7
+pyjwt==2.12.1
+
+# ============ LOGGING & MONITORING ============
+python-json-logger==2.0.7
+prometheus-client==0.19.0
+
+# ============ PRODUCTION ============
+gunicorn==21.2.0
+
+# ============ DEVELOPMENT & TESTING ============
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# ============ CODE QUALITY ============
+black==23.12.0
+flake8==6.1.0
+mypy==1.7.1

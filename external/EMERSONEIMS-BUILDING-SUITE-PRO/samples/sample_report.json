@@ -1,0 +1,173 @@
+﻿{
+    "cost_summary":  {
+                         "contingency":  9343.13,
+                         "contractor_profit":  15416.17,
+                         "cost_per_sqm_local":  82650.77,
+                         "cost_per_sqm_usd":  537.23,
+                         "currency":  "KES",
+                         "equipment_cost":  5832.62,
+                         "labor_cost":  8202.13,
+                         "material_cost":  72907.78,
+                         "overhead":  6488.79,
+                         "symbol":  "KES",
+                         "total_project_cost_local":  18183172.31,
+                         "total_project_cost_usd":  118190.62
+                     },
+    "drawings_included":  [
+                              "Site Plan",
+                              "Foundation Plan",
+                              "Floor Plan (All Levels)",
+                              "Roof Plan",
+                              "Elevation Views (Front, Rear, Side)",
+                              "Cross Section",
+                              "Electrical Layout",
+                              "Plumbing Layout",
+                              "Structural Details",
+                              "Door \u0026 Window Schedule"
+                          ],
+    "electrical_summary":  {
+                               "distribution_boards":  1,
+                               "estimated_load_kw":  9.0,
+                               "total_light_points":  12,
+                               "total_socket_outlets":  12
+                           },
+    "generated_at":  "2026-04-26T19:25:55.463353",
+    "material_summary":  {
+                             "currency":  "KES",
+                             "items_by_category":  {
+                                                       "electrical":  11,
+                                                       "external":  12,
+                                                       "finishes":  18,
+                                                       "mep_hvac":  5,
+                                                       "plumbing":  14,
+                                                       "structural":  17
+                                                   },
+                             "symbol":  "KES",
+                             "total_line_items":  77,
+                             "total_material_cost_local":  11216581.54,
+                             "total_material_cost_usd":  72907.78
+                         },
+    "phases_summary":  [
+                           {
+                               "has_data":  false,
+                               "name":  "Satellite Site Analysis",
+                               "phase":  1,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Geotechnical Investigation",
+                               "phase":  2,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Foundation \u0026 Structural",
+                               "phase":  3,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Floor Plans \u0026 Architecture",
+                               "phase":  4,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Electrical Systems",
+                               "phase":  5,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Plumbing \u0026 Water",
+                               "phase":  6,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Bill of Quantities",
+                               "phase":  7,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Infrastructure \u0026 Energy",
+                               "phase":  8,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Landscape Design",
+                               "phase":  9,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Permits \u0026 Compliance",
+                               "phase":  10,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "3D / BIM / Drawings",
+                               "phase":  11,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Financial \u0026 ROI",
+                               "phase":  12,
+                               "status":  "Pending Input"
+                           },
+                           {
+                               "has_data":  false,
+                               "name":  "Project Integration",
+                               "phase":  13,
+                               "status":  "Pending Input"
+                           }
+                       ],
+    "plumbing_summary":  {
+                             "sewage_system":  "Septic Tank with Soakaway",
+                             "total_bathrooms":  2,
+                             "total_kitchens":  1,
+                             "water_storage_litres":  2000
+                         },
+    "project_summary":  {
+                            "bedrooms_per_unit":  4,
+                            "building_code":  "Kenya Building Code 2020",
+                            "building_type":  "residential",
+                            "country":  "Kenya",
+                            "dwelling_units":  1,
+                            "footprint_m2":  220.0,
+                            "location":  "Nairobi, Kenya",
+                            "perimeter_m":  59.3,
+                            "plot_coverage":  "40.0%",
+                            "project_name":  "Residential Development - Nairobi, Kenya",
+                            "stories":  1,
+                            "total_area_m2":  220.0,
+                            "total_rooms":  6
+                        },
+    "report_type":  "comprehensive_project_report",
+    "site_analysis":  {
+                          "access_requirements":  "Min corridor 1.2m, stairs 0.9m",
+                          "minimum_parking":  "0.5 per unit (0 total)",
+                          "required_setbacks":  {
+                                                    "front":  "5m",
+                                                    "rear":  "3m",
+                                                    "side":  "2m"
+                                                }
+                      },
+    "structural_summary":  {
+                               "ceiling_height_m":  2.7,
+                               "foundation_depth_m":  1.2,
+                               "foundation_type":  "Strip Foundation",
+                               "roof_type":  "Pitched Roof with Box Profile Sheeting",
+                               "slab_type":  "Reinforced Concrete Slab (150mm)",
+                               "total_blocks":  7681,
+                               "total_concrete_m3":  0,
+                               "total_steel_kg":  17114.0,
+                               "wall_type":  "Reinforced Concrete Block (200mm external, 100mm internal)"
+                           },
+    "success":  true
+}

@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: solargenius-postgres
+    environment:
+      POSTGRES_USER: solargenius
+      POSTGRES_PASSWORD: solargenius123
+      POSTGRES_DB: solargenius
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - solargenius-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U solargenius"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: solargenius-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - solargenius-network
+    command: redis-server --appendonly yes
+
+  # Backend API Server
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: solargenius-backend
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://solargenius:solargenius123@postgres:5432/solargenius
+      REDIS_URL: redis://redis:6379
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - solargenius-network
+    restart: unless-stopped
+
+  # Nginx (Reverse Proxy)
+  nginx:
+    image: nginx:alpine
+    container_name: solargenius-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ../dist:/usr/share/nginx/html
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+    networks:
+      - solargenius-network
+    restart: unless-stopped
+
+  # Worker for background jobs
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    container_name: solargenius-worker
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://solargenius:solargenius123@postgres:5432/solargenius
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - solargenius-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  solargenius-network:
+    driver: bridge

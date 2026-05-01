@@ -79,7 +79,7 @@ const AI_TOOLS = [
     tagline: '26 AI Analysis Tools | NASA Integration | Patent Pending',
     ranking: '#1 WORLDWIDE',
     icon: '💧',
-    link: '/aquascan-pro',
+    link: '/aquascan-pro-v3',
     totalCapabilities: 26,
     overallAccuracy: 97.8,
     capabilities: AQUASCAN_PRO_CAPABILITIES,

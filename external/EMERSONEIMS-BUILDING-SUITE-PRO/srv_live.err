@@ -1,0 +1,110 @@
+2026-04-27 04:26:21,635 [INFO] eims.fx: FX module registered (3 endpoints)
+2026-04-27 04:26:21,639 [INFO] eims.materials: Materials price-index module registered (3 endpoints)
+2026-04-27 04:26:21,642 [INFO] eims.wind: Wind-loads module registered (ASCE 7-22 + EN 1991-1-4)
+2026-04-27 04:26:21,645 [INFO] eims.seismic: Seismic module registered (ASCE 7-22 ELF + EN 1998-1)
+2026-04-27 04:26:21,649 [INFO] eims.geotech: Geotechnical module registered (Terzaghi/Meyerhof/Hansen + SPT)
+2026-04-27 04:26:21,652 [INFO] eims.rc: RC verification module registered (EN 1992-1-1)
+2026-04-27 04:26:21,653 [INFO] eims.steel: Steel-connection module registered (EN 1993-1-8)
+2026-04-27 04:26:21,656 [INFO] eims.nrm1: NRM1 elemental cost-plan module registered
+2026-04-27 04:26:21,659 [INFO] eims.rates: Rate build-up library module registered
+2026-04-27 04:26:21,662 [INFO] eims.cashflow: Cashflow & interim-valuation module registered
+2026-04-27 04:26:21,665 [INFO] eims.variations: Variation-register module registered
+2026-04-27 04:26:21,671 [INFO] eims.tender: Tender-comparison module registered
+2026-04-27 04:26:21,674 [INFO] eims.risk: Risk Monte-Carlo module registered
+2026-04-27 04:26:21,675 [INFO] eims.evm: Earned Value Management module registered
+2026-04-27 04:26:21,678 [INFO] eims.carbon: Embodied-carbon (EN 15978) module registered
+2026-04-27 04:26:21,680 [INFO] eims.daylight: Daylight (EN 17037) module registered
+2026-04-27 04:26:21,683 [INFO] eims.acoustics: Acoustics (Sabine/Eyring) module registered
+2026-04-27 04:26:21,685 [INFO] eims.uvalue: U-value (EN ISO 6946) module registered
+2026-04-27 04:26:21,688 [INFO] eims.egress: Egress (IBC 2021) module registered
+2026-04-27 04:26:21,691 [INFO] eims.accessibility: Accessibility (ADA / AD M / ISO 21542) module registered
+2026-04-27 04:26:21,697 [INFO] eims.boq: BOQ format renderer registered
+2026-04-27 04:26:21,699 [INFO] eims.health: Healthcheck endpoints registered (/api/health, /api/health/deep)
+2026-04-27 04:26:21,700 [INFO] eims.ratelimit: Rate-limit middleware registered (60/min + burst 20)
+2026-04-27 04:26:21,703 [INFO] eims.audit: Audit log module registered (writes to G:\EMERSONEIMS BUILDING SUITE PRO\uploads\.audit_log.jsonl)
+2026-04-27 04:26:21,707 [INFO] eims.openapi: OpenAPI spec + /api/docs registered
+2026-04-27 04:26:21,708 [INFO] eims.pdfreport: PDF report builder registered (reportlab=True)
+2026-04-27 04:26:21,718 [INFO] eims.projects: Project persistence module registered (G:\EMERSONEIMS BUILDING SUITE PRO\uploads\eims_projects.db)
+2026-04-27 04:26:21,720 [INFO] eims.scheduler: CPM scheduler module registered (/api/sched/cpm, /api/sched/gantt)
+2026-04-27 04:26:21,722 [INFO] eims.frame: 2D frame analysis module registered (/api/eng/frame/analyze)
+2026-04-27 04:26:21,723 [INFO] eims.export: Export module registered (openpyxl=True)
+2026-04-27 04:26:21,730 [INFO] eims: House-designer module registered (10 endpoints, styles=Marbella/Andalusian/Mediterranean, outputs=DXF/OBJ/GLB/SVG + 3D viewer)
+2026-04-27 04:26:21,737 [INFO] eims: Experience-design module registered (7 endpoints: solar-path / lifestyle-journeys / emotion-brief / indoor-outdoor-flow / restraint-score / complete-brief / palettes)
+2026-04-27 04:26:21,739 [INFO] eims: Safety risk-register module registered (ISO 45001)
+2026-04-27 04:26:21,742 [INFO] eims: Method-statement module registered (7 templates: HSE/OSHA/NFPA-based)
+2026-04-27 04:26:21,743 [INFO] eims: Value-engineering module registered (rule-based advisor)
+2026-04-27 04:26:21,753 [INFO] eims: Shadow-study module registered (pysolar=True, 3 endpoints)
+2026-04-27 04:26:21,758 [INFO] eims: Interior palette module registered (pillow=True, colorthief=True)
+2026-04-27 04:26:21,760 [INFO] eims: Marbella/Andalusian details module registered (11 curated details, 3 SVG motifs)
+2026-04-27 04:26:21,762 [INFO] eims: Brief parser module registered (deterministic NL extractor)
+2026-04-27 04:26:21,765 [INFO] eims: Plants + irrigation module registered (16 plants, FAO-56 sizing)
+2026-04-27 04:26:21,767 [INFO] eims: Flood/catchment hydrology module registered (rational+Kirpich+pond)
+2026-04-27 04:26:21,769 [INFO] eims: Site-hazard enrichment module registered (offline + open-meteo fallback)
+2026-04-27 04:26:21,804 [INFO] eims.bim: BIM endpoints registered (build, project/<id>, schedules, floor-plan, 3d-model, element/update, family-library, types/import, sheet-pack, sheet-pack/pdf, copilot)
+2026-04-27 04:26:21,808 [INFO] eims: mep_clash module registered: /api/mep/clash-detect, /api/mep/clash/clearance-rules
+2026-04-27 04:26:21,811 [INFO] eims: highrise module registered: /api/highrise/{p-delta,modal-rsa,wind/gust-flexible,wind/vortex,comfort}
+2026-04-27 04:26:21,813 [INFO] eims: healthcare module registered: /api/healthcare/audit, /api/healthcare/standards
+2026-04-27 04:26:21,896 [INFO] eims.fx: FX module registered (3 endpoints)
+2026-04-27 04:26:21,897 [INFO] eims.materials: Materials price-index module registered (3 endpoints)
+2026-04-27 04:26:21,898 [INFO] eims.wind: Wind-loads module registered (ASCE 7-22 + EN 1991-1-4)
+2026-04-27 04:26:21,900 [INFO] eims.seismic: Seismic module registered (ASCE 7-22 ELF + EN 1998-1)
+2026-04-27 04:26:21,902 [INFO] eims.geotech: Geotechnical module registered (Terzaghi/Meyerhof/Hansen + SPT)
+2026-04-27 04:26:21,905 [INFO] eims.rc: RC verification module registered (EN 1992-1-1)
+2026-04-27 04:26:21,907 [INFO] eims.steel: Steel-connection module registered (EN 1993-1-8)
+2026-04-27 04:26:21,908 [INFO] eims.nrm1: NRM1 elemental cost-plan module registered
+2026-04-27 04:26:21,910 [INFO] eims.rates: Rate build-up library module registered
+2026-04-27 04:26:21,912 [INFO] eims.cashflow: Cashflow & interim-valuation module registered
+2026-04-27 04:26:21,913 [INFO] eims.variations: Variation-register module registered
+2026-04-27 04:26:21,915 [INFO] eims.tender: Tender-comparison module registered
+2026-04-27 04:26:21,917 [INFO] eims.risk: Risk Monte-Carlo module registered
+2026-04-27 04:26:21,918 [INFO] eims.evm: Earned Value Management module registered
+2026-04-27 04:26:21,920 [INFO] eims.carbon: Embodied-carbon (EN 15978) module registered
+2026-04-27 04:26:21,921 [INFO] eims.daylight: Daylight (EN 17037) module registered
+2026-04-27 04:26:21,922 [INFO] eims.acoustics: Acoustics (Sabine/Eyring) module registered
+2026-04-27 04:26:21,923 [INFO] eims.uvalue: U-value (EN ISO 6946) module registered
+2026-04-27 04:26:21,926 [INFO] eims.egress: Egress (IBC 2021) module registered
+2026-04-27 04:26:21,926 [INFO] eims.accessibility: Accessibility (ADA / AD M / ISO 21542) module registered
+2026-04-27 04:26:21,928 [INFO] eims.boq: BOQ format renderer registered
+2026-04-27 04:26:21,929 [INFO] eims.health: Healthcheck endpoints registered (/api/health, /api/health/deep)
+2026-04-27 04:26:21,931 [INFO] eims.ratelimit: Rate-limit middleware registered (60/min + burst 20)
+2026-04-27 04:26:21,932 [INFO] eims.audit: Audit log module registered (writes to G:\EMERSONEIMS BUILDING SUITE PRO\uploads\.audit_log.jsonl)
+2026-04-27 04:26:21,933 [INFO] eims.openapi: OpenAPI spec + /api/docs registered
+2026-04-27 04:26:21,935 [INFO] eims.pdfreport: PDF report builder registered (reportlab=True)
+2026-04-27 04:26:21,943 [INFO] eims.projects: Project persistence module registered (G:\EMERSONEIMS BUILDING SUITE PRO\uploads\eims_projects.db)
+2026-04-27 04:26:21,953 [INFO] eims.scheduler: CPM scheduler module registered (/api/sched/cpm, /api/sched/gantt)
+2026-04-27 04:26:21,954 [INFO] eims.frame: 2D frame analysis module registered (/api/eng/frame/analyze)
+2026-04-27 04:26:21,955 [INFO] eims.export: Export module registered (openpyxl=True)
+2026-04-27 04:26:21,960 [INFO] eims: House-designer module registered (10 endpoints, styles=Marbella/Andalusian/Mediterranean, outputs=DXF/OBJ/GLB/SVG + 3D viewer)
+2026-04-27 04:26:21,963 [INFO] eims: Experience-design module registered (7 endpoints: solar-path / lifestyle-journeys / emotion-brief / indoor-outdoor-flow / restraint-score / complete-brief / palettes)
+2026-04-27 04:26:21,963 [INFO] eims: Safety risk-register module registered (ISO 45001)
+2026-04-27 04:26:21,965 [INFO] eims: Method-statement module registered (7 templates: HSE/OSHA/NFPA-based)
+2026-04-27 04:26:21,967 [INFO] eims: Value-engineering module registered (rule-based advisor)
+2026-04-27 04:26:21,969 [INFO] eims: Shadow-study module registered (pysolar=True, 3 endpoints)
+2026-04-27 04:26:21,970 [INFO] eims: Interior palette module registered (pillow=True, colorthief=True)
+2026-04-27 04:26:21,972 [INFO] eims: Marbella/Andalusian details module registered (11 curated details, 3 SVG motifs)
+2026-04-27 04:26:21,973 [INFO] eims: Brief parser module registered (deterministic NL extractor)
+2026-04-27 04:26:21,975 [INFO] eims: Plants + irrigation module registered (16 plants, FAO-56 sizing)
+2026-04-27 04:26:21,976 [INFO] eims: Flood/catchment hydrology module registered (rational+Kirpich+pond)
+2026-04-27 04:26:21,977 [INFO] eims: Site-hazard enrichment module registered (offline + open-meteo fallback)
+2026-04-27 04:26:21,987 [INFO] eims.bim: BIM endpoints registered (build, project/<id>, schedules, floor-plan, 3d-model, element/update, family-library, types/import, sheet-pack, sheet-pack/pdf, copilot)
+2026-04-27 04:26:21,989 [INFO] eims: mep_clash module registered: /api/mep/clash-detect, /api/mep/clash/clearance-rules
+2026-04-27 04:26:21,992 [INFO] eims: highrise module registered: /api/highrise/{p-delta,modal-rsa,wind/gust-flexible,wind/vortex,comfort}
+2026-04-27 04:26:21,993 [INFO] eims: healthcare module registered: /api/healthcare/audit, /api/healthcare/standards
+2026-04-27 04:26:21,998 [INFO] eims: collaboration module registered: /api/collab/{lock,presence,changes}/*
+2026-04-27 04:26:22,003 [INFO] eims: collaboration module registered: /api/collab/{lock,presence,changes}/*
+2026-04-27 04:26:22,023 [INFO] waitress: Serving on http://127.0.0.1:5000
+2026-04-27 04:26:22,023 [INFO] waitress: Serving on http://[::1]:5000
+G:\EMERSONEIMS BUILDING SUITE PRO\.venv\Lib\site-packages\pysolar\solartime.py:115: UserWarning: Leap seconds for year 2025 are not available for the installed version of pysolar
+  warnings.warn \
+2026-04-27 04:30:53,736 [WARNING] svglib.svglib: Can't handle color: url(#grid)
+2026-04-27 04:30:53,739 [WARNING] svglib.svglib: Can't handle color: url(#hatch)
+2026-04-27 04:30:53,747 [WARNING] svglib.svglib: Can't handle color: url(#grid)
+2026-04-27 04:30:53,762 [WARNING] svglib.svglib: Can't handle color: url(#grid)
+2026-04-27 04:30:53,762 [WARNING] svglib.svglib: Can't handle color: url(#hatch)
+2026-04-27 04:30:53,770 [WARNING] svglib.svglib: Can't handle color: url(#grid)
+2026-04-27 04:30:53,771 [WARNING] svglib.svglib: Can't handle color: url(#hatch)
+2026-04-27 04:30:53,779 [WARNING] svglib.svglib: Can't handle color: url(#grid)
+2026-04-27 04:30:53,780 [WARNING] svglib.svglib: Can't handle color: url(#hatch)
+2026-04-27 04:30:53,787 [WARNING] svglib.svglib: Can't handle color: url(#grid)
+2026-04-27 04:30:53,828 [WARNING] svglib.svglib: Can't handle color: url(#grid)
+2026-04-27 04:30:53,837 [WARNING] svglib.svglib: Can't handle color: url(#grid)

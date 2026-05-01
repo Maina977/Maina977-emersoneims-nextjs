@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: borehole-frontend
+  namespace: borehole-ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: borehole-frontend
+  template:
+    metadata:
+      labels:
+        app: borehole-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: borehole-ai/frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://borehole-backend-service:8000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: borehole-frontend-service
+  namespace: borehole-ai
+spec:
+  selector:
+    app: borehole-frontend
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: LoadBalancer

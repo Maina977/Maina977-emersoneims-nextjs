@@ -1,0 +1,149 @@
+﻿PARTIAL | core\advanced\AdvancedFeaturesSuite.ts | CarbonCredit, CarbonCreditsMarketplaceEngine, GridService, GridServicesRevenueEngine, DynamicPrice, DynamicPricingEngine, ResilienceScore, ExtremeWeatherResilienceEngine, MicrogridSimulation, MicrogridSimulationEngine, DigitalTwinMetrics, RealTimeDigitalTwinEngine, SupplierRecommendation, SupplyChainOptimizationEngine, ARGuide, ARInstallationGuideEngine, AssistantResponse, AIEnergyAssistantEngine, IndependenceScore, EnergyIndependenceScoreEngine, BenchmarkData, PerformanceBenchmarkingEngine
+PARTIAL | core\advanced\AdvancedFeaturesSuite2.ts | GridStatus, GridConnectionIntelligenceEngine, FleetMetrics, FleetManagementEngine, EVChargingOptimization, EVChargingIntegrationEngine, WaterHeatingOptimization, SmartWaterHeatingEngine, WarrantyInfo, WarrantyManagementEngine, InsuranceQuote, InsuranceIntegrationEngine, RecyclingData, WasteRecyclingTrackingEngine, SuccessPrediction, CustomerSuccessPredictionEngine, MLDiagnosis, AdvancedDiagnosticsMLEngine, P2PTransaction, P2PEnergyTradingEngine, CarbonNFT, CarbonCreditNFTEngine
+PARTIAL | core\advanced\SmartHomeDesignEngine.ts | HouseAnalysisResult, ShadowArea, PanelPlacement, Room, Appliance, QuotationData, ArchitecturalDrawing, DrawingLayer, DrawingElement, DrawingSection, Panel3D, Equipment3D, Wire3D, Dimension, Annotation, SafetySpecifications, SystemDesignResult, SmartHomeDesignEngine
+PARTIAL | core\ai\AIStorageOptimizerEngine.ts | StorageOptimization, HourlyDemand, UsagePattern, PriceForecast, WeatherImpactAnalysis, BatteryHealthMetrics, AIStorageOptimizerEngine
+PARTIAL | core\ai\energySimulationEngine.ts | EnergySimulationRequest, EnergySimulationResponse, TimeSeriesPrediction, ConfidenceInterval, SimulationMetadata, energySimulationEngine
+PARTIAL | core\ai\failurePredictionAI.ts | FailurePredictionRequest, ComponentTelemetry, FailurePredictionResponse, ComponentPrediction, Factor, MaintenanceRecommendation, RiskLevel, failurePredictionAI
+LIVE | core\ai\financialModel.ts | FinancialAnalysisRequest, FinancialAnalysisResponse, FinancialSummary, CashFlowProjection, FinancialMetrics, OptimizationSuggestions, RiskAssessment, RiskFactor, financialModel
+PARTIAL | core\ai\learningEngine.ts | LearningData, ModelUpdate, LearningInsight, learningEngine
+LIVE | core\ai\permitGeneratorAI.ts | PermitRequest, PermitResponse, GeneratedPermit, PermitRequirement, permitGeneratorAI
+LIVE | core\ai\PredictiveMaintenanceEngine.ts | EquipmentTelemetry, FailurePrediction, Anomaly, MaintenanceAction, EquipmentHealthReport, ScheduledMaintenance, PredictiveMaintenanceEngine
+PARTIAL | core\ai\SmartLoadManagementEngine.ts | SmartAppliance, LoadSchedule, ScheduledAppliance, PowerForecast, LoadOptimizationResult, SmartLoadManagementEngine, EVChargingSchedule
+PARTIAL | core\ai\WeatherAlertEngine.ts | WeatherAlert, ProductionForecast, HourlyForecast, WeatherAlertEngine
+LIVE | core\calculator\3DVisualizationEngine.ts | Location3D, Roof3D, Building3D, SolarPotential3D, ShadingAnalysis3D, HourlyShading, MonthlyShading, SunPath3D, SunPosition, Terrain3D, Visualization3D, Advanced3DVisualizationEngine
+LIVE | core\calculator\DiagnosticEngine.ts | DiagnosticProblem, RootCause, DiagnosticStep, Solution, DIAGNOSTIC_DATABASE, DiagnosticEngine
+PARTIAL | core\calculator\Global3DDataProvider.ts | GLOBAL_REGIONS, GlobalDataProvider, ElevationData, GlobalSolarData, MonthlyData, HistoricalSolarData, DailyData, BuildingData, NearbyBuildingInfo, GlobalWeatherData, HistoricalWeatherData, DailyWeatherData, SeasonalWeather, SatelliteImageryUrl, RegionInfo, Global3DDataProvider
+LIVE | core\calculator\QualityAssessmentEngine.ts | AuthenticityMarker, ProductQualityGrade, PANEL_AUTHENTICITY_MARKERS, INVERTER_AUTHENTICITY_MARKERS, BATTERY_AUTHENTICITY_MARKERS, PANEL_QUALITY_RATINGS, INVERTER_QUALITY_RATINGS, BATTERY_QUALITY_RATINGS, INSTALLATION_BEST_PRACTICES, QualityAssessmentEngine
+LIVE | core\calculator\RoofShadingEngine.ts | ShadingObject, RoofSpecification, ShadingPattern, HourlyShading, AnnualShadingAnalysis, ShadingReport, RoofShadingEngine
+LIVE | core\calculator\SolarCalculatorEngine.ts | Location, Appliance, LoadProfile, SolarIrradiance, SystemRecommendation, CostEstimate, WiringSpec, CalculationResult, APPLIANCE_DATABASE, EQUIPMENT_DATABASE, SolarCalculatorEngine
+LIVE | core\calculator\SunWeatherEngine.ts | Location, SunPosition, WeatherData, WeatherImpact, SeasonalData, HourlyProduction, ProductionForecast, SunWeatherEngine
+LIVE | core\decisionEngine\confidenceScoring.ts | ConfidenceScore, ConfidenceComponent, ConfidenceFactor, confidenceScoring
+LIVE | core\decisionEngine\optimizationEngine.ts | OptimizationRequest, OptimizationResult, SystemDesign, Tradeoff, SensitivityAnalysis, optimizationEngine
+LIVE | core\decisionEngine\recommendationEngine.ts | RecommendationRequest, RecommendationResponse, AlternativeRecommendation, recommendationEngine
+LIVE | core\decisionEngine\riskEngine.ts | RiskAssessment, RiskCategory, RiskFactor, MitigationAction, riskEngine
+LIVE | core\financial\AdvancedFinancialModelingEngine.ts | FinancialModel, ROIAnalysis, FinancingOptions, BreakEvenAnalysis, NPVAnalysis, YearProjection, IncentiveAnalysis, IncentiveItem, FinancialScenario, AdvancedFinancialModelingEngine
+LIVE | core\learning\feedbackLoop.ts | FeedbackEntry, FeedbackStats, feedbackLoop
+LIVE | core\learning\modelRetraining.ts | RetrainingRequest, RetrainingJob, TrainingData, modelRetraining
+LIVE | core\learning\performanceTracking.ts | PerformanceRecord, PerformanceTrend, PerformanceAlert, performanceTracking
+LIVE | core\simulation\energySimulation.ts | EnergySimulationInput, EnergySimulationOutput, TimeSeriesData, MonthlyData, YearlyData, energySimulation
+LIVE | core\simulation\financialSimulation.ts | FinancialInput, FinancialOutput, FinancialSummary, CashFlowYear, FinancialMetrics, SensitivityAnalysis, ComparisonResult, financialSimulation
+LIVE | core\simulation\loadBehaviorSimulation.ts | LoadProfile, SeasonalLoad, ApplianceProfile, LoadSimulationInput, loadBehaviorSimulation
+LIVE | core\simulation\shading8760.ts | ShadingInput, Obstruction, PanelPlacement, ShadingResult, shading8760
+LIVE | core\simulation\shadingEngine.ts | ShadingAnalysis, ShadingParams, Obstacle, calculateShadingHeatmap, calculateSolarPosition, calculateObstacleShadow, detectObstacles, generateShadingReport, recommendPanelPlacement, SPA
+LIVE | core\simulation\whatIfSimulator.ts | WhatIfScenario, ScenarioChanges, ScenarioResults, ScenarioComparison, TradeoffMatrix, whatIfSimulator
+LIVE | server\middleware\auth.js | 
+LIVE | server\middleware\errorHandler.js | 
+LIVE | server\business.js | 
+LIVE | server\config.js | 
+LIVE | server\financial.js | 
+PARTIAL | server\index.js | 
+LIVE | server\logger.js | 
+LIVE | server\rateLimit.js | 
+LIVE | server\reports.js | 
+LIVE | server\research-impl.js | 
+LIVE | server\research-stubs.js | 
+LIVE | server\solar-engineering.js | 
+LIVE | server\sustainability.js | 
+LIVE | server\validation.js | 
+LIVE | services\api\googleMapsApi.ts | GeocodeResult, PlaceResult, DistanceMatrixResult, createGoogleMapsApiService
+PARTIAL | services\api\nasaApi.ts | NASASolarData, MonthlySolarData, nasaApi
+PARTIAL | services\api\openWeatherApi.ts | CurrentWeather, DailyForecast, createOpenWeatherApiService
+PARTIAL | services\marketplace\pricingLiveFeed.ts | PriceUpdate, PriceAlert, pricingLiveFeed
+LIVE | services\marketplace\suppliersApi.ts | Supplier, SupplierProduct, suppliersApi
+PARTIAL | services\googleEarthEngine.ts | SatelliteImagery, VegetationAnalysis, SeasonalVegetation, RoofAnalysis, Obstruction, createGoogleEarthEngineService
+PARTIAL | services\lidarApi.ts | LidarPoint, RoofMesh, BuildingFootprint, Obstruction, lidarApi
+PARTIAL | services\provenance.ts | ProvenanceKind, Provenance, Sourced, DataUnavailableError, NotImplementedError, provenance, sourced
+LIVE | services\QuoteParserService.ts | QuoteItem, Quote, ExtractedData, QuoteParserUI
+LIVE | services\RepairAndMaintenanceService.ts | RepairGuide, Step, MaintenanceSchedule, MaintenanceScheduler, RepairGuidesUI
+LIVE | digitalTwin\lifecycleSimulator.ts | LifecycleSimulation, SimulationScenario, YearlyResult, ReplacementEvent, LifecycleSummary, lifecycleSimulator
+LIVE | digitalTwin\realTimeSync.ts | RealTimeData, RealTimeAlert
+LIVE | digitalTwin\siteModel.ts | SiteModel, BuildingModel, VegetationModel, ObstructionModel, siteModel
+LIVE | digitalTwin\systemModel.ts | SystemModel, SystemComponents, PanelModel, InverterModel, BatteryModel, SystemConfiguration, SystemPerformance, SystemStatus, systemModel
+LIVE | digitalTwin\weatherModel.ts | WeatherModel, HistoricalWeather, ForecastWeather, WeatherStatistics, weatherModel
+LIVE | offline\conflictResolution.ts | Conflict, MergeResult, conflictResolution
+LIVE | offline\localCache.ts | CacheEntry, CacheConfig, localCache
+LIVE | offline\offlineSync.ts | OfflineQueueItem, SyncStatus, offlineSync
+LIVE | offline\queueManager.ts | QueueItem, QueueStats, queueManager
+LIVE | offline\serviceWorker.ts | ServiceWorkerConfig, serviceWorkerManager
+LIVE | aiGovernance\auditLog.ts | AuditEntry, AuditQuery, auditLog
+LIVE | aiGovernance\biasDetection.ts | BiasReport, BiasMetric, DemographicGroup, biasDetection
+LIVE | aiGovernance\driftDetection.ts | DriftReport, FeatureDistribution, driftDetection
+LIVE | aiGovernance\explainability.ts | Explanation, ExplanationFactor, Counterfactual, explainability
+LIVE | dataPipeline\cleaning.ts | CleaningResult, CleaningIssue, dataCleaning
+LIVE | dataPipeline\featureEngineering.ts | FeatureSet, featureEngineering
+LIVE | dataPipeline\ingestion.ts | IngestedData, IngestionResult, dataIngestion
+LIVE | dataPipeline\normalization.ts | NormalizationResult, UnitConversion, dataNormalization
+LIVE | dataPipeline\storage.ts | StorageRecord, dataStorage
+LIVE | dataPipeline\validation.ts | ValidationResult, ValidationError, ValidationWarning, dataValidation
+LIVE | commandCenter\aiAdvisor.ts | AdvisorRequest, AdvisorResponse, Recommendation, aiAdvisor
+LIVE | commandCenter\AIAdvisorWidget.tsx | AIAdvisorWidget
+LIVE | commandCenter\decisionSummary.ts | DecisionSummary, decisionSummary
+LIVE | commandCenter\DecisionSummaryCard.tsx | DecisionSummaryCard
+LIVE | commandCenter\executiveDashboard.ts | ExecutiveMetrics, executiveDashboard
+LIVE | commandCenter\smartAlerts.ts | SmartAlert, AlertAction, smartAlerts
+LIVE | commandCenter\voiceAssistant.ts | VoiceCommand, VoiceResponse, voiceAssistant
+LIVE | commandCenter\VoiceCommandBar.tsx | VoiceCommandBar
+LIVE | commandCenter\VoiceDesignAI.ts | VoiceCommand, VoiceDesignAI
+LIVE | intergration\batteryAPIs.ts | BatteryData, BatteryCell, BatteryAlert, BatteryPrediction, batteryAPIs
+LIVE | intergration\deviceMQTT.ts | DeviceMessage, TelemetryData, DeviceCommand, deviceMQTT
+LIVE | intergration\gisAPIs.ts | GeoLocation, TerrainData, BuildingFootprint, RoadNetwork, gisAPIs
+LIVE | intergration\weatherAPIs.ts | WeatherData, DailyForecast, HourlyForecast, WeatherAlert, weatherAPIs
+LIVE | market\demandForecast.ts | DemandForecast, DemandDriver, DemandPrediction, demandForecast
+LIVE | market\livePricingEngine.ts | PriceQuote, PriceOptimization, livePricingEngine
+LIVE | market\priceComparison.ts | PriceComparison, SupplierPrice, priceComparison
+LIVE | market\procurementOptimizer.ts | ProcurementPlan, ProcurementItem, AlternativeOption, ProcurementRecommendation, ProcurementTimeline, RiskAssessment, procurementOptimizer
+LIVE | market\supplierNetwork.ts | Supplier, SupplierProduct, SupplierPerformance, supplierNetwork
+LIVE | platform\client\ClientPortal.tsx | ClientPortal
+LIVE | platform\client\MaintenanceScheduler.tsx | MaintenanceScheduler
+LIVE | platform\client\ProductionMonitoring.tsx | ProductionMonitoring
+LIVE | platform\dashboard\AlertsPanel.tsx | AlertsPanel
+LIVE | platform\dashboard\ProjectOverview.tsx | ProjectOverview
+LIVE | platform\dashboard\ProjectTracker.tsx | ProjectTracker
+LIVE | platform\dashboard\ROITracker.tsx | ROITracker
+LIVE | platform\dashboard\SystemHealth.tsx | SystemHealth
+LIVE | platform\install\Checklist.tsx | Checklist
+LIVE | platform\install\InstallationGuide.tsx | InstallationGuide
+LIVE | platform\install\TechnicianMode.tsx | TechnicianMode
+LIVE | tenancy\customDomain.ts | CustomDomain, DNSRecord
+LIVE | tenancy\organiizationIsolation.ts | IsolationConfig, organizationIsolation
+LIVE | tenancy\quotaEnforcer.ts | QuotaViolation, quotaEnforcer
+LIVE | tenancy\subscriptionManager.ts | Subscription, SubscriptionLimits, Plan, subscriptionManager
+LIVE | tenancy\tenantManager.ts | Tenant, TenantSettings, TenantQuotas, TenantUsage, TenantContext, tenantManager
+LIVE | security\encryption.ts | EncryptedData, encryption
+LIVE | security\rateLimiter.ts | RateLimitConfig, RateLimitInfo, rateLimiter
+LIVE | security\roleManagement.ts | Role, Permission, UserRole, roleManagement
+LIVE | security\sanitization.ts | SanitizeOptions, sanitization
+LIVE | security\sessionManager.ts | Session, SessionConfig, sessionManager
+LIVE | validation\qualityAssurance.ts | QualityCheck, QualityReport, qualityAssurance
+LIVE | validation\regionalCodes.ts | RegionalCode, CodeRequirement, regionalCodes
+LIVE | validation\safetyValidation.ts | SafetyCheck, SafetyReport
+LIVE | infrastructure\caching.ts | CacheOptions, CacheStats, cacheManager
+LIVE | infrastructure\queueSystem.ts | QueueJob, QueueConfig, queueSystem
+LIVE | mobile\pwa\sw.js | 
+LIVE | mobile\ReactNativeApp\components\Button.tsx | Button
+LIVE | mobile\ReactNativeApp\components\Card.tsx | Card
+LIVE | mobile\ReactNativeApp\components\Input.tsx | Input
+LIVE | mobile\ReactNativeApp\components\LoadingSpinner.tsx | LoadingSpinner
+LIVE | mobile\ReactNativeApp\hooks\useAuth.ts | useAuth, AuthProvider
+LIVE | mobile\ReactNativeApp\hooks\useCamera.ts | useCamera
+LIVE | mobile\ReactNativeApp\hooks\useLocation.ts | useLocation
+LIVE | mobile\ReactNativeApp\hooks\useOffline.ts | useOffline
+LIVE | mobile\ReactNativeApp\navigation\AppNavigator.tsx | AppNavigator
+LIVE | mobile\ReactNativeApp\navigation\AuthNavigator.tsx | AuthNavigator
+LIVE | mobile\ReactNativeApp\navigation\MainNavigator.tsx | MainNavigator
+LIVE | mobile\ReactNativeApp\services\api.ts | api
+LIVE | mobile\ReactNativeApp\services\LoginScreen.tsx | LoginScreen
+LIVE | mobile\ReactNativeApp\services\notification.ts | notification
+LIVE | mobile\ReactNativeApp\services\ProfileScreen.tsx | ProfileScreen
+LIVE | mobile\ReactNativeApp\services\storage.ts | storage
+LIVE | mobile\ReactNativeApp\services\sync.ts | sync
+LIVE | mobile\responsive\responsiveStyles.ts | responsive, media, responsiveStyle, responsiveGrid, responsiveContainer, responsiveTypography
+LIVE | mobile\responsive\useBreakpoint.ts | Breakpoint, Breakpoints, useBreakpoint, responsive
+LIVE | mobile\screens\DesignScreen.tsx | DesignScreen
+LIVE | mobile\screens\FieldEngineerMode.tsx | FieldEngineerMode
+LIVE | mobile\screens\ForgotPasswordScreen.tsx | ForgotPasswordScreen
+LIVE | mobile\screens\HomeScreen.tsx | HomeScreen
+LIVE | mobile\screens\LoginScreen.tsx | LoginScreen
+LIVE | mobile\screens\OfflineDashboard.tsx | OfflineDashboard
+LIVE | mobile\screens\ProfileScreen.tsx | ProfileScreen
+LIVE | mobile\screens\RegisterScreen.tsx | RegisterScreen

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head><title>Output Test</title></head>
+<body>
+<h2>Borehole Analyzer Output Verification</h2>
+<pre id="out" style="white-space:pre-wrap;font-size:12px;max-height:90vh;overflow:auto">Loading...</pre>
+<script type="module">
+import { BoreholeAnalyzer } from './src/boreholeAnalyzer.ts';
+
+const out = document.getElementById('out');
+function log(msg) { out.textContent += msg + '\n'; console.log(msg); }
+
+async function runTest() {
+  out.textContent = '';
+  log('=== BOREHOLE ANALYZER OUTPUT VERIFICATION ===');
+  log('Test location: Nairobi, Kenya (-1.2921, 36.8219)');
+  log('');
+
+  const analyzer = new BoreholeAnalyzer();
+
+  // Create a minimal 1x1 white PNG as dummy image
+  const canvas = document.createElement('canvas');
+  canvas.width = 100; canvas.height = 100;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#8B7355'; ctx.fillRect(0, 0, 100, 100); // brown soil
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+  const file = new File([blob], 'test.png', { type: 'image/png' });
+
+  const clientLocation = {
+    latitude: -1.2921,
+    longitude: 36.8219,
+    region: 'Nairobi',
+    country: 'Kenya'
+  };
+
+  log('Starting analysis...');
+  const startTime = Date.now();
+
+  try {
+    // Add master timeout — if analysis takes >4 min, capture whatever is available
+    const analysisPromise = analyzer.analyzeImage(file, (step, label) => {
+      log(`  [Step ${step}] ${label}`);
+    }, clientLocation);
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('MASTER TIMEOUT: Analysis exceeded 4 minutes')), 240000)
+    );
+
+    const result = await Promise.race([analysisPromise, timeoutPromise]);
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    log(`\nAnalysis complete in ${elapsed}s\n`);
+
+    // === CRITICAL VALUES TO VERIFY ===
+    log('========== CRITICAL OUTPUT VALUES ==========');
+    log(`probability (0-1 scale): ${result.probability}`);
+    log(`probability displayed: ${(result.probability * 100).toFixed(1)}%`);
+    log(`recommendedDepth: ${result.recommendedDepth}m`);
+    log(`estimatedYield: ${result.estimatedYield} m³/hr`);
+    log(`confidence: ${result.confidence}`);
+    log(`waterQuality: ${result.waterQuality}`);
+    
+    log('\n--- Confidence Metrics ---');
+    const cm = result.confidenceMetrics;
+    if (cm) {
+      log(`  geological: ${cm.geological}`);
+      log(`  terrain: ${cm.terrain}`);
+      log(`  vegetation: ${cm.vegetation}`);
+      log(`  dataDensity: ${cm.dataDensity}`);
+      log(`  waterQuality: ${cm.waterQuality}`);
+      log(`  overall: ${cm.overall}`);
+      log(`  methodology: ${cm.methodology?.substring(0, 200)}...`);
+    }
+
+    log('\n--- Final Consensus ---');
+    const fc = result.finalConsensus;
+    if (fc) {
+      log(`  successProbability: ${fc.successProbability}`);
+      log(`  depth_m: ${fc.depth_m}m`);
+      log(`  yield_m3hr: ${fc.yield_m3hr} m³/hr`);
+      log(`  assessmentGrade: ${fc.assessmentGrade}`);
+      log(`  probabilityRange: ${JSON.stringify(fc.probabilityRange)}`);
+      log(`  depthRange: ${JSON.stringify(fc.depthRange)}`);
+      log(`  yieldRange: ${JSON.stringify(fc.yieldRange)}`);
+    }
+
+    log('\n--- Drilling Prediction ---');
+    const dp = result.drillingPrediction;
+    if (dp) {
+      log(`  successProbability: ${dp.successProbability}%`);
+      log(`  predictedDepth_m: ${dp.predictedDepth_m}`);
+      log(`  predictedYield_m3h: ${dp.predictedYield_m3h}`);
+    }
+
+    log('\n--- Ensemble Result ---');
+    const er = result.ensembleResult;
+    if (er) {
+      log(`  probability: ${er.probability}`);
+      log(`  depth_m: ${er.depth_m}`);
+      log(`  yield_m3h: ${er.yield_m3h}`);
+      log(`  sourcesUsed: ${er.sourcesUsed}`);
+      log(`  sourceAgreement: ${er.sourceAgreement}`);
+    }
+
+    log('\n--- ERT Interpretation ---');
+    const ert = result.ertInterpretation;
+    if (ert) {
+      log(`  dataSource: ${ert.dataSource}`);
+      log(`  drillOrNoDrill: ${ert.drillOrNoDrill}`);
+      log(`  depthOpt.recommendedDrillingDepth_m: ${ert.depthOptimization?.recommendedDrillingDepth_m}`);
+      log(`  yieldEst.estimatedYield_m3hr: ${ert.yieldEstimation?.estimatedYield_m3hr}`);
+    }
+
+    log('\n--- Satellite Remote Sensing ---');
+    const srs = result.satelliteRemoteSensing;
+    if (srs) {
+      log(`  GPI: ${srs.fusion?.groundwaterPotentialIndex}/100`);
+      if (srs.methods) {
+        srs.methods.forEach(m => {
+          log(`  ${m.method}: score=${m.groundwaterScore}/100, status=${m.status}, confidence=${m.confidence}`);
+        });
+      }
+    }
+
+    log('\n--- Data Quality Score ---');
+    const dq = result.dataQualityScore;
+    if (dq && typeof dq === 'object') {
+      log(`  overallQualityScore: ${dq.overallQualityScore}`);
+      log(`  satelliteData_pct: ${dq.satelliteData_pct}`);
+      log(`  fieldMeasurement_pct: ${dq.fieldMeasurement_pct}`);
+      log(`  laboratoryData_pct: ${dq.laboratoryData_pct}`);
+      log(`  modelInferred_pct: ${dq.modelInferred_pct}`);
+      log(`  databaseData_pct: ${dq.databaseData_pct}`);
+      log(`  userInput_pct: ${dq.userInput_pct}`);
+      log(`  dataCompleteness_pct: ${dq.dataCompleteness_pct}`);
+      log(`  sourcesUsed: ${dq.sourcesUsed?.length}`);
+      log(`  narrative: ${dq.narrative?.substring(0, 200)}`);
+    } else {
+      log(`  RAW VALUE (not object): ${JSON.stringify(dq)}`);
+    }
+
+    log('\n--- Geophysics Fusion ---');
+    const gf = result.geophysicsFusion;
+    if (gf) {
+      log(`  dataSource: ${gf.dataSource}`);
+      log(`  overallConfidence: ${gf.overallConfidence}`);
+      log(`  bedrockDepth_m: ${gf.bedrockDepth_m}`);
+      log(`  waterTableDepth_m: ${gf.waterTableDepth_m}`);
+      log(`  expectedYield: ${JSON.stringify(gf.expectedYield_m3hr)}`);
+    }
+
+    log('\n--- Advanced Rock Mapping ---');
+    const arm = result.advancedRockMapping;
+    if (arm) {
+      log(`  primaryRockType: ${arm.primaryRockType}`);
+      log(`  confidence: ${arm.confidence}`);
+      log(`  fusionMethod: ${arm.fusionMethod}`);
+      log(`  dataSources: ${arm.dataSources?.length}`);
+      log(`  geologicalFormation: ${arm.geologicalFormation}`);
+    }
+
+    log('\n--- Borehole Intelligence ---');
+    const bi = result.boreholeIntelligence;
+    if (bi) {
+      log(`  totalRecords: ${bi.totalRecords}`);
+      log(`  avgDepth_m: ${bi.avgDepth_m}`);
+      log(`  avgYield_m3hr: ${bi.avgYield_m3hr}`);
+      log(`  successRate: ${bi.successRate}`);
+      log(`  dataSource: ${bi.dataSource}`);
+    }
+
+    log('\n--- Fracture AI ---');
+    const fa = result.fractureAI;
+    if (fa) {
+      log(`  totalLineaments: ${fa.lineaments?.length}`);
+      log(`  overallFractureScore: ${fa.overallFractureScore}`);
+      log(`  diagnostics: ${fa.diagnostics?.slice(0, 3).join(' | ')}`);
+    }
+
+    log('\n--- Engineer Confidence ---');
+    const ec = result.engineerConfidence;
+    if (ec) {
+      log(`  provenance items: ${ec.provenance?.items?.length}`);
+      const depthItem = ec.provenance?.items?.find(i => i.parameter === 'Recommended Drilling Depth');
+      if (depthItem) {
+        log(`  Depth tier: ${depthItem.tier}`);
+        log(`  Depth category: ${depthItem.category}`);
+        log(`  Depth source: ${depthItem.source}`);
+        log(`  Depth accuracy: ${depthItem.accuracy_pct}%`);
+      }
+      const yieldItem = ec.provenance?.items?.find(i => i.parameter === 'Estimated Yield');
+      if (yieldItem) {
+        log(`  Yield tier: ${yieldItem.tier}`);
+        log(`  Yield source: ${yieldItem.source}`);
+      }
+    }
+
+    log('\n--- Uncertainty ---');
+    if (result.uncertainty) {
+      log(`  probabilityRange: ${JSON.stringify(result.uncertainty.probabilityRange)}`);
+      log(`  depthRange: ${JSON.stringify(result.uncertainty.depthRange)}`);
+      log(`  yieldRange: ${JSON.stringify(result.uncertainty.yieldRange)}`);
+    }
+
+    log('\n========== IMPOSSIBLE VALUE CHECKS ==========');
+    // Check for impossible values
+    const checks = [];
+    if (result.probability < 0 || result.probability > 1) checks.push(`❌ probability ${result.probability} outside 0-1`);
+    if (result.recommendedDepth < 1 || result.recommendedDepth > 500) checks.push(`❌ depth ${result.recommendedDepth} outside 1-500`);
+    if (result.estimatedYield < 0.1 || result.estimatedYield > 50) checks.push(`❌ yield ${result.estimatedYield} outside 0.1-50`);
+    if (cm?.overall > 100) checks.push(`❌ confidence ${cm.overall} > 100`);
+    if (dp?.successProbability > 100) checks.push(`❌ drillingPrediction.successProbability ${dp?.successProbability} > 100%`);
+    if (srs?.fusion?.groundwaterPotentialIndex > 100) checks.push(`❌ GPI ${srs.fusion.groundwaterPotentialIndex} > 100`);
+    if (fc?.successProbability > 1) checks.push(`❌ finalConsensus.successProbability ${fc.successProbability} > 1`);
+    
+    // Check satellite scores
+    srs?.methods?.forEach(m => {
+      if (m.groundwaterScore > 100) checks.push(`❌ ${m.method} score ${m.groundwaterScore} > 100`);
+      if (m.groundwaterScore < 0) checks.push(`❌ ${m.method} score ${m.groundwaterScore} < 0`);
+    });
+
+    // Check data quality
+    if (dq && typeof dq === 'object') {
+      if (dq.overallQualityScore > 100) checks.push(`❌ dataQuality overall ${dq.overallQualityScore} > 100`);
+      if (dq.overallQualityScore === 0) checks.push(`⚠️ dataQuality overall = 0 (empty?)`);
+    } else {
+      checks.push(`❌ dataQualityScore is NOT an object: ${JSON.stringify(dq)}`);
+    }
+
+    // Check for contradictions
+    if (fc) {
+      const depthDiff = Math.abs(fc.recommendedDepth - result.recommendedDepth);
+      if (depthDiff > 30) checks.push(`⚠️ finalConsensus depth ${fc.recommendedDepth}m vs main depth ${result.recommendedDepth}m (diff: ${depthDiff}m)`);
+      
+      const yieldDiff = Math.abs(fc.expectedYield - result.estimatedYield);
+      if (yieldDiff > 5) checks.push(`⚠️ finalConsensus yield ${fc.expectedYield} vs main yield ${result.estimatedYield} (diff: ${yieldDiff})`);
+    }
+
+    // Check provenance tiers
+    if (ec?.provenance?.items) {
+      ec.provenance.items.forEach(item => {
+        if (item.tier === 'MEASURED' && !result.fieldData) {
+          checks.push(`❌ "${item.parameter}" labeled MEASURED but no field data provided`);
+        }
+      });
+    }
+
+    // Check geophysics fusion honesty
+    if (gf && !gf.dataSource?.includes('MODELLED') && !result.fieldData) {
+      checks.push(`⚠️ geophysicsFusion doesn't say MODELLED but no field data`);
+    }
+
+    // Check rock mapper sources
+    if (arm?.sourcesUsed === 0) checks.push(`⚠️ advancedRockMapping: 0 sources used`);
+
+    // Check borehole intelligence
+    if (bi?.totalRecords === 3 && !bi?.dataSource?.includes('database')) {
+      checks.push(`⚠️ boreholeIntelligence: totalRecords=3 may be fabricated default`);
+    }
+
+    if (checks.length === 0) {
+      log('✅ ALL CHECKS PASSED — no impossible values found');
+    } else {
+      checks.forEach(c => log(c));
+      log(`\n${checks.filter(c => c.startsWith('❌')).length} ERRORS, ${checks.filter(c => c.startsWith('⚠️')).length} WARNINGS`);
+    }
+
+    // === VERIFICATION ENGINE REPORT ===
+    log('\n========== VERIFICATION ENGINE REPORT ==========');
+    const vr = result.verificationReport;
+    if (vr) {
+      log(`VERIFIED: ${vr.verified}`);
+      log(`GRADE: ${vr.grade} | SCORE: ${vr.score}%`);
+      log(`TOTAL: ${vr.totalChecks} | PASS: ${vr.passed} | WARN: ${vr.warnings} | FAIL: ${vr.failures} | SKIP: ${vr.skipped}`);
+      log(`API re-queries: ${vr.apiRequeriesPerformed} performed, ${vr.apiRequeriesMatched} matched`);
+      log(`Duration: ${vr.durationMs}ms`);
+      log(`Summary: ${vr.summary}`);
+      log('');
+      log('--- All Checks Detail ---');
+      vr.checks.forEach((c, i) => {
+        const icon = c.severity === 'PASS' ? '✅' : c.severity === 'WARN' ? '⚠️' : c.severity === 'FAIL' ? '❌' : '⏭️';
+        log(`  ${icon} [${c.category}] ${c.name}: ${c.message}`);
+        if (c.expected) log(`      Expected: ${c.expected}`);
+        if (c.actual) log(`      Actual: ${c.actual}`);
+        if (c.source) log(`      Source: ${c.source}`);
+      });
+    } else {
+      log('⚠️ No verificationReport found in result — engine may not have run');
+    }
+
+    // === DEEP PROVENANCE AUDIT ===
+    log('\n========== DEEP PROVENANCE AUDIT ==========');
+    // Check every numeric value has a plausible source
+    const suspiciousPatterns = [];
+
+    // Check if water budget makes sense
+    const wb = result.gldasGroundwater?.waterBudget;
+    if (wb) {
+      log(`Water Budget: P=${wb.precipitation}mm, ET=${wb.evapotranspiration}mm, R=${wb.recharge}mm, Runoff=${wb.runoff}mm`);
+      if (wb.evapotranspiration > wb.precipitation) suspiciousPatterns.push(`❌ ET (${wb.evapotranspiration}) > Precipitation (${wb.precipitation}) — violates physics`);
+      if (wb.recharge > wb.precipitation) suspiciousPatterns.push(`❌ Recharge (${wb.recharge}) > Precipitation (${wb.precipitation}) — impossible`);
+      if (wb.recharge < 0) suspiciousPatterns.push(`❌ Negative recharge: ${wb.recharge}`);
+    }
+
+    // Check remote sensing has real source data
+    const rs = result.remoteSensing;
+    if (rs) {
+      log(`Remote Sensing: elevation=${rs.elevation?.elevation}m, precip=${rs.climate?.annualPrecipitation}mm, temp=${rs.climate?.meanTemperature}°C`);
+      if (rs.elevation?.elevation != null && (rs.elevation.elevation < -500 || rs.elevation.elevation > 9000))
+        suspiciousPatterns.push(`❌ Elevation ${rs.elevation.elevation}m outside Earth range`);
+      if (rs.climate?.annualPrecipitation != null && (rs.climate.annualPrecipitation < 0 || rs.climate.annualPrecipitation > 12000))
+        suspiciousPatterns.push(`❌ Precipitation ${rs.climate.annualPrecipitation}mm outside Earth range`);
+      if (rs.climate?.meanTemperature != null && (rs.climate.meanTemperature < -50 || rs.climate.meanTemperature > 60))
+        suspiciousPatterns.push(`❌ Temperature ${rs.climate.meanTemperature}°C outside Earth range`);
+    }
+
+    // Check for suspiciously round numbers (fabrication signal)
+    if (result.probability === 0.5 || result.probability === 0.75) {
+      suspiciousPatterns.push(`⚠️ Probability exactly ${result.probability} — suspiciously round, may be hardcoded`);
+    }
+    if (result.recommendedDepth % 50 === 0) {
+      suspiciousPatterns.push(`⚠️ Depth exactly ${result.recommendedDepth}m — suspiciously round, possible hardcode`);
+    }
+
+    // Check nearby wells reality
+    const nw = result.nearbyWells;
+    if (nw) {
+      log(`Nearby Wells: count=${nw.sampleSize}, avgDepth=${nw.averageDepth}m, avgYield=${nw.averageYield} m³/hr`);
+      if (nw.sampleSize === 0 && nw.averageDepth > 0) suspiciousPatterns.push(`❌ 0 nearby wells but avgDepth=${nw.averageDepth}`);
+    }
+
+    // Check contamination assessment
+    const contam = result.contamination;
+    if (contam) {
+      log(`Contamination risk: ${contam.overallRisk ?? contam.riskLevel ?? 'N/A'}`);
+    }
+
+    // Recharge model check
+    const rm = result.rechargeModel;
+    if (rm) {
+      log(`Recharge Model: recharge=${rm.estimatedRecharge_mm_year}mm/yr, method=${rm.method}`);
+    }
+
+    if (suspiciousPatterns.length === 0) {
+      log('✅ DEEP AUDIT PASSED — no suspicious patterns found');
+    } else {
+      suspiciousPatterns.forEach(s => log(s));
+      log(`\n${suspiciousPatterns.filter(s => s.startsWith('❌')).length} ERRORS, ${suspiciousPatterns.filter(s => s.startsWith('⚠️')).length} WARNINGS`);
+    }
+
+  } catch (err) {
+    log(`\n❌ ANALYSIS FAILED: ${err.message}`);
+    log(err.stack);
+  }
+}
+
+runTest();
+</script>
+</body>
+</html>

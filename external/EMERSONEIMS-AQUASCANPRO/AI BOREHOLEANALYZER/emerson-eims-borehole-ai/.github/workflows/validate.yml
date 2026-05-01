@@ -1,0 +1,113 @@
+name: Build & Validate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ═══════════════════════════════════════
+  # TypeScript / Frontend Validation
+  # ═══════════════════════════════════════
+  frontend:
+    name: TypeScript Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Vite production build
+        run: cd ai-borehole-analyzer && npx vite build
+
+      - name: Check no duplicate exports
+        run: |
+          DUPES=$(grep -c '^export.*function generatePDFReport' ai-borehole-analyzer/src/reportGenerator.ts || true)
+          if [ "$DUPES" -gt 1 ]; then
+            echo "❌ Duplicate generatePDFReport found!"
+            exit 1
+          fi
+          echo "✅ No duplicate exports"
+
+  # ═══════════════════════════════════════
+  # Python / Backend Validation
+  # ═══════════════════════════════════════
+  backend:
+    name: Python Lint & Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install linting tools
+        run: pip install ruff mypy
+
+      - name: Check __init__.py naming
+        run: |
+          BAD=$(find app -name 'init.py' -not -name '__init__.py' | head -20)
+          if [ -n "$BAD" ]; then
+            echo "❌ Found init.py files that should be __init__.py:"
+            echo "$BAD"
+            exit 1
+          fi
+          echo "✅ All init files correctly named"
+
+      - name: Check no TypeScript in backend
+        run: |
+          TS_FILES=$(find app -name '*.ts' -o -name '*.tsx' | head -20)
+          if [ -n "$TS_FILES" ]; then
+            echo "❌ TypeScript files found in Python backend:"
+            echo "$TS_FILES"
+            exit 1
+          fi
+          echo "✅ No TypeScript in backend"
+
+      - name: Python syntax check (all files)
+        run: |
+          find app -name '*.py' | while read f; do
+            python -c "import ast; ast.parse(open('$f').read())" 2>/dev/null || {
+              echo "❌ Syntax error in $f"
+              exit 1
+            }
+          done
+          echo "✅ All Python files have valid syntax"
+
+      - name: Ruff lint
+        run: ruff check app/ --config pyproject.toml || true
+
+  # ═══════════════════════════════════════
+  # Full Validation (combined)
+  # ═══════════════════════════════════════
+  validate:
+    name: Full Validation
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: npm ci
+      - name: Run full validation
+        run: node scripts/validate-all.mjs

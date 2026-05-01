@@ -1,0 +1,52 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EMERSONEIMS SECURITY.TXT
+# Security Contact Information (RFC 9116 Compliant)
+# https://securitytxt.org/
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Security contact information
+Contact: mailto:security@emersoneims.com
+Contact: mailto:info@emersoneims.com
+Contact: https://emersoneims.com/contact
+
+# Our security policy
+Policy: https://emersoneims.com/security-policy
+
+# Preferred languages for security reports
+Preferred-Languages: en, sw
+
+# When this file expires (update annually)
+Expires: 2026-12-31T23:59:59.000Z
+
+# PGP key for encrypted communications (optional - can be added later)
+# Encryption: https://emersoneims.com/.well-known/pgp-key.txt
+
+# Acknowledgments page for security researchers
+Acknowledgments: https://emersoneims.com/security-thanks
+
+# Hiring security professionals
+Hiring: https://emersoneims.com/careers
+
+# Canonical URL for this file
+Canonical: https://emersoneims.com/.well-known/security.txt
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECURITY POLICY OVERVIEW
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# EmersonEIMS takes security seriously. If you discover a security 
+# vulnerability, please report it to us responsibly.
+#
+# We commit to:
+# - Acknowledging receipt within 48 hours
+# - Providing an initial assessment within 7 days
+# - Working with you to understand and resolve the issue
+# - Not pursuing legal action for good-faith security research
+#
+# Please do not:
+# - Access data that doesn't belong to you
+# - Perform actions that could harm our services or users
+# - Share vulnerability details publicly before we've resolved them
+#
+# © 2012-2026 EmersonEIMS. All Rights Reserved.
+# ═══════════════════════════════════════════════════════════════════════════════

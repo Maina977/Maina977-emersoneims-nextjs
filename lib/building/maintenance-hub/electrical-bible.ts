@@ -1,0 +1,905 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * ELECTRICAL BIBLE - COMPREHENSIVE DATA
+ * Wiring Diagrams, Repair Manuals, Parts Catalogue, Maintenance Schedules
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DETAILED WIRING DIAGRAMS
+// ═══════════════════════════════════════════════════════════════════════════════
+export const WIRING_DIAGRAMS = [
+  // RESIDENTIAL DIAGRAMS
+  {
+    id: 'res-001',
+    category: 'Residential',
+    name: 'Single Phase House Wiring (Complete)',
+    description: 'Complete single phase domestic installation from KPLC meter to final circuits',
+    components: ['KPLC meter', 'Main switch 63A', 'Consumer unit', 'MCBs', 'RCDs', 'Socket outlets', 'Lighting'],
+    diagram: `
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    SINGLE PHASE HOUSE WIRING DIAGRAM                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  KPLC SUPPLY                                                             │
+│     │                                                                    │
+│     ▼                                                                    │
+│  ┌──────────┐                                                            │
+│  │ KPLC     │ L ────────────────────────────────────────┐               │
+│  │ METER    │ N ─────────────────────────────────────┐  │               │
+│  │ (Prepaid)│                                        │  │               │
+│  └──────────┘                                        │  │               │
+│                                                      │  │               │
+│  ┌──────────────────────────────────────────────────┴──┴───────────┐   │
+│  │                     MAIN SWITCH 63A DP                           │   │
+│  │  L ─── ══════════════════════════════════ ─── L (Load)          │   │
+│  │  N ─── ══════════════════════════════════ ─── N (Load)          │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                              │  │                                        │
+│                              ▼  ▼                                        │
+│  ┌──────────────────────────────────────────────────────────────────┐   │
+│  │                    CONSUMER UNIT (DB)                             │   │
+│  │ ┌─────────────────────────────────────────────────────────────┐  │   │
+│  │ │ MAIN RCD 63A 30mA    ═══════════════════════════════════   │  │   │
+│  │ └─────────────────────────────────────────────────────────────┘  │   │
+│  │                              │                                    │   │
+│  │ ┌────┬────┬────┬────┬────┬────┬────┬────┐                       │   │
+│  │ │MCB │MCB │MCB │MCB │MCB │MCB │MCB │MCB │                       │   │
+│  │ │6A  │6A  │16A │16A │20A │32A │20A │6A  │                       │   │
+│  │ │Ltg │Ltg │Skt │Skt │W/H │Cook│A/C │Ext │                       │   │
+│  │ │Gnd │1st │Gnd │1st │    │    │    │    │                       │   │
+│  │ └────┴────┴────┴────┴────┴────┴────┴────┘                       │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                                                                          │
+│  CIRCUIT DETAILS:                                                        │
+│  • Lighting Ground Floor: 6A MCB, 1.5mm² cable                          │
+│  • Lighting First Floor: 6A MCB, 1.5mm² cable                           │
+│  • Sockets Ground Floor: 16A MCB, 2.5mm² cable (ring)                   │
+│  • Sockets First Floor: 16A MCB, 2.5mm² cable (ring)                    │
+│  • Water Heater: 20A MCB, 4mm² cable (dedicated)                        │
+│  • Cooker: 32A MCB, 6mm² cable (dedicated)                              │
+│  • Air Conditioner: 20A MCB, 4mm² cable (dedicated)                     │
+│  • External/Security: 6A MCB, 1.5mm² cable                              │
+│                                                                          │
+│  EARTHING:                                                               │
+│  • Main Earth Terminal (MET) connected to earth rod                     │
+│  • Earth rod: 16mm copper, 2.4m long, resistance <20Ω                   │
+│  • Main bonding: 10mm² to water pipes, gas pipes                        │
+│  • CPC in all circuits as per cable size                                │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+`,
+    cableSchedule: [
+      { circuit: 'Main supply', cable: '16mm² twin+earth', length: 'As required', protection: '63A main switch' },
+      { circuit: 'Lighting', cable: '1.5mm² twin+earth', length: 'Max 50m', protection: '6A MCB Type B' },
+      { circuit: 'Ring main', cable: '2.5mm² twin+earth', length: 'Max 50m ring', protection: '32A MCB Type B' },
+      { circuit: 'Radial sockets', cable: '2.5mm² twin+earth', length: 'Max 20m', protection: '20A MCB Type B' },
+      { circuit: 'Water heater', cable: '4mm² twin+earth', length: 'Max 25m', protection: '20A MCB Type B' },
+      { circuit: 'Cooker', cable: '6mm² twin+earth', length: 'Max 25m', protection: '32A MCB Type B' },
+      { circuit: 'Air conditioner', cable: '4mm² twin+earth', length: 'Max 25m', protection: '20A MCB Type C' },
+    ],
+    notes: [
+      'All cables to be PVC/PVC to BS 6004',
+      'Minimum insulation resistance: 1MΩ',
+      'RCD must trip within 40ms at 150mA',
+      'Label all circuits clearly',
+      'Issue Electrical Installation Certificate on completion',
+    ],
+  },
+  {
+    id: 'res-002',
+    category: 'Residential',
+    name: 'Two-Way Light Switch Circuit',
+    description: 'Control one light from two locations (stairs, corridors)',
+    components: ['2x 2-way switches', 'Lamp holder', '1.5mm² 3-core cable', 'Junction box'],
+    diagram: `
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    TWO-WAY SWITCHING DIAGRAM                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  From MCB (6A)                                                           │
+│     │                                                                    │
+│     │ L (Brown)                                                          │
+│     │                                                                    │
+│     ▼                                                                    │
+│  ┌──────────────────┐                          ┌──────────────────┐     │
+│  │   SWITCH 1       │                          │   SWITCH 2       │     │
+│  │   (2-Way)        │                          │   (2-Way)        │     │
+│  │                  │                          │                  │     │
+│  │   COM ●──────────┼───── L1 (Black) ─────────┼──● L1            │     │
+│  │       │          │                          │                  │     │
+│  │   L1  ●──────────┼───── L2 (Grey) ──────────┼──● L2            │     │
+│  │       │          │                          │                  │     │
+│  │   L2  ●          │                          │  ● COM ──────────┼───┐ │
+│  │                  │                          │                  │   │ │
+│  └──────────────────┘                          └──────────────────┘   │ │
+│                                                                        │ │
+│                                                                        ▼ │
+│                                                              ┌─────────┐ │
+│                                                              │  LAMP   │ │
+│                                                              │   💡    │ │
+│                                                              └────┬────┘ │
+│                                                                   │      │
+│  From MCB ─────────────────── N (Blue) ───────────────────────────┘      │
+│                                                                          │
+│  CABLE REQUIRED:                                                         │
+│  • Switch 1 to Switch 2: 1.5mm² 3-core + earth                          │
+│  • Supply to Switch 1: 1.5mm² twin + earth                              │
+│  • Switch 2 to Lamp: 1.5mm² twin + earth                                │
+│                                                                          │
+│  TERMINAL CONNECTIONS:                                                   │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │ Terminal │ Wire Color │ Function                                  │  │
+│  │ COM      │ Brown      │ Live (common) - carries switching         │  │
+│  │ L1       │ Black      │ Strapper wire 1                           │  │
+│  │ L2       │ Grey       │ Strapper wire 2                           │  │
+│  │ Earth    │ Green/Yell │ Earth continuity                          │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+`,
+    cableSchedule: [
+      { circuit: 'Supply to SW1', cable: '1.5mm² T+E', length: 'As required', protection: '6A MCB' },
+      { circuit: 'SW1 to SW2', cable: '1.5mm² 3-core+E', length: 'As required', protection: '-' },
+      { circuit: 'SW2 to Lamp', cable: '1.5mm² T+E', length: 'As required', protection: '-' },
+    ],
+    notes: [
+      'Ensure correct identification of L1 and L2 at both switches',
+      'COM terminal connects to live supply at one end and lamp at other',
+      'Test switching from both positions before completion',
+      'Use appropriate back boxes (25mm minimum depth)',
+    ],
+  },
+  {
+    id: 'res-003',
+    category: 'Residential',
+    name: 'Ring Main Circuit',
+    description: 'Ring circuit for socket outlets serving floor area up to 100m²',
+    components: ['2.5mm² cable', '32A MCB', '13A socket outlets', 'Junction boxes'],
+    diagram: `
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    RING MAIN CIRCUIT DIAGRAM                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│                        CONSUMER UNIT                                     │
+│                    ┌─────────────────┐                                   │
+│                    │    32A MCB      │                                   │
+│                    │   (Type B)      │                                   │
+│                    └───────┬─────────┘                                   │
+│                      L  N  E                                             │
+│                      │  │  │                                             │
+│         ┌────────────┴──┴──┴────────────┐                               │
+│         │                               │                               │
+│         ▼                               ▼                               │
+│    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐            │
+│    │ Socket  │────│ Socket  │────│ Socket  │────│ Socket  │            │
+│    │   1     │    │   2     │    │   3     │    │   4     │            │
+│    └─────────┘    └─────────┘    └─────────┘    └─────────┘            │
+│         │                                             │                 │
+│         │              RING CIRCUIT                   │                 │
+│         │         (2.5mm² Twin+Earth)                 │                 │
+│         │                                             │                 │
+│    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐            │
+│    │ Socket  │────│ Socket  │────│ Socket  │────│ Socket  │            │
+│    │   8     │    │   7     │    │   6     │    │   5     │            │
+│    └─────────┘    └─────────┘    └─────────┘    └─────────┘            │
+│         │                                             │                 │
+│         └─────────────────────────────────────────────┘                 │
+│                      Back to Consumer Unit                              │
+│                                                                          │
+│  SPUR CONNECTIONS (Maximum 1 double socket per spur):                   │
+│                                                                          │
+│    Ring Socket ──── 2.5mm² ──── Fused Connection Unit ──── Spur Socket │
+│                                     (13A fuse)                          │
+│                                                                          │
+│  RING MAIN RULES:                                                        │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │ • Maximum floor area: 100m²                                       │  │
+│  │ • Unlimited sockets on ring (practical limit ~20)                 │  │
+│  │ • Maximum 1 spur per socket on ring                               │  │
+│  │ • Spur can feed: 1 single socket OR 1 double socket OR 1 FCU      │  │
+│  │ • Both ends MUST connect to same MCB                              │  │
+│  │ • Test: R1 reading same at both ends of ring                      │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+│  TESTING REQUIREMENTS:                                                   │
+│  1. Continuity of ring - must form complete circuit                     │
+│  2. Insulation resistance - >1MΩ between all conductors                 │
+│  3. Earth fault loop impedance - Zs ≤1.15Ω for 32A MCB                 │
+│  4. RCD test - 30mA RCD must trip within 40ms                           │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+`,
+    cableSchedule: [
+      { circuit: 'Ring circuit', cable: '2.5mm² T+E', length: 'Max 50m total', protection: '32A MCB Type B' },
+      { circuit: 'Spur (unfused)', cable: '2.5mm² T+E', length: 'Max 10m', protection: 'Via ring MCB' },
+      { circuit: 'Spur (fused)', cable: '1.5mm² or 2.5mm²', length: 'As required', protection: '13A fuse in FCU' },
+    ],
+    notes: [
+      'Both legs must return to same MCB terminals',
+      'Never break ring to add socket - add as spur',
+      'Use ring continuity test to verify complete circuit',
+    ],
+  },
+  {
+    id: 'res-004',
+    category: 'Residential',
+    name: 'Electric Shower Installation',
+    description: 'Dedicated circuit for instantaneous electric shower',
+    components: ['45A DP switch', '40A MCB', '30mA RCD', '10mm² cable', 'Shower unit'],
+    diagram: `
+┌─────────────────────────────────────────────────────────────────────────┐
+│                ELECTRIC SHOWER CIRCUIT DIAGRAM                           │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  CONSUMER UNIT                                                           │
+│  ┌─────────────────────────────────────────┐                            │
+│  │                                         │                            │
+│  │  ┌──────────┐   ┌──────────┐            │                            │
+│  │  │ 40A MCB  │───│ 30mA RCD │            │                            │
+│  │  │ Type B   │   │ or RCBO  │            │                            │
+│  │  └────┬─────┘   └────┬─────┘            │                            │
+│  │       │              │                   │                            │
+│  │       └──────────────┘                   │                            │
+│  │              │                           │                            │
+│  └──────────────┼───────────────────────────┘                            │
+│                 │                                                        │
+│                 │ 10mm² Twin + Earth Cable                               │
+│                 │ (Must be continuous - no joints)                       │
+│                 │                                                        │
+│                 ▼                                                        │
+│  ┌─────────────────────────────────────────┐                            │
+│  │        45A DOUBLE POLE SWITCH           │                            │
+│  │        (Ceiling mounted pull cord)      │                            │
+│  │                                         │                            │
+│  │  ┌─────┐         ┌─────┐               │                            │
+│  │  │ L   │═════════│ L'  │ ────────┐     │                            │
+│  │  │ in  │  SWITCH │ out │         │     │                            │
+│  │  └─────┘         └─────┘         │     │                            │
+│  │                                   │     │                            │
+│  │  ┌─────┐         ┌─────┐         │     │                            │
+│  │  │ N   │═════════│ N'  │ ────────┼──┐  │                            │
+│  │  │ in  │  SWITCH │ out │         │  │  │                            │
+│  │  └─────┘         └─────┘         │  │  │                            │
+│  │                                   │  │  │                            │
+│  │  Neon indicator shows when ON    │  │  │                            │
+│  └─────────────────────────────────────────┘                            │
+│                                      │  │                               │
+│                                      ▼  ▼                               │
+│  ┌─────────────────────────────────────────┐                            │
+│  │           ELECTRIC SHOWER               │                            │
+│  │              9.5kW                       │                            │
+│  │  ┌─────────────────────────────────┐    │                            │
+│  │  │  L ──── Heating Element ──── N  │    │                            │
+│  │  │         (9.5kW @ 240V)          │    │                            │
+│  │  │            = 39.6A              │    │                            │
+│  │  └─────────────────────────────────┘    │                            │
+│  │                                         │                            │
+│  │  E ──── Connected to metal parts        │                            │
+│  │                                         │                            │
+│  └─────────────────────────────────────────┘                            │
+│                                                                          │
+│  CABLE SIZING (for 9.5kW shower):                                       │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │ Cable Run │ Cable Size │ Voltage Drop │ Current │ MCB             │  │
+│  │ Up to 18m │ 6mm²       │ <5.5V        │ 39.6A   │ 40A (marginal)  │  │
+│  │ Up to 27m │ 10mm²      │ <5.5V        │ 39.6A   │ 40A or 45A      │  │
+│  │ Up to 45m │ 16mm²      │ <5.5V        │ 39.6A   │ 45A             │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+│  ZONE REQUIREMENTS (BS 7671):                                           │
+│  • Switch must be OUTSIDE Zones 0, 1, and 2                             │
+│  • Shower unit IP rating: minimum IPX4 (Zone 1)                         │
+│  • RCD protection mandatory (30mA)                                       │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+`,
+    cableSchedule: [
+      { circuit: 'Shower circuit', cable: '10mm² T+E minimum', length: 'Max 27m for 9.5kW', protection: '40A/45A MCB + 30mA RCD' },
+    ],
+    notes: [
+      'RCD protection is MANDATORY for shower circuits',
+      'Pull cord switch must be outside zones 0, 1, 2',
+      'Cable must be continuous with no joints',
+      'Use IP rated accessories for bathroom installation',
+    ],
+  },
+
+  // THREE PHASE DIAGRAMS
+  {
+    id: 'ind-001',
+    category: 'Industrial',
+    name: 'Three Phase DOL Motor Starter',
+    description: 'Direct On Line starter for 3-phase induction motor',
+    components: ['MCCB', 'Contactor', 'Overload relay', 'Start/Stop buttons', 'Motor'],
+    diagram: `
+┌─────────────────────────────────────────────────────────────────────────┐
+│            THREE PHASE DOL STARTER - POWER & CONTROL CIRCUIT            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  POWER CIRCUIT:                                                          │
+│  ══════════════                                                          │
+│                                                                          │
+│  L1 (R) ────┬────── MCCB ──────┬────── Contactor ──────┬──── OL ──── U │
+│             │       (3-pole)    │       (Main)          │              │ │
+│  L2 (Y) ────┼──────────────────┼──────────────────────┼──── OL ──── V │──► MOTOR
+│             │                   │                       │              │ │
+│  L3 (B) ────┴──────────────────┴──────────────────────┴──── OL ──── W │
+│                                                                          │
+│                                                                          │
+│  CONTROL CIRCUIT:                                                        │
+│  ════════════════                                                        │
+│                                                                          │
+│     L1 ─────────┬──────────────────────────────────────────────────┐    │
+│                 │                                                   │    │
+│                 │    ┌─────┐                                        │    │
+│                 ├────┤STOP │────┐                                   │    │
+│                 │    │(NC) │    │                                   │    │
+│                 │    └─────┘    │                                   │    │
+│                 │               │    ┌─────┐                        │    │
+│                 │               ├────┤START│────┐                   │    │
+│                 │               │    │(NO) │    │                   │    │
+│                 │               │    └─────┘    │                   │    │
+│                 │               │               │                   │    │
+│                 │               │    ┌─────┐    │                   │    │
+│                 │               └────┤ K1  │────┤ (Holding contact) │    │
+│                 │                    │(NO) │    │                   │    │
+│                 │                    └─────┘    │                   │    │
+│                 │                               │                   │    │
+│                 │                    ┌─────┐    │                   │    │
+│                 │                    │ OL  │────┤ (Overload NC)     │    │
+│                 │                    │(NC) │    │                   │    │
+│                 │                    └─────┘    │                   │    │
+│                 │                               │                   │    │
+│                 │                    ┌─────┐    │                   │    │
+│                 │                    │ K1  │◄───┘                   │    │
+│                 │                    │COIL │                        │    │
+│                 │                    └──┬──┘                        │    │
+│                 │                       │                           │    │
+│     N ──────────┴───────────────────────┴───────────────────────────┘    │
+│                                                                          │
+│                                                                          │
+│  COMPONENT SIZING (Example: 7.5kW Motor):                               │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │ Component      │ Rating        │ Notes                            │  │
+│  ├────────────────┼───────────────┼──────────────────────────────────┤  │
+│  │ Motor FLC      │ 15A           │ Full Load Current at 415V        │  │
+│  │ MCCB           │ 20A or 25A    │ 1.5 x FLC for starting           │  │
+│  │ Contactor      │ AC3, 18A      │ Size for motor duty              │  │
+│  │ Overload       │ 13-18A        │ Set to 15A (100% FLC)            │  │
+│  │ Control Fuse   │ 2A            │ Protect control circuit          │  │
+│  │ Power Cable    │ 4mm²          │ Current capacity 27A             │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+`,
+    cableSchedule: [
+      { circuit: 'Motor supply', cable: '4mm² 4-core armoured', length: 'Max 50m', protection: '25A MCCB' },
+      { circuit: 'Control circuit', cable: '1.5mm² flexible', length: 'As required', protection: '2A fuse' },
+    ],
+    notes: [
+      'Set overload to motor nameplate FLC',
+      'Ensure contactor is rated for AC3 duty',
+      'Include emergency stop in control circuit',
+      'Earth motor frame with 4mm² minimum',
+    ],
+  },
+  {
+    id: 'ind-002',
+    category: 'Industrial',
+    name: 'Star-Delta Starter',
+    description: 'Reduced voltage starting for motors above 7.5kW',
+    components: ['MCCB', '3x Contactors', 'Timer', 'Overload relay', 'Motor 6-terminal'],
+    diagram: `
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    STAR-DELTA STARTER DIAGRAM                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  POWER CIRCUIT:                                                          │
+│                                                                          │
+│  L1 ───── MCCB ─────┬───── K1 (Main) ───────────────────┬───── U1 ─┐   │
+│                      │                                   │          │   │
+│  L2 ───────────────┼─────────────────────────────────┼───── V1 ─┼─► M │
+│                      │                                   │          │   │
+│  L3 ───────────────┼─────────────────────────────────┼───── W1 ─┘   │
+│                      │                                   │              │
+│                      │      ┌─── K2 (Delta) ───┐        │              │
+│                      │      │                   │        │              │
+│                      │   U2─┼─V1    V2─┼─W1    W2─┼─U1   │              │
+│                      │      │                   │        │              │
+│                      │      └───────────────────┘        │              │
+│                      │                                   │              │
+│                      │      ┌─── K3 (Star) ────┐        │              │
+│                      │      │                   │        │              │
+│                      │   U2─┼──┬──V2──┬──W2    │        │              │
+│                      │      │  │      │  │     │        │              │
+│                      │      │  └──────┴──┘     │        │              │
+│                      │      │   (Star point)   │        │              │
+│                      │      └──────────────────┘        │              │
+│                      │                                   │              │
+│                      └───── OL ─────────────────────────┘              │
+│                                                                          │
+│  SEQUENCE:                                                               │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │ 1. Press START                                                    │  │
+│  │ 2. K1 (Main) + K3 (Star) energize → Motor starts in STAR          │  │
+│  │ 3. Timer counts (5-15 seconds typically)                          │  │
+│  │ 4. Timer completes → K3 (Star) de-energizes                       │  │
+│  │ 5. Short delay (50ms) → K2 (Delta) energizes                      │  │
+│  │ 6. Motor now running in DELTA at full speed                       │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+│  MOTOR TERMINAL CONNECTIONS:                                             │
+│  ┌─────────────────────────────┐                                        │
+│  │    U1    V1    W1           │    Terminal Box                       │
+│  │    ┃     ┃     ┃            │    (Links removed for S-D)            │
+│  │    ┃     ┃     ┃            │                                        │
+│  │    U2    V2    W2           │                                        │
+│  └─────────────────────────────┘                                        │
+│                                                                          │
+│  STAR: V=415/√3=240V, I=FLC/√3, Torque=33%                             │
+│  DELTA: V=415V, I=FLC, Torque=100%                                      │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+`,
+    cableSchedule: [
+      { circuit: 'Motor supply (6 wires)', cable: '6-core or 2x 4-core', length: 'As required', protection: 'MCCB sized for FLC' },
+      { circuit: 'Control circuit', cable: '1.5mm² flexible', length: 'As required', protection: '2A fuse' },
+    ],
+    notes: [
+      'Motor MUST have 6 terminals accessible',
+      'K2 and K3 must be electrically AND mechanically interlocked',
+      'Timer typically 5-15 seconds based on motor load',
+      'Starting current reduced to 33% of DOL',
+      'Starting torque reduced to 33% of DOL',
+    ],
+  },
+  {
+    id: 'ind-003',
+    category: 'Industrial',
+    name: 'ATS (Automatic Transfer Switch)',
+    description: 'Automatic changeover between mains and generator',
+    components: ['ATS controller', '2x Contactors', 'Generator', 'Mains supply'],
+    diagram: `
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    ATS WIRING DIAGRAM                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  KPLC MAINS                              GENERATOR                       │
+│  ═════════                               ═════════                       │
+│     │                                        │                           │
+│     │ L1,L2,L3,N                            │ L1,L2,L3,N                │
+│     │                                        │                           │
+│     ▼                                        ▼                           │
+│  ┌──────────────┐                      ┌──────────────┐                 │
+│  │ Mains MCCB   │                      │  Gen MCCB    │                 │
+│  │    100A      │                      │    100A      │                 │
+│  └──────┬───────┘                      └──────┬───────┘                 │
+│         │                                      │                         │
+│         │                                      │                         │
+│         ▼                                      ▼                         │
+│  ┌──────────────┐    INTERLOCKED      ┌──────────────┐                 │
+│  │    K1        │◄──────────────────►│     K2       │                 │
+│  │   MAINS      │   (Mechanical +     │  GENERATOR   │                 │
+│  │ CONTACTOR    │    Electrical)      │  CONTACTOR   │                 │
+│  └──────┬───────┘                      └──────┬───────┘                 │
+│         │                                      │                         │
+│         └──────────────────┬───────────────────┘                         │
+│                            │                                             │
+│                            ▼                                             │
+│                     ┌──────────────┐                                    │
+│                     │    LOAD      │                                    │
+│                     │   OUTPUT     │                                    │
+│                     │  L1,L2,L3,N  │                                    │
+│                     └──────────────┘                                    │
+│                                                                          │
+│  ATS CONTROLLER CONNECTIONS:                                            │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                     ATS CONTROLLER                                 │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │  │
+│  │  │ MAINS SENSING    │ L1  L2  L3  N    (From mains before K1) │  │  │
+│  │  │ GEN SENSING      │ L1  L2  L3  N    (From gen before K2)   │  │  │
+│  │  │ K1 COIL OUTPUT   │ A1  A2           (To mains contactor)   │  │  │
+│  │  │ K2 COIL OUTPUT   │ A1  A2           (To gen contactor)     │  │  │
+│  │  │ GEN START        │ IGN  FUEL  CRANK (To generator)         │  │  │
+│  │  │ GEN STOP         │ STOP             (To generator)         │  │  │
+│  │  │ ALARMS           │ MAINS FAIL, GEN FAIL, etc.              │  │  │
+│  │  └─────────────────────────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+│  SEQUENCE OF OPERATION:                                                  │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │ MAINS FAILURE:                                                    │  │
+│  │ 1. Controller detects mains fail (all 3 phases monitored)        │  │
+│  │ 2. Wait 3-10 seconds (adjustable) to confirm                     │  │
+│  │ 3. Send START signal to generator                                │  │
+│  │ 4. Generator starts and stabilizes (10-30 seconds)               │  │
+│  │ 5. K1 (Mains) opens                                               │  │
+│  │ 6. Delay 100-500ms (break before make)                           │  │
+│  │ 7. K2 (Generator) closes                                          │  │
+│  │ 8. Load now on generator                                          │  │
+│  │                                                                    │  │
+│  │ MAINS RESTORATION:                                                │  │
+│  │ 1. Controller detects mains healthy (all 3 phases)               │  │
+│  │ 2. Wait 1-5 minutes (adjustable) to confirm stable               │  │
+│  │ 3. K2 (Generator) opens                                           │  │
+│  │ 4. Delay 100-500ms (break before make)                           │  │
+│  │ 5. K1 (Mains) closes                                              │  │
+│  │ 6. Load now on mains                                              │  │
+│  │ 7. Generator runs for cool-down (3-5 minutes)                    │  │
+│  │ 8. Generator stops                                                │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+`,
+    cableSchedule: [
+      { circuit: 'Mains to ATS', cable: 'As per load', length: 'As required', protection: 'Mains MCCB' },
+      { circuit: 'Generator to ATS', cable: 'As per load', length: 'As required', protection: 'Gen MCCB' },
+      { circuit: 'ATS to Load', cable: 'As per load', length: 'As required', protection: 'Load MCCBs' },
+      { circuit: 'Control wiring', cable: '1.5mm² flexible', length: 'As required', protection: '2A fuse' },
+    ],
+    notes: [
+      'Contactors MUST be mechanically interlocked',
+      'Use break-before-make timing (never parallel mains and gen)',
+      'Include manual bypass for maintenance',
+      'Earth generator neutral at generator only (not at ATS)',
+    ],
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPREHENSIVE REPAIR MANUALS
+// ═══════════════════════════════════════════════════════════════════════════════
+export const REPAIR_MANUALS = [
+  {
+    id: 'rm-001',
+    title: 'MCB/MCCB Replacement Procedure',
+    category: 'Protection Devices',
+    difficulty: 'Medium',
+    timeRequired: '30-60 minutes',
+    tools: ['Insulated screwdrivers', 'Voltage tester', 'Torque screwdriver', 'PPE'],
+    safetyWarnings: [
+      'ALWAYS isolate supply before working',
+      'Use lock-out/tag-out procedure',
+      'Verify dead with voltage tester',
+      'Wear appropriate PPE (gloves, safety glasses)',
+    ],
+    steps: [
+      {
+        step: 1,
+        title: 'Isolate Supply',
+        description: 'Turn off main switch upstream of the breaker to be replaced. Lock out and tag.',
+        details: 'Ensure all phases are isolated. Use voltage tester to confirm dead.',
+        caution: 'Never assume power is off - always test',
+      },
+      {
+        step: 2,
+        title: 'Verify Dead',
+        description: 'Use approved voltage tester on all phases and neutral',
+        details: 'Test voltage tester on known live source before and after testing. Test L-N, L-L, and L-E.',
+        caution: 'GS38 probes required for testing',
+      },
+      {
+        step: 3,
+        title: 'Document Connections',
+        description: 'Photograph or note all cable connections before disconnecting',
+        details: 'Note cable sizes, colors, and terminal positions. Record any special arrangements.',
+        caution: 'Proper documentation prevents errors on reassembly',
+      },
+      {
+        step: 4,
+        title: 'Disconnect Cables',
+        description: 'Loosen terminal screws and remove cables',
+        details: 'Support cables to prevent damage. Keep conductors separated.',
+        caution: 'Do not force cables - this can damage insulation',
+      },
+      {
+        step: 5,
+        title: 'Remove Old Breaker',
+        description: 'Unclip or unbolt breaker from DIN rail or busbar',
+        details: 'MCBs clip onto DIN rail - use screwdriver to release clip. MCCBs may have bolted connections.',
+        caution: 'Support breaker when removing to prevent dropping',
+      },
+      {
+        step: 6,
+        title: 'Verify Replacement',
+        description: 'Confirm new breaker matches specifications of old one',
+        details: 'Check: Current rating, breaking capacity, type (B/C/D), poles, voltage rating',
+        caution: 'Never substitute different specifications without engineering approval',
+      },
+      {
+        step: 7,
+        title: 'Install New Breaker',
+        description: 'Clip or bolt new breaker in position',
+        details: 'Ensure secure mounting. Check alignment with busbar or connections.',
+        caution: 'Verify breaker is in OFF position before connecting',
+      },
+      {
+        step: 8,
+        title: 'Reconnect Cables',
+        description: 'Connect cables to correct terminals and tighten',
+        details: 'Use correct torque settings. Typical: 2.5Nm for MCB, check MCCB manual.',
+        caution: 'Over-tightening damages terminals, under-tightening causes heating',
+      },
+      {
+        step: 9,
+        title: 'Pre-Energization Checks',
+        description: 'Verify all connections before restoring power',
+        details: 'Check: All terminals tight, no exposed conductors, breaker in OFF position, covers replaced.',
+        caution: 'Double-check all connections match documentation',
+      },
+      {
+        step: 10,
+        title: 'Restore Power and Test',
+        description: 'Remove locks/tags, close upstream supply, test breaker',
+        details: 'Turn breaker ON, verify load operates correctly. Test trip function if possible.',
+        caution: 'Stand to side when energizing in case of fault',
+      },
+    ],
+    verification: [
+      'Breaker operates smoothly',
+      'No unusual heating at terminals',
+      'Load operates correctly',
+      'Trip function works (if safe to test)',
+      'Update records/labels as needed',
+    ],
+  },
+  {
+    id: 'rm-002',
+    title: 'Earth Fault Finding Procedure',
+    category: 'Fault Finding',
+    difficulty: 'Advanced',
+    timeRequired: '1-4 hours',
+    tools: ['Insulation resistance tester (Megger)', 'Voltage tester', 'Clamp meter', 'Screwdrivers'],
+    safetyWarnings: [
+      'Isolate circuit before insulation testing',
+      'Megger test voltage can damage sensitive equipment',
+      'Disconnect electronic devices before testing',
+    ],
+    steps: [
+      {
+        step: 1,
+        title: 'Identify Faulty Circuit',
+        description: 'Determine which circuit is causing RCD/ELCB trips',
+        details: 'Turn off all MCBs, reset RCD. Turn on MCBs one by one until RCD trips. This identifies faulty circuit.',
+        caution: 'If RCD trips with all MCBs off, fault is in wiring before MCBs',
+      },
+      {
+        step: 2,
+        title: 'Isolate Faulty Circuit',
+        description: 'Turn off MCB for faulty circuit and lock out',
+        details: 'Leave other circuits operating if needed. Tag the faulty circuit MCB.',
+        caution: 'Verify correct circuit is isolated',
+      },
+      {
+        step: 3,
+        title: 'Disconnect Loads',
+        description: 'Unplug all equipment and disconnect fixed appliances on faulty circuit',
+        details: 'Remove lamps from holders, unplug appliances, disconnect fixed equipment at FCUs.',
+        caution: 'Disconnecting loads helps isolate if fault is in equipment or wiring',
+      },
+      {
+        step: 4,
+        title: 'Insulation Test - No Loads',
+        description: 'Megger test circuit with all loads disconnected',
+        details: 'Test at 500V DC. Measure L-E, N-E, L-N. Good reading >1MΩ (ideally >2MΩ).',
+        caution: 'If test passes, fault is in disconnected equipment. If fails, fault is in wiring.',
+      },
+      {
+        step: 5,
+        title: 'If Wiring Fault - Divide and Conquer',
+        description: 'Split circuit at midpoint to locate fault area',
+        details: 'Disconnect circuit at junction box or midpoint. Test each section. Repeat until fault located.',
+        caution: 'Systematic approach is essential - dont skip sections',
+      },
+      {
+        step: 6,
+        title: 'Common Fault Locations',
+        description: 'Check likely fault points',
+        details: 'Junction boxes (moisture), outdoor connections, bathroom connections, damaged cables at fixings.',
+        caution: 'Look for signs of moisture, rodent damage, mechanical damage',
+      },
+      {
+        step: 7,
+        title: 'Repair Fault',
+        description: 'Fix identified fault',
+        details: 'Replace damaged cable section, repair junction, replace accessory. Use appropriate IP rating outdoors.',
+        caution: 'Ensure repair meets regulations',
+      },
+      {
+        step: 8,
+        title: 'Retest After Repair',
+        description: 'Megger test repaired circuit',
+        details: 'Full insulation test. Must achieve >1MΩ on all tests.',
+        caution: 'Do not energize until passing insulation test',
+      },
+      {
+        step: 9,
+        title: 'Reconnect and Test',
+        description: 'Reconnect loads, restore power, test RCD',
+        details: 'Reconnect equipment, energize circuit, test RCD button function.',
+        caution: 'Monitor for 24 hours in case of intermittent fault',
+      },
+    ],
+    verification: [
+      'Insulation resistance >1MΩ',
+      'RCD holds with circuit loaded',
+      'RCD trips within 40ms on test button',
+      'No unusual heating anywhere',
+    ],
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PARTS CATALOGUE WITH KENYA SUPPLIERS
+// ═══════════════════════════════════════════════════════════════════════════════
+export const PARTS_CATALOGUE = {
+  mcbs: [
+    { partNumber: 'ABB-S201-B6', description: 'MCB 1P 6A Type B', brand: 'ABB', priceKES: 450, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-S201-B10', description: 'MCB 1P 10A Type B', brand: 'ABB', priceKES: 450, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-S201-B16', description: 'MCB 1P 16A Type B', brand: 'ABB', priceKES: 480, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-S201-B20', description: 'MCB 1P 20A Type B', brand: 'ABB', priceKES: 500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-S201-B32', description: 'MCB 1P 32A Type B', brand: 'ABB', priceKES: 550, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-S203-B63', description: 'MCB 3P 63A Type B', brand: 'ABB', priceKES: 2800, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-IC60N-B6', description: 'MCB 1P 6A Type B', brand: 'Schneider', priceKES: 520, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-IC60N-B16', description: 'MCB 1P 16A Type B', brand: 'Schneider', priceKES: 550, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-IC60N-B32', description: 'MCB 1P 32A Type B', brand: 'Schneider', priceKES: 620, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'HAGER-MC106', description: 'MCB 1P 6A Type B', brand: 'Hager', priceKES: 380, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'HAGER-MC116', description: 'MCB 1P 16A Type B', brand: 'Hager', priceKES: 400, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CHINT-NB1-63-B16', description: 'MCB 1P 16A Type B', brand: 'Chint', priceKES: 180, suppliers: ['EmersonEIMS'] },
+  ],
+  mccbs: [
+    { partNumber: 'ABB-A1N-100', description: 'MCCB 3P 100A 25kA', brand: 'ABB', priceKES: 18500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-A1N-160', description: 'MCCB 3P 160A 25kA', brand: 'ABB', priceKES: 22000, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-A2N-250', description: 'MCCB 3P 250A 36kA', brand: 'ABB', priceKES: 35000, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-NSX100F', description: 'MCCB 3P 100A 36kA', brand: 'Schneider', priceKES: 21000, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-NSX250F', description: 'MCCB 3P 250A 36kA', brand: 'Schneider', priceKES: 42000, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-NSX400F', description: 'MCCB 3P 400A 36kA', brand: 'Schneider', priceKES: 68000, suppliers: ['EmersonEIMS'] },
+  ],
+  rcds: [
+    { partNumber: 'ABB-F202-AC-25-0.03', description: 'RCD 2P 25A 30mA Type AC', brand: 'ABB', priceKES: 3200, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-F202-AC-40-0.03', description: 'RCD 2P 40A 30mA Type AC', brand: 'ABB', priceKES: 3500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-F202-AC-63-0.03', description: 'RCD 2P 63A 30mA Type AC', brand: 'ABB', priceKES: 3800, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-F204-AC-40-0.03', description: 'RCD 4P 40A 30mA Type AC', brand: 'ABB', priceKES: 6500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-F204-AC-63-0.03', description: 'RCD 4P 63A 30mA Type AC', brand: 'ABB', priceKES: 7200, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-ID-2P-40-30', description: 'RCD 2P 40A 30mA', brand: 'Schneider', priceKES: 3800, suppliers: ['EmersonEIMS'] },
+  ],
+  cables: [
+    { partNumber: 'EACL-1.5-TE', description: 'Cable 1.5mm² T+E per metre', brand: 'East African Cables', priceKES: 85, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EACL-2.5-TE', description: 'Cable 2.5mm² T+E per metre', brand: 'East African Cables', priceKES: 130, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EACL-4.0-TE', description: 'Cable 4mm² T+E per metre', brand: 'East African Cables', priceKES: 200, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EACL-6.0-TE', description: 'Cable 6mm² T+E per metre', brand: 'East African Cables', priceKES: 280, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EACL-10-TE', description: 'Cable 10mm² T+E per metre', brand: 'East African Cables', priceKES: 450, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EACL-16-TE', description: 'Cable 16mm² T+E per metre', brand: 'East African Cables', priceKES: 680, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EACL-4C-2.5-ARM', description: 'Cable 4-core 2.5mm² armoured per metre', brand: 'East African Cables', priceKES: 350, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EACL-4C-4.0-ARM', description: 'Cable 4-core 4mm² armoured per metre', brand: 'East African Cables', priceKES: 520, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EACL-4C-6.0-ARM', description: 'Cable 4-core 6mm² armoured per metre', brand: 'East African Cables', priceKES: 750, suppliers: ['EmersonEIMS'] },
+  ],
+  accessories: [
+    { partNumber: 'MK-13A-SOCKET', description: '13A Socket Outlet Single', brand: 'MK', priceKES: 850, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MK-13A-SOCKET-D', description: '13A Socket Outlet Double', brand: 'MK', priceKES: 1400, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MK-1G-SWITCH', description: '1 Gang 2 Way Switch', brand: 'MK', priceKES: 450, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MK-2G-SWITCH', description: '2 Gang 2 Way Switch', brand: 'MK', priceKES: 650, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'MK-COOKER-CTRL', description: 'Cooker Control Unit 45A', brand: 'MK', priceKES: 2800, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CRABTREE-13A-D', description: '13A Socket Double', brand: 'Crabtree', priceKES: 1200, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'LEGRAND-13A-D', description: '13A Socket Double', brand: 'Legrand', priceKES: 950, suppliers: ['EmersonEIMS'] },
+  ],
+  earthing: [
+    { partNumber: 'EARTH-ROD-16-2.4', description: 'Earth Rod 16mm x 2.4m Copper Clad', brand: 'Generic', priceKES: 3500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EARTH-ROD-16-1.2', description: 'Earth Rod 16mm x 1.2m Copper Clad', brand: 'Generic', priceKES: 2000, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EARTH-CLAMP-16', description: 'Earth Rod Clamp 16mm', brand: 'Generic', priceKES: 350, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EARTH-CABLE-16', description: 'Earth Cable 16mm² Green/Yellow per metre', brand: 'EACL', priceKES: 450, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EARTH-CABLE-25', description: 'Earth Cable 25mm² Green/Yellow per metre', brand: 'EACL', priceKES: 680, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'EARTH-BAR-12WAY', description: 'Earth Bar 12 Way', brand: 'Generic', priceKES: 1200, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'BENTONITE-25KG', description: 'Bentonite 25kg bag (earth enhancement)', brand: 'Generic', priceKES: 2500, suppliers: ['EmersonEIMS'] },
+  ],
+  surgeProtection: [
+    { partNumber: 'ABB-OVR-T2-3N', description: 'SPD Type 2 3P+N 40kA', brand: 'ABB', priceKES: 8500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-PRD40-3PN', description: 'SPD Type 2 3P+N 40kA', brand: 'Schneider', priceKES: 9200, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'DEHN-DG-M-TT-275', description: 'SPD Type 2 1P+N 40kA', brand: 'DEHN', priceKES: 4500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CITEL-DS41-230', description: 'SPD Type 2 1P+N', brand: 'Citel', priceKES: 3800, suppliers: ['EmersonEIMS'] },
+  ],
+  consumerUnits: [
+    { partNumber: 'ABB-8WAY-CU', description: 'Consumer Unit 8 Way Metal', brand: 'ABB', priceKES: 8500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'ABB-12WAY-CU', description: 'Consumer Unit 12 Way Metal', brand: 'ABB', priceKES: 12000, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'SCHNDR-8WAY-CU', description: 'Consumer Unit 8 Way', brand: 'Schneider', priceKES: 9500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'HAGER-8WAY-CU', description: 'Consumer Unit 8 Way', brand: 'Hager', priceKES: 7500, suppliers: ['EmersonEIMS'] },
+    { partNumber: 'CHINT-8WAY-CU', description: 'Consumer Unit 8 Way', brand: 'Chint', priceKES: 3500, suppliers: ['EmersonEIMS'] },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAINTENANCE SCHEDULES
+// ═══════════════════════════════════════════════════════════════════════════════
+export const MAINTENANCE_SCHEDULES = {
+  residential: {
+    daily: [],
+    weekly: [],
+    monthly: [
+      { task: 'Test RCD trip button', procedure: 'Press test button - RCD should trip immediately', tools: ['None'] },
+    ],
+    quarterly: [
+      { task: 'Visual inspection of consumer unit', procedure: 'Check for signs of overheating, loose connections, damage', tools: ['Torch'] },
+      { task: 'Test smoke detectors', procedure: 'Press test button on each detector', tools: ['None'] },
+    ],
+    annually: [
+      { task: 'Full electrical inspection', procedure: 'Professional inspection and testing per BS 7671', tools: ['Full test equipment'] },
+      { task: 'Thermal imaging survey', procedure: 'Check for hot spots in DB and connections', tools: ['Thermal camera'] },
+      { task: 'Earth electrode test', procedure: 'Measure earth resistance - should be <20Ω', tools: ['Earth tester'] },
+    ],
+    fiveYearly: [
+      { task: 'EICR (Electrical Installation Condition Report)', procedure: 'Full periodic inspection and testing', tools: ['Full test equipment'] },
+    ],
+  },
+  commercial: {
+    daily: [
+      { task: 'Visual check of MDB indicators', procedure: 'Check all indicator lights, no alarms active', tools: ['None'] },
+    ],
+    weekly: [
+      { task: 'Check UPS status', procedure: 'Verify battery status, load level, no alarms', tools: ['None'] },
+      { task: 'Generator test run', procedure: 'Run generator on load for 30 minutes', tools: ['None'] },
+    ],
+    monthly: [
+      { task: 'Test RCDs', procedure: 'Trip all RCDs using test button', tools: ['None'] },
+      { task: 'Check emergency lighting', procedure: 'Simulate power failure, verify all emergency lights work', tools: ['None'] },
+      { task: 'Clean panel filters', procedure: 'Remove and clean ventilation filters', tools: ['Brush', 'Vacuum'] },
+    ],
+    quarterly: [
+      { task: 'Thermal imaging survey', procedure: 'Full thermal scan of all switchgear', tools: ['Thermal camera'] },
+      { task: 'Torque check connections', procedure: 'Check tightness of main connections', tools: ['Torque wrench'] },
+      { task: 'Power quality check', procedure: 'Measure voltage, harmonics, power factor', tools: ['Power analyzer'] },
+    ],
+    annually: [
+      { task: 'Full electrical inspection', procedure: 'EICR by qualified contractor', tools: ['Full test equipment'] },
+      { task: 'Protection relay testing', procedure: 'Test all protection relay settings and operation', tools: ['Relay test set'] },
+      { task: 'ATS functional test', procedure: 'Simulate mains failure, verify full transfer sequence', tools: ['None'] },
+      { task: 'Earth mat testing', procedure: 'Test earth grid resistance and step/touch potential', tools: ['Earth tester'] },
+    ],
+  },
+  industrial: {
+    daily: [
+      { task: 'Patrol inspection', procedure: 'Walk-through of all electrical rooms, check for abnormalities', tools: ['Torch', 'IR thermometer'] },
+      { task: 'Check transformer oil levels', procedure: 'Verify oil level in sight glass', tools: ['None'] },
+      { task: 'Log meter readings', procedure: 'Record kWh, kVA, power factor, max demand', tools: ['None'] },
+    ],
+    weekly: [
+      { task: 'Generator load test', procedure: 'Run generator on load for 1 hour minimum', tools: ['Load bank if needed'] },
+      { task: 'Check capacitor bank', procedure: 'Verify PF correction operating, check for bulging capacitors', tools: ['None'] },
+      { task: 'Battery room inspection', procedure: 'Check electrolyte levels, terminal condition, ventilation', tools: ['Hydrometer'] },
+    ],
+    monthly: [
+      { task: 'Thermal imaging - full', procedure: 'Thermal scan all MV and LV switchgear', tools: ['Thermal camera'] },
+      { task: 'Protection relay indicators', procedure: 'Check all relay flags/indicators, reset any trips', tools: ['None'] },
+      { task: 'Motor current readings', procedure: 'Record running current of all major motors', tools: ['Clamp meter'] },
+      { task: 'Clean switchgear', procedure: 'Vacuum/blow out dust from panels', tools: ['Vacuum', 'Blower'] },
+    ],
+    quarterly: [
+      { task: 'Oil sample analysis', procedure: 'Take transformer oil samples for DGA', tools: ['Sampling kit'] },
+      { task: 'Insulation resistance tests', procedure: 'Megger test major cables and motors', tools: ['Insulation tester'] },
+      { task: 'Earth grid testing', procedure: 'Fall of potential test on earth grid', tools: ['Earth tester'] },
+      { task: 'Power quality survey', procedure: 'Full PQ analysis including harmonics', tools: ['PQ analyzer'] },
+    ],
+    annually: [
+      { task: 'Shutdown maintenance', procedure: 'Full inspection and testing during planned shutdown', tools: ['All test equipment'] },
+      { task: 'Relay testing', procedure: 'Secondary injection test all protection relays', tools: ['Relay test set'] },
+      { task: 'Circuit breaker maintenance', procedure: 'Clean, lubricate, and test all MV/LV breakers', tools: ['As per OEM'] },
+      { task: 'Transformer tests', procedure: 'Turns ratio, winding resistance, insulation tests', tools: ['Transformer test set'] },
+    ],
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EMERSONEIMS PARTS & SERVICES - YOUR TRUSTED PARTNER
+// ═══════════════════════════════════════════════════════════════════════════════
+export const KENYA_SUPPLIERS = [
+  { name: 'EmersonEIMS', location: 'Nairobi, Kenya (Serving All Counties)', specialization: 'Complete Electrical Solutions - Sales, Installation, Maintenance & Repairs', phone: '+254 768 860 665', email: 'info@emersoneims.com' },
+];
+
+// Export all
+export const ELECTRICAL_BIBLE_DATA = {
+  wiringDiagrams: WIRING_DIAGRAMS,
+  repairManuals: REPAIR_MANUALS,
+  partsCatalogue: PARTS_CATALOGUE,
+  maintenanceSchedules: MAINTENANCE_SCHEDULES,
+  suppliers: KENYA_SUPPLIERS,
+};

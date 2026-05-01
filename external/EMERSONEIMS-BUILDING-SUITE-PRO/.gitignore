@@ -1,0 +1,58 @@
+# ===== Runtime data — NEVER commit =====
+# Databases (production data; back up separately, not in git)
+eims.db
+eims.db-journal
+eims.db-wal
+eims.db-shm
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# User uploads and runtime caches (contain user data / secrets)
+uploads/
+!uploads/.gitkeep
+
+# ===== Secrets =====
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ===== Python =====
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ===== Node (in case you ever bring back the Next.js stack) =====
+node_modules/
+.next/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+
+# ===== Logs =====
+*.log
+
+# ===== Editor/IDE — keep .vscode/settings.json, ignore personal state =====
+.idea/
+*.swp
+*.swo
+.aider*
+
+# ===== OS junk =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== This repo's local-only folders =====
+_ARCHIVE_*/
+backups/

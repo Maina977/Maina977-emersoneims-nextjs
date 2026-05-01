@@ -46,6 +46,7 @@
     "scripts/**",
     "components/building-modules/**",
     "components/solar-modules/**",
-    "components/aquascan-modules/**"
+    "components/aquascan-modules/**",
+    "external/**"
   ]
 }

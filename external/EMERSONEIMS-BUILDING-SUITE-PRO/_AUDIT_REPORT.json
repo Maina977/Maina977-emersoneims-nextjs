@@ -1,0 +1,1821 @@
+{
+  "summary": {
+    "total": 226,
+    "ok": 160,
+    "4xx": 65,
+    "5xx": 1,
+    "timeout": 0,
+    "error": 0,
+    "skipped": 6
+  },
+  "results": [
+    {
+      "method": "GET",
+      "path": "/",
+      "http": 200,
+      "time_ms": 118,
+      "size": 5005,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/audit",
+      "http": 503,
+      "time_ms": 39,
+      "size": 132,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/arch/accessibility/check",
+      "http": 400,
+      "time_ms": 41,
+      "size": 50,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/arch/accessibility/limits",
+      "http": 200,
+      "time_ms": 8,
+      "size": 614,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/arch/acoustics/recommended",
+      "http": 200,
+      "time_ms": 60,
+      "size": 398,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/arch/acoustics/reverberation",
+      "http": 400,
+      "time_ms": 59,
+      "size": 52,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/arch/daylight/adf",
+      "http": 400,
+      "time_ms": 22,
+      "size": 56,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/arch/egress",
+      "http": 400,
+      "time_ms": 102,
+      "size": 359,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/arch/egress/load-factors",
+      "http": 200,
+      "time_ms": 21,
+      "size": 398,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/arch/shadow/hourly",
+      "http": 400,
+      "time_ms": 265,
+      "size": 106,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/arch/shadow/position",
+      "http": 400,
+      "time_ms": 41,
+      "size": 114,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/arch/shadow/solstice",
+      "http": 400,
+      "time_ms": 41,
+      "size": 106,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/arch/uvalue",
+      "http": 400,
+      "time_ms": 40,
+      "size": 56,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/3d-model",
+      "http": 400,
+      "time_ms": 40,
+      "size": 64,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/build",
+      "http": 404,
+      "time_ms": 22,
+      "size": 46,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/clash-detection",
+      "http": 200,
+      "time_ms": 44,
+      "size": 3558,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/copilot",
+      "http": 400,
+      "time_ms": 22,
+      "size": 48,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bim/copilot/history/<project_id>",
+      "http": 404,
+      "time_ms": 58,
+      "size": 46,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/copilot/reset/<project_id>",
+      "http": 404,
+      "time_ms": 373,
+      "size": 46,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bim/copilot/status",
+      "http": 200,
+      "time_ms": 18,
+      "size": 36,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/download-ifc",
+      "http": 200,
+      "time_ms": 61,
+      "size": 54740,
+      "ctype": "application/x-step"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/element/update",
+      "http": 400,
+      "time_ms": 44,
+      "size": 67,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bim/family-library",
+      "http": 200,
+      "time_ms": 154,
+      "size": 14372,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/floor-plan",
+      "http": 400,
+      "time_ms": 23,
+      "size": 64,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/generate-ifc",
+      "http": 200,
+      "time_ms": 104,
+      "size": 56016,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bim/parametric-families",
+      "http": 200,
+      "time_ms": 38,
+      "size": 1227,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/parametric-family",
+      "http": 200,
+      "time_ms": 43,
+      "size": 645,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bim/project/<project_id>",
+      "http": 404,
+      "time_ms": 57,
+      "size": 46,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/schedules",
+      "http": 400,
+      "time_ms": 55,
+      "size": 64,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bim/sheet-pack/<project_id>",
+      "http": 404,
+      "time_ms": 241,
+      "size": 46,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bim/sheet-pack/<project_id>/preview/<sheet_no>",
+      "http": 404,
+      "time_ms": 41,
+      "size": 46,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bim/types/import",
+      "http": 400,
+      "time_ms": 41,
+      "size": 48,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/boq/generate",
+      "http": 200,
+      "time_ms": 158,
+      "size": 11605,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/collab/chat",
+      "http": 404,
+      "time_ms": 41,
+      "size": 30,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/collab/create",
+      "http": 200,
+      "time_ms": 325,
+      "size": 318,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/collab/events",
+      "http": 404,
+      "time_ms": 80,
+      "size": 30,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/collab/join",
+      "http": 404,
+      "time_ms": 43,
+      "size": 30,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/collab/lock",
+      "http": 404,
+      "time_ms": 165,
+      "size": 30,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/collab/unlock",
+      "http": 404,
+      "time_ms": 55,
+      "size": 30,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/collab/update",
+      "http": 404,
+      "time_ms": 60,
+      "size": 30,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/components/3d-object",
+      "http": 200,
+      "time_ms": 123,
+      "size": 48,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/components/build-house",
+      "http": 200,
+      "time_ms": 42,
+      "size": 644,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/components/catalog",
+      "http": 200,
+      "time_ms": 260,
+      "size": 14001,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/daily-log",
+      "http": 200,
+      "time_ms": 184,
+      "size": 379,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/dashboard",
+      "http": 200,
+      "time_ms": 74,
+      "size": 281,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/punch-list/create",
+      "http": 200,
+      "time_ms": 41,
+      "size": 221,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/punch-list/update",
+      "http": 200,
+      "time_ms": 121,
+      "size": 50,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/rfi/create",
+      "http": 200,
+      "time_ms": 156,
+      "size": 395,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/rfi/list",
+      "http": 200,
+      "time_ms": 42,
+      "size": 1176,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/rfi/respond",
+      "http": 200,
+      "time_ms": 79,
+      "size": 43,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/submittal/create",
+      "http": 200,
+      "time_ms": 249,
+      "size": 315,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/submittal/list",
+      "http": 200,
+      "time_ms": 42,
+      "size": 942,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/construction/submittal/review",
+      "http": 200,
+      "time_ms": 133,
+      "size": 49,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/brief/parse",
+      "http": 200,
+      "time_ms": 81,
+      "size": 615,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/experience/complete",
+      "http": 200,
+      "time_ms": 322,
+      "size": 19573,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/experience/emotion",
+      "http": 400,
+      "time_ms": 42,
+      "size": 48,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/experience/flow",
+      "http": 200,
+      "time_ms": 76,
+      "size": 1121,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/experience/journeys",
+      "http": 200,
+      "time_ms": 124,
+      "size": 7322,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/design/experience/palettes",
+      "http": 200,
+      "time_ms": 246,
+      "size": 4786,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/experience/restraint",
+      "http": 200,
+      "time_ms": 85,
+      "size": 281,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/experience/solar",
+      "http": 200,
+      "time_ms": 297,
+      "size": 6311,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/generate-floor-plan",
+      "http": 200,
+      "time_ms": 105,
+      "size": 356,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/design/marbella/catalog",
+      "http": 200,
+      "time_ms": 47,
+      "size": 1393,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/design/marbella/detail/<key>",
+      "http": 404,
+      "time_ms": 8,
+      "size": 274,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/design/marbella/svg/<key>",
+      "http": 404,
+      "time_ms": 53,
+      "size": 124,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/villa/brief",
+      "http": 200,
+      "time_ms": 58,
+      "size": 803,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/villa/elevation",
+      "http": 200,
+      "time_ms": 27,
+      "size": 1004,
+      "ctype": "image/svg+xml"
+    },
+    {
+      "method": "GET",
+      "path": "/api/design/villa/finishes",
+      "http": 200,
+      "time_ms": 48,
+      "size": 1373,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/villa/floorplan",
+      "http": 200,
+      "time_ms": 1388,
+      "size": 59513,
+      "ctype": "application/dxf"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/villa/generate",
+      "http": 200,
+      "time_ms": 173,
+      "size": 4744,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/villa/model",
+      "http": 200,
+      "time_ms": 58,
+      "size": 1603,
+      "ctype": "model/obj"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/villa/model_glb",
+      "http": 200,
+      "time_ms": 98,
+      "size": 7104,
+      "ctype": "model/gltf-binary"
+    },
+    {
+      "method": "POST",
+      "path": "/api/design/villa/siteplan",
+      "http": 200,
+      "time_ms": 135,
+      "size": 59848,
+      "ctype": "application/dxf"
+    },
+    {
+      "method": "GET",
+      "path": "/api/design/villa/styles",
+      "http": 200,
+      "time_ms": 99,
+      "size": 598,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/design/villa/viewer",
+      "http": 200,
+      "time_ms": 70,
+      "size": 6622,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/api/docs",
+      "http": 200,
+      "time_ms": 59,
+      "size": 354,
+      "ctype": "text/html"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/3d-model",
+      "http": 200,
+      "time_ms": 83,
+      "size": 27581,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/all",
+      "http": 200,
+      "time_ms": 162,
+      "size": 69361,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/annotation",
+      "http": 200,
+      "time_ms": 60,
+      "size": 423,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/construction-doc",
+      "http": 200,
+      "time_ms": 165,
+      "size": 14695,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/detail",
+      "http": 200,
+      "time_ms": 79,
+      "size": 2993,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/elevation",
+      "http": 200,
+      "time_ms": 80,
+      "size": 4045,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/floor-plan",
+      "http": 200,
+      "time_ms": 40,
+      "size": 6603,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/mep",
+      "http": 200,
+      "time_ms": 121,
+      "size": 9123,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/section",
+      "http": 200,
+      "time_ms": 41,
+      "size": 2626,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/site-plan",
+      "http": 200,
+      "time_ms": 138,
+      "size": 4272,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drawings/structural",
+      "http": 200,
+      "time_ms": 102,
+      "size": 21757,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/eng/frame/analyze",
+      "http": 400,
+      "time_ms": 82,
+      "size": 77,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/execute-all-phases",
+      "http": 200,
+      "time_ms": 583,
+      "size": 16516,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/export/csv",
+      "http": 200,
+      "time_ms": 38,
+      "size": 0,
+      "ctype": "text/csv"
+    },
+    {
+      "method": "POST",
+      "path": "/api/export/dxf/all",
+      "http": 200,
+      "time_ms": 851,
+      "size": 23183,
+      "ctype": "application/dxf"
+    },
+    {
+      "method": "POST",
+      "path": "/api/export/dxf/floor-plan",
+      "http": 200,
+      "time_ms": 177,
+      "size": 41679,
+      "ctype": "application/dxf"
+    },
+    {
+      "method": "GET",
+      "path": "/api/export/excel",
+      "http": 200,
+      "time_ms": 4578,
+      "size": 16923,
+      "ctype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "method": "POST",
+      "path": "/api/export/fbx",
+      "http": 200,
+      "time_ms": 42,
+      "size": 9538,
+      "ctype": "application/octet-stream"
+    },
+    {
+      "method": "POST",
+      "path": "/api/export/nwd",
+      "http": 200,
+      "time_ms": 145,
+      "size": 9105,
+      "ctype": "application/xml"
+    },
+    {
+      "method": "GET",
+      "path": "/api/export/pdf",
+      "http": 200,
+      "time_ms": 10917,
+      "size": 34536,
+      "ctype": "application/pdf"
+    },
+    {
+      "method": "POST",
+      "path": "/api/export/xlsx",
+      "http": 400,
+      "time_ms": 80,
+      "size": 60,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/generate",
+      "http": 200,
+      "time_ms": 207,
+      "size": 15453,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/geotech/bearing/hansen",
+      "http": 200,
+      "time_ms": 118,
+      "size": 581,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/geotech/bearing/meyerhof",
+      "http": 200,
+      "time_ms": 81,
+      "size": 494,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/geotech/bearing/terzaghi",
+      "http": 200,
+      "time_ms": 40,
+      "size": 489,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/geotech/spt/bearing",
+      "http": 200,
+      "time_ms": 44,
+      "size": 455,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/geotech/spt/phi",
+      "http": 200,
+      "time_ms": 79,
+      "size": 366,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/global/building-code",
+      "http": 200,
+      "time_ms": 42,
+      "size": 409,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/global/climate-zones",
+      "http": 200,
+      "time_ms": 100,
+      "size": 1481,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/global/convert-currency",
+      "http": 200,
+      "time_ms": 58,
+      "size": 323,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/global/countries",
+      "http": 200,
+      "time_ms": 88,
+      "size": 1926,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/global/currencies",
+      "http": 200,
+      "time_ms": 72,
+      "size": 2333,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/global/design-recommendations",
+      "http": 200,
+      "time_ms": 19,
+      "size": 663,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/global/fx/convert",
+      "http": 200,
+      "time_ms": 25,
+      "size": 323,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/global/fx/rates",
+      "http": 200,
+      "time_ms": 115,
+      "size": 7147,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/global/fx/refresh",
+      "http": 200,
+      "time_ms": 978,
+      "size": 7147,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "http": 200,
+      "time_ms": 120,
+      "size": 91,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/deep",
+      "http": 200,
+      "time_ms": 73,
+      "size": 762,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/hydro/pond",
+      "http": 400,
+      "time_ms": 81,
+      "size": 76,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/hydro/rational",
+      "http": 400,
+      "time_ms": 6,
+      "size": 56,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/hydro/runoff-coefficients",
+      "http": 200,
+      "time_ms": 45,
+      "size": 605,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/hydro/tc/kirpich",
+      "http": 400,
+      "time_ms": 75,
+      "size": 67,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/infrastructure/generate",
+      "http": 200,
+      "time_ms": 20,
+      "size": 577,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/integration/complete-project",
+      "http": 200,
+      "time_ms": 931,
+      "size": 15536,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/interior/palette/anchors",
+      "http": 200,
+      "time_ms": 77,
+      "size": 1802,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/interior/palette/extract",
+      "http": 400,
+      "time_ms": 44,
+      "size": 75,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/landscape/generate",
+      "http": 200,
+      "time_ms": 37,
+      "size": 234,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/landscape/irrigation/plan",
+      "http": 200,
+      "time_ms": 43,
+      "size": 76,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/landscape/plants",
+      "http": 200,
+      "time_ms": 116,
+      "size": 3950,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/loads/seismic/asce7-elf",
+      "http": 400,
+      "time_ms": 79,
+      "size": 64,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/loads/seismic/eurocode8",
+      "http": 400,
+      "time_ms": 7,
+      "size": 48,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/loads/seismic/r-table",
+      "http": 200,
+      "time_ms": 56,
+      "size": 442,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/loads/wind/asce7",
+      "http": 200,
+      "time_ms": 107,
+      "size": 1276,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/loads/wind/eurocode",
+      "http": 200,
+      "time_ms": 137,
+      "size": 1730,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/marketplace/contact",
+      "http": 200,
+      "time_ms": 69,
+      "size": 137,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/marketplace/contractors",
+      "http": 200,
+      "time_ms": 84,
+      "size": 4993,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/marketplace/materials",
+      "http": 200,
+      "time_ms": 54,
+      "size": 3925,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials/countries",
+      "http": 200,
+      "time_ms": 79,
+      "size": 3055,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials/country-prices",
+      "http": 200,
+      "time_ms": 162,
+      "size": 38732,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials/current-prices",
+      "http": 200,
+      "time_ms": 174,
+      "size": 27661,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/materials/estimate",
+      "http": 200,
+      "time_ms": 207,
+      "size": 18675,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/materials/index",
+      "http": 200,
+      "time_ms": 77,
+      "size": 477,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/materials/refresh-index",
+      "http": 200,
+      "time_ms": 1064,
+      "size": 1925,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/mep/generate",
+      "http": 200,
+      "time_ms": 120,
+      "size": 724,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/modeler/boolean",
+      "http": 200,
+      "time_ms": 43,
+      "size": 227,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/modeler/create",
+      "http": 200,
+      "time_ms": 180,
+      "size": 1375,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/modeler/element-types",
+      "http": 200,
+      "time_ms": 211,
+      "size": 1388,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/modeler/modify",
+      "http": 200,
+      "time_ms": 62,
+      "size": 37,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/openapi.json",
+      "http": 200,
+      "time_ms": 41,
+      "size": 70339,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/permits/analyze",
+      "http": 200,
+      "time_ms": 101,
+      "size": 451,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/execute",
+      "http": 200,
+      "time_ms": 59,
+      "size": 61,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/plugins/list",
+      "http": 200,
+      "time_ms": 38,
+      "size": 1410,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/register",
+      "http": 200,
+      "time_ms": 40,
+      "size": 62,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects",
+      "http": 200,
+      "time_ms": 243,
+      "size": 10117,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects",
+      "http": 200,
+      "time_ms": 418,
+      "size": 61,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/<project_id>",
+      "http": 404,
+      "time_ms": 41,
+      "size": 30,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/qs/boq/formats",
+      "http": 200,
+      "time_ms": 87,
+      "size": 1988,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/boq/price",
+      "http": 200,
+      "time_ms": 35,
+      "size": 97,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/boq/render",
+      "http": 200,
+      "time_ms": 37,
+      "size": 518,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/carbon/assess",
+      "http": 400,
+      "time_ms": 59,
+      "size": 50,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/qs/carbon/stages",
+      "http": 200,
+      "time_ms": 40,
+      "size": 523,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/cashflow/s-curve",
+      "http": 400,
+      "time_ms": 56,
+      "size": 81,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/evm",
+      "http": 400,
+      "time_ms": 41,
+      "size": 49,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/nrm1/cost-plan",
+      "http": 400,
+      "time_ms": 82,
+      "size": 53,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/qs/nrm1/template",
+      "http": 200,
+      "time_ms": 39,
+      "size": 3369,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/rate-buildup",
+      "http": 200,
+      "time_ms": 171,
+      "size": 728,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/qs/risk/distributions",
+      "http": 200,
+      "time_ms": 58,
+      "size": 111,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/risk/monte-carlo",
+      "http": 200,
+      "time_ms": 1942,
+      "size": 781,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/tender/compare",
+      "http": 400,
+      "time_ms": 158,
+      "size": 73,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/valuation/interim",
+      "http": 200,
+      "time_ms": 43,
+      "size": 777,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/variations/add",
+      "http": 400,
+      "time_ms": 39,
+      "size": 58,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/qs/variations/clauses",
+      "http": 200,
+      "time_ms": 40,
+      "size": 1070,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/qs/variations/summary",
+      "http": 400,
+      "time_ms": 81,
+      "size": 48,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/variations/update",
+      "http": 400,
+      "time_ms": 126,
+      "size": 40,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/qs/ve/rules",
+      "http": 200,
+      "time_ms": 38,
+      "size": 2102,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qs/ve/suggest",
+      "http": 200,
+      "time_ms": 39,
+      "size": 63,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rc/beam/bending",
+      "http": 400,
+      "time_ms": 80,
+      "size": 68,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rc/beam/shear",
+      "http": 200,
+      "time_ms": 166,
+      "size": 637,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rc/column/axial",
+      "http": 400,
+      "time_ms": 36,
+      "size": 52,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rc/slab/oneway",
+      "http": 400,
+      "time_ms": 66,
+      "size": 68,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rebar/beam",
+      "http": 200,
+      "time_ms": 127,
+      "size": 765,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rebar/column",
+      "http": 200,
+      "time_ms": 251,
+      "size": 451,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rebar/slab",
+      "http": 200,
+      "time_ms": 40,
+      "size": 388,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/render/environments",
+      "http": 200,
+      "time_ms": 39,
+      "size": 793,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/render/material",
+      "http": 200,
+      "time_ms": 234,
+      "size": 47,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/render/materials",
+      "http": 200,
+      "time_ms": 164,
+      "size": 3149,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/render/scene",
+      "http": 200,
+      "time_ms": 285,
+      "size": 988,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/report/client-package",
+      "http": 200,
+      "time_ms": 211,
+      "size": 15876,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/report/comprehensive",
+      "http": 200,
+      "time_ms": 289,
+      "size": 3140,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/report/pdf",
+      "http": 400,
+      "time_ms": 42,
+      "size": 55,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/report/quotation",
+      "http": 200,
+      "time_ms": 77,
+      "size": 11905,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/safety/methods/catalog",
+      "http": 200,
+      "time_ms": 41,
+      "size": 912,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/safety/methods/generate",
+      "http": 400,
+      "time_ms": 42,
+      "size": 40,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/safety/risks/categories",
+      "http": 200,
+      "time_ms": 36,
+      "size": 431,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/safety/risks/register",
+      "http": 200,
+      "time_ms": 40,
+      "size": 4429,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/sched/cpm",
+      "http": 400,
+      "time_ms": 159,
+      "size": 53,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/sched/gantt",
+      "http": 400,
+      "time_ms": 59,
+      "size": 53,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/site/enrich",
+      "http": 400,
+      "time_ms": 57,
+      "size": 47,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/spatial/move-wall",
+      "http": 200,
+      "time_ms": 51,
+      "size": 79,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/spatial/snap",
+      "http": 200,
+      "time_ms": 133,
+      "size": 63,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/spatial/solve",
+      "http": 200,
+      "time_ms": 40,
+      "size": 126,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/spatial/validate",
+      "http": 200,
+      "time_ms": 46,
+      "size": 91,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/steel/baseplate",
+      "http": 200,
+      "time_ms": 6,
+      "size": 493,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/steel/bolt",
+      "http": 200,
+      "time_ms": 72,
+      "size": 738,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/steel/bolt-grades",
+      "http": 200,
+      "time_ms": 44,
+      "size": 299,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/steel/connection",
+      "http": 200,
+      "time_ms": 42,
+      "size": 840,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/steel/sections",
+      "http": 200,
+      "time_ms": 37,
+      "size": 1789,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/steel/select-beam",
+      "http": 200,
+      "time_ms": 37,
+      "size": 824,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/steel/select-column",
+      "http": 200,
+      "time_ms": 41,
+      "size": 682,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/steel/weld",
+      "http": 200,
+      "time_ms": 134,
+      "size": 534,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/store/projects",
+      "http": 200,
+      "time_ms": 85,
+      "size": 186,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/store/projects",
+      "http": 400,
+      "time_ms": 48,
+      "size": 46,
+      "ctype": "application/json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/store/projects/<int:pid>",
+      "http": 404,
+      "time_ms": 264,
+      "size": 207,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/api/store/projects/<int:pid>",
+      "http": 404,
+      "time_ms": 40,
+      "size": 207,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/api/store/projects/<int:pid>/snapshots",
+      "http": 404,
+      "time_ms": 19,
+      "size": 207,
+      "ctype": "text/html"
+    },
+    {
+      "method": "POST",
+      "path": "/api/store/projects/<int:pid>/snapshots",
+      "http": 404,
+      "time_ms": 39,
+      "size": 207,
+      "ctype": "text/html"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/store/snapshots/<int:sid>",
+      "http": 404,
+      "time_ms": 43,
+      "size": 207,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/api/store/snapshots/<int:sid>",
+      "http": 404,
+      "time_ms": 43,
+      "size": 207,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/api/templates",
+      "http": 200,
+      "time_ms": 38,
+      "size": 1096,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/wizard/analyze-floor-plan",
+      "http": 200,
+      "time_ms": 44,
+      "size": 639,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/wizard/calculate-roi",
+      "http": 200,
+      "time_ms": 162,
+      "size": 575,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/wizard/generate-floor-options",
+      "http": 200,
+      "time_ms": 40,
+      "size": 1093,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/wizard/material-recommendations",
+      "http": 200,
+      "time_ms": 37,
+      "size": 1969,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/wizard/save-project",
+      "http": 200,
+      "time_ms": 84,
+      "size": 493,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/wizard/sketch-to-plan",
+      "http": 200,
+      "time_ms": 42,
+      "size": 576,
+      "ctype": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/wizard/upload-image",
+      "http": 400,
+      "time_ms": 60,
+      "size": 29,
+      "ctype": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/console",
+      "http": 200,
+      "time_ms": 60,
+      "size": 50374,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/static/<path:filename>",
+      "http": 404,
+      "time_ms": 37,
+      "size": 207,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/static/wizard-<asset_hash>.css",
+      "http": 404,
+      "time_ms": 40,
+      "size": 0,
+      "ctype": "text/html"
+    },
+    {
+      "method": "GET",
+      "path": "/static/wizard-<asset_hash>.js",
+      "http": 404,
+      "time_ms": 8,
+      "size": 0,
+      "ctype": "text/html"
+    }
+  ]
+}

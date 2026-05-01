@@ -29,5 +29,11 @@ deployment-package/
 .env*.local
 .build-metadata.json
 
+# Mirrored vendor projects (see external/); omit heavy artifacts
+external/**/node_modules/
+external/**/.venv/
+external/**/__pycache__/
+external/**/.pytest_cache/
+
 .vercel
 .env*.local

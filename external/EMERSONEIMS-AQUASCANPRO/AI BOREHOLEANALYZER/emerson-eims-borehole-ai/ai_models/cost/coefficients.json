@@ -1,0 +1,13 @@
+{
+  "drilling_cost_per_meter": 50,
+  "casing_cost_per_meter": 30,
+  "screen_cost_per_meter": 25,
+  "pump_cost": 500,
+  "logistics_base_cost": 300,
+  "permits_cost": 200,
+  "labor_daily_rate": 50,
+  "mobilization_cost": 1000,
+  "demobilization_cost": 500,
+  "materials_markup": 1.2,
+  "contingency_factor": 0.15
+}

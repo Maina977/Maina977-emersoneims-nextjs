@@ -281,12 +281,8 @@ function isHeadlessBrowser(request: NextRequest): boolean {
     }
   }
 
-  // Check if Accept-Language is missing (common in headless browsers)
-  const acceptLang = request.headers.get('accept-language');
-  if (!acceptLang && userAgent) {
-    return true;
-  }
-
+  // Do NOT use missing Accept-Language as a headless signal — many valid clients
+  // (automation, desktop shells, some mobile WebViews) omit it, which produced 403 on normal pages.
   return false;
 }
 
@@ -330,6 +326,16 @@ function getPreferredLocale(request: NextRequest): string {
 // COMBINED MIDDLEWARE
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/** EIMS embed pages: bot UA exempt + Link preconnect to Flask origin. */
+function isEimsEmbedShellPath(pathname: string): boolean {
+  return (
+    pathname === '/pro-building-suite' ||
+    pathname.startsWith('/pro-building-suite/') ||
+    pathname === '/eims-pro' ||
+    pathname.startsWith('/eims-pro/')
+  );
+}
+
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const url = pathname + request.nextUrl.search;
@@ -351,15 +357,15 @@ export function middleware(request: NextRequest) {
   // ─────────────────────────────────────────────────────────────────────────────
   // 1. MALICIOUS BOT DETECTION
   // ─────────────────────────────────────────────────────────────────────────────
-  if (isMaliciousBot(userAgent)) {
+  if (!isEimsEmbedShellPath(pathname) && isMaliciousBot(userAgent)) {
     console.log(`🚫 BLOCKED: Malicious bot from ${clientIP} - UA: ${userAgent.substring(0, 50)}`);
     return new NextResponse('Access Denied', { status: 403 });
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 1.5. HEADLESS BROWSER DETECTION
+  // 1.5. HEADLESS BROWSER DETECTION (User-Agent heuristics only; off in dev)
   // ─────────────────────────────────────────────────────────────────────────────
-  if (isHeadlessBrowser(request)) {
+  if (process.env.NODE_ENV === 'production' && isHeadlessBrowser(request)) {
     console.log(`🚫 BLOCKED: Headless browser from ${clientIP} - UA: ${userAgent.substring(0, 50)}`);
     return new NextResponse('Access Denied', { status: 403 });
   }
@@ -477,12 +483,30 @@ export function middleware(request: NextRequest) {
   // 🚀 WORLD'S #1 FASTEST - PERFORMANCE HEADERS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // Early Hints (103) - Preload critical resources before response
-  response.headers.set('Link', [
+  const linkHints = [
     '</images/logo-tagline.png>; rel=preload; as=image',
     '<https://fonts.googleapis.com>; rel=preconnect',
     '<https://fonts.gstatic.com>; rel=preconnect; crossorigin',
-  ].join(', '));
+  ];
+
+  // EIMS PRO / Building Suite embed: warm connection to Flask before HTML parses.
+  if (isEimsEmbedShellPath(pathname)) {
+    const suiteBase =
+      process.env.NEXT_PUBLIC_EIMS_BUILDING_SUITE_URL || 'http://127.0.0.1:5000';
+    let origin = 'http://127.0.0.1:5000';
+    try {
+      const normalized = suiteBase.trim().startsWith('http')
+        ? suiteBase.trim()
+        : `https://${suiteBase.trim()}`;
+      origin = new URL(normalized).origin;
+    } catch {
+      /* keep default */
+    }
+    linkHints.push(`<${origin}>; rel=preconnect`);
+    linkHints.push(`<${origin}>; rel=dns-prefetch`);
+  }
+
+  response.headers.set('Link', linkHints.join(', '));
 
   // Server Timing - Performance debugging
   response.headers.set('Server-Timing', `middleware;dur=${Date.now() % 100}`);

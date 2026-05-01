@@ -1,0 +1,770 @@
+﻿{
+    "client":  "Mr. \u0026 Mrs. John Kamau",
+    "company":  "EIMS Construction Solutions Ltd",
+    "cost_summary":  {
+                         "contingency":  {
+                                             "local":  1437404.62,
+                                             "usd":  9343.13
+                                         },
+                         "contractor_profit":  {
+                                                   "local":  2371718.46,
+                                                   "usd":  15416.17
+                                               },
+                         "cost_per_sqm":  {
+                                              "local":  85816.16,
+                                              "usd":  557.81
+                                          },
+                         "discount":  {
+                                          "local":  0.0,
+                                          "percentage":  0.0,
+                                          "usd":  0
+                                      },
+                         "equipment_cost":  {
+                                                "local":  897326.15,
+                                                "usd":  5832.62
+                                            },
+                         "grand_total":  {
+                                             "local":  18879555.38,
+                                             "usd":  122717.11
+                                         },
+                         "gross_total":  {
+                                             "local":  16275478.46,
+                                             "usd":  105790.61
+                                         },
+                         "labor_cost":  {
+                                            "local":  1261866.15,
+                                            "usd":  8202.13
+                                        },
+                         "material_cost":  {
+                                               "local":  9308887.69,
+                                               "usd":  60507.77
+                                           },
+                         "net_before_vat":  {
+                                                "local":  16275478.46,
+                                                "usd":  105790.61
+                                            },
+                         "overhead":  {
+                                          "local":  998275.38,
+                                          "usd":  6488.79
+                                      },
+                         "subtotal":  {
+                                          "local":  13903760.0,
+                                          "usd":  90374.44
+                                      },
+                         "vat":  {
+                                     "local":  2604076.92,
+                                     "rate":  16.0,
+                                     "usd":  16926.5
+                                 }
+                     },
+    "currency":  "KES",
+    "estimated_duration_months":  4,
+    "exclusions":  [
+                       "Land acquisition and survey costs",
+                       "Government permit and approval fees",
+                       "Furniture, fittings and equipment (FF\u0026E)",
+                       "Temporary power and water supply during construction",
+                       "Professional fees (architect, engineer, QS)",
+                       "Land rates, taxes and insurance"
+                   ],
+    "generated_at":  "2026-04-26T19:25:58.286319",
+    "payment_schedule":  [
+                             {
+                                 "amount_local":  18879555.38,
+                                 "percentage":  100,
+                                 "stage":  "Full Payment on Contract Signing"
+                             }
+                         ],
+    "payment_terms":  "30/40/20/10",
+    "project_description":  {
+                                "bedrooms_per_unit":  4,
+                                "country":  "Kenya",
+                                "location":  "Nairobi, Kenya",
+                                "stories":  1,
+                                "total_area_m2":  220.0,
+                                "type":  "Residential",
+                                "units":  1
+                            },
+    "quotation_number":  "QS-20260426-0922",
+    "quotation_type":  "quantity_surveyor_quotation",
+    "scope_of_work":  [
+                          "Site clearing and preparation",
+                          "Foundation and substructure works",
+                          "Superstructure: 1-storey residential building (220m²)",
+                          "Roofing and waterproofing",
+                          "Electrical installation and wiring",
+                          "Plumbing, drainage and water supply",
+                          "Internal and external finishes",
+                          "Painting and decorating",
+                          "External works: paving, landscaping, fencing",
+                          "HVAC and mechanical systems",
+                          "Testing, commissioning and handover"
+                      ],
+    "success":  true,
+    "symbol":  "KES",
+    "terms_and_conditions":  [
+                                 "Prices are valid for the stated validity period only",
+                                 "Variations to scope will be priced separately",
+                                 "Payment to be made within 14 days of each stage certificate",
+                                 "Retention of 5% to be released 6 months after practical completion",
+                                 "Contractor to provide 12-month defects liability period",
+                                 "All works to comply with local building regulations",
+                                 "Client to provide clear site access and water/power connection",
+                                 "All prices shown in KES (Kenyan Shilling)"
+                             ],
+    "trade_sections":  {
+                           "A. SUBSTRUCTURE \u0026 SUPERSTRUCTURE":  {
+                                                                         "items":  [
+                                                                                       {
+                                                                                           "amount":  1175810.9,
+                                                                                           "description":  "Portland Cement (50kg)",
+                                                                                           "item_no":  1,
+                                                                                           "quantity":  1232.7,
+                                                                                           "rate":  953.85,
+                                                                                           "unit":  "bag"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  895175.57,
+                                                                                           "description":  "Reinforcement Steel Y12 (12mm)",
+                                                                                           "item_no":  2,
+                                                                                           "quantity":  6845.42,
+                                                                                           "rate":  130.77,
+                                                                                           "unit":  "kg"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  810892.35,
+                                                                                           "description":  "Reinforcement Steel Y16 (16mm)",
+                                                                                           "item_no":  3,
+                                                                                           "quantity":  5989.75,
+                                                                                           "rate":  135.38,
+                                                                                           "unit":  "kg"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  546307.62,
+                                                                                           "description":  "Reinforcement Steel Y10 (10mm)",
+                                                                                           "item_no":  4,
+                                                                                           "quantity":  4278.39,
+                                                                                           "rate":  127.69,
+                                                                                           "unit":  "kg"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  52858.0,
+                                                                                           "description":  "Binding Wire (gauge 18)",
+                                                                                           "item_no":  5,
+                                                                                           "quantity":  264.29,
+                                                                                           "rate":  200.0,
+                                                                                           "unit":  "kg"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  99507.64,
+                                                                                           "description":  "BRC Mesh A142 (4.8m×2.4m)",
+                                                                                           "item_no":  6,
+                                                                                           "quantity":  23.1,
+                                                                                           "rate":  4307.69,
+                                                                                           "unit":  "sheet"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  268315.45,
+                                                                                           "description":  "Fine River Sand",
+                                                                                           "item_no":  7,
+                                                                                           "quantity":  83.05,
+                                                                                           "rate":  3230.77,
+                                                                                           "unit":  "m³"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  664400.0,
+                                                                                           "description":  "Coarse Aggregate (20mm)",
+                                                                                           "item_no":  8,
+                                                                                           "quantity":  166.1,
+                                                                                           "rate":  4000.0,
+                                                                                           "unit":  "m³"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  111784.52,
+                                                                                           "description":  "Concrete Blocks 200mm (8\")",
+                                                                                           "item_no":  9,
+                                                                                           "quantity":  2075.85,
+                                                                                           "rate":  53.85,
+                                                                                           "unit":  "piece"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  68993.79,
+                                                                                           "description":  "Concrete Blocks 100mm (4\")",
+                                                                                           "item_no":  10,
+                                                                                           "quantity":  2491.65,
+                                                                                           "rate":  27.69,
+                                                                                           "unit":  "piece"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  544569.8,
+                                                                                           "description":  "Formwork Plywood 18mm",
+                                                                                           "item_no":  11,
+                                                                                           "quantity":  186.3,
+                                                                                           "rate":  2923.08,
+                                                                                           "unit":  "sheet"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  504448.56,
+                                                                                           "description":  "Timber 50×100mm (Softwood)",
+                                                                                           "item_no":  12,
+                                                                                           "quantity":  1425.6,
+                                                                                           "rate":  353.85,
+                                                                                           "unit":  "m"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  5750.91,
+                                                                                           "description":  "DPC Polythene (1000 gauge)",
+                                                                                           "item_no":  13,
+                                                                                           "quantity":  37.38,
+                                                                                           "rate":  153.85,
+                                                                                           "unit":  "m²"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  96800.0,
+                                                                                           "description":  "Hardcore / Murram",
+                                                                                           "item_no":  14,
+                                                                                           "quantity":  48.4,
+                                                                                           "rate":  2000.0,
+                                                                                           "unit":  "m³"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  245215.74,
+                                                                                           "description":  "Anti-termite Chemical",
+                                                                                           "item_no":  15,
+                                                                                           "quantity":  115.5,
+                                                                                           "rate":  2123.08,
+                                                                                           "unit":  "litre"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  106615.74,
+                                                                                           "description":  "Waterproof Membrane",
+                                                                                           "item_no":  16,
+                                                                                           "quantity":  92.4,
+                                                                                           "rate":  1153.85,
+                                                                                           "unit":  "m²"
+                                                                                       },
+                                                                                       {
+                                                                                           "amount":  18767.94,
+                                                                                           "description":  "Precast Concrete Lintel (1200mm)",
+                                                                                           "item_no":  17,
+                                                                                           "quantity":  13.26,
+                                                                                           "rate":  1415.38,
+                                                                                           "unit":  "piece"
+                                                                                       }
+                                                                                   ],
+                                                                         "subtotal_local":  6216214.53,
+                                                                         "subtotal_usd":  40405.52
+                                                                     },
+                           "B. ELECTRICAL INSTALLATION":  {
+                                                              "items":  [
+                                                                            {
+                                                                                "amount":  15440.36,
+                                                                                "description":  "Copper Wire 2.5mm² (single core)",
+                                                                                "item_no":  18,
+                                                                                "quantity":  173.04,
+                                                                                "rate":  89.23,
+                                                                                "unit":  "m"
+                                                                            },
+                                                                            {
+                                                                                "amount":  6402.01,
+                                                                                "description":  "Copper Wire 1.5mm² (single core)",
+                                                                                "item_no":  19,
+                                                                                "quantity":  104.03,
+                                                                                "rate":  61.54,
+                                                                                "unit":  "m"
+                                                                            },
+                                                                            {
+                                                                                "amount":  14070.0,
+                                                                                "description":  "PVC Conduit 20mm",
+                                                                                "item_no":  20,
+                                                                                "quantity":  140.7,
+                                                                                "rate":  100.0,
+                                                                                "unit":  "m"
+                                                                            },
+                                                                            {
+                                                                                "amount":  8484.0,
+                                                                                "description":  "Switch 1-Gang 1-Way",
+                                                                                "item_no":  21,
+                                                                                "quantity":  12.12,
+                                                                                "rate":  700.0,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  15756.0,
+                                                                                "description":  "Socket Outlet 13A Double",
+                                                                                "item_no":  22,
+                                                                                "quantity":  12.12,
+                                                                                "rate":  1300.0,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  19584.0,
+                                                                                "description":  "LED Downlight 9W",
+                                                                                "item_no":  23,
+                                                                                "quantity":  12.24,
+                                                                                "rate":  1600.0,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  5252.0,
+                                                                                "description":  "Circuit Breaker MCB 20A",
+                                                                                "item_no":  24,
+                                                                                "quantity":  4.04,
+                                                                                "rate":  1300.0,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  5050.0,
+                                                                                "description":  "RCCB/ELCB 40A 30mA",
+                                                                                "item_no":  25,
+                                                                                "quantity":  1.01,
+                                                                                "rate":  5000.0,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  13130.0,
+                                                                                "description":  "Distribution Board 12-Way",
+                                                                                "item_no":  26,
+                                                                                "quantity":  1.01,
+                                                                                "rate":  13000.0,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  3030.0,
+                                                                                "description":  "Earth Rod (1.5m Copper)",
+                                                                                "item_no":  27,
+                                                                                "quantity":  1.01,
+                                                                                "rate":  3000.0,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  21816.0,
+                                                                                "description":  "Smoke Detector",
+                                                                                "item_no":  28,
+                                                                                "quantity":  6.06,
+                                                                                "rate":  3600.0,
+                                                                                "unit":  "piece"
+                                                                            }
+                                                                        ],
+                                                              "subtotal_local":  128014.37,
+                                                              "subtotal_usd":  832.09
+                                                          },
+                           "C. PLUMBING \u0026 DRAINAGE":  {
+                                                               "items":  [
+                                                                             {
+                                                                                 "amount":  9207.72,
+                                                                                 "description":  "PPR Pipe 20mm (Hot/Cold)",
+                                                                                 "item_no":  29,
+                                                                                 "quantity":  39.9,
+                                                                                 "rate":  230.77,
+                                                                                 "unit":  "m"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  9207.7,
+                                                                                 "description":  "PVC Pipe 110mm (4m)",
+                                                                                 "item_no":  30,
+                                                                                 "quantity":  6.3,
+                                                                                 "rate":  1461.54,
+                                                                                 "unit":  "length"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  2180.78,
+                                                                                 "description":  "PVC Pipe 50mm (4m)",
+                                                                                 "item_no":  31,
+                                                                                 "quantity":  3.15,
+                                                                                 "rate":  692.31,
+                                                                                 "unit":  "length"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  20200.0,
+                                                                                 "description":  "Toilet (Close-Coupled)",
+                                                                                 "item_no":  32,
+                                                                                 "quantity":  2.02,
+                                                                                 "rate":  10000.0,
+                                                                                 "unit":  "set"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  13181.54,
+                                                                                 "description":  "Washbasin (Pedestal)",
+                                                                                 "item_no":  33,
+                                                                                 "quantity":  2.04,
+                                                                                 "rate":  6461.54,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  17480.78,
+                                                                                 "description":  "Shower Mixer Valve",
+                                                                                 "item_no":  34,
+                                                                                 "quantity":  2.02,
+                                                                                 "rate":  8653.85,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  13596.16,
+                                                                                 "description":  "Shower Head (Rain 200mm)",
+                                                                                 "item_no":  35,
+                                                                                 "quantity":  2.02,
+                                                                                 "rate":  6730.77,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  11653.84,
+                                                                                 "description":  "Basin Mixer Tap",
+                                                                                 "item_no":  36,
+                                                                                 "quantity":  2.02,
+                                                                                 "rate":  5769.23,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  12625.0,
+                                                                                 "description":  "Kitchen Sink (SS Double Bowl)",
+                                                                                 "item_no":  37,
+                                                                                 "quantity":  1.01,
+                                                                                 "rate":  12500.0,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  7769.23,
+                                                                                 "description":  "Kitchen Mixer Tap",
+                                                                                 "item_no":  38,
+                                                                                 "quantity":  1.01,
+                                                                                 "rate":  7692.31,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  25638.47,
+                                                                                 "description":  "Water Tank (Polyethylene 2000L)",
+                                                                                 "item_no":  39,
+                                                                                 "quantity":  1.01,
+                                                                                 "rate":  25384.62,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  29134.61,
+                                                                                 "description":  "Water Heater (50L Electric)",
+                                                                                 "item_no":  40,
+                                                                                 "quantity":  1.01,
+                                                                                 "rate":  28846.15,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  5884.63,
+                                                                                 "description":  "Floor Drain (SS 150mm)",
+                                                                                 "item_no":  41,
+                                                                                 "quantity":  5.1,
+                                                                                 "rate":  1153.85,
+                                                                                 "unit":  "piece"
+                                                                             },
+                                                                             {
+                                                                                 "amount":  9711.53,
+                                                                                 "description":  "Inspection Chamber Cover (450mm)",
+                                                                                 "item_no":  42,
+                                                                                 "quantity":  2.02,
+                                                                                 "rate":  4807.69,
+                                                                                 "unit":  "piece"
+                                                                             }
+                                                                         ],
+                                                               "subtotal_local":  187471.99,
+                                                               "subtotal_usd":  1218.56
+                                                           },
+                           "D. FINISHES \u0026 JOINERY":  {
+                                                              "items":  [
+                                                                            {
+                                                                                "amount":  484000.0,
+                                                                                "description":  "Ceramic Floor Tile 600×600mm",
+                                                                                "item_no":  43,
+                                                                                "quantity":  242.0,
+                                                                                "rate":  2000.0,
+                                                                                "unit":  "m²"
+                                                                            },
+                                                                            {
+                                                                                "amount":  59569.31,
+                                                                                "description":  "Ceramic Wall Tile 300×600mm",
+                                                                                "item_no":  44,
+                                                                                "quantity":  35.2,
+                                                                                "rate":  1692.31,
+                                                                                "unit":  "m²"
+                                                                            },
+                                                                            {
+                                                                                "amount":  40384.58,
+                                                                                "description":  "Tile Adhesive (20kg)",
+                                                                                "item_no":  45,
+                                                                                "quantity":  52.5,
+                                                                                "rate":  769.23,
+                                                                                "unit":  "bag"
+                                                                            },
+                                                                            {
+                                                                                "amount":  16024.69,
+                                                                                "description":  "Tile Grout (5kg)",
+                                                                                "item_no":  46,
+                                                                                "quantity":  32.55,
+                                                                                "rate":  492.31,
+                                                                                "unit":  "bag"
+                                                                            },
+                                                                            {
+                                                                                "amount":  14215.38,
+                                                                                "description":  "Interior Emulsion Paint (20L)",
+                                                                                "item_no":  47,
+                                                                                "quantity":  3.3,
+                                                                                "rate":  4307.69,
+                                                                                "unit":  "can"
+                                                                            },
+                                                                            {
+                                                                                "amount":  12861.53,
+                                                                                "description":  "Exterior Weather Paint (20L)",
+                                                                                "item_no":  48,
+                                                                                "quantity":  2.2,
+                                                                                "rate":  5846.15,
+                                                                                "unit":  "can"
+                                                                            },
+                                                                            {
+                                                                                "amount":  7446.16,
+                                                                                "description":  "Primer/Undercoat (20L)",
+                                                                                "item_no":  49,
+                                                                                "quantity":  2.2,
+                                                                                "rate":  3384.62,
+                                                                                "unit":  "can"
+                                                                            },
+                                                                            {
+                                                                                "amount":  142918.05,
+                                                                                "description":  "Cement Plaster (Wall 15mm)",
+                                                                                "item_no":  50,
+                                                                                "quantity":  265.42,
+                                                                                "rate":  538.46,
+                                                                                "unit":  "m²"
+                                                                            },
+                                                                            {
+                                                                                "amount":  365538.1,
+                                                                                "description":  "Gypsum Board Ceiling (9.5mm)",
+                                                                                "item_no":  51,
+                                                                                "quantity":  237.6,
+                                                                                "rate":  1538.46,
+                                                                                "unit":  "m²"
+                                                                            },
+                                                                            {
+                                                                                "amount":  35150.79,
+                                                                                "description":  "Flush Door Leaf (900×2100)",
+                                                                                "item_no":  52,
+                                                                                "quantity":  7.14,
+                                                                                "rate":  4923.08,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  28560.0,
+                                                                                "description":  "Timber Door Frame (900×2100)",
+                                                                                "item_no":  53,
+                                                                                "quantity":  7.14,
+                                                                                "rate":  4000.0,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  22375.39,
+                                                                                "description":  "Security Steel Door",
+                                                                                "item_no":  54,
+                                                                                "quantity":  1.01,
+                                                                                "rate":  22153.85,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  23494.18,
+                                                                                "description":  "Door Lock Set (Mortise)",
+                                                                                "item_no":  55,
+                                                                                "quantity":  7.07,
+                                                                                "rate":  3323.08,
+                                                                                "unit":  "piece"
+                                                                            },
+                                                                            {
+                                                                                "amount":  10441.82,
+                                                                                "description":  "Door Hinges (3\" Stainless, pair)",
+                                                                                "item_no":  56,
+                                                                                "quantity":  14.14,
+                                                                                "rate":  738.46,
+                                                                                "unit":  "pair"
+                                                                            },
+                                                                            {
+                                                                                "amount":  57507.71,
+                                                                                "description":  "Aluminum Window Frame",
+                                                                                "item_no":  57,
+                                                                                "quantity":  8.9,
+                                                                                "rate":  6461.54,
+                                                                                "unit":  "m²"
+                                                                            },
+                                                                            {
+                                                                                "amount":  13395.66,
+                                                                                "description":  "Float Glass 4mm (Clear)",
+                                                                                "item_no":  58,
+                                                                                "quantity":  9.07,
+                                                                                "rate":  1476.92,
+                                                                                "unit":  "m²"
+                                                                            },
+                                                                            {
+                                                                                "amount":  5815.4,
+                                                                                "description":  "Putty / Wall Filler (5kg)",
+                                                                                "item_no":  59,
+                                                                                "quantity":  6.3,
+                                                                                "rate":  923.08,
+                                                                                "unit":  "bag"
+                                                                            },
+                                                                            {
+                                                                                "amount":  46523.07,
+                                                                                "description":  "Granite Countertop (25mm)",
+                                                                                "item_no":  60,
+                                                                                "quantity":  3.15,
+                                                                                "rate":  14769.23,
+                                                                                "unit":  "m²"
+                                                                            }
+                                                                        ],
+                                                              "subtotal_local":  1386221.82,
+                                                              "subtotal_usd":  9010.44
+                                                          },
+                           "E. EXTERNAL WORKS \u0026 ROOFING":  {
+                                                                    "items":  [
+                                                                                  {
+                                                                                      "amount":  180276.55,
+                                                                                      "description":  "Roofing Sheet (Box Profile 3m)",
+                                                                                      "item_no":  61,
+                                                                                      "quantity":  97.65,
+                                                                                      "rate":  1846.15,
+                                                                                      "unit":  "sheet"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  9821.62,
+                                                                                      "description":  "Ridge Cap",
+                                                                                      "item_no":  62,
+                                                                                      "quantity":  16.8,
+                                                                                      "rate":  584.62,
+                                                                                      "unit":  "piece"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  10500.0,
+                                                                                      "description":  "Guttering (PVC 100mm, 3m)",
+                                                                                      "item_no":  63,
+                                                                                      "quantity":  10.5,
+                                                                                      "rate":  1000.0,
+                                                                                      "unit":  "length"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  3876.91,
+                                                                                      "description":  "Downpipe (PVC 75mm, 3m)",
+                                                                                      "item_no":  64,
+                                                                                      "quantity":  5.25,
+                                                                                      "rate":  738.46,
+                                                                                      "unit":  "length"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  41935.19,
+                                                                                      "description":  "Fascia Board (225mm Timber)",
+                                                                                      "item_no":  65,
+                                                                                      "quantity":  61.95,
+                                                                                      "rate":  676.92,
+                                                                                      "unit":  "m"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  175915.28,
+                                                                                      "description":  "Concrete Paving Block (60mm)",
+                                                                                      "item_no":  66,
+                                                                                      "quantity":  69.3,
+                                                                                      "rate":  2538.46,
+                                                                                      "unit":  "m²"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  146596.18,
+                                                                                      "description":  "Topsoil",
+                                                                                      "item_no":  67,
+                                                                                      "quantity":  34.65,
+                                                                                      "rate":  4230.77,
+                                                                                      "unit":  "m³"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  81907.32,
+                                                                                      "description":  "Grass Sod / Turf",
+                                                                                      "item_no":  68,
+                                                                                      "quantity":  121.0,
+                                                                                      "rate":  676.92,
+                                                                                      "unit":  "m²"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  191654.02,
+                                                                                      "description":  "Perimeter Wall Block (200mm)",
+                                                                                      "item_no":  69,
+                                                                                      "quantity":  3114.3,
+                                                                                      "rate":  61.54,
+                                                                                      "unit":  "piece"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  85461.53,
+                                                                                      "description":  "Septic Tank (Prefab 3000L)",
+                                                                                      "item_no":  70,
+                                                                                      "quantity":  1.01,
+                                                                                      "rate":  84615.38,
+                                                                                      "unit":  "piece"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  34184.61,
+                                                                                      "description":  "Soakaway Pit (Precast Rings)",
+                                                                                      "item_no":  71,
+                                                                                      "quantity":  1.01,
+                                                                                      "rate":  33846.15,
+                                                                                      "unit":  "set"
+                                                                                  },
+                                                                                  {
+                                                                                      "amount":  15383.07,
+                                                                                      "description":  "Manhole Cover (Heavy Duty)",
+                                                                                      "item_no":  72,
+                                                                                      "quantity":  3.03,
+                                                                                      "rate":  5076.92,
+                                                                                      "unit":  "piece"
+                                                                                  }
+                                                                              ],
+                                                                    "subtotal_local":  977512.28,
+                                                                    "subtotal_usd":  6353.81
+                                                                },
+                           "F. MECHANICAL \u0026 HVAC":  {
+                                                             "items":  [
+                                                                           {
+                                                                               "amount":  315430.76,
+                                                                               "description":  "Split AC Unit (12000 BTU)",
+                                                                               "item_no":  73,
+                                                                               "quantity":  4.04,
+                                                                               "rate":  78076.92,
+                                                                               "unit":  "set"
+                                                                           },
+                                                                           {
+                                                                               "amount":  47314.6,
+                                                                               "description":  "Ceiling Fan (1200mm)",
+                                                                               "item_no":  74,
+                                                                               "quantity":  6.06,
+                                                                               "rate":  7807.69,
+                                                                               "unit":  "piece"
+                                                                           },
+                                                                           {
+                                                                               "amount":  13518.47,
+                                                                               "description":  "Exhaust Fan (200mm)",
+                                                                               "item_no":  75,
+                                                                               "quantity":  3.03,
+                                                                               "rate":  4461.54,
+                                                                               "unit":  "piece"
+                                                                           },
+                                                                           {
+                                                                               "amount":  10138.84,
+                                                                               "description":  "Fire Extinguisher (CO2 5kg)",
+                                                                               "item_no":  76,
+                                                                               "quantity":  1.01,
+                                                                               "rate":  10038.46,
+                                                                               "unit":  "piece"
+                                                                           },
+                                                                           {
+                                                                               "amount":  27036.92,
+                                                                               "description":  "Water Pump (0.75kW)",
+                                                                               "item_no":  77,
+                                                                               "quantity":  1.01,
+                                                                               "rate":  26769.23,
+                                                                               "unit":  "piece"
+                                                                           }
+                                                                       ],
+                                                             "subtotal_local":  413439.59,
+                                                             "subtotal_usd":  2687.35
+                                                         }
+                       },
+    "validity":  "30 days from date of issue"
+}

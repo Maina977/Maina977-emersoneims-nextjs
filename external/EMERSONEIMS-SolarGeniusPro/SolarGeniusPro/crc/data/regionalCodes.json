@@ -1,0 +1,61 @@
+{
+  "countries": {
+    "Kenya": {
+      "codes": [
+        {
+          "code": "KS-1978",
+          "name": "Kenya Standard for Electrical Installations",
+          "version": "2023",
+          "authority": "KEBS",
+          "requirements": [
+            {
+              "id": "K-ELEC-001",
+              "category": "electrical",
+              "requirement": "Maximum DC voltage",
+              "value": 1000,
+              "unit": "V",
+              "severity": "mandatory"
+            }
+          ]
+        }
+      ],
+      "permits": ["EPRA License", "KPLC Net Metering Agreement", "County Building Permit"],
+      "fees": 25000,
+      "processingDays": 30,
+      "tariff": 25.5,
+      "currency": "KES"
+    },
+    "Nigeria": {
+      "codes": [
+        {
+          "code": "NESP-2023",
+          "name": "Nigerian Electricity Supply Standards",
+          "version": "2023",
+          "authority": "NERC",
+          "requirements": []
+        }
+      ],
+      "permits": ["NERC Generation License", "DISCO Connection Agreement"],
+      "fees": 50000,
+      "processingDays": 45,
+      "tariff": 65,
+      "currency": "NGN"
+    },
+    "South Africa": {
+      "codes": [
+        {
+          "code": "SANS-10142-1",
+          "name": "The Wiring of Premises",
+          "version": "2023",
+          "authority": "SABS",
+          "requirements": []
+        }
+      ],
+      "permits": ["NERSA Registration", "Municipal Approval"],
+      "fees": 35000,
+      "processingDays": 60,
+      "tariff": 2.5,
+      "currency": "ZAR"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80" viewBox="0 0 320 80" role="img" aria-label="Emerson EiMS">
+  <title>Emerson EiMS</title>
+  <desc>Emerson EiMS wordmark</desc>
+  <g fill="none" fill-rule="evenodd">
+    <text x="0" y="38"
+      fill="#FFFFFF"
+      font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
+      font-size="36"
+      font-weight="800"
+      letter-spacing="-0.8">EMERSON</text>
+    <text x="2" y="64"
+      fill="#FBBF24"
+      font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, &quot;Liberation Mono&quot;, &quot;Courier New&quot;, monospace"
+      font-size="18"
+      font-weight="700"
+      letter-spacing="6">EiMS</text>
+  </g>
+</svg>

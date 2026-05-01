@@ -1,0 +1,28 @@
+# EmersonEIMS Building Suite Pro — local dev compose
+# Usage:
+#   docker compose up --build
+# then browse http://localhost:5000/console
+
+services:
+  eims:
+    build: .
+    image: eims-bsp:2026.04
+    container_name: eims_bsp
+    ports:
+      - "5000:5000"
+    environment:
+      EIMS_VERSION:               "2026.04-compose"
+      EIMS_RATELIMIT_PER_MINUTE:  "120"
+      EIMS_RATELIMIT_BURST:       "30"
+    volumes:
+      - eims_uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:5000/api/health',timeout=3).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  eims_uploads:
