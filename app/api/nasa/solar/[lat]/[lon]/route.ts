@@ -16,10 +16,11 @@ const PARAMETERS = [
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { lat: string; lon: string } }
+  { params }: { params: Promise<{ lat: string; lon: string }> }
 ) {
-  const lat = parseFloat(params.lat);
-  const lon = parseFloat(params.lon);
+  const { lat: latStr, lon: lonStr } = await params;
+  const lat = parseFloat(latStr);
+  const lon = parseFloat(lonStr);
 
   if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
     return NextResponse.json({ error: 'Invalid coordinates' }, { status: 400 });
