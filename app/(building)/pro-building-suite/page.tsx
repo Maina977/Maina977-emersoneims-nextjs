@@ -23,7 +23,7 @@ export default function ProBuildingSuitePage() {
       <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
       <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-      <link rel="prefetch" href="/eims-building-suite.html" as="document" />
+      <link rel="prefetch" href="/eims-building-suite" as="document" />
       <ProBuildingSuiteClient />
     </>
   );

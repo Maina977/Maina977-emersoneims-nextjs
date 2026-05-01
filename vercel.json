@@ -228,7 +228,7 @@
       ]
     },
     {
-      "source": "/eims-building-suite.html",
+      "source": "/eims-building-suite(.html)?",
       "headers": [
         {
           "key": "Cache-Control",
