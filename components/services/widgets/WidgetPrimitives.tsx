@@ -7,7 +7,7 @@
  */
 'use client';
 
-import { useState, useId } from 'react';
+import { useState } from 'react';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -103,7 +103,6 @@ export function Knob({
   source,
 }: KnobProps) {
   const [val, setVal] = useState(initial);
-  const id = useId();
   const range = max - min;
   // 270° sweep, starting at 135° (bottom-left) ending at 405° (bottom-right)
   const startAngle = 135;
@@ -171,8 +170,7 @@ export function Knob({
         )}
       </div>
       <div className="flex items-center justify-center">
-        <svg viewBox="0 0 220 220" className="w-full max-w-[220px]" role="img" aria-labelledby={id}>
-          <title id={id}>{label} dial showing {val} {unit}</title>
+        <svg viewBox="0 0 220 220" className="w-full max-w-[220px]" role="img" aria-label={`${label} dial`}>
           {/* track */}
           <path
             d={`M ${cx + r * Math.cos(rad(startAngle))} ${cy + r * Math.sin(rad(startAngle))} A ${r} ${r} 0 1 1 ${cx + r * Math.cos(rad(startAngle + sweep))} ${cy + r * Math.sin(rad(startAngle + sweep))}`}
