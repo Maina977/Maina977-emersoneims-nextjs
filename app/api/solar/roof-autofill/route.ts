@@ -100,9 +100,16 @@ out geom;
     });
   } catch (err) {
     console.error('[solar/roof-autofill]', err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Roof autofill failed' },
-      { status: 502 }
-    );
+    // Graceful degradation: never fail hard; return safe defaults so calculator can proceed
+    const defaultAreaM2 = 120;
+    return NextResponse.json({
+      found: false,
+      roofAreaM2: defaultAreaM2,
+      usableRoofM2: Math.round(defaultAreaM2 * 0.7),
+      pitchDegrees: 15,
+      roofType: 'unknown',
+      source: 'default',
+      note: err instanceof Error ? err.message : 'Overpass unavailable',
+    });
   }
 }
