@@ -178,7 +178,11 @@ export default async function ServiceDetailPage({ params }: Props) {
         service={service}
         relatedServices={relatedServices}
         category={category}
-        trustBadges={TRUST_BADGES}
+        trustBadges={
+          service.slug === 'cummins-generators'
+            ? TRUST_BADGES
+            : TRUST_BADGES.filter((b) => !/warranty/i.test(b.title))
+        }
         contact={BUSINESS_CONTACT}
         diagnostics={diagnostics}
         bible={bible}

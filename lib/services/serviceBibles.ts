@@ -108,7 +108,7 @@ const GENERATOR_BIBLE: ServiceBible = {
     'Finally, the most under-spec\'d item is the fuel-day-tank piping. A diesel-engine return temperature can hit 80 °C; routing the return to the bottom of a tank that already supplies the engine recirculates hot fuel and chokes capacity. Returns must enter at the top, separated from suction by a baffle, and the day-tank should be vented through a flame-arrester that itself is checked yearly.',
   ],
   topBrands: [
-    { name: 'Cummins', origin: 'United States', founded: '1919', capability: 'Vertical-integrated engine + alternator + controls (PowerCommand). 10 kVA – 3.75 MVA range with QSB / QSL / QSK / QSV engine families. Reference choice for hospitals and data-centres.', bestFor: ['Hospitals', 'Data centres', 'Industry'], warranty: 'Standard 24 months / 1,000 hr; extended to 5 yr on QSB7 / QSL9 with PMS contract', tier: 'premium', notes: 'EmersonEIMS authorised dealer in Kenya — 3-year warranty.' },
+    { name: 'Cummins', origin: 'United States', founded: '1919', capability: 'Vertical-integrated engine + alternator + controls (PowerCommand). 10 kVA – 3.75 MVA range with QSB / QSL / QSK / QSV engine families. Reference choice for hospitals and data-centres.', bestFor: ['Hospitals', 'Data centres', 'Industry'], warranty: 'Standard 24 months / 1,000 hr; extended to 5 yr on QSB7 / QSL9 with PMS contract', tier: 'premium', notes: 'EmersonEIMS authorised dealer in Kenya.' },
     { name: 'Perkins', origin: 'United Kingdom (Caterpillar group)', founded: '1932', capability: 'Diesel engine builder; gensets assembled by partners (FG Wilson, Olympian). Strong parts network in East Africa.', bestFor: ['Construction', 'Telecom shelters', 'SME'], warranty: 'Typically 24 months — varies by packager', tier: 'mid', notes: 'Look for "Perkins Genuine Parts" lock-tag holograms; counterfeits are common in regional markets.' },
     { name: 'Caterpillar (CAT)', origin: 'United States', founded: '1925', capability: 'Heavy-duty C-series engines (C7.1 to C175). Industrial-grade, premium dealer support.', bestFor: ['Mining', 'Petrochemical', 'Mission-critical'], warranty: '12 months std / extended to 5 yr via Customer Value Agreement', tier: 'premium', notes: 'Highest TCO of the top tier; lowest unplanned-downtime statistics in heavy industry.' },
     { name: 'FG Wilson', origin: 'United Kingdom', founded: '1966', capability: 'Perkins-engined gensets 6.8 kVA – 2,500 kVA. Strong African distribution.', bestFor: ['Commercial', 'Light industrial'], warranty: '24 months / 1,000 hr standard', tier: 'mid', notes: 'Owned by Caterpillar; benefits from CAT parts logistics.' },
@@ -239,7 +239,6 @@ const GENERATOR_BIBLE: ServiceBible = {
     { scenario: '1 MVA MTU — Tier-3 data centre', capex: 'KES 30M – 40M', annualSaving: 'SLA-credit avoidance ≈ KES 8M / yr', payback: '4–5 years', notes: 'Closed-transition ATS mandatory.' },
   ],
   warrantyOptions: [
-    'EmersonEIMS 3-Year Cummins warranty — bumper-to-bumper on parts & labour',
     'OEM standard 24 months / 1,000 hr',
     'Extended OEM 5 yr / 5,000 hr — requires PMS contract',
     'Loadbank-test certificate annually keeps warranty live',
