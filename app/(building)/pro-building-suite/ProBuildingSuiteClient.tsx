@@ -55,7 +55,7 @@ export default function ProBuildingSuiteClient() {
         </div>
       )}
       <iframe
-        src="/eims-building-suite"
+        src="/eims-building-suite.html?v=20260501-2"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={() => setLoaded(true)}
         loading="eager"
