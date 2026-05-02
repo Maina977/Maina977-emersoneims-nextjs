@@ -34,7 +34,28 @@ export default defineConfig([
       "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
       "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-require-imports": "warn"
+      "@typescript-eslint/no-require-imports": "warn",
+      // Prevent fragile parent-relative imports that point at top-level folders.
+      // These break easily when files move and were the root cause of repeated
+      // Vercel build failures in components/building/security/SecurityProvider.tsx.
+      // Always use the "@/" path alias for cross-folder imports.
+      "no-restricted-imports": ["error", {
+        patterns: [
+          {
+            group: [
+              "**/../lib/**",
+              "**/../components/**",
+              "**/../app/**",
+              "**/../hooks/**",
+              "**/../config/**",
+              "**/../types/**",
+              "**/../styles/**",
+              "**/../prisma/**"
+            ],
+            message: "Use the '@/' path alias instead of parent-relative imports into top-level folders (e.g. '@/lib/...' not '../../lib/...')."
+          }
+        ]
+      }]
     }
   },
   {
