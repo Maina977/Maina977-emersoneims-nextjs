@@ -336,6 +336,16 @@ function isEimsEmbedShellPath(pathname: string): boolean {
   );
 }
 
+/**
+ * Versioned wizard HTML files in /public. These are static, immutable assets
+ * (filename includes a date stamp). Middleware should NOT override their
+ * cache headers — we want CDN + browser to cache for a year.
+ * Matches both `.html` and the cleanUrls-stripped path.
+ */
+function isWizardAsset(pathname: string): boolean {
+  return pathname.startsWith('/eims-building-suite-');
+}
+
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const url = pathname + request.nextUrl.search;
@@ -477,7 +487,13 @@ export function middleware(request: NextRequest) {
   response.headers.set('X-Copyright', 'Generator Oracle 2024-2026');
   response.headers.set('X-Content-Protected', 'true');
   response.headers.set('X-Robots-Tag', 'noarchive, noimageindex'); // Prevent caching by scrapers
-  response.headers.set('Cache-Control', 'private, no-store'); // Prevent proxy caching of sensitive content
+
+  // Cache override: skip for versioned wizard assets so the immutable header
+  // set in next.config.ts headers() is preserved (otherwise visitors refetch
+  // the 553KB wizard on every page load).
+  if (!isWizardAsset(pathname)) {
+    response.headers.set('Cache-Control', 'private, no-store'); // Prevent proxy caching of sensitive content
+  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 🚀 WORLD'S #1 FASTEST - PERFORMANCE HEADERS
