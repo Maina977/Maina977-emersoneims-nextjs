@@ -496,18 +496,43 @@ Many new ECMs require initialization before first use:
 - SmartGen SG72 Software: Free download
 `;
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Centralised model id, override via CLAUDE_MODEL env var. Default targets the
+// current Opus 4.7 ID; the previous hardcoded 'claude-opus-4-6' is not a
+// valid Anthropic model slug and caused every chat call to 503.
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-opus-4-7';
+
+// Lazily build the Anthropic client so missing-key cases never reach the SDK.
+let anthropicClient: Anthropic | null = null;
+function getAnthropic(): Anthropic {
+  if (!anthropicClient) {
+    anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return anthropicClient;
+}
 
 export async function POST(request: NextRequest) {
+  // Explicit env validation — surface configuration problems with a stable
+  // error code instead of swallowing them into a canned "having trouble"
+  // prose response that looks like a real assistant reply.
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      {
+        success: false,
+        code: 'AI_NOT_CONFIGURED',
+        error: 'ANTHROPIC_API_KEY is not set on the server',
+        message:
+          'Set ANTHROPIC_API_KEY (and optionally CLAUDE_MODEL) on the deployment to enable Expert AI Chat.',
+      },
+      { status: 503 },
+    );
+  }
+
   try {
     const { messages, systemPrompt, context } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
-        { error: 'Messages array is required' },
+        { success: false, code: 'INVALID_REQUEST', error: 'Messages array is required' },
         { status: 400 }
       );
     }
@@ -635,8 +660,8 @@ REMEMBER: Your goal is to guide the technician to a complete solution. Don't lea
 `;
 
     // Call Claude API
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+    const response = await getAnthropic().messages.create({
+      model: CLAUDE_MODEL,
       max_tokens: 4096,
       system: enhancedSystemPrompt,
       messages: messages.map((m: { role: string; content: string }) => ({
@@ -679,6 +704,8 @@ REMEMBER: Your goal is to guide the technician to a complete solution. Don't lea
     metadata.suggestedFollowUps = verificationQuestions;
 
     return NextResponse.json({
+      success: true,
+      source: 'ai',
       content,
       metadata,
       model: response.model,
@@ -687,35 +714,24 @@ REMEMBER: Your goal is to guide the technician to a complete solution. Don't lea
   } catch (error) {
     console.error('Expert chat API error:', error);
 
-    // Return a proper error response with fallback content
+    // Distinguish JSON-parse errors (bad client request) from genuine
+    // upstream failures so the UI can render the right message.
+    const isSyntax = error instanceof SyntaxError;
+    const code = isSyntax ? 'INVALID_REQUEST' : 'AI_UPSTREAM_ERROR';
+    const status = isSyntax ? 400 : 502;
+
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to process request',
-        fallbackContent: `I'm experiencing a temporary connection issue. While I reconnect, here are some general troubleshooting tips:
-
-**For Starting Issues:**
-1. Check battery voltage (should be >12.4V for 12V systems)
-2. Verify fuel supply and filter condition
-3. Check for air in fuel system
-4. Verify starter motor engagement
-
-**For Overheating:**
-1. Check coolant level and condition
-2. Verify thermostat operation
-3. Inspect radiator for blockage
-4. Check water pump operation
-
-**For Electrical Issues:**
-1. Check AVR adjustment
-2. Verify excitation circuit
-3. Test alternator output
-4. Check circuit breakers
-
-Please try your question again or use the other diagnostic panels for detailed guidance.`,
-        metadata: {},
+        code,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message:
+          isSyntax
+            ? 'Request body could not be parsed.'
+            : 'AI service is temporarily unavailable. Please retry in a moment.',
+        model: CLAUDE_MODEL,
       },
-      { status: 503 } // Service temporarily unavailable
+      { status },
     );
   }
 }
@@ -725,6 +741,8 @@ export async function GET() {
   return NextResponse.json({
     status: 'ok',
     service: 'Generator Oracle Expert AI Chat',
+    aiConfigured: !!process.env.ANTHROPIC_API_KEY,
+    model: CLAUDE_MODEL,
     capabilities: [
       'Diagnosis',
       'Fault Code Interpretation',

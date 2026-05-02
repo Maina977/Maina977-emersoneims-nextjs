@@ -9,10 +9,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Centralised vision model id, override via CLAUDE_MODEL env var. The previous
+// hardcoded 'claude-opus-4-6' is not a valid Anthropic model slug and caused
+// every visual diagnose call to fail (silently swallowed by the demo
+// fallback in the client).
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-opus-4-7';
+
+// Lazy client so missing-key cases never reach the SDK.
+let anthropicClient: Anthropic | null = null;
+function getAnthropic(): Anthropic {
+  if (!anthropicClient) {
+    anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return anthropicClient;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE ENGINE COMPONENT DATABASE
@@ -379,6 +389,21 @@ Always respond in VALID JSON format with this complete structure:
 }`;
 
 export async function POST(request: NextRequest) {
+  // Up-front env check — refuse to dress up mock data as a successful AI
+  // analysis. The frontend can still surface a demo on the user's request.
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      {
+        success: false,
+        code: 'AI_NOT_CONFIGURED',
+        error: 'ANTHROPIC_API_KEY is not set on the server',
+        message:
+          'Set ANTHROPIC_API_KEY (and optionally CLAUDE_MODEL) on the deployment to enable AI Visual Diagnostic.',
+      },
+      { status: 503 },
+    );
+  }
+
   try {
     const { image, images, context, mode, generatorMake, generatorModel, enhancedAnalysis } = await request.json();
 
@@ -387,41 +412,9 @@ export async function POST(request: NextRequest) {
 
     if (!imageData) {
       return NextResponse.json(
-        { success: false, error: 'No image provided' },
+        { success: false, code: 'INVALID_REQUEST', error: 'No image provided' },
         { status: 400 }
       );
-    }
-
-    // Create hint from mode, context, and generator info for smart mock matching
-    const analysisHint = [
-      mode || '',
-      context || '',
-      generatorMake || '',
-      generatorModel || '',
-    ].filter(Boolean).join(' ');
-
-    // Check for API key
-    if (!process.env.ANTHROPIC_API_KEY) {
-      console.log('AI Visual Diagnostic: No API key configured, using demo mode');
-      // Return mock analysis for demo/development with flag indicating demo mode
-      // Use smart matching based on context and mode
-      const mockResult = getMockAnalysis(analysisHint);
-
-      // Enhance mock result with generator info if provided
-      if (generatorMake || generatorModel) {
-        mockResult.equipment = {
-          ...mockResult.equipment,
-          brand: generatorMake || mockResult.equipment?.brand || 'Unknown',
-          model: generatorModel || mockResult.equipment?.model || 'Unknown',
-        };
-      }
-
-      return NextResponse.json({
-        success: true,
-        demoMode: true,
-        message: 'Running in demo mode - configure ANTHROPIC_API_KEY for live AI analysis',
-        result: mockResult,
-      });
     }
 
     const image_to_analyze = imageData;
@@ -462,8 +455,8 @@ CRITICAL: Be thorough and specific. Technicians in the field need:
 Provide your response in the JSON format specified in the system prompt.`;
 
     // Call Claude Vision API
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+    const response = await getAnthropic().messages.create({
+      model: CLAUDE_MODEL,
       max_tokens: 8192,
       system: DIAGNOSTIC_SYSTEM_PROMPT,
       messages: [
@@ -540,23 +533,38 @@ Provide your response in the JSON format specified in the system prompt.`;
 
     return NextResponse.json({
       success: true,
+      source: 'ai',
       aiAnalysis: true,
+      model: response.model,
       result,
     });
   } catch (error) {
     console.error('Visual diagnosis error:', error);
 
-    // Provide specific error information
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-    // Return proper error status with fallback content for graceful degradation
-    return NextResponse.json({
-      success: false,
-      demoMode: true,
-      error: `AI analysis failed: ${errorMessage}. Showing sample analysis.`,
-      fallbackResult: getMockAnalysis(),
-    }, { status: 503 }); // Service temporarily unavailable
+    const isSyntax = error instanceof SyntaxError;
+    return NextResponse.json(
+      {
+        success: false,
+        code: isSyntax ? 'INVALID_REQUEST' : 'AI_UPSTREAM_ERROR',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: isSyntax
+          ? 'Request body could not be parsed.'
+          : 'AI vision service is temporarily unavailable. Please retry in a moment.',
+        model: CLAUDE_MODEL,
+      },
+      { status: isSyntax ? 400 : 502 },
+    );
   }
+}
+
+// Health check — exposes whether the route is configured to run real AI.
+export async function GET() {
+  return NextResponse.json({
+    status: 'ok',
+    service: 'Generator Oracle AI Visual Diagnostic',
+    aiConfigured: !!process.env.ANTHROPIC_API_KEY,
+    model: CLAUDE_MODEL,
+  });
 }
 
 // Multiple mock scenarios for different image types

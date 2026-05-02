@@ -1781,8 +1781,12 @@ export async function performHybridDiagnosis(
 ): Promise<HybridDiagnosisResult> {
   const startTime = Date.now();
 
-  // If useAI is explicitly false or undefined (browser-side), use local
-  if (options.useAI === false || typeof window !== 'undefined') {
+  // If useAI is explicitly false, skip the API call entirely.
+  // (Original code also skipped on `typeof window !== 'undefined'`, which is
+  // always true in the browser — that pinned every UI request to local
+  // analysis even when ANTHROPIC_API_KEY and USE_AI_DIAGNOSTICS were set.
+  // The browser is exactly where this fetch is supposed to run.)
+  if (options.useAI === false) {
     return {
       success: true,
       result: performAIDiagnosis(options.readings),

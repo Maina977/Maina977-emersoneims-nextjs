@@ -429,6 +429,15 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
   const [analysisMode, setAnalysisMode] = useState<string>('auto');
   const [analysisResult, setAnalysisResult] = useState<VisualAnalysisResult | null>(null);
   const [showBoundingBoxes, setShowBoundingBoxes] = useState(true);
+  // Provenance of the currently-displayed result. Demo is only ever set when
+  // the user explicitly clicks "View demo" after a backend failure, so the UI
+  // never silently presents fabricated data as a real AI analysis.
+  const [resultSource, setResultSource] = useState<'ai' | 'demo' | null>(null);
+  const [analysisError, setAnalysisError] = useState<{
+    code: 'AI_NOT_CONFIGURED' | 'AI_UPSTREAM_ERROR' | 'NETWORK_ERROR' | 'INVALID_REQUEST' | 'UNKNOWN';
+    message: string;
+    detail?: string;
+  } | null>(null);
 
   // UI state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -561,6 +570,9 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
     setIsAnalyzing(true);
     setAnalysisProgress(0);
     setError(null);
+    setAnalysisError(null);
+    setResultSource(null);
+    setAnalysisResult(null);
     setViewMode('results');
 
     const stages = [
@@ -606,9 +618,10 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
 
-      if (data.success) {
+      // Real AI success path — server confirms it ran the model.
+      if (response.ok && data?.success && data?.aiAnalysis && data?.result) {
         setAnalysisProgress(100);
         setAnalysisStage('Analysis complete!');
 
@@ -628,6 +641,7 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
         };
 
         setAnalysisResult(enhancedResult);
+        setResultSource('ai');
         onAnalysisComplete?.(enhancedResult);
 
         // Voice narration if enabled
@@ -638,19 +652,58 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
           speechSynthesis.speak(utterance);
         }
       } else {
-        setError(data.error || 'Analysis failed. Please try again.');
+        // Backend refused or errored — surface the structured code rather
+        // than silently substituting a fake "successful" result.
+        const KNOWN_CODES = ['AI_NOT_CONFIGURED', 'AI_UPSTREAM_ERROR', 'INVALID_REQUEST'] as const;
+        type ApiErrorCode = (typeof KNOWN_CODES)[number];
+        const apiCode: ApiErrorCode | null =
+          typeof data?.code === 'string' && (KNOWN_CODES as readonly string[]).includes(data.code)
+            ? (data.code as ApiErrorCode)
+            : null;
+        const code: NonNullable<typeof analysisError>['code'] =
+          apiCode ?? (response.status === 503 ? 'AI_NOT_CONFIGURED' : 'AI_UPSTREAM_ERROR');
+        setAnalysisError({
+          code,
+          message:
+            data?.message ||
+            (code === 'AI_NOT_CONFIGURED'
+              ? 'AI Visual Diagnostic is not configured on the server.'
+              : 'AI vision service is unavailable. Please retry in a moment.'),
+          detail: data?.error || `HTTP ${response.status}`,
+        });
+        setAnalysisProgress(0);
+        setAnalysisStage('');
       }
     } catch (err) {
-      // Generate comprehensive demo result for offline/demo mode
-      const demoResult = generateDemoResult();
-      setAnalysisProgress(100);
-      setAnalysisStage('Analysis complete!');
-      setAnalysisResult(demoResult);
-      onAnalysisComplete?.(demoResult);
+      setAnalysisError({
+        code: 'NETWORK_ERROR',
+        message: 'Could not reach the AI vision service.',
+        detail: err instanceof Error ? err.message : 'Network request failed',
+      });
+      setAnalysisProgress(0);
+      setAnalysisStage('');
     }
 
     setIsAnalyzing(false);
   }, [capturedImages, analysisMode, onAnalysisComplete, isVoiceEnabled]);
+
+  // Explicit user opt-in to view canned demo data after a backend failure.
+  // Result is clearly labelled as DEMO via resultSource === 'demo' so it can
+  // never be confused with a real AI analysis.
+  const showDemoResult = useCallback(() => {
+    const demoResult = generateDemoResult();
+    setAnalysisResult(demoResult);
+    setResultSource('demo');
+    setAnalysisProgress(100);
+    setAnalysisStage('Demo analysis loaded');
+    onAnalysisComplete?.(demoResult);
+  }, [onAnalysisComplete]);
+
+  const retryAnalysis = useCallback(() => {
+    if (!isAnalyzing) analyzeImages();
+  }, [isAnalyzing, analyzeImages]);
+
+  const dismissAnalysisError = useCallback(() => setAnalysisError(null), []);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // DEMO RESULT GENERATOR (For offline/demo use)
@@ -1258,6 +1311,8 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
     setCapturedImages([]);
     setActiveImageIndex(0);
     setAnalysisResult(null);
+    setResultSource(null);
+    setAnalysisError(null);
     setViewMode('camera');
     setFacingMode('environment');
     setImageEnhancement({ brightness: 100, contrast: 100, zoom: 100, rotation: 0 });
@@ -1958,6 +2013,73 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
           </div>
         )}
 
+        {/* Error state — shown only when the backend explicitly fails. The
+            user can retry, dismiss, or opt-in to seeing demo data, but demo
+            data is never auto-substituted as if it were a real AI result. */}
+        {!isAnalyzing && analysisError && !analysisResult && (
+          <div className="py-12 px-4 max-w-xl mx-auto">
+            <div
+              className={`p-6 rounded-2xl border ${
+                analysisError.code === 'AI_NOT_CONFIGURED'
+                  ? 'bg-amber-500/10 border-amber-500/40'
+                  : 'bg-red-500/10 border-red-500/40'
+              }`}
+              role="alert"
+            >
+              <div className="flex items-start gap-3 mb-4">
+                <AlertTriangle
+                  className={`w-6 h-6 flex-shrink-0 ${
+                    analysisError.code === 'AI_NOT_CONFIGURED' ? 'text-amber-400' : 'text-red-400'
+                  }`}
+                />
+                <div className="flex-1 min-w-0">
+                  <h3
+                    className={`text-lg font-bold ${
+                      analysisError.code === 'AI_NOT_CONFIGURED' ? 'text-amber-300' : 'text-red-300'
+                    }`}
+                  >
+                    {analysisError.code === 'AI_NOT_CONFIGURED'
+                      ? 'AI Visual Diagnostic not configured'
+                      : analysisError.code === 'NETWORK_ERROR'
+                        ? 'Network error'
+                        : 'AI service unavailable'}
+                  </h3>
+                  <p className="text-sm text-slate-300 mt-1">{analysisError.message}</p>
+                  {analysisError.detail && (
+                    <p className="text-xs text-slate-500 mt-2 font-mono break-all">
+                      {analysisError.detail}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {analysisError.code !== 'AI_NOT_CONFIGURED' && (
+                  <button
+                    onClick={retryAnalysis}
+                    disabled={isAnalyzing}
+                    className="px-4 py-2 text-sm font-semibold rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white disabled:opacity-50"
+                  >
+                    Retry analysis
+                  </button>
+                )}
+                <button
+                  onClick={showDemoResult}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100"
+                  title="Loads pre-canned sample output. Not a real analysis."
+                >
+                  View demo result
+                </button>
+                <button
+                  onClick={dismissAnalysisError}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800/60 hover:bg-slate-700 text-slate-300"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Analysis Results */}
         <AnimatePresence>
           {analysisResult && (
@@ -1966,6 +2088,29 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
+              {/* Provenance banner — distinguishes a genuine AI response from
+                  the canned demo result, so the technician is never misled. */}
+              {resultSource === 'demo' && (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/40 rounded-xl flex items-start gap-3" role="status">
+                  <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-amber-300 font-bold text-sm">Demo data — not a real analysis</p>
+                    <p className="text-slate-300 text-xs mt-0.5">
+                      The AI vision service is unavailable, so this is illustrative pre-canned output.
+                      Do not act on these findings as if they were a live diagnosis.
+                    </p>
+                  </div>
+                </div>
+              )}
+              {resultSource === 'ai' && (
+                <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl flex items-center gap-3" role="status">
+                  <Brain className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                  <p className="text-purple-200 text-xs">
+                    <span className="font-bold">Live AI analysis</span> — generated by Claude Vision against your captured image{capturedImages.length > 1 ? 's' : ''}.
+                  </p>
+                </div>
+              )}
+
               {/* Confidence Banner */}
               <div className="p-4 bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-500/30 rounded-xl">
                 <div className="flex items-center justify-between">

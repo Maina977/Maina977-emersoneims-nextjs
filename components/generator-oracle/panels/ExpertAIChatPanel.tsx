@@ -367,12 +367,20 @@ function MessageBubble({ message }: { message: Message }) {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 
+type ChatError = {
+  code: 'AI_NOT_CONFIGURED' | 'AI_UPSTREAM_ERROR' | 'NETWORK_ERROR' | 'UNKNOWN';
+  message: string;
+  detail?: string;
+};
+
 export default function ExpertAIChatPanel({ className = '' }: { className?: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [chatError, setChatError] = useState<ChatError | null>(null);
+  const [lastUserMessage, setLastUserMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -429,6 +437,8 @@ Tell me about your generator problem, or choose a quick action below to get star
     setInput('');
     setIsLoading(true);
     setShowQuickActions(false);
+    setChatError(null);
+    setLastUserMessage(content.trim());
 
     try {
       // Build conversation history for context
@@ -455,11 +465,27 @@ Tell me about your generator problem, or choose a quick action below to get star
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
-      }
+      const data = await response.json().catch(() => null);
 
-      const data = await response.json();
+      if (!response.ok || !data || data.success === false) {
+        // Strip the typing bubble + the user's message (the user can resend
+        // via the retry button). Surface a clearly-styled error banner.
+        setMessages(prev => prev.filter(m => !m.isTyping && m.id !== userMessage.id));
+        const code: ChatError['code'] =
+          data?.code === 'AI_NOT_CONFIGURED' ? 'AI_NOT_CONFIGURED'
+          : data?.code === 'AI_UPSTREAM_ERROR' ? 'AI_UPSTREAM_ERROR'
+          : 'UNKNOWN';
+        setChatError({
+          code,
+          message:
+            data?.message ||
+            (code === 'AI_NOT_CONFIGURED'
+              ? 'AI service is not configured on the server.'
+              : 'AI service is unavailable. Please retry.'),
+          detail: data?.error || `HTTP ${response.status}`,
+        });
+        return;
+      }
 
       // Remove typing indicator and add actual response
       setMessages(prev => [
@@ -474,30 +500,25 @@ Tell me about your generator problem, or choose a quick action below to get star
       ]);
     } catch (error) {
       console.error('Chat error:', error);
-
-      // Fallback response
-      setMessages(prev => [
-        ...prev.filter(m => !m.isTyping),
-        {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: `I apologize, but I'm having trouble connecting to the AI service right now.
-
-However, I can still help! Here are some general troubleshooting steps:
-
-1. **For starting issues**: Check battery voltage, fuel supply, and air filter
-2. **For overheating**: Verify coolant level, radiator condition, and thermostat
-3. **For electrical issues**: Check AVR, breakers, and alternator connections
-4. **For fault codes**: Note the exact code and controller model
-
-Please try again, or use the other diagnostic panels in Generator Oracle for detailed guidance.`,
-          timestamp: new Date(),
-        },
-      ]);
+      setMessages(prev => prev.filter(m => !m.isTyping && m.id !== userMessage.id));
+      setChatError({
+        code: 'NETWORK_ERROR',
+        message: 'Could not reach the AI service.',
+        detail: error instanceof Error ? error.message : 'Network request failed',
+      });
     } finally {
       setIsLoading(false);
     }
   }, [messages, isLoading]);
+
+  // Retry the last user message that failed.
+  const retryLastMessage = useCallback(() => {
+    if (lastUserMessage && !isLoading) {
+      sendMessage(lastUserMessage);
+    }
+  }, [lastUserMessage, isLoading, sendMessage]);
+
+  const dismissError = useCallback(() => setChatError(null), []);
 
   // Handle quick action click
   const handleQuickAction = useCallback((action: QuickAction) => {
@@ -558,10 +579,22 @@ Please try again, or use the other diagnostic panels in Generator Oracle for det
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 border border-green-500/30 rounded-full">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs text-green-400 font-medium">Online</span>
-            </div>
+            {chatError ? (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 border border-red-500/40 rounded-full">
+                <div className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="text-xs text-red-300 font-medium">AI Unavailable</span>
+              </div>
+            ) : isLoading ? (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/20 border border-cyan-500/30 rounded-full">
+                <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="text-xs text-cyan-300 font-medium">Thinking…</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 border border-green-500/30 rounded-full">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs text-green-400 font-medium">Online</span>
+              </div>
+            )}
             <button
               onClick={clearConversation}
               className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
@@ -628,6 +661,68 @@ Please try again, or use the other diagnostic panels in Generator Oracle for det
                   <span className="text-sm text-slate-300 group-hover:text-white">{action.label}</span>
                 </button>
               ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Error banner — shown only when the API call fails. Gives the user
+          a clear, dismissible signal instead of a fake assistant reply. */}
+      <AnimatePresence>
+        {chatError && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className={`flex-shrink-0 mx-4 mb-3 p-4 border rounded-xl ${
+              chatError.code === 'AI_NOT_CONFIGURED'
+                ? 'bg-amber-500/10 border-amber-500/40'
+                : 'bg-red-500/10 border-red-500/40'
+            }`}
+            role="alert"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl leading-none">
+                {chatError.code === 'AI_NOT_CONFIGURED' ? '⚙️' : '⚠️'}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p
+                  className={`text-sm font-semibold ${
+                    chatError.code === 'AI_NOT_CONFIGURED' ? 'text-amber-300' : 'text-red-300'
+                  }`}
+                >
+                  {chatError.code === 'AI_NOT_CONFIGURED'
+                    ? 'AI service not configured'
+                    : chatError.code === 'AI_UPSTREAM_ERROR'
+                      ? 'AI service error'
+                      : chatError.code === 'NETWORK_ERROR'
+                        ? 'Network error'
+                        : 'Request failed'}
+                </p>
+                <p className="text-sm text-slate-300 mt-0.5">{chatError.message}</p>
+                {chatError.detail && (
+                  <p className="text-xs text-slate-500 mt-1 font-mono break-all">
+                    {chatError.detail}
+                  </p>
+                )}
+                <div className="flex gap-2 mt-3">
+                  {chatError.code !== 'AI_NOT_CONFIGURED' && lastUserMessage && (
+                    <button
+                      onClick={retryLastMessage}
+                      disabled={isLoading}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white disabled:opacity-50"
+                    >
+                      Retry
+                    </button>
+                  )}
+                  <button
+                    onClick={dismissError}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-200"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
