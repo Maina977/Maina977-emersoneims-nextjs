@@ -1,18 +1,30 @@
-import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import ProBuildingSuiteClient from '@/app/(building)/pro-building-suite/ProBuildingSuiteClient';
 
-// /solutions/building used to mount an older React-based building suite
-// (ProBuildingSuiteComplete). The single source-of-truth is now the HTML
-// wizard at /pro-building-suite. Redirect permanently so every old link,
-// bookmark, and nav entry lands on the new wizard.
+// /solutions/building IS the canonical Building Suite page. It mounts the
+// new HTML wizard (eims-building-suite-vYYYYMMDD.html) via a same-origin
+// iframe — exactly the same component used by /pro-building-suite. There is
+// only ONE building-suite UI in this codebase and this is its home.
 export const metadata: Metadata = {
   title: 'Pro Building Suite | Emerson EIMS',
   description:
     'Full EIMS engineering, quantity surveying, BIM, and professional reports — Building Suite Pro.',
-  robots: { index: false, follow: true },
-  alternates: { canonical: '/pro-building-suite' },
+  robots: { index: true, follow: true },
+  alternates: { canonical: '/solutions/building' },
+  other: {
+    'link-prefetch': '/eims-building-suite-v20260503.html',
+  },
 };
 
-export default function BuildingRedirectPage() {
-  redirect('/pro-building-suite');
+export default function BuildingPage() {
+  return (
+    <>
+      <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+      <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+      <link rel="prefetch" href="/eims-building-suite-v20260503.html" as="document" />
+      <ProBuildingSuiteClient />
+    </>
+  );
 }
