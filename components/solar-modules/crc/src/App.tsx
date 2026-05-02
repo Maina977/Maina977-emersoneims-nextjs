@@ -50,11 +50,18 @@ const SIDEBAR_W_MINI  = 68;
 const AppContainer = styled.div`
   display: grid;
   grid-template-columns: auto 1fr;
+  /* 100dvh tracks the dynamic viewport (iOS Safari collapsing URL bar);
+     100vh fallback for older browsers. Prevents blank-strip + scroll-trap on mobile. */
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: #050818;
   color: #E6F1FF;
   font-feature-settings: 'cv02','cv03','cv04','cv11';
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const Sidebar = styled.aside<{ $open: boolean; $mini: boolean }>`
@@ -66,6 +73,7 @@ const Sidebar = styled.aside<{ $open: boolean; $mini: boolean }>`
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   overflow-x: hidden;
   transition: width 0.18s ease, transform 0.22s ease;
@@ -218,6 +226,7 @@ const MainArea = styled.section`
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   min-width: 0;
 `;

@@ -8,7 +8,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const CACHE_VERSION = 'v6-20260501-buildingsuite';
+const CACHE_VERSION = 'v8-20260502-precache-expanded';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const IMAGES_CACHE = `images-${CACHE_VERSION}`;
 const PAGES_CACHE = `pages-${CACHE_VERSION}`;
@@ -27,6 +27,13 @@ const PRECACHE_ASSETS = [
   '/generators',
   '/solar',
   '/contact',
+  '/about-us',
+  '/services',
+  '/solutions',
+  '/booking',
+  '/brands',
+  '/ai-tools',
+  '/products/generator-oracle',
 ];
 
 // Performance tracking

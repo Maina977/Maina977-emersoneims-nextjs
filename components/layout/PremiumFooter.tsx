@@ -18,7 +18,7 @@ const FOOTER_LINKS = {
   solutions: [
     { label: 'Generators', href: '/generators' },
     { label: 'Solar Energy', href: '/solar' },
-    { label: 'Diagnostic Suite', href: '/diagnostic-suite' },
+    { label: 'Diagnostic Suite', href: '/diagnostics' },
     { label: 'Troubleshooting', href: '/troubleshooting' },
     { label: 'Knowledge Base', href: '/knowledge-base' },
     { label: 'FAQ', href: '/faq' },

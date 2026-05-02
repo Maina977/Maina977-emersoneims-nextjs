@@ -323,13 +323,16 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Images - Long cache
+      // Images - Long cache, but revalidate weekly so in-place replacements
+      // (e.g. re-running the compress-heavy-images script) reach users without
+      // needing a filename change. SWR=604800 = serve stale up to 7 days while
+      // refetching in background.
       {
         source: '/images/(.*)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, stale-while-revalidate=86400',
+            value: 'public, max-age=2592000, stale-while-revalidate=604800',
           },
         ],
       },
@@ -367,6 +370,20 @@ const nextConfig: NextConfig = {
           {
             key: 'Cross-Origin-Resource-Policy',
             value: 'cross-origin',
+          },
+        ],
+      },
+      // Versioned wizard HTML files in /public are immutable: filename includes a date stamp
+      // that bumps every time the file is replaced, so we can cache aggressively at the edge.
+      // First load is fast; repeat loads are instant. Cache-busting is automatic via the URL.
+      // NOTE: bump the date suffix here whenever a new wizard version is deployed
+      // (see memory: project_building_suite_pro_wizard_sync.md).
+      {
+        source: '/eims-building-suite-v20260502.html',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   },
   other: {
     // Hint browser to start fetching the wizard shell + Three.js CDN immediately
-    'link-prefetch': '/eims-building-suite-v20260501.html',
+    'link-prefetch': '/eims-building-suite-v20260502.html',
   },
 };
 
@@ -23,7 +23,7 @@ export default function ProBuildingSuitePage() {
       <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
       <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-      <link rel="prefetch" href="/eims-building-suite-v20260501.html" as="document" />
+      <link rel="prefetch" href="/eims-building-suite-v20260502.html" as="document" />
       <ProBuildingSuiteClient />
     </>
   );

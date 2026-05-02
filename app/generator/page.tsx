@@ -54,6 +54,7 @@ export default function GeneratorPage() {
           muted
           loop
           playsInline
+          preload="metadata"
           poster="/images/GEN 2-1920x1080.png"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>

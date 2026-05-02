@@ -2094,6 +2094,7 @@ export default function GeneratorPage() {
             loop
             muted
             playsInline
+            preload="metadata"
             poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
             className="absolute inset-0 w-full h-full object-cover"
             style={{

@@ -16,10 +16,10 @@ import { useEffect, useState } from 'react';
 // One-shot stale-cache kicker. If a visitor still has the OLD service worker
 // (which stale-while-revalidates this page back to the previous wizard URL),
 // nuke ALL caches + unregister, then reload once. Marked in sessionStorage so
-// it never loops.
+// it never loops. Bump the KEY date whenever the wizard file is replaced.
 function killOldServiceWorkerOnce() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
-  const KEY = 'eims-bs-cache-cleared-20260501';
+  const KEY = 'eims-bs-cache-cleared-20260502';
   if (sessionStorage.getItem(KEY)) return;
   Promise.all([
     navigator.serviceWorker.getRegistrations().then((regs) =>
@@ -44,7 +44,19 @@ export default function ProBuildingSuiteClient() {
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 4rem)', background: '#0a0e27' }}>
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        // 100dvh handles iOS Safari's collapsing URL bar correctly on mobile/tablet
+        // (100vh would leave a blank strip when the bar retracts). 4rem accounts for the global fixed nav.
+        height: 'calc(100dvh - 4rem)',
+        minHeight: 'calc(100vh - 4rem)',
+        background: '#0a0e27',
+        overflow: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       {!loaded && (
         <div
           style={{
@@ -77,7 +89,7 @@ export default function ProBuildingSuiteClient() {
         </div>
       )}
       <iframe
-        src="/eims-building-suite-v20260501.html"
+        src="/eims-building-suite-v20260502.html"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={() => setLoaded(true)}
         loading="eager"
