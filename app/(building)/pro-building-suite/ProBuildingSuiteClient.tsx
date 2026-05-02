@@ -13,10 +13,32 @@
 
 import { useEffect, useState } from 'react';
 
+// One-shot stale-cache kicker. If a visitor still has the OLD service worker
+// (which stale-while-revalidates this page back to the previous wizard URL),
+// nuke ALL caches + unregister, then reload once. Marked in sessionStorage so
+// it never loops.
+function killOldServiceWorkerOnce() {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+  const KEY = 'eims-bs-cache-cleared-20260501';
+  if (sessionStorage.getItem(KEY)) return;
+  Promise.all([
+    navigator.serviceWorker.getRegistrations().then((regs) =>
+      Promise.all(regs.map((r) => r.unregister()))
+    ),
+    'caches' in window
+      ? caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      : Promise.resolve(),
+  ]).then(() => {
+    sessionStorage.setItem(KEY, '1');
+    location.reload();
+  });
+}
+
 export default function ProBuildingSuiteClient() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    killOldServiceWorkerOnce();
     const t = window.setTimeout(() => setLoaded(true), 6000); // safety hide (wizard typically ready in 2-3s)
     return () => window.clearTimeout(t);
   }, []);
@@ -55,7 +77,7 @@ export default function ProBuildingSuiteClient() {
         </div>
       )}
       <iframe
-        src="/eims-building-suite.html?v=20260501-2"
+        src="/eims-building-suite-v20260501.html"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={() => setLoaded(true)}
         loading="eager"
