@@ -8,7 +8,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const CACHE_VERSION = 'v5-20260223-ultrafast';
+const CACHE_VERSION = 'v6-20260501-buildingsuite';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const IMAGES_CACHE = `images-${CACHE_VERSION}`;
 const PAGES_CACHE = `pages-${CACHE_VERSION}`;
@@ -116,6 +116,15 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-http(s) requests
   if (!url.protocol.startsWith('http')) return;
+
+  // BYPASS: never cache the Building Suite Pro wizard or its container page
+  if (
+    url.pathname === '/pro-building-suite' ||
+    url.pathname.startsWith('/pro-building-suite/') ||
+    url.pathname.startsWith('/eims-building-suite')
+  ) {
+    return;
+  }
 
   // Route to appropriate caching strategy
   if (url.pathname.startsWith('/_next/static/')) {
