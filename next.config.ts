@@ -379,7 +379,7 @@ const nextConfig: NextConfig = {
       // NOTE: bump the date suffix here whenever a new wizard version is deployed
       // (see memory: project_building_suite_pro_wizard_sync.md).
       {
-        source: '/eims-building-suite-v20260502.html',
+        source: '/eims-building-suite-v20260503.html',
         headers: [
           {
             key: 'Cache-Control',

@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react';
 // it never loops. Bump the KEY date whenever the wizard file is replaced.
 function killOldServiceWorkerOnce() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
-  const KEY = 'eims-bs-cache-cleared-20260502';
+  const KEY = 'eims-bs-cache-cleared-20260503';
   if (sessionStorage.getItem(KEY)) return;
   Promise.all([
     navigator.serviceWorker.getRegistrations().then((regs) =>
@@ -89,7 +89,7 @@ export default function ProBuildingSuiteClient() {
         </div>
       )}
       <iframe
-        src="/eims-building-suite-v20260502.html"
+        src="/eims-building-suite-v20260503.html"
         title="EMERSON EIMS Building Suite Pro"
         onLoad={() => setLoaded(true)}
         loading="eager"
