@@ -318,15 +318,6 @@ const SOLAR_PROJECTS = [
     image: '/images/solar power farms.png',
     stats: { panels: 556, capacity: '250kWp', savings: '65%', payback: '3.2 years' }
   },
-  {
-    client: 'Kivukoni International School',
-    location: 'Kilifi',
-    type: 'Solar-Generator Hybrid',
-    before: 'Unreliable grid power affecting classes, high fuel costs running generator during day',
-    after: '20kWp solar array covering daytime load, generator for backup only - 80% fuel savings',
-    image: '/images/solar for flower farms.png',
-    stats: { panels: 40, capacity: '20kWp', savings: '80%', payback: '2.5 years' }
-  },
 ];
 
 // ==================== FAQ SECTION ====================

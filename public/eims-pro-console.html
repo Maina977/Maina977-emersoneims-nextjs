@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>EmersonEIMS Building Suite Pro &middot; Console</title>
+<style>
+  :root{
+    --bg:#0b1220;--panel:#111a2e;--panel2:#16223c;--ink:#e6edf7;--mute:#9aa7c2;
+    --acc:#3b82f6;--acc2:#22c55e;--bad:#ef4444;--warn:#f59e0b;--line:#1f2c4a;
+    --code:#0e1730; --pill:#1f2a44;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,Segoe UI,Roboto,sans-serif}
+  a{color:var(--acc)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;
+         background:linear-gradient(90deg,#0b1220,#13203b);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  header h1{margin:0;font-size:16px;letter-spacing:.4px}
+  header h1 small{color:var(--mute);font-weight:400;margin-left:8px}
+  .pill{padding:3px 8px;border-radius:999px;background:var(--pill);color:var(--mute);font-size:11px;margin-left:6px}
+  .ok{color:var(--acc2)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+  main{display:grid;grid-template-columns:260px 1fr;height:calc(100% - 46px)}
+  nav{border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:10px 0}
+  nav .grp{padding:10px 14px 4px;color:var(--mute);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+  nav button{display:block;width:100%;text-align:left;padding:8px 14px;background:none;border:0;color:var(--ink);
+             cursor:pointer;font-size:13px;border-left:3px solid transparent}
+  nav button:hover{background:var(--panel2)}
+  nav button.active{background:var(--panel2);border-left-color:var(--acc);color:#fff}
+  section.view{padding:18px 22px;overflow-y:auto}
+  h2{margin:0 0 4px;font-size:18px}
+  .sub{color:var(--mute);margin:0 0 14px;font-size:13px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+  label{display:block;font-size:12px;color:var(--mute);margin:6px 0 4px}
+  input,select,textarea{width:100%;background:#0e1730;border:1px solid var(--line);color:var(--ink);
+                          padding:7px 9px;border-radius:6px;font:13px monospace}
+  textarea{min-height:90px;font:12px/1.35 ui-monospace,Consolas,monospace}
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  button.act{background:var(--acc);color:#fff;border:0;padding:9px 14px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:10px}
+  button.act:hover{background:#2563eb}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .out{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;
+       max-height:520px;overflow:auto;color:#dbe7ff}
+  .stat{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;background:#1f2a44;color:#c5d3f1}
+  .chip.ok{background:#123526;color:#86efac}.chip.bad{background:#3a1111;color:#fca5a5}
+  .metric{display:inline-block;background:#13203b;border:1px solid var(--line);padding:8px 10px;border-radius:8px;margin:0 8px 8px 0}
+  .metric b{display:block;color:#9fb4dd;font-size:11px;font-weight:500}
+  .metric span{font-size:15px;font-weight:700;color:#fff}
+  .tblwrap{overflow:auto;border:1px solid var(--line);border-radius:8px}
+  .note{padding:10px;border:1px solid var(--line);background:#101b33;border-radius:8px;white-space:pre-wrap;line-height:1.5}
+  .ref{font-size:11px;color:var(--mute);margin-top:4px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:6px}
+  .b-eng{background:#1e3a8a}.b-qs{background:#065f46}.b-arch{background:#7c2d12}.b-plat{background:#4c1d95}
+  .b-safe{background:#b45309}.b-land{background:#15803d}.b-int{background:#be185d}.b-ai{background:#0e7490}
+  .b-exp{background:#5b21b6}.b-disrupt{background:#dc2626}.b-collab{background:#0891b2}
+  .b-mep{background:#059669}.b-health{background:#9333ea}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  th{color:var(--mute);font-weight:600}
+  .tool-hint{color:var(--mute);font-size:12px;margin-left:8px;font-weight:400}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>EmersonEIMS Building Suite Pro <small>Professional Console</small></h1>
+  <div>
+    <span class="pill" id="health">Checking connection…</span>
+  </div>
+</header>
+
+<main>
+<nav id="nav"></nav>
+<section class="view" id="view"></section>
+</main>
+
+<script>
+// ==========================================================================
+//  Module registry — every entry maps a sidebar item to a calculator UI.
+//  Each calculator has: title, group, endpoint, method, fields, refs, render.
+// ==========================================================================
+const MODULES = [
+
+  // ---------------- Engineering ----------------
+  { id:'wind', group:'Engineering', tag:'b-eng',
+    title:'Wind loads (ASCE 7-22)',
+    endpoint:'/api/loads/wind/asce7', method:'POST',
+    refs:['ASCE 7-22 Ch. 26-27', 'EN 1991-1-4'],
+    fields:[
+      {k:'V_mph', label:'Basic wind speed (mph)', type:'number', def:115},
+      {k:'height_ft', label:'Mean roof height (ft)', type:'number', def:30},
+      {k:'length_ft', label:'Length (ft)', type:'number', def:60},
+      {k:'width_ft', label:'Width (ft)', type:'number', def:40},
+      {k:'exposure', label:'Exposure', type:'select', opts:['B','C','D'], def:'C'},
+      {k:'enclosure', label:'Enclosure', type:'select',
+        opts:['enclosed','partially_enclosed','open'], def:'enclosed'},
+    ]},
+
+  { id:'seismic', group:'Engineering', tag:'b-eng',
+    title:'Seismic ELF (ASCE 7-22 §12.8)',
+    endpoint:'/api/loads/seismic/asce7-elf', method:'POST',
+    refs:['ASCE 7-22 §12.8','PMI/ANSI'],
+    fields:[
+      {k:'SDS', label:'SDS (g)', type:'number', def:1.0, step:'0.01'},
+      {k:'SD1', label:'SD1 (g)', type:'number', def:0.5, step:'0.01'},
+      {k:'R',   label:'R factor', type:'number', def:8},
+      {k:'Ie',  label:'Ie',       type:'number', def:1.0, step:'0.1'},
+      {k:'W_kN', label:'Seismic weight W (kN)', type:'number', def:8896},
+      {k:'height_ft', label:'Building height (ft)', type:'number', def:48},
+      {k:'structure_type', label:'Structure type', type:'select',
+        opts:['steel_moment_frame','concrete_moment_frame','eccentric_braced','other'],
+        def:'steel_moment_frame'},
+      {k:'stories', label:'Stories', type:'number', def:4},
+    ]},
+
+  { id:'geotech', group:'Engineering', tag:'b-eng',
+    title:'Bearing capacity (Terzaghi)',
+    endpoint:'/api/geotech/bearing/terzaghi', method:'POST',
+    refs:['Terzaghi 1943','Meyerhof','Hansen'],
+    fields:[
+      {k:'c_kPa', label:'Cohesion c (kPa)', type:'number', def:10},
+      {k:'phi_deg', label:'Friction φ (°)', type:'number', def:30},
+      {k:'gamma_kN_m3', label:'Unit weight γ (kN/m³)', type:'number', def:18},
+      {k:'B_m', label:'Footing width B (m)', type:'number', def:2, step:'0.1'},
+      {k:'Df_m', label:'Embedment Df (m)', type:'number', def:1.5, step:'0.1'},
+      {k:'shape', label:'Shape', type:'select',
+        opts:['strip','square','circular','rectangular'], def:'strip'},
+    ]},
+
+  { id:'rc_beam', group:'Engineering', tag:'b-eng',
+    title:'RC beam — singly reinforced (EN 1992-1-1)',
+    endpoint:'/api/rc/beam/bending', method:'POST',
+    refs:['EN 1992-1-1 §6.1'],
+    fields:[
+      {k:'b_mm', label:'b (mm)', type:'number', def:300},
+      {k:'h_mm', label:'h (mm)', type:'number', def:500},
+      {k:'d_mm', label:'d effective (mm)', type:'number', def:450},
+      {k:'As_mm2', label:'As (mm²)', type:'number', def:1500},
+      {k:'fck_MPa', label:'fck (MPa)', type:'number', def:30},
+      {k:'fyk_MPa', label:'fyk (MPa)', type:'number', def:500},
+      {k:'Med_kNm', label:'M_Ed (kNm)', type:'number', def:180},
+    ]},
+
+  { id:'steel_bolt', group:'Engineering', tag:'b-eng',
+    title:'Steel bolt capacity (EN 1993-1-8)',
+    endpoint:'/api/steel/bolt', method:'POST',
+    refs:['EN 1993-1-8 §3.6'],
+    fields:[
+      {k:'designation', label:'Bolt size', type:'select',
+        opts:['M12','M16','M20','M24','M27','M30'], def:'M20'},
+      {k:'grade', label:'Grade', type:'select', opts:['4.6','5.6','8.8','10.9'], def:'8.8'},
+      {k:'shear_planes', label:'Shear planes', type:'number', def:1},
+      {k:'threads_in_shear', label:'Threads in shear plane', type:'select',
+        opts:[true,false], def:true},
+      {k:'t_ply_mm', label:'Ply thickness (mm)', type:'number', def:10},
+      {k:'fu_ply_MPa', label:'fu ply (MPa)', type:'number', def:410},
+      {k:'e1_mm', label:'e1 (mm)', type:'number', def:30},
+      {k:'p1_mm', label:'p1 (mm)', type:'number', def:60},
+      {k:'d_hole_mm', label:'Hole d (mm)', type:'number', def:22},
+      {k:'Fv_Ed_kN', label:'Fv,Ed (kN)', type:'number', def:50},
+      {k:'Ft_Ed_kN', label:'Ft,Ed (kN)', type:'number', def:10},
+    ]},
+
+  // ---------------- Quantity Surveying ----------------
+  { id:'fx', group:'Quantity Surveying', tag:'b-qs',
+    title:'Live FX rates',
+    endpoint:'/api/global/fx/rates', method:'GET',
+    refs:['exchangerate.host','open.er-api.com'],
+    fields:[]},
+
+  { id:'materials', group:'Quantity Surveying', tag:'b-qs',
+    title:'Materials price index (live)',
+    endpoint:'/api/materials/index', method:'GET',
+    refs:['BLS WPUIP2311001','Eurostat sts_copi_m'],
+    fields:[
+      {k:'region', label:'Region', type:'select', opts:['US','EU'], def:'US', querystring:true},
+    ]},
+
+  { id:'rate', group:'Quantity Surveying', tag:'b-qs',
+    title:'Rate build-up (CIOB / NRM2)',
+    endpoint:'/api/qs/rate-buildup', method:'POST',
+    refs:['CIOB CoEP','RICS NRM2'],
+    fields:[
+      {k:'item_description', label:'Item', type:'text', def:'C30/37 concrete'},
+      {k:'unit_of_measure',  label:'Unit', type:'text', def:'m3'},
+      {k:'labour',   label:'Labour (JSON)',   type:'textarea',
+        def:'[{"description":"Carpenter","unit":"hr","quantity":2,"rate":25,"source":"local"}]'},
+      {k:'plant',    label:'Plant (JSON)',    type:'textarea', def:'[]'},
+      {k:'material', label:'Material (JSON)', type:'textarea',
+        def:'[{"description":"Ready-mix","unit":"m3","quantity":1,"rate":110,"source":"BCIS Q1"}]'},
+      {k:'waste_pct', label:'Waste %', type:'number', def:0.05, step:'0.01'},
+      {k:'overheads_pct', label:'OH %', type:'number', def:0.10, step:'0.01'},
+      {k:'profit_pct', label:'Profit %', type:'number', def:0.05, step:'0.01'},
+    ]},
+
+  { id:'nrm1', group:'Quantity Surveying', tag:'b-qs',
+    title:'NRM1 cost plan template',
+    endpoint:'/api/qs/nrm1/template', method:'GET',
+    refs:['RICS NRM1 (2nd ed.)'],
+    fields:[]},
+
+  { id:'cashflow', group:'Quantity Surveying', tag:'b-qs',
+    title:'Cashflow S-curve (Tucker)',
+    endpoint:'/api/qs/cashflow/s-curve', method:'POST',
+    refs:['Tucker 1986','Kenley & Wilson'],
+    fields:[
+      {k:'contract_value', label:'Contract value', type:'number', def:5000000},
+      {k:'duration_months', label:'Duration (months)', type:'number', def:18},
+      {k:'k', label:'k (steepness)', type:'number', def:6.0, step:'0.1'},
+      {k:'t0', label:'t0 (midpoint, 0-1)', type:'number', def:0.5, step:'0.05'},
+    ]},
+
+  { id:'valuation', group:'Quantity Surveying', tag:'b-qs',
+    title:'Interim valuation (JCT/NEC)',
+    endpoint:'/api/qs/valuation/interim', method:'POST',
+    refs:['JCT SBC 2016','NEC4 ECC'],
+    fields:[
+      {k:'gross_value_to_date', label:'Gross value to date', type:'number', def:1000000},
+      {k:'previously_certified', label:'Previously certified', type:'number', def:400000},
+      {k:'retention_pct', label:'Retention %', type:'number', def:0.05, step:'0.01'},
+      {k:'vat_pct', label:'VAT %', type:'number', def:0.20, step:'0.01'},
+    ]},
+
+  { id:'tender', group:'Quantity Surveying', tag:'b-qs',
+    title:'Tender comparison + abnormally-low flag',
+    endpoint:'/api/qs/tender/compare', method:'POST',
+    refs:['EU Dir 2014/24 Art. 69'],
+    fields:[
+      {k:'bidders', label:'Bidders (JSON)', type:'textarea',
+        def:'[\n  {"name":"A","total":1000000,"items":[]},\n  {"name":"B","total":1050000,"items":[]},\n  {"name":"C","total":1020000,"items":[]},\n  {"name":"D","total":700000,"items":[]}\n]'},
+    ]},
+
+  { id:'mc', group:'Quantity Surveying', tag:'b-qs',
+    title:'Risk Monte-Carlo (AACE 57R-09)',
+    endpoint:'/api/qs/risk/monte-carlo', method:'POST',
+    refs:['AACE RP 57R-09'],
+    fields:[
+      {k:'base_cost', label:'Base cost', type:'number', def:5000000},
+      {k:'iterations', label:'Iterations', type:'number', def:5000},
+      {k:'seed', label:'Seed', type:'number', def:42},
+      {k:'risks', label:'Risks (JSON)', type:'textarea',
+        def:'[\n  {"name":"weather delay","probability":0.4,\n   "cost_distribution":{"type":"triangular","min":50000,"mode":150000,"max":400000}}\n]'},
+    ]},
+
+  { id:'evm', group:'Quantity Surveying', tag:'b-qs',
+    title:'Earned Value (PMI/ANSI)',
+    endpoint:'/api/qs/evm', method:'POST',
+    refs:['PMI EVM 3rd ed.','ANSI/EIA-748-D','AACE 80R-13'],
+    fields:[
+      {k:'BAC', label:'BAC', type:'number', def:5000000},
+      {k:'PV',  label:'PV',  type:'number', def:2500000},
+      {k:'EV',  label:'EV',  type:'number', def:2300000},
+      {k:'AC',  label:'AC',  type:'number', def:2400000},
+    ]},
+
+  { id:'carbon', group:'Quantity Surveying', tag:'b-qs',
+    title:'Embodied carbon (EN 15978 / RICS WLCA)',
+    endpoint:'/api/qs/carbon/assess', method:'POST',
+    refs:['EN 15978','RICS WLCA 2nd ed.','ICE v3.0'],
+    fields:[
+      {k:'materials', label:'Materials (JSON)', type:'textarea',
+        def:'[\n  {"name":"Concrete C30","quantity":250,"unit":"m3","factor_kgCO2e_per_unit":300,"factor_source":"ICE v3.0","stage":"A1-A3"},\n  {"name":"Rebar","quantity":15000,"unit":"kg","factor_kgCO2e_per_unit":1.99,"factor_source":"ICE v3.0","stage":"A1-A3"}\n]'},
+      {k:'gifa_m2', label:'GIFA (m²)', type:'number', def:2500},
+    ]},
+
+  { id:'boq', group:'Quantity Surveying', tag:'b-qs',
+    title:'BOQ format (NRM2 / CESMM4 / SMM7 / POMI)',
+    endpoint:'/api/qs/boq/render', method:'POST',
+    refs:['NRM2','CESMM4','SMM7','POMI'],
+    fields:[
+      {k:'format_name', label:'Format', type:'select',
+        opts:['NRM2','CESMM4','SMM7','POMI'], def:'NRM2'},
+      {k:'currency', label:'Currency', type:'text', def:'GBP'},
+      {k:'items', label:'Items (JSON)', type:'textarea',
+        def:'[\n  {"ref":"A.1","description":"Excavate to reduce levels","unit":"m3","quantity":120,"rate":18.5},\n  {"ref":"B.1","description":"Mass concrete C20","unit":"m3","quantity":40,"rate":135}\n]'},
+    ]},
+
+  // ---------------- Architecture ----------------
+  { id:'villa_brief', group:'Architecture', tag:'b-arch',
+    title:'AI villa design brief (Marbella / Andalusian / Mediterranean)',
+    endpoint:'/api/design/villa/brief', method:'POST',
+    refs:['RIBA Plan of Work 2020 Stage 2','Neufert 5e','CTE DB-HE/HS'],
+    fields:[
+      {k:'plot_w_m', label:'Plot width (m)',  type:'number', def:25},
+      {k:'plot_d_m', label:'Plot depth (m)',  type:'number', def:35},
+      {k:'bedrooms', label:'Bedrooms',         type:'number', def:4},
+      {k:'budget_eur', label:'Budget (EUR)',   type:'number', def:3000000},
+      {k:'style', label:'Style',               type:'text',   def:'marbella_modern'},
+      {k:'lifestyle', label:'Lifestyle (JSON array)', type:'textarea',
+        def:'["wellness","entertain","work_from_home","cars"]'},
+    ]},
+
+  { id:'villa_generate', group:'Architecture', tag:'b-arch',
+    title:'Generate villa — full spec (rooms, pool, terraces, costs, carbon)',
+    endpoint:'/api/design/villa/generate', method:'POST',
+    refs:['BCIS Q1-2024 Spain','ICE v3.0','ASOFAP 2025'],
+    fields:[
+      {k:'plot_w_m', label:'Plot width (m)', type:'number', def:30},
+      {k:'plot_d_m', label:'Plot depth (m)', type:'number', def:40},
+      {k:'bedrooms', label:'Bedrooms',        type:'number', def:5},
+      {k:'style', label:'Style',              type:'text',   def:'marbella_modern'},
+      {k:'lifestyle', label:'Lifestyle (JSON array)', type:'textarea',
+        def:'["wellness","entertain"]'},
+    ]},
+
+  { id:'villa_floorplan', group:'Architecture', tag:'b-arch',
+    title:'Villa floor plan — DXF (CAD)',
+    endpoint:'/api/design/villa/floorplan', method:'POST', binary:true,
+    refs:['ezdxf','RIBA Stage 2'],
+    fields:[
+      {k:'plot_w_m', label:'Plot width (m)', type:'number', def:25},
+      {k:'plot_d_m', label:'Plot depth (m)', type:'number', def:35},
+      {k:'bedrooms', label:'Bedrooms',        type:'number', def:4},
+      {k:'level',    label:'Level (0=ground, 1=first)', type:'number', def:0},
+      {k:'style',    label:'Style',           type:'text',   def:'marbella_modern'},
+    ]},
+
+  { id:'villa_model', group:'Architecture', tag:'b-arch',
+    title:'Villa 3-D massing — Wavefront OBJ (Blender / Rhino / Three.js)',
+    endpoint:'/api/design/villa/model', method:'POST', binary:true,
+    refs:['Wavefront OBJ spec'],
+    fields:[
+      {k:'plot_w_m', label:'Plot width (m)', type:'number', def:25},
+      {k:'plot_d_m', label:'Plot depth (m)', type:'number', def:35},
+      {k:'bedrooms', label:'Bedrooms',        type:'number', def:4},
+      {k:'style',    label:'Style',           type:'text',   def:'marbella_modern'},
+    ]},
+
+  { id:'villa_elevation', group:'Architecture', tag:'b-arch',
+    title:'Villa elevation — SVG',
+    endpoint:'/api/design/villa/elevation', method:'POST', binary:true,
+    refs:['SVG 1.1'],
+    fields:[
+      {k:'plot_w_m', label:'Plot width (m)', type:'number', def:25},
+      {k:'plot_d_m', label:'Plot depth (m)', type:'number', def:35},
+      {k:'bedrooms', label:'Bedrooms',        type:'number', def:4},
+      {k:'side',     label:'Side (front|side)', type:'text', def:'front'},
+      {k:'style',    label:'Style',           type:'text',   def:'marbella_modern'},
+    ]},
+
+  { id:'villa_siteplan', group:'Architecture', tag:'b-arch',
+    title:'Villa landscaped site plan — DXF (driveway, pool deck, planting)',
+    endpoint:'/api/design/villa/siteplan', method:'POST', binary:true,
+    refs:['RHS Mediterranean planting guide'],
+    fields:[
+      {k:'plot_w_m', label:'Plot width (m)', type:'number', def:30},
+      {k:'plot_d_m', label:'Plot depth (m)', type:'number', def:40},
+      {k:'bedrooms', label:'Bedrooms',        type:'number', def:5},
+      {k:'style',    label:'Style',           type:'text',   def:'marbella_modern'},
+    ]},
+
+  { id:'villa_glb', group:'Architecture', tag:'b-arch',
+    title:'Villa 3-D — glTF 2.0 (.glb) for web/AR/Sketchfab/Babylon',
+    endpoint:'/api/design/villa/model_glb', method:'POST', binary:true,
+    refs:['Khronos glTF 2.0'],
+    fields:[
+      {k:'plot_w_m', label:'Plot width (m)', type:'number', def:25},
+      {k:'plot_d_m', label:'Plot depth (m)', type:'number', def:35},
+      {k:'bedrooms', label:'Bedrooms',        type:'number', def:4},
+      {k:'style',    label:'Style',           type:'text',   def:'marbella_modern'},
+    ]},
+
+  { id:'villa_finishes', group:'Architecture', tag:'b-arch',
+    title:'Villa finishes palette (manufacturer-cited)',
+    endpoint:'/api/design/villa/finishes?style=marbella_modern', method:'GET',
+    refs:['CTE DB-HE','Manufacturer datasheets'],
+    fields:[]},
+
+  { id:'villa_viewer', group:'Architecture', tag:'b-arch',
+    title:'Villa interactive 3D viewer (opens new tab → /api/design/villa/viewer)',
+    endpoint:'/api/design/villa/viewer', method:'GET',
+    refs:['three.js r160','glTF 2.0'],
+    fields:[]},
+
+  { id:'daylight', group:'Architecture', tag:'b-arch',
+    title:'Daylight factor (BS EN 17037)',
+    endpoint:'/api/arch/daylight/adf', method:'POST',
+    refs:['BS EN 17037','BS 8206-2','CIBSE LG10'],
+    fields:[
+      {k:'T_glass', label:'τ glass', type:'number', def:0.68, step:'0.01'},
+      {k:'window_area_m2', label:'Window area (m²)', type:'number', def:6},
+      {k:'sky_angle_deg', label:'Sky angle θ (°)', type:'number', def:65},
+      {k:'total_internal_surface_m2', label:'Total internal surface (m²)', type:'number', def:120},
+      {k:'avg_reflectance', label:'Avg reflectance', type:'number', def:0.5, step:'0.05'},
+      {k:'maintenance_factor', label:'Maintenance factor', type:'number', def:0.9, step:'0.05'},
+      {k:'frame_factor', label:'Frame factor', type:'number', def:0.7, step:'0.05'},
+    ]},
+
+  { id:'acoustics', group:'Architecture', tag:'b-arch',
+    title:'Acoustics — Reverberation (Sabine/Eyring)',
+    endpoint:'/api/arch/acoustics/reverberation', method:'POST',
+    refs:['BS 8233:2014','BB93:2014'],
+    fields:[
+      {k:'volume_m3', label:'Volume (m³)', type:'number', def:200},
+      {k:'method', label:'Method', type:'select', opts:['sabine','eyring'], def:'sabine'},
+      {k:'room_type', label:'Room type', type:'select',
+        opts:['office','classroom','meeting','concert_hall','auditorium','restaurant'], def:'office'},
+      {k:'surfaces', label:'Surfaces (JSON)', type:'textarea',
+        def:'[\n  {"description":"plastered ceiling","area_m2":80,"alpha":0.04},\n  {"description":"carpet on concrete","area_m2":80,"alpha":0.30},\n  {"description":"glass / drywall","area_m2":40,"alpha":0.10}\n]'},
+    ]},
+
+  { id:'uvalue', group:'Architecture', tag:'b-arch',
+    title:'U-value (BS EN ISO 6946)',
+    endpoint:'/api/arch/uvalue', method:'POST',
+    refs:['BS EN ISO 6946:2017'],
+    fields:[
+      {k:'heat_flow', label:'Heat flow', type:'select',
+        opts:['horizontal','upward','downward'], def:'horizontal'},
+      {k:'layers', label:'Layers (JSON)', type:'textarea',
+        def:'[\n  {"description":"Brick outer","thickness_m":0.10,"lambda_W_mK":0.84,"source":"EN ISO 10456"},\n  {"description":"Mineral wool","thickness_m":0.10,"lambda_W_mK":0.038,"source":"EN ISO 10456"},\n  {"description":"Block inner","thickness_m":0.10,"lambda_W_mK":0.51,"source":"EN ISO 10456"},\n  {"description":"Plasterboard","thickness_m":0.013,"lambda_W_mK":0.21,"source":"EN ISO 10456"}\n]'},
+    ]},
+
+  { id:'egress', group:'Architecture', tag:'b-arch',
+    title:'Egress capacity (IBC 2021)',
+    endpoint:'/api/arch/egress', method:'POST',
+    refs:['IBC 2021 §1004-1010','BS 9999','NFPA 101'],
+    fields:[
+      {k:'occupancy_type', label:'Occupancy', type:'select',
+        opts:['assembly','business','classroom','mercantile','industrial','storage','residential'],
+        def:'business'},
+      {k:'floor_area_m2', label:'Floor area (m²)', type:'number', def:1500},
+      {k:'sprinklered', label:'Sprinklered', type:'select', opts:[true,false], def:true},
+      {k:'voice_notification', label:'Voice notification', type:'select', opts:[true,false], def:true},
+    ]},
+
+  { id:'access', group:'Architecture', tag:'b-arch',
+    title:'Accessibility check (ADA / AD-M / ISO 21542)',
+    endpoint:'/api/arch/accessibility/check', method:'POST',
+    refs:['ADA 2010','AD M (UK)','ISO 21542:2021'],
+    fields:[
+      {k:'jurisdiction', label:'Jurisdiction', type:'select',
+        opts:['strictest','ADA','ApprovedM','ISO_21542'], def:'strictest'},
+      {k:'measurements', label:'Measurements (JSON)', type:'textarea',
+        def:'{\n  "door_clear_width_mm": 850,\n  "corridor_min_width_mm": 1200,\n  "wc_cubicle_width_mm": 1500,\n  "wc_cubicle_depth_mm": 2200,\n  "ramp_max_slope_ratio": 0.0833,\n  "parking_bay_width_mm": 3600\n}'},
+    ]},
+
+  // ---------------- Platform ----------------
+  { id:'audit', group:'Platform', tag:'b-plat',
+    title:'Audit log (last 50 events)',
+    endpoint:'/api/admin/audit?limit=50', method:'GET',
+    refs:[],
+    fields:[]},
+
+  { id:'pdf', group:'Platform', tag:'b-plat',
+    title:'PDF report (with Data Provenance appendix)',
+    endpoint:'/api/report/pdf', method:'POST', binary:true,
+    refs:['Platform data policy'],
+    fields:[
+      {k:'title', label:'Title', type:'text', def:'EmersonEIMS Combined Calculation Report'},
+      {k:'project', label:'Project', type:'text', def:'Demo project'},
+      {k:'author', label:'Author', type:'text', def:'EmersonEIMS user'},
+      {k:'summary', label:'Executive summary', type:'textarea',
+        def:'This report consolidates the key engineering, cost and sustainability findings from the EmersonEIMS Building Suite Pro session.'},
+      {k:'findings', label:'Findings (JSON)', type:'textarea',
+        def:'[\n  {"item":"Wind base shear","value":420,"unit":"kN","source":"ASCE 7-22","clause":"§27.3"},\n  {"item":"Cost per m²","value":2059,"unit":"GBP/m²","source":"BCIS Q1 2024","clause":"NRM1"},\n  {"item":"Embodied carbon","value":32.95,"unit":"kgCO2e/m²","source":"ICE v3.0","clause":"EN 15978 A1-A3"}\n]'},
+      {k:'calculations', label:'Calculations (JSON)', type:'textarea',
+        def:'[\n  {"label":"Wind ASCE 7-22","standard":"ASCE 7-22","reference":"Table 26.10-1"}\n]'},
+    ]},
+
+  // ---------------- Sprint 4: gap-closers vs world-leading tools ----------------
+  { id:'frame', group:'Engineering', tag:'b-eng',
+    title:'2D frame analysis (matrix stiffness)',
+    endpoint:'/api/eng/frame/analyze', method:'POST',
+    refs:['McGuire/Gallagher/Ziemian','Cook/Malkus/Plesha/Witt'],
+    fields:[
+      {k:'nodes', label:'Nodes (JSON)', type:'textarea',
+        def:'[\n  {"id":"A","x":0,"y":0},\n  {"id":"B","x":0,"y":4},\n  {"id":"C","x":6,"y":4},\n  {"id":"D","x":6,"y":0}\n]'},
+      {k:'members', label:'Members (JSON, E in Pa, A in m², I in m⁴)', type:'textarea',
+        def:'[\n  {"id":"col1","i":"A","j":"B","E":210e9,"A":7.55e-3,"I":8.36e-5},\n  {"id":"beam","i":"B","j":"C","E":210e9,"A":7.55e-3,"I":8.36e-5},\n  {"id":"col2","i":"C","j":"D","E":210e9,"A":7.55e-3,"I":8.36e-5}\n]'},
+      {k:'supports', label:'Supports (JSON)', type:'textarea',
+        def:'[\n  {"node":"A","ux":true,"uy":true,"rz":true},\n  {"node":"D","ux":true,"uy":true,"rz":true}\n]'},
+      {k:'loads', label:'Nodal loads (JSON)', type:'textarea',
+        def:'[\n  {"node":"B","Fx":15000,"Fy":0,"Mz":0}\n]'},
+      {k:'member_loads', label:'Member loads (JSON)', type:'textarea',
+        def:'[\n  {"member":"beam","type":"UDL","w":-12000}\n]'},
+    ]},
+
+  { id:'cpm', group:'Quantity Surveying', tag:'b-qs',
+    title:'CPM scheduler + Gantt',
+    endpoint:'/api/sched/gantt', method:'POST',
+    refs:['Kelley & Walker (1959)','PMBOK 7th ed.','AACE RP 29R-03'],
+    fields:[
+      {k:'project_start', label:'Project start (YYYY-MM-DD)', type:'text', def:'2026-05-01'},
+      {k:'activities', label:'Activities (JSON)', type:'textarea',
+        def:'[\n  {"id":"A","name":"Site set-up","duration_days":5,"predecessors":[]},\n  {"id":"B","name":"Excavation","duration_days":10,"predecessors":["A"]},\n  {"id":"C","name":"Foundations","duration_days":15,"predecessors":["B"]},\n  {"id":"D","name":"Substructure utilities","duration_days":8,"predecessors":["B"]},\n  {"id":"E","name":"Superstructure","duration_days":30,"predecessors":["C","D"]},\n  {"id":"F","name":"Envelope","duration_days":20,"predecessors":["E"]},\n  {"id":"G","name":"Fit-out","duration_days":25,"predecessors":["F"]},\n  {"id":"H","name":"Commissioning","duration_days":7,"predecessors":["G"]}\n]'},
+    ]},
+
+  { id:'store', group:'Platform', tag:'b-plat',
+    title:'Project store (SQLite) — list',
+    endpoint:'/api/store/projects', method:'GET',
+    refs:['SQLite WAL'],
+    fields:[]},
+
+  { id:'store_new', group:'Platform', tag:'b-plat',
+    title:'Project store — create',
+    endpoint:'/api/store/projects', method:'POST',
+    refs:[],
+    fields:[
+      {k:'name', label:'Project name', type:'text', def:'Demo project'},
+      {k:'client', label:'Client', type:'text', def:'EmersonEIMS Demo Ltd'},
+      {k:'location', label:'Location', type:'text', def:'London, UK'},
+    ]},
+
+  { id:'export_xlsx', group:'Platform', tag:'b-plat',
+    title:'Export — multi-sheet XLSX',
+    endpoint:'/api/export/xlsx', method:'POST', binary:true,
+    refs:['openpyxl'],
+    fields:[
+      {k:'title', label:'Workbook title', type:'text', def:'EmersonEIMS combined export'},
+      {k:'filename', label:'Filename', type:'text', def:'eims_export.xlsx'},
+      {k:'sheets', label:'Sheets (JSON)', type:'textarea',
+        def:'[\n  {"name":"BOQ","columns":["ref","description","unit","quantity","rate","total"],\n   "rows":[\n     {"ref":"A.1","description":"Excavate","unit":"m3","quantity":120,"rate":18.5,"total":2220},\n     {"ref":"B.1","description":"Mass concrete C20","unit":"m3","quantity":40,"rate":135,"total":5400}\n   ],\n   "meta":{"format":"NRM2","currency":"GBP","source":"BCIS Q1 2024"}\n  }\n]'},
+    ]},
+
+  { id:'export_csv', group:'Platform', tag:'b-plat',
+    title:'Export — CSV',
+    endpoint:'/api/export/csv', method:'POST', binary:true,
+    refs:[],
+    fields:[
+      {k:'filename', label:'Filename', type:'text', def:'eims_export.csv'},
+      {k:'columns', label:'Columns (JSON array, optional)', type:'textarea',
+        def:'["item","value","unit","source"]'},
+      {k:'rows', label:'Rows (JSON)', type:'textarea',
+        def:'[\n  {"item":"Wind base shear","value":420,"unit":"kN","source":"ASCE 7-22"},\n  {"item":"Cost per m²","value":2059,"unit":"GBP/m²","source":"BCIS Q1 2024"}\n]'},
+    ]},
+
+  // =============================================================================
+  // SPRINT 5 EXTENSIONS — Safety / Landscape / Hydro / Interior / Marbella / AI
+  // Each module is independent; remove an entry and the rest still work.
+  // =============================================================================
+
+  // ---------------- Safety ----------------
+  { id:'risk_register', group:'Safety', tag:'b-safe',
+    title:'Construction risk register (ISO 45001)',
+    endpoint:'/api/safety/risks/register', method:'POST',
+    refs:['ISO 45001:2018','HSE HSG150','OGP 432'],
+    fields:[
+      {k:'project_type', label:'Project type', type:'select',
+        opts:['general','high_rise','deep_excavation','demolition','roofing','marine'], def:'general'},
+      {k:'extras', label:'Additional risks (JSON array of project types)', type:'textarea',
+        def:'["roofing"]'},
+      {k:'location', label:'Site location (optional)', type:'text', def:'Marbella, Spain'},
+    ]},
+
+  { id:'method_catalog', group:'Safety', tag:'b-safe',
+    title:'Method-statement catalog',
+    endpoint:'/api/safety/methods/catalog', method:'GET',
+    refs:['HSE','OSHA 1926','NFPA 51B'],
+    fields:[]},
+
+  { id:'method_generate', group:'Safety', tag:'b-safe',
+    title:'Generate method statement',
+    endpoint:'/api/safety/methods/generate', method:'POST',
+    refs:['HSE CIS/HSG','OSHA 29 CFR 1926','NFPA 51B'],
+    fields:[
+      {k:'id', label:'Task template', type:'select',
+        opts:['scaffolding_erect','excavation_trench','work_at_height','hot_work',
+              'confined_space','lifting_operation','demolition_soft_strip'],
+        def:'scaffolding_erect'},
+      {k:'project_ref', label:'Project reference', type:'text', def:'EIMS-2026-001'},
+      {k:'site', label:'Site address', type:'text', def:'Plot A, Marbella'},
+    ]},
+
+  // ---------------- QS: Value Engineering ----------------
+  { id:'ve_rules', group:'Quantity Surveying', tag:'b-qs',
+    title:'Value-engineering rule library',
+    endpoint:'/api/qs/ve/rules', method:'GET',
+    refs:['RICS VE principles'],
+    fields:[]},
+
+  { id:'ve_suggest', group:'Quantity Surveying', tag:'b-qs',
+    title:'VE advisor — material substitutions',
+    endpoint:'/api/qs/ve/suggest', method:'POST',
+    refs:['RICS VE principles','BCIS 2024'],
+    fields:[
+      {k:'boq_items', label:'BOQ items (JSON)', type:'textarea',
+        def:'[\n  {"description":"C32/40 concrete for basement slab","quantity":200,"unit":"m3","rate":150},\n  {"description":"Solid hardwood oak floor","quantity":80,"unit":"m2","rate":120},\n  {"description":"Natural stone cladding","quantity":45,"unit":"m2","rate":280},\n  {"description":"Triple-glazed units","quantity":25,"unit":"m2","rate":420},\n  {"description":"Copper pipework for plumbing","quantity":300,"unit":"m","rate":45}\n]'},
+    ]},
+
+  // ---------------- Architecture: Shadow study ----------------
+  { id:'shadow_position', group:'Architecture', tag:'b-arch',
+    title:'Sun position (instantaneous)',
+    endpoint:'/api/arch/shadow/position', method:'POST',
+    refs:['NREL Solar Position Algorithm','pysolar MIT'],
+    fields:[
+      {k:'lat', label:'Latitude', type:'number', def:36.51, step:'0.0001'},
+      {k:'lng', label:'Longitude', type:'number', def:-4.88, step:'0.0001'},
+      {k:'datetime_utc', label:'Datetime UTC (ISO 8601, blank = now)', type:'text',
+        def:'2026-06-21T12:00:00Z'},
+    ]},
+
+  { id:'shadow_hourly', group:'Architecture', tag:'b-arch',
+    title:'Hourly shadow study (full day)',
+    endpoint:'/api/arch/shadow/hourly', method:'POST',
+    refs:['NREL SPA','pysolar MIT'],
+    fields:[
+      {k:'lat', label:'Latitude', type:'number', def:36.51, step:'0.0001'},
+      {k:'lng', label:'Longitude', type:'number', def:-4.88, step:'0.0001'},
+      {k:'date', label:'Date (YYYY-MM-DD)', type:'text', def:'2026-06-21'},
+      {k:'utc_offset_hours', label:'Local UTC offset (hr)', type:'number', def:2},
+      {k:'pole_height_m', label:'Reference pole height (m)', type:'number', def:3, step:'0.1'},
+    ]},
+
+  { id:'shadow_solstice', group:'Architecture', tag:'b-arch',
+    title:'Solstice / equinox comparison',
+    endpoint:'/api/arch/shadow/solstice', method:'POST',
+    refs:['NREL SPA'],
+    fields:[
+      {k:'lat', label:'Latitude', type:'number', def:36.51, step:'0.0001'},
+      {k:'lng', label:'Longitude', type:'number', def:-4.88, step:'0.0001'},
+      {k:'year', label:'Year', type:'number', def:2026},
+      {k:'pole_height_m', label:'Reference pole height (m)', type:'number', def:3, step:'0.1'},
+    ]},
+
+  // ---------------- Architecture: Marbella detail library ----------------
+  { id:'marbella_catalog', group:'Architecture', tag:'b-arch',
+    title:'Marbella / Andalusian detail catalog',
+    endpoint:'/api/design/marbella/catalog', method:'GET',
+    refs:['Al-Andalus 8-15th c.','Alhambra','Medina Azahara','Ronda vernacular'],
+    fields:[]},
+
+  { id:'marbella_svg_horseshoe', group:'Architecture', tag:'b-arch',
+    title:'Horseshoe arch — SVG',
+    endpoint:'/api/design/marbella/svg/horseshoe_arch', method:'GET',
+    refs:['Great Mosque of Cordoba (Mihrab)'],
+    fields:[]},
+
+  { id:'marbella_svg_star', group:'Architecture', tag:'b-arch',
+    title:'Eight-point star (Azulejo) — SVG',
+    endpoint:'/api/design/marbella/svg/azulejo_zellige_tile', method:'GET',
+    refs:['Hispano-Moresque tilework'],
+    fields:[]},
+
+  // ---------------- Interior design ----------------
+  { id:'palette_anchors', group:'Interior', tag:'b-int',
+    title:'Interior palette anchor library',
+    endpoint:'/api/interior/palette/anchors', method:'GET',
+    refs:['Interior finish library (non-copyrighted)'],
+    fields:[]},
+
+  { id:'palette_extract', group:'Interior', tag:'b-int',
+    title:'Extract palette from image (base64)',
+    endpoint:'/api/interior/palette/extract', method:'POST',
+    refs:['Modified Median Cut Quantization','ColorThief MIT'],
+    fields:[
+      {k:'image_base64', label:'Image base64 (data URL or raw)', type:'textarea',
+        def:''},
+      {k:'n_colors', label:'Number of palette colors (2-10)', type:'number', def:6},
+    ]},
+
+  // ---------------- Design AI: brief parser ----------------
+  { id:'brief_parse', group:'Design AI', tag:'b-ai',
+    title:'Natural-language brief parser',
+    endpoint:'/api/design/brief/parse', method:'POST',
+    refs:['Deterministic regex + keyword extraction'],
+    fields:[
+      {k:'brief', label:'Design brief (free text)', type:'textarea',
+        def:'modern Marbella villa with 4 bedrooms, 600 m2, infinity pool, sea view, wine cellar and smart home automation'},
+    ]},
+
+  // ---------------- Landscape ----------------
+  { id:'plants_region', group:'Landscape', tag:'b-land',
+    title:'Native plants by country',
+    endpoint:'/api/landscape/plants', method:'GET',
+    refs:['GBIF','FAO-56','USDA hardiness'],
+    fields:[
+      {k:'country', label:'Country', type:'select',
+        opts:['','spain','italy','france','greece','morocco',
+              'kenya','tanzania','uganda','ethiopia',
+              'uae','saudi arabia','qatar',
+              'indonesia','malaysia','thailand','nigeria','brazil'],
+        def:'spain', querystring:true},
+      {k:'water_budget', label:'Max water need', type:'select',
+        opts:['very_low','low','medium','high'], def:'low', querystring:true},
+    ]},
+
+  { id:'irrigation_plan', group:'Landscape', tag:'b-land',
+    title:'Irrigation plan (FAO-56)',
+    endpoint:'/api/landscape/irrigation/plan', method:'POST',
+    refs:['FAO-56 Allen et al. 1998'],
+    fields:[
+      {k:'garden_area_m2', label:'Garden area (m²)', type:'number', def:500},
+      {k:'climate_et0_mm_day', label:'Reference ET₀ (mm/day)', type:'number',
+        def:5.0, step:'0.1'},
+      {k:'water_need', label:'Plant water-need class', type:'select',
+        opts:['very_low','low','medium','high'], def:'medium'},
+      {k:'drip_emitter_lph', label:'Emitter flow (L/hr)', type:'number',
+        def:4.0, step:'0.5'},
+      {k:'emitter_spacing_m', label:'Emitter spacing (m)', type:'number',
+        def:0.5, step:'0.1'},
+      {k:'line_spacing_m', label:'Line spacing (m)', type:'number', def:0.6, step:'0.1'},
+    ]},
+
+  // ---------------- Civil: Hydrology ----------------
+  { id:'hydro_rational', group:'Engineering', tag:'b-eng',
+    title:'Peak runoff — rational method',
+    endpoint:'/api/hydro/rational', method:'POST',
+    refs:['Mulvaney 1851','Kuichling 1889','Chow 1988','ASCE 1992'],
+    fields:[
+      {k:'area_ha', label:'Catchment area (ha)', type:'number', def:2.5, step:'0.1'},
+      {k:'runoff_c', label:'Runoff coefficient C', type:'number', def:0.65, step:'0.01'},
+      {k:'rainfall_intensity_mm_hr', label:'Rainfall intensity (mm/hr)',
+        type:'number', def:85},
+    ]},
+
+  { id:'hydro_kirpich', group:'Engineering', tag:'b-eng',
+    title:'Time of concentration — Kirpich',
+    endpoint:'/api/hydro/tc/kirpich', method:'POST',
+    refs:['Kirpich 1940'],
+    fields:[
+      {k:'length_m', label:'Longest flow-path length (m)', type:'number', def:300},
+      {k:'slope_m_per_m', label:'Average slope (m/m)', type:'number', def:0.02, step:'0.001'},
+    ]},
+
+  { id:'hydro_pond', group:'Engineering', tag:'b-eng',
+    title:'Detention pond sizing',
+    endpoint:'/api/hydro/pond', method:'POST',
+    refs:['Modified rational method'],
+    fields:[
+      {k:'peak_inflow_m3_s', label:'Peak inflow (m³/s)', type:'number', def:0.45, step:'0.01'},
+      {k:'peak_outflow_m3_s', label:'Peak outflow allowed (m³/s)', type:'number', def:0.15, step:'0.01'},
+      {k:'storm_duration_hr', label:'Storm duration (hr)', type:'number', def:1.0, step:'0.1'},
+    ]},
+
+  { id:'hydro_coeffs', group:'Engineering', tag:'b-eng',
+    title:'Runoff coefficient tables',
+    endpoint:'/api/hydro/runoff-coefficients', method:'GET',
+    refs:['Chow et al. 1988','ASCE 1992'],
+    fields:[]},
+
+  // ---------------- Civil: Site hazard ----------------
+  { id:'site_enrich', group:'Engineering', tag:'b-eng',
+    title:'Site hazard (GPS → climate/seismic/wind)',
+    endpoint:'/api/site/enrich', method:'POST',
+    refs:['Köppen-Geiger','GEM 2018 (screening)','open-meteo.com (optional)'],
+    fields:[
+      {k:'lat', label:'Latitude', type:'number', def:36.51, step:'0.0001'},
+      {k:'lng', label:'Longitude', type:'number', def:-4.88, step:'0.0001'},
+      {k:'try_live_weather', label:'Fetch live weather (open-meteo)',
+        type:'select', opts:[true,false], def:true},
+    ]},
+
+  // ---------------- Experience Design (Sprint 6) ----------------
+  { id:'exp_solar', group:'Experience Design', tag:'b-exp',
+    title:'Solar-path study (equinox + solstices)',
+    endpoint:'/api/design/experience/solar', method:'POST',
+    refs:['NREL SPA','ASHRAE sunpath','pysolar'],
+    fields:[
+      {k:'lat', label:'Latitude', type:'number', def:36.51, step:'0.0001'},
+      {k:'lon', label:'Longitude', type:'number', def:-4.88, step:'0.0001'},
+      {k:'tz_offset', label:'Timezone offset (h)', type:'number', def:1},
+      {k:'dates', label:'Dates (JSON array, optional)', type:'textarea', def:'null'},
+      {k:'facade_azimuths', label:'Facade azimuths (JSON object, optional)',
+        type:'textarea', def:'null'},
+    ]},
+
+  { id:'exp_journeys', group:'Experience Design', tag:'b-exp',
+    title:'Lifestyle journeys (morning → evening narrative)',
+    endpoint:'/api/design/experience/journeys', method:'POST',
+    refs:['EIMS Experience Design Engine v1.0'],
+    fields:[
+      {k:'journeys', label:'Journeys (JSON array, optional)',
+        type:'textarea', def:'null'},
+      {k:'rooms_present', label:'Rooms present (JSON array)',
+        type:'textarea', def:'["master_bedroom","kitchen","living","dining","terrace","pool"]'},
+      {k:'has_pool', label:'Has pool', type:'select', opts:[true,false], def:true},
+      {k:'has_outdoor_kitchen', label:'Has outdoor kitchen',
+        type:'select', opts:[true,false], def:true},
+      {k:'style', label:'Style', type:'select',
+        opts:['marbella_modern','andalusian_courtyard','mediterranean_classic'],
+        def:'marbella_modern'},
+    ]},
+
+  { id:'exp_emotion', group:'Experience Design', tag:'b-exp',
+    title:'Emotion brief (per-room feeling + palette)',
+    endpoint:'/api/design/experience/emotion', method:'POST',
+    refs:['EIMS Experience Design Engine v1.0'],
+    fields:[
+      {k:'rooms', label:'Rooms (JSON array of {name, kind?, area_m2?, level?})',
+        type:'textarea',
+        def:'[\n  {"name":"master_bedroom","kind":"bedroom","area_m2":32,"level":1},\n  {"name":"living","kind":"living","area_m2":48,"level":0},\n  {"name":"kitchen","kind":"kitchen","area_m2":24,"level":0},\n  {"name":"dining","kind":"dining","area_m2":22,"level":0},\n  {"name":"bathroom","kind":"bathroom","area_m2":12,"level":1},\n  {"name":"terrace","kind":"terrace","area_m2":60,"level":0}\n]'},
+      {k:'style', label:'Style', type:'select',
+        opts:['marbella_modern','andalusian_courtyard','mediterranean_classic'],
+        def:'marbella_modern'},
+      {k:'override_emotions', label:'Override emotions (JSON object, optional)',
+        type:'textarea', def:'null'},
+    ]},
+
+  { id:'exp_flow', group:'Experience Design', tag:'b-exp',
+    title:'Indoor-outdoor flow optimiser',
+    endpoint:'/api/design/experience/flow', method:'POST',
+    refs:['EIMS Experience Design Engine v1.0'],
+    fields:[
+      {k:'facade_lengths', label:'Facade lengths m (JSON object)',
+        type:'textarea', def:'{"south":14.0,"east":9.0,"west":9.0,"north":14.0}'},
+      {k:'openable_lengths', label:'Openable lengths m (JSON object)',
+        type:'textarea', def:'{"south":9.6}'},
+      {k:'interior_rooms', label:'Interior rooms (JSON array)',
+        type:'textarea', def:'["living","dining","kitchen"]'},
+      {k:'exterior_features', label:'Exterior features (JSON array)',
+        type:'textarea', def:'["pool","terrace","garden"]'},
+      {k:'style', label:'Style', type:'select',
+        opts:['marbella_modern','andalusian_courtyard','mediterranean_classic'],
+        def:'marbella_modern'},
+    ]},
+
+  { id:'exp_restraint', group:'Experience Design', tag:'b-exp',
+    title:'Restraint score (SAOTA / John Pawson standard)',
+    endpoint:'/api/design/experience/restraint', method:'POST',
+    refs:['EIMS Experience Design Engine v1.0'],
+    fields:[
+      {k:'materials', label:'Materials (JSON array)',
+        type:'textarea', def:'["limestone","white render","oak","stainless"]'},
+      {k:'features', label:'Features (JSON array)',
+        type:'textarea', def:'["pool","terrace","outdoor_kitchen"]'},
+      {k:'facade_elements', label:'Facade elements (JSON array, optional)',
+        type:'textarea', def:'null'},
+      {k:'interior_styles', label:'Interior styles (JSON array, optional)',
+        type:'textarea', def:'null'},
+    ]},
+
+  { id:'exp_complete', group:'Experience Design', tag:'b-exp',
+    title:'Complete experience brief (narrative + all sections)',
+    endpoint:'/api/design/experience/complete', method:'POST',
+    refs:['EIMS Experience Design Engine v1.0'],
+    fields:[
+      {k:'villa_name', label:'Villa name', type:'text', def:'Villa Luz'},
+      {k:'location', label:'Location', type:'text', def:'Marbella, Costa del Sol'},
+      {k:'lat', label:'Latitude', type:'number', def:36.51, step:'0.0001'},
+      {k:'lon', label:'Longitude', type:'number', def:-4.88, step:'0.0001'},
+      {k:'tz_offset', label:'Timezone offset (h)', type:'number', def:1},
+      {k:'style', label:'Style', type:'select',
+        opts:['marbella_modern','andalusian_courtyard','mediterranean_classic'],
+        def:'marbella_modern'},
+      {k:'bedrooms', label:'Bedrooms', type:'number', def:4},
+      {k:'has_pool', label:'Has pool', type:'select', opts:[true,false], def:true},
+      {k:'has_outdoor_kitchen', label:'Has outdoor kitchen',
+        type:'select', opts:[true,false], def:true},
+      {k:'orientation_deg', label:'Facade orientation (° from N)',
+        type:'number', def:180, step:'1'},
+      {k:'facade_lengths', label:'Facade lengths m (JSON, optional)',
+        type:'textarea', def:'null'},
+      {k:'openable_lengths', label:'Openable lengths m (JSON, optional)',
+        type:'textarea', def:'null'},
+      {k:'rooms', label:'Rooms (JSON array, optional)',
+        type:'textarea', def:'null'},
+      {k:'materials', label:'Materials (JSON array, optional)',
+        type:'textarea', def:'null'},
+      {k:'features', label:'Features (JSON array, optional)',
+        type:'textarea', def:'null'},
+    ]},
+
+  { id:'exp_palettes', group:'Experience Design', tag:'b-exp',
+    title:'Curated material palettes (by style)',
+    endpoint:'/api/design/experience/palettes', method:'GET',
+    refs:['EIMS Experience Design Engine v1.0 — original palette library'],
+    fields:[
+      {k:'style', label:'Style', type:'select',
+        opts:['marbella_modern','andalusian_courtyard','mediterranean_classic'],
+        def:'marbella_modern', querystring:true},
+    ]},
+
+  // ====================================================================
+  //  DISRUPTION MODULES — areas where Revit needs Robot/Navisworks/BIM360
+  //  ($5,000+/yr in extra licences). Here they're built-in.
+  // ====================================================================
+
+  // ---------- MEP clash detection (replaces Navisworks Manage) ----------
+  { id:'mep_clash', group:'MEP Clash Detection', tag:'b-mep',
+    title:'3D AABB clash sweep (Navisworks-class)',
+    endpoint:'/api/mep/clash-detect', method:'POST',
+    refs:['BS 1192-1:2007','BSRIA BG 6/2018','AIA E202-2008 LOD 350'],
+    fields:[
+      {k:'elements', label:'Elements (JSON array of {id,system,kind,aabb:{xmin,ymin,zmin,xmax,ymax,zmax}})',
+       type:'textarea',
+       def:JSON.stringify([
+         {id:'C1',system:'STRUCTURE',kind:'column',
+          aabb:{xmin:0,ymin:0,zmin:0,xmax:0.4,ymax:0.4,zmax:3}},
+         {id:'D1',system:'HVAC',kind:'duct',
+          aabb:{xmin:-0.5,ymin:0.1,zmin:1.5,xmax:0.9,ymax:0.5,zmax:1.9}},
+         {id:'P1',system:'PLUMBING',kind:'pipe',
+          aabb:{xmin:5,ymin:5,zmin:2,xmax:5.1,ymax:5.1,zmax:2.5}}
+       ], null, 2)},
+    ]},
+
+  { id:'mep_clearance', group:'MEP Clash Detection', tag:'b-mep',
+    title:'BSRIA clearance rule library',
+    endpoint:'/api/mep/clash/clearance-rules', method:'GET',
+    refs:['BSRIA BG 6/2018'],
+    fields:[]},
+
+  // ---------- High-rise dynamics (replaces Robot/ETABS plugin) ----------
+  { id:'hr_pdelta', group:'High-Rise Dynamics', tag:'b-disrupt',
+    title:'P-Δ stability coefficient (ASCE 7-22 §12.8.7)',
+    endpoint:'/api/highrise/p-delta', method:'POST',
+    refs:['ASCE 7-22 §12.8.7 Eq. 12.8-16'],
+    fields:[
+      {k:'P_x_kN',    label:'Total vertical load above storey P_x (kN)', type:'number', def:50000},
+      {k:'delta_x_m', label:'Storey drift δ_x (m)', type:'number', def:0.020, step:'0.001'},
+      {k:'V_x_kN',    label:'Storey shear V_x (kN)', type:'number', def:2000},
+      {k:'h_sx_m',    label:'Storey height h_sx (m)', type:'number', def:3.5, step:'0.1'},
+      {k:'Cd',        label:'Deflection amplification C_d', type:'number', def:5.5, step:'0.5'},
+      {k:'Ie',        label:'Importance factor I_e', type:'number', def:1.0, step:'0.1'},
+      {k:'theta_max', label:'θ_max (default 0.25)', type:'number', def:0.25, step:'0.01'},
+    ]},
+
+  { id:'hr_modal', group:'High-Rise Dynamics', tag:'b-disrupt',
+    title:'Modal Response Spectrum analysis (lumped-mass shear building)',
+    endpoint:'/api/highrise/modal-rsa', method:'POST',
+    refs:['ASCE 7-22 §12.9','EN 1998-1 §4.3.3.3'],
+    fields:[
+      {k:'story_masses_t', label:'Story masses (tonnes, JSON array, ground→top)',
+       type:'textarea', def:'[120, 110, 100, 90, 80]'},
+      {k:'story_stiffness_kNpm', label:'Story stiffness (kN/m, JSON array)',
+       type:'textarea', def:'[80000, 75000, 70000, 65000, 60000]'},
+      {k:'spectrum', label:'Design spectrum (JSON array of [period_s, Sa_g])',
+       type:'textarea', def:'[[0.0,0.4],[0.2,1.0],[0.6,1.0],[2.0,0.3],[5.0,0.1]]'},
+      {k:'damping_pct', label:'Damping (%)', type:'number', def:5.0, step:'0.5'},
+      {k:'num_modes', label:'Modes to combine', type:'number', def:5},
+    ]},
+
+  { id:'hr_gust', group:'High-Rise Dynamics', tag:'b-disrupt',
+    title:'Gust effect factor G_f (flexible structure)',
+    endpoint:'/api/highrise/wind/gust-flexible', method:'POST',
+    refs:['ASCE 7-22 §26.11'],
+    fields:[
+      {k:'V_mps',        label:'Mean wind speed V (m/s)', type:'number', def:40},
+      {k:'height_m',     label:'Building height h (m)',   type:'number', def:150},
+      {k:'width_m',      label:'Width B (m)',             type:'number', def:40},
+      {k:'depth_m',      label:'Depth L (m)',             type:'number', def:40},
+      {k:'n1_hz',        label:'Fundamental frequency n₁ (Hz)', type:'number', def:0.5, step:'0.05'},
+      {k:'beta_damping', label:'Damping ratio β', type:'number', def:0.015, step:'0.005'},
+      {k:'exposure',     label:'Exposure', type:'select', opts:['B','C','D'], def:'B'},
+    ]},
+
+  { id:'hr_vortex', group:'High-Rise Dynamics', tag:'b-disrupt',
+    title:'Vortex shedding / lock-in check',
+    endpoint:'/api/highrise/wind/vortex', method:'POST',
+    refs:['EN 1991-1-4 Annex E'],
+    fields:[
+      {k:'V_mean_mps', label:'Mean wind V (m/s)', type:'number', def:33},
+      {k:'b_m',        label:'Across-wind dimension b (m)', type:'number', def:10},
+      {k:'n1_hz',      label:'Fundamental frequency n₁ (Hz)', type:'number', def:0.4, step:'0.05'},
+      {k:'shape',      label:'Cross-section', type:'select',
+       opts:['rectangular','square','circular'], def:'rectangular'},
+      {k:'height_m',   label:'Building height (m)', type:'number', def:120},
+    ]},
+
+  { id:'hr_comfort', group:'High-Rise Dynamics', tag:'b-disrupt',
+    title:'Occupant comfort (ISO 10137 Annex D)',
+    endpoint:'/api/highrise/comfort', method:'POST',
+    refs:['ISO 10137:2007 Annex D'],
+    fields:[
+      {k:'peak_accel_mps2',  label:'Peak across-wind acceleration (m/s²)', type:'number', def:0.05, step:'0.001'},
+      {k:'occupancy',        label:'Occupancy', type:'select',
+       opts:['office','residential','hotel'], def:'office'},
+      {k:'return_period_yr', label:'Return period (years)', type:'number', def:10},
+    ]},
+
+  // ---------- Healthcare compliance (FGI / HBN / HTM) ----------
+  { id:'hc_audit', group:'Healthcare Compliance', tag:'b-health',
+    title:'Audit rooms + compartments vs FGI / HBN / HTM',
+    endpoint:'/api/healthcare/audit', method:'POST',
+    refs:['FGI 2022','HBN 00-09','HTM 03-01','HTM 05-02'],
+    fields:[
+      {k:'rooms', label:'Rooms (JSON array)', type:'textarea',
+       def:JSON.stringify([
+         {id:'OR-1', type:'operating_room_general', area_m2:42,
+          door_clear_mm:1500, ach:25, pressure:'positive'},
+         {id:'P-101', type:'patient_room_single', area_m2:14,
+          door_clear_mm:1200, ach:6, pressure:'neutral',
+          en_suite_wc:true, handwash_distance_m:1.8},
+         {id:'ISO-1', type:'isolation_room_airborne', area_m2:14,
+          door_clear_mm:1200, ach:12, pressure:'negative',
+          handwash_distance_m:1.5}
+       ], null, 2)},
+      {k:'compartments', label:'Compartments (JSON array)', type:'textarea',
+       def:JSON.stringify([
+         {id:'WARD-A', usage:'inpatient_ward', area_m2:1800},
+         {id:'OR-SUITE', usage:'operating_suite', area_m2:1200}
+       ], null, 2)},
+    ]},
+
+  { id:'hc_standards', group:'Healthcare Compliance', tag:'b-health',
+    title:'FGI / HTM reference tables',
+    endpoint:'/api/healthcare/standards', method:'GET',
+    refs:['FGI 2022','HBN 00-09','HTM 03-01','HTM 05-02'],
+    fields:[]},
+
+  // ---------- Real-time multi-user collaboration (replaces BIM 360) ----------
+  { id:'cl_lock_acq', group:'Collaboration', tag:'b-collab',
+    title:'Acquire project lock (Worksharing-class)',
+    endpoint:'/api/collab/lock/acquire', method:'POST',
+    refs:['Advisory locks with TTL — replaces Revit Worksharing on BIM 360'],
+    fields:[
+      {k:'project_id', label:'Project ID', type:'text', def:'demo-001'},
+      {k:'user_id',    label:'User ID',    type:'text', def:'alice'},
+      {k:'user_name',  label:'User name',  type:'text', def:'Alice'},
+      {k:'ttl_s',      label:'Lease TTL (s)', type:'number', def:300},
+      {k:'force',      label:'Force-steal lock', type:'select',
+       opts:['false','true'], def:'false'},
+    ]},
+
+  { id:'cl_lock_renew', group:'Collaboration', tag:'b-collab',
+    title:'Renew lock (heartbeat extends lease)',
+    endpoint:'/api/collab/lock/renew', method:'POST',
+    refs:['Renew before TTL expires to keep editing'],
+    fields:[
+      {k:'project_id', label:'Project ID', type:'text', def:'demo-001'},
+      {k:'token',      label:'Lock token', type:'text', def:''},
+      {k:'ttl_s',      label:'New TTL (s)', type:'number', def:300},
+    ]},
+
+  { id:'cl_lock_rel', group:'Collaboration', tag:'b-collab',
+    title:'Release lock',
+    endpoint:'/api/collab/lock/release', method:'POST',
+    refs:[],
+    fields:[
+      {k:'project_id', label:'Project ID', type:'text', def:'demo-001'},
+      {k:'token',      label:'Lock token', type:'text', def:''},
+    ]},
+
+  { id:'cl_lock_stat', group:'Collaboration', tag:'b-collab',
+    title:'Lock status (who holds it now?)',
+    endpoint:'/api/collab/lock/status', method:'GET',
+    refs:[],
+    fields:[
+      {k:'project_id', label:'Project ID', type:'text', def:'demo-001', querystring:true},
+    ]},
+
+  { id:'cl_pres_hb', group:'Collaboration', tag:'b-collab',
+    title:'Presence heartbeat (I am here)',
+    endpoint:'/api/collab/presence/heartbeat', method:'POST',
+    refs:['Auto-purge after 60 s silence'],
+    fields:[
+      {k:'project_id', label:'Project ID', type:'text', def:'demo-001'},
+      {k:'user_id',    label:'User ID',    type:'text', def:'alice'},
+      {k:'user_name',  label:'User name',  type:'text', def:'Alice'},
+      {k:'view',       label:'Active view', type:'text', def:'floor-plan'},
+    ]},
+
+  { id:'cl_pres', group:'Collaboration', tag:'b-collab',
+    title:'Presence — who is online now',
+    endpoint:'/api/collab/presence', method:'GET',
+    refs:[],
+    fields:[
+      {k:'project_id', label:'Project ID', type:'text', def:'demo-001', querystring:true},
+    ]},
+
+  { id:'cl_chg_rec', group:'Collaboration', tag:'b-collab',
+    title:'Record change (broadcast to feed)',
+    endpoint:'/api/collab/changes/record', method:'POST',
+    refs:[],
+    fields:[
+      {k:'project_id', label:'Project ID', type:'text', def:'demo-001'},
+      {k:'user_id',    label:'User ID', type:'text', def:'alice'},
+      {k:'user_name',  label:'User name', type:'text', def:'Alice'},
+      {k:'op',         label:'Operation', type:'text', def:'wall.create'},
+      {k:'payload',    label:'Payload (JSON)', type:'textarea',
+       def:'{"id":"W1","length_m":5.2}'},
+    ]},
+
+  { id:'cl_chg_poll', group:'Collaboration', tag:'b-collab',
+    title:'Poll change feed (long-poll)',
+    endpoint:'/api/collab/changes/poll', method:'GET',
+    refs:['Returns immediately if changes pending; up to 25 s otherwise'],
+    fields:[
+      {k:'project_id', label:'Project ID', type:'text', def:'demo-001', querystring:true},
+      {k:'since_id',   label:'Since change ID', type:'number', def:0, querystring:true},
+      {k:'timeout_s',  label:'Long-poll timeout (s)', type:'number', def:5, querystring:true},
+    ]},
+];
+
+// ==========================================================================
+//  UI render
+// ==========================================================================
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>el.querySelectorAll(s);
+
+function buildNav(){
+  const nav = $('#nav'); nav.innerHTML='';
+  const groups = {};
+  MODULES.forEach(m=>{ (groups[m.group]=groups[m.group]||[]).push(m); });
+  Object.entries(groups).forEach(([g, list])=>{
+    const h = document.createElement('div'); h.className='grp'; h.textContent=g;
+    nav.appendChild(h);
+    list.forEach(m=>{
+      const b = document.createElement('button');
+      b.innerHTML = `<span class="badge ${m.tag}">${m.group[0]}</span>${m.title}`;
+      b.dataset.id = m.id;
+      b.onclick = ()=>show(m.id);
+      nav.appendChild(b);
+    });
+  });
+}
+
+function show(id){
+  $$('#nav button').forEach(b=>b.classList.toggle('active', b.dataset.id===id));
+  const m = MODULES.find(x=>x.id===id); if(!m) return;
+  const v = $('#view');
+  const refs = m.refs.length ? `<div class="ref"><strong>Standards / sources:</strong> ${m.refs.join(' &middot; ')}</div>` : '';
+  v.innerHTML = `
+    <h2>${m.title}</h2>
+    <p class="sub"><span class="badge ${m.tag}">${m.group}</span><span class="tool-hint">Enter your parameters, then Run.</span></p>
+    <div class="grid2">
+      <div class="card">
+        <form id="frm">${m.fields.map(renderField).join('')}</form>
+        <button class="act" id="run">Run</button>
+        <button class="act ghost" id="clear">Clear</button>
+        ${refs}
+      </div>
+      <div class="card">
+        <strong>Response</strong>
+        <div class="out" id="out"><div class="note">Awaiting execution.</div></div>
+      </div>
+    </div>`;
+  $('#run').onclick = ()=>execute(m);
+  $('#clear').onclick = ()=>{ $('#out').innerHTML = '<div class="note">Cleared.</div>'; };
+}
+
+function renderField(f){
+  const id = `f_${f.k}`;
+  if(f.type==='select'){
+    const opts = f.opts.map(o=>`<option value="${o}" ${String(o)===String(f.def)?'selected':''}>${String(o)}</option>`).join('');
+    return `<label for="${id}">${f.label}</label><select id="${id}">${opts}</select>`;
+  }
+  if(f.type==='textarea'){
+    return `<label for="${id}">${f.label}</label><textarea id="${id}">${f.def||''}</textarea>`;
+  }
+  const step = f.step?`step="${f.step}"`:'';
+  return `<label for="${id}">${f.label}</label><input id="${id}" type="${f.type}" value="${f.def??''}" ${step}/>`;
+}
+
+function readForm(m){
+  const body = {}; const qs = {};
+  for(const f of m.fields){
+    const el = $(`#f_${f.k}`); if(!el) continue;
+    let v = el.value;
+    if(f.type==='number') v = v===''?null:Number(v);
+    else if(f.type==='textarea'){ try{ v = JSON.parse(v); }catch(e){ /* leave string */ } }
+    else if(f.type==='select' && (v==='true'||v==='false')) v = (v==='true');
+    if(f.querystring) qs[f.k] = v; else body[f.k] = v;
+  }
+  return {body, qs};
+}
+
+async function execute(m){
+  const {body, qs} = readForm(m);
+  let url = m.endpoint;
+  const qstr = new URLSearchParams(qs).toString();
+  if(qstr){ url += (url.includes('?')?'&':'?') + qstr; }
+  const out = $('#out'); out.innerHTML = '<div class="note">Running request...</div>';
+  try{
+    const opts = {method: m.method, headers:{'Content-Type':'application/json'}};
+    if(m.method!=='GET') opts.body = JSON.stringify(body);
+    const r = await fetch(url, opts);
+    if(m.binary){
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      const dl = URL.createObjectURL(blob);
+      a.href = dl; a.download = (r.headers.get('Content-Disposition')||'').match(/filename=([^;]+)/)?.[1] || 'eims_report.pdf';
+      a.click(); URL.revokeObjectURL(dl);
+      out.innerHTML = `<div class="stat"><span class="chip ${r.ok?'ok':'bad'}">${r.ok?'Download complete':'Download failed'}</span></div>
+        <div class="note">${r.ok ? 'Your download should start automatically.' : 'The download did not complete.'} File: ${proEscape(a.download)}.</div>`;
+      return;
+    }
+    const text = await r.text();
+    let payload = text;
+    try{ payload = JSON.parse(text); }catch(e){}
+    out.innerHTML = renderResponse(r.status, r.statusText, payload, {endpoint: m.endpoint, title: m.title});
+  }catch(err){
+    out.innerHTML = renderError(err);
+  }
+}
+
+function proEscape(v){
+  return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toLabel(key){
+  return String(key).replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+}
+
+function isPlainObject(v){
+  return v && typeof v === 'object' && !Array.isArray(v);
+}
+
+function formatValue(v){
+  if (v === null || v === undefined) return 'n/a';
+  if (typeof v === 'number') return Number.isFinite(v) ? v.toLocaleString() : String(v);
+  if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+  return String(v);
+}
+
+function renderArray(arr){
+  if (!arr.length) return '<div class="note">No records returned.</div>';
+  if (arr.every(v => !isPlainObject(v))){
+    return `<div>${arr.slice(0, 40).map(v => `<span class="chip">${proEscape(formatValue(v))}</span>`).join(' ')}</div>`;
+  }
+  const keys = [...new Set(arr.slice(0, 12).flatMap(o => Object.keys(o || {})))].slice(0, 8);
+  const head = keys.map(k => `<th>${proEscape(toLabel(k))}</th>`).join('');
+  const rows = arr.slice(0, 24).map(row => `<tr>${keys.map(k => `<td>${proEscape(formatValue(row?.[k]))}</td>`).join('')}</tr>`).join('');
+  return `<div class="tblwrap"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function endpointProfile(endpoint){
+  const p = [
+    {test:'/api/mep/clash-detect', title:'MEP Coordination Summary', metrics:['coordination_score','clash_count']},
+    {test:'/api/mep/clash/clearance-rules', title:'MEP Clearance Rules', metrics:[]},
+    {test:'/api/highrise/p-delta', title:'P-Delta Stability Review', metrics:['amplification_factor','stability_index_theta','second_order_ratio']},
+    {test:'/api/highrise/modal-rsa', title:'Modal Response Summary', metrics:['period_fundamental_s','cumulative_modal_mass_pct']},
+    {test:'/api/highrise/wind/gust-flexible', title:'Dynamic Wind Response', metrics:['gust_effect_factor_Gf','peak_deflection_m','peak_accel_mps2']},
+    {test:'/api/highrise/wind/vortex', title:'Vortex Shedding Check', metrics:['critical_speed_mps','service_speed_mps']},
+    {test:'/api/highrise/comfort', title:'Occupant Comfort Assessment', metrics:['peak_accel_milli_g','limit_milli_g']},
+    {test:'/api/healthcare/audit', title:'Healthcare Compliance Audit', metrics:['compliance_score','total_fail','total_warn']},
+    {test:'/api/healthcare/standards', title:'Healthcare Standards Register', metrics:[]},
+    {test:'/api/collab/lock/acquire', title:'Lock Acquisition Status', metrics:['ttl_s','expires_in_s']},
+    {test:'/api/collab/lock/renew', title:'Lock Renewal Status', metrics:['expires_in_s']},
+    {test:'/api/collab/lock/release', title:'Lock Release Status', metrics:['released']},
+    {test:'/api/collab/lock/status', title:'Current Lock Status', metrics:['locked','expires_in_s']},
+    {test:'/api/collab/presence/heartbeat', title:'Presence Heartbeat', metrics:[]},
+    {test:'/api/collab/presence', title:'Active Team Presence', metrics:['count']},
+    {test:'/api/collab/changes/record', title:'Change Recording Status', metrics:['change_id']},
+    {test:'/api/collab/changes/poll', title:'Change Feed Snapshot', metrics:['last_id','timed_out']},
+  ];
+  return p.find(x => endpoint === x.test) || {title:'Result', metrics:[]};
+}
+
+function renderObject(obj, profile){
+  const entries = Object.entries(obj || {});
+  if (!entries.length) return '<div class="note">No data returned.</div>';
+  const preferred = profile?.metrics?.length ? profile.metrics : [];
+  const scalarEntries = entries.filter(([,v]) => ['string','number','boolean'].includes(typeof v) || v == null);
+  const picked = preferred.length
+    ? preferred.map(k => [k, obj?.[k]]).filter(([,v]) => v !== undefined)
+    : scalarEntries.slice(0, 8);
+  const extra = scalarEntries.filter(([k]) => !picked.some(([pk]) => pk===k)).slice(0, Math.max(0, 8 - picked.length));
+  const metrics = [...picked, ...extra]
+    .map(([k,v]) => `<div class="metric"><b>${proEscape(toLabel(k))}</b><span>${proEscape(formatValue(v))}</span></div>`)
+    .join('');
+  const nested = entries.filter(([,v]) => typeof v === 'object' && v !== null).slice(0, 8).map(([k,v])=>{
+    const sectionTitle = `<div style="margin:10px 0 6px;color:#a8b8d8;font-weight:600">${proEscape(toLabel(k))}</div>`;
+    if (Array.isArray(v)) return sectionTitle + renderArray(v);
+    const rows = Object.entries(v).slice(0, 20).map(([ik,iv]) => `<tr><th>${proEscape(toLabel(ik))}</th><td>${proEscape(formatValue(iv))}</td></tr>`).join('');
+    return sectionTitle + `<div class="tblwrap"><table><tbody>${rows}</tbody></table></div>`;
+  }).join('');
+  return (metrics ? `<div>${metrics}</div>` : '') + nested;
+}
+
+function renderResponse(status, statusText, payload, moduleInfo){
+  const ok = status >= 200 && status < 300;
+  const profile = endpointProfile(moduleInfo?.endpoint || '');
+  const title = profile.title || moduleInfo?.title || 'Result';
+  const head = `<div class="stat"><span class="chip ${ok?'ok':'bad'}">${ok ? 'Completed' : 'Could not complete'}</span><span class="chip">${proEscape(title)}</span></div>`;
+  if (Array.isArray(payload)) return head + renderArray(payload);
+  if (isPlainObject(payload)) return head + renderObject(payload, profile);
+  return head + `<div class="note">${proEscape(formatValue(payload))}</div>`;
+}
+
+function renderError(err){
+  return `<div class="stat"><span class="chip bad">Network error</span></div><div class="note">${proEscape(err?.message || err || 'Unknown error')}</div>`;
+}
+
+// Connection status only — no version/uptime or internal identifiers for end users
+async function ping(){
+  try{
+    const r = await fetch('/api/health');
+    if (!r.ok) throw new Error('bad status');
+    $('#health').innerHTML = `<span class="ok">●</span> Ready`;
+  }catch(e){
+    $('#health').innerHTML = `<span class="bad">●</span> Unavailable`;
+  }
+}
+
+buildNav();
+// Honor #moduleId deep-links from the wizard (e.g. /console#hr_pdelta).
+const _hash = (window.location.hash || '').replace(/^#/, '');
+const _initial = _hash && MODULES.find(m=>m.id===_hash) ? _hash : MODULES[0].id;
+show(_initial);
+window.addEventListener('hashchange', ()=>{
+  const id = (window.location.hash || '').replace(/^#/, '');
+  if (id && MODULES.find(m=>m.id===id)) show(id);
+});
+ping();
+setInterval(ping, 30000);
+</script>
+</body>
+</html>

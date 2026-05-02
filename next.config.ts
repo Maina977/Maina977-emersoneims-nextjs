@@ -387,6 +387,21 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Building Suite Pro Console (mounted at /console via rewrites). It is
+      // iframed by the wizard, so it MUST be allowed in same-origin frames.
+      {
+        source: '/eims-pro-console.html',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=60',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+        ],
+      },
       {
         source: '/eims-pro',
         headers: [
@@ -404,6 +419,18 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+    ];
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // REWRITES - Mount static Building Suite Pro Console under /console.
+  // The Building Suite Pro wizard iframes /console (with #moduleId hashes
+  // for MEP Clash, High-Rise, Healthcare, Collab, All Tools, etc.) and
+  // previously 404'd because no Next.js route owned that path.
+  // ═══════════════════════════════════════════════════════════════════
+  async rewrites() {
+    return [
+      { source: '/console', destination: '/eims-pro-console.html' },
     ];
   },
 

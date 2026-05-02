@@ -75,19 +75,19 @@ function StaticHeroFallback() {
           {/* Badge - Apple-style pill */}
           <div className="inline-flex items-center gap-2 mb-6 sm:mb-8 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-xs sm:text-sm text-amber-300 tracking-wider uppercase font-medium">East Africa's #1 Power Solutions</span>
+            <span className="text-xs sm:text-sm text-amber-300 tracking-wider uppercase font-medium">AI-Powered Energy & Engineering · East Africa</span>
           </div>
 
           {/* Hero Title - Apple-style display typography */}
           <h1 className="apple-display mb-6 sm:mb-8">
-            <span className="block text-white">POWER</span>
-            <span className="block text-amber-500">REDEFINED</span>
+            <span className="block text-white">POWER &amp; BUILD</span>
+            <span className="block text-amber-500">REDEFINED BY AI</span>
           </h1>
 
           {/* Subtitle - Apple-style subheadline */}
           <p className="apple-subheadline text-gray-200 mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-            Premium Energy Solutions. Engineering-Grade Reliability.
-            <span className="text-amber-400 font-medium"> 12+ Years</span> Powering East Africa.
+            Generators · Solar · Boreholes · Buildings — one AI-native platform.
+            <span className="text-amber-400 font-medium"> 12+ Years</span> powering East Africa, now with Generator Oracle, Solar Genius Pro, AquaScan Pro &amp; Building Suite Pro.
           </p>
 
           {/* CTAs - Apple-style buttons with mobile optimization */}
@@ -220,15 +220,15 @@ function AITechnologyShowcase() {
       badge: 'WORLD #1'
     },
     {
-      id: 'enterprise',
-      title: 'Enterprise Platform',
-      subtitle: 'Business Solutions',
-      description: 'Full enterprise integrations including Salesforce, DocuSign, HubSpot, QuickBooks. Professional workflow management for solar installers.',
-      features: ['Salesforce CRM', 'E-Signatures', 'Auto Invoicing', 'Project Tracking'],
-      icon: '🏢',
+      id: 'building-suite-pro',
+      title: 'Building Suite Pro',
+      subtitle: 'AI Construction & Engineering Suite',
+      description: 'Global Construction Intelligence Platform — BIM, structural & MEP engineering, QS / BOQ, healthcare & high-rise compliance, professional reports across 28 countries.',
+      features: ['BIM + 3D Studio', 'AI QS / BOQ', 'MEP Clash + High-Rise', '28 Countries'],
+      icon: '🏗️',
       gradient: 'from-purple-500 to-pink-500',
-      link: '/solutions',
-      badge: 'ENTERPRISE'
+      link: '/solutions/building',
+      badge: 'AI'
     }
   ];
 
@@ -345,6 +345,12 @@ function AITechnologyShowcase() {
               className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
             >
               Explore Solar AI
+            </Link>
+            <Link
+              href="/solutions/building"
+              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
+            >
+              Open Building Suite Pro
             </Link>
           </div>
         </div>

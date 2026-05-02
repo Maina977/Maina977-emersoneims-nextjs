@@ -233,12 +233,12 @@ const MEGA_MENUS = {
 // ═══════════════════════════════════════════════════════════════════════════════
 const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
+  { href: '/about-us', label: 'ABOUT', type: 'link' },
+  { key: 'services', label: 'SERVICES', type: 'mega' },
+  { key: 'aiPowerhouse', label: 'AI SOLUTIONS', type: 'mega', featured: true },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
-  { key: 'aiPowerhouse', label: 'AI POWERHOUSE', type: 'mega', featured: true },
-  { key: 'services', label: 'SERVICES', type: 'mega' },
   { key: 'resources', label: 'RESOURCES', type: 'mega' },
-  { href: '/about-us', label: 'ABOUT', type: 'link' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
