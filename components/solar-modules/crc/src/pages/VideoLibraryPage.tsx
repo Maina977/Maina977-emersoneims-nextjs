@@ -1,7 +1,11 @@
 // MODULE — Video Tutorial Library page
 // Curated solar PV training videos from public YouTube channels.
 // Data lives in `data/video-library.json` (with provenance block).
-// We embed via YouTube's standard iframe — we do NOT host the videos.
+// Link-first design: cards show a thumbnail + metadata and open the video on
+// YouTube in a new tab. We intentionally do NOT iframe-embed because (a) some
+// channels disable third-party embedding and (b) youtube-nocookie embeds were
+// being blocked by our CSP frame-src — both produced grey/blank player boxes
+// in production. Linking out is reliable, fast, and respects the publisher.
 
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
@@ -24,14 +28,46 @@ const Tab = styled.button<{ $active: boolean }>`
   color: ${p => p.$active ? '#050818' : '#00D9FF'};
   font-weight: 600; font-size: 0.86rem;
 `;
-const Grid = styled.div` display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1rem; `;
+const Grid = styled.div` display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; `;
 const VideoCard = styled.div`
   background: rgba(0,0,0,0.35); border: 1px solid rgba(0,217,255,0.2);
   border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  &:hover { transform: translateY(-2px); border-color: rgba(0,217,255,0.5); }
 `;
-const Frame = styled.div`
-  position: relative; width: 100%; padding-top: 56.25%;
-  iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+const ThumbLink = styled.a`
+  position: relative; display: block; width: 100%; padding-top: 56.25%;
+  background: linear-gradient(135deg, #0b1230 0%, #050818 100%);
+  text-decoration: none; overflow: hidden;
+`;
+const Thumb = styled.img`
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block;
+`;
+const PlayBadge = styled.span`
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  &::before {
+    content: ''; width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(0, 0, 0, 0.65);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  }
+  &::after {
+    content: ''; position: absolute;
+    border-style: solid; border-width: 11px 0 11px 18px;
+    border-color: transparent transparent transparent #ffffff;
+    margin-left: 5px;
+  }
+`;
+const OpenBtn = styled.a`
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0.4rem 0.7rem; margin-top: 0.6rem;
+  border-radius: 6px; border: 1px solid rgba(0,217,255,0.45);
+  background: rgba(0,217,255,0.08); color: #00D9FF;
+  text-decoration: none; font-size: 0.82rem; font-weight: 600;
+  transition: background 0.15s ease;
+  &:hover { background: rgba(0,217,255,0.18); }
 `;
 const Pill = styled.span<{ $tone?: 'intro' | 'intermediate' | 'advanced' }>`
   display: inline-block; padding: 2px 8px; border-radius: 999px;
@@ -48,6 +84,9 @@ const Pill = styled.span<{ $tone?: 'intro' | 'intermediate' | 'advanced' }>`
 
 interface Video { title: string; channel: string; youtubeId: string; minutes: number; level: 'intro' | 'intermediate' | 'advanced'; }
 interface Category { id: string; title: string; videos: Video[]; }
+
+const watchUrl = (id: string) => `https://www.youtube.com/watch?v=${id}`;
+const thumbUrl = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
 const VideoLibraryPage: React.FC = () => {
   const cats: Category[] = (library as any).categories || [];
@@ -75,9 +114,9 @@ const VideoLibraryPage: React.FC = () => {
     <Wrap>
       <h1 style={{ marginTop: 0 }}>🎬 Video Tutorial Library</h1>
       <p style={{ color: 'rgba(230,241,255,0.65)' }}>
-        Curated solar PV training videos from public manufacturer + educator
-        YouTube channels. SolarGeniusPro does not host these — every video is
-        embedded directly from the original publisher.
+        A curated index of public solar PV training videos from manufacturer
+        and educator YouTube channels. SolarGeniusPro does not host these —
+        each card opens the original publisher's page on YouTube.
       </p>
 
       <Card>
@@ -104,24 +143,35 @@ const VideoLibraryPage: React.FC = () => {
       <Grid>
         {filtered.map((v, i) => (
           <VideoCard key={`${v.youtubeId}-${i}`}>
-            <Frame>
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${v.youtubeId}`}
-                title={v.title}
-                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
+            <ThumbLink
+              href={watchUrl(v.youtubeId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open "${v.title}" on YouTube`}
+            >
+              <Thumb
+                src={thumbUrl(v.youtubeId)}
+                alt=""
                 loading="lazy"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  // Hide broken thumbnails so the gradient backdrop + play badge remain clean.
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                }}
               />
-            </Frame>
+              <PlayBadge aria-hidden="true" />
+            </ThumbLink>
             <div style={{ padding: '0.7rem 0.9rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
                 <strong style={{ fontSize: '0.95rem', lineHeight: 1.3 }}>{v.title}</strong>
                 <Pill $tone={v.level}>{v.level}</Pill>
               </div>
               <div style={{ marginTop: 4, fontSize: '0.78rem', color: 'rgba(230,241,255,0.6)' }}>
-                {v.channel} · {v.minutes} min ·{' '}
-                <a href={`https://www.youtube.com/watch?v=${v.youtubeId}`} target="_blank" rel="noreferrer" style={{ color: '#00D9FF' }}>Open on YouTube</a>
+                {v.channel} · {v.minutes} min
               </div>
+              <OpenBtn href={watchUrl(v.youtubeId)} target="_blank" rel="noopener noreferrer">
+                Watch on YouTube ↗
+              </OpenBtn>
             </div>
           </VideoCard>
         ))}
