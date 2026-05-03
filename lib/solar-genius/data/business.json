@@ -1,0 +1,1443 @@
+{
+  "sites": [
+    {
+      "id": "site_1776798324067_2ffqd",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-21T19:05:24.067Z"
+    },
+    {
+      "id": "site_1776798841814_8hawq",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-21T19:14:01.814Z"
+    },
+    {
+      "id": "site_1776799297229_zbx6s",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-21T19:21:37.229Z"
+    },
+    {
+      "id": "site_1776799877624_2yk2n",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-21T19:31:17.624Z"
+    },
+    {
+      "id": "site_1776802289549_7fn0v",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-21T20:11:29.549Z"
+    },
+    {
+      "id": "site_1776802391876_hmyf6",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-21T20:13:11.876Z"
+    },
+    {
+      "id": "site_1776802727070_yuw73",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-21T20:18:47.070Z"
+    },
+    {
+      "id": "site_1776842353509_wk9lb",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T07:19:13.509Z"
+    },
+    {
+      "id": "site_1776842573002_yjz97",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T07:22:53.002Z"
+    },
+    {
+      "id": "site_1776842686138_hdozo",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T07:24:46.138Z"
+    },
+    {
+      "id": "site_1776842971864_3dk2u",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T07:29:31.864Z"
+    },
+    {
+      "id": "site_1776843117039_o36vz",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T07:31:57.039Z"
+    },
+    {
+      "id": "site_1776843304507_aqyz5",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T07:35:04.507Z"
+    },
+    {
+      "id": "site_1776844468633_ssf4l",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T07:54:28.633Z"
+    },
+    {
+      "id": "site_1776844942136_8aqtp",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T08:02:22.136Z"
+    },
+    {
+      "id": "site_1776845457105_9d3ur",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T08:10:57.105Z"
+    },
+    {
+      "id": "site_1776846622341_0j7ju",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T08:30:22.341Z"
+    },
+    {
+      "id": "site_1776846753596_pdd04",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T08:32:33.596Z"
+    },
+    {
+      "id": "site_1776846874345_wcmxv",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T08:34:34.345Z"
+    },
+    {
+      "id": "site_1776861080299_uyuff",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T12:31:20.299Z"
+    },
+    {
+      "id": "site_1776861352255_gdenf",
+      "name": "Audit Site Nairobi HQ",
+      "location": {
+        "lat": -1.2865,
+        "lon": 36.8172,
+        "city": "Nairobi"
+      },
+      "systemKw": 6.8,
+      "batteryKwh": 10,
+      "capexKes": 1247500,
+      "annualKwhExpected": 12600,
+      "commissionedAt": null,
+      "status": "commissioned",
+      "tags": [
+        "audit",
+        "commercial"
+      ],
+      "createdAt": "2026-04-22T12:35:52.255Z"
+    }
+  ],
+  "leads": [
+    {
+      "id": "lead_1776798327092_yyipy",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-21T19:05:27.092Z"
+    },
+    {
+      "id": "lead_1776798843783_hdw7y",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-21T19:14:03.783Z"
+    },
+    {
+      "id": "lead_1776799299142_h4ynh",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-21T19:21:39.142Z"
+    },
+    {
+      "id": "lead_1776799881035_pwbs2",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-21T19:31:21.035Z"
+    },
+    {
+      "id": "lead_1776802289976_7lvn4",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-21T20:11:29.976Z"
+    },
+    {
+      "id": "lead_1776802392310_k652s",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-21T20:13:12.310Z"
+    },
+    {
+      "id": "lead_1776802727498_3iypm",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-21T20:18:47.498Z"
+    },
+    {
+      "id": "lead_1776842353930_opccd",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T07:19:13.930Z"
+    },
+    {
+      "id": "lead_1776842573276_f65rq",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T07:22:53.276Z"
+    },
+    {
+      "id": "lead_1776842686410_y5bbf",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T07:24:46.410Z"
+    },
+    {
+      "id": "lead_1776842972304_gkbkg",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T07:29:32.304Z"
+    },
+    {
+      "id": "lead_1776843117489_9svlk",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T07:31:57.489Z"
+    },
+    {
+      "id": "lead_1776843304959_115cn",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T07:35:04.959Z"
+    },
+    {
+      "id": "lead_1776844469046_pl6v8",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T07:54:29.046Z"
+    },
+    {
+      "id": "lead_1776844942538_lu5n9",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T08:02:22.538Z"
+    },
+    {
+      "id": "lead_1776845457499_ps1wq",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T08:10:57.499Z"
+    },
+    {
+      "id": "lead_1776846622758_2l4ft",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T08:30:22.758Z"
+    },
+    {
+      "id": "lead_1776846754007_zq2j9",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T08:32:34.007Z"
+    },
+    {
+      "id": "lead_1776846874758_hllue",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T08:34:34.758Z"
+    },
+    {
+      "id": "lead_1776861080742_honl9",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T12:31:20.742Z"
+    },
+    {
+      "id": "lead_1776861352679_7f3hi",
+      "name": "Audit Lead",
+      "email": "audit@example.com",
+      "phone": "254700000000",
+      "source": "website",
+      "monthlyBillKes": 8500,
+      "location": null,
+      "notes": "",
+      "status": "new",
+      "createdAt": "2026-04-22T12:35:52.679Z"
+    }
+  ],
+  "deals": [
+    {
+      "id": "deal_1776798328400_xyzbh",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-21T19:05:28.400Z",
+      "updatedAt": "2026-04-21T19:05:28.400Z"
+    },
+    {
+      "id": "deal_1776798845065_kilyc",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-21T19:14:05.065Z",
+      "updatedAt": "2026-04-21T19:14:05.065Z"
+    },
+    {
+      "id": "deal_1776799300534_pzzvj",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-21T19:21:40.534Z",
+      "updatedAt": "2026-04-21T19:21:40.534Z"
+    },
+    {
+      "id": "deal_1776799882942_u2arq",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-21T19:31:22.942Z",
+      "updatedAt": "2026-04-21T19:31:22.942Z"
+    },
+    {
+      "id": "deal_1776802290270_kx6ba",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-21T20:11:30.270Z",
+      "updatedAt": "2026-04-21T20:11:30.270Z"
+    },
+    {
+      "id": "deal_1776802392589_ucr70",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-21T20:13:12.589Z",
+      "updatedAt": "2026-04-21T20:13:12.589Z"
+    },
+    {
+      "id": "deal_1776802727794_lqf6a",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-21T20:18:47.794Z",
+      "updatedAt": "2026-04-21T20:18:47.794Z"
+    },
+    {
+      "id": "deal_1776842354211_10282",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T07:19:14.211Z",
+      "updatedAt": "2026-04-22T07:19:14.211Z"
+    },
+    {
+      "id": "deal_1776842573467_gtlqq",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T07:22:53.467Z",
+      "updatedAt": "2026-04-22T07:22:53.467Z"
+    },
+    {
+      "id": "deal_1776842686604_e54w1",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T07:24:46.604Z",
+      "updatedAt": "2026-04-22T07:24:46.604Z"
+    },
+    {
+      "id": "deal_1776842972589_pxl31",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T07:29:32.589Z",
+      "updatedAt": "2026-04-22T07:29:32.589Z"
+    },
+    {
+      "id": "deal_1776843117775_gfy3e",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T07:31:57.775Z",
+      "updatedAt": "2026-04-22T07:31:57.775Z"
+    },
+    {
+      "id": "deal_1776843305248_oj7od",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T07:35:05.248Z",
+      "updatedAt": "2026-04-22T07:35:05.248Z"
+    },
+    {
+      "id": "deal_1776844469335_vze1p",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T07:54:29.335Z",
+      "updatedAt": "2026-04-22T07:54:29.335Z"
+    },
+    {
+      "id": "deal_1776844942818_3wx4x",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T08:02:22.818Z",
+      "updatedAt": "2026-04-22T08:02:22.818Z"
+    },
+    {
+      "id": "deal_1776845457760_1bfrn",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T08:10:57.760Z",
+      "updatedAt": "2026-04-22T08:10:57.760Z"
+    },
+    {
+      "id": "deal_1776846623035_58lge",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T08:30:23.035Z",
+      "updatedAt": "2026-04-22T08:30:23.035Z"
+    },
+    {
+      "id": "deal_1776846754281_38dul",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T08:32:34.281Z",
+      "updatedAt": "2026-04-22T08:32:34.281Z"
+    },
+    {
+      "id": "deal_1776846875046_3k5sw",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T08:34:35.046Z",
+      "updatedAt": "2026-04-22T08:34:35.046Z"
+    },
+    {
+      "id": "deal_1776861081044_2c6fj",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T12:31:21.044Z",
+      "updatedAt": "2026-04-22T12:31:21.044Z"
+    },
+    {
+      "id": "deal_1776861352953_255jh",
+      "title": "Audit Deal — 6.8 kWp",
+      "valueKes": 1247500,
+      "stage": "proposal_sent",
+      "probabilityPct": 20,
+      "expectedCloseDate": "2026-06-30",
+      "ownerEmail": null,
+      "createdAt": "2026-04-22T12:35:52.953Z",
+      "updatedAt": "2026-04-22T12:35:52.953Z"
+    }
+  ],
+  "events": [
+    {
+      "id": "evt_1776798327092_0xwry",
+      "type": "lead_captured",
+      "leadId": "lead_1776798327092_yyipy",
+      "at": "2026-04-21T19:05:27.092Z"
+    },
+    {
+      "id": "evt_1776798328400_4rpzs",
+      "type": "deal_created",
+      "dealId": "deal_1776798328400_xyzbh",
+      "at": "2026-04-21T19:05:28.400Z"
+    },
+    {
+      "id": "evt_1776798843783_kcpol",
+      "type": "lead_captured",
+      "leadId": "lead_1776798843783_hdw7y",
+      "at": "2026-04-21T19:14:03.783Z"
+    },
+    {
+      "id": "evt_1776798845065_s6tcj",
+      "type": "deal_created",
+      "dealId": "deal_1776798845065_kilyc",
+      "at": "2026-04-21T19:14:05.065Z"
+    },
+    {
+      "id": "evt_1776799299142_39q4l",
+      "type": "lead_captured",
+      "leadId": "lead_1776799299142_h4ynh",
+      "at": "2026-04-21T19:21:39.142Z"
+    },
+    {
+      "id": "evt_1776799300534_685sy",
+      "type": "deal_created",
+      "dealId": "deal_1776799300534_pzzvj",
+      "at": "2026-04-21T19:21:40.534Z"
+    },
+    {
+      "id": "evt_1776799881035_xh1oi",
+      "type": "lead_captured",
+      "leadId": "lead_1776799881035_pwbs2",
+      "at": "2026-04-21T19:31:21.035Z"
+    },
+    {
+      "id": "evt_1776799882942_8um7q",
+      "type": "deal_created",
+      "dealId": "deal_1776799882942_u2arq",
+      "at": "2026-04-21T19:31:22.942Z"
+    },
+    {
+      "id": "evt_1776802289976_2zxp6",
+      "type": "lead_captured",
+      "leadId": "lead_1776802289976_7lvn4",
+      "at": "2026-04-21T20:11:29.976Z"
+    },
+    {
+      "id": "evt_1776802290270_sldux",
+      "type": "deal_created",
+      "dealId": "deal_1776802290270_kx6ba",
+      "at": "2026-04-21T20:11:30.270Z"
+    },
+    {
+      "id": "evt_1776802392310_4ueia",
+      "type": "lead_captured",
+      "leadId": "lead_1776802392310_k652s",
+      "at": "2026-04-21T20:13:12.310Z"
+    },
+    {
+      "id": "evt_1776802392589_rxsl1",
+      "type": "deal_created",
+      "dealId": "deal_1776802392589_ucr70",
+      "at": "2026-04-21T20:13:12.589Z"
+    },
+    {
+      "id": "evt_1776802727498_jfrg5",
+      "type": "lead_captured",
+      "leadId": "lead_1776802727498_3iypm",
+      "at": "2026-04-21T20:18:47.498Z"
+    },
+    {
+      "id": "evt_1776802727795_pq87m",
+      "type": "deal_created",
+      "dealId": "deal_1776802727794_lqf6a",
+      "at": "2026-04-21T20:18:47.794Z"
+    },
+    {
+      "id": "evt_1776842353930_gyoz3",
+      "type": "lead_captured",
+      "leadId": "lead_1776842353930_opccd",
+      "at": "2026-04-22T07:19:13.930Z"
+    },
+    {
+      "id": "evt_1776842354211_gbxl0",
+      "type": "deal_created",
+      "dealId": "deal_1776842354211_10282",
+      "at": "2026-04-22T07:19:14.211Z"
+    },
+    {
+      "id": "evt_1776842573276_kfs3q",
+      "type": "lead_captured",
+      "leadId": "lead_1776842573276_f65rq",
+      "at": "2026-04-22T07:22:53.276Z"
+    },
+    {
+      "id": "evt_1776842573467_l6znr",
+      "type": "deal_created",
+      "dealId": "deal_1776842573467_gtlqq",
+      "at": "2026-04-22T07:22:53.467Z"
+    },
+    {
+      "id": "evt_1776842686410_jj2xi",
+      "type": "lead_captured",
+      "leadId": "lead_1776842686410_y5bbf",
+      "at": "2026-04-22T07:24:46.410Z"
+    },
+    {
+      "id": "evt_1776842686604_cty8l",
+      "type": "deal_created",
+      "dealId": "deal_1776842686604_e54w1",
+      "at": "2026-04-22T07:24:46.604Z"
+    },
+    {
+      "id": "evt_1776842972304_7nvwx",
+      "type": "lead_captured",
+      "leadId": "lead_1776842972304_gkbkg",
+      "at": "2026-04-22T07:29:32.304Z"
+    },
+    {
+      "id": "evt_1776842972589_yv45j",
+      "type": "deal_created",
+      "dealId": "deal_1776842972589_pxl31",
+      "at": "2026-04-22T07:29:32.589Z"
+    },
+    {
+      "id": "evt_1776843117489_isrh4",
+      "type": "lead_captured",
+      "leadId": "lead_1776843117489_9svlk",
+      "at": "2026-04-22T07:31:57.489Z"
+    },
+    {
+      "id": "evt_1776843117776_n7s3j",
+      "type": "deal_created",
+      "dealId": "deal_1776843117775_gfy3e",
+      "at": "2026-04-22T07:31:57.775Z"
+    },
+    {
+      "id": "evt_1776843304959_2ejs6",
+      "type": "lead_captured",
+      "leadId": "lead_1776843304959_115cn",
+      "at": "2026-04-22T07:35:04.959Z"
+    },
+    {
+      "id": "evt_1776843305248_80w26",
+      "type": "deal_created",
+      "dealId": "deal_1776843305248_oj7od",
+      "at": "2026-04-22T07:35:05.248Z"
+    },
+    {
+      "id": "evt_1776844469046_5ihv0",
+      "type": "lead_captured",
+      "leadId": "lead_1776844469046_pl6v8",
+      "at": "2026-04-22T07:54:29.046Z"
+    },
+    {
+      "id": "evt_1776844469335_5anq2",
+      "type": "deal_created",
+      "dealId": "deal_1776844469335_vze1p",
+      "at": "2026-04-22T07:54:29.335Z"
+    },
+    {
+      "id": "evt_1776844942538_8ef16",
+      "type": "lead_captured",
+      "leadId": "lead_1776844942538_lu5n9",
+      "at": "2026-04-22T08:02:22.538Z"
+    },
+    {
+      "id": "evt_1776844942818_3lbpv",
+      "type": "deal_created",
+      "dealId": "deal_1776844942818_3wx4x",
+      "at": "2026-04-22T08:02:22.818Z"
+    },
+    {
+      "id": "evt_1776845457499_8v0ig",
+      "type": "lead_captured",
+      "leadId": "lead_1776845457499_ps1wq",
+      "at": "2026-04-22T08:10:57.499Z"
+    },
+    {
+      "id": "evt_1776845457760_2nz9i",
+      "type": "deal_created",
+      "dealId": "deal_1776845457760_1bfrn",
+      "at": "2026-04-22T08:10:57.760Z"
+    },
+    {
+      "id": "evt_1776846622759_m66sf",
+      "type": "lead_captured",
+      "leadId": "lead_1776846622758_2l4ft",
+      "at": "2026-04-22T08:30:22.758Z"
+    },
+    {
+      "id": "evt_1776846623035_1pjka",
+      "type": "deal_created",
+      "dealId": "deal_1776846623035_58lge",
+      "at": "2026-04-22T08:30:23.035Z"
+    },
+    {
+      "id": "evt_1776846754007_pmzoc",
+      "type": "lead_captured",
+      "leadId": "lead_1776846754007_zq2j9",
+      "at": "2026-04-22T08:32:34.007Z"
+    },
+    {
+      "id": "evt_1776846754281_ccz61",
+      "type": "deal_created",
+      "dealId": "deal_1776846754281_38dul",
+      "at": "2026-04-22T08:32:34.281Z"
+    },
+    {
+      "id": "evt_1776846874758_qcw0u",
+      "type": "lead_captured",
+      "leadId": "lead_1776846874758_hllue",
+      "at": "2026-04-22T08:34:34.758Z"
+    },
+    {
+      "id": "evt_1776846875046_c00o3",
+      "type": "deal_created",
+      "dealId": "deal_1776846875046_3k5sw",
+      "at": "2026-04-22T08:34:35.046Z"
+    },
+    {
+      "id": "evt_1776861080742_xo2ul",
+      "type": "lead_captured",
+      "leadId": "lead_1776861080742_honl9",
+      "at": "2026-04-22T12:31:20.742Z"
+    },
+    {
+      "id": "evt_1776861081044_1c687",
+      "type": "deal_created",
+      "dealId": "deal_1776861081044_2c6fj",
+      "at": "2026-04-22T12:31:21.044Z"
+    },
+    {
+      "id": "evt_1776861352679_q0nnx",
+      "type": "lead_captured",
+      "leadId": "lead_1776861352679_7f3hi",
+      "at": "2026-04-22T12:35:52.679Z"
+    },
+    {
+      "id": "evt_1776861352953_wtjqz",
+      "type": "deal_created",
+      "dealId": "deal_1776861352953_255jh",
+      "at": "2026-04-22T12:35:52.953Z"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job_1776798330664_3qeyu",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-21T19:05:30.664Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776798847510_09kgu",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-21T19:14:07.510Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776799303311_yh8yu",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-21T19:21:43.311Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776799886999_fr14d",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-21T19:31:26.999Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776802290717_31w3w",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-21T20:11:30.717Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776802393019_o7qt0",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-21T20:13:13.019Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776802728223_p8hka",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-21T20:18:48.223Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776842354646_qugd1",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T07:19:14.646Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776842573761_yzw81",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T07:22:53.761Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776842686869_sokkx",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T07:24:46.869Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776842973037_h0tge",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T07:29:33.037Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776843118241_jry0c",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T07:31:58.241Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776843305691_5a0mh",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T07:35:05.691Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776844469743_zsdc3",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T07:54:29.743Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776844943241_ptgud",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T08:02:23.241Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776845458160_q47y2",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T08:10:58.160Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776846623453_yxpr0",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T08:30:23.453Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776846754708_cndc8",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T08:32:34.708Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776846875462_7hu0x",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T08:34:35.462Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776861081485_u0ah1",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T12:31:21.485Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    },
+    {
+      "id": "job_1776861353365_6kr2m",
+      "siteId": null,
+      "dealId": null,
+      "quotedKes": 1247500,
+      "actualMaterialsKes": 720000,
+      "actualLabourKes": 180000,
+      "actualOtherKes": 50000,
+      "completedAt": "2026-04-22T12:35:53.365Z",
+      "totalCostKes": 950000,
+      "profitKes": 297500,
+      "marginPct": 23.85
+    }
+  ],
+  "settings": {
+    "mode": "beginner"
+  }
+}

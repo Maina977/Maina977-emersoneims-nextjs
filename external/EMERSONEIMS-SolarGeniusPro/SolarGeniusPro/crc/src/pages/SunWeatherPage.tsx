@@ -62,6 +62,14 @@ const SunWeatherPage: React.FC = () => {
     const grab = async (url: string, key: string) => {
       try {
         const r = await fetch(url);
+        // Guard against non-JSON responses (Next.js 404 HTML, edge errors,
+        // CDN error pages). Without this, calling `r.json()` on HTML throws
+        // "Unexpected token '<', '<!DOCTYPE'" and the badge looks broken.
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          const snippet = (await r.text().catch(() => '')).slice(0, 80).replace(/\s+/g, ' ').trim();
+          throw new Error(`HTTP ${r.status}${snippet ? ` — ${snippet.slice(0, 60)}…` : ''}`);
+        }
         const j = await r.json();
         if (!r.ok || j.success === false) throw new Error(j.error || `HTTP ${r.status}`);
         return j.data ?? j;

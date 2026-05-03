@@ -1,7 +1,7 @@
 export default function SolarGeniusProLoading() {
   return (
     <div
-      className="min-h-[100dvh] pt-[4.5rem] sm:pt-20 flex items-center justify-center bg-gradient-to-b from-slate-950 to-black"
+      className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-b from-slate-950 to-black"
       role="status"
       aria-live="polite"
     >
