@@ -1,0 +1,14 @@
+/**
+ * SolarGeniusPro panel catalogue — real datasheet specs ported from the
+ * original Express backend (equipment-library.js). Includes JA Solar,
+ * LONGi, Trina, Canadian Solar and others with full STC parameters.
+ */
+import { NextRequest } from 'next/server';
+import { handleSolarGenius } from '@/lib/solar-genius/adapter';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
+  return handleSolarGenius(req, 'equipment', ['panels']);
+}

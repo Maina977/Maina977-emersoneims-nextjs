@@ -1,6 +1,7 @@
-﻿/**
- * SolarGeniusPro engineering-extras (Tier 1+2+3) catch-all.
- * Real algorithms ported from server/engineering-extras.js.
+/**
+ * SolarGeniusPro engineering-ELITE (Tier-4 utility-scale) catch-all.
+ * Real algorithms ported from server/engineering-elite.js: 8760 TMY
+ * simulation, GA optimiser, PAN degradation, EPRA grid-code pack.
  */
 import { NextRequest } from 'next/server';
 import { handleSolarGenius } from '@/lib/solar-genius/adapter';
@@ -14,12 +15,10 @@ const handler = async (
   ctx: { params: Promise<{ path?: string[] }> },
 ) => {
   const { path = [] } = await ctx.params;
-  const res = await handleSolarGenius(req, 'eng', path);
+  const res = await handleSolarGenius(req, 'engelite', path);
   if (res.status !== 404) return res;
-  return dispatch(req, path, 'eng');
+  return dispatch(req, path, 'engelite');
 };
 
 export const GET = handler;
 export const POST = handler;
-export const PUT = handler;
-export const DELETE = handler;

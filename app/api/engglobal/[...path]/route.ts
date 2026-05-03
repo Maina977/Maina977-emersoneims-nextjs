@@ -1,6 +1,8 @@
-﻿/**
- * SolarGeniusPro engineering-extras (Tier 1+2+3) catch-all.
- * Real algorithms ported from server/engineering-extras.js.
+/**
+ * SolarGeniusPro engineering-GLOBAL (Tier-5 utility-scale, no upper limit)
+ * catch-all. Real algorithms ported from server/engineering-global.js:
+ * EPW TMY import, PVsyst PAN/OND parser, continuous-beam FE, PVGIS hourly,
+ * global grid-code pack, global finance pack.
  */
 import { NextRequest } from 'next/server';
 import { handleSolarGenius } from '@/lib/solar-genius/adapter';
@@ -14,12 +16,10 @@ const handler = async (
   ctx: { params: Promise<{ path?: string[] }> },
 ) => {
   const { path = [] } = await ctx.params;
-  const res = await handleSolarGenius(req, 'eng', path);
+  const res = await handleSolarGenius(req, 'engglobal', path);
   if (res.status !== 404) return res;
-  return dispatch(req, path, 'eng');
+  return dispatch(req, path, 'engglobal');
 };
 
 export const GET = handler;
 export const POST = handler;
-export const PUT = handler;
-export const DELETE = handler;
