@@ -9,9 +9,21 @@
  * SAME-ORIGIN iframe so its embedded fetch() calls to /api/* reach the
  * Next.js API routes we are progressively porting from the original Flask
  * backend (lib/building/wizardApi/*).
+ *
+ * Deep-link mode preselect: when this page is reached via a feature slug
+ * (e.g. `/qs`, `/safety`, `/healthcare` — see `lib/buildingSuitePro/featureRoutes.ts`),
+ * the slug page redirects to `/solutions/building?mode=<wizardMode>`. On
+ * iframe load we read the query param and call the wizard's setMode() to
+ * auto-open the right tab. Same-origin iframe so direct contentWindow
+ * access is safe — no postMessage required.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { BSP_FEATURES } from '@/lib/buildingSuitePro/featureRoutes';
+
+const VALID_MODES = new Set(BSP_FEATURES.map((f) => f.mode));
+
+type WizardWindow = Window & { setMode?: (m: string) => void };
 
 // One-shot stale-cache kicker. If a visitor still has the OLD service worker
 // (which stale-while-revalidates this page back to the previous wizard URL),
@@ -36,12 +48,35 @@ function killOldServiceWorkerOnce() {
 
 export default function ProBuildingSuiteClient() {
   const [loaded, setLoaded] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     killOldServiceWorkerOnce();
     const t = window.setTimeout(() => setLoaded(true), 6000); // safety hide (wizard typically ready in 2-3s)
     return () => window.clearTimeout(t);
   }, []);
+
+  /**
+   * If the user landed here via a Building Suite Pro feature slug
+   * (`/qs`, `/safety`, etc.) the slug page appended `?mode=<wizardMode>`.
+   * Forward that into the wizard once the iframe has finished loading.
+   * Wrapped in try/catch because the iframe may briefly be cross-origin
+   * during navigation, and we never want this enhancement to crash the page.
+   */
+  function handleIframeLoad() {
+    setLoaded(true);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get('mode');
+      if (!mode || !VALID_MODES.has(mode)) return;
+      const win = iframeRef.current?.contentWindow as WizardWindow | null | undefined;
+      if (typeof win?.setMode === 'function') {
+        // Wizard sometimes initialises async — try now and again shortly after.
+        win.setMode(mode);
+        setTimeout(() => { try { win.setMode?.(mode); } catch { /* noop */ } }, 400);
+      }
+    } catch { /* ignore — wizard may not yet expose setMode */ }
+  }
 
   return (
     <div
@@ -89,9 +124,10 @@ export default function ProBuildingSuiteClient() {
         </div>
       )}
       <iframe
+        ref={iframeRef}
         src="/eims-building-suite-v20260503.html"
         title="EMERSON EIMS Building Suite Pro"
-        onLoad={() => setLoaded(true)}
+        onLoad={handleIframeLoad}
         loading="eager"
         // @ts-expect-error fetchpriority is a valid HTML attr but not yet typed in React 19
         fetchpriority="high"
