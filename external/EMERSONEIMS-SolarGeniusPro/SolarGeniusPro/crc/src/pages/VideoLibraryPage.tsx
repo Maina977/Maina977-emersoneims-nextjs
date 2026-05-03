@@ -1,11 +1,19 @@
 // MODULE — Video Tutorial Library page
-// Curated solar PV training videos from public YouTube channels.
+// Curated directory of public solar PV training destinations on YouTube.
 // Data lives in `data/video-library.json` (with provenance block).
-// Link-first design: cards show a thumbnail + metadata and open the video on
-// YouTube in a new tab. We intentionally do NOT iframe-embed because (a) some
-// channels disable third-party embedding and (b) youtube-nocookie embeds were
-// being blocked by our CSP frame-src — both produced grey/blank player boxes
-// in production. Linking out is reliable, fast, and respects the publisher.
+//
+// Design history:
+// 1) Originally embedded individual videos via youtube-nocookie iframes — those
+//    were blocked by our CSP frame-src and showed grey boxes in production.
+// 2) Switched to link-first cards using individual youtubeId values + i.ytimg
+//    thumbnails — but the curated IDs were stale/private/deleted, so YouTube
+//    served its generic "video unavailable" placeholder thumbnail (HTTP 200,
+//    so onError never fired) and click-throughs hit YouTube's unavailable page.
+// 3) (Current) The library is now a topic directory of CHANNEL pages and
+//    YouTube SEARCH-result URLs. Channels and search URLs do not 404, return
+//    live results, and self-refresh as publishers add content. There are no
+//    per-video IDs to go stale and no thumbnails to fetch, so the
+//    "unavailable" frames are gone for good.
 
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
@@ -29,45 +37,25 @@ const Tab = styled.button<{ $active: boolean }>`
   font-weight: 600; font-size: 0.86rem;
 `;
 const Grid = styled.div` display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; `;
-const VideoCard = styled.div`
+const TopicCard = styled.a`
+  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 1rem 1.1rem; min-height: 168px;
   background: rgba(0,0,0,0.35); border: 1px solid rgba(0,217,255,0.2);
-  border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;
-  transition: transform 0.15s ease, border-color 0.15s ease;
-  &:hover { transform: translateY(-2px); border-color: rgba(0,217,255,0.5); }
-`;
-const ThumbLink = styled.a`
-  position: relative; display: block; width: 100%; padding-top: 56.25%;
-  background: linear-gradient(135deg, #0b1230 0%, #050818 100%);
-  text-decoration: none; overflow: hidden;
-`;
-const Thumb = styled.img`
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; display: block;
-`;
-const PlayBadge = styled.span`
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  pointer-events: none;
-  &::before {
-    content: ''; width: 64px; height: 64px; border-radius: 50%;
-    background: rgba(0, 0, 0, 0.65);
-    border: 2px solid rgba(255, 255, 255, 0.85);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
-  }
-  &::after {
-    content: ''; position: absolute;
-    border-style: solid; border-width: 11px 0 11px 18px;
-    border-color: transparent transparent transparent #ffffff;
-    margin-left: 5px;
+  border-radius: 10px; color: #E6F1FF; text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0,217,255,0.55);
+    background: rgba(0,32,64,0.45);
   }
 `;
-const OpenBtn = styled.a`
+const KindBadge = styled.span<{ $kind: 'channel' | 'search' }>`
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 0.4rem 0.7rem; margin-top: 0.6rem;
-  border-radius: 6px; border: 1px solid rgba(0,217,255,0.45);
-  background: rgba(0,217,255,0.08); color: #00D9FF;
-  text-decoration: none; font-size: 0.82rem; font-weight: 600;
-  transition: background 0.15s ease;
-  &:hover { background: rgba(0,217,255,0.18); }
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em;
+  border: 1px solid currentColor;
+  color: ${p => (p.$kind === 'channel' ? '#7dd3fc' : '#fcd34d')};
+  background: ${p => (p.$kind === 'channel' ? 'rgba(125,211,252,0.12)' : 'rgba(252,211,77,0.12)')};
 `;
 const Pill = styled.span<{ $tone?: 'intro' | 'intermediate' | 'advanced' }>`
   display: inline-block; padding: 2px 8px; border-radius: 999px;
@@ -81,12 +69,24 @@ const Pill = styled.span<{ $tone?: 'intro' | 'intermediate' | 'advanced' }>`
     p.$tone === 'intermediate' ? '#fcd34d' :
     '#86efac'};
 `;
+const OpenLine = styled.span`
+  margin-top: auto; padding-top: 0.4rem;
+  font-size: 0.82rem; font-weight: 600; color: #00D9FF;
+`;
 
-interface Video { title: string; channel: string; youtubeId: string; minutes: number; level: 'intro' | 'intermediate' | 'advanced'; }
-interface Category { id: string; title: string; videos: Video[]; }
-
-const watchUrl = (id: string) => `https://www.youtube.com/watch?v=${id}`;
-const thumbUrl = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+interface LinkItem {
+  title: string;
+  source: string;
+  url: string;
+  kind: 'channel' | 'search';
+  level: 'intro' | 'intermediate' | 'advanced';
+}
+interface Category {
+  id: string;
+  title: string;
+  description?: string;
+  links: LinkItem[];
+}
 
 const VideoLibraryPage: React.FC = () => {
   const cats: Category[] = (library as any).categories || [];
@@ -98,11 +98,12 @@ const VideoLibraryPage: React.FC = () => {
   const filtered = useMemo(() => {
     if (!current) return [];
     const q = search.trim().toLowerCase();
-    if (!q) return current.videos;
-    return current.videos.filter(v =>
-      v.title.toLowerCase().includes(q) ||
-      v.channel.toLowerCase().includes(q) ||
-      v.level.toLowerCase().includes(q)
+    if (!q) return current.links;
+    return current.links.filter(l =>
+      l.title.toLowerCase().includes(q) ||
+      l.source.toLowerCase().includes(q) ||
+      l.level.toLowerCase().includes(q) ||
+      l.kind.toLowerCase().includes(q)
     );
   }, [current, search]);
 
@@ -114,22 +115,22 @@ const VideoLibraryPage: React.FC = () => {
     <Wrap>
       <h1 style={{ marginTop: 0 }}>🎬 Video Tutorial Library</h1>
       <p style={{ color: 'rgba(230,241,255,0.65)' }}>
-        A curated index of public solar PV training videos from manufacturer
-        and educator YouTube channels. SolarGeniusPro does not host these —
-        each card opens the original publisher's page on YouTube.
+        A curated topic directory of public solar PV training on YouTube. Each
+        card opens a publisher's channel or a live YouTube topic search in a
+        new tab — SolarGeniusPro never hosts or rebroadcasts video content.
       </p>
 
       <Card>
         <Tabs>
           {cats.map(c => (
             <Tab key={c.id} $active={c.id === active} onClick={() => setActive(c.id)}>
-              {c.title} <span style={{ opacity: 0.6, marginLeft: 4 }}>({c.videos.length})</span>
+              {c.title} <span style={{ opacity: 0.6, marginLeft: 4 }}>({c.links.length})</span>
             </Tab>
           ))}
         </Tabs>
         <input
           type="text"
-          placeholder="Search title / channel / level…"
+          placeholder="Search title / source / level / kind…"
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{
@@ -140,45 +141,38 @@ const VideoLibraryPage: React.FC = () => {
         />
       </Card>
 
+      {current?.description && (
+        <Card>
+          <p style={{ margin: 0, fontSize: '0.92rem', color: 'rgba(230,241,255,0.78)' }}>
+            {current.description}
+          </p>
+        </Card>
+      )}
+
       <Grid>
-        {filtered.map((v, i) => (
-          <VideoCard key={`${v.youtubeId}-${i}`}>
-            <ThumbLink
-              href={watchUrl(v.youtubeId)}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Open "${v.title}" on YouTube`}
-            >
-              <Thumb
-                src={thumbUrl(v.youtubeId)}
-                alt=""
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  // Hide broken thumbnails so the gradient backdrop + play badge remain clean.
-                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                }}
-              />
-              <PlayBadge aria-hidden="true" />
-            </ThumbLink>
-            <div style={{ padding: '0.7rem 0.9rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
-                <strong style={{ fontSize: '0.95rem', lineHeight: 1.3 }}>{v.title}</strong>
-                <Pill $tone={v.level}>{v.level}</Pill>
-              </div>
-              <div style={{ marginTop: 4, fontSize: '0.78rem', color: 'rgba(230,241,255,0.6)' }}>
-                {v.channel} · {v.minutes} min
-              </div>
-              <OpenBtn href={watchUrl(v.youtubeId)} target="_blank" rel="noopener noreferrer">
-                Watch on YouTube ↗
-              </OpenBtn>
+        {filtered.map((l, i) => (
+          <TopicCard
+            key={`${l.url}-${i}`}
+            href={l.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open ${l.title} on YouTube`}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
+              <KindBadge $kind={l.kind}>
+                {l.kind === 'channel' ? '▶ Channel' : '🔎 Topic'}
+              </KindBadge>
+              <Pill $tone={l.level}>{l.level}</Pill>
             </div>
-          </VideoCard>
+            <strong style={{ fontSize: '1rem', lineHeight: 1.3 }}>{l.title}</strong>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(230,241,255,0.6)' }}>{l.source}</span>
+            <OpenLine>Open on YouTube ↗</OpenLine>
+          </TopicCard>
         ))}
       </Grid>
 
       {filtered.length === 0 && (
-        <Card><p style={{ margin: 0, color: 'rgba(230,241,255,0.55)' }}>No videos match your search in this category.</p></Card>
+        <Card><p style={{ margin: 0, color: 'rgba(230,241,255,0.55)' }}>No topics match your search in this category.</p></Card>
       )}
 
       {provenance && (
