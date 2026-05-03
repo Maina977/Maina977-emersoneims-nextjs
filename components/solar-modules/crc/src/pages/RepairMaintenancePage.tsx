@@ -74,8 +74,17 @@ const RepairMaintenancePage: React.FC = () => {
   const setStep = (f: Fault, n: number | null) => setWizards(w => ({ ...w, [wizardKey(f)]: n }));
 
   useEffect(() => {
+    // Guard against non-JSON (HTML 404) responses so we don't crash with
+    // "Unexpected token '<', '<!DOCTYPE'" when the fault catalogue endpoint
+    // is unavailable. Show empty catalogue instead.
     fetch('/api/faults')
-      .then(r => r.json())
+      .then(async r => {
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          return { success: true, data: [], provenance: null };
+        }
+        return r.json();
+      })
       .then(j => {
         if (!j.success) throw new Error(j.error || 'load failed');
         setFaults(j.data || []);

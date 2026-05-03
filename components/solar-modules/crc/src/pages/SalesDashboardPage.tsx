@@ -60,14 +60,25 @@ const SalesDashboardPage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
+    // Safe JSON fetcher: returns {} instead of throwing
+    // "Unexpected token '<', '<!DOCTYPE'" when the server sends an HTML
+    // error page. Pages display empty-state cleanly in that case.
+    const safeJson = async (url: string): Promise<any> => {
+      try {
+        const r = await fetch(url);
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) return {};
+        return await r.json();
+      } catch { return {}; }
+    };
     (async () => {
       try {
         const [p1, p2, p3, p4, p5] = await Promise.all([
-          fetch('/api/biz/portfolio').then(r => r.json()),
-          fetch('/api/biz/pipeline').then(r => r.json()),
-          fetch('/api/biz/conversion?days=90').then(r => r.json()),
-          fetch('/api/biz/profit').then(r => r.json()),
-          fetch('/api/biz/leads').then(r => r.json()),
+          safeJson('/api/biz/portfolio'),
+          safeJson('/api/biz/pipeline'),
+          safeJson('/api/biz/conversion?days=90'),
+          safeJson('/api/biz/profit'),
+          safeJson('/api/biz/leads'),
         ]);
         if (cancelled) return;
         setS({

@@ -114,8 +114,15 @@ const PanelLayoutPage: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Guard against non-JSON (HTML 404) responses so we don't crash with
+    // "Unexpected token '<', '<!DOCTYPE'" when the catalogue endpoint is
+    // unavailable. Show empty list instead.
     fetch('/api/equipment/panels')
-      .then(r => r.json())
+      .then(async r => {
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) return { data: [] };
+        return r.json();
+      })
       .then(j => {
         const raw = j.data || j || [];
         const list: Panel[] = raw.map(normalisePanel).filter(Boolean) as Panel[];

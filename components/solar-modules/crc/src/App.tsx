@@ -39,9 +39,15 @@ import { useSolarStore } from './services/store';
 // No body scroll — each region scrolls independently.
 // ============================================
 
-// Lock body scroll so the shell behaves like a desktop application.
+// NOTE: Originally this locked html/body with `overflow: hidden` so the SPA
+// could behave like a standalone desktop app. Mounted inside Next.js under a
+// global fixed top nav (~80px), that lock trapped the bottom of the workspace
+// below the viewport and disabled vertical page scroll on /solar-genius-pro.
+// We keep the height baseline but drop the body overflow lock so the host
+// page can scroll when the inner regions overflow. Inner panes still have
+// their own `overflow-y: auto` so the desktop-app feel is preserved.
 const AppGlobal = createGlobalStyle`
-  html, body, #root { height: 100%; overflow: hidden; }
+  html, body, #root { height: 100%; }
 `;
 
 const SIDEBAR_W       = 260;

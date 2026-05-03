@@ -54,6 +54,14 @@ const QuoteParserPage: React.FC = () => {
       fd.append('file', file);
       fd.append('type', type);
       const res = await fetch('/api/site/upload', { method: 'POST', body: fd });
+      const ct = res.headers.get('content-type') || '';
+      // Avoid the "Unexpected token '<', '<!DOCTYPE'" parse crash when the
+      // upload endpoint returns an HTML error page (e.g. 413/502). Surface
+      // the HTTP status to the user instead.
+      if (!ct.includes('application/json')) {
+        const snippet = (await res.text().catch(() => '')).slice(0, 100);
+        throw new Error(`Upload failed: HTTP ${res.status}${snippet ? ` — ${snippet}` : ''}`);
+      }
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || `HTTP ${res.status}`);
       setResult(json);

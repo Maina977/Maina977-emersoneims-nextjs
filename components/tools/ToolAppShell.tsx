@@ -3,13 +3,15 @@
 import type { ReactNode } from 'react';
 
 /**
- * Fixed nav (~64–80px) is global; this shell adds padding so tool UIs are not covered.
- * content-visibility improves paint on long dashboards (supported browsers).
+ * The global layout (app/layout.tsx) already pads main#main-content by
+ * 64–72px to clear the fixed nav. We must NOT add another `pt-20` here or
+ * tools render with a ~150px empty band at the top. Use a plain wrapper
+ * sized to the remaining viewport.
  */
 export function ToolAppShell({ children, label }: { children: ReactNode; label?: string }) {
   return (
     <div
-      className="w-full min-h-[100dvh] pt-[4.5rem] sm:pt-20 [content-visibility:auto]"
+      className="w-full min-h-[100dvh] [content-visibility:auto]"
       data-emerson-tool={label ?? 'app'}
     >
       {children}
@@ -20,7 +22,7 @@ export function ToolAppShell({ children, label }: { children: ReactNode; label?:
 export function ToolLoadingState({ name }: { name: string }) {
   return (
     <div
-      className="min-h-[100dvh] pt-[4.5rem] sm:pt-20 flex items-center justify-center bg-gradient-to-b from-slate-950 to-black"
+      className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-b from-slate-950 to-black"
       role="status"
       aria-live="polite"
     >

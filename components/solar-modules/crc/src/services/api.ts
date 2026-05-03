@@ -14,7 +14,13 @@ async function req<T = any>(path: string, opts: RequestInit = {}): Promise<T> {
     if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
     return json;
   }
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  // Non-JSON response (e.g. Next.js 404 HTML page). Read the text safely
+  // and surface a clear error instead of letting downstream code call
+  // `.json()` on HTML and explode with "Unexpected token '<', '<!DOCTYPE'".
+  if (!res.ok) {
+    const snippet = (await res.text().catch(() => '')).slice(0, 120);
+    throw new Error(`HTTP ${res.status}${snippet ? ` — ${snippet}` : ''}`);
+  }
   return (await res.blob()) as any;
 }
 
