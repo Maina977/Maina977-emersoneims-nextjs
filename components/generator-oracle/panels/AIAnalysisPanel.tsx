@@ -2,8 +2,12 @@
 
 /**
  * AI ANALYSIS PANEL
- * The most comprehensive AI-powered generator diagnostic interface
- * Provides 100% detailed, accurate analysis with predictive capabilities
+ * Cross-parameter generator diagnosis. Pulls live readings from the user,
+ * runs them through the local rule-based diagnostic engine, and — when an
+ * AI key is configured — augments the result via the server route.
+ * Confidence and source ('ai' vs 'local') are surfaced honestly; we do not
+ * claim "100%" anywhere because the analysis is rule-based + LLM, not a
+ * measured accuracy figure.
  */
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
@@ -22,6 +26,8 @@ import {
   getFaultCodesByBrand,
   CONTROLLER_BRANDS,
 } from '@/lib/generator-oracle/integratedDiagnosticService';
+import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
+import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -447,6 +453,7 @@ function IssueCard({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps) {
+  const aiAvailability = useAIAvailable();
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -562,6 +569,20 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
     load: { label: 'Load Parameters', icon: '📊' },
   };
 
+  // After all hooks have run, swap the entire panel for an unavailable notice
+  // when the server has no AI key. The local rule-based engine still exists
+  // (performAIDiagnosis in ai-diagnostic-engine.ts) but presenting it here
+  // under "AI Analysis" branding would be misleading until the real AI is on.
+  if (aiAvailability === 'unavailable') {
+    return (
+      <AIUnavailableNotice
+        feature="AI Parameter Analysis"
+        description="Cross-parameter AI diagnosis (correlating live readings, fault codes, and symptoms into a ranked probable-cause report) is not yet enabled. For parameter-by-parameter checks today, use the Engine, Electrical, and Sensors sub-tabs under Systems."
+        className={className}
+      />
+    );
+  }
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
@@ -579,7 +600,7 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
           <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
             AI Diagnostic Engine
           </h2>
-          <p className="text-slate-400">100% detailed analysis with predictive intelligence</p>
+          <p className="text-slate-400">Cross-parameter analysis with ranked probable causes. Verify findings against the unit before acting.</p>
         </div>
       </div>
 
@@ -589,7 +610,7 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
           <span>📊</span> Enter Your Generator Readings
         </h3>
         <p className="text-slate-400 text-sm mb-4">
-          Input your meter readings below. The AI will analyze all parameters, detect problems, identify root causes, and provide 100% detailed solutions.
+          Enter the readings you actually measured. The engine will rank likely root causes against generic thresholds; technician verification is still required before any irreversible action.
         </p>
 
         <div className="space-y-6">

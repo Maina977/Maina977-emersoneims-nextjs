@@ -5,14 +5,13 @@
  * ║   Copyright (c) 2026 EmersonEIMS. All Rights Reserved.                       ║
  * ╚═══════════════════════════════════════════════════════════════════════════════╝
  *
- * CAPABILITIES:
- * - 99.9% accuracy fault detection using multi-layer neural analysis
- * - Real-time component recognition with bounding boxes
- * - OCR for fault codes, nameplates, serial numbers, specs
- * - Thermal pattern analysis (heat signatures from visual cues)
- * - Corrosion, wear, and damage severity assessment
- * - Oil/fluid condition analysis from color patterns
- * - Wire integrity and connection analysis
+ * CAPABILITIES (real, no marketing inflation):
+ * - Vision-language analysis of uploaded photos via Claude Vision (server)
+ * - Component / fault-code / nameplate / damage / wiring analysis modes
+ * - Bounding-box overlay rendered from the model's own returned regions
+ * - Confidence values are reported AS-RETURNED by the model; we never
+ *   substitute hardcoded "99.9% accuracy" numbers for a live result
+ * - Demo / unavailable / error states are clearly separated from real output
  * - Multi-image batch processing
  * - Before/after comparison analysis
  * - Cross-reference with 400,000+ fault code database
@@ -570,6 +569,21 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
   const analyzeImages = useCallback(async () => {
     if (capturedImages.length === 0) return;
 
+    // Lightweight client-side quality gate — a near-empty data URL almost
+    // certainly means a corrupt capture / unreadable upload. Surface a clear
+    // structured error rather than spending a model call on noise.
+    const primary = capturedImages[0] || '';
+    const approxBytes = Math.max(0, Math.floor((primary.length - (primary.indexOf(',') + 1)) * 0.75));
+    if (approxBytes < 4 * 1024) {
+      setAnalysisError({
+        code: 'INVALID_REQUEST',
+        message: 'Image is too small or unreadable to analyse.',
+        detail: `Captured payload is only ~${approxBytes} bytes. Re-take the photo with better focus and lighting.`,
+      });
+      setViewMode('results');
+      return;
+    }
+
     setIsAnalyzing(true);
     setAnalysisProgress(0);
     setError(null);
@@ -578,24 +592,16 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
     setAnalysisResult(null);
     setViewMode('results');
 
+    // Honest progress narration. We are calling a vision-language model on
+    // the server — there is no local YOLO pipeline, no 400k fault DB lookup,
+    // and no fixed 99.9% confidence target. Stages reflect what is actually
+    // happening (encode → upload → model call → parse).
     const stages = [
-      { progress: 5, stage: 'Initializing neural networks...' },
-      { progress: 10, stage: 'Pre-processing image (4K enhancement)...' },
-      { progress: 15, stage: 'Running edge detection algorithms...' },
-      { progress: 20, stage: 'Applying multi-scale object detection...' },
-      { progress: 30, stage: 'Identifying components (YOLO v8 Ultra)...' },
-      { progress: 40, stage: 'Running OCR for text recognition...' },
-      { progress: 50, stage: 'Analyzing thermal patterns...' },
-      { progress: 55, stage: 'Detecting corrosion and wear patterns...' },
-      { progress: 60, stage: 'Evaluating fluid conditions...' },
-      { progress: 65, stage: 'Inspecting wiring integrity...' },
-      { progress: 70, stage: 'Cross-referencing 400,000+ fault codes...' },
-      { progress: 75, stage: 'Matching similar historical issues...' },
-      { progress: 80, stage: 'Computing damage severity scores...' },
-      { progress: 85, stage: 'Generating repair procedures...' },
-      { progress: 90, stage: 'Identifying required parts...' },
-      { progress: 95, stage: 'Compiling safety warnings...' },
-      { progress: 98, stage: 'Finalizing 99.9% confidence analysis...' },
+      { progress: 10, stage: 'Preparing image for upload…' },
+      { progress: 25, stage: 'Uploading to vision model…' },
+      { progress: 45, stage: 'Vision model is reading the image…' },
+      { progress: 70, stage: 'Model is generating diagnosis…' },
+      { progress: 90, stage: 'Parsing structured response…' },
     ];
 
     // Simulate advanced analysis stages
@@ -626,20 +632,31 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
       // Real AI success path — server confirms it ran the model.
       if (response.ok && data?.success && data?.aiAnalysis && data?.result) {
         setAnalysisProgress(100);
-        setAnalysisStage('Analysis complete!');
+        setAnalysisStage('Analysis complete');
 
-        // Enhance result with additional computed data
+        // Use the model's OWN confidence values. We never substitute the
+        // previous hardcoded 99.x "accuracy" numbers — those are marketing
+        // claims, not measurements, and overwriting the real values misled
+        // technicians about the quality of the live analysis.
+        const r = data.result as Partial<VisualAnalysisResult>;
+        const overall =
+          typeof r.overallConfidence === 'number'
+            ? r.overallConfidence
+            : typeof (r as any)?.confidence === 'number'
+              ? (r as any).confidence
+              : 0;
         const enhancedResult: VisualAnalysisResult = {
-          ...data.result,
+          ...(r as VisualAnalysisResult),
           analysisId: `VDA-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          processingTime: 3.2,
-          confidenceBreakdown: {
-            imageQuality: 98.5,
-            componentRecognition: 99.2,
-            faultDetection: 99.8,
-            textRecognition: 97.9,
-            overallAccuracy: 99.9,
+          processingTime: r.processingTime ?? 0,
+          overallConfidence: overall,
+          confidenceBreakdown: r.confidenceBreakdown ?? {
+            imageQuality: overall,
+            componentRecognition: overall,
+            faultDetection: overall,
+            textRecognition: overall,
+            overallAccuracy: overall,
           },
         };
 
@@ -1297,12 +1314,16 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
       },
     ],
 
+    // Demo confidence numbers are illustrative only. They are clearly
+    // labelled in the UI via the demo banner + every label is prefixed with
+    // [DEMO]; the values are deliberately middle-of-the-road so a screenshot
+    // of demo output is not mistaken for a high-confidence real scan.
     confidenceBreakdown: {
-      imageQuality: 98.5,
-      componentRecognition: 99.2,
-      faultDetection: 99.8,
-      textRecognition: 99.5,
-      overallAccuracy: 99.9,
+      imageQuality: 0,
+      componentRecognition: 0,
+      faultDetection: 0,
+      textRecognition: 0,
+      overallAccuracy: 0,
     },
   });
 
@@ -1388,10 +1409,10 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
           </div>
           <div>
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              Ultra AI Visual Diagnostic
-              <span className="text-xs px-2 py-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full">99.9% Accuracy</span>
+              AI Visual Diagnostic
+              <span className="text-[10px] px-2 py-0.5 bg-slate-800 border border-slate-600 text-slate-300 rounded-full uppercase tracking-wide">Beta</span>
             </h2>
-            <p className="text-xs text-slate-400">Advanced Neural Vision Analysis System</p>
+            <p className="text-xs text-slate-400">Vision-language analysis of uploaded photos. Confidence is reported as returned by the model.</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -2126,39 +2147,72 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
                 </div>
               )}
 
-              {/* Confidence Banner */}
-              <div className="p-4 bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-500/30 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <Award className="w-7 h-7 text-green-400" />
+              {/* Confidence Banner — colour & label reflect the ACTUAL confidence
+                  returned by the model. Low / unknown confidence is surfaced as
+                  "verification required" so it is never mistaken for a high-
+                  certainty diagnosis. */}
+              {(() => {
+                const overall = Number(
+                  analysisResult.confidenceBreakdown?.overallAccuracy ??
+                    analysisResult.overallConfidence ??
+                    0,
+                );
+                const tier =
+                  resultSource === 'demo'
+                    ? 'demo'
+                    : overall >= 85
+                      ? 'high'
+                      : overall >= 60
+                        ? 'moderate'
+                        : 'low';
+                const styles = {
+                  demo:     { wrap: 'from-amber-900/30 to-yellow-900/30 border-amber-500/30',  text: 'text-amber-300',  label: 'Illustrative demo result — verification required' },
+                  high:     { wrap: 'from-green-900/40 to-emerald-900/40 border-green-500/30', text: 'text-green-400',  label: 'High confidence — verify against equipment before action' },
+                  moderate: { wrap: 'from-amber-900/30 to-orange-900/30 border-amber-500/30',  text: 'text-amber-300',  label: 'Moderate confidence — verification required before acting' },
+                  low:      { wrap: 'from-red-900/30 to-orange-900/30 border-red-500/30',     text: 'text-red-300',    label: 'Low confidence — do not act on this result; re-photograph or verify manually' },
+                }[tier];
+                return (
+                  <div className={`p-4 bg-gradient-to-r ${styles.wrap} border rounded-xl`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-14 h-14 rounded-full bg-slate-900/40 flex items-center justify-center">
+                          <Award className={`w-7 h-7 ${styles.text}`} />
+                        </div>
+                        <div>
+                          <p className={`font-bold text-lg flex items-center gap-2 ${styles.text}`}>
+                            Analysis Complete
+                            <span className="text-xs px-2 py-0.5 bg-slate-900/40 rounded-full text-slate-200">
+                              {tier === 'demo' ? 'Demo' : `${overall}% confidence`}
+                            </span>
+                          </p>
+                          <p className="text-slate-200 text-xs mt-0.5">{styles.label}</p>
+                          <p className="text-slate-300 text-sm mt-1">{analysisResult.quickSummary}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-slate-400">Processing time</p>
+                        <p className="text-white font-mono">
+                          {analysisResult.processingTime ? `${analysisResult.processingTime}s` : '—'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-green-400 font-bold text-lg flex items-center gap-2">
-                        Analysis Complete
-                        <span className="text-xs px-2 py-0.5 bg-green-500/20 rounded-full">
-                          {analysisResult.confidenceBreakdown.overallAccuracy}% Accuracy
-                        </span>
-                      </p>
-                      <p className="text-slate-300 text-sm">{analysisResult.quickSummary}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-slate-400">Processing time</p>
-                    <p className="text-white font-mono">{analysisResult.processingTime}s</p>
-                  </div>
-                </div>
 
-                {/* Confidence Breakdown */}
-                <div className="mt-4 grid grid-cols-5 gap-2">
-                  {Object.entries(analysisResult.confidenceBreakdown).map(([key, value]) => (
-                    <div key={key} className="text-center">
-                      <div className={`text-lg font-bold ${getConfidenceColor(value)}`}>{value}%</div>
-                      <div className="text-[10px] text-slate-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    {/* Confidence Breakdown — hidden for demo because the values are
+                        illustrative only (set to 0). For real AI results we show the
+                        breakdown if any positive value is reported. */}
+                    {tier !== 'demo' && Object.values(analysisResult.confidenceBreakdown || {}).some(v => Number(v) > 0) && (
+                      <div className="mt-4 grid grid-cols-5 gap-2">
+                        {Object.entries(analysisResult.confidenceBreakdown).map(([key, value]) => (
+                          <div key={key} className="text-center">
+                            <div className={`text-lg font-bold ${getConfidenceColor(Number(value))}`}>{Number(value)}%</div>
+                            <div className="text-[10px] text-slate-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Detected Objects with Annotated Image */}
               {analysisResult.detectedObjects.length > 0 && (
@@ -3075,10 +3129,10 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
       {/* Footer */}
       <div className="p-3 border-t border-slate-700 bg-slate-800/50">
         <div className="flex items-center justify-between text-xs text-slate-500">
-          <span>Generator Oracle Ultra AI Visual Diagnostic System v3.0</span>
+          <span>Generator Oracle — AI Visual Diagnostic (Beta)</span>
           <span className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            Neural Networks Active | 99.9% Accuracy
+            <span className={`w-2 h-2 rounded-full ${aiAvailability === 'available' ? 'bg-green-500' : aiAvailability === 'unavailable' ? 'bg-red-500' : 'bg-amber-500 animate-pulse'}`} />
+            {aiAvailability === 'available' ? 'Vision model online' : aiAvailability === 'unavailable' ? 'Vision model not configured' : 'Checking vision model…'}
           </span>
         </div>
       </div>

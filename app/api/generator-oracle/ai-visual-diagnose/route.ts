@@ -8,12 +8,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { isAIDisabledServer } from '@/lib/generator-oracle/aiFlags';
 
-// Centralised vision model id, override via CLAUDE_MODEL env var. The previous
-// hardcoded 'claude-opus-4-6' is not a valid Anthropic model slug and caused
-// every visual diagnose call to fail (silently swallowed by the demo
-// fallback in the client).
-const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-opus-4-7';
+// Centralised vision model id. Override via CLAUDE_MODEL env var on the
+// deployment. Default is a real, currently-released Anthropic vision model
+// slug — earlier defaults like 'claude-opus-4-6' / 'claude-opus-4-7' are not
+// valid Anthropic model identifiers and made every Visual Diagnose call 502.
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-5';
 
 // Lazy client so missing-key cases never reach the SDK.
 let anthropicClient: Anthropic | null = null;
@@ -389,6 +390,21 @@ Always respond in VALID JSON format with this complete structure:
 }`;
 
 export async function POST(request: NextRequest) {
+  // Kill-switch: deployment-level disable for the non-AI rollout. Refuses
+  // the call before any image bytes are read so nothing leaks into the SDK.
+  if (isAIDisabledServer()) {
+    return NextResponse.json(
+      {
+        success: false,
+        code: 'AI_NOT_CONFIGURED',
+        error: 'Generator Oracle AI is disabled on this deployment',
+        message:
+          'AI Visual Diagnostic is intentionally turned off for this rollout.',
+      },
+      { status: 503 },
+    );
+  }
+
   // Up-front env check — refuse to dress up mock data as a successful AI
   // analysis. The frontend can still surface a demo on the user's request.
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -559,10 +575,12 @@ Provide your response in the JSON format specified in the system prompt.`;
 
 // Health check — exposes whether the route is configured to run real AI.
 export async function GET() {
+  const aiConfigured = !!process.env.ANTHROPIC_API_KEY && !isAIDisabledServer();
   return NextResponse.json({
     status: 'ok',
     service: 'Generator Oracle AI Visual Diagnostic',
-    aiConfigured: !!process.env.ANTHROPIC_API_KEY,
+    aiConfigured,
+    aiDisabledByFlag: isAIDisabledServer(),
     model: CLAUDE_MODEL,
   });
 }
