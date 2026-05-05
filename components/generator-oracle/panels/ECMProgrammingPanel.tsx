@@ -127,6 +127,12 @@ export default function ECMProgrammingPanel() {
   const [targetFirmware, setTargetFirmware] = useState('');
   const [programmingStep, setProgrammingStep] = useState<ProgrammingStep>('select');
   const [programmingProgress, setProgrammingProgress] = useState(0);
+  // SAFETY GATES — must all be satisfied before any (simulated) programming
+  // sequence is allowed to start. Backup is enforced explicitly so a
+  // technician cannot "skip" past it like in earlier revisions.
+  const [hazardAck, setHazardAck] = useState(false);
+  const [backupConfirmed, setBackupConfirmed] = useState(false);
+  const [enginePoweredCorrectlyAck, setEnginePoweredCorrectlyAck] = useState(false);
 
   // Derived data
   const ecmManufacturers = useMemo(() =>
@@ -144,8 +150,35 @@ export default function ECMProgrammingPanel() {
     return getFirmwareRecommendations(selectedECM.id, currentFirmware, selectedController);
   }, [selectedECM, currentFirmware, selectedController]);
 
-  // Simulate programming process
+  // Simulate programming process — SAFETY GATED.
+  // ECM reprogramming can permanently brick a controller and damage an engine
+  // if interrupted, mismatched, or attempted without a verified backup. We
+  // therefore hard-block the entry point until the technician (a) selects ECM
+  // + controller + serial + current/target firmware, (b) acknowledges the
+  // hazard, (c) confirms the rescue/backup file exists, and (d) confirms the
+  // engine is in the correct power state.
   const startProgramming = useCallback(() => {
+    if (!selectedECM || !selectedController || !ecmSerial || !currentFirmware || !targetFirmware) {
+      alert('Select ECM, controller, serial, current firmware and target firmware before programming.');
+      return;
+    }
+    if (compatibility && compatibility.compatible === false) {
+      alert('Compatibility check FAILED. Do not proceed — selected ECM is not approved for the selected controller.');
+      return;
+    }
+    if (!hazardAck) {
+      alert('You must acknowledge the ECM reprogramming hazard before continuing.');
+      return;
+    }
+    if (!backupConfirmed) {
+      alert('SAFETY: You must capture and verify a calibration / parameter backup BEFORE starting programming. This step is mandatory.');
+      return;
+    }
+    if (!enginePoweredCorrectlyAck) {
+      alert('Confirm the engine is in the correct ignition / power state required by the OEM tool before continuing.');
+      return;
+    }
+
     setProgrammingStep('verify');
     setProgrammingProgress(0);
 
@@ -384,14 +417,45 @@ export default function ECMProgrammingPanel() {
             </div>
           )}
 
-          {/* Start Button */}
+          {/* SAFETY GATES — hazard ack, backup confirmation, power-state confirmation */}
           {programmingStep === 'select' && targetFirmware && (
-            <button
-              onClick={startProgramming}
-              className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl transition-all"
-            >
-              Start Firmware Programming
-            </button>
+            <div className="space-y-3 p-4 bg-red-500/10 border-2 border-red-500/40 rounded-xl">
+              <div className="flex items-start gap-2">
+                <span className="text-2xl" aria-hidden>🚨</span>
+                <div>
+                  <p className="font-bold text-red-300">CRITICAL — ECM REPROGRAMMING HAZARD</p>
+                  <p className="text-xs text-red-200/80 mt-1">
+                    Incorrect firmware, interrupted programming, mismatched calibration, or wrong power state can permanently damage the ECM, engine, or downstream equipment. Reprogramming is a TECHNICIAN-ONLY operation. End users / operators must NOT proceed.
+                  </p>
+                </div>
+              </div>
+              <label className="flex items-start gap-2 text-sm text-red-200 cursor-pointer">
+                <input type="checkbox" checked={hazardAck} onChange={(e) => setHazardAck(e.target.checked)} className="mt-1 w-4 h-4 accent-red-500" />
+                <span>I am a qualified ECM technician and I accept responsibility for this operation.</span>
+              </label>
+              <label className="flex items-start gap-2 text-sm text-red-200 cursor-pointer">
+                <input type="checkbox" checked={backupConfirmed} onChange={(e) => setBackupConfirmed(e.target.checked)} className="mt-1 w-4 h-4 accent-red-500" />
+                <span>I have captured and VERIFIED a full calibration / parameter backup of the current ECM (mandatory).</span>
+              </label>
+              <label className="flex items-start gap-2 text-sm text-red-200 cursor-pointer">
+                <input type="checkbox" checked={enginePoweredCorrectlyAck} onChange={(e) => setEnginePoweredCorrectlyAck(e.target.checked)} className="mt-1 w-4 h-4 accent-red-500" />
+                <span>Engine is in the correct ignition / power state required by the OEM programming tool, with stable battery voltage.</span>
+              </label>
+              {compatibility && compatibility.compatible === false && (
+                <div className="p-2 bg-red-500/20 border border-red-500/40 rounded text-xs text-red-200">
+                  Compatibility check failed for the selected ECM ↔ controller pair. Programming is BLOCKED.
+                </div>
+              )}
+              <button
+                onClick={startProgramming}
+                disabled={!hazardAck || !backupConfirmed || !enginePoweredCorrectlyAck || (compatibility?.compatible === false)}
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed disabled:text-slate-500 text-white font-bold rounded-xl transition-all"
+              >
+                {(!hazardAck || !backupConfirmed || !enginePoweredCorrectlyAck)
+                  ? 'Complete safety acknowledgments above to enable'
+                  : 'Start Firmware Programming (Technician-Only)'}
+              </button>
+            </div>
           )}
         </div>
       )}

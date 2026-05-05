@@ -26,6 +26,8 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
+import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
 import {
   Camera,
   X,
@@ -400,6 +402,7 @@ const ANALYSIS_MODES: AnalysisMode[] = [
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVisualDiagnosticProps) {
+  const aiAvailability = useAIAvailable();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -722,37 +725,37 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
       {
         id: 'obj-1',
         type: 'component',
-        label: 'DSE 7320 Controller',
+        label: '[DEMO] DSE 7320 Controller (illustrative)',
         confidence: 99.8,
         boundingBox: { x: 10, y: 10, width: 40, height: 30 },
         severity: 'normal',
-        details: 'Deep Sea Electronics 7320 MKII controller identified',
+        details: 'DEMO ONLY — illustrative result. Not a real scan of your equipment. Upload a photo of YOUR controller for a real analysis.',
       },
       {
         id: 'obj-2',
         type: 'fault',
-        label: 'High Temperature Warning',
+        label: '[DEMO] High Temperature Warning (example)',
         confidence: 99.9,
         boundingBox: { x: 15, y: 45, width: 30, height: 15 },
         severity: 'warning',
-        details: 'Active warning indicator illuminated on display',
+        details: 'DEMO ONLY — example fault. Do not apply this finding to your unit without a real diagnostic.',
       },
       {
         id: 'obj-3',
         type: 'thermal',
-        label: 'Elevated Heat Zone',
+        label: '[DEMO] Elevated Heat Zone (example)',
         confidence: 98.5,
         boundingBox: { x: 55, y: 20, width: 35, height: 40 },
         severity: 'warning',
-        details: 'Thermal signature indicates above-normal temperature',
+        details: 'DEMO ONLY — illustrative thermal signature.',
       },
     ],
 
     ocrResults: [
-      { text: 'SPN 110', confidence: 99.9, type: 'fault_code', boundingBox: { x: 20, y: 50, width: 15, height: 8 } },
-      { text: 'FMI 16', confidence: 99.8, type: 'fault_code', boundingBox: { x: 38, y: 50, width: 12, height: 8 } },
-      { text: 'HIGH COOLANT TEMP', confidence: 99.5, type: 'warning', boundingBox: { x: 20, y: 60, width: 35, height: 8 } },
-      { text: 'DSE 7320', confidence: 99.9, type: 'model' },
+      { text: '[DEMO] SPN 110', confidence: 99.9, type: 'fault_code', boundingBox: { x: 20, y: 50, width: 15, height: 8 } },
+      { text: '[DEMO] FMI 16', confidence: 99.8, type: 'fault_code', boundingBox: { x: 38, y: 50, width: 12, height: 8 } },
+      { text: '[DEMO] HIGH COOLANT TEMP', confidence: 99.5, type: 'warning', boundingBox: { x: 20, y: 60, width: 35, height: 8 } },
+      { text: '[DEMO] DSE 7320', confidence: 99.9, type: 'model' },
     ],
 
     thermalAnalysis: {
@@ -1357,6 +1360,18 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
   // ─────────────────────────────────────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────────
+
+  // After all hooks have run, swap the entire panel for an unavailable notice
+  // when the server has no AI key configured. This avoids the camera/upload
+  // UI implying that vision diagnosis is currently working.
+  if (aiAvailability === 'unavailable') {
+    return (
+      <AIUnavailableNotice
+        feature="AI Visual Diagnostic"
+        description="Photo-based diagnosis (fault display photos, leak/damage analysis, component identification) is not yet enabled. The camera and upload tools below will return when the AI vision model is wired up."
+      />
+    );
+  }
 
   return (
     <div className={`bg-slate-900 rounded-2xl border border-cyan-500/30 overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>

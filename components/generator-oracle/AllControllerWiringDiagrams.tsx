@@ -633,10 +633,17 @@ interface AllControllerWiringDiagramsProps {
 }
 
 export default function AllControllerWiringDiagrams({ className = '' }: AllControllerWiringDiagramsProps) {
-  const [selectedController, setSelectedController] = useState(CONTROLLER_WIRING_DATA[0].id);
+  // SAFETY GATE: no default selection. Technician MUST explicitly choose their
+  // exact controller before any model-specific terminal pinout is shown. This
+  // prevents one controller's wiring (e.g. DSE 7320) from being mis-applied to
+  // a different make (e.g. ComAp / Woodward / SmartGen).
+  const [selectedController, setSelectedController] = useState<string | null>(null);
+  const [wiringAcknowledged, setWiringAcknowledged] = useState(false);
   const [showColorLegend, setShowColorLegend] = useState(true);
 
-  const controller = CONTROLLER_WIRING_DATA.find(c => c.id === selectedController) || CONTROLLER_WIRING_DATA[0];
+  const controller = selectedController
+    ? CONTROLLER_WIRING_DATA.find(c => c.id === selectedController) || null
+    : null;
 
   return (
     <div className={`bg-slate-900 rounded-xl overflow-hidden ${className}`}>
@@ -650,17 +657,50 @@ export default function AllControllerWiringDiagrams({ className = '' }: AllContr
         </p>
       </div>
 
+      {/* MODEL-GATING SAFETY BANNER */}
+      <div className="p-4 bg-red-500/10 border-b border-red-500/30">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl" aria-hidden>⚠️</span>
+          <div className="flex-1 text-sm">
+            <p className="font-bold text-red-300 mb-1">SAFETY: Model-specific wiring only</p>
+            <p className="text-red-200/80">
+              Wiring, terminal numbering, and pinout differ between makes and even between models within the same family.
+              Never apply one controller's wiring to a different make/model. Always verify against the manufacturer
+              documentation supplied with your specific unit before energising.
+            </p>
+            <label className="mt-3 flex items-center gap-2 cursor-pointer text-red-200">
+              <input
+                type="checkbox"
+                checked={wiringAcknowledged}
+                onChange={(e) => setWiringAcknowledged(e.target.checked)}
+                className="w-4 h-4 accent-red-500"
+              />
+              <span>
+                I am a qualified technician. I will verify wiring against the OEM document for my exact controller before connecting power.
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/* Controller Selector */}
       <div className="p-4 border-b border-slate-700">
+        <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
+          Step 1 — Select your EXACT controller make &amp; model
+        </p>
         <div className="flex flex-wrap gap-2">
           {CONTROLLER_WIRING_DATA.map((ctrl) => (
             <button
               key={ctrl.id}
-              onClick={() => setSelectedController(ctrl.id)}
+              onClick={() => wiringAcknowledged && setSelectedController(ctrl.id)}
+              disabled={!wiringAcknowledged}
+              title={!wiringAcknowledged ? 'Acknowledge the wiring-safety notice above first' : `${ctrl.brand} — ${ctrl.model}`}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedController === ctrl.id
-                  ? 'text-white shadow-lg'
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                !wiringAcknowledged
+                  ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
+                  : selectedController === ctrl.id
+                    ? 'text-white shadow-lg'
+                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
               }`}
               style={{
                 backgroundColor: selectedController === ctrl.id ? ctrl.color : undefined,
@@ -670,6 +710,11 @@ export default function AllControllerWiringDiagrams({ className = '' }: AllContr
             </button>
           ))}
         </div>
+        {!selectedController && (
+          <p className="mt-3 text-xs text-amber-300">
+            No controller selected — model-specific terminal pinouts are hidden until you choose your exact unit.
+          </p>
+        )}
       </div>
 
       {/* Wire Color Legend Toggle */}
@@ -713,6 +758,17 @@ export default function AllControllerWiringDiagrams({ className = '' }: AllContr
       </AnimatePresence>
 
       {/* Controller Details */}
+      {!controller && (
+        <div className="p-8 text-center">
+          <div className="inline-block p-4 bg-slate-800/60 border border-slate-700 rounded-xl">
+            <p className="text-slate-300 font-semibold">Select a controller above to view its terminal pinout.</p>
+            <p className="text-slate-500 text-sm mt-1">
+              We deliberately do not display a default wiring layout — pinouts are not interchangeable between makes.
+            </p>
+          </div>
+        </div>
+      )}
+      {controller && (
       <div className="p-4">
         <div className="mb-4">
           <div className="flex items-center gap-3 mb-2">
@@ -724,6 +780,18 @@ export default function AllControllerWiringDiagrams({ className = '' }: AllContr
           </div>
           <p className="text-cyan-400 font-medium">{controller.model}</p>
           <p className="text-slate-400 text-sm">{controller.description}</p>
+
+          {/* VERIFICATION-STATUS BADGE — applies to every diagram */}
+          <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <div className="flex items-start gap-2 text-xs">
+              <span className="text-amber-300 font-bold uppercase tracking-wide">Generic reference</span>
+              <span className="text-amber-200/80">
+                — Terminal numbering and wire-colour conventions reflect the documented standard for {controller.brand.split(' ')[0]} {controller.model}.
+                Variant, firmware revision, and option-card configurations may differ. Cross-check against the OEM
+                installation manual shipped with your unit before connecting.
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Terminal Pinout Table */}
@@ -887,6 +955,7 @@ export default function AllControllerWiringDiagrams({ className = '' }: AllContr
           </ul>
         </div>
       </div>
+      )}
     </div>
   );
 }

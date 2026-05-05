@@ -158,6 +158,11 @@ function StepCard({ step, phase, action, details, expectedResult, criticalNotes,
 
 function GuideDisplay({ guide }: { guide: ReprogrammingGuide }) {
   const [activeSection, setActiveSection] = useState<'overview' | 'connection' | 'programming' | 'parameters' | 'j1939' | 'troubleshooting'>('overview');
+  // Hazard acknowledgment — gates the deeper procedural sections so a casual
+  // visitor cannot click straight into reprogramming steps without seeing the
+  // safety warnings and accepting them.
+  const [hazardAck, setHazardAck] = useState(false);
+  const advancedSections = new Set(['connection', 'programming', 'parameters', 'j1939']);
 
   return (
     <div className="space-y-6">
@@ -169,17 +174,34 @@ function GuideDisplay({ guide }: { guide: ReprogrammingGuide }) {
         <div>
           <h1 className="text-2xl font-bold text-white">{guide.ecmName}</h1>
           <p className="text-slate-400">{guide.manufacturer} | Models: {guide.models.join(', ')}</p>
+          <p className="text-xs text-amber-300 mt-1">
+            Generic / field-derived reference for the {guide.manufacturer} family — verify every step against the OEM service manual for your exact ECM variant and firmware level.
+          </p>
         </div>
       </div>
 
-      {/* Safety Warnings */}
+      {/* Safety Warnings + acknowledgment gate */}
       <WarningBox>
-        <h4 className="font-semibold mb-2">CRITICAL SAFETY WARNINGS</h4>
+        <h4 className="font-semibold mb-2">CRITICAL SAFETY WARNINGS — TECHNICIAN ONLY</h4>
         <ul className="space-y-1 text-sm">
           {guide.safetyWarnings.map((warning, idx) => (
             <li key={idx}>• {warning}</li>
           ))}
+          <li>• Capture and verify a full ECM backup BEFORE any parameter change or reprogramming step.</li>
+          <li>• Do not perform these steps on a customer engine without explicit authorisation.</li>
+          <li>• If any step or value is uncertain, STOP and consult OEM documentation — do not guess.</li>
         </ul>
+        <label className="mt-3 flex items-start gap-2 cursor-pointer text-red-300 text-sm">
+          <input
+            type="checkbox"
+            checked={hazardAck}
+            onChange={(e) => setHazardAck(e.target.checked)}
+            className="mt-1 w-4 h-4 accent-red-500"
+          />
+          <span>
+            I am a qualified ECM technician, I have a verified backup, and I accept responsibility before viewing the connection / programming / parameter / J1939 procedures below.
+          </span>
+        </label>
       </WarningBox>
 
       {/* Section Tabs */}
@@ -191,20 +213,32 @@ function GuideDisplay({ guide }: { guide: ReprogrammingGuide }) {
           { id: 'parameters', label: 'Parameters', icon: '⚙️' },
           { id: 'j1939', label: 'J1939 Setup', icon: '📡' },
           { id: 'troubleshooting', label: 'Troubleshooting', icon: '🔧' }
-        ].map(section => (
-          <button
-            key={section.id}
-            onClick={() => setActiveSection(section.id as typeof activeSection)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              activeSection === section.id
-                ? 'bg-amber-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-            }`}
-          >
-            {section.icon} {section.label}
-          </button>
-        ))}
+        ].map(section => {
+          const locked = advancedSections.has(section.id) && !hazardAck;
+          return (
+            <button
+              key={section.id}
+              onClick={() => { if (!locked) setActiveSection(section.id as typeof activeSection); }}
+              disabled={locked}
+              title={locked ? 'Acknowledge the safety warnings above to unlock this section' : section.label}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                locked
+                  ? 'bg-slate-900 text-slate-600 cursor-not-allowed border border-slate-800'
+                  : activeSection === section.id
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              }`}
+            >
+              {locked ? '🔒 ' : ''}{section.icon} {section.label}
+            </button>
+          );
+        })}
       </div>
+      {!hazardAck && (
+        <div className="p-3 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          Connection, Programming, Parameters and J1939 sections are locked until the safety acknowledgment above is checked.
+        </div>
+      )}
 
       {/* Section Content */}
       <AnimatePresence mode="wait">

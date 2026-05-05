@@ -1486,11 +1486,36 @@ We have mobile service units with full diagnostic capability.
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Controller / make options used to gate every troubleshooting scenario so
+// the technician cannot follow generic steps without first declaring the
+// equipment they are working on. Steps are not specialised per make at this
+// layer, but the declaration is recorded so any displayed guidance is clearly
+// scoped, and the user is reminded that procedures vary by make/model.
+const CONTROLLER_MAKES = [
+  'Deep Sea Electronics (DSE)',
+  'ComAp',
+  'Woodward',
+  'SmartGen',
+  'CAT PowerWizard',
+  'Datakom',
+  'Lovato',
+  'Siemens',
+  'ENKO',
+  'Volvo Penta VODIA',
+  'Other / Not listed',
+];
+
 export default function InteractiveTroubleshooter() {
   const [selectedScenario, setSelectedScenario] = useState<TroubleshootingScenario | null>(null);
   const [currentStepId, setCurrentStepId] = useState<string>('');
   const [history, setHistory] = useState<string[]>([]);
   const [satisfaction, setSatisfaction] = useState<'none' | 'positive' | 'negative'>('none');
+  // Pre-flight: technician must declare equipment context before guidance is
+  // shown. This prevents one make's troubleshooting flow from being silently
+  // applied to a different controller / engine combination.
+  const [equipmentMake, setEquipmentMake] = useState<string>('');
+  const [equipmentModel, setEquipmentModel] = useState<string>('');
+  const [equipmentAck, setEquipmentAck] = useState<boolean>(false);
 
   const currentStep = selectedScenario?.steps[currentStepId];
 
@@ -1521,17 +1546,85 @@ export default function InteractiveTroubleshooter() {
     setSatisfaction('none');
   }, []);
 
-  // Scenario Selection View
-  if (!selectedScenario) {
+  // PRE-FLIGHT GATE — equipment context required before any scenario list shows.
+  if (!equipmentAck) {
     return (
-      <div className="space-y-6">
-        <div className="text-center mb-8">
+      <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-2">
             🔧 Interactive Troubleshooting Guide
           </h2>
           <p className="text-slate-400">
-            Select your problem and we'll guide you step-by-step to the solution
+            Procedures, parameters and reset paths differ by controller and engine. Tell us what you are working on first.
           </p>
+        </div>
+        <div className="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-4">
+          <p className="text-amber-300 text-sm font-semibold">Required pre-flight checks</p>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Controller make</label>
+              <select
+                value={equipmentMake}
+                onChange={(e) => setEquipmentMake(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+              >
+                <option value="">— Select your controller make —</option>
+                {CONTROLLER_MAKES.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Controller model / engine model</label>
+              <input
+                value={equipmentModel}
+                onChange={(e) => setEquipmentModel(e.target.value)}
+                placeholder="e.g. DSE 7320 MKII / Cummins QSX15"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm placeholder-slate-500"
+              />
+            </div>
+          </div>
+          <ul className="text-xs text-amber-200/80 list-disc pl-5 space-y-1">
+            <li>Confirm system voltage (12 V vs 24 V) before any electrical step.</li>
+            <li>Confirm controller family and firmware level — parameter numbers differ between revisions.</li>
+            <li>Capture current settings / parameters before changing anything.</li>
+            <li>Stop and consult OEM documentation if any step does not match what you see.</li>
+          </ul>
+          <label className="flex items-start gap-2 text-sm text-amber-200 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={false}
+              onChange={(e) => {
+                if (!equipmentMake || !equipmentModel.trim()) {
+                  alert('Select controller make and enter the controller / engine model before continuing.');
+                  return;
+                }
+                setEquipmentAck(e.target.checked);
+              }}
+              className="mt-1 w-4 h-4 accent-amber-500"
+            />
+            <span>
+              I have selected my equipment above. I understand the troubleshooting steps that follow are GENERIC guidance and that exact procedures, parameters and pinouts vary by make / model / firmware. I will verify against OEM documentation before any irreversible action.
+            </span>
+          </label>
+        </div>
+      </div>
+    );
+  }
+
+  // Scenario Selection View
+  if (!selectedScenario) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="text-2xl font-bold text-white">🔧 Interactive Troubleshooting Guide</h2>
+            <p className="text-slate-400 text-sm">Select your problem — guidance will be scoped to <span className="text-amber-300">{equipmentMake} — {equipmentModel}</span>.</p>
+          </div>
+          <button
+            onClick={() => { setEquipmentAck(false); setEquipmentMake(''); setEquipmentModel(''); }}
+            className="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg"
+          >
+            Change equipment
+          </button>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
