@@ -139,77 +139,89 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const page = resolvePage(resolvedParams.county, resolvedParams.slug);
+  try {
+    const resolvedParams = await params;
+    const page = resolvePage(resolvedParams.county, resolvedParams.slug);
 
-  if (!page) {
-    return { title: 'Not Found' };
-  }
+    if (!page) {
+      return { title: 'Not Found', robots: { index: false, follow: false } };
+    }
 
-  switch (page.type) {
-    case 'county-service':
-      return generateLocationServiceMetadata(
-        { name: page.county.name, slug: page.county.slug, type: 'county' },
-        page.service!,
-        { county: { name: page.county.name, slug: page.county.slug } }
-      );
+    switch (page.type) {
+      case 'county-service':
+        return generateLocationServiceMetadata(
+          { name: page.county.name, slug: page.county.slug, type: 'county' },
+          page.service!,
+          { county: { name: page.county.name, slug: page.county.slug } }
+        );
 
-    case 'constituency':
-      return generateConstituencyMetadata(
-        page.constituency!.name,
-        page.constituency!.slug,
-        page.county.name,
-        page.county.slug
-      );
+      case 'constituency':
+        return generateConstituencyMetadata(
+          page.constituency!.name,
+          page.constituency!.slug,
+          page.county.name,
+          page.county.slug
+        );
 
-    case 'constituency-service':
-      return generateLocationServiceMetadata(
-        {
-          name: page.constituency!.name,
-          slug: page.constituency!.slug,
-          type: 'constituency',
-        },
-        page.service!,
-        {
-          county: { name: page.county.name, slug: page.county.slug },
-          constituency: {
+      case 'constituency-service':
+        return generateLocationServiceMetadata(
+          {
             name: page.constituency!.name,
             slug: page.constituency!.slug,
+            type: 'constituency',
           },
-        }
-      );
+          page.service!,
+          {
+            county: { name: page.county.name, slug: page.county.slug },
+            constituency: {
+              name: page.constituency!.name,
+              slug: page.constituency!.slug,
+            },
+          }
+        );
 
-    case 'village':
-      return generateVillageMetadata(
-        page.village!.name,
-        page.village!.slug,
-        page.constituency!.name,
-        page.constituency!.slug,
-        page.county.name,
-        page.county.slug
-      );
+      case 'village':
+        return generateVillageMetadata(
+          page.village!.name,
+          page.village!.slug,
+          page.constituency!.name,
+          page.constituency!.slug,
+          page.county.name,
+          page.county.slug
+        );
 
-    case 'village-service':
-      return generateLocationServiceMetadata(
-        { name: page.village!.name, slug: page.village!.slug, type: 'village' },
-        page.service!,
-        {
-          county: { name: page.county.name, slug: page.county.slug },
-          constituency: {
-            name: page.constituency!.name,
-            slug: page.constituency!.slug,
-          },
-        }
-      );
+      case 'village-service':
+        return generateLocationServiceMetadata(
+          { name: page.village!.name, slug: page.village!.slug, type: 'village' },
+          page.service!,
+          {
+            county: { name: page.county.name, slug: page.county.slug },
+            constituency: {
+              name: page.constituency!.name,
+              slug: page.constituency!.slug,
+            },
+          }
+        );
 
-    default:
-      return { title: 'Not Found' };
+      default:
+        return { title: 'Not Found', robots: { index: false, follow: false } };
+    }
+  } catch (err) {
+    // Never surface a 5xx to crawlers from metadata generation.
+    console.error('[kenya/[county]/[...slug]] generateMetadata error:', err);
+    return { title: 'Not Found', robots: { index: false, follow: false } };
   }
 }
 
 export default async function DynamicLocationPage({ params }: Props) {
-  const resolvedParams = await params;
-  const page = resolvePage(resolvedParams.county, resolvedParams.slug);
+  let page: ResolvedPage | null = null;
+  try {
+    const resolvedParams = await params;
+    page = resolvePage(resolvedParams.county, resolvedParams.slug);
+  } catch (err) {
+    console.error('[kenya/[county]/[...slug]] resolvePage error:', err);
+    notFound();
+  }
 
   if (!page) {
     notFound();

@@ -33,7 +33,7 @@ export default function robots(): MetadataRoute.Robots {
           '/gallery/',
           '/booking/',
         ],
-        disallow: ['/api/', '/admin/', '/_next/static/', '/private/', '*.json$', '/test-*'],
+        disallow: ['/api/', '/admin/', '/_next/static/', '/private/', '/test-*'],
       },
       // Google - Priority crawler, no delay
       {

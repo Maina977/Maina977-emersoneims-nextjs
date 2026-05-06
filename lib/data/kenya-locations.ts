@@ -47,6 +47,19 @@ const VILLAGE_PATTERNS: Record<string, string[]> = {
   'North Eastern': ['Village', 'Town', 'Centre', 'Township', 'Market'],
 };
 
+// Stable, deterministic hash so the same constituency always yields the same
+// village count across builds and lambda cold starts. (Replaces Math.random()
+// which caused identical URLs to exist on one instance and 404 on another —
+// the root cause of the dynamic-Kenya 5xx / 404 inflation in Search Console.)
+function stableHash(input: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
 // Generate villages for a constituency based on common patterns
 function generateVillages(constituencyName: string, region: string): Village[] {
   const patterns = VILLAGE_PATTERNS[region] || VILLAGE_PATTERNS.Central;
@@ -58,8 +71,9 @@ function generateVillages(constituencyName: string, region: string): Village[] {
   const villages: Village[] = [];
   const constituencySlug = generateSlug(constituencyName);
 
-  // Generate 15-25 villages per constituency
-  const numVillages = 15 + Math.floor(Math.random() * 10);
+  // Deterministic count in [15, 24] derived from constituency name + region.
+  // Same input → same count on every server instance and every build.
+  const numVillages = 15 + (stableHash(`${constituencyName}|${region}`) % 10);
 
   // Add constituency-named villages
   villages.push({ name: `${constituencyName} Central`, slug: `${constituencySlug}-central` });

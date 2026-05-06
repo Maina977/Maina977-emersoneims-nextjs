@@ -112,23 +112,63 @@ const BLOCKED_USER_AGENTS = [
   'extractor',
 ];
 
-// Allowed bots (search engines, monitoring)
+// Allowed bots (search engines, monitoring) — these BYPASS all rate-limit /
+// scraping / headless / pattern checks below. Includes every Google fetcher
+// variant + major search engines + social previewers.
 const ALLOWED_BOTS = [
+  // Google family
   'googlebot',
+  'googlebot-image',
+  'googlebot-video',
+  'googlebot-news',
+  'googlebot-mobile',
+  'adsbot-google',
+  'mediapartners-google',
+  'storebot-google',
   'google-inspectiontool',
+  'google-read-aloud',
+  'google-site-verification',
+  'google-extended',
+  'apis-google',
+  'feedfetcher-google',
+  // Bing / Yahoo / others
   'bingbot',
-  'slurp', // Yahoo
+  'bingpreview',
+  'msnbot',
+  'slurp',
   'duckduckbot',
+  'duckduckgo-favicons-bot',
+  'yandex',
+  'baiduspider',
+  // Social
   'facebookexternalhit',
+  'facebot',
   'twitterbot',
   'linkedinbot',
   'whatsapp',
   'telegrambot',
   'applebot',
+  'pinterest',
+  'redditbot',
+  // Monitoring
   'vercel',
   'uptimerobot',
   'pingdom',
+  'lighthouse',
 ];
+
+// Returns true when the request's user-agent matches a verified search engine
+// or social previewer in ALLOWED_BOTS. Used to short-circuit ALL access
+// control logic (rate-limit, scraping detection, headless heuristics, etc.)
+// so legitimate crawlers can never be 4xx-blocked by this middleware.
+function isVerifiedCrawler(userAgent: string): boolean {
+  if (!userAgent) return false;
+  const ua = userAgent.toLowerCase();
+  for (const bot of ALLOWED_BOTS) {
+    if (ua.includes(bot)) return true;
+  }
+  return false;
+}
 
 // Suspicious patterns in URLs (SQL injection, path traversal, etc.)
 const MALICIOUS_PATTERNS = [
@@ -168,7 +208,46 @@ const LICENSED_DOMAINS = [
   '127.0.0.1',
   'emersoneims.com',
   'www.emersoneims.com',
+  // Vercel preview/staging deployments (e.g. my-app-xyz.vercel.app) — required
+  // for pre-production verification (Lighthouse, smoke tests). Production
+  // traffic continues to be served from emersoneims.com.
+  'vercel.app',
 ];
+
+// Local development hosts that should always pass the licence guard, even
+// when NODE_ENV=production (e.g. running `next start` locally to verify a
+// production build). This is intentionally a hard-coded allow-list of
+// loopback / private-network identifiers — no public IP can reach these.
+//
+// To temporarily widen this list during local engineering work, set:
+//   $env:ALLOW_LOCAL_DEV = 'true'                        (PowerShell)
+//   ALLOW_LOCAL_DEV=true                                 (POSIX)
+// or provide a comma-separated list of extra hostnames in
+//   DEV_ALLOWED_HOSTS=10.0.0.5,my-laptop.local
+//
+// To re-tighten the lock, unset both env vars and redeploy / restart.
+const LOCAL_DEV_HOSTS = new Set([
+  'localhost',
+  '127.0.0.1',
+  '0.0.0.0',
+  '::1',
+]);
+
+function isLocalDevHost(hostname: string): boolean {
+  if (LOCAL_DEV_HOSTS.has(hostname)) return true;
+  // Private LAN ranges (RFC 1918) — only useful when running on the same
+  // physical / virtual network as the developer machine.
+  if (/^192\.168\./.test(hostname)) return true;
+  if (/^10\./.test(hostname)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(hostname)) return true;
+  if (process.env.ALLOW_LOCAL_DEV === 'true') return true;
+  const extra = (process.env.DEV_ALLOWED_HOSTS || '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  if (extra.includes(hostname.toLowerCase())) return true;
+  return false;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECURITY FUNCTIONS
@@ -255,6 +334,11 @@ function detectScraping(ip: string, path: string): boolean {
 function isAuthorizedDomain(hostname: string): boolean {
   // Allow in development
   if (process.env.NODE_ENV === 'development') return true;
+
+  // Local-dev / private-network bypass — see LOCAL_DEV_HOSTS comment.
+  // Always-on for loopback so a production build can be verified locally
+  // without exposing public traffic.
+  if (isLocalDevHost(hostname)) return true;
 
   return LICENSED_DOMAINS.some(domain =>
     hostname === domain || hostname.endsWith(`.${domain}`)
@@ -346,6 +430,37 @@ function isWizardAsset(pathname: string): boolean {
   return pathname.startsWith('/eims-building-suite-');
 }
 
+/**
+ * Admin surfaces under /admin/* MUST be gated. Middleware runs on the Edge
+ * runtime where node:crypto.timingSafeEqual isn't always available, so use
+ * a manual constant-time comparison.
+ */
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
+function isAdminPath(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/');
+}
+
+/**
+ * Returns true when the request carries a valid admin session cookie that
+ * matches ADMIN_API_KEY. In dev (no env var set) admin pages remain open so
+ * local development isn't broken; in production the cookie is required.
+ */
+function hasValidAdminSession(request: NextRequest): boolean {
+  const adminKey = process.env.ADMIN_API_KEY;
+  if (!adminKey) return process.env.NODE_ENV !== 'production';
+  const cookie = request.cookies.get('admin_session')?.value || '';
+  if (!cookie) return false;
+  return constantTimeEqual(cookie, adminKey);
+}
+
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const url = pathname + request.nextUrl.search;
@@ -354,7 +469,25 @@ export function middleware(request: NextRequest) {
   const hostname = request.nextUrl.hostname;
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 0. DOMAIN AUTHORIZATION CHECK (Production only)
+  // 0. VERIFIED CRAWLER FAST-PATH (Googlebot, Bingbot, etc.)
+  //     Search engines & social previewers MUST never be rate-limited,
+  //     scrape-blocked, or 403'd. Short-circuit the entire access-control
+  //     pipeline and emit a SEO-friendly response.
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (isVerifiedCrawler(userAgent)) {
+    const crawlerResponse = NextResponse.next();
+    crawlerResponse.headers.set('X-Robots-Tag', 'index, follow');
+    crawlerResponse.headers.set('X-Crawler-Bypass', '1');
+    // Allow CDN to cache HTML for crawlers (matches /kenya/* + general SEO).
+    crawlerResponse.headers.set(
+      'Cache-Control',
+      'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
+    );
+    return crawlerResponse;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 0b. DOMAIN AUTHORIZATION CHECK (Production only)
   // ─────────────────────────────────────────────────────────────────────────────
   if (process.env.NODE_ENV === 'production' && !isAuthorizedDomain(hostname)) {
     console.log(`🚫 BLOCKED: Unauthorized domain ${hostname} from ${clientIP}`);
@@ -386,6 +519,16 @@ export function middleware(request: NextRequest) {
   if (containsMaliciousPattern(url)) {
     console.log(`🚫 BLOCKED: Malicious request from ${clientIP} - URL: ${url.substring(0, 100)}`);
     return new NextResponse('Forbidden', { status: 403 });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 2.5. ADMIN GATE — /admin/* requires a session cookie matching ADMIN_API_KEY
+  //      (set in production env). Owners log in by issuing the cookie out-of-
+  //      band — see SECURITY.md / SECURITY-NOTES below. Returns 404 to avoid
+  //      advertising the existence of admin surfaces to anonymous scanners.
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (isAdminPath(pathname) && !hasValidAdminSession(request)) {
+    return new NextResponse('Not Found', { status: 404 });
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -483,16 +626,22 @@ export function middleware(request: NextRequest) {
   response.headers.set('X-Request-ID', `GO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   response.headers.set('X-Locale', preferredLocale);
 
-  // Copyright & Anti-Copy Headers
+  // Copyright header (informational only — does NOT instruct crawlers to
+  // skip caching or de-index, which previously caused indexing failures).
   response.headers.set('X-Copyright', 'Generator Oracle 2024-2026');
   response.headers.set('X-Content-Protected', 'true');
-  response.headers.set('X-Robots-Tag', 'noarchive, noimageindex'); // Prevent caching by scrapers
 
-  // Cache override: skip for versioned wizard assets so the immutable header
-  // set in next.config.ts headers() is preserved (otherwise visitors refetch
-  // the 553KB wizard on every page load).
+  // SEO-safe per-request cache policy.
+  // - Wizard assets: untouched (handled in next.config headers())
+  // - /admin/*       : private, no-store (sensitive surfaces only)
+  // - everything else: leave the response cache headers alone so
+  //   vercel.json / next.config / page-level revalidate can take effect.
+  //   The previous blanket `private, no-store` killed CDN caching for the
+  //   entire site and was a major contributor to indexing failures.
   if (!isWizardAsset(pathname)) {
-    response.headers.set('Cache-Control', 'private, no-store'); // Prevent proxy caching of sensitive content
+    if (isAdminPath(pathname)) {
+      response.headers.set('Cache-Control', 'private, no-store');
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
