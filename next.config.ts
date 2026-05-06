@@ -277,10 +277,13 @@ const nextConfig: NextConfig = {
             key: 'X-Content-Protected',
             value: 'true'
           },
-          {
-            key: 'X-Robots-Tag',
-            value: 'noarchive, noimageindex, notranslate'
-          },
+          // NOTE: previously emitted `X-Robots-Tag: noarchive, noimageindex,
+          // notranslate` here. That header was being applied site-wide
+          // (including /sitemap.xml, /robots.txt, county redirect targets)
+          // and was contributing to Search Console's "Crawled — currently
+          // not indexed" bucket. The middleware now sets `index, follow`
+          // explicitly for verified search-engine crawlers; do NOT add a
+          // conflicting global X-Robots-Tag here.
           {
             key: 'X-Download-Options',
             value: 'noopen'
@@ -429,8 +432,13 @@ const nextConfig: NextConfig = {
   // previously 404'd because no Next.js route owned that path.
   // ═══════════════════════════════════════════════════════════════════
   async rewrites() {
+    // NOTE: vercel.json sets `cleanUrls: true`, so Vercel strips `.html` from
+    // every public asset (e.g. /eims-pro-console.html → 308 → /eims-pro-console).
+    // Rewriting `/console` directly to the cleanUrl form is required — using
+    // the `.html` form here causes the rewrite to resolve against the redirect
+    // and the request ends up as a 404. See verified live probe 2026-05-02.
     return [
-      { source: '/console', destination: '/eims-pro-console.html' },
+      { source: '/console', destination: '/eims-pro-console' },
     ];
   },
 
@@ -451,6 +459,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       // Legacy URL redirects
+      {
+        source: '/diagnostic-cockpit',
+        destination: '/diagnostics',
+        permanent: true,
+      },
       {
         source: '/generators-kenya',
         destination: '/generators',
