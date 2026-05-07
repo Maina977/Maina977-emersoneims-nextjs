@@ -12,14 +12,15 @@
  * Brand references are for compatibility indication only.
  */
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// Client-safe imports — types only. Heavy dataset access goes through the
+// server-side API via lib/generator-oracle/client/oracleClient.
+import { type ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
 import {
-  searchFaultCodes,
-  getFaultCodesByBrand,
-  getTotalFaultCodeCount,
-  type ControllerFaultCode,
-} from '@/lib/generator-oracle/controllerFaultCodes';
+  searchFaultCodes as apiSearchFaultCodes,
+  getHealth as oracleHealth,
+} from '@/lib/generator-oracle/client/oracleClient';
 import {
   ECMCommunicationService,
   HardwareAdapter,
@@ -586,18 +587,59 @@ function DiagnosticToolInterface({ tool, generatorInfo, onClose, onAIAnalyze }: 
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [confidenceScore, setConfidenceScore] = useState(0);
 
-  // Total fault codes available
-  const totalFaultCodes = useMemo(() => getTotalFaultCodeCount(), []);
+  // Total fault codes available — fetched once from /api/generator-oracle/health
+  const [totalFaultCodes, setTotalFaultCodes] = useState<number>(0);
+  useEffect(() => {
+    let cancelled = false;
+    oracleHealth()
+      .then((h) => { if (!cancelled) setTotalFaultCodes(h.totals.faultCodes); })
+      .catch(() => { /* leave at 0 when API is unreachable */ });
+    return () => { cancelled = true; };
+  }, []);
 
-  // Search fault codes from 400k database
+  // Server-side fault search — debounced via AbortController, no full dataset
+  // is ever pulled into client memory.
+  const faultSearchAbort = useRef<AbortController | null>(null);
   const handleFaultCodeSearch = useCallback((query: string) => {
     setFaultCodeSearch(query);
-    if (query.length >= 2) {
-      const results = searchFaultCodes(query).slice(0, 20);
-      setSearchResults(results);
-    } else {
+    if (query.length < 2) {
       setSearchResults([]);
+      return;
     }
+    if (faultSearchAbort.current) faultSearchAbort.current.abort();
+    const controller = new AbortController();
+    faultSearchAbort.current = controller;
+    apiSearchFaultCodes({ query, pageSize: 20, signal: controller.signal })
+      .then((data) => {
+        const stubs: ControllerFaultCode[] = data.results.map((r) => ({
+          id: r.id,
+          code: r.code,
+          brand: r.brand,
+          model: r.model,
+          firmwareVersions: [],
+          category: r.category,
+          subcategory: r.subcategory,
+          severity: r.severity,
+          alarmType: r.alarmType,
+          title: r.title,
+          description: r.description,
+          triggerParameters: [],
+          symptoms: [],
+          possibleCauses: [],
+          diagnosticSteps: [],
+          resetPathways: [],
+          solutions: [],
+          safetyWarnings: [],
+          preventiveMeasures: [],
+          verified: r.verified,
+          lastUpdated: '',
+        }));
+        setSearchResults(stubs);
+      })
+      .catch((e: Error & { name?: string }) => {
+        if (e?.name === 'AbortError') return;
+        setSearchResults([]);
+      });
   }, []);
 
   // Generate follow-up questions based on symptoms

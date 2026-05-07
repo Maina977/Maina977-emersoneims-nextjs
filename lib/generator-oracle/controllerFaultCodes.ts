@@ -3,7 +3,35 @@
  * 400,000+ authentic fault codes for professional generator controller diagnostics
  *
  * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO, Volvo Penta VODIA
+ *
+ * Server-side data layer: loads brand-curated data files and runs the
+ * 451k-record template generator. New client components must use:
+ *   - `lib/generator-oracle/controllerMeta.ts` for types + brand/category metadata
+ *   - `lib/generator-oracle/client/oracleClient.ts` for data access (via APIs)
+ *
+ * NOTE: a hard `import 'server-only'` directive is intentionally NOT applied
+ * here. A handful of legacy panels (CompleteDiagnosticPanel, AIAnalysisPanel,
+ * CommunityFaultCodesPanel, ECMDiagnosticsPanel, AdvancedDiagnosticsPanel,
+ * UnifiedDiagnosticsPanel, ODIDashboardPanel, ExpertAIChatPanel) still import
+ * helpers transitively through `integratedDiagnosticService.ts`. They are
+ * code-split via `dynamic()` so they do NOT enter the initial bundle, but
+ * marking this module server-only would fail their build. Refactor each of
+ * those panels to `oracleClient` to fully eliminate the chain, then add the
+ * directive.
  */
+
+// Types and the small static brand/category configuration come from the
+// client-safe metadata module. Importing into this module's scope (rather
+// than only re-exporting) is required because `generateExtendedCodes()`
+// below references `CONTROLLER_BRANDS` directly.
+import {
+  CONTROLLER_BRANDS,
+  FAULT_CATEGORIES,
+  type ControllerBrandKey,
+  type FaultCategoryKey,
+} from './controllerMeta';
+export { CONTROLLER_BRANDS, FAULT_CATEGORIES };
+export type { ControllerBrandKey, FaultCategoryKey };
 
 // ==================== INTERFACES ====================
 
@@ -166,137 +194,10 @@ export interface ControllerFaultCode {
   lastUpdated: string;
 }
 
-// ==================== BRAND CONFIGURATIONS ====================
-
-export const CONTROLLER_BRANDS = {
-  DSE: {
-    name: 'DeepSea Electronics',
-    models: ['DSE 4510', 'DSE 4610', 'DSE 4410', 'DSE 5110', 'DSE 5210', 'DSE 7320', 'DSE 7510', 'DSE 7560', 'DSE 8610', 'DSE 8660'],
-    logo: '/brands/deepsea.png',
-    color: '#1E40AF'
-  },
-  COMAP: {
-    name: 'ComAp',
-    models: ['InteliLite IL-NT AMF25', 'InteliGen NTC BaseBox', 'InteliSys NTC', 'InteliDrive'],
-    logo: '/brands/comap.png',
-    color: '#DC2626'
-  },
-  WOODWARD: {
-    name: 'Woodward',
-    models: ['EasyGen 3000', 'EasyGen 3500', 'LS-5 Load Share', 'GCP-30'],
-    logo: '/brands/woodward.png',
-    color: '#059669'
-  },
-  SMARTGEN: {
-    name: 'SmartGen',
-    models: ['HGM6100', 'HGM9500', 'HGM420', 'HGM5310'],
-    logo: '/brands/smartgen.png',
-    color: '#7C3AED'
-  },
-  POWERWIZARD: {
-    name: 'CAT PowerWizard',
-    models: ['PowerWizard 1.0', 'PowerWizard 2.0', 'PowerWizard 4.1'],
-    logo: '/brands/cat.png',
-    color: '#F59E0B'
-  },
-  DATAKOM: {
-    name: 'Datakom',
-    models: ['DKG-109', 'DKG-207', 'DKG-307', 'DKG-309', 'DKG-329', 'DKG-509', 'DKG-517', 'DKG-527', 'D-100', 'D-200', 'D-300', 'D-500', 'D-700'],
-    logo: '/brands/datakom.png',
-    color: '#0891B2'
-  },
-  LOVATO: {
-    name: 'Lovato Electric',
-    models: ['RGK600', 'RGK700', 'RGK800', 'RGK900', 'ATL600', 'ATL800', 'ATL900', 'EXP series', 'ATXP40'],
-    logo: '/brands/lovato.png',
-    color: '#EA580C'
-  },
-  SIEMENS: {
-    name: 'Siemens',
-    models: ['SICAM A8000', 'SICAM PAS', 'SIPROTEC 7SJ', 'SIPROTEC 7SD', 'SIPROTEC 7SL', 'SIPROTEC 7UT', 'SIPROTEC 7SA', 'SENTRON PAC'],
-    logo: '/brands/siemens.png',
-    color: '#009999'
-  },
-  ENKO: {
-    name: 'ENKO',
-    models: ['GCU-100', 'GCU-200', 'GCU-300', 'GCU-400', 'GCU-500', 'AMF-100', 'AMF-200', 'SYNC-100', 'SYNC-200'],
-    logo: '/brands/enko.png',
-    color: '#7C3AED'
-  },
-  VODIA: {
-    name: 'Volvo Penta VODIA',
-    models: ['VODIA5', 'VODIA6', 'D5', 'D7', 'D11', 'D13', 'D16', 'TAD530', 'TAD730', 'TAD1140', 'TAD1150', 'TAD1640', 'TAD1650', 'TWD740', 'TWD1030', 'TWD1210', 'TWD1620'],
-    logo: '/brands/volvo-penta.png',
-    color: '#003057'
-  }
-};
-
-export const FAULT_CATEGORIES = {
-  ELECTRICAL: {
-    name: 'Electrical',
-    subcategories: ['Voltage', 'Current', 'Frequency', 'Power Factor', 'Phase', 'Earth Fault', 'Power', 'Protection']
-  },
-  ENGINE: {
-    name: 'Engine',
-    subcategories: ['Oil Pressure', 'Coolant', 'Speed', 'Fuel', 'Temperature', 'Starting', 'Charging', 'Battery', 'Emergency', 'Auxiliary']
-  },
-  CONTROL: {
-    name: 'Control',
-    subcategories: ['Communication', 'Memory', 'Configuration', 'Display', 'Input/Output', 'Hardware', 'Maintenance']
-  },
-  SYNCHRONIZATION: {
-    name: 'Synchronization',
-    subcategories: ['Sync', 'Load Sharing', 'Breaker', 'Phase Matching', 'Frequency Matching']
-  },
-  MAINS: {
-    name: 'Mains',
-    subcategories: ['Supply', 'Voltage', 'Frequency', 'Phase']
-  },
-  PROTECTION: {
-    name: 'Protection',
-    subcategories: ['Shutdown', 'Lockout', 'Trip', 'Alarm']
-  },
-  ECM: {
-    name: 'ECM/Engine Control',
-    subcategories: ['Communication', 'J1939', 'Injector', 'Rail Pressure', 'EGR', 'SCR', 'DPF', 'VGT', 'Timing', 'Power Supply']
-  },
-  COOLING: {
-    name: 'Cooling System',
-    subcategories: ['Coolant Flow', 'Thermostat', 'Water Pump', 'Fan', 'Radiator', 'Heat Exchanger', 'Heater']
-  },
-  LUBRICATION: {
-    name: 'Lubrication System',
-    subcategories: ['Oil Flow', 'Oil Filter', 'Oil Cooler', 'Oil Quality', 'Gallery Pressure', 'Bypass']
-  },
-  AIR_SYSTEM: {
-    name: 'Air System',
-    subcategories: ['Air Filter', 'Intake Manifold', 'Charge Air', 'Turbocharger', 'Compressor', 'Wastegate']
-  },
-  EXHAUST: {
-    name: 'Exhaust System',
-    subcategories: ['Exhaust Temp', 'Back Pressure', 'Aftertreatment', 'Catalyst', 'Muffler', 'Pyrometer']
-  },
-  WIRING: {
-    name: 'Wiring & Harness',
-    subcategories: ['Harness', 'Connector', 'Short Circuit', 'Open Circuit', 'Shield', 'Termination']
-  },
-  SENSORS: {
-    name: 'Sensors',
-    subcategories: ['Pressure', 'Temperature', 'Position', 'Speed', 'Level', 'Flow', 'Calibration']
-  },
-  PREDICTIVE: {
-    name: 'Predictive Maintenance',
-    subcategories: ['Oil Life', 'Filter Life', 'Wear Analysis', 'Trend Analysis', 'Service Due']
-  },
-  LOAD: {
-    name: 'Load Management',
-    subcategories: ['Load Profile', 'Load Factor', 'Load Acceptance', 'Load Rejection', 'Load Balance']
-  },
-  PROGRAMMING: {
-    name: 'Programming & Config',
-    subcategories: ['Parameters', 'Setpoints', 'Logic', 'Timers', 'Network', 'Protocol']
-  }
-};
+// CONTROLLER_BRANDS and FAULT_CATEGORIES are exported from controllerMeta.ts
+// and re-exported at the top of this file. Keeping them in a single module
+// guarantees the client gets identical typed metadata without pulling in any
+// of the brand-curated data files below.
 
 // ==================== IMPORT BRAND-SPECIFIC CODES ====================
 
@@ -2116,7 +2017,10 @@ function createExtendedCode(
     safetyWarnings: content.safetyWarnings,
     preventiveMeasures: content.preventiveMeasures,
     interactiveQuestions: content.interactiveQuestions,
-    verified: true,
+    // Procedurally generated from manufacturer-published code-range templates.
+    // Marked unverified so the API and UI can label them as "template / range-based"
+    // and surface manufacturer-curated entries (verified=true) first.
+    verified: false,
     lastUpdated: '2024-12-01'
   };
 }

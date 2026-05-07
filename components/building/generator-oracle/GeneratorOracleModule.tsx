@@ -41,15 +41,14 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import dynamic from 'next/dynamic';
+// Client-safe metadata only — no dataset, no template generator. ~5 KB.
+import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
+// All dataset access goes through the typed server API client.
 import {
-  getAllFaultCodes,
-  searchFaultCodes,
-  getFaultCodesByBrand,
-  getFaultCodesByModel,
-  getTotalFaultCodeCount,
-  CONTROLLER_BRANDS,
-  type ControllerFaultCode,
-} from '@/lib/generator-oracle/controllerFaultCodes';
+  getHealth as oracleHealth,
+  searchFaultCodes as apiSearchFaultCodes,
+  type SearchResultItem,
+} from '@/lib/generator-oracle/client/oracleClient';
 import {
   getOracleTranslation,
   SUPPORTED_ORACLE_LANGUAGES,
@@ -1167,7 +1166,14 @@ export default function GeneratorOracleModule() {
       window.addEventListener('online', () => setIsOffline(false));
       window.addEventListener('offline', () => setIsOffline(true));
 
-      setTotalCodes(getTotalFaultCodeCount());
+      // Total code count comes from the server-side fault index, never from
+      // a client-side dataset import. One small JSON request, deduped via the
+      // oracleClient health cache.
+      oracleHealth()
+        .then((h) => setTotalCodes(h.totals.faultCodes))
+        .catch(() => {
+          /* leave totalCodes at its initial value when API is unreachable */
+        });
 
       if (isDatabaseAvailable()) {
         try {
@@ -1184,13 +1190,12 @@ export default function GeneratorOracleModule() {
           if (savedBrand) setSelectedBrand(savedBrand);
           if (savedModel) setSelectedModel(savedModel);
 
-          const offlineLoaded = await getSetting('offlineDataLoaded');
-          if (offlineLoaded) {
-            setOfflineReady(true);
-          } else {
-            await initializeOfflineData(getAllFaultCodes(), () => {});
-            setOfflineReady(true);
-          }
+          // Bulk-preloading the full 451k-record dataset into IndexedDB on
+          // first launch was the original source of the client memory spike.
+          // Offline cache is now populated on demand: each fault code the
+          // user actually opens is persisted as it is fetched. Mark the
+          // session ready immediately.
+          setOfflineReady(true);
 
           const history = await getDiagnosisHistory(20);
           setDiagnosisHistory(history);
@@ -1213,6 +1218,7 @@ export default function GeneratorOracleModule() {
     }
   }, []);
 
+  const searchAbortRef = useRef<AbortController | null>(null);
   const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
     if (!query.trim()) {
@@ -1220,30 +1226,50 @@ export default function GeneratorOracleModule() {
       return;
     }
 
+    if (searchAbortRef.current) searchAbortRef.current.abort();
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+
     setIsSearching(true);
     try {
-      let results: ControllerFaultCode[];
-      if (selectedModel) {
-        const modelCodes = getFaultCodesByModel(selectedModel);
-        const q = query.toLowerCase();
-        results = modelCodes.filter(code =>
-          code.code.toLowerCase().includes(q) ||
-          code.title.toLowerCase().includes(q) ||
-          code.description.toLowerCase().includes(q)
-        );
-      } else if (selectedBrand) {
-        const brandCodes = getFaultCodesByBrand(selectedBrand);
-        const q = query.toLowerCase();
-        results = brandCodes.filter(code =>
-          code.code.toLowerCase().includes(q) ||
-          code.title.toLowerCase().includes(q) ||
-          code.description.toLowerCase().includes(q)
-        );
-      } else {
-        results = searchFaultCodes(query);
-      }
-      setSearchResults(results.slice(0, 100));
+      const data = await apiSearchFaultCodes({
+        query,
+        brand: selectedBrand || undefined,
+        model: selectedModel || undefined,
+        page: 1,
+        pageSize: 100,
+        signal: controller.signal,
+      });
+      const stubs: ControllerFaultCode[] = data.results.map((r: SearchResultItem) => ({
+        id: r.id,
+        code: r.code,
+        brand: r.brand,
+        model: r.model,
+        firmwareVersions: [],
+        category: r.category,
+        subcategory: r.subcategory,
+        severity: r.severity,
+        alarmType: r.alarmType,
+        title: r.title,
+        description: r.description,
+        triggerParameters: [],
+        symptoms: [],
+        possibleCauses: [],
+        diagnosticSteps: [],
+        resetPathways: [],
+        solutions: [],
+        safetyWarnings: [],
+        preventiveMeasures: [],
+        verified: r.verified,
+        lastUpdated: '',
+      }));
+      setSearchResults(stubs);
+    } catch (e) {
+      if ((e as { name?: string })?.name === 'AbortError') return;
+      console.error('Fault search failed:', e);
+      setSearchResults([]);
     } finally {
+      if (searchAbortRef.current === controller) searchAbortRef.current = null;
       setIsSearching(false);
     }
   }, [selectedBrand, selectedModel]);

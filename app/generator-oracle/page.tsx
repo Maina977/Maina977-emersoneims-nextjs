@@ -3,6 +3,9 @@
 import { Suspense, lazy } from 'react';
 import DMCAProtection from '@/components/security/DMCAProtection';
 import GeneratorOracleSEO from '@/components/seo/GeneratorOracleSEO';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import LiveBackendStatus from '@/components/generator-oracle/LiveBackendStatus';
 
 // Lazy load the main component for better initial load performance
 const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/GeneratorOracleModule'));
@@ -16,7 +19,7 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * All brand names are trademarks of their respective owners.
  *
  * Features:
- * - 250,000+ fault codes compatible with 10 controller types
+ * - 400,000+ fault-code references compatible with 10 controller types
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB
@@ -32,6 +35,9 @@ export default function GeneratorOraclePage() {
       <GeneratorOracleSEO pageType="diagnostic" />
       {/* Disable DevTools protection - it causes false positives on Windows with display scaling */}
       <DMCAProtection enableDevToolsProtection={false} />
+      <div className="px-4 pt-4 max-w-7xl mx-auto">
+        <LiveBackendStatus variant="compact" />
+      </div>
       <Suspense fallback={<LoadingFallback />}>
         <GeneratorOracleModule />
       </Suspense>
@@ -42,6 +48,9 @@ export default function GeneratorOraclePage() {
 function LoadingFallback() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.generatorOracle} />
+
       <div className="text-center px-4">
         {/* Oracle Logo Animation */}
         <div className="relative w-24 h-24 mx-auto mb-6">
@@ -71,8 +80,8 @@ function LoadingFallback() {
         {/* Loading Stats */}
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
-            <div className="text-amber-400 font-bold">250,000+</div>
-            <div className="text-slate-500">Fault Codes</div>
+            <div className="text-amber-400 font-bold">400,000+</div>
+            <div className="text-slate-500">Fault-Code References</div>
           </div>
           <div className="text-center">
             <div className="text-amber-400 font-bold">10</div>

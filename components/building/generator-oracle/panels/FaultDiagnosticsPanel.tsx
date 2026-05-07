@@ -9,10 +9,13 @@
  * with AI insights, case studies, and predictive maintenance indicators
  */
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { ControllerFaultCode } from '@/lib/generator-oracle/controllerFaultCodes';
-import { getFaultByCode, type EnhancedFaultCode } from '@/lib/generator-oracle/enhanced-fault-database';
+import type { ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
+import type { EnhancedFaultCode } from '@/lib/generator-oracle/enhanced-fault-database';
+// `getFaultByCode` only resolves a static set of 6 enriched records — keeping
+// it dynamically imported in this client component means the 1.9k-line module
+// is fetched only when the modal mounts, not on initial page render.
 
 // Extended interface to include interactive questions
 interface ExtendedFaultCode extends ControllerFaultCode {
@@ -70,7 +73,15 @@ function FaultDetailModal({
   const [completedDiagnostics, setCompletedDiagnostics] = useState<number[]>([]);
 
   // Get enhanced fault data if available (4+ paragraph detailed descriptions)
-  const enhancedFault = useMemo(() => getFaultByCode(fault.code), [fault.code]);
+  // Lazy-load the enriched-detail module only when the modal opens.
+  const [enhancedFault, setEnhancedFault] = useState<EnhancedFaultCode | undefined>(undefined);
+  useEffect(() => {
+    let cancelled = false;
+    import('@/lib/generator-oracle/enhanced-fault-database')
+      .then((mod) => { if (!cancelled) setEnhancedFault(mod.getFaultByCode(fault.code)); })
+      .catch(() => { /* enriched data is optional */ });
+    return () => { cancelled = true; };
+  }, [fault.code]);
 
   // Get the first reset pathway and solution
   const resetPathway = fault.resetPathways?.[0];

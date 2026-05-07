@@ -14,6 +14,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import OracleDemoVideo from '@/components/generator-oracle/OracleDemoVideo';
+import LiveBackendStatus, { useBackendHealth } from '@/components/generator-oracle/LiveBackendStatus';
+import LiveFaultLookup from '@/components/generator-oracle/LiveFaultLookup';
 
 // Advanced Features
 const ADVANCED_FEATURES = [
@@ -70,7 +72,7 @@ const ADVANCED_FEATURES = [
 // Core Features
 const CORE_FEATURES = [
   { icon: '🔍', stat: '400,000+', label: 'Fault Codes', desc: 'Comprehensive database' },
-  { icon: '⚡', stat: '9', label: 'Controller Types', desc: 'Wide compatibility' },
+  { icon: '⚡', stat: '10', label: 'Controller Brands', desc: 'Wide compatibility' },
   { icon: '🔄', stat: '100%', label: 'Reset Pathways', desc: 'Step-by-step guides' },
   { icon: '📴', stat: '100%', label: 'Offline Ready', desc: 'No internet required' },
   { icon: '🌍', stat: '7+', label: 'Languages', desc: 'Including Arabic RTL' },
@@ -79,33 +81,35 @@ const CORE_FEATURES = [
 
 // Feature Highlights
 const FEATURE_HIGHLIGHTS = [
-  { feature: 'Multi-type compatibility', description: 'Compatible with DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens, ENKO type controllers' },
-  { feature: 'AI-powered diagnostics', description: 'Intelligent fault analysis and recommendations' },
-  { feature: 'Offline capability', description: 'Works without internet connection' },
+  { feature: 'Multi-brand compatibility', description: 'Compatible with DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO and Volvo Penta VODIA controllers' },
+  { feature: 'Verified fault-code intelligence', description: 'Manufacturer-curated entries plus template-extended coverage from published code-range documentation' },
+  { feature: 'Offline capability', description: 'Works without internet connection — references cached locally on first load' },
   { feature: 'Professional pricing', description: 'KES 20,000/year subscription with full support & updates' },
 ];
 
-// Compatible controller types (50+ models from 9 types)
-// DISCLAIMER: Not affiliated with any manufacturer
+// Compatible controller models across the 10 supported brands.
+// DISCLAIMER: Not affiliated with any manufacturer.
 const COMPATIBLE_CONTROLLERS = [
-  // Compatible with DSE type
-  'DSE 7320 MKII', 'DSE 7310 MKII', 'DSE 6020 MKII', 'DSE 6120 MKII', 'DSE 4520', 'DSE 8610 MKII', 'DSE 8660 MKII',
-  // Compatible with ComAp type
-  'InteliLite NT', 'InteliGen NT', 'InteliSys NT', 'InteliMains NT',
-  // Compatible with Woodward type
-  'easYgen 3000', 'easYgen 2000', 'DTSC-200',
-  // Compatible with SmartGen type
-  'HGM6120', 'HGM7220', 'HGM9320', 'HGM9510',
-  // Compatible with PowerWizard type
-  'PowerWizard 1.0', 'PowerWizard 1.1', 'PowerWizard 2.0',
-  // Compatible with Datakom type
+  // DSE
+  'DSE 4510', 'DSE 4610', 'DSE 5110', 'DSE 5210', 'DSE 7320', 'DSE 7510', 'DSE 7560', 'DSE 8610', 'DSE 8660',
+  // ComAp
+  'InteliLite IL-NT AMF25', 'InteliGen NTC', 'InteliSys NTC', 'InteliDrive',
+  // Woodward
+  'easYgen 3000', 'easYgen 3500', 'LS-5 Load Share', 'GCP-30',
+  // SmartGen
+  'HGM6100', 'HGM9500', 'HGM420', 'HGM5310',
+  // CAT PowerWizard
+  'PowerWizard 1.0', 'PowerWizard 2.0', 'PowerWizard 4.1',
+  // Datakom
   'DKG-109', 'DKG-307', 'DKG-509', 'D-500', 'D-700',
-  // Compatible with Lovato type
+  // Lovato
   'RGK600', 'RGK800', 'ATL600', 'ATL900',
-  // Compatible with Siemens type
+  // Siemens
   'SICAM A8000', 'SIPROTEC 7SJ', 'SIPROTEC 7UT', 'SENTRON PAC',
-  // Compatible with ENKO type
+  // ENKO
   'GCU-100', 'GCU-300', 'GCU-500', 'AMF-100', 'SYNC-100',
+  // Volvo Penta VODIA
+  'VODIA5', 'VODIA6', 'TAD730', 'TAD1640', 'D13', 'D16',
 ];
 
 // Animated Counter Component
@@ -181,6 +185,24 @@ function FeatureCard({ feature, index }: { feature: typeof ADVANCED_FEATURES[0];
 
 export default function GeneratorOracleShowcase() {
   const [activeTab, setActiveTab] = useState<'features' | 'comparison'>('features');
+  const health = useBackendHealth();
+
+  // Stats are driven from the live /api/generator-oracle/health response
+  // when the diagnostic engine is reachable; otherwise we fall back to the
+  // verified static counts so the section stays presentable offline.
+  const liveStats = health.status === 'connected' && health.totals
+    ? [
+        { value: `${health.totals.faultCodes.toLocaleString('en-US')}+`, label: 'Fault-code references', color: '#06b6d4' },
+        { value: `${health.totals.verifiedCodes.toLocaleString('en-US')}`, label: 'Manufacturer-curated', color: '#22c55e' },
+        { value: `${health.totals.models}`, label: 'Controller models', color: '#f59e0b' },
+        { value: `${health.totals.brands}`, label: 'Major brands', color: '#8b5cf6' },
+      ]
+    : [
+        { value: '400,000+', label: 'Fault-code references', color: '#06b6d4' },
+        { value: 'Verified', label: 'Manufacturer-curated', color: '#22c55e' },
+        { value: '80+', label: 'Controller models', color: '#f59e0b' },
+        { value: '10', label: 'Major brands', color: '#8b5cf6' },
+      ];
 
   return (
     <section className="py-24 sm:py-32 bg-gradient-to-b from-black via-slate-950 to-black relative overflow-hidden">
@@ -236,12 +258,16 @@ export default function GeneratorOracleShowcase() {
           </p>
 
           <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-            A comprehensive diagnostic tool with <span className="text-cyan-400 font-bold">AI-Powered Analysis</span>,{' '}
-            <span className="text-purple-400 font-bold">3D Visualization</span>,{' '}
-            <span className="text-green-400 font-bold">Vibration Analysis</span>, and{' '}
-            <span className="text-amber-400 font-bold">400,000+ fault codes</span> across{' '}
-            <span className="text-white font-bold">5 major brands</span>.
+            Manufacturer-aware diagnostic lookup with{' '}
+            <span className="text-amber-400 font-bold">400,000+ fault-code references</span>,{' '}
+            verified troubleshooting steps, and AI-assisted analysis across{' '}
+            <span className="text-white font-bold">10 controller brands</span>.
           </p>
+
+          {/* Live backend status — proves the engine is reachable */}
+          <div className="max-w-2xl mx-auto mt-6">
+            <LiveBackendStatus variant="banner" />
+          </div>
         </motion.div>
 
         {/* MASSIVE STATS ROW */}
@@ -251,12 +277,7 @@ export default function GeneratorOracleShowcase() {
           viewport={{ once: true }}
           className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
         >
-          {[
-            { value: '400,000+', label: 'Fault Codes', color: '#06b6d4' },
-            { value: '6', label: 'Advanced Features', color: '#f59e0b' },
-            { value: '21', label: 'Controllers Supported', color: '#22c55e' },
-            { value: '5', label: 'Major Brands', color: '#8b5cf6' },
-          ].map((stat, idx) => (
+          {liveStats.map((stat, idx) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, scale: 0.8 }}
@@ -266,7 +287,11 @@ export default function GeneratorOracleShowcase() {
               className="text-center p-6 bg-slate-900/50 rounded-2xl border border-slate-800"
             >
               <div className="text-4xl sm:text-5xl font-black mb-2" style={{ color: stat.color }}>
-                <AnimatedCounter value={stat.value} />
+                {/^[\d,]+\+?$/.test(stat.value) ? (
+                  <AnimatedCounter value={stat.value} />
+                ) : (
+                  stat.value
+                )}
               </div>
               <div className="text-slate-400 text-sm font-medium">{stat.label}</div>
             </motion.div>
@@ -291,6 +316,28 @@ export default function GeneratorOracleShowcase() {
             </span>
           </div>
           <OracleDemoVideo autoPlay={true} />
+        </motion.div>
+
+        {/* LIVE FAULT-CODE LOOKUP — proves the backend is wired */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-20"
+        >
+          <div className="text-center mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/15 border border-cyan-500/30 rounded-full text-cyan-300 text-sm font-bold">
+              <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+              TRY IT NOW · Live fault-code lookup
+            </span>
+            <p className="text-slate-400 text-sm mt-3 max-w-2xl mx-auto">
+              Hits the same endpoint the diagnostic UI uses. Every result is read from the
+              server-side fault index — no static lists, no demo data.
+            </p>
+          </div>
+          <div className="max-w-4xl mx-auto">
+            <LiveFaultLookup />
+          </div>
         </motion.div>
 
         {/* TAB NAVIGATION */}
@@ -410,7 +457,9 @@ export default function GeneratorOracleShowcase() {
           className="mb-16"
         >
           <h3 className="text-center text-lg font-bold text-white mb-6">
-            21 Controllers Supported Across 5 Major Brands
+            {health.status === 'connected' && health.totals
+              ? `${health.totals.models}+ Controller Models Across ${health.totals.brands} Major Brands`
+              : '80+ Controller Models Across 10 Major Brands'}
           </h3>
           <div className="flex flex-wrap justify-center gap-2">
             {COMPATIBLE_CONTROLLERS.map((controller, i) => (
@@ -447,17 +496,17 @@ export default function GeneratorOracleShowcase() {
               <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
                 <span className="text-5xl">🎉</span>
                 <div>
-                  <div className="text-3xl sm:text-4xl font-black text-white">FREE TRIAL ACCESS</div>
-                  <div className="text-xl text-green-400 font-bold">Until April 1st, 2026</div>
+                  <div className="text-3xl sm:text-4xl font-black text-white">FREE FOREVER TIER</div>
+                  <div className="text-xl text-green-400 font-bold">No credit card · No expiry</div>
                 </div>
                 <span className="text-5xl">🎉</span>
               </div>
               <p className="text-slate-300 max-w-2xl mx-auto">
-                Try Generator Oracle completely free during our launch period.
-                Full access to all features. All 400,000+ fault codes. AI diagnostics included. No credit card required.
+                Use Generator Oracle free for life — full access to 400,000+ fault-code references,
+                AI-assisted analysis, and 10 supported controller brands. Built for technicians across Africa.
               </p>
               <p className="text-amber-400 font-bold mt-4">
-                After trial: KES 20,000/year subscription (includes updates & premium support)
+                Pro plan available from KES 20,000/year (updates &amp; premium support)
               </p>
             </div>
           </div>
@@ -529,9 +578,10 @@ export default function GeneratorOracleShowcase() {
         >
           <p className="text-slate-600 text-xs text-center max-w-4xl mx-auto leading-relaxed">
             <strong>Disclaimer:</strong> Generator Oracle is an independent diagnostic assistant developed by Emerson EIMS.
-            Compatible with controllers from DSE (Deep Sea Electronics), ComAp, Woodward, SmartGen, Caterpillar PowerWizard, Datakom, Lovato Electric, Siemens, and ENKO.
+            Compatible with controllers from DSE (Deep Sea Electronics), ComAp, Woodward, SmartGen, Caterpillar PowerWizard,
+            Datakom, Lovato Electric, Siemens, ENKO, and Volvo Penta VODIA.
             These are trademarks of their respective owners. This tool is not affiliated with or endorsed by these companies.
-            Feature comparisons based on publicly available product specifications as of 2024.
+            Feature comparisons based on publicly available product specifications.
           </p>
         </motion.div>
       </div>
