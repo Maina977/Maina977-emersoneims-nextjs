@@ -29,6 +29,32 @@ deployment-package/
 .env*.local
 .build-metadata.json
 
+# Local diagnostic / audit / lighthouse artifacts (do not commit)
+build_*.txt
+build-*.txt
+build*.log
+build-*.log
+_build_*.txt
+full-build-errors.txt
+build-errors.txt
+build-output-full.txt
+build-diagnosis.txt
+build-log.txt
+audit-services.txt
+audit-shots/
+test-results/
+lh_*.json
+lh11_*.json
+lighthouse*.json
+lighthouse*.html
+performance-test.json
+MEDIA_RESOLUTION_REPORT.json
+_diag*.mjs
+debug.js
+chunk-*.js
+*.BACKUP
+*.backup
+
 # Mirrored vendor projects (see external/); omit heavy artifacts
 external/**/node_modules/
 external/**/.venv/
