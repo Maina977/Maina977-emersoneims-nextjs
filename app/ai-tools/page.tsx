@@ -200,13 +200,13 @@ export default function AIToolsPage() {
       title: 'Fault Code Lookup',
       description: 'Search 400,000+ error codes instantly',
       icon: <Search className="w-6 h-6" />,
-      href: '/fault-code-lookup',
+      href: '/faults',
     },
     {
       title: 'Diagnostic Suite',
       description: 'Complete diagnostic experience',
       icon: <BarChart3 className="w-6 h-6" />,
-      href: '/diagnostic-suite',
+      href: '/diagnostics',
     },
     {
       title: 'Solar Sizing Calculator',

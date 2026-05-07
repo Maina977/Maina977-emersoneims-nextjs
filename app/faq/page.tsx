@@ -505,7 +505,7 @@ export default function FAQPage() {
                   Contact Us
                 </Link>
                 <Link
-                  href="/diagnostic-suite"
+                  href="/diagnostics"
                   className="px-8 py-4 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition-colors"
                 >
                   🔧 Try Diagnostic Suite
@@ -535,7 +535,7 @@ export default function FAQPage() {
                 <h3 className="font-semibold text-white group-hover:text-blue-400">Calculators</h3>
                 <p className="text-sm text-gray-400">Sizing & ROI tools</p>
               </Link>
-              <Link href="/diagnostic-suite" className="p-6 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 transition-colors text-center group">
+              <Link href="/diagnostics" className="p-6 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 transition-colors text-center group">
                 <div className="text-4xl mb-3">🔧</div>
                 <h3 className="font-semibold text-white group-hover:text-blue-400">Diagnostics</h3>
                 <p className="text-sm text-gray-400">9,000+ error codes</p>

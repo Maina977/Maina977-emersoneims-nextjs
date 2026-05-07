@@ -953,7 +953,7 @@ export default function KnowledgeBasePage() {
             <Link href="/faq" className="px-6 py-3 bg-white/10 text-white rounded-full hover:bg-white/20 transition-colors">
               Browse FAQs
             </Link>
-            <Link href="/diagnostic-suite" className="px-6 py-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors">
+            <Link href="/diagnostics" className="px-6 py-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors">
               🔧 Diagnostic Suite
             </Link>
             <Link href="/contact" className="px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">

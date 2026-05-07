@@ -464,6 +464,19 @@ const nextConfig: NextConfig = {
         destination: '/diagnostics',
         permanent: true,
       },
+      // GSC-discovered 404 slugs that were emitted historically in sitemap and
+      // structured data. They map to real pages — redirect rather than 404 so
+      // existing inbound discovery preserves SEO equity.
+      {
+        source: '/diagnostic-suite',
+        destination: '/diagnostics',
+        permanent: true,
+      },
+      {
+        source: '/fault-code-lookup',
+        destination: '/faults',
+        permanent: true,
+      },
       {
         source: '/generators-kenya',
         destination: '/generators',

@@ -416,7 +416,7 @@ export function WebSiteSchema() {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://www.emersoneims.com/fault-code-lookup?q={search_term_string}'
+        urlTemplate: 'https://www.emersoneims.com/faults?q={search_term_string}'
       },
       'query-input': 'required name=search_term_string'
     },

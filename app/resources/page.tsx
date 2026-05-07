@@ -15,7 +15,7 @@ const RESOURCE_CATEGORIES = [
       { href: '/guides/emergency-response', title: 'Emergency Response Guide', desc: 'What to do when your generator fails', type: 'Guide' },
       { href: '/generator-oracle', title: 'Generator Oracle', desc: 'AI-powered fault code diagnosis', type: 'Tool' },
       { href: '/troubleshooting', title: 'Troubleshooting Wizard', desc: 'Interactive problem solver', type: 'Tool' },
-      { href: '/fault-code-lookup', title: 'Fault Code Lookup', desc: 'Search 250,000+ error codes', type: 'Database' },
+      { href: '/faults', title: 'Fault Code Lookup', desc: 'Search 250,000+ error codes', type: 'Database' },
     ],
   },
   {
@@ -64,10 +64,10 @@ const RESOURCE_CATEGORIES = [
     icon: '🔬',
     color: 'blue',
     resources: [
-      { href: '/diagnostic-cockpit', title: 'Diagnostic Cockpit', desc: 'Aerospace-style control interface', type: 'Tool' },
+      { href: '/diagnostics', title: 'Diagnostic Cockpit', desc: 'Aerospace-style control interface', type: 'Tool' },
       { href: '/diagnostic-journey', title: 'Diagnostic Journey', desc: 'Step-by-step diagnosis flow', type: 'Tool' },
       { href: '/diagnostic-qa', title: 'Expert Q&A', desc: 'AI-powered technical answers', type: 'AI' },
-      { href: '/diagnostic-suite', title: 'Full Diagnostic Suite', desc: 'Complete diagnostic platform', type: 'Suite' },
+      { href: '/diagnostics', title: 'Full Diagnostic Suite', desc: 'Complete diagnostic platform', type: 'Suite' },
     ],
   },
 ];

@@ -605,15 +605,15 @@ export default function UniversalDiagnosticPage() {
         <section className="mt-12 border-t border-gray-700 pt-8">
           <h3 className="text-lg font-bold text-cyan-400 mb-4">MORE DIAGNOSTIC TOOLS</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Link href="/diagnostic-suite" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
+            <Link href="/faults" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">🔧</div>
-              <div className="font-bold text-white">Diagnostic Suite</div>
+              <div className="font-bold text-white">Fault Code Library</div>
               <div className="text-sm text-gray-400">13,500+ error codes database</div>
             </Link>
-            <Link href="/diagnostic-cockpit" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
+            <Link href="/troubleshooting" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">🎛️</div>
-              <div className="font-bold text-white">Mission Control Cockpit</div>
-              <div className="text-sm text-gray-400">Real-time telemetry & gauges</div>
+              <div className="font-bold text-white">Troubleshooting Wizard</div>
+              <div className="text-sm text-gray-400">Step-by-step problem solver</div>
             </Link>
             <Link href="/diagnostic-qa" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">❓</div>

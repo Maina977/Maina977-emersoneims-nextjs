@@ -12,6 +12,11 @@ export default function robots(): MetadataRoute.Robots {
       // Default rules for all crawlers - optimized for maximum visibility
       {
         userAgent: '*',
+        // Allow rules are positive permission hints to crawlers; they do NOT
+        // create routes. Removed entries that pointed at non-existent or
+        // permanently-redirected paths (/counties/ → /kenya/, /diagnostic-suite/
+        // → /diagnostics/, /fault-code-lookup/ → /faults/) so Search Console
+        // stops re-discovering those slugs as crawl targets.
         allow: [
           '/',
           '/generators/',
@@ -19,11 +24,10 @@ export default function robots(): MetadataRoute.Robots {
           '/solutions/',
           '/services/',
           '/blog/',
-          '/counties/',
+          '/kenya/',
           '/diagnostics/',
-          '/diagnostic-suite/',
           '/diagnostic-journey/',
-          '/fault-code-lookup/',
+          '/faults/',
           '/calculators/',
           '/contact/',
           '/about-us/',
@@ -32,6 +36,7 @@ export default function robots(): MetadataRoute.Robots {
           '/faq/',
           '/gallery/',
           '/booking/',
+          '/hub/',
         ],
         disallow: ['/api/', '/admin/', '/_next/static/', '/private/', '/test-*'],
       },

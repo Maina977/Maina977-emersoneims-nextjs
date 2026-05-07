@@ -114,16 +114,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/generators/used`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
 
     // Solar pages
+    // /solutions/solar is permanently redirected to /solar in next.config.ts
+    // and is kept out of the sitemap to avoid GSC "Page with redirect" warnings.
     { url: `${BASE_URL}/solar`, lastModified: currentDate, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${BASE_URL}/solutions/solar`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/solutions/solar-sizing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
 
     // Diagnostic pages
+    // /diagnostic-suite, /fault-code-lookup, /diagnostic-cockpit are NOT real
+    // routes. /diagnostic-cockpit + /diagnostic-suite redirect to /diagnostics;
+    // /fault-code-lookup redirects to /faults. They are removed from the sitemap
+    // so Search Console stops reporting them as 404s during validation.
     { url: `${BASE_URL}/generator-oracle`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.95 },
     { url: `${BASE_URL}/diagnostics`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/diagnostic-suite`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/diagnostic-cockpit`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
-    { url: `${BASE_URL}/fault-code-lookup`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE_URL}/faults`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${BASE_URL}/troubleshooting`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${BASE_URL}/technical-bible`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
 
@@ -143,25 +146,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/ai-tools`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9  },
     { url: `${BASE_URL}/ai-tools/capabilities`,                 lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/all-tools`,                             lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/products`,                              lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
 
     // Service pages
+    // The /solutions/* slugs that 308 redirect in next.config.ts (solar, ups,
+    // motor-rewinding, borehole-pumps, ac, generators, controls, motors) are
+    // omitted here — only the canonical /services/* (or top-level) destinations
+    // are listed. The non-redirected /solutions/* slugs are still emitted.
     { url: `${BASE_URL}/services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${BASE_URL}/services/ups-systems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/services/motor-rewinding`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/services/borehole-pumps`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/services/ac-installation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/services/ats-changeover`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/solutions/ups`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/solutions/motor-rewinding`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/solutions/borehole-pumps`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/solutions/ac`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/incinerators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/solutions/solar`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/solutions/solar-sizing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${BASE_URL}/solutions/generators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${BASE_URL}/solutions/building`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/solutions/controls`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/fabrication`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/high-voltage`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/diesel-automation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/solutions/motors`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/power-interruptions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
 
     // Other pages
@@ -185,7 +187,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/knowledge-base`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/careers`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/locations`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/counties`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    // /counties is permanently redirected to /kenya — keep only the canonical.
     { url: `${BASE_URL}/kenya`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
 
     // Generator sub-routes (commercial intent)

@@ -316,8 +316,8 @@ export default function InnovationsPage() {
             Try our live innovations or request beta access to upcoming features
           </p>
           <div className="flex justify-center gap-6">
-            <Link 
-              href="/diagnostic-suite"
+            <Link
+              href="/diagnostics"
               className="px-12 py-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold rounded-full hover:scale-105 transition-all duration-500 shadow-[0_0_30px_rgba(168,85,247,0.4)]"
             >
               Try Live Features

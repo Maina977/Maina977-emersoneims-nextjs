@@ -1541,7 +1541,7 @@ export default function TroubleshootingWizardPage() {
                       {result.relatedCodes.map(code => (
                         <Link
                           key={code}
-                          href={`/diagnostic-suite?code=${code}`}
+                          href={`/faults/${encodeURIComponent(code)}`}
                           className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
                         >
                           {code}
@@ -1549,7 +1549,7 @@ export default function TroubleshootingWizardPage() {
                       ))}
                     </div>
                     <p className="text-sm text-gray-400 mt-3">
-                      Click a code to see detailed information in our Diagnostic Suite
+                      Click a code to open its detailed fault page
                     </p>
                   </div>
                 )}

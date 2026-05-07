@@ -22,7 +22,7 @@ const FOOTER_SECTIONS = [
     links: [
       { href: '/solutions', label: 'Engineering Solutions' },
       { href: '/services', label: 'Services' },
-      { href: '/diagnostic-suite', label: 'Generator Diagnostics' },
+      { href: '/diagnostics', label: 'Generator Diagnostics' },
     ],
   },
   {
