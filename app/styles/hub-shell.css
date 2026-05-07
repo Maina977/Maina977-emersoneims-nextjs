@@ -1,0 +1,133 @@
+/* ============================================================================
+   SOLAR & UPS INTELLIGENCE HUB — premium chrome polish
+   Scoped to .hub-shell (HubShell wrapper). Does NOT affect marketing pages
+   or the simulator's internal cockpit (which has its own dark scope).
+   ============================================================================ */
+
+.hub-shell .hub-nav-scroll::-webkit-scrollbar { height: 4px; }
+.hub-shell .hub-nav-scroll::-webkit-scrollbar-track { background: transparent; }
+.hub-shell .hub-nav-scroll::-webkit-scrollbar-thumb {
+  background: rgba(140, 170, 220, 0.18);
+  border-radius: 4px;
+}
+.hub-shell .hub-nav-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(76, 210, 238, 0.45);
+}
+
+/* Premium form controls inside hub cards. */
+.hub-shell input:not([type="checkbox"]):not([type="radio"]),
+.hub-shell select,
+.hub-shell textarea {
+  border-color: var(--color-border-subtle);
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+.hub-shell input:hover,
+.hub-shell select:hover,
+.hub-shell textarea:hover {
+  border-color: rgba(0, 113, 227, 0.45);
+}
+.hub-shell input:focus-visible,
+.hub-shell select:focus-visible,
+.hub-shell textarea:focus-visible {
+  outline: none;
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.25);
+}
+
+.hub-shell .hub-nav-scroll a:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Premium primary action button used inside hub modules. */
+.hub-shell .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.05rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0071e3 0%, #003a73 100%);
+  box-shadow: 0 8px 22px -10px rgba(0, 113, 227, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  cursor: pointer;
+  border: none;
+}
+.hub-shell .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px -12px rgba(0, 113, 227, 0.75),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+.hub-shell .btn-primary:active {
+  transform: translateY(0);
+}
+
+.hub-shell .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.05rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0b1220;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(15, 30, 60, 0.18),
+    0 1px 2px rgba(8, 15, 35, 0.05);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+  cursor: pointer;
+  border: none;
+}
+.hub-shell .btn-secondary:hover {
+  box-shadow: inset 0 0 0 1px #0071e3,
+    0 4px 12px -4px rgba(0, 113, 227, 0.35);
+}
+
+/* Hub-shell text contrast: text inside Cards stays dark (cards are white).
+   Text directly on the hub canvas (outside cards) is lifted to light tones. */
+.hub-shell > main {
+  color: rgba(230, 237, 247, 0.78);
+}
+.hub-shell > main > section > header h2,
+.hub-shell > main > section > h2,
+.hub-shell > main > h2 {
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+.hub-shell > main > section > header p,
+.hub-shell > main > section > header div,
+.hub-shell > main > section > p {
+  color: rgba(230, 237, 247, 0.70);
+}
+
+/* Cards reset to dark interior text. */
+.hub-shell .rounded-xl,
+.hub-shell .rounded-lg,
+.hub-shell .rounded-2xl {
+  color: var(--color-text-primary);
+}
+
+/* HubConnectStrip is dark-themed already. */
+.hub-shell section[aria-label="Connected workspace"] {
+  color: rgba(230, 237, 247, 0.78);
+}
+
+/* Live cockpit power-flow shimmer. */
+@keyframes cockpit-flow-shimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.cockpit-flow-line {
+  background-size: 200% 100%;
+  animation: cockpit-flow-shimmer 2.4s linear infinite;
+}
+@keyframes cockpit-lamp-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+.cockpit-lamp-pulse {
+  animation: cockpit-lamp-pulse 1.4s ease-in-out infinite;
+}

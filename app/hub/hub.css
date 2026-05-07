@@ -1,0 +1,30 @@
+/* ============================================================================
+   SOLAR & UPS INTELLIGENCE HUB — route-scoped stylesheet
+   ----------------------------------------------------------------------------
+   Loaded only by app/hub/layout.tsx (Next.js App Router scopes a CSS import
+   from a layout to that route subtree). This keeps the hub's design-token
+   layer + chrome-isolation rules out of the marketing site's globals.css so
+   non-hub pages are unaffected by the rollout.
+   ========================================================================= */
+
+@import "../styles/tokens.css";
+@import "../styles/hub-shell.css";
+
+/* ----------------------------------------------------------------------------
+   Hub chrome isolation
+   ----------------------------------------------------------------------------
+   `HubChromeIsolator` (client effect) tags <html data-hub-route="true"> while
+   any hub route is mounted. The marketing-site nav and footer are visually
+   hidden for the duration so the cockpit owns the viewport. DOM stays in the
+   tree for SEO / structured data — only display is suppressed.
+   ------------------------------------------------------------------------- */
+html[data-hub-route="true"] #main-navigation,
+html[data-hub-route="true"] #contact-section {
+  display: none !important;
+}
+html[data-hub-route="true"] body {
+  padding-top: 0 !important;
+}
+html[data-hub-route="true"] main#main-content {
+  padding-top: 0 !important;
+}
