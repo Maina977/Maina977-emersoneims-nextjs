@@ -27,7 +27,6 @@ import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNoti
 import AssetCardGate, {
   type AssetCardValue,
 } from '@/components/generator-oracle/AssetCardGate';
-import FaultCodeQuickLookup from '@/components/generator-oracle/FaultCodeQuickLookup';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -724,12 +723,6 @@ Tell me about your generator problem, or choose a quick action below to get star
             </span>
           ))}
         </div>
-      </div>
-
-      {/* Direct technician input — typed fault-code lookup. Deterministic
-          (bundled DB), runs without an AI key, and clearly labels misses. */}
-      <div className="flex-shrink-0 px-4 pt-3">
-        <FaultCodeQuickLookup />
       </div>
 
       {/* Messages area */}
