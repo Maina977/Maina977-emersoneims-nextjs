@@ -22,6 +22,12 @@ import {
   getFaultCodesByBrand,
   CONTROLLER_BRANDS,
 } from '@/lib/generator-oracle/integratedDiagnosticService';
+import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
+import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
+import AssetCardGate, {
+  type AssetCardValue,
+} from '@/components/generator-oracle/AssetCardGate';
+import FaultCodeQuickLookup from '@/components/generator-oracle/FaultCodeQuickLookup';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -368,12 +374,78 @@ function MessageBubble({ message }: { message: Message }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 type ChatError = {
-  code: 'AI_NOT_CONFIGURED' | 'AI_UPSTREAM_ERROR' | 'NETWORK_ERROR' | 'UNKNOWN';
+  code:
+    | 'AI_UNAVAILABLE'
+    | 'ASSET_CARD_REQUIRED'
+    | 'RULE_BLOCK'
+    | 'OUTPUT_INVALID'
+    | 'NETWORK_ERROR'
+    | 'UNKNOWN';
   message: string;
   detail?: string;
 };
 
-export default function ExpertAIChatPanel({ className = '' }: { className?: string }) {
+function formatLocalDiagnosisAsChat(result: {
+  verdict: string;
+  confidence: 'verified' | 'probable' | 'generic' | 'verification_required';
+  evidenceUsed?: Array<{ source: string; snippet: string }>;
+  evidenceMissing?: string[];
+  userSafeChecks?: string[];
+  technicianOnlyActions?: string[];
+  nextChecks?: string[];
+  safetyNotes?: string[];
+  ruleViolations?: string[];
+}): string {
+  const lines: string[] = [];
+  const label = {
+    verified: '✅ Verified',
+    probable: '🟡 Probable',
+    generic: '⚪ Generic',
+    verification_required: '⚠️ Verification required',
+  }[result.confidence];
+  lines.push(`**Verdict (${label})**`);
+  lines.push(result.verdict);
+  if (result.evidenceUsed?.length) {
+    lines.push('', '**Evidence used:**');
+    for (const e of result.evidenceUsed) {
+      lines.push(`• ${e.source}`);
+    }
+  }
+  if (result.evidenceMissing?.length) {
+    lines.push('', '**Evidence missing:**');
+    for (const m of result.evidenceMissing) lines.push(`• ${m}`);
+  }
+  if (result.userSafeChecks?.length) {
+    lines.push('', '**Anyone can check now:**');
+    for (const c of result.userSafeChecks) lines.push(`• ${c}`);
+  }
+  if (result.technicianOnlyActions?.length) {
+    lines.push('', '**Technician-only actions:**');
+    for (const c of result.technicianOnlyActions) lines.push(`• ${c}`);
+  }
+  if (result.nextChecks?.length) {
+    lines.push('', '**Next checks:**');
+    for (const c of result.nextChecks) lines.push(`• ${c}`);
+  }
+  if (result.safetyNotes?.length) {
+    lines.push('', '**Safety notes:**');
+    for (const c of result.safetyNotes) lines.push(`⚠️ ${c}`);
+  }
+  if (result.ruleViolations?.length) {
+    lines.push('', '**Rule engine notes:**');
+    for (const c of result.ruleViolations) lines.push(`• ${c}`);
+  }
+  return lines.join('\n');
+}
+
+function ExpertAIChatPanelInner({
+  className = '',
+  card,
+}: {
+  className?: string;
+  card: AssetCardValue;
+}) {
+  const aiAvailability = useAIAvailable();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -455,47 +527,70 @@ Tell me about your generator problem, or choose a quick action below to get star
         content: content.trim(),
       });
 
-      // Call the AI API
+      // Call the local-AI API
       const response = await fetch('/api/generator-oracle/expert-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: conversationHistory,
-          systemPrompt: AI_SYSTEM_PROMPT,
+          assetCard: card,
         }),
       });
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok || !data || data.success === false) {
-        // Strip the typing bubble + the user's message (the user can resend
-        // via the retry button). Surface a clearly-styled error banner.
+      if (!response.ok || !data || data.ok === false) {
         setMessages(prev => prev.filter(m => !m.isTyping && m.id !== userMessage.id));
-        const code: ChatError['code'] =
-          data?.code === 'AI_NOT_CONFIGURED' ? 'AI_NOT_CONFIGURED'
-          : data?.code === 'AI_UPSTREAM_ERROR' ? 'AI_UPSTREAM_ERROR'
+        const knownCodes = new Set([
+          'AI_UNAVAILABLE',
+          'ASSET_CARD_REQUIRED',
+          'RULE_BLOCK',
+          'OUTPUT_INVALID',
+        ]);
+        const code: ChatError['code'] = knownCodes.has(data?.code)
+          ? (data.code as ChatError['code'])
           : 'UNKNOWN';
+        const fallbackMessages: Record<string, string> = {
+          AI_UNAVAILABLE: 'Local AI stack is not configured or not reachable.',
+          ASSET_CARD_REQUIRED: 'Asset card is required.',
+          RULE_BLOCK: 'Refused by deterministic rule engine.',
+          OUTPUT_INVALID: 'Local model returned malformed output.',
+          UNKNOWN: 'Request failed.',
+        };
         setChatError({
           code,
-          message:
-            data?.message ||
-            (code === 'AI_NOT_CONFIGURED'
-              ? 'AI service is not configured on the server.'
-              : 'AI service is unavailable. Please retry.'),
-          detail: data?.error || `HTTP ${response.status}`,
+          message: data?.message || fallbackMessages[code],
+          detail: data?.detail || `HTTP ${response.status}`,
         });
         return;
       }
 
-      // Remove typing indicator and add actual response
+      const result = data.result;
+      if (!result?.verdict) {
+        setMessages(prev => prev.filter(m => !m.isTyping && m.id !== userMessage.id));
+        setChatError({
+          code: 'OUTPUT_INVALID',
+          message: 'Local model returned an empty diagnosis.',
+        });
+        return;
+      }
+      const formatted = formatLocalDiagnosisAsChat(result);
       setMessages(prev => [
         ...prev.filter(m => !m.isTyping),
         {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
-          content: data.content,
+          content: formatted,
           timestamp: new Date(),
-          metadata: data.metadata,
+          metadata: {
+            urgency:
+              result.confidence === 'verification_required'
+                ? 'high'
+                : result.confidence === 'verified'
+                  ? 'low'
+                  : 'medium',
+            category: `Local AI · ${result.confidence}`,
+          },
         },
       ]);
     } catch (error) {
@@ -555,6 +650,22 @@ Tell me about your generator problem, or choose a quick action below to get star
     ? QUICK_ACTIONS.filter(a => a.category === selectedCategory)
     : QUICK_ACTIONS;
 
+  // After all hooks have run, swap the entire panel for an honest
+  // unavailable notice when the local AI stack is not configured /
+  // reachable. The interactive UI is not rendered at all, so it cannot
+  // give the impression that AI is active. No "coming soon" wording —
+  // the feature is implemented, the inference infra simply isn't pointed
+  // at by this deployment.
+  if (aiAvailability === 'unavailable') {
+    return (
+      <AIUnavailableNotice
+        feature="Expert AI Chat"
+        description="Expert chat runs against a self-hosted Ollama (Qwen2.5) plus local retrieval. This deployment does not currently have LOCAL_AI_BASE_URL pointing at a healthy local stack, so the chat surface refuses rather than risk fabricated diagnostics. No paid AI is used in the diagnostic path."
+        className={className}
+      />
+    );
+  }
+
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Header */}
@@ -613,6 +724,12 @@ Tell me about your generator problem, or choose a quick action below to get star
             </span>
           ))}
         </div>
+      </div>
+
+      {/* Direct technician input — typed fault-code lookup. Deterministic
+          (bundled DB), runs without an AI key, and clearly labels misses. */}
+      <div className="flex-shrink-0 px-4 pt-3">
+        <FaultCodeQuickLookup />
       </div>
 
       {/* Messages area */}
@@ -675,7 +792,8 @@ Tell me about your generator problem, or choose a quick action below to get star
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             className={`flex-shrink-0 mx-4 mb-3 p-4 border rounded-xl ${
-              chatError.code === 'AI_NOT_CONFIGURED'
+              chatError.code === 'AI_UNAVAILABLE' ||
+              chatError.code === 'ASSET_CARD_REQUIRED'
                 ? 'bg-amber-500/10 border-amber-500/40'
                 : 'bg-red-500/10 border-red-500/40'
             }`}
@@ -683,21 +801,31 @@ Tell me about your generator problem, or choose a quick action below to get star
           >
             <div className="flex items-start gap-3">
               <span className="text-xl leading-none">
-                {chatError.code === 'AI_NOT_CONFIGURED' ? '⚙️' : '⚠️'}
+                {chatError.code === 'AI_UNAVAILABLE' ||
+                chatError.code === 'ASSET_CARD_REQUIRED'
+                  ? '⚙️'
+                  : '⚠️'}
               </span>
               <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm font-semibold ${
-                    chatError.code === 'AI_NOT_CONFIGURED' ? 'text-amber-300' : 'text-red-300'
+                    chatError.code === 'AI_UNAVAILABLE' ||
+                    chatError.code === 'ASSET_CARD_REQUIRED'
+                      ? 'text-amber-300'
+                      : 'text-red-300'
                   }`}
                 >
-                  {chatError.code === 'AI_NOT_CONFIGURED'
-                    ? 'AI service not configured'
-                    : chatError.code === 'AI_UPSTREAM_ERROR'
-                      ? 'AI service error'
-                      : chatError.code === 'NETWORK_ERROR'
-                        ? 'Network error'
-                        : 'Request failed'}
+                  {chatError.code === 'AI_UNAVAILABLE'
+                    ? 'Local AI stack unavailable'
+                    : chatError.code === 'ASSET_CARD_REQUIRED'
+                      ? 'Asset card required'
+                      : chatError.code === 'RULE_BLOCK'
+                        ? 'Refused by rule engine'
+                        : chatError.code === 'OUTPUT_INVALID'
+                          ? 'Local model output invalid'
+                          : chatError.code === 'NETWORK_ERROR'
+                            ? 'Network error'
+                            : 'Request failed'}
                 </p>
                 <p className="text-sm text-slate-300 mt-0.5">{chatError.message}</p>
                 {chatError.detail && (
@@ -706,7 +834,9 @@ Tell me about your generator problem, or choose a quick action below to get star
                   </p>
                 )}
                 <div className="flex gap-2 mt-3">
-                  {chatError.code !== 'AI_NOT_CONFIGURED' && lastUserMessage && (
+                  {chatError.code !== 'AI_UNAVAILABLE' &&
+                    chatError.code !== 'ASSET_CARD_REQUIRED' &&
+                    lastUserMessage && (
                     <button
                       onClick={retryLastMessage}
                       disabled={isLoading}
@@ -772,5 +902,23 @@ Tell me about your generator problem, or choose a quick action below to get star
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Public export — wraps the chat panel in `AssetCardGate` so the asset
+ * card (make, model, controller, serial, firmware) is collected before
+ * the user can talk to the model. The card is then passed into every
+ * /api/generator-oracle/expert-chat call.
+ */
+export default function ExpertAIChatPanel({
+  className = '',
+}: {
+  className?: string;
+}) {
+  return (
+    <AssetCardGate feature="Expert AI Chat">
+      {(card) => <ExpertAIChatPanelInner className={className} card={card} />}
+    </AssetCardGate>
   );
 }

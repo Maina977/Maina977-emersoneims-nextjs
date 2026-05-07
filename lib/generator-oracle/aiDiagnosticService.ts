@@ -1,418 +1,278 @@
 /**
- * GENERATOR ORACLE AI DIAGNOSTIC SERVICE
- * Real Claude AI integration for advanced generator diagnostics
+ * GENERATOR ORACLE — AI Diagnostic Service (LOCAL stack)
  *
- * @copyright 2026 Generator Oracle
+ * Previously this module called Anthropic; that path has been removed.
+ * The diagnostic flow is now:
+ *
+ *   - if useAI=false (or local stack offline) → return the deterministic
+ *     local rule-based engine result (`performAIDiagnosis` in
+ *     `ai-diagnostic-engine.ts`). This is NOT an AI result and is labelled
+ *     `source: 'rule-based'`.
+ *   - if useAI=true AND local stack is reachable → call Qwen2.5 via the
+ *     local Ollama and return its `DiagnosisOutput` payload, labelled
+ *     `source: 'local-ai'`.
+ *   - if useAI=true AND local stack is offline → return `source:
+ *     'unavailable'` with a typed reason. The service NEVER silently falls
+ *     back to a different surface; the caller must decide what to render.
+ *
+ * @copyright 2026 EmersonEIMS / Generator Oracle
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-import {
-  DIAGNOSTIC_SYSTEM_PROMPT,
-  FAULT_CODE_SYSTEM_PROMPT,
-  generateDiagnosisPrompt,
-  generateFaultCodePrompt,
-  generateSymptomPrompt,
-  validateAIResponse,
-} from './aiPrompts';
 import {
   performAIDiagnosis as performLocalDiagnosis,
   type GeneratorReadings,
   type AIAnalysisResult,
 } from './ai-diagnostic-engine';
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-opus-4-7';
-const USE_AI_DIAGNOSTICS = process.env.USE_AI_DIAGNOSTICS === 'true';
-const MAX_TOKENS = 8192;
-
-// Lazy-initialized client
-let anthropicClient: Anthropic | null = null;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// TYPES
-// ═══════════════════════════════════════════════════════════════════════════════
+import { isAIDisabledServer } from './aiFlags';
+import {
+  AssetCardSchema,
+  DiagnosisOutputSchema,
+  type AssetCard,
+  type DiagnosisOutput,
+  buildExpertChatPrompt,
+  hitsToCitations,
+  retrievalQuery,
+  ollamaChat,
+  OllamaUnavailableError,
+  OllamaResponseError,
+  sanitizeModelOutput,
+  extractJsonObject,
+  labelConfidence,
+  runAllPreflightRules,
+  summarizeViolations,
+  getLocalAiEnv,
+  getLocalAiHealth,
+} from './local-ai';
 
 export interface AIDiagnosticRequest {
   readings: GeneratorReadings;
   faultCodes?: string[];
   symptoms?: string;
+  assetCard?: unknown;
   controllerBrand?: string;
   generatorBrand?: string;
   engineBrand?: string;
-  useAI?: boolean; // Override USE_AI_DIAGNOSTICS env var
+  useAI?: boolean;
 }
+
+export type AIDiagnosticSource = 'rule-based' | 'local-ai' | 'unavailable';
 
 export interface AIDiagnosticResponse {
   success: boolean;
+  source: AIDiagnosticSource;
   result?: AIAnalysisResult;
+  localAiResult?: DiagnosisOutput;
   error?: string;
-  source: 'ai' | 'local';
-  usage?: {
-    inputTokens: number;
-    outputTokens: number;
-    estimatedCostUSD: number;
-  };
+  unavailableReason?: string;
   processingTimeMs: number;
 }
 
+export function isAIDiagnosticsEnabled(): boolean {
+  if (isAIDisabledServer()) return false;
+  return !!process.env.LOCAL_AI_BASE_URL;
+}
+
+function readingsSummary(r: GeneratorReadings, faultCodes?: string[], symptoms?: string): string {
+  const parts: string[] = [];
+  for (const [k, v] of Object.entries(r)) {
+    if (v === undefined || v === null) continue;
+    parts.push(`${k}=${v}`);
+  }
+  if (faultCodes?.length) parts.push(`fault_codes=${faultCodes.join(',')}`);
+  if (symptoms) parts.push(`symptoms="${symptoms}"`);
+  return parts.join('; ');
+}
+
+export async function getAIDiagnosis(
+  request: AIDiagnosticRequest,
+): Promise<AIDiagnosticResponse> {
+  const startTime = Date.now();
+
+  // Default branch — deterministic local engine. NOT AI.
+  const shouldUseAI = request.useAI === true;
+  if (!shouldUseAI) {
+    const result = performLocalDiagnosis(request.readings);
+    return {
+      success: true,
+      source: 'rule-based',
+      result,
+      processingTimeMs: Date.now() - startTime,
+    };
+  }
+
+  // AI branch — local-AI only. Never paid AI.
+  if (isAIDisabledServer()) {
+    return {
+      success: false,
+      source: 'unavailable',
+      unavailableReason: 'Generator Oracle AI is disabled on this deployment.',
+      processingTimeMs: Date.now() - startTime,
+    };
+  }
+
+  // Asset card is required for the AI branch (blueprint).
+  const cardParse = AssetCardSchema.safeParse(request.assetCard);
+  if (!cardParse.success) {
+    return {
+      success: false,
+      source: 'unavailable',
+      unavailableReason:
+        'Asset card (make, model, controller, serial, firmware) is required for AI diagnosis.',
+      processingTimeMs: Date.now() - startTime,
+    };
+  }
+  const card: AssetCard = cardParse.data;
+
+  const preflight = runAllPreflightRules({
+    card,
+    faultCode: request.faultCodes?.[0] ?? null,
+    freeText: request.symptoms ?? null,
+  });
+  if (!preflight.ok) {
+    return {
+      success: false,
+      source: 'unavailable',
+      unavailableReason: `Refused by rule engine: ${summarizeViolations(preflight.violations).join('; ')}`,
+      processingTimeMs: Date.now() - startTime,
+    };
+  }
+
+  const env = getLocalAiEnv();
+  const health = await getLocalAiHealth();
+  if (!health.ok) {
+    return {
+      success: false,
+      source: 'unavailable',
+      unavailableReason: env.baseUrl
+        ? `Local AI stack unreachable: ${health.text.reason ?? 'unknown'}`
+        : 'LOCAL_AI_BASE_URL is not configured',
+      processingTimeMs: Date.now() - startTime,
+    };
+  }
+
+  const summary = readingsSummary(request.readings, request.faultCodes, request.symptoms);
+  const retrieval = await retrievalQuery({
+    text: `${card.make} ${card.model} ${card.controller}\n${summary}`,
+    k: 5,
+    filter: { controller: card.controller, make: card.make },
+  });
+  const citations = hitsToCitations(retrieval.hits);
+
+  const { system, userMessages } = buildExpertChatPrompt({
+    card,
+    question: `Analyse the following live readings and produce a structured diagnosis. Treat threshold breaches as evidence and rank likely root causes. Live readings: ${summary || '(none)'}.`,
+    citations,
+  });
+
+  try {
+    const resp = await ollamaChat({
+      messages: [
+        { role: 'system', content: system },
+        ...userMessages.map((m) => ({ role: m.role, content: m.content })),
+      ],
+      format: 'json',
+    });
+    const draft = extractJsonObject(sanitizeModelOutput(resp.text));
+    const parsed = DiagnosisOutputSchema.safeParse(draft);
+    if (!parsed.success) {
+      return {
+        success: false,
+        source: 'unavailable',
+        unavailableReason:
+          'Local model returned output that failed schema validation.',
+        error: parsed.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('; '),
+        processingTimeMs: Date.now() - startTime,
+      };
+    }
+    const finalResult: DiagnosisOutput = {
+      ...parsed.data,
+      confidence: labelConfidence({
+        citations,
+        ruleViolations: preflight.violations,
+      }),
+      evidenceUsed: citations,
+      ruleViolations: summarizeViolations(preflight.violations),
+      modelMeta: {
+        textModel: env.textModel,
+        retrievalSource: retrieval.configured ? 'local-vector' : 'unavailable',
+      },
+    };
+    return {
+      success: true,
+      source: 'local-ai',
+      localAiResult: finalResult,
+      processingTimeMs: Date.now() - startTime,
+    };
+  } catch (err) {
+    if (
+      err instanceof OllamaUnavailableError ||
+      err instanceof OllamaResponseError
+    ) {
+      return {
+        success: false,
+        source: 'unavailable',
+        unavailableReason: `Local model call failed: ${err.message}`,
+        processingTimeMs: Date.now() - startTime,
+      };
+    }
+    return {
+      success: false,
+      source: 'unavailable',
+      unavailableReason: err instanceof Error ? err.message : 'Unknown error',
+      processingTimeMs: Date.now() - startTime,
+    };
+  }
+}
+
+/**
+ * Streaming variant — kept compatible with the existing GET stream
+ * consumers. Currently the local stack call is non-streaming; we emit a
+ * single 'complete' event at the end so the client transport stays the
+ * same.
+ */
 export interface StreamingDiagnosticEvent {
   type: 'start' | 'delta' | 'complete' | 'error';
   content?: string;
   result?: AIAnalysisResult;
+  localAiResult?: DiagnosisOutput;
   error?: string;
+  source?: AIDiagnosticSource;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// CLIENT MANAGEMENT
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * Check if AI diagnostics are enabled
- */
-export function isAIDiagnosticsEnabled(): boolean {
-  return USE_AI_DIAGNOSTICS && !!ANTHROPIC_API_KEY;
-}
-
-/**
- * Get or initialize Anthropic client
- */
-function getClient(): Anthropic {
-  if (!ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY is not configured');
-  }
-
-  if (!anthropicClient) {
-    anthropicClient = new Anthropic({
-      apiKey: ANTHROPIC_API_KEY,
-    });
-  }
-
-  return anthropicClient;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAIN DIAGNOSTIC FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * Perform AI-powered diagnosis with automatic fallback to local engine
- */
-export async function getAIDiagnosis(
-  request: AIDiagnosticRequest
-): Promise<AIDiagnosticResponse> {
-  const startTime = Date.now();
-  const shouldUseAI = request.useAI ?? isAIDiagnosticsEnabled();
-
-  // If AI is disabled, use local diagnosis
-  if (!shouldUseAI) {
-    const result = performLocalDiagnosis(request.readings);
-    return {
-      success: true,
-      result,
-      source: 'local',
-      processingTimeMs: Date.now() - startTime,
-    };
-  }
-
-  try {
-    const client = getClient();
-
-    // Generate prompt
-    const prompt = generateDiagnosisPrompt({
-      readings: request.readings,
-      faultCodes: request.faultCodes,
-      symptoms: request.symptoms,
-      controllerBrand: request.controllerBrand,
-      generatorBrand: request.generatorBrand,
-      engineBrand: request.engineBrand,
-      engineHours: request.readings.engineHours,
-    });
-
-    // Call Claude API
-    const message = await client.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: MAX_TOKENS,
-      system: DIAGNOSTIC_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
-
-    // Extract response text
-    const textContent = message.content.find(block => block.type === 'text');
-    const responseText = textContent?.type === 'text' ? textContent.text : '';
-
-    // Parse JSON response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('No valid JSON found in AI response');
-    }
-
-    const parsedResult = JSON.parse(jsonMatch[0]) as AIAnalysisResult;
-
-    // Validate response structure
-    if (!validateAIResponse(parsedResult)) {
-      throw new Error('AI response missing required fields');
-    }
-
-    // Add timestamp if missing
-    if (!parsedResult.timestamp) {
-      parsedResult.timestamp = new Date().toISOString();
-    }
-
-    // Calculate counts if missing
-    if (parsedResult.issues) {
-      parsedResult.criticalCount = parsedResult.issues.filter(
-        i => i.status === 'critical' || i.status === 'emergency'
-      ).length;
-      parsedResult.warningCount = parsedResult.issues.filter(
-        i => i.status === 'warning'
-      ).length;
-      parsedResult.normalCount = parsedResult.issues.filter(
-        i => i.status === 'normal'
-      ).length;
-    }
-
-    // Calculate cost
-    const inputCost = (message.usage.input_tokens / 1_000_000) * 3; // Sonnet input
-    const outputCost = (message.usage.output_tokens / 1_000_000) * 15; // Sonnet output
-
-    return {
-      success: true,
-      result: parsedResult,
-      source: 'ai',
-      usage: {
-        inputTokens: message.usage.input_tokens,
-        outputTokens: message.usage.output_tokens,
-        estimatedCostUSD: inputCost + outputCost,
-      },
-      processingTimeMs: Date.now() - startTime,
-    };
-  } catch (error) {
-    console.error('AI diagnosis error, falling back to local:', error);
-
-    // Fallback to local diagnosis
-    const result = performLocalDiagnosis(request.readings);
-    return {
-      success: true,
-      result,
-      source: 'local',
-      error: `AI unavailable: ${error instanceof Error ? error.message : 'Unknown error'}. Using local analysis.`,
-      processingTimeMs: Date.now() - startTime,
-    };
-  }
-}
-
-/**
- * Stream AI diagnosis response for real-time UX
- */
 export async function* streamAIDiagnosis(
-  request: AIDiagnosticRequest
+  request: AIDiagnosticRequest,
 ): AsyncGenerator<StreamingDiagnosticEvent, void, unknown> {
-  const shouldUseAI = request.useAI ?? isAIDiagnosticsEnabled();
-
-  // If AI is disabled, return local result immediately
-  if (!shouldUseAI) {
-    yield { type: 'start' };
-    const result = performLocalDiagnosis(request.readings);
-    yield { type: 'complete', result };
-    return;
-  }
-
-  try {
-    const client = getClient();
-
-    const prompt = generateDiagnosisPrompt({
-      readings: request.readings,
-      faultCodes: request.faultCodes,
-      symptoms: request.symptoms,
-      controllerBrand: request.controllerBrand,
-      generatorBrand: request.generatorBrand,
-      engineBrand: request.engineBrand,
-      engineHours: request.readings.engineHours,
-    });
-
-    yield { type: 'start' };
-
-    const stream = await client.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: MAX_TOKENS,
-      system: DIAGNOSTIC_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
-      stream: true,
-    });
-
-    let fullResponse = '';
-
-    for await (const event of stream) {
-      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        fullResponse += event.delta.text;
-        yield { type: 'delta', content: event.delta.text };
-      }
-    }
-
-    // Parse final result
-    const jsonMatch = fullResponse.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsedResult = JSON.parse(jsonMatch[0]) as AIAnalysisResult;
-      parsedResult.timestamp = parsedResult.timestamp || new Date().toISOString();
-      yield { type: 'complete', result: parsedResult };
-    } else {
-      throw new Error('No valid JSON in stream');
-    }
-  } catch (error) {
-    console.error('Streaming AI diagnosis error:', error);
+  yield { type: 'start' };
+  const resp = await getAIDiagnosis(request);
+  if (resp.success) {
+    yield {
+      type: 'complete',
+      result: resp.result,
+      localAiResult: resp.localAiResult,
+      source: resp.source,
+    };
+  } else {
     yield {
       type: 'error',
-      error: error instanceof Error ? error.message : 'Unknown streaming error',
-    };
-
-    // Fallback
-    const result = performLocalDiagnosis(request.readings);
-    yield { type: 'complete', result };
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SPECIALIZED DIAGNOSTIC FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * Look up a specific fault code
- */
-export async function lookupFaultCode(
-  faultCode: string,
-  controllerBrand?: string
-): Promise<{
-  success: boolean;
-  analysis?: string;
-  error?: string;
-}> {
-  if (!isAIDiagnosticsEnabled()) {
-    return {
-      success: false,
-      error: 'AI diagnostics not enabled. Use local fault code database.',
-    };
-  }
-
-  try {
-    const client = getClient();
-
-    const prompt = generateFaultCodePrompt(faultCode, controllerBrand);
-
-    const message = await client.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 4096,
-      system: FAULT_CODE_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const textContent = message.content.find(block => block.type === 'text');
-    const responseText = textContent?.type === 'text' ? textContent.text : '';
-
-    return {
-      success: true,
-      analysis: responseText,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Fault code lookup failed',
+      error: resp.unavailableReason ?? resp.error ?? 'Diagnosis failed',
+      source: resp.source,
     };
   }
 }
 
-/**
- * Quick symptom-based diagnosis
- */
-export async function diagnoseSymptom(symptom: string): Promise<{
-  success: boolean;
-  analysis?: string;
-  error?: string;
-}> {
-  if (!isAIDiagnosticsEnabled()) {
-    return {
-      success: false,
-      error: 'AI diagnostics not enabled',
-    };
-  }
-
-  try {
-    const client = getClient();
-
-    const prompt = generateSymptomPrompt(symptom);
-
-    const message = await client.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 2048,
-      system: DIAGNOSTIC_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const textContent = message.content.find(block => block.type === 'text');
-    const responseText = textContent?.type === 'text' ? textContent.text : '';
-
-    return {
-      success: true,
-      analysis: responseText,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Symptom diagnosis failed',
-    };
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// UTILITY FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * Get service status and configuration
- */
 export function getServiceStatus(): {
   enabled: boolean;
-  hasApiKey: boolean;
-  model: string;
+  hasLocalAi: boolean;
+  textModel: string;
+  visionModel: string;
 } {
+  const env = getLocalAiEnv();
   return {
-    enabled: USE_AI_DIAGNOSTICS,
-    hasApiKey: !!ANTHROPIC_API_KEY,
-    model: CLAUDE_MODEL,
-  };
-}
-
-/**
- * Estimate cost for a diagnosis request
- */
-export function estimateDiagnosisCost(readings: GeneratorReadings): {
-  estimatedInputTokens: number;
-  estimatedOutputTokens: number;
-  estimatedCostUSD: number;
-} {
-  // Rough estimates based on typical request/response sizes
-  const paramCount = Object.keys(readings).filter(
-    k => readings[k as keyof GeneratorReadings] !== undefined
-  ).length;
-
-  const estimatedInputTokens = 1000 + paramCount * 50;
-  const estimatedOutputTokens = 4000 + paramCount * 200;
-
-  // Sonnet pricing
-  const inputCost = (estimatedInputTokens / 1_000_000) * 3;
-  const outputCost = (estimatedOutputTokens / 1_000_000) * 15;
-
-  return {
-    estimatedInputTokens,
-    estimatedOutputTokens,
-    estimatedCostUSD: inputCost + outputCost,
+    enabled: isAIDiagnosticsEnabled(),
+    hasLocalAi: !!env.baseUrl,
+    textModel: env.textModel,
+    visionModel: env.visionModel,
   };
 }
