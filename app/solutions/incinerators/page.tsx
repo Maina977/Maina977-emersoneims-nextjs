@@ -3,7 +3,20 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+
+// Lazy-loaded technical guide section (rendered below existing content).
+// Code-split to keep the initial Incinerator page bundle small.
+const ConstructionGuide = dynamic(() => import('./ConstructionGuide'), {
+  loading: () => (
+    <div className="mx-auto max-w-7xl px-6 py-20 text-center text-gray-500 text-sm">
+      Loading construction & commissioning guide…
+    </div>
+  ),
+});
 
 const TABS = [
   { id: 'overview', label: 'Overview', color: 'orange' },
@@ -430,6 +443,7 @@ export default function IncineratorsPage() {
 
   return (
     <main className="bg-black min-h-screen">
+      <B2BCommercialBand profile={B2B_PROFILES.incinerators} />
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
         <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
@@ -801,6 +815,12 @@ export default function IncineratorsPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ============================================================
+           NEW TECHNICAL RESOURCE SECTION — appended below existing content.
+           Continuation of the page; preserves all sections above.
+         ============================================================ */}
+      <ConstructionGuide />
 
       {/* CTA Section */}
       <section className="mx-auto max-w-7xl px-6 py-16">
