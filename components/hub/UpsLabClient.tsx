@@ -29,6 +29,9 @@ import { StatusLight, LampBar } from '@/components/hub/cockpit/StatusLight';
 import { DigitalReadout } from '@/components/hub/cockpit/DigitalReadout';
 import { AlarmController, type AlarmSignal } from '@/components/hub/cockpit/AlarmController';
 import { UpsTopologyBoard, type UpsTopologyState } from '@/components/hub/cockpit/UpsTopologyBoard';
+import { SimpleUpsBoard } from '@/components/hub/cockpit/SimpleUpsBoard';
+
+type UpsViewMode = 'simple' | 'engineering';
 
 /* ────────── Catalogue: UPS models ────────── */
 
@@ -220,6 +223,9 @@ function useShimmer() {
 export default function UpsLabClient() {
   const [comp, setComp] = React.useState<Composition>(DEFAULT_COMPOSITION);
   const result = React.useMemo(() => compute(comp), [comp]);
+  /** Same simple/engineering toggle as the solar simulator — both views
+   *  read the same composition state so the picture stays coherent. */
+  const [viewMode, setViewMode] = React.useState<UpsViewMode>('engineering');
   const noise = useShimmer();
   const live = (w: number) => w * (1 + noise);
 
@@ -312,8 +318,38 @@ export default function UpsLabClient() {
 
         {/* Live one-line schematic — dynamic SVG that reflects mains/battery,
             UPS count, capacity, load, and overload state in real time. */}
-        <CockpitPanel eyebrow="System schematic" title="Live one-line diagram" right={<SampleBadge />}>
-          <UpsTopologyBoard state={toUpsTopologyState(comp, result)} />
+        <CockpitPanel
+          eyebrow="System schematic"
+          title="Live one-line diagram"
+          right={
+            <div className="flex items-center gap-2">
+              <UpsViewModeToggle value={viewMode} onChange={setViewMode} />
+              <SampleBadge />
+            </div>
+          }
+        >
+          {viewMode === 'simple' ? (
+            <SimpleUpsBoard
+              state={(() => {
+                const s = toUpsTopologyState(comp, result);
+                return {
+                  mainsPresent: s.mainsPresent,
+                  upsCount: s.upsCount,
+                  upsCapacityKw: s.upsCapacityKw,
+                  loadKw: s.loadKw,
+                  inputKw: s.inputKw,
+                  outputKw: s.outputKw,
+                  batteryKwh: s.batteryKwh,
+                  runtimeMin: s.runtimeMin,
+                  overloaded: s.overloaded,
+                  highLoad: s.highLoad,
+                  topologyLabel: s.topologyLabel,
+                };
+              })()}
+            />
+          ) : (
+            <UpsTopologyBoard state={toUpsTopologyState(comp, result)} />
+          )}
           <p className="mt-2 text-[11px]" style={{ color: 'var(--cockpit-ink-muted)' }}>
             Mains, rectifier, DC bus, battery branch, inverter, static bypass and output bus update as you add UPS units, change loads, or drop the mains.
             Annotations show live kW on the input/output traces and remaining battery runtime when running on battery.
@@ -602,5 +638,35 @@ function GradeChip({ g }: { g: UpsModel['grade'] }) {
       style={{ background: p.bg, color: p.fg, border: `1px solid ${p.border}` }}
       title={`Internal suitability grade ${g}`}
     >{g}</span>
+  );
+}
+
+function UpsViewModeToggle({ value, onChange }: { value: UpsViewMode; onChange: (v: UpsViewMode) => void }) {
+  return (
+    <div
+      role="tablist"
+      aria-label="UPS diagram view mode"
+      className="inline-flex items-center rounded-md border text-[11px] font-semibold"
+      style={{ borderColor: 'var(--color-border-subtle, rgba(140,170,220,0.25))' }}
+    >
+      {(['simple', 'engineering'] as const).map((m) => {
+        const active = value === m;
+        return (
+          <button
+            key={m}
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(m)}
+            className="px-2.5 py-1 uppercase tracking-[0.16em] focus:outline-none"
+            style={{
+              background: active ? 'var(--cockpit-trace-active, #4cd2ee)' : 'transparent',
+              color: active ? '#0b1220' : 'var(--cockpit-ink-muted, #8a9bb8)',
+            }}
+          >
+            {m === 'simple' ? 'Simple' : 'Engineering'}
+          </button>
+        );
+      })}
+    </div>
   );
 }

@@ -17,6 +17,7 @@ import {
   TOPOLOGY_DEFAULTS,
   type TopologyComposition,
 } from '@/components/hub/cockpit/TopologyBoard';
+import { SimpleSolarBoard } from '@/components/hub/cockpit/SimpleSolarBoard';
 
 /**
  * Smart Sizing Simulator — cockpit edition.
@@ -32,6 +33,12 @@ import {
  * the output. SampleBadge is rendered everywhere synthetic estimates are
  * surfaced.
  */
+
+type ViewMode = 'simple' | 'engineering';
+type ControllerKind = 'MPPT' | 'PWM';
+type InverterKind = 'off-grid' | 'hybrid' | 'grid-tied';
+type BatteryChemistry = 'LFP' | 'NMC' | 'AGM' | 'Flooded';
+type PanelArrangement = 'series' | 'parallel' | 'mixed';
 
 interface Inputs {
   baseLoadKw: number;
@@ -51,6 +58,18 @@ interface Inputs {
   nonCriticalLoadKw: number;
   batteryBankKwh: number;
   chargeCRate: number;
+  /* ── new engineering inputs ── */
+  panelWattage: number;
+  panelArrangement: PanelArrangement;
+  controllerKind: ControllerKind;
+  controllerRatingA: number;
+  inverterKind: InverterKind;
+  batteryChemistry: BatteryChemistry;
+  /* protection toggles (true = present) */
+  hasDcBreaker: boolean;
+  hasAcBreaker: boolean;
+  hasIsolator: boolean;
+  hasCombiner: boolean;
 }
 
 const DEFAULTS: Inputs = {
@@ -71,6 +90,16 @@ const DEFAULTS: Inputs = {
   nonCriticalLoadKw: 35,
   batteryBankKwh: 30,
   chargeCRate: 0.2,
+  panelWattage: 550,
+  panelArrangement: 'mixed',
+  controllerKind: 'MPPT',
+  controllerRatingA: 80,
+  inverterKind: 'hybrid',
+  batteryChemistry: 'LFP',
+  hasDcBreaker: true,
+  hasAcBreaker: true,
+  hasIsolator: true,
+  hasCombiner: true,
 };
 
 /* ────────── sizing model (transparent + conservative) ────────── */
@@ -110,14 +139,38 @@ function sizeUps(i: Inputs) {
 
 /* ────────── composition synthesis (panels/batteries → kW/kWh) ────────── */
 
-const KW_PER_PANEL = 0.55;
 const KWH_PER_BATTERY = 5;
+/** Default panel wattage when the user hasn't set one yet (in kW). */
+const DEFAULT_KW_PER_PANEL = 0.55;
 
 function syntheticBankKwh(c: TopologyComposition) {
   return c.batteries * KWH_PER_BATTERY;
 }
-function syntheticSolarKwPeak(c: TopologyComposition) {
-  return c.solarPanels * KW_PER_PANEL;
+function syntheticSolarKwPeak(c: TopologyComposition, panelWattageW = DEFAULT_KW_PER_PANEL * 1000) {
+  return (c.solarPanels * panelWattageW) / 1000;
+}
+
+/* ────────── battery chemistry → usable depth-of-discharge ────────── */
+
+const CHEM_DOD: Record<BatteryChemistry, number> = {
+  LFP:     0.9,
+  NMC:     0.85,
+  AGM:     0.5,
+  Flooded: 0.4,
+};
+
+/* ────────── controller adequacy heuristic ────────── */
+/**
+ * Rough-cut: required charge current ≈ array peak / 48 V system bus.
+ * If user-rated controller (A) < required by > 10 %, we flag undersized.
+ * MPPT can harvest ~25 % more than PWM at the same array, so PWM users
+ * with a high-V array hit the warn threshold sooner.
+ */
+function controllerUndersized(arrayKw: number, ratingA: number, kind: ControllerKind): boolean {
+  if (arrayKw <= 0 || ratingA <= 0) return false;
+  const sysV = 48;
+  const requiredA = (arrayKw * 1000) / sysV / (kind === 'MPPT' ? 1.25 : 1.0);
+  return ratingA < requiredA * 0.9;
 }
 
 /* ────────── component ────────── */
@@ -125,6 +178,13 @@ function syntheticSolarKwPeak(c: TopologyComposition) {
 export default function SimulatorClient() {
   const [inputs, setInputs] = React.useState<Inputs>(DEFAULTS);
   const [comp, setComp] = React.useState<TopologyComposition>(TOPOLOGY_DEFAULTS);
+  /**
+   * View mode: 'simple' = customer-friendly diagram (panels → MPPT →
+   * battery → inverter → load); 'engineering' = full topology cockpit
+   * with multi-source bus + power-quality. Both views read the SAME state
+   * so toggling never produces an inconsistent picture.
+   */
+  const [viewMode, setViewMode] = React.useState<ViewMode>('engineering');
 
   const effectiveInputs: Inputs = React.useMemo(
     () => ({
@@ -143,8 +203,20 @@ export default function SimulatorClient() {
   const ups = sizeUps(effectiveInputs);
 
   /* live operational state — purely indicative */
-  const solarKw = syntheticSolarKwPeak(comp);
+  const solarKw = syntheticSolarKwPeak(comp, inputs.panelWattage);
   const solarCoveragePct = Math.min(100, (solarKw / Math.max(inputs.peakLoadKw, 1)) * 100);
+  /* extra warning flags driven by the new engineering inputs */
+  const ctrlUndersized = controllerUndersized(solarKw, inputs.controllerRatingA, inputs.controllerKind);
+  const invUndersized = comp.inverters > 0 && inputs.peakLoadKw > comp.inverters * 8 * 1.0;
+  const battMismatch = comp.batteries > 0 && (
+    (inputs.batteryChemistry === 'AGM' || inputs.batteryChemistry === 'Flooded') &&
+    inputs.chargeCRate > 0.2
+  );
+  const missingProtections: string[] = [];
+  if (!inputs.hasDcBreaker && (comp.solarPanels > 0 || comp.batteries > 0)) missingProtections.push('DC breaker');
+  if (!inputs.hasAcBreaker && comp.inverters > 0) missingProtections.push('AC breaker');
+  if (!inputs.hasIsolator && (comp.solarPanels > 0 || comp.batteries > 0)) missingProtections.push('isolator');
+  if (!inputs.hasCombiner && comp.solarPanels >= 6) missingProtections.push('combiner');
   const sourceMode: 'grid' | 'generator' | 'battery' = comp.gridConnected
     ? 'grid'
     : comp.generators > 0
@@ -278,20 +350,53 @@ export default function SimulatorClient() {
       <main className="grid gap-6 px-6 py-6 lg:grid-cols-[1.2fr_0.9fr] xl:grid-cols-[1.2fr_0.7fr]">
         {/* Left: Topology + Inputs + Harmonics */}
         <section className="space-y-6">
-          <CockpitPanel eyebrow="System schematic" title="Live one-line diagram" right={<SampleBadge />} className="shadow-md rounded-xl bg-[color:var(--color-surface-base)]/95">
-            <TopologyBoard
-              composition={comp}
-              onChange={setComp}
-              flow={{ sourceMode, overload, lowBattery, solarActive: comp.solarPanels > 0 }}
-              liveAnnotations={{
-                loadKw: liveLoadKw,
-                lineA: lineI,
-                lineV: lineV,
-                socPct: socPct,
-                runtimeMin: runtimeMin,
-                solarKw: solarKw,
-              }}
-            />
+          <CockpitPanel
+            eyebrow="System schematic"
+            title="Live one-line diagram"
+            right={
+              <div className="flex items-center gap-2">
+                <ViewModeToggle value={viewMode} onChange={setViewMode} />
+                <SampleBadge />
+              </div>
+            }
+            className="shadow-md rounded-xl bg-[color:var(--color-surface-base)]/95"
+          >
+            {viewMode === 'simple' ? (
+              <SimpleSolarBoard
+                state={{
+                  panels: comp.solarPanels,
+                  batteries: comp.batteries,
+                  inverters: comp.inverters,
+                  controllerKind: inputs.controllerKind,
+                  inverterKind: inputs.inverterKind,
+                  gridConnected: comp.gridConnected,
+                  solarKwp: solarKw,
+                  bankKwh: syntheticBankKwh(comp),
+                  socPct,
+                  loadKw: liveLoadKw,
+                  runtimeMin,
+                  overload,
+                  inverterUndersized: invUndersized,
+                  controllerUndersized: ctrlUndersized,
+                  batteryMismatch: battMismatch,
+                  missingProtections,
+                }}
+              />
+            ) : (
+              <TopologyBoard
+                composition={comp}
+                onChange={setComp}
+                flow={{ sourceMode, overload, lowBattery, solarActive: comp.solarPanels > 0 }}
+                liveAnnotations={{
+                  loadKw: liveLoadKw,
+                  lineA: lineI,
+                  lineV: lineV,
+                  socPct: socPct,
+                  runtimeMin: runtimeMin,
+                  solarKw: solarKw,
+                }}
+              />
+            )}
           </CockpitPanel>
 
           <CockpitPanel variant="raised" eyebrow="Configuration" title="Site, loads, system, redundancy" right={<SampleBadge />} className="shadow rounded-xl bg-[color:var(--color-surface-base)]/95">
@@ -315,12 +420,68 @@ export default function SimulatorClient() {
                 <NumberField label="Support margin" value={inputs.supportMarginPct} unit="%" step={1} min={0} max={50} onChange={set('supportMarginPct')} />
                 <NumberField label="Fuel tank" value={inputs.fuelTankL} unit="L" step={50} onChange={set('fuelTankL')} />
                 <ReadOnlyField label="Battery bank (composed)" value={syntheticBankKwh(comp)} unit="kWh" />
-                <ReadOnlyField label="Solar peak (composed)" value={syntheticSolarKwPeak(comp)} unit="kW" />
+                <ReadOnlyField label="Solar peak (composed)" value={syntheticSolarKwPeak(comp, inputs.panelWattage)} unit="kW" />
               </FieldGroup>
               <FieldGroup title="UPS / Backup / Redundancy">
                 <NumberField label="UPS autonomy" value={inputs.upsAutonomyMin} unit="min" step={5} onChange={set('upsAutonomyMin')} />
                 <NumberField label="Charge C-rate" value={inputs.chargeCRate} unit="C" step={0.05} min={0} max={0.5} onChange={set('chargeCRate')} />
                 <ReadOnlyField label="Redundancy (composed)" value={effectiveInputs.redundancy} unit="" />
+              </FieldGroup>
+              <FieldGroup title="PV array">
+                <NumberField label="Panel wattage" value={inputs.panelWattage} unit="W" step={5} min={50} max={1000} onChange={set('panelWattage')} />
+                <SelectField
+                  label="Arrangement"
+                  value={inputs.panelArrangement}
+                  options={[
+                    { value: 'series', label: 'Series' },
+                    { value: 'parallel', label: 'Parallel' },
+                    { value: 'mixed', label: 'Mixed' },
+                  ]}
+                  onChange={set('panelArrangement')}
+                />
+                <ReadOnlyField label="Array peak (live)" value={solarKw} unit="kW" />
+              </FieldGroup>
+              <FieldGroup title="Charge controller">
+                <SelectField
+                  label="Type"
+                  value={inputs.controllerKind}
+                  options={[
+                    { value: 'MPPT', label: 'MPPT' },
+                    { value: 'PWM', label: 'PWM' },
+                  ]}
+                  onChange={set('controllerKind')}
+                />
+                <NumberField label="Controller rating" value={inputs.controllerRatingA} unit="A" step={5} min={5} max={400} onChange={set('controllerRatingA')} />
+              </FieldGroup>
+              <FieldGroup title="Inverter & battery">
+                <SelectField
+                  label="Inverter type"
+                  value={inputs.inverterKind}
+                  options={[
+                    { value: 'off-grid', label: 'Off-grid' },
+                    { value: 'hybrid', label: 'Hybrid' },
+                    { value: 'grid-tied', label: 'Grid-tied' },
+                  ]}
+                  onChange={set('inverterKind')}
+                />
+                <SelectField
+                  label="Battery chemistry"
+                  value={inputs.batteryChemistry}
+                  options={[
+                    { value: 'LFP', label: 'LFP (LiFePO₄)' },
+                    { value: 'NMC', label: 'NMC' },
+                    { value: 'AGM', label: 'AGM' },
+                    { value: 'Flooded', label: 'Flooded' },
+                  ]}
+                  onChange={set('batteryChemistry')}
+                />
+                <ReadOnlyField label="Usable DoD" value={Math.round(CHEM_DOD[inputs.batteryChemistry] * 100)} unit="%" />
+              </FieldGroup>
+              <FieldGroup title="Protections (present)">
+                <CheckboxField label="DC breaker" checked={inputs.hasDcBreaker} onChange={set('hasDcBreaker')} />
+                <CheckboxField label="AC breaker" checked={inputs.hasAcBreaker} onChange={set('hasAcBreaker')} />
+                <CheckboxField label="Isolator"   checked={inputs.hasIsolator}  onChange={set('hasIsolator')} />
+                <CheckboxField label="Combiner box" checked={inputs.hasCombiner} onChange={set('hasCombiner')} />
               </FieldGroup>
             </div>
           </CockpitPanel>
@@ -484,6 +645,99 @@ function ReadOnlyField({
           ? value.toLocaleString('en-US', { maximumFractionDigits: 1 })
           : value}
       </div>
+    </div>
+  );
+}
+
+function SelectField<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <label className="block">
+      <span
+        className="mb-1 flex items-baseline justify-between text-[11px] font-medium"
+        style={{ color: 'var(--cockpit-ink-muted)' }}
+      >
+        <span>{label}</span>
+      </span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        className="w-full rounded-md border px-2.5 py-1.5 text-sm tabular-nums focus:outline-none focus:ring-2"
+        style={{
+          borderColor: 'var(--cockpit-rail)',
+          background: 'var(--cockpit-field-bg)',
+          color: 'var(--cockpit-ink)',
+          fontFamily: 'ui-monospace, monospace',
+          // @ts-expect-error custom prop fallback
+          '--tw-ring-color': 'var(--cockpit-trace-active)',
+        }}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function CheckboxField({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center gap-2 text-[12px] font-medium" style={{ color: 'var(--cockpit-ink)' }}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 rounded border"
+        style={{ borderColor: 'var(--cockpit-rail)', accentColor: 'var(--cockpit-trace-active, #4cd2ee)' }}
+      />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function ViewModeToggle({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Diagram view mode"
+      className="inline-flex items-center rounded-md border text-[11px] font-semibold"
+      style={{ borderColor: 'var(--color-border-subtle, rgba(140,170,220,0.25))' }}
+    >
+      {(['simple', 'engineering'] as const).map((m) => {
+        const active = value === m;
+        return (
+          <button
+            key={m}
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(m)}
+            className="px-2.5 py-1 uppercase tracking-[0.16em] focus:outline-none"
+            style={{
+              background: active ? 'var(--cockpit-trace-active, #4cd2ee)' : 'transparent',
+              color: active ? '#0b1220' : 'var(--cockpit-ink-muted, #8a9bb8)',
+            }}
+          >
+            {m === 'simple' ? 'Simple' : 'Engineering'}
+          </button>
+        );
+      })}
     </div>
   );
 }
