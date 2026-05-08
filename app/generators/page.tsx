@@ -113,7 +113,7 @@ const GENERATOR_HUB_SECTIONS = [
     icon: '🤖',
     href: '#ai-diagnostic',
     color: 'pink',
-    description: '99.9% accuracy visual analysis',
+    description: 'AI-assisted visual triage — verification required',
     badge: 'AI'
   },
   {
@@ -469,14 +469,15 @@ const AIVisualDiagnosticSection = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
             </span>
-            AI-Powered • 99.9% Accuracy
+            AI-assisted • verification required
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
             AI Visual Diagnostic
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Upload a photo of any generator component. Our AI identifies parts,
-            predicts failures, estimates lifespan, and provides OEM part numbers.
+            Upload a photo of a generator component. The AI returns ranked
+            candidate parts and likely faults to accelerate triage. Always
+            verify against the equipment and the OEM manual before action.
           </p>
         </motion.div>
 
@@ -2852,7 +2853,7 @@ export default function GeneratorPage() {
       <GeneratorLeasingSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
-          AI VISUAL DIAGNOSTIC - 99.9% Accuracy Analysis
+          AI VISUAL DIAGNOSTIC — AI-assisted triage (verification required)
       ════════════════════════════════════════════════════════════════ */}
       <AIVisualDiagnosticSection />
 

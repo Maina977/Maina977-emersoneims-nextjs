@@ -1762,6 +1762,16 @@ export interface HybridDiagnosisOptions {
   generatorBrand?: string;
   engineBrand?: string;
   useAI?: boolean;
+  /** Asset card (make/model/controller/serial/firmware). Required by the
+   *  local-AI backend whenever useAI is true; without it the server returns
+   *  source: 'unavailable' and we fall through to the local rule engine. */
+  assetCard?: {
+    make: string;
+    model: string;
+    controller: string;
+    serial: string;
+    firmware: string;
+  };
 }
 
 export interface HybridDiagnosisResult {
@@ -1806,6 +1816,7 @@ export async function performHybridDiagnosis(
         readings: options.readings,
         faultCodes: options.faultCodes,
         symptoms: options.symptoms,
+        assetCard: options.assetCard,
         controllerBrand: options.controllerBrand,
         generatorBrand: options.generatorBrand,
         engineBrand: options.engineBrand,

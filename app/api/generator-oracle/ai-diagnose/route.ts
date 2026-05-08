@@ -130,11 +130,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build request
+    // Build request — assetCard is forwarded so the local-AI service can
+    // enforce its mandatory pre-use form. Without this the AI branch always
+    // returned source: 'unavailable' regardless of whether the caller had
+    // collected the card client-side.
     const diagnosticRequest: AIDiagnosticRequest = {
       readings: body.readings,
       faultCodes: Array.isArray(body.faultCodes) ? body.faultCodes : undefined,
       symptoms: typeof body.symptoms === 'string' ? body.symptoms : undefined,
+      assetCard: body.assetCard,
       controllerBrand: typeof body.controllerBrand === 'string' ? body.controllerBrand : undefined,
       generatorBrand: typeof body.generatorBrand === 'string' ? body.generatorBrand : undefined,
       engineBrand: typeof body.engineBrand === 'string' ? body.engineBrand : undefined,

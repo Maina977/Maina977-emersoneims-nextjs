@@ -6,7 +6,11 @@
  * ╚═══════════════════════════════════════════════════════════════════════════════╝
  *
  * CAPABILITIES (real, no marketing inflation):
- * - Vision-language analysis of uploaded photos via Claude Vision (server)
+ * - Vision-language analysis of uploaded photos via the Generator Oracle
+ *   AI provider stack: self-hosted Ollama (Qwen2.5-VL) when LOCAL_AI_BASE_URL
+ *   is configured, with Google Gemini (gemini-2.0-flash, multimodal) as a
+ *   hosted fallback when only GEMINI_API_KEY is set. NO Anthropic / Claude
+ *   is used in the diagnostic path.
  * - Component / fault-code / nameplate / damage / wiring analysis modes
  * - Bounding-box overlay rendered from the model's own returned regions
  * - Confidence values are reported AS-RETURNED by the model; we never
@@ -27,6 +31,9 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
 import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
+import AssetCardGate, {
+  type AssetCardValue,
+} from '@/components/generator-oracle/AssetCardGate';
 import {
   Camera,
   X,
@@ -377,6 +384,12 @@ interface AnalysisMode {
 interface AIVisualDiagnosticProps {
   onAnalysisComplete?: (result: VisualAnalysisResult) => void;
   onClose?: () => void;
+  /**
+   * Asset card injected by the surrounding AssetCardGate. The local-AI
+   * vision route refuses to run without make/model/controller/serial/
+   * firmware so a request without it would always 400.
+   */
+  card?: AssetCardValue;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -400,7 +413,15 @@ const ANALYSIS_MODES: AnalysisMode[] = [
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVisualDiagnosticProps) {
+export default function AIVisualDiagnostic(props: AIVisualDiagnosticProps) {
+  return (
+    <AssetCardGate feature="AI Visual Diagnostic">
+      {(card) => <AIVisualDiagnosticImpl {...props} card={card} />}
+    </AssetCardGate>
+  );
+}
+
+function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualDiagnosticProps) {
   const aiAvailability = useAIAvailable();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -436,7 +457,15 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
   // never silently presents fabricated data as a real AI analysis.
   const [resultSource, setResultSource] = useState<'ai' | 'demo' | null>(null);
   const [analysisError, setAnalysisError] = useState<{
-    code: 'AI_NOT_CONFIGURED' | 'AI_UPSTREAM_ERROR' | 'NETWORK_ERROR' | 'INVALID_REQUEST' | 'UNKNOWN';
+    code:
+      | 'AI_NOT_CONFIGURED'
+      | 'AI_UPSTREAM_ERROR'
+      | 'NETWORK_ERROR'
+      | 'INVALID_REQUEST'
+      | 'ASSET_CARD_REQUIRED'
+      | 'RULE_BLOCK'
+      | 'OUTPUT_INVALID'
+      | 'UNKNOWN';
     message: string;
     detail?: string;
   } | null>(null);
@@ -616,47 +645,156 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          // The current local-AI route reads a single `image` (the others are
+          // ignored server-side); we still pass `images` so a future batch
+          // route stays compatible without another client change.
+          image: capturedImages[0],
           images: capturedImages,
           mode: analysisMode,
-          generatorMake: generatorInfo.make,
-          generatorModel: generatorInfo.model,
-          enhancedAnalysis: true,
-          context: analysisMode === 'part_id' ? 'Identify all visible parts with OEM part numbers' :
-                   analysisMode === 'predictive' ? 'Analyze component condition and predict remaining lifespan' :
-                   analysisMode === 'component' ? 'Identify all visible components' : '',
+          // assetCard is mandatory server-side. Falling back to the loose
+          // generatorMake/generatorModel pair would let the route 400 with
+          // ASSET_CARD_REQUIRED, so we forward the gated card directly.
+          assetCard: card
+            ? {
+                make: card.make,
+                model: card.model,
+                controller: card.controller,
+                serial: card.serial,
+                firmware: card.firmware,
+              }
+            : undefined,
+          generatorMake: card?.make ?? generatorInfo.make,
+          generatorModel: card?.model ?? generatorInfo.model,
+          symptom:
+            analysisMode === 'part_id'
+              ? 'Identify all visible parts with OEM part numbers'
+              : analysisMode === 'predictive'
+                ? 'Analyze component condition and predict remaining lifespan'
+                : analysisMode === 'component'
+                  ? 'Identify all visible components'
+                  : undefined,
         }),
       });
 
       const data = await response.json().catch(() => null);
 
-      // Real AI success path — server confirms it ran the model.
-      if (response.ok && data?.success && data?.aiAnalysis && data?.result) {
+      // Real AI success path. The local-AI envelope is { ok: true, source:
+      // 'local-ai', result: DiagnosisOutput }. We accept either that shape or
+      // the legacy { success, aiAnalysis, result } shape so older deployments
+      // do not regress.
+      const isLocalAiOk = response.ok && data?.ok === true && data?.result;
+      const isLegacyAiOk =
+        response.ok && data?.success === true && data?.aiAnalysis && data?.result;
+
+      if (isLocalAiOk || isLegacyAiOk) {
         setAnalysisProgress(100);
         setAnalysisStage('Analysis complete');
 
-        // Use the model's OWN confidence values. We never substitute the
-        // previous hardcoded 99.x "accuracy" numbers — those are marketing
-        // claims, not measurements, and overwriting the real values misled
-        // technicians about the quality of the live analysis.
-        const r = data.result as Partial<VisualAnalysisResult>;
-        const overall =
+        const r = data.result as Partial<VisualAnalysisResult> & {
+          verdict?: string;
+          confidence?: unknown;
+          userSafeChecks?: string[];
+          technicianOnlyActions?: string[];
+          nextChecks?: string[];
+          safetyNotes?: string[];
+          evidenceUsed?: Array<{ source: string; snippet: string }>;
+        };
+
+        // The local-AI DiagnosisOutput is intentionally narrower than the
+        // legacy VisualAnalysisResult shape. Map only the fields we can
+        // honestly fill from the model — never fabricate the missing ones.
+        const confidenceLabel = typeof r.confidence === 'string' ? r.confidence : '';
+        const numericConfidence =
           typeof r.overallConfidence === 'number'
             ? r.overallConfidence
-            : typeof (r as any)?.confidence === 'number'
-              ? (r as any).confidence
-              : 0;
+            : confidenceLabel === 'verified'
+              ? 85
+              : confidenceLabel === 'probable'
+                ? 60
+                : confidenceLabel === 'generic'
+                  ? 40
+                  : confidenceLabel === 'verification_required'
+                    ? 25
+                    : 0;
+
         const enhancedResult: VisualAnalysisResult = {
           ...(r as VisualAnalysisResult),
+          success: true,
           analysisId: `VDA-${Date.now()}`,
           timestamp: new Date().toISOString(),
           processingTime: r.processingTime ?? 0,
-          overallConfidence: overall,
+          overallConfidence: numericConfidence,
+          overallSeverity: r.overallSeverity ?? 'info',
+          quickSummary: r.quickSummary ?? r.verdict ?? 'Diagnosis returned by local AI.',
+          detectedObjects: r.detectedObjects ?? [],
+          ocrResults:
+            r.ocrResults ??
+            (r.evidenceUsed ?? []).slice(0, 6).map((e, i) => ({
+              text: `${e.source}: ${e.snippet.slice(0, 120)}`,
+              confidence: numericConfidence,
+              type: 'general' as const,
+              boundingBox: { x: 0, y: 0, width: 0, height: 0 },
+              // synthetic id avoids React key collisions
+              ...({ _key: `ev-${i}` } as Record<string, unknown>),
+            })),
+          faultCodes: r.faultCodes ?? [],
+          identifiedComponents: r.identifiedComponents ?? [],
+          partIdentifications: r.partIdentifications ?? [],
+          predictiveFailures: r.predictiveFailures ?? [],
+          shelfLifeAnalysis: r.shelfLifeAnalysis ?? [],
+          similarIssues: r.similarIssues ?? [],
+          partsNeeded: r.partsNeeded ?? [],
+          safetyWarnings:
+            r.safetyWarnings ??
+            (r.safetyNotes ?? []).map((m) => ({
+              level: 'warning' as const,
+              message: m,
+              icon: '⚠️',
+            })),
+          diagnosis:
+            r.diagnosis ?? {
+              primaryIssue: r.verdict ?? 'See verdict',
+              secondaryIssues: [],
+              rootCauseAnalysis: r.verdict ?? '',
+              affectedSystems: [],
+              riskAssessment: {
+                operationalRisk: 'low',
+                safetyRisk: 'low',
+                environmentalRisk: 'low',
+              },
+              urgency: 'monitor',
+            },
+          solutions:
+            r.solutions ?? {
+              immediate: (r.userSafeChecks ?? []).map((s) => ({
+                title: 'User-safe check',
+                steps: [s],
+                priority: 'medium' as const,
+                estimatedTime: '—',
+                safetyNotes: r.safetyNotes ?? [],
+              })),
+              repair: (r.technicianOnlyActions ?? []).map((s) => ({
+                title: 'Technician-only action',
+                steps: [s],
+                tools: [],
+                parts: [],
+                estimatedTime: '—',
+                estimatedCost: { min: 0, max: 0, currency: 'KES' },
+                skillLevel: 'specialist' as const,
+                videoGuideAvailable: false,
+              })),
+              preventive: (r.nextChecks ?? []).map((s) => ({
+                action: s,
+                frequency: 'as required',
+                importance: 'recommended' as const,
+              })),
+            },
           confidenceBreakdown: r.confidenceBreakdown ?? {
-            imageQuality: overall,
-            componentRecognition: overall,
-            faultDetection: overall,
-            textRecognition: overall,
-            overallAccuracy: overall,
+            imageQuality: numericConfidence,
+            componentRecognition: numericConfidence,
+            faultDetection: numericConfidence,
+            textRecognition: numericConfidence,
+            overallAccuracy: numericConfidence,
           },
         };
 
@@ -673,23 +811,45 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
         }
       } else {
         // Backend refused or errored — surface the structured code rather
-        // than silently substituting a fake "successful" result.
-        const KNOWN_CODES = ['AI_NOT_CONFIGURED', 'AI_UPSTREAM_ERROR', 'INVALID_REQUEST'] as const;
+        // than silently substituting a fake "successful" result. Recognises
+        // both the new local-AI codes and the legacy ones.
+        const KNOWN_CODES = [
+          'AI_NOT_CONFIGURED',
+          'AI_UPSTREAM_ERROR',
+          'INVALID_REQUEST',
+          'ASSET_CARD_REQUIRED',
+          'RULE_BLOCK',
+          'OUTPUT_INVALID',
+        ] as const;
         type ApiErrorCode = (typeof KNOWN_CODES)[number];
-        const apiCode: ApiErrorCode | null =
-          typeof data?.code === 'string' && (KNOWN_CODES as readonly string[]).includes(data.code)
-            ? (data.code as ApiErrorCode)
-            : null;
+        // The local-AI envelope uses `AI_UNAVAILABLE`; map it to the existing
+        // `AI_NOT_CONFIGURED` UI branch so the amber "configure your stack"
+        // message renders instead of the generic red error.
+        const rawCode = typeof data?.code === 'string' ? data.code : '';
+        const normalisedCode =
+          rawCode === 'AI_UNAVAILABLE' ? 'AI_NOT_CONFIGURED' : rawCode;
+        const apiCode: ApiErrorCode | null = (KNOWN_CODES as readonly string[]).includes(
+          normalisedCode,
+        )
+          ? (normalisedCode as ApiErrorCode)
+          : null;
         const code: NonNullable<typeof analysisError>['code'] =
           apiCode ?? (response.status === 503 ? 'AI_NOT_CONFIGURED' : 'AI_UPSTREAM_ERROR');
+        const fallbackMessages: Record<string, string> = {
+          AI_NOT_CONFIGURED:
+            'AI Visual Diagnostic is not configured on the server. Set LOCAL_AI_BASE_URL to a healthy Ollama with Qwen2.5-VL.',
+          AI_UPSTREAM_ERROR: 'AI vision service is unavailable. Please retry in a moment.',
+          INVALID_REQUEST: 'Request was rejected as invalid by the server.',
+          ASSET_CARD_REQUIRED:
+            'Asset card is required (make, model, controller, serial, firmware). Use the Edit button above to provide it.',
+          RULE_BLOCK:
+            'Refused by deterministic rule engine. The detail field below shows the failing rule.',
+          OUTPUT_INVALID: 'Local model returned output that did not match the diagnosis schema.',
+        };
         setAnalysisError({
           code,
-          message:
-            data?.message ||
-            (code === 'AI_NOT_CONFIGURED'
-              ? 'AI Visual Diagnostic is not configured on the server.'
-              : 'AI vision service is unavailable. Please retry in a moment.'),
-          detail: data?.error || `HTTP ${response.status}`,
+          message: data?.message || fallbackMessages[code] || 'Analysis failed.',
+          detail: data?.detail || data?.error || `HTTP ${response.status}`,
         });
         setAnalysisProgress(0);
         setAnalysisStage('');
@@ -806,35 +966,36 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
     ],
 
     equipment: {
-      brand: 'Deep Sea Electronics',
-      model: 'DSE 7320 MKII',
-      serial: 'DSE-2024-78432',
-      yearOfManufacture: '2024',
+      brand: '[DEMO] Deep Sea Electronics',
+      model: '[DEMO] DSE 7320 MKII',
+      serial: '[DEMO] DSE-2024-78432 — illustrative only',
+      yearOfManufacture: '[DEMO]',
       specs: {
+        'Note': 'DEMO ONLY — example specs, not from your photo',
         'Display': '4.3" Color LCD',
         'Voltage': '8-35V DC',
         'Protocol': 'J1939/CANbus',
         'Protection': 'IP65 Front Panel',
       },
-      matchConfidence: 99.8,
+      matchConfidence: 0,
     },
 
     identifiedComponents: [
       {
-        name: 'Coolant Temperature Sensor',
-        partNumber: 'DSE-TEMP-110',
-        manufacturer: 'Deep Sea Electronics',
-        matchConfidence: 98.5,
+        name: '[DEMO] Coolant Temperature Sensor',
+        partNumber: '[DEMO] DSE-TEMP-110',
+        manufacturer: '[DEMO] Deep Sea Electronics',
+        matchConfidence: 0,
         alternatePartNumbers: ['CUMMINS-3408345', 'CAT-2274255'],
         estimatedPrice: { min: 2500, max: 4500, currency: 'KES' },
         availability: 'in_stock',
         internalLink: '/spare-parts/sensors/temperature',
       },
       {
-        name: 'Engine Thermostat',
-        partNumber: 'TH-180-71C',
-        manufacturer: 'Gates',
-        matchConfidence: 95.2,
+        name: '[DEMO] Engine Thermostat',
+        partNumber: '[DEMO] TH-180-71C',
+        manufacturer: '[DEMO] Gates',
+        matchConfidence: 0,
         alternatePartNumbers: ['CUMMINS-3076489', 'STANT-45879'],
         estimatedPrice: { min: 3500, max: 6000, currency: 'KES' },
         availability: 'in_stock',
@@ -2142,7 +2303,7 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
                 <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl flex items-center gap-3" role="status">
                   <Brain className="w-5 h-5 text-purple-400 flex-shrink-0" />
                   <p className="text-purple-200 text-xs">
-                    <span className="font-bold">Live AI analysis</span> — generated by Claude Vision against your captured image{capturedImages.length > 1 ? 's' : ''}.
+                    <span className="font-bold">Live AI analysis</span> — generated by the Generator Oracle vision provider (self-hosted Ollama Qwen2.5-VL or Gemini multimodal fallback) against your captured image{capturedImages.length > 1 ? 's' : ''}. Verify findings against the equipment before acting.
                   </p>
                 </div>
               )}
@@ -3131,8 +3292,11 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
         <div className="flex items-center justify-between text-xs text-slate-500">
           <span>Generator Oracle — AI Visual Diagnostic (Beta)</span>
           <span className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${aiAvailability === 'available' ? 'bg-green-500' : aiAvailability === 'unavailable' ? 'bg-red-500' : 'bg-amber-500 animate-pulse'}`} />
-            {aiAvailability === 'available' ? 'Vision model online' : aiAvailability === 'unavailable' ? 'Vision model not configured' : 'Checking vision model…'}
+            {/* The 'unavailable' branch is unreachable here because the
+                top-level guard already returned <AIUnavailableNotice />.
+                Only 'loading' and 'available' can reach this footer. */}
+            <span className={`w-2 h-2 rounded-full ${aiAvailability === 'available' ? 'bg-green-500' : 'bg-amber-500 animate-pulse'}`} />
+            {aiAvailability === 'available' ? 'Vision model online' : 'Checking vision model…'}
           </span>
         </div>
       </div>

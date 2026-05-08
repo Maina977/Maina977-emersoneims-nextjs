@@ -14,6 +14,14 @@
  */
 
 import { getLocalAiEnv } from './env';
+import {
+  geminiChat,
+  geminiVision,
+  geminiPing,
+  isGeminiConfigured,
+  GeminiUnavailableError,
+  GeminiResponseError,
+} from './geminiClient';
 
 export interface OllamaChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -75,6 +83,35 @@ export async function ollamaChat(opts: {
   timeoutMs?: number;
 }): Promise<OllamaGenerateResult> {
   const env = getLocalAiEnv();
+
+  // Provider routing: if no local Ollama is configured but a Gemini key is
+  // present, transparently use Gemini. Routes and the diagnostic service
+  // continue to call this function — the abstraction lets them stay
+  // backend-agnostic. Errors are remapped onto the existing typed error
+  // classes so the route's `instanceof OllamaUnavailableError` checks still
+  // trigger the same `AI_UNAVAILABLE` envelope.
+  if (!env.baseUrl && isGeminiConfigured()) {
+    try {
+      const r = await geminiChat(opts);
+      return {
+        text: r.text,
+        model: r.model,
+        totalDurationMs: r.totalDurationMs,
+        promptEvalCount: r.promptTokens,
+        evalCount: r.outputTokens,
+        done: true,
+      };
+    } catch (err) {
+      if (err instanceof GeminiUnavailableError) {
+        throw new OllamaUnavailableError(err.message, err);
+      }
+      if (err instanceof GeminiResponseError) {
+        throw new OllamaResponseError(err.message, err.status);
+      }
+      throw err;
+    }
+  }
+
   if (!env.baseUrl) {
     throw new OllamaUnavailableError('LOCAL_AI_BASE_URL is not configured');
   }
@@ -140,6 +177,31 @@ export async function ollamaVision(opts: {
   timeoutMs?: number;
 }): Promise<OllamaGenerateResult> {
   const env = getLocalAiEnv();
+
+  // Same provider routing as ollamaChat — Gemini's multimodal model
+  // handles vision requests with the exact same call surface.
+  if (!env.baseUrl && isGeminiConfigured()) {
+    try {
+      const r = await geminiVision(opts);
+      return {
+        text: r.text,
+        model: r.model,
+        totalDurationMs: r.totalDurationMs,
+        promptEvalCount: r.promptTokens,
+        evalCount: r.outputTokens,
+        done: true,
+      };
+    } catch (err) {
+      if (err instanceof GeminiUnavailableError) {
+        throw new OllamaUnavailableError(err.message, err);
+      }
+      if (err instanceof GeminiResponseError) {
+        throw new OllamaResponseError(err.message, err.status);
+      }
+      throw err;
+    }
+  }
+
   return ollamaChat({
     model: opts.model ?? env.visionModel,
     messages: [
@@ -164,6 +226,17 @@ export async function ollamaPing(timeoutMs = 4000): Promise<{
 }> {
   const env = getLocalAiEnv();
   if (!env.baseUrl) {
+    // No Ollama configured — report Gemini as the active backend if its
+    // key is set. The shape stays compatible with the health check.
+    if (isGeminiConfigured()) {
+      const g = await geminiPing(timeoutMs);
+      return {
+        ok: g.ok,
+        baseUrl: 'gemini://generativelanguage.googleapis.com',
+        reason: g.reason,
+        modelsAvailable: g.modelsAvailable,
+      };
+    }
     return { ok: false, baseUrl: null, reason: 'LOCAL_AI_BASE_URL unset' };
   }
   const controller = new AbortController();

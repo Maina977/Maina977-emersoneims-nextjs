@@ -28,6 +28,9 @@ import {
 } from '@/lib/generator-oracle/integratedDiagnosticService';
 import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
 import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
+import AssetCardGate, {
+  type AssetCardValue,
+} from '@/components/generator-oracle/AssetCardGate';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -35,6 +38,12 @@ import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNoti
 
 interface AIAnalysisPanelProps {
   className?: string;
+  /**
+   * Asset card injected by the surrounding AssetCardGate. Required so the
+   * server-side local-AI route can validate the controller/firmware and
+   * refuse to substitute generic DSE 7320 context for a different unit.
+   */
+  card?: AssetCardValue;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -452,7 +461,7 @@ function IssueCard({
 // MAIN AI ANALYSIS PANEL
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps) {
+function AIAnalysisPanelImpl({ className = '', card }: AIAnalysisPanelProps) {
   const aiAvailability = useAIAvailable();
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
@@ -485,10 +494,17 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
 
     try {
       if (useAI) {
-        // Use hybrid diagnosis (API call to AI with fallback)
+        // Use hybrid diagnosis (API call to AI with fallback). The asset
+        // card is forwarded so the local-AI route can refuse the request
+        // honestly when controller-specific context is missing rather than
+        // silently substituting generic DSE 7320 wiring.
         const response = await performHybridDiagnosis({
           readings,
           useAI: true,
+          assetCard: card,
+          controllerBrand: card?.controller,
+          generatorBrand: card?.make,
+          engineBrand: card?.make,
         });
 
         setAnalysisResult(response.result);
@@ -654,7 +670,9 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
             <div>
               <h4 className="text-white font-semibold">Analysis Mode</h4>
               <p className="text-slate-400 text-sm">
-                {useAI ? 'Claude AI - Advanced reasoning with real-time insights' : 'Local Engine - Fast rule-based analysis'}
+                {useAI
+                  ? 'Generator Oracle AI — local Ollama (Qwen2.5) or Gemini fallback when configured'
+                  : 'Rule-based engine — deterministic threshold analysis'}
               </p>
             </div>
           </div>
@@ -692,12 +710,12 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 />
-                <span>{useAI ? 'AI Analyzing...' : 'Analyzing...'}</span>
+                <span>{useAI ? 'AI analysing…' : 'Analysing…'}</span>
               </>
             ) : (
               <>
                 <span className="text-xl">{useAI ? '🧠' : '⚙️'}</span>
-                <span>{useAI ? 'PERFORM AI ANALYSIS' : 'PERFORM LOCAL ANALYSIS'}</span>
+                <span>{useAI ? 'RUN AI ANALYSIS' : 'RUN RULE-BASED ANALYSIS'}</span>
               </>
             )}
           </motion.button>
@@ -727,7 +745,7 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
                     ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
                     : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
                 }`}>
-                  {analysisSource === 'ai' ? '🤖 AI Analysis' : '⚙️ Local Analysis'}
+                  {analysisSource === 'ai' ? '🤖 AI (provider-backed)' : '⚙️ Rule-based engine'}
                 </span>
                 {analysisError && (
                   <span className="px-3 py-1 rounded-full text-xs bg-amber-500/20 text-amber-400 border border-amber-500/50">
@@ -929,5 +947,20 @@ export default function AIAnalysisPanel({ className = '' }: AIAnalysisPanelProps
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/**
+ * Public export — wraps AIAnalysisPanel in `AssetCardGate` so the
+ * mandatory pre-use form (make, model, controller, serial, firmware) is
+ * captured before any AI call. Without the asset card the local-AI
+ * backend would refuse the request and the UI would silently fall back to
+ * the deterministic local engine, misrepresenting the source of advice.
+ */
+export default function AIAnalysisPanel(props: AIAnalysisPanelProps) {
+  return (
+    <AssetCardGate feature="AI Parameter Analysis">
+      {(card) => <AIAnalysisPanelImpl {...props} card={card} />}
+    </AssetCardGate>
   );
 }

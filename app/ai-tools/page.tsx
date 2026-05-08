@@ -143,7 +143,7 @@ export default function AIToolsPage() {
       ],
       stats: [
         { label: 'Fault Codes', value: '400K+' },
-        { label: 'Accuracy', value: '99.9%' },
+        { label: 'Controllers', value: '15+' },
         { label: 'Brands', value: '50+' },
       ],
       icon: <Zap className="w-8 h-8 text-white" />,
