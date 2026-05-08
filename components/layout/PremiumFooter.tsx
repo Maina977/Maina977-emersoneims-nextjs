@@ -18,27 +18,85 @@ const SOCIAL_LINKS = [
 const FOOTER_LINKS = {
   company: [
     { label: 'About Us', href: '/about-us' },
-    { label: 'Services', href: '/services' },
+    { label: 'All Services', href: '/services' },
     { label: 'Book a Service', href: '/booking' },
     { label: 'Project Gallery', href: '/gallery' },
+    { label: 'Case Studies', href: '/case-studies' },
+    { label: 'Industries Served', href: '/industries' },
     { label: 'Careers', href: '/careers' },
     { label: 'Contact Us', href: '/contact' },
   ],
-  solutions: [
-    { label: 'Generators', href: '/generators' },
-    { label: 'Solar Energy', href: '/solar' },
-    { label: 'Diagnostic Suite', href: '/diagnostics' },
-    { label: 'Troubleshooting', href: '/troubleshooting' },
+  // Comprehensive B2B service inventory — every entry is a working route.
+  // Sourced from lib/services/allServices.ts (canonical /services/<slug>) plus
+  // /solutions/<slug> deep-dive pages. Keep groups <= 8 entries for scannability.
+  servicesPower: [
+    { label: 'Cummins Generators (3-yr warranty)', href: '/services/cummins-generators' },
+    { label: 'Generator Repairs & Maintenance', href: '/services/generator-repairs' },
+    { label: 'ATS / Changeovers', href: '/services/ats-changeover' },
+    { label: 'Generator Sales', href: '/generators' },
+    { label: 'Generator Rental', href: '/generators/rental' },
+    { label: 'Generator Installation', href: '/generators/installation' },
+    { label: 'Generator Spare Parts', href: '/generators/spare-parts' },
+    { label: 'Power Interruption Solutions', href: '/solutions/power-interruptions' },
+  ],
+  servicesRenewable: [
+    { label: 'Solar Energy Solutions', href: '/services/solar-energy' },
+    { label: 'Commercial / Industrial Solar', href: '/solutions/solar' },
+    { label: 'Solar System Sizing', href: '/solutions/solar-sizing' },
+    { label: 'Solar Genius Pro™', href: '/solar-genius-pro' },
+    { label: 'UPS Systems', href: '/services/ups-systems' },
+    { label: 'UPS Lab', href: '/hub/ups-lab' },
+    { label: 'Solar / UPS Hub', href: '/resources/solar-ups-hub' },
+    { label: 'Borehole Pumps', href: '/services/borehole-pumps' },
+  ],
+  servicesElectrical: [
+    { label: 'Distribution Boards & Panels', href: '/services/distribution-boards' },
+    { label: 'Motor Rewinding', href: '/services/motor-rewinding' },
+    { label: 'Motors & Drives', href: '/solutions/motors' },
+    { label: 'High-Voltage Systems', href: '/solutions/high-voltage' },
+    { label: 'Diesel Automation', href: '/solutions/diesel-automation' },
+    { label: 'Industrial Controls', href: '/solutions/controls' },
+    { label: 'Steel Fabrication', href: '/solutions/fabrication' },
+    { label: 'AC / HVAC Installation', href: '/services/ac-installation' },
+  ],
+  servicesSpecialised: [
+    { label: 'Hospital Incinerators', href: '/services/hospital-incinerators' },
+    { label: 'Incinerator Construction Guide', href: '/solutions/incinerators' },
+    { label: 'Building Engineering Suite', href: '/solutions/building' },
+    { label: 'EIMS PRO Workspace', href: '/eims-pro' },
+    { label: 'AquaScan Pro™', href: '/aquascan-pro-v3' },
+    { label: 'Generator Oracle™', href: '/generator-oracle' },
+    { label: 'Diagnostics Hub', href: '/diagnostics' },
+    { label: 'Troubleshooting Wizard', href: '/troubleshooting' },
+  ],
+  maintenanceHubs: [
+    { label: 'Generator Maintenance', href: '/maintenance-hub/generators' },
+    { label: 'Solar Maintenance', href: '/maintenance-hub/solar' },
+    { label: 'HVAC Maintenance', href: '/maintenance-hub/hvac' },
+    { label: 'Borehole Maintenance', href: '/maintenance-hub/borehole' },
+    { label: 'Electrical Maintenance', href: '/maintenance-hub/electrical' },
+    { label: 'Motors Maintenance', href: '/maintenance-hub/motors' },
+    { label: 'Incinerator Maintenance', href: '/maintenance-hub/incinerators' },
+    { label: 'Fabrication & Welding', href: '/maintenance-hub/fabrication' },
+  ],
+  resources: [
+    { label: 'Resources & Learning Hub', href: '/resources' },
     { label: 'Knowledge Base', href: '/knowledge-base' },
+    { label: 'Technical Bible', href: '/technical-bible' },
+    { label: 'Power Calculators', href: '/calculators' },
+    { label: 'Fault Code Database', href: '/faults' },
+    { label: 'Blog & Articles', href: '/blog' },
     { label: 'FAQ', href: '/faq' },
+    { label: 'Emergency Response Guide', href: '/guides/emergency-response' },
   ],
   serviceAreas: [
-    { label: 'All Kenya Counties', href: '/kenya' },
+    { label: 'All Kenya — 47 Counties', href: '/kenya' },
     { label: 'Nairobi', href: '/kenya/nairobi' },
     { label: 'Mombasa', href: '/kenya/mombasa' },
     { label: 'Kisumu', href: '/kenya/kisumu' },
     { label: 'Nakuru', href: '/kenya/nakuru' },
     { label: 'Kiambu', href: '/kenya/kiambu' },
+    { label: 'All Service Locations', href: '/locations' },
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy' },
@@ -68,6 +126,79 @@ export default function PremiumFooter() {
       />
       
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+        {/* ═══════════════════════════════════════════════════════════════════
+            SERVICES DIRECTORY — full B2B service inventory.
+            Every link below resolves to a working route. Sourced from
+            lib/services/allServices.ts and the /solutions/* deep dives so
+            buyers reach the right page in one click.
+        ═══════════════════════════════════════════════════════════════════ */}
+        <nav aria-label="Services directory" className="mb-20 pb-16 border-b border-white/10">
+          <div className="flex items-baseline justify-between mb-10">
+            <h3 className="text-xs font-mono text-brand-gold tracking-[0.3em] uppercase">
+              Services Directory
+            </h3>
+            <Link
+              href="/services"
+              className="text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-wider"
+            >
+              View all services →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            {[
+              { title: 'Power & Generators', items: FOOTER_LINKS.servicesPower },
+              { title: 'Renewable & UPS', items: FOOTER_LINKS.servicesRenewable },
+              { title: 'Electrical & HVAC', items: FOOTER_LINKS.servicesElectrical },
+              { title: 'Specialised & AI Suites', items: FOOTER_LINKS.servicesSpecialised },
+            ].map((group) => (
+              <div key={group.title}>
+                <h4 className="text-sm font-mono text-brand-gold mb-5 tracking-wider uppercase">
+                  {group.title}
+                </h4>
+                <ul className="space-y-3">
+                  {group.items.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mt-12 pt-12 border-t border-white/5">
+            {[
+              { title: 'Maintenance Hubs', items: FOOTER_LINKS.maintenanceHubs },
+              { title: 'Resources & Tools', items: FOOTER_LINKS.resources },
+              { title: 'Service Areas', items: FOOTER_LINKS.serviceAreas },
+            ].map((group) => (
+              <div key={group.title}>
+                <h4 className="text-sm font-mono text-brand-gold mb-5 tracking-wider uppercase">
+                  {group.title}
+                </h4>
+                <ul className="space-y-3">
+                  {group.items.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </nav>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-20">
           
           {/* Brand Column */}
@@ -108,7 +239,7 @@ export default function PremiumFooter() {
           </div>
 
           {/* Links Columns */}
-          <nav aria-label="Footer" className="lg:col-span-5 lg:col-start-6 grid grid-cols-1 sm:grid-cols-3 gap-12 lg:gap-6">
+          <nav aria-label="Footer" className="lg:col-span-5 lg:col-start-6 grid grid-cols-1 sm:grid-cols-2 gap-12 lg:gap-6">
             <div>
               <h4 className="text-sm font-mono text-brand-gold mb-6 tracking-wider uppercase">Company</h4>
               <ul className="space-y-4">
@@ -126,25 +257,17 @@ export default function PremiumFooter() {
             </div>
 
             <div>
-              <h4 className="text-sm font-mono text-brand-gold mb-6 tracking-wider uppercase">Solutions</h4>
+              <h4 className="text-sm font-mono text-brand-gold mb-6 tracking-wider uppercase">Quick Links</h4>
               <ul className="space-y-4">
-                {FOOTER_LINKS.solutions.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-gray-400 hover:text-white transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-mono text-brand-gold mb-6 tracking-wider uppercase">Service Areas</h4>
-              <ul className="space-y-4">
-                {FOOTER_LINKS.serviceAreas.map((link) => (
+                {[
+                  { label: 'Generator Sales', href: '/generators' },
+                  { label: 'Solar Energy', href: '/solar' },
+                  { label: 'Diagnostic Suite', href: '/diagnostics' },
+                  { label: 'Solar / UPS Hub', href: '/resources/solar-ups-hub' },
+                  { label: 'Generator Oracle', href: '/generator-oracle' },
+                  { label: 'Knowledge Base', href: '/knowledge-base' },
+                  { label: 'FAQ', href: '/faq' },
+                ].map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
