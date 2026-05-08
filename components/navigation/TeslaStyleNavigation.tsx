@@ -103,9 +103,10 @@ const MEGA_MENUS = {
       {
         title: 'Service & Coverage',
         items: [
-          { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🔆', desc: 'Diagnostics & repair' },
+          { href: '/resources/solar-ups-hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace + simulators' },
+          { href: '/hub/ups-lab', label: 'UPS Lab', icon: '🔋', desc: 'Battery + load tests' },
+          { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🛠️', desc: 'Diagnostics & repair' },
           { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Nationwide service' },
-          { href: '/locations', label: 'Service Locations', icon: '🗺️', desc: 'Find a branch' },
           { href: '/booking', label: 'Book a Site Visit', icon: '📅', desc: 'Schedule today' },
         ],
       },
@@ -190,6 +191,20 @@ const MEGA_MENUS = {
     title: 'Resources & Insights',
     description: 'Knowledge, stories, and nationwide coverage',
     sections: [
+      {
+        // SURFACED: the Solar / UPS Hub workspace was previously orphaned from
+        // the navbar (only the Quick Access band on /resources linked it).
+        // Hub pages now live as a first-class section in the Resources mega.
+        title: 'Solar / UPS Hub',
+        items: [
+          { href: '/resources/solar-ups-hub', label: 'Solar / UPS Hub', icon: '🔆', desc: 'Workspace overview' },
+          { href: '/hub/simulator', label: 'UPS Simulator', icon: '🧪', desc: 'Sizing & runtime' },
+          { href: '/hub/ups-lab', label: 'UPS Lab', icon: '🔋', desc: 'Battery + load tests' },
+          { href: '/hub/verifier', label: 'Spec Verifier', icon: '✅', desc: 'Verify nameplate vs spec' },
+          { href: '/hub/quote-audit', label: 'Quote Audit', icon: '🧾', desc: 'Vendor quote sanity check' },
+          { href: '/hub/diagnostics', label: 'Hub Diagnostics', icon: '🔧', desc: 'Diagnostic workspace' },
+        ],
+      },
       {
         title: 'Knowledge',
         items: [
@@ -454,8 +469,15 @@ export default function TeslaStyleNavigation({
               <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {(() => {
                   const menu = MEGA_MENUS[activeMega as keyof typeof MEGA_MENUS];
+                  // Adaptive column count: one column per section + one for the CTA.
+                  // Resources now has 4 sections (added Solar / UPS Hub) so the grid
+                  // must scale to 5 columns; Tailwind needs literal class names.
+                  const colsClass =
+                    menu.sections.length >= 4
+                      ? 'grid lg:grid-cols-5 gap-8'
+                      : 'grid lg:grid-cols-4 gap-8';
                   return (
-                    <div className="grid lg:grid-cols-4 gap-8">
+                    <div className={colsClass}>
                       {/* Menu Sections */}
                       {menu.sections.map((section) => (
                         <div key={section.title}>
