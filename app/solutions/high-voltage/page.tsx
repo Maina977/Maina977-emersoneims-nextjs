@@ -1043,10 +1043,10 @@ const HighVoltagePage = () => {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200'
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'low': return 'bg-green-100 text-green-800 border-green-200'
+      case 'critical': return 'bg-red-500/20 text-red-200 border-red-500/30'
+      case 'high': return 'bg-orange-500/20 text-orange-200 border-orange-500/30'
+      case 'medium': return 'bg-yellow-500/20 text-yellow-200 border-yellow-500/30'
+      case 'low': return 'bg-green-500/20 text-green-200 border-green-500/30'
       default: return 'bg-white/10 text-gray-100 border-white/10'
     }
   }
@@ -1079,7 +1079,7 @@ const HighVoltagePage = () => {
               className="max-w-4xl"
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-yellow-500/20 rounded-xl backdrop-blur-sm">
+                <div className="p-3 bg-yellow-500/100/20 rounded-xl backdrop-blur-sm">
                   <Zap className="w-8 h-8 text-yellow-400" />
                 </div>
                 <span className="text-yellow-400 font-semibold tracking-wider uppercase">
@@ -1153,8 +1153,8 @@ const HighVoltagePage = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-4 border-b-2 whitespace-nowrap transition-colors ${
                     activeTab === tab.id
-                      ? 'border-yellow-500 text-yellow-600'
-                      : 'border-transparent text-gray-300 hover:text-yellow-600'
+                      ? 'border-yellow-500 text-yellow-400'
+                      : 'border-transparent text-gray-300 hover:text-yellow-400'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -1256,7 +1256,7 @@ const HighVoltagePage = () => {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
+                    <div className="bg-yellow-500/10 rounded-xl p-6 border border-yellow-500/30">
                       <h3 className="text-lg font-semibold text-white mb-4">Our Capabilities</h3>
                       <ul className="space-y-3">
                         {[
@@ -1270,7 +1270,7 @@ const HighVoltagePage = () => {
                           "24/7 emergency response"
                         ].map((item, index) => (
                           <li key={index} className="flex items-start gap-2">
-                            <CheckCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                            <CheckCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
                             <span className="text-gray-200">{item}</span>
                           </li>
                         ))}
@@ -1334,10 +1334,10 @@ const HighVoltagePage = () => {
                         <div className="flex items-start justify-between mb-4">
                           <div>
                             <h3 className="text-xl font-semibold text-white">{equipment.name}</h3>
-                            <p className="text-yellow-600 font-medium">{equipment.voltageRange}</p>
+                            <p className="text-yellow-400 font-medium">{equipment.voltageRange}</p>
                           </div>
-                          <div className="p-3 bg-yellow-100 rounded-lg">
-                            <Zap className="w-6 h-6 text-yellow-600" />
+                          <div className="p-3 bg-yellow-500/20 rounded-lg">
+                            <Zap className="w-6 h-6 text-yellow-400" />
                           </div>
                         </div>
 
@@ -1412,8 +1412,8 @@ const HighVoltagePage = () => {
                         className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-2 bg-yellow-100 rounded-lg">
-                            <CircuitBoard className="w-5 h-5 text-yellow-600" />
+                          <div className="p-2 bg-yellow-500/20 rounded-lg">
+                            <CircuitBoard className="w-5 h-5 text-yellow-400" />
                           </div>
                           <div className="text-left">
                             <h3 className="font-semibold text-white">{component.name}</h3>
@@ -1443,7 +1443,7 @@ const HighVoltagePage = () => {
                                   <ul className="space-y-2">
                                     {component.types.map((type, idx) => (
                                       <li key={idx} className="flex items-center gap-2 text-gray-300">
-                                        <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                                        <div className="w-2 h-2 bg-yellow-500/100 rounded-full" />
                                         {type}
                                       </li>
                                     ))}
@@ -1490,14 +1490,14 @@ const HighVoltagePage = () => {
                   are essential for protecting personnel and ensuring safe operations.
                 </p>
 
-                <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-8">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-red-100 rounded-lg">
-                      <AlertTriangle className="w-6 h-6 text-red-600" />
+                    <div className="p-3 bg-red-500/20 rounded-lg">
+                      <AlertTriangle className="w-6 h-6 text-red-300" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-red-900 mb-2">Critical Warning</h3>
-                      <p className="text-red-700">
+                      <h3 className="text-lg font-semibold text-red-200 mb-2">Critical Warning</h3>
+                      <p className="text-red-300">
                         High voltage electricity can cause fatal injuries, severe burns, and arc flash
                         incidents. Only qualified and authorized personnel should work on or near high
                         voltage equipment. Always assume equipment is live until proven dead and properly
@@ -1517,8 +1517,8 @@ const HighVoltagePage = () => {
                       className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-start gap-4 mb-4">
-                        <div className="p-2 bg-yellow-100 rounded-lg">
-                          <Shield className="w-5 h-5 text-yellow-600" />
+                        <div className="p-2 bg-yellow-500/20 rounded-lg">
+                          <Shield className="w-5 h-5 text-yellow-400" />
                         </div>
                         <div>
                           <h3 className="font-semibold text-white">{guideline.title}</h3>
@@ -1528,7 +1528,7 @@ const HighVoltagePage = () => {
                       <ol className="space-y-2 ml-12">
                         {guideline.steps.map((step, idx) => (
                           <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
-                            <span className="font-medium text-yellow-600">{idx + 1}.</span>
+                            <span className="font-medium text-yellow-400">{idx + 1}.</span>
                             {step}
                           </li>
                         ))}
@@ -1602,15 +1602,15 @@ const HighVoltagePage = () => {
                       className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-yellow-100 rounded-lg">
-                          <Activity className="w-5 h-5 text-yellow-600" />
+                        <div className="p-2 bg-yellow-500/20 rounded-lg">
+                          <Activity className="w-5 h-5 text-yellow-400" />
                         </div>
                         <h3 className="font-semibold text-white">{procedure.name}</h3>
                       </div>
                       <ul className="space-y-2">
                         {procedure.tests.map((test, idx) => (
                           <li key={idx} className="flex items-center gap-2 text-gray-300 text-sm">
-                            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+                            <div className="w-1.5 h-1.5 bg-yellow-500/100 rounded-full" />
                             {test}
                           </li>
                         ))}
@@ -1619,7 +1619,7 @@ const HighVoltagePage = () => {
                   ))}
                 </div>
 
-                <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
+                <div className="bg-yellow-500/10 rounded-xl p-6 border border-yellow-500/30">
                   <h3 className="text-xl font-semibold text-white mb-4">Testing Equipment Available</h3>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div>
@@ -1683,7 +1683,7 @@ const HighVoltagePage = () => {
                         { step: "Commissioning", desc: "Load tests, protection verification, documentation" }
                       ].map((item, idx) => (
                         <li key={idx} className="flex items-start gap-4">
-                          <span className="flex-shrink-0 w-8 h-8 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center font-semibold text-sm">
+                          <span className="flex-shrink-0 w-8 h-8 bg-yellow-500/20 text-yellow-400 rounded-full flex items-center justify-center font-semibold text-sm">
                             {idx + 1}
                           </span>
                           <div>
@@ -1709,7 +1709,7 @@ const HighVoltagePage = () => {
                         { step: "Functional Tests", desc: "Close/open operations, interlocks" }
                       ].map((item, idx) => (
                         <li key={idx} className="flex items-start gap-4">
-                          <span className="flex-shrink-0 w-8 h-8 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center font-semibold text-sm">
+                          <span className="flex-shrink-0 w-8 h-8 bg-yellow-500/20 text-yellow-400 rounded-full flex items-center justify-center font-semibold text-sm">
                             {idx + 1}
                           </span>
                           <div>
@@ -1835,12 +1835,12 @@ const HighVoltagePage = () => {
                       transition={{ delay: index * 0.1 }}
                       className={`rounded-xl p-6 ${
                         plan.popular
-                          ? 'bg-yellow-500 text-white ring-4 ring-yellow-200'
+                          ? 'bg-yellow-500/100 text-white ring-4 ring-yellow-500/40'
                           : 'bg-white/5 border border-white/10'
                       }`}
                     >
                       {plan.popular && (
-                        <span className="inline-block px-3 py-1 bg-white/5 text-yellow-600 text-sm font-medium rounded-full mb-4">
+                        <span className="inline-block px-3 py-1 bg-white/5 text-yellow-400 text-sm font-medium rounded-full mb-4">
                           Most Popular
                         </span>
                       )}
@@ -1850,7 +1850,7 @@ const HighVoltagePage = () => {
                       <p className={`text-sm ${plan.popular ? 'text-yellow-100' : 'text-gray-400'}`}>
                         {plan.frequency}
                       </p>
-                      <p className={`text-2xl font-bold mt-4 ${plan.popular ? 'text-white' : 'text-yellow-600'}`}>
+                      <p className={`text-2xl font-bold mt-4 ${plan.popular ? 'text-white' : 'text-yellow-400'}`}>
                         {plan.price}
                       </p>
                       <ul className="mt-6 space-y-3">
@@ -1986,7 +1986,7 @@ const HighVoltagePage = () => {
                                   <ul className="space-y-1">
                                     {fault.symptoms.map((symptom, idx) => (
                                       <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
-                                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2" />
+                                        <div className="w-1.5 h-1.5 bg-orange-500/100 rounded-full mt-2" />
                                         {symptom}
                                       </li>
                                     ))}
@@ -2000,7 +2000,7 @@ const HighVoltagePage = () => {
                                   <ul className="space-y-1">
                                     {fault.causes.map((cause, idx) => (
                                       <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
-                                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2" />
+                                        <div className="w-1.5 h-1.5 bg-blue-500/100 rounded-full mt-2" />
                                         {cause}
                                       </li>
                                     ))}
@@ -2014,7 +2014,7 @@ const HighVoltagePage = () => {
                                   <ul className="space-y-1">
                                     {fault.solutions.map((solution, idx) => (
                                       <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
-                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2" />
+                                        <div className="w-1.5 h-1.5 bg-green-500/100 rounded-full mt-2" />
                                         {solution}
                                       </li>
                                     ))}
@@ -2061,7 +2061,7 @@ const HighVoltagePage = () => {
                           <tr key={index} className="hover:bg-white/10">
                             <td className="py-4 px-6 font-medium text-white">{item.item}</td>
                             <td className="py-4 px-6 text-gray-300">{item.specification}</td>
-                            <td className="py-4 px-6 text-yellow-600 font-medium">{item.priceRange}</td>
+                            <td className="py-4 px-6 text-yellow-400 font-medium">{item.priceRange}</td>
                             <td className="py-4 px-6 text-gray-300">{item.leadTime}</td>
                           </tr>
                         ))}
@@ -2071,7 +2071,7 @@ const HighVoltagePage = () => {
                 </div>
 
                 <div className="mt-8 grid md:grid-cols-2 gap-6">
-                  <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
+                  <div className="bg-yellow-500/10 rounded-xl p-6 border border-yellow-500/30">
                     <h3 className="text-lg font-semibold text-white mb-4">Pricing Notes</h3>
                     <ul className="space-y-2 text-gray-300">
                       <li className="flex items-start gap-2">
@@ -2135,8 +2135,8 @@ const HighVoltagePage = () => {
                 <div className="grid lg:grid-cols-2 gap-8 mb-8">
                   <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-yellow-100 rounded-lg">
-                        <Truck className="w-5 h-5 text-yellow-600" />
+                      <div className="p-2 bg-yellow-500/20 rounded-lg">
+                        <Truck className="w-5 h-5 text-yellow-400" />
                       </div>
                       <h3 className="text-xl font-semibold text-white">Delivery Options</h3>
                     </div>
@@ -2144,30 +2144,30 @@ const HighVoltagePage = () => {
                       <div className="border-b border-white/10 pb-4">
                         <h4 className="font-medium text-white">Standard Delivery</h4>
                         <p className="text-gray-300 text-sm">Ex-works collection or delivery within Nairobi</p>
-                        <p className="text-yellow-600 font-medium">Included in price</p>
+                        <p className="text-yellow-400 font-medium">Included in price</p>
                       </div>
                       <div className="border-b border-white/10 pb-4">
                         <h4 className="font-medium text-white">Up-country Delivery (Kenya)</h4>
                         <p className="text-gray-300 text-sm">Mombasa, Kisumu, Nakuru, Eldoret, etc.</p>
-                        <p className="text-yellow-600 font-medium">KES 15,000 - 50,000</p>
+                        <p className="text-yellow-400 font-medium">KES 15,000 - 50,000</p>
                       </div>
                       <div className="border-b border-white/10 pb-4">
                         <h4 className="font-medium text-white">Heavy Equipment</h4>
                         <p className="text-gray-300 text-sm">Transformers &gt;1MVA, requires special transport</p>
-                        <p className="text-yellow-600 font-medium">Quote on request</p>
+                        <p className="text-yellow-400 font-medium">Quote on request</p>
                       </div>
                       <div>
                         <h4 className="font-medium text-white">East Africa Export</h4>
                         <p className="text-gray-300 text-sm">Uganda, Tanzania, Rwanda, Ethiopia</p>
-                        <p className="text-yellow-600 font-medium">CIF pricing available</p>
+                        <p className="text-yellow-400 font-medium">CIF pricing available</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-yellow-100 rounded-lg">
-                        <MapPin className="w-5 h-5 text-yellow-600" />
+                      <div className="p-2 bg-yellow-500/20 rounded-lg">
+                        <MapPin className="w-5 h-5 text-yellow-400" />
                       </div>
                       <h3 className="text-xl font-semibold text-white">Service Coverage</h3>
                     </div>
@@ -2194,7 +2194,7 @@ const HighVoltagePage = () => {
                   </div>
                 </div>
 
-                <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
+                <div className="bg-yellow-500/10 rounded-xl p-6 border border-yellow-500/30">
                   <h3 className="text-lg font-semibold text-white mb-4">Heavy Lift & Special Transport</h3>
                   <p className="text-gray-300 mb-4">
                     Power transformers and large switchgear require specialized transport equipment:
@@ -2290,12 +2290,12 @@ const HighVoltagePage = () => {
                       className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-yellow-100 rounded-lg">
-                          <warranty.icon className="w-5 h-5 text-yellow-600" />
+                        <div className="p-2 bg-yellow-500/20 rounded-lg">
+                          <warranty.icon className="w-5 h-5 text-yellow-400" />
                         </div>
                         <div>
                           <h3 className="font-semibold text-white">{warranty.title}</h3>
-                          <p className="text-yellow-600 font-medium">{warranty.duration}</p>
+                          <p className="text-yellow-400 font-medium">{warranty.duration}</p>
                         </div>
                       </div>
                       <ul className="space-y-2">
@@ -2341,23 +2341,23 @@ const HighVoltagePage = () => {
                     </ul>
                   </div>
 
-                  <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
+                  <div className="bg-yellow-500/10 rounded-xl p-6 border border-yellow-500/30">
                     <h3 className="text-xl font-semibold text-white mb-4">Support Channels</h3>
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
                         <div className="p-2 bg-white/5 rounded-lg">
-                          <Phone className="w-5 h-5 text-yellow-600" />
+                          <Phone className="w-5 h-5 text-yellow-400" />
                         </div>
                         <div>
                           <h4 className="font-medium text-white">24/7 Emergency Hotline</h4>
-                          <a href="tel:+254722274914" className="text-yellow-600 hover:text-yellow-700">
+                          <a href="tel:+254722274914" className="text-yellow-400 hover:text-yellow-300">
                             +254 722 274 914
                           </a>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
                         <div className="p-2 bg-white/5 rounded-lg">
-                          <Clock className="w-5 h-5 text-yellow-600" />
+                          <Clock className="w-5 h-5 text-yellow-400" />
                         </div>
                         <div>
                           <h4 className="font-medium text-white">Response Time</h4>
@@ -2366,7 +2366,7 @@ const HighVoltagePage = () => {
                       </div>
                       <div className="flex items-start gap-4">
                         <div className="p-2 bg-white/5 rounded-lg">
-                          <Users className="w-5 h-5 text-yellow-600" />
+                          <Users className="w-5 h-5 text-yellow-400" />
                         </div>
                         <div>
                           <h4 className="font-medium text-white">Technical Support Team</h4>

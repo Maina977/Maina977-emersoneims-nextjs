@@ -881,7 +881,7 @@ const FabricationPage = () => {
               className="max-w-4xl"
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-orange-500/20 rounded-xl backdrop-blur-sm">
+                <div className="p-3 bg-orange-500/100/20 rounded-xl backdrop-blur-sm">
                   <Hammer className="w-8 h-8 text-orange-400" />
                 </div>
                 <span className="text-orange-400 font-semibold tracking-wider uppercase">
@@ -955,8 +955,8 @@ const FabricationPage = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-4 border-b-2 whitespace-nowrap transition-colors ${
                     activeTab === tab.id
-                      ? 'border-orange-500 text-orange-600'
-                      : 'border-transparent text-gray-300 hover:text-orange-600'
+                      ? 'border-orange-500 text-orange-300'
+                      : 'border-transparent text-gray-300 hover:text-orange-300'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -1059,7 +1059,7 @@ const FabricationPage = () => {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                    <div className="bg-orange-500/10 rounded-xl p-6 border border-orange-500/30">
                       <h3 className="text-lg font-semibold text-white mb-4">Our Capabilities</h3>
                       <ul className="space-y-3">
                         {[
@@ -1073,7 +1073,7 @@ const FabricationPage = () => {
                           "CNC cutting & machining"
                         ].map((item, index) => (
                           <li key={index} className="flex items-start gap-2">
-                            <CheckCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                            <CheckCircle className="w-5 h-5 text-orange-300 flex-shrink-0 mt-0.5" />
                             <span className="text-gray-200">{item}</span>
                           </li>
                         ))}
@@ -1098,7 +1098,7 @@ const FabricationPage = () => {
                     <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                       <h3 className="text-lg font-semibold text-white mb-4">Quick Contact</h3>
                       <div className="space-y-3">
-                        <a href="tel:+254722274914" className="flex items-center gap-2 text-gray-200 hover:text-orange-600">
+                        <a href="tel:+254722274914" className="flex items-center gap-2 text-gray-200 hover:text-orange-300">
                           <Phone className="w-5 h-5" />
                           <span>+254 722 274 914</span>
                         </a>
@@ -1143,8 +1143,8 @@ const FabricationPage = () => {
                             <h3 className="text-xl font-semibold text-white">{service.name}</h3>
                             <p className="text-gray-300">{service.description}</p>
                           </div>
-                          <div className="p-3 bg-orange-100 rounded-lg">
-                            <Factory className="w-6 h-6 text-orange-600" />
+                          <div className="p-3 bg-orange-500/20 rounded-lg">
+                            <Factory className="w-6 h-6 text-orange-300" />
                           </div>
                         </div>
 
@@ -1219,8 +1219,8 @@ const FabricationPage = () => {
                         className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-2 bg-orange-100 rounded-lg">
-                            <Cog className="w-5 h-5 text-orange-600" />
+                          <div className="p-2 bg-orange-500/20 rounded-lg">
+                            <Cog className="w-5 h-5 text-orange-300" />
                           </div>
                           <div className="text-left">
                             <h3 className="font-semibold text-white">{process.name}</h3>
@@ -1250,7 +1250,7 @@ const FabricationPage = () => {
                                   <ol className="space-y-2">
                                     {process.steps.map((step, idx) => (
                                       <li key={idx} className="flex items-start gap-3 text-gray-300">
-                                        <span className="flex-shrink-0 w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-sm font-medium">
+                                        <span className="flex-shrink-0 w-6 h-6 bg-orange-500/20 text-orange-300 rounded-full flex items-center justify-center text-sm font-medium">
                                           {idx + 1}
                                         </span>
                                         {step}
@@ -1312,8 +1312,8 @@ const FabricationPage = () => {
                       className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-orange-100 rounded-lg">
-                          <Layers className="w-5 h-5 text-orange-600" />
+                        <div className="p-2 bg-orange-500/20 rounded-lg">
+                          <Layers className="w-5 h-5 text-orange-300" />
                         </div>
                         <h3 className="font-semibold text-white">{material.name}</h3>
                       </div>
@@ -1340,7 +1340,7 @@ const FabricationPage = () => {
                           <ul className="space-y-1">
                             {material.applications.map((app, idx) => (
                               <li key={idx} className="text-gray-300 text-sm flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                                <div className="w-1.5 h-1.5 bg-orange-500/100 rounded-full" />
                                 {app}
                               </li>
                             ))}
@@ -1351,7 +1351,7 @@ const FabricationPage = () => {
                   ))}
                 </div>
 
-                <div className="mt-8 bg-orange-50 rounded-xl p-6 border border-orange-100">
+                <div className="mt-8 bg-orange-500/10 rounded-xl p-6 border border-orange-500/30">
                   <h3 className="text-lg font-semibold text-white mb-4">Material Sourcing</h3>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div>
@@ -1413,12 +1413,12 @@ const FabricationPage = () => {
                         className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-2 bg-orange-100 rounded-lg">
-                            <Award className="w-5 h-5 text-orange-600" />
+                          <div className="p-2 bg-orange-500/20 rounded-lg">
+                            <Award className="w-5 h-5 text-orange-300" />
                           </div>
                           <div className="text-left">
                             <h3 className="font-semibold text-white">{standard.name}</h3>
-                            <p className="text-sm text-orange-600 font-medium">{standard.code}</p>
+                            <p className="text-sm text-orange-300 font-medium">{standard.code}</p>
                           </div>
                         </div>
                         <ChevronDown
@@ -1476,7 +1476,7 @@ const FabricationPage = () => {
                     </ul>
                   </div>
 
-                  <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                  <div className="bg-orange-500/10 rounded-xl p-6 border border-orange-500/30">
                     <h3 className="text-xl font-semibold text-white mb-4">Quality Documentation</h3>
                     <ul className="space-y-3">
                       {[
@@ -1582,15 +1582,15 @@ const FabricationPage = () => {
                       className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-orange-100 rounded-lg">
-                          <Settings className="w-5 h-5 text-orange-600" />
+                        <div className="p-2 bg-orange-500/20 rounded-lg">
+                          <Settings className="w-5 h-5 text-orange-300" />
                         </div>
                         <h3 className="font-semibold text-white">{category.category}</h3>
                       </div>
                       <ul className="space-y-2">
                         {category.items.map((item, idx) => (
                           <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
-                            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 bg-orange-500/100 rounded-full mt-2 flex-shrink-0" />
                             {item}
                           </li>
                         ))}
@@ -1687,7 +1687,7 @@ const FabricationPage = () => {
                       className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
-                      <p className="text-orange-600 font-medium mb-4">{project.client}</p>
+                      <p className="text-orange-300 font-medium mb-4">{project.client}</p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-400">Scope:</span>
@@ -1699,14 +1699,14 @@ const FabricationPage = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Value:</span>
-                          <span className="text-orange-600 font-medium">{project.value}</span>
+                          <span className="text-orange-300 font-medium">{project.value}</span>
                         </div>
                       </div>
                     </motion.div>
                   ))}
                 </div>
 
-                <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                <div className="bg-orange-500/10 rounded-xl p-6 border border-orange-500/30">
                   <h3 className="text-xl font-semibold text-white mb-4">Industries Served</h3>
                   <div className="grid md:grid-cols-4 gap-4">
                     {[
@@ -1763,7 +1763,7 @@ const FabricationPage = () => {
                           <tr key={index} className="hover:bg-white/10">
                             <td className="py-4 px-6 font-medium text-white">{item.item}</td>
                             <td className="py-4 px-6 text-gray-300">{item.specification}</td>
-                            <td className="py-4 px-6 text-orange-600 font-medium">{item.priceRange}</td>
+                            <td className="py-4 px-6 text-orange-300 font-medium">{item.priceRange}</td>
                             <td className="py-4 px-6 text-gray-300">{item.leadTime}</td>
                           </tr>
                         ))}
@@ -1773,7 +1773,7 @@ const FabricationPage = () => {
                 </div>
 
                 <div className="mt-8 grid md:grid-cols-2 gap-6">
-                  <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                  <div className="bg-orange-500/10 rounded-xl p-6 border border-orange-500/30">
                     <h3 className="text-lg font-semibold text-white mb-4">Pricing Factors</h3>
                     <ul className="space-y-2 text-gray-300">
                       <li className="flex items-start gap-2">
@@ -1841,8 +1841,8 @@ const FabricationPage = () => {
                 <div className="grid lg:grid-cols-2 gap-8 mb-8">
                   <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-orange-100 rounded-lg">
-                        <Truck className="w-5 h-5 text-orange-600" />
+                      <div className="p-2 bg-orange-500/20 rounded-lg">
+                        <Truck className="w-5 h-5 text-orange-300" />
                       </div>
                       <h3 className="text-xl font-semibold text-white">Transport Options</h3>
                     </div>
@@ -1850,30 +1850,30 @@ const FabricationPage = () => {
                       <div className="border-b border-white/10 pb-4">
                         <h4 className="font-medium text-white">Standard Truck</h4>
                         <p className="text-gray-300 text-sm">Up to 25 tons, 12m length</p>
-                        <p className="text-orange-600 font-medium">KES 25,000 - 45,000 (Nairobi)</p>
+                        <p className="text-orange-300 font-medium">KES 25,000 - 45,000 (Nairobi)</p>
                       </div>
                       <div className="border-b border-white/10 pb-4">
                         <h4 className="font-medium text-white">Low-bed Trailer</h4>
                         <p className="text-gray-300 text-sm">Up to 50 tons, oversized loads</p>
-                        <p className="text-orange-600 font-medium">KES 80,000 - 150,000</p>
+                        <p className="text-orange-300 font-medium">KES 80,000 - 150,000</p>
                       </div>
                       <div className="border-b border-white/10 pb-4">
                         <h4 className="font-medium text-white">Abnormal Load</h4>
                         <p className="text-gray-300 text-sm">Over-width/height, police escort</p>
-                        <p className="text-orange-600 font-medium">Quote on request</p>
+                        <p className="text-orange-300 font-medium">Quote on request</p>
                       </div>
                       <div>
                         <h4 className="font-medium text-white">Container Export</h4>
                         <p className="text-gray-300 text-sm">20ft/40ft container, CIF available</p>
-                        <p className="text-orange-600 font-medium">Quote on request</p>
+                        <p className="text-orange-300 font-medium">Quote on request</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-orange-100 rounded-lg">
-                        <Wrench className="w-5 h-5 text-orange-600" />
+                      <div className="p-2 bg-orange-500/20 rounded-lg">
+                        <Wrench className="w-5 h-5 text-orange-300" />
                       </div>
                       <h3 className="text-xl font-semibold text-white">Site Installation</h3>
                     </div>
@@ -1902,7 +1902,7 @@ const FabricationPage = () => {
                   </div>
                 </div>
 
-                <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                <div className="bg-orange-500/10 rounded-xl p-6 border border-orange-500/30">
                   <h3 className="text-lg font-semibold text-white mb-4">Delivery Coverage</h3>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -1992,12 +1992,12 @@ const FabricationPage = () => {
                       className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-orange-100 rounded-lg">
-                          <warranty.icon className="w-5 h-5 text-orange-600" />
+                        <div className="p-2 bg-orange-500/20 rounded-lg">
+                          <warranty.icon className="w-5 h-5 text-orange-300" />
                         </div>
                         <div>
                           <h3 className="font-semibold text-white">{warranty.title}</h3>
-                          <p className="text-orange-600 font-medium">{warranty.duration}</p>
+                          <p className="text-orange-300 font-medium">{warranty.duration}</p>
                         </div>
                       </div>
                       <ul className="space-y-2">
@@ -2039,23 +2039,23 @@ const FabricationPage = () => {
                     </ul>
                   </div>
 
-                  <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                  <div className="bg-orange-500/10 rounded-xl p-6 border border-orange-500/30">
                     <h3 className="text-xl font-semibold text-white mb-4">After-Sales Support</h3>
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
                         <div className="p-2 bg-white/5 rounded-lg">
-                          <Phone className="w-5 h-5 text-orange-600" />
+                          <Phone className="w-5 h-5 text-orange-300" />
                         </div>
                         <div>
                           <h4 className="font-medium text-white">Technical Hotline</h4>
-                          <a href="tel:+254722274914" className="text-orange-600 hover:text-orange-700">
+                          <a href="tel:+254722274914" className="text-orange-300 hover:text-orange-300">
                             +254 722 274 914
                           </a>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
                         <div className="p-2 bg-white/5 rounded-lg">
-                          <Wrench className="w-5 h-5 text-orange-600" />
+                          <Wrench className="w-5 h-5 text-orange-300" />
                         </div>
                         <div>
                           <h4 className="font-medium text-white">Repair Services</h4>
@@ -2064,7 +2064,7 @@ const FabricationPage = () => {
                       </div>
                       <div className="flex items-start gap-4">
                         <div className="p-2 bg-white/5 rounded-lg">
-                          <FileText className="w-5 h-5 text-orange-600" />
+                          <FileText className="w-5 h-5 text-orange-300" />
                         </div>
                         <div>
                           <h4 className="font-medium text-white">Documentation</h4>
