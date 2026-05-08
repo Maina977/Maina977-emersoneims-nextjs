@@ -120,7 +120,7 @@ export default function NairobiCountyPage() {
               💰 Get Installation Quote
             </Link>
             <Link 
-              href="/diagnostic-suite"
+              href="/diagnostics"
               className="px-8 py-4 bg-white/5 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-all"
             >
               🔧 Diagnose Generator Error
@@ -175,7 +175,7 @@ export default function NairobiCountyPage() {
             </Link>
 
             <Link
-              href="/diagnostic-suite"
+              href="/diagnostics"
               className="group bg-orange-900/20 border border-orange-500/30 rounded-xl p-6 hover:border-orange-400 hover:bg-orange-900/30 transition-all"
             >
               <div className="text-3xl mb-3">⚠️</div>

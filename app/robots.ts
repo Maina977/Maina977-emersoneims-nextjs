@@ -26,7 +26,6 @@ export default function robots(): MetadataRoute.Robots {
           '/blog/',
           '/kenya/',
           '/diagnostics/',
-          '/diagnostic-journey/',
           '/faults/',
           '/calculators/',
           '/contact/',

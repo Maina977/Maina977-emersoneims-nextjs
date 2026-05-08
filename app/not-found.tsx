@@ -12,7 +12,7 @@ export default function NotFound() {
     { name: 'Solar Power', href: '/solar', icon: '☀️' },
     { name: 'Services', href: '/services', icon: '🔧' },
     { name: 'Contact', href: '/contact', icon: '📞' },
-    { name: 'About Us', href: '/about', icon: '🏢' },
+    { name: 'About Us', href: '/about-us', icon: '🏢' },
     { name: 'Blog', href: '/blog', icon: '📰' },
   ];
 

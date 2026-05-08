@@ -735,7 +735,7 @@ export default function SallyAIAssistant() {
                       💬 WhatsApp
                     </Link>
                     <Link
-                      href="/fault-code-lookup"
+                      href="/faults"
                       className="flex-1 text-center px-3 py-2 bg-amber-100 text-amber-700 text-xs font-medium rounded-lg hover:bg-amber-200 transition-colors"
                     >
                       🔧 Diagnostics
