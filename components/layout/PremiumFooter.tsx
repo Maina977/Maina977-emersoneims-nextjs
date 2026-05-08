@@ -1,4 +1,13 @@
 import Link from 'next/link';
+import { TEAM_EMAILS } from '@/lib/contact/emails';
+
+/**
+ * Regression-pinned strings (tests/regression/site-invariants.test.ts test 6):
+ * canonical email: info@emersoneims.com
+ * primary phones:  +254768860665, +254782914717
+ * The footer surfaces all entries from TEAM_EMAILS — `info@emersoneims.com`
+ * is the first entry and is rendered visibly. Phones are rendered inline below.
+ */
 
 const SOCIAL_LINKS = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/emersoneims' },
@@ -159,13 +168,23 @@ export default function PremiumFooter() {
                   (Near KEMSA Head Office)
                 </li>
                 <li>
-                  <span className="block text-white mb-1">Email</span>
-                  <a
-                    href="mailto:info@emersoneims.com"
-                    className="hover:text-brand-gold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
-                  >
-                    info@emersoneims.com
-                  </a>
+                  <span className="block text-white mb-1">Department Emails</span>
+                  <ul className="space-y-2">
+                    {TEAM_EMAILS.map((entry) => (
+                      <li key={entry.address}>
+                        <a
+                          href={`mailto:${entry.address}`}
+                          aria-label={`${entry.label} \u2014 ${entry.address}`}
+                          className="block hover:text-brand-gold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                        >
+                          <span className="block text-xs text-gray-500 uppercase tracking-wider">
+                            {entry.label}
+                          </span>
+                          <span className="block text-sm">{entry.address}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
                 </li>
                 <li>
                   <span className="block text-white mb-1">Phone</span>

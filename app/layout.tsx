@@ -523,15 +523,14 @@ export default async function RootLayout({
         <main id="main-content" role="main" aria-label="Main content">
           {children}
         </main>
-        {/* Site-wide B2B positioning strip — guarantees every page carries the
-            commercial / industrial / institutional / contractor B2B message
-            without rearranging existing per-page content. Rendered immediately
-            before the footer so it sits in normal document flow and never
-            collides with the fixed-position TeslaStyleNavigation. */}
-        <B2BSiteStrip />
-        <footer id="contact-section" role="contentinfo">
+        {/* PremiumFooter renders its own semantic <footer>; we wrap it in a
+            <div> (not <footer>) to avoid nested-footer markup while keeping
+            the #contact-section anchor target stable. The B2B strip is mounted
+            ONCE near the top (after TeslaStyleNavigation); a second mount
+            here would render the strip twice on every page. */}
+        <div id="contact-section">
           <PremiumFooter />
-        </footer>
+        </div>
         
         {/* ═══════════════════════════════════════════════════════════════════
             NON-CRITICAL: Client-side components loaded after page is interactive
