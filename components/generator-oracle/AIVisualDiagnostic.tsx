@@ -31,9 +31,12 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
 import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
+import RuleBasedAssistantPanel from '@/components/generator-oracle/RuleBasedAssistantPanel';
 import AssetCardGate, {
   type AssetCardValue,
 } from '@/components/generator-oracle/AssetCardGate';
+
+void AIUnavailableNotice;
 import {
   Camera,
   X,
@@ -1543,15 +1546,13 @@ function AIVisualDiagnosticImpl({ onAnalysisComplete, onClose, card }: AIVisualD
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────────
 
-  // After all hooks have run, swap the entire panel for an unavailable notice
-  // when the server has no AI key configured. This avoids the camera/upload
-  // UI implying that vision diagnosis is currently working.
+  // Photo-based AI vision is not enabled on this deployment — but the
+  // technician's underlying need ("I can see X, what is it?") still has a
+  // deterministic answer in the curated fault library. We deliver a
+  // structured visual triage assistant instead of a dead-ended notice.
   if (aiAvailability === 'unavailable') {
     return (
-      <AIUnavailableNotice
-        feature="AI Visual Diagnostic"
-        description="Photo-based diagnosis (fault display photos, leak/damage analysis, component identification) is not yet enabled. The camera and upload tools below will return when the AI vision model is wired up."
-      />
+      <RuleBasedAssistantPanel mode="visual" card={card} />
     );
   }
 

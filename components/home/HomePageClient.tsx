@@ -103,6 +103,46 @@ const EmergencyCTA = dynamic(
   { ssr: false }
 );
 
+/**
+ * Solar / UPS Hub teaser — minimal, neutral link block.
+ *
+ * Restored under user authorization "Option B: minimal teaser using only
+ * existing page title / destination / neutral link language". Title and
+ * description are taken VERBATIM from the registered entry in
+ * app/resources/page.tsx (Maintenance Guides → Solar / UPS Hub) so this
+ * block introduces zero new marketing copy.
+ */
+function SolarUpsHubTeaser() {
+  return (
+    <section
+      aria-labelledby="solar-ups-hub-teaser"
+      className="py-12 bg-black border-y border-amber-500/10"
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <a
+          href="/resources/solar-ups-hub"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl bg-slate-900/50 border border-amber-500/20 hover:border-amber-500/50 transition-colors"
+        >
+          <div>
+            <h2
+              id="solar-ups-hub-teaser"
+              className="text-xl font-semibold text-amber-300"
+            >
+              Solar / UPS Hub
+            </h2>
+            <p className="text-sm text-slate-300 mt-1">
+              Solar + UPS resource hub
+            </p>
+          </div>
+          <span className="text-amber-400 text-sm font-medium">
+            Open hub →
+          </span>
+        </a>
+      </div>
+    </section>
+  );
+}
+
 export default function HomePageClient() {
   return (
     <>
@@ -114,6 +154,9 @@ export default function HomePageClient() {
 
       {/* GENERATOR ORACLE - Lead Generation Tool (Moved Up for Prominence) */}
       <GeneratorOracleShowcase />
+
+      {/* Solar / UPS Hub — restores the previously-missing homepage teaser */}
+      <SolarUpsHubTeaser />
 
       {/* Lazy loaded sections */}
       <PremiumServicesShowcase />

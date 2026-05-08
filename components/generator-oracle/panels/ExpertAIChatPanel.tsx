@@ -24,9 +24,12 @@ import {
 } from '@/lib/generator-oracle/integratedDiagnosticService';
 import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
 import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
+import RuleBasedAssistantPanel from '@/components/generator-oracle/RuleBasedAssistantPanel';
 import AssetCardGate, {
   type AssetCardValue,
 } from '@/components/generator-oracle/AssetCardGate';
+
+void AIUnavailableNotice;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -649,19 +652,13 @@ Tell me about your generator problem, or choose a quick action below to get star
     ? QUICK_ACTIONS.filter(a => a.category === selectedCategory)
     : QUICK_ACTIONS;
 
-  // After all hooks have run, swap the entire panel for an honest
-  // unavailable notice when the local AI stack is not configured /
-  // reachable. The interactive UI is not rendered at all, so it cannot
-  // give the impression that AI is active. No "coming soon" wording —
-  // the feature is implemented, the inference infra simply isn't pointed
-  // at by this deployment.
+  // When the local AI stack is not configured for this deployment we deliver
+  // the deterministic rule-based engineering assistant in place of generative
+  // chat. It serves the same intent (symptom -> ranked documented faults +
+  // fault-code lookup) without the fabrication risk of an LLM call.
   if (aiAvailability === 'unavailable') {
     return (
-      <AIUnavailableNotice
-        feature="Expert AI Chat"
-        description="Expert chat runs against a self-hosted Ollama (Qwen2.5) plus local retrieval. This deployment does not currently have LOCAL_AI_BASE_URL pointing at a healthy local stack, so the chat surface refuses rather than risk fabricated diagnostics. No paid AI is used in the diagnostic path."
-        className={className}
-      />
+      <RuleBasedAssistantPanel mode="chat" card={card} className={className} />
     );
   }
 

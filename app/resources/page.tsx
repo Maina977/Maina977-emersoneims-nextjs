@@ -38,6 +38,9 @@ const RESOURCE_CATEGORIES = [
       { href: '/maintenance-hub/solar', title: 'Solar Maintenance', desc: 'Panel cleaning & battery care', type: 'Guide' },
       { href: '/maintenance-hub/hvac', title: 'HVAC Maintenance', desc: 'AC servicing & repair', type: 'Guide' },
       { href: '/knowledge-base', title: 'Knowledge Base', desc: 'In-depth technical articles', type: 'Library' },
+      // Hidden-content surfacing: /resources/solar-ups-hub page existed but was unlinked from this index.
+      // See tests/regression/site-invariants.test.ts (resources-links-solar-ups-hub).
+      { href: '/resources/solar-ups-hub', title: 'Solar / UPS Hub', desc: 'Solar + UPS resource hub', type: 'Hub' },
     ],
   },
   {

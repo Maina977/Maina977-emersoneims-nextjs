@@ -16,6 +16,11 @@ export default defineConfig([
       "app/componets/**",
       "app/PC/**",
       "deployment-package/**",
+      // Third-party / vendored bundles. Linting these triggers Babel
+      // OOM on >500KB generated sources and is not our code to police.
+      "external/**",
+      "node_modules/**",
+      "components/aquascan-modules/**",
     ],
   },
   {
@@ -53,6 +58,19 @@ export default defineConfig([
               "**/../prisma/**"
             ],
             message: "Use the '@/' path alias instead of parent-relative imports into top-level folders (e.g. '@/lib/...' not '../../lib/...')."
+          },
+          {
+            // Hard ban on importing from the dead `components/building/` and
+            // `lib/building/` mirror trees. They are inert duplicates kept for
+            // historical reference; editing them produces "changes did not
+            // take effect" symptoms in production.
+            group: [
+              "@/components/building/**",
+              "@/lib/building/**",
+              "**/components/building/**",
+              "**/lib/building/**"
+            ],
+            message: "components/building/** and lib/building/** are DEAD MIRROR trees. Edit the live copy under components/** or lib/** instead."
           }
         ]
       }]

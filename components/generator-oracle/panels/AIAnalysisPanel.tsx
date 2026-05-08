@@ -28,9 +28,15 @@ import {
 } from '@/lib/generator-oracle/integratedDiagnosticService';
 import { useAIAvailable } from '@/lib/generator-oracle/useAIAvailable';
 import AIUnavailableNotice from '@/components/generator-oracle/AIUnavailableNotice';
+import RuleBasedAssistantPanel from '@/components/generator-oracle/RuleBasedAssistantPanel';
 import AssetCardGate, {
   type AssetCardValue,
 } from '@/components/generator-oracle/AssetCardGate';
+
+// `AIUnavailableNotice` is intentionally retained as an exported fallback for
+// future hardware-error states (camera blocked, mic blocked, etc.). The AI
+// panels themselves now degrade to the rule-based engineering assistant.
+void AIUnavailableNotice;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -585,17 +591,14 @@ function AIAnalysisPanelImpl({ className = '', card }: AIAnalysisPanelProps) {
     load: { label: 'Load Parameters', icon: '📊' },
   };
 
-  // After all hooks have run, swap the entire panel for an unavailable notice
-  // when the server has no AI key. The local rule-based engine still exists
-  // (performAIDiagnosis in ai-diagnostic-engine.ts) but presenting it here
-  // under "AI Analysis" branding would be misleading until the real AI is on.
+  // When the server has no generative-AI key wired up, deliver the deterministic
+  // rule-based engineering assistant instead of dead-ending on an unavailable
+  // notice. The assistant is sourced exclusively from the curated fault-code
+  // library and the deterministic threshold engine (`performAIDiagnosis`). It
+  // is clearly labelled as non-generative.
   if (aiAvailability === 'unavailable') {
     return (
-      <AIUnavailableNotice
-        feature="AI Parameter Analysis"
-        description="Cross-parameter AI diagnosis (correlating live readings, fault codes, and symptoms into a ranked probable-cause report) is not yet enabled. For parameter-by-parameter checks today, use the Engine, Electrical, and Sensors sub-tabs under Systems."
-        className={className}
-      />
+      <RuleBasedAssistantPanel mode="analysis" card={card} className={className} />
     );
   }
 

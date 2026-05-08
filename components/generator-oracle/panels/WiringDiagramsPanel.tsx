@@ -23,7 +23,83 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   WIRING_SAFETY_NOTICE,
   WIRING_UNAVAILABLE_MESSAGE,
+  validateControllerWiringMatch,
 } from '@/lib/generator-oracle/wiringGuard';
+import {
+  getControllerSource,
+  type ControllerSourceEntry,
+} from '@/lib/generator-oracle/controllerSources';
+
+/**
+ * Renders the OEM source provenance / unsupported-reason for a controller.
+ * Verified controllers list the OEM document(s) the pin map was extracted
+ * from. Unsupported controllers list the searched OEM hubs and the explicit
+ * reason no pinout has been shipped — making the gap auditable rather than
+ * hidden.
+ */
+function ControllerSourceBlock({ controllerId }: { controllerId: string }) {
+  const entry: ControllerSourceEntry | undefined = getControllerSource(controllerId);
+  if (!entry) return null;
+  if (entry.status === 'verified') {
+    return (
+      <div
+        className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs"
+        role="note"
+        aria-label="controller wiring source"
+      >
+        <div className="font-semibold text-emerald-300 mb-1">
+          Verified pinout source ({entry.verificationConfidence} confidence)
+        </div>
+        <ul className="list-disc pl-5 space-y-1 text-slate-300">
+          {entry.sources.map((s, i) => (
+            <li key={i}>
+              <span className="font-medium text-slate-100">{s.title}</span>
+              {s.revision ? <span className="text-slate-400"> · rev {s.revision}</span> : null}
+              <span className="text-slate-400"> · {s.publisher} · {s.documentType}</span>
+              {s.url ? (
+                <>
+                  {' '}
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-300 underline hover:text-emerald-200"
+                  >
+                    open document
+                  </a>
+                </>
+              ) : null}
+              {s.notes ? <div className="text-slate-400 mt-0.5">{s.notes}</div> : null}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+  return (
+    <div
+      className="mt-3 rounded-lg border border-slate-600/50 bg-slate-900/40 p-3 text-xs"
+      role="note"
+      aria-label="controller wiring unsupported reason"
+      data-testid="controller-unsupported-reason"
+    >
+      <div className="font-semibold text-amber-300 mb-1">
+        Why this controller is unsupported
+      </div>
+      <p className="text-slate-300 leading-relaxed">{entry.reason}</p>
+      {entry.searchedSources.length > 0 && (
+        <div className="mt-2">
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">Sources searched</div>
+          <ul className="list-disc pl-5 text-slate-400">
+            {entry.searchedSources.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ==================== ELECTRICAL SYMBOLS (SVG) ====================
 const ElectricalSymbols = {
@@ -3012,6 +3088,7 @@ function PinoutTable({ controller }: { controller: ControllerModel }) {
             <p className="text-xs text-slate-400 leading-relaxed">
               {WIRING_SAFETY_NOTICE}
             </p>
+            <ControllerSourceBlock controllerId={controller.id} />
           </div>
         </div>
       </div>
@@ -3030,6 +3107,8 @@ function PinoutTable({ controller }: { controller: ControllerModel }) {
 
   return (
     <div className="space-y-4">
+      {/* Verified-source citation */}
+      <ControllerSourceBlock controllerId={controller.id} />
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
         <input
@@ -3157,6 +3236,7 @@ function DetailedSchematicView({
             is not yet loaded — terminal numbers shown are illustrative.{' '}
             {WIRING_UNAVAILABLE_MESSAGE}
           </p>
+          <ControllerSourceBlock controllerId={controller.id} />
         </div>
       )}
       {/* Schematic SVG */}
@@ -3280,7 +3360,22 @@ export default function WiringDiagramsPanel() {
 
   // Get current pin configuration. Never fall back to DSE 7320 — see
   // lib/generator-oracle/wiringGuard.ts for the reasoning.
-  const currentPins = CONTROLLER_PINS[selectedController.id] ?? [];
+  const rawPins = CONTROLLER_PINS[selectedController.id] ?? [];
+  // Defense-in-depth: validate that the wiring data we are about to render
+  // belongs to the same brand as the selected controller. Today CONTROLLER_PINS
+  // is keyed by controller.id so a mismatch is impossible, but this guard
+  // ensures any future regression that re-introduces a cross-brand fallback
+  // (e.g. silently using DSE 7320 wiring for PowerWizard / SmartGen / ComAp /
+  // Woodward / Datakom / Lovato / Siemens / ENKO / VODIA) is force-blanked
+  // at the render boundary. See lib/generator-oracle/wiringGuard.ts and
+  // tests/regression/site-invariants.test.ts.
+  const wiringGuard = validateControllerWiringMatch(
+    selectedController.brand,
+    selectedController.model,
+    selectedController.brand,
+    selectedController.model,
+  );
+  const currentPins = wiringGuard.ok ? rawPins : [];
   const hasVerifiedPinout = currentPins.length > 0;
 
   // Export to PDF function

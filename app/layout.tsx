@@ -9,6 +9,7 @@ import "@/styles/accessibility.css"; // WCAG 2.1 AAA Accessibility Styles
 // ═══════════════════════════════════════════════════════════════════════════════
 import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
+import B2BSiteStrip from '@/components/b2b/B2BSiteStrip';
 import { OrganizationSchema, WebSiteSchema, DiagnosticSuiteSchema } from '@/components/seo/StructuredData';
 import FAQSchema from '@/components/seo/FAQSchema';
 import SkipToContent from '@/components/accessibility/SkipToContent';
@@ -482,6 +483,10 @@ export default async function RootLayout({
         <nav id="main-navigation" aria-label="Main navigation">
           <TeslaStyleNavigation />
         </nav>
+        {/* Site-wide B2B positioning strip — single source of truth.
+            Mounted here so EVERY page in the site carries the B2B message.
+            See components/b2b/B2BSiteStrip.tsx and tests/regression/site-invariants.test.ts. */}
+        <B2BSiteStrip />
         <main id="main-content" role="main" aria-label="Main content">
           {children}
         </main>
