@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { BLOG_ARTICLES, BLOG_CATEGORIES, getFeaturedArticles } from '@/lib/data/blog-articles';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata: Metadata = {
   title: 'Generator & Solar Blog | Expert Insights Kenya | Emerson EiMS',
@@ -33,6 +35,9 @@ export default function BlogPage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.blog} />
+
       {/* Schema.org JSON-LD for Blog */}
       <script
         type="application/ld+json"

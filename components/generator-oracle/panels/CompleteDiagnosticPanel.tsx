@@ -23,14 +23,9 @@ import {
   COMPLETE_SOLUTIONS,
   ECM_REPROGRAMMING_GUIDES
 } from '@/lib/generator-oracle/completeDiagnosticSolutions';
-import {
-  searchAllFaultCodes,
-  getTotalFaultCodeCount,
-  searchControllerFaults,
-  getFaultCodesByBrand,
-  CONTROLLER_BRANDS,
-  type ControllerFaultCode
-} from '@/lib/generator-oracle/integratedDiagnosticService';
+// Client-safe metadata only (~5 KB). Heavy fault-code operations are
+// reachable from the client via lib/generator-oracle/client/oracleClient.
+import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
 import { DisclaimerBanner } from '../DisclaimerBanner';
 
 // ==================== COMPONENTS ====================

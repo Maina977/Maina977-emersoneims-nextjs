@@ -4,6 +4,8 @@ import React, { useState, useRef } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import UnifiedCTA from '@/components/cta/UnifiedCTA'
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand'
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles'
 import {
   Hammer,
   Shield,
@@ -853,6 +855,7 @@ const FabricationPage = () => {
 
   return (
     <main className="min-h-screen bg-gray-50">
+      <B2BCommercialBand profile={B2B_PROFILES.fabrication} />
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[600px] overflow-hidden">
         <motion.div

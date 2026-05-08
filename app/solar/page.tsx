@@ -15,6 +15,8 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { AnalogClock, AnalogCalendar, WeatherWidget } from '@/components/ui/AnalogWidgets';
 import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // ==================== DYNAMIC IMPORTS ====================
 const SolarBibleEngine = dynamic(() => import('@/components/solar/SolarBibleEngine'), {
@@ -728,6 +730,7 @@ export default function SolarBible() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-slate-900 to-black">
+      <B2BCommercialBand profile={B2B_PROFILES.solar} />
       {/* Urgency Banner */}
       <UrgencyBanner />
 

@@ -1,5 +1,7 @@
 import SectionLead from "../../components/generators/SectionLead";
 import CTAForm from "@/components/CTAForm";
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata = {
   title: "Talk to an expert — EmersonEIMS solutions",
@@ -10,6 +12,9 @@ export const metadata = {
 export default function ContactPage() {
   return (
     <main>
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.contact} />
+
       <SectionLead
         title="Talk to an expert"
         subtitle="Get in touch with our engineering team for diesel generators, solar, controls, and power systems advice."

@@ -16,6 +16,7 @@ import {
   type AIDiagnosticRequest,
 } from '@/lib/generator-oracle/aiDiagnosticService';
 import type { GeneratorReadings } from '@/lib/generator-oracle/ai-diagnostic-engine';
+import { isAIDisabledServer } from '@/lib/generator-oracle/aiFlags';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // RATE LIMITING
@@ -87,6 +88,23 @@ function validateReadings(readings: unknown): readings is GeneratorReadings {
  * Perform AI diagnosis on generator readings
  */
 export async function POST(request: NextRequest) {
+  // Kill-switch: refuse AI parameter analysis when the deployment is in
+  // non-AI rollout mode. The local rule-based engine still exists
+  // (`performAIDiagnosis` in ai-diagnostic-engine.ts) and is wired into the
+  // Systems / Sensors panels under their own non-AI branding.
+  if (isAIDisabledServer()) {
+    return NextResponse.json(
+      {
+        success: false,
+        code: 'AI_NOT_CONFIGURED',
+        error: 'Generator Oracle AI is disabled on this deployment',
+        message:
+          'AI parameter diagnosis is intentionally turned off for this rollout.',
+      },
+      { status: 503 },
+    );
+  }
+
   try {
     // Rate limiting
     const limiter = getRatelimit();
@@ -204,10 +222,12 @@ export async function POST(request: NextRequest) {
  */
 export async function GET() {
   const status = getServiceStatus();
+  const aiDisabledByFlag = isAIDisabledServer();
 
   return NextResponse.json({
     service: 'Generator Oracle AI Diagnostics',
-    aiEnabled: isAIDiagnosticsEnabled(),
+    aiEnabled: !aiDisabledByFlag && isAIDiagnosticsEnabled(),
+    aiDisabledByFlag,
     ...status,
     endpoints: {
       diagnose: {

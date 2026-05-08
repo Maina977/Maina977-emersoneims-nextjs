@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // =====================================================
 // COMPREHENSIVE SOLAR SIZING SOLUTIONS HUB
@@ -265,6 +267,7 @@ export default function SolarSizingHub() {
 
   return (
     <main className="bg-black min-h-screen">
+      <B2BCommercialBand profile={B2B_PROFILES.solarSizing} />
       <CinematicHeroImage
         src="/images/3 (1).png"
         alt="Solar System Sizing"

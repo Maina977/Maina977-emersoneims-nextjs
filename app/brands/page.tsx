@@ -22,6 +22,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // Cinematic Cummins generator image with Hollywood color grading
 const cumminsImage = '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg';
@@ -112,6 +114,9 @@ export default function SOTDWinningHomepage() {
 
   return (
     <>
+      {/* B2B Commercial Band */}
+      <B2BCommercialBand profile={B2B_PROFILES.brands} />
+
       {/* Premium Custom Cursor */}
       {!isLite && (
         <Suspense fallback={null}>

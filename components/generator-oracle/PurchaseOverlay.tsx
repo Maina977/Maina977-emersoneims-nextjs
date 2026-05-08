@@ -33,8 +33,8 @@ interface PurchaseOverlayProps {
 const FEATURES = [
   {
     icon: '🔍',
-    title: '250,000+ Fault Codes',
-    desc: 'Comprehensive database covering all major error codes',
+    title: '400,000+ Fault-Code References',
+    desc: 'Manufacturer-curated entries plus structural template coverage across all major code ranges',
   },
   {
     icon: '⚡',

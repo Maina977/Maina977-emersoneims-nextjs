@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // All generator services
 const services = [
@@ -123,6 +125,9 @@ const serviceAreas = [
 export default function GeneratorServicesPage() {
   return (
     <main className="min-h-screen bg-black text-white">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.generatorServices} />
+
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden">
         <div className="absolute inset-0 opacity-10">

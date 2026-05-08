@@ -76,7 +76,7 @@ const ACTION_CONFIG: Record<CTAAction, { href: string; label: string; icon: stri
     icon: '📥'
   },
   'diagnostic': { 
-    href: '/diagnostic-cockpit', 
+    href: '/diagnostics', 
     label: 'Try Diagnostic Suite', 
     icon: '🎯' 
   },

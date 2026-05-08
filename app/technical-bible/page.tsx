@@ -31,6 +31,8 @@ import {
   BookOpen, Wrench, Cpu, Zap, AlertTriangle,
   Settings, FileText, Download, Search
 } from 'lucide-react';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // Dynamic import for heavy technical content
 const TechnicalBibleHub = dynamic(
@@ -52,6 +54,9 @@ const TechnicalBibleHub = dynamic(
 export default function TechnicalBiblePage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.technicalBible} />
+
       {/* Hero Section */}
       <section className="relative py-16 px-4 border-b border-slate-800">
         <div className="absolute inset-0 overflow-hidden">

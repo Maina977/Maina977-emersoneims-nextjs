@@ -11,6 +11,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SERVICE CATEGORIES
@@ -229,6 +231,9 @@ const SystemStatusPanel = () => {
 
   return (
     <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/30">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.maintenanceHub} />
+
       <div className="flex items-center gap-2 mb-4">
         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
         <span className="text-cyan-400 text-sm font-bold">SYSTEM STATUS: ONLINE</span>

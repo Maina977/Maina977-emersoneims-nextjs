@@ -9,6 +9,7 @@ import { Metadata } from 'next';
 
 // Client wrapper for interactive sections
 import HomePageClient from '@/components/home/HomePageClient';
+import HubFeatureBlock from '@/components/home/HubFeatureBlock';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // STATIC SEO METADATA - Rendered at build time
@@ -86,8 +87,8 @@ function StaticHeroFallback() {
 
           {/* Subtitle - Apple-style subheadline */}
           <p className="apple-subheadline text-gray-200 mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-            Generators · Solar · Boreholes · Buildings — one AI-native platform.
-            <span className="text-amber-400 font-medium"> 12+ Years</span> powering East Africa, now with Generator Oracle, Solar Genius Pro, AquaScan Pro &amp; Building Suite Pro.
+            Generators · Solar · UPS · Boreholes · Buildings — one AI-native platform.
+            <span className="text-amber-400 font-medium"> 12+ Years</span> powering East Africa, now with Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro &amp; the Solar &amp; UPS Intelligence Hub.
           </p>
 
           {/* CTAs - Apple-style buttons with mobile optimization */}
@@ -229,6 +230,17 @@ function AITechnologyShowcase() {
       gradient: 'from-purple-500 to-pink-500',
       link: '/solutions/building',
       badge: 'AI'
+    },
+    {
+      id: 'solar-ups-hub',
+      title: 'Solar & UPS Intelligence Hub',
+      subtitle: 'Sizing · Audit · Diagnostics · UPS Cockpit',
+      description: 'One workspace for solar & UPS engineers — smart sizing, quote audit, product intelligence, UPS live lab and the case library. Every value carries its unit. A–G suitability grading.',
+      features: ['Smart Sizing', 'UPS Live Lab', 'Quote Audit AI', 'Diagnostics'],
+      icon: '🛠️',
+      gradient: 'from-emerald-500 to-cyan-500',
+      link: '/hub',
+      badge: 'HUB'
     }
   ];
 
@@ -271,9 +283,8 @@ function AITechnologyShowcase() {
         </div>
 
         {/* Product Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {products.map((product) => (
-            <Link
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-8">
+          {products.map((product) => (            <Link
               key={product.id}
               href={product.link}
               className="group relative bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:border-amber-500/50 transition-all duration-500 overflow-hidden"
@@ -351,6 +362,12 @@ function AITechnologyShowcase() {
               className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
             >
               Open Building Suite Pro
+            </Link>
+            <Link
+              href="/hub"
+              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold rounded-full hover:scale-105 transition-all shadow-lg"
+            >
+              Open Solar &amp; UPS Hub
             </Link>
           </div>
         </div>
@@ -664,6 +681,7 @@ export default function HomePage() {
       {/* STATIC CONTENT - Renders instantly (no JS needed) */}
       <StaticHeroFallback />
       <StaticFeaturesSection />
+      <HubFeatureBlock />
       <StaticStatsSection />
       <AITechnologyShowcase />
       <StaticCountiesSection />

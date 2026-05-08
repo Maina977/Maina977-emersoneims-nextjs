@@ -6,6 +6,8 @@ import Image from 'next/image';
 import SectionLead from "../../components/generators/SectionLead";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // =====================================================
 // COMPREHENSIVE DIESEL GENERATOR SOLUTIONS HUB
@@ -654,6 +656,7 @@ export default function GeneratorsSolutionHub() {
 
   return (
     <main className="bg-black min-h-screen">
+      <B2BCommercialBand profile={B2B_PROFILES.solutionsGenerators} />
       {/* CINEMATIC HERO SECTION - Hollywood Color Graded */}
       <section className="relative h-[70vh] md:h-[80vh] overflow-hidden">
         {/* Hero Image with Cinematic Treatment */}

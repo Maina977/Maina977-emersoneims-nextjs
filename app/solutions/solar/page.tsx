@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic';
 import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // Dynamic import for SolarGenius Pro Hub V2 - World's #1 Solar AI Platform
 const SolarGeniusProHub = dynamic(() => import('@/components/solar/SolarGeniusProHubV2'), {
@@ -433,6 +435,7 @@ export default function SolarSolutionHub() {
 
   return (
     <main className="bg-black min-h-screen">
+      <B2BCommercialBand profile={B2B_PROFILES.solutionsSolar} />
       <CinematicHeroImage
         src="/images/1 (1).png"
         alt="Solar Power Solutions"

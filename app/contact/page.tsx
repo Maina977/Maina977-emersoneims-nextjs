@@ -4,6 +4,9 @@ import { useState, useEffect, useRef, FormEvent } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import Link from 'next/link';
 import HolographicMap from '@/components/map/HolographicMap';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import { TEAM_EMAILS } from '@/lib/contact/emails';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🚀 SCI-FI PREMIUM CONTACT PAGE - AWWWARD SOTD WORTHY
@@ -41,6 +44,9 @@ function ParticleField() {
   if (isMobile) {
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.contact} />
+
         {particles.map((p) => (
           <div
             key={p.id}
@@ -837,6 +843,36 @@ export default function SciFiContactPage() {
               gradient="from-green-600 to-green-700"
             />
           </div>
+
+          {/* Department Email Desks */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.25 }}
+            className="mt-12"
+          >
+            <div className="text-center mb-6">
+              <p className="text-amber-400 font-mono text-sm">// EMAIL_DESKS</p>
+              <h3 className="text-2xl md:text-3xl font-bold text-white mt-2">Reach the right desk directly</h3>
+              <p className="text-slate-400 mt-2 max-w-2xl mx-auto">
+                Each desk is staffed by the team that owns the work — faster routing, fewer hand-offs.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {TEAM_EMAILS.map((e) => (
+                <a
+                  key={e.address}
+                  href={`mailto:${e.address}`}
+                  className="group block p-5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-amber-400/40 transition-all"
+                >
+                  <div className="text-[11px] uppercase tracking-wider text-amber-400 font-mono">{e.label}</div>
+                  <div className="text-sm md:text-base text-white font-medium mt-1 break-all group-hover:text-amber-300 transition-colors">{e.address}</div>
+                  <div className="text-xs text-slate-400 mt-2 leading-snug">{e.use}</div>
+                </a>
+              ))}
+            </div>
+          </motion.div>
           
           {/* QR Code Quick Connect */}
           <motion.div

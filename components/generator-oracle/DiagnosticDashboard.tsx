@@ -208,7 +208,7 @@ export default function DiagnosticDashboard({
                     <span>🎁</span> FREE ACCESS PERIOD
                   </div>
                   <div className="text-xs text-slate-400">
-                    Full access until April 1st, 2026
+                    Free forever tier — no expiry
                   </div>
                 </div>
               </div>

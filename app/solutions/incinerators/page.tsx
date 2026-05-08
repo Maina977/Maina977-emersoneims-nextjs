@@ -9,14 +9,19 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // Lazy-loaded technical guide section (rendered below existing content).
-// Code-split to keep the initial Incinerator page bundle small.
-const ConstructionGuide = dynamic(() => import('./ConstructionGuide'), {
-  loading: () => (
-    <div className="mx-auto max-w-7xl px-6 py-20 text-center text-gray-500 text-sm">
-      Loading construction & commissioning guide…
-    </div>
-  ),
-});
+// Code-split to keep the initial Incinerator page bundle small. The same
+// component is also rendered on /services/hospital-incinerators (its
+// canonical home), so it lives under components/incinerators/.
+const ConstructionGuide = dynamic(
+  () => import('@/components/incinerators/ConstructionGuide'),
+  {
+    loading: () => (
+      <div className="mx-auto max-w-7xl px-6 py-20 text-center text-gray-500 text-sm">
+        Loading construction & commissioning guide…
+      </div>
+    ),
+  },
+);
 
 const TABS = [
   { id: 'overview', label: 'Overview', color: 'orange' },

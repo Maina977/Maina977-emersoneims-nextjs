@@ -19,13 +19,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  searchAllFaultCodes,
-  searchControllerFaults,
-  getTotalFaultCodeCount,
-  getFaultCodesByBrand,
-  CONTROLLER_BRANDS,
-} from '@/lib/generator-oracle/integratedDiagnosticService';
+// Client-safe metadata only (~5 KB). Heavy fault-code operations are
+// reachable from the client via lib/generator-oracle/client/oracleClient.
+import { CONTROLLER_BRANDS } from '@/lib/generator-oracle/controllerMeta';
 
 // ==================== TYPES ====================
 interface ComponentHealth {

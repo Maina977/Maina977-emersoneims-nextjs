@@ -4,6 +4,8 @@ import MTBFChart from "../components/generators/MTBFChart";
 import ErrorFrequencyChart from "../components/generators/ErrorFrequencyChart";
 import { cumminsGenerators } from "../lib/data/cumminsgenerators";
 import { generatorServices } from "../lib/data/generatorservices";
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata = {
   title: "Cummins Generators — Powering Kenya | EmersonEIMS",
@@ -13,6 +15,9 @@ export const metadata = {
 export default function GeneratorPage() {
   return (
     <main className="min-h-screen">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.generatorMain} />
+
       {/* VideoObject Schema for SEO */}
       <script
         type="application/ld+json"

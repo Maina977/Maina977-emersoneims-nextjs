@@ -1499,7 +1499,7 @@ export default function SettingsPanel({
                     <h4 className="text-amber-400 font-bold">Free Premium Access</h4>
                   </div>
                   <p className="text-slate-300">
-                    Full access until <strong className="text-white">April 1st, 2026</strong>
+                    Free forever tier — <strong className="text-white">no expiry</strong>
                   </p>
                   <p className="text-sm text-slate-500 mt-1">
                     After trial: KES 20,000/year | USD 150/year

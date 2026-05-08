@@ -17,12 +17,9 @@ import {
   CONTRIBUTOR_REWARDS,
   SAMPLE_COMMUNITY_CODES,
 } from '@/lib/generator-oracle/communityFaultCodes';
-import {
-  searchAllFaultCodes,
-  getTotalFaultCodeCount,
-  getAllFaultCodeStats,
-  CONTROLLER_BRANDS,
-} from '@/lib/generator-oracle/integratedDiagnosticService';
+// Client-safe metadata only (~5 KB). Heavy fault-code operations are
+// reachable from the client via lib/generator-oracle/client/oracleClient.
+import { CONTROLLER_BRANDS } from '@/lib/generator-oracle/controllerMeta';
 
 interface CommunityFaultCodesPanelProps {
   userId?: string;

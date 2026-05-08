@@ -5,6 +5,8 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // =====================================================
 // COMPREHENSIVE DEEPSEA & POWERWIZARD SOLUTIONS HUB
@@ -414,6 +416,7 @@ export default function ControlsSolutionHub() {
 
   return (
     <main className="bg-black min-h-screen">
+      <B2BCommercialBand profile={B2B_PROFILES.controls} />
       {/* Cinematic Hero Section with Hollywood Color Grading */}
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
         {/* Background Image with Cinematic Scale */}

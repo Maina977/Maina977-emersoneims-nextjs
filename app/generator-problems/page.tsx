@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { SYMPTOM_DIAGNOSES } from '@/lib/generator-oracle/educationalContent';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata: Metadata = {
   title: 'Generator Problems & Solutions | Free Diagnostic Guide',
@@ -72,6 +74,9 @@ const urgencyStyles = {
 export default function GeneratorProblemsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.generatorProblems} />
+
       {/* Hero Section */}
       <section className="py-16 md:py-24 px-6">
         <div className="max-w-6xl mx-auto text-center">

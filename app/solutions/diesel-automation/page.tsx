@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SectionLead from "../../components/generators/SectionLead";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 const TABS = [
   { id: 'amf', label: '⚡ AMF Panels', color: 'blue' },
@@ -61,6 +63,7 @@ export default function DieselAutomationHub() {
 
   return (
     <main className="bg-black min-h-screen">
+      <B2BCommercialBand profile={B2B_PROFILES.dieselAutomation} />
       <SectionLead
         title="Diesel Automation Solutions"
         subtitle="Complete automation for diesel generators: AMF panels, ATS systems, and remote monitoring solutions."

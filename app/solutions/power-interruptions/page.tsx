@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 const TABS = [
   { id: 'power-quality', label: '⚡ Power Quality', color: 'blue' },
@@ -48,6 +50,7 @@ export default function PowerInterruptionsHub() {
 
   return (
     <main className="bg-black min-h-screen">
+      <B2BCommercialBand profile={B2B_PROFILES.powerInterruptions} />
       <CinematicHeroImage
         src="/images/generator-canopy-fabrication.png"
         alt="Power Interruptions Solutions"

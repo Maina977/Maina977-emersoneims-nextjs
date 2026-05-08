@@ -17,23 +17,21 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// Client-safe small catalogues + helpers + types — no fault-code dataset access.
 import {
-  performIntegratedDiagnosis,
   getECMManufacturers,
   getControllerBrands,
   getECMsByManufacturer,
   searchECMs,
   ECM_DATABASE,
   CONTROLLER_DATABASE,
-  // 400,000+ fault codes integration
-  searchAllFaultCodes,
-  getAllFaultCodeStats,
-  getTotalFaultCodeCount,
-  CONTROLLER_BRANDS,
   type TechnicianInput,
   type IntegratedDiagnosisResult,
-  type ECMEntry
-} from '@/lib/generator-oracle/integratedDiagnosticService';
+  type ECMEntry,
+} from '@/lib/generator-oracle/integratedDiagnosticData';
+import { CONTROLLER_BRANDS } from '@/lib/generator-oracle/controllerMeta';
+// Heavy diagnosis runs server-side via the typed API client.
+import { performIntegratedDiagnosis } from '@/lib/generator-oracle/client/oracleClient';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES

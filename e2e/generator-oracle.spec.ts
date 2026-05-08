@@ -90,17 +90,20 @@ test.describe('Generator Oracle', () => {
 
   test('Expert Chat surfaces a structured error (honesty path)', async ({ page }) => {
     await page.getByRole('button', { name: /AI Diagnostics/i }).first().click();
-    // Default sub-tab is Expert Chat. Find the textarea and send a message.
+    // Default sub-tab is Expert Chat. The chat surface is only mounted when
+    // the server reports aiConfigured:true (otherwise the AIUnavailableNotice
+    // takes its place — covered by a separate test below). Skip if absent.
     const input = page.locator('textarea').first();
-    await expect(input).toBeVisible({ timeout: 15_000 });
+    if (!(await input.isVisible().catch(() => false))) {
+      test.skip(true, 'AI is unavailable on this server — covered by AIUnavailableNotice test');
+    }
     await input.fill('What does DSE 0027 mean?');
-    // Send via Enter (no shift) — ExpertAIChatPanel's input handler treats this as submit
     await input.press('Enter');
 
     // Either:
-    //   (a) AI_NOT_CONFIGURED — amber banner with "AI service not configured"
-    //   (b) AI_UPSTREAM_ERROR — red banner with "AI service error"
-    //   (c) NETWORK_ERROR — red banner with "Network error"
+    //   (a) AI_NOT_CONFIGURED — amber banner "AI service not configured"
+    //   (b) AI_UPSTREAM_ERROR — red banner "AI service error"
+    //   (c) NETWORK_ERROR — red banner "Network error"
     // All three are HONEST — none is a fake assistant reply.
     const banner = page
       .getByText(
@@ -108,8 +111,64 @@ test.describe('Generator Oracle', () => {
       )
       .first();
     await expect(banner).toBeVisible({ timeout: 30_000 });
-
-    // Verify the canned fallback ("I'm having trouble connecting to the AI service right now") is GONE.
     await expect(page.getByText(/I'm having trouble connecting to the AI service/i)).toHaveCount(0);
+  });
+});
+
+/**
+ * Same module, but every AI panel is forced into its "unavailable" placeholder
+ * by intercepting the health endpoints with aiConfigured:false. This proves
+ * disabled-AI shows a clear "Coming Soon" notice rather than a half-functional
+ * UI that could be mistaken for working AI.
+ */
+test.describe('Generator Oracle — AI disabled mode', () => {
+  test.beforeEach(async ({ page, context }) => {
+    await context.addInitScript(() => {
+      try {
+        window.localStorage.setItem('oracle_disclaimer_accepted', 'true');
+      } catch {}
+    });
+    await page.route('**/api/generator-oracle/expert-chat', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ status: 'ok', aiConfigured: false, model: 'claude-opus-4-7' }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+    await page.route('**/api/generator-oracle/ai-visual-diagnose', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ status: 'ok', aiConfigured: false, model: 'claude-opus-4-7' }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto('/generator-oracle');
+    await expect(page.getByRole('button', { name: /Command/i }).first()).toBeVisible({ timeout: 30_000 });
+    await page.getByRole('button', { name: /AI Diagnostics/i }).first().click();
+  });
+
+  test('Expert Chat shows "Coming Soon" notice', async ({ page }) => {
+    await expect(page.getByText(/Expert AI Chat — Coming Soon/i)).toBeVisible({ timeout: 15_000 });
+    // Interactive textarea must NOT exist when AI is disabled.
+    await expect(page.locator('textarea')).toHaveCount(0);
+  });
+
+  test('Visual Diagnose shows "Coming Soon" notice', async ({ page }) => {
+    await page.getByRole('button', { name: /Visual Diagnose/i }).first().click();
+    await expect(page.getByText(/AI Visual Diagnostic — Coming Soon/i)).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('AI Analysis shows "Coming Soon" notice', async ({ page }) => {
+    await page.getByRole('button', { name: /AI Analysis/i }).first().click();
+    await expect(page.getByText(/AI Parameter Analysis — Coming Soon/i)).toBeVisible({ timeout: 15_000 });
   });
 });

@@ -52,10 +52,10 @@ const yandexVerification = process.env.NEXT_PUBLIC_YANDEX_VERIFICATION;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "EmersonEIMS | #1 Generator & Solar Company Kenya | AI-Powered | 3-Year Warranty",
-    template: "%s | EmersonEIMS - AI-Powered Generator & Solar Solutions Kenya"
+    default: "EmersonEIMS | B2B Power & Engineering Partner for Industry, Healthcare & Telecom in Kenya",
+    template: "%s | EmersonEIMS — B2B Power & Engineering Solutions Kenya"
   },
-  description: "Kenya's #1 Generator & Solar Company with 3-YEAR WARRANTY. AI Generator Oracle (90% accuracy). Solar Solution School with 10 AI engines. Cummins, Perkins, FG Wilson Authorized. 15 African countries. 47 counties. 24/7 Emergency. Call +254768860665",
+  description: "EmersonEIMS is a B2B power-engineering partner for manufacturers, hospitals, telecom, commercial property and construction in Kenya — generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 3-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Call +254768860665.",
   // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
   // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],
@@ -71,8 +71,8 @@ export const metadata: Metadata = {
     locale: "en_KE",
     url: siteUrl,
     siteName: "EmersonEIMS",
-    title: "EmersonEIMS | #1 AI-Powered Generator & Solar Company Kenya | 3-Year Warranty",
-    description: "Kenya's #1 Generator & Solar Company. 3-Year Warranty. AI Generator Oracle (90% accuracy). Solar Solution School with 10 AI engines. 15 African countries. 47 counties. Call +254768860665",
+    title: "EmersonEIMS | B2B Power & Engineering Partner for Kenyan Industry",
+    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes and incinerators for manufacturing, healthcare, telecom and commercial property in Kenya. 3-year warranty, SLA maintenance, 24/7 emergency. Call +254768860665.",
     images: [
       {
         url: `${siteUrl}/og-image.jpg`,
@@ -84,12 +84,18 @@ export const metadata: Metadata = {
     ],
     countryName: "Kenya",
     phoneNumbers: ["+254 768 860 665", "+254 782 914 717"],
-    emails: ["info@emersoneims.com"],
+    emails: [
+      "info@emersoneims.com",
+      "emersoneimservices@emersoneims.com",
+      "generators@emersoneims.com",
+      "solar@emersoneims.com",
+      "sally@emersoneims.com",
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "EmersonEIMS | #1 AI-Powered Generator & Solar Kenya | 3-Year Warranty",
-    description: "Kenya's #1 Generator & Solar Company. AI Generator Oracle (90% accuracy). Solar AI with 10 engines. 3-Year Warranty. 15 African countries. Call +254768860665",
+    title: "EmersonEIMS | B2B Power & Engineering Partner Kenya | 3-Year Warranty",
+    description: "B2B power & engineering for industry, healthcare, telecom & construction in Kenya. Generators, solar, UPS, HVAC, boreholes, incinerators. SLA maintenance + 24/7 emergency. Call +254768860665.",
     images: [`${siteUrl}/og-image.jpg`],
     creator: "@EmersonEIMS",
     site: "@EmersonEIMS",
@@ -186,6 +192,7 @@ export default async function RootLayout({
         "@type": "ContactPoint",
         "contactType": "customer service",
         "telephone": "+254768860665",
+        "email": "info@emersoneims.com",
         "availableLanguage": ["English", "Swahili"],
         "areaServed": [
           "KE", "TZ", "UG", "RW",
@@ -196,6 +203,37 @@ export default async function RootLayout({
           "Kericho", "Bomet", "Kakamega", "Vihiga", "Bungoma", "Busia", "Siaya", "Kisumu", "Homa Bay",
           "Migori", "Kisii", "Nyamira", "Nairobi City"
         ]
+      },
+      {
+        "@type": "ContactPoint",
+        "contactType": "technical support",
+        "telephone": "+254768860665",
+        "email": "emersoneimservices@emersoneims.com",
+        "availableLanguage": ["English", "Swahili"],
+        "areaServed": "KE"
+      },
+      {
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "telephone": "+254768860665",
+        "email": "generators@emersoneims.com",
+        "productSupported": "Generators, ATS, Controllers, Diesel Automation",
+        "areaServed": "KE"
+      },
+      {
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "telephone": "+254768860665",
+        "email": "solar@emersoneims.com",
+        "productSupported": "Solar PV, Hybrid, UPS, Batteries, Inverters",
+        "areaServed": "KE"
+      },
+      {
+        "@type": "ContactPoint",
+        "contactType": "account management",
+        "telephone": "+254768860665",
+        "email": "sally@emersoneims.com",
+        "areaServed": "KE"
       },
       {
         "@type": "ContactPoint",
@@ -382,7 +420,6 @@ export default async function RootLayout({
           .lazy-image{opacity:0;transition:opacity .3s ease-in-out}.lazy-image.loaded{opacity:1}
           /* Prevent CLS - Reserve space for images and media */
           img,video,iframe{height:auto;max-width:100%;display:block}
-          img{content-visibility:auto}
           /* Fast font loading with fallback */
           @font-face{font-family:Inter;font-style:normal;font-weight:400 700;font-display:swap;src:local('Inter'),local('Inter-Regular')}
           /* Navigation skeleton for instant render */
@@ -425,14 +462,10 @@ export default async function RootLayout({
         {/* HIGHEST PRIORITY: Preload critical resources */}
         <link rel="preload" href="/images/logo-tagline.png" as="image" type="image/png" fetchPriority="high" />
 
-        {/* Module Preload for faster JS execution */}
-        <link rel="modulepreload" href="/_next/static/chunks/webpack.js" />
-
-        {/* DEFERRED: Prefetch pages user is likely to visit (loaded during idle) */}
-        <link rel="prefetch" href="/generators" as="document" />
-        <link rel="prefetch" href="/generator-oracle" as="document" />
-        <link rel="prefetch" href="/contact" as="document" />
-        <link rel="prefetch" href="/solar" as="document" />
+        {/* PERF: removed blanket <link rel="prefetch"> for /generators, /generator-oracle,
+            /contact and /solar. They were forcing every user to download four extra HTML
+            documents on every page load (heavy on mobile data). next/link prefetch on
+            hover already covers in-app navigation. */}
 
         {/* Performance Optimization Meta - Mobile & Desktop */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
@@ -490,6 +523,12 @@ export default async function RootLayout({
         <main id="main-content" role="main" aria-label="Main content">
           {children}
         </main>
+        {/* Site-wide B2B positioning strip — guarantees every page carries the
+            commercial / industrial / institutional / contractor B2B message
+            without rearranging existing per-page content. Rendered immediately
+            before the footer so it sits in normal document flow and never
+            collides with the fixed-position TeslaStyleNavigation. */}
+        <B2BSiteStrip />
         <footer id="contact-section" role="contentinfo">
           <PremiumFooter />
         </footer>
@@ -510,22 +549,10 @@ export default async function RootLayout({
             DEFERRED SCRIPTS - Load after page is interactive
         ════════════════════════════════════════════════════════════════════ */}
         
-        {/* Service Worker Cache Management - Deferred */}
-        <Script
-          id="sw-register"
-          strategy="lazyOnload"
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Clear old caches on load
-              (async function() {
-                if ('caches' in window) {
-                  const cacheNames = await caches.keys();
-                  await Promise.all(cacheNames.map(name => caches.delete(name)));
-                }
-              })();
-            `,
-          }}
-        />
+        {/* PERF: removed blanket cache-clearing script. The previous version called
+            caches.delete() on EVERY page load, which destroyed the browser cache
+            and forced full re-download of every asset. Cache invalidation is now
+            handled by Next.js content hashing on the asset URLs. */}
         
         {/* Accessibility Keyboard Shortcut - Deferred */}
         <Script
@@ -544,7 +571,10 @@ export default async function RootLayout({
           }}
         />
 
-        {/* 🚀 WORLD'S #1 FASTEST - Performance Monitoring */}
+        {/* PERF: Performance Monitoring — only attached in dev. Production users
+            should not pay the cost of three PerformanceObservers and a load-time
+            handler that exist only to log to the console. */}
+        {isDev && (
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -606,6 +636,7 @@ export default async function RootLayout({
             `,
           }}
         />
+        )}
         </NextIntlClientProvider>
         </ScreenReaderAnnouncerProvider>
       </body>

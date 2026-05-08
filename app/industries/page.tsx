@@ -5,9 +5,12 @@
  * that drives visitors to industry-specific pages.
  */
 
+
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllIndustries, INDUSTRY_STATS } from '@/lib/seo/industryData';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata: Metadata = {
   title: 'Industries We Serve | Generator & Power Solutions for Every Sector | EmersonEIMS',
@@ -27,36 +30,44 @@ export default function IndustriesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black">
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
+      {/* B2B Commercial Band */}
+      <B2BCommercialBand profile={{
+        eyebrow: 'Industry Solutions • B2B Power',
+        headline: 'Specialized power solutions for every industry in Kenya.',
+        subtitle: 'From hospitals and hotels to manufacturing, banks, and agribusiness — engineered, installed, and maintained for uptime, compliance, and ROI.',
+        whoFor: [
+          'Hospitals & clinics',
+          'Hotels & hospitality',
+          'Manufacturing',
+          'Banks & financial',
+          'Schools & universities',
+          'Agribusiness',
+          'Data centres',
+          'Government & NGOs',
+        ],
+        pso: [
+          { problem: 'Industry-specific risks: outages, compliance, downtime.', solution: 'Tailored engineering, installation, and SLA-backed service.', outcome: 'Documented uptime, audit-ready compliance, lower TCO.' },
+          { problem: 'Generic solutions don’t fit your sector.', solution: 'Sector-specific sizing, controls, and reporting.', outcome: 'Right-fit systems, proven results, sector references.' },
+          { problem: 'No single partner for all your sites.', solution: 'Nationwide coverage, one contract, one SLA.', outcome: 'Simplified management, predictable cost, 24/7 support.' },
+        ],
+        trust: [
+          'Trusted by 16,000+ hotels, 9,000+ hospitals, 93,000+ schools',
+          '3-year warranty, 24/7 support',
+          'SLA-backed service, audit-ready records',
+        ],
+        ctas: [
+          { label: 'Get Industry Proposal', href: '/contact?topic=industry-proposal', variant: 'primary' },
+          { label: 'Book Free Site Survey', href: '/booking?service=industry-audit', variant: 'secondary' },
+          { label: 'WhatsApp Industry Desk', href: 'https://wa.me/254768860665', variant: 'tertiary' },
+        ],
+        accent: 'cyan',
+      }} />
 
+      {/* Hero / Stats Section */}
+      <section className="relative py-16 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-blue-900/10" />
         <div className="max-w-6xl mx-auto relative z-10">
-          {/* Breadcrumbs */}
-          <nav className="mb-8 text-sm" aria-label="Breadcrumb">
-            <ol className="flex items-center gap-2 text-slate-400">
-              <li><Link href="/" className="hover:text-cyan-400 transition-colors">Home</Link></li>
-              <li>/</li>
-              <li className="text-white">Industries</li>
-            </ol>
-          </nav>
-
-          <div className="text-center">
-            <span className="inline-block px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-medium mb-6">
-              Trusted by Kenya's Leading Organizations
-            </span>
-
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Power Solutions for{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-                Every Industry
-              </span>
-            </h1>
+          <div className="text-center mb-12">
 
             <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
               We don't believe in one-size-fits-all. Every industry has unique power challenges.

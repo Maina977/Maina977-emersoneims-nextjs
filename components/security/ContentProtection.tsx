@@ -44,8 +44,13 @@ export default function ContentProtection() {
     // Detect Print Screen attempts
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'PrintScreen') {
-        // Clear clipboard after PrintScreen
-        navigator.clipboard?.writeText('© EmersonEIMS - Content Protected').catch(() => {});
+        // Intentionally do NOT touch the system clipboard here. Browsers
+        // (Chromium 122+) treat any `navigator.clipboard.writeText()` call
+        // outside an explicit user gesture as a permission-prompted action,
+        // which surfaced an intrusive “wants to see text and images copied
+        // to the clipboard” popup on first paint. PrintScreen detection in
+        // a web page is unreliable anyway — leave the deterrent to CSP /
+        // headers and keep the page load silent.
       }
     };
 

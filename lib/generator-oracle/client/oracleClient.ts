@@ -18,6 +18,7 @@
  */
 
 import type { ControllerFaultCode } from '../controllerMeta';
+import type { TechnicianInput, IntegratedDiagnosisResult } from '../integratedDiagnosticData';
 
 // ============================================================================
 // Shared types (mirror the server-side `faultIndex.ts` payloads)
@@ -261,6 +262,23 @@ export async function getControllers(brand?: string, signal?: AbortSignal): Prom
 export async function diagnoseSymptoms(input: DiagnoseInput): Promise<DiagnoseResponse> {
   const { signal, ...payload } = input;
   return postJson<DiagnoseResponse>(`${BASE}/diagnose`, payload, signal);
+}
+
+/**
+ * Server-side `performIntegratedDiagnosis()` proxy. Sends the technician
+ * input to /api/generator-oracle/integrated-diagnose and returns the full
+ * IntegratedDiagnosisResult — no fault-code dataset access from the client.
+ */
+export async function performIntegratedDiagnosis(
+  input: TechnicianInput,
+  signal?: AbortSignal,
+): Promise<IntegratedDiagnosisResult> {
+  const json = await postJson<{ ok: true; result: IntegratedDiagnosisResult }>(
+    `${BASE}/integrated-diagnose`,
+    input,
+    signal,
+  );
+  return json.result;
 }
 
 // ============================================================================

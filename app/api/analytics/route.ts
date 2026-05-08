@@ -15,6 +15,8 @@ declare global {
     referrers: Map<string, number>;
     devices: { desktop: number; mobile: number; tablet: number };
     countries: Map<string, number>;
+    ctaClicks: Map<string, number>;
+    ctaTotal: number;
   };
 }
 
@@ -30,6 +32,8 @@ if (!global.analyticsStore) {
     referrers: new Map(),
     devices: { desktop: 0, mobile: 0, tablet: 0 },
     countries: new Map(),
+    ctaClicks: new Map(),
+    ctaTotal: 0,
   };
 }
 
@@ -44,6 +48,33 @@ function cleanupInactiveUsers() {
     if (now - data.lastSeen > timeout) {
       store.activeUsers.delete(id);
     }
+  }
+}
+
+// Hard caps on the in-memory Maps so a malicious client cannot exhaust
+// process memory by spamming POSTs with random page/referrer values.
+const MAX_PAGES = 5000;
+const MAX_REFERRERS = 2000;
+const MAX_COUNTRIES = 500;
+const MAX_UNIQUE_VISITORS = 50000;
+const MAX_HOURLY_BUCKETS = 24 * 14; // ~2 weeks
+const MAX_DAILY_BUCKETS = 365;
+function capMap<K, V>(map: Map<K, V>, max: number) {
+  if (map.size <= max) return;
+  const overflow = map.size - max;
+  let i = 0;
+  for (const k of map.keys()) {
+    if (i++ >= overflow) break;
+    map.delete(k);
+  }
+}
+function capSet<T>(set: Set<T>, max: number) {
+  if (set.size <= max) return;
+  const overflow = set.size - max;
+  let i = 0;
+  for (const v of set) {
+    if (i++ >= overflow) break;
+    set.delete(v);
   }
 }
 
@@ -85,7 +116,12 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { action, page, referrer } = body;
-    
+
+    // Cap input string sizes so attackers can't push huge keys into the
+    // Maps below (memory growth + JSON response bloat).
+    const safePage = typeof page === 'string' ? page.slice(0, 200) : '/';
+    const safeReferrer = typeof referrer === 'string' ? referrer.slice(0, 500) : '';
+
     const visitorId = getVisitorId(req);
     const userAgent = req.headers.get('user-agent') || '';
     const deviceType = getDeviceType(userAgent);
@@ -104,13 +140,13 @@ export async function POST(req: NextRequest) {
       // Track active users
       store.activeUsers.set(visitorId, {
         lastSeen: Date.now(),
-        page: page || '/',
+        page: safePage,
         country,
       });
       
       // Track page views
-      const currentViews = store.pageViews.get(page) || 0;
-      store.pageViews.set(page, currentViews + 1);
+      const currentViews = store.pageViews.get(safePage) || 0;
+      store.pageViews.set(safePage, currentViews + 1);
       
       // Track daily visits
       const dateKey = getDateKey();
@@ -123,9 +159,9 @@ export async function POST(req: NextRequest) {
       store.hourlyVisits.set(hourKey, hourlyCount + 1);
       
       // Track referrers
-      if (referrer && !referrer.includes('emersoneims.com')) {
-        const refCount = store.referrers.get(referrer) || 0;
-        store.referrers.set(referrer, refCount + 1);
+      if (safeReferrer && !safeReferrer.includes('emersoneims.com')) {
+        const refCount = store.referrers.get(safeReferrer) || 0;
+        store.referrers.set(safeReferrer, refCount + 1);
       }
       
       // Track devices (only for new visitors)
@@ -138,7 +174,15 @@ export async function POST(req: NextRequest) {
         const countryCount = store.countries.get(country) || 0;
         store.countries.set(country, countryCount + 1);
       }
-      
+
+      // Enforce caps to keep memory bounded under abuse.
+      capSet(store.uniqueVisitors, MAX_UNIQUE_VISITORS);
+      capMap(store.pageViews, MAX_PAGES);
+      capMap(store.referrers, MAX_REFERRERS);
+      capMap(store.countries, MAX_COUNTRIES);
+      capMap(store.hourlyVisits, MAX_HOURLY_BUCKETS);
+      capMap(store.dailyVisits, MAX_DAILY_BUCKETS);
+
       return NextResponse.json({ success: true, visitorId });
     }
     
@@ -147,8 +191,21 @@ export async function POST(req: NextRequest) {
       if (store.activeUsers.has(visitorId)) {
         const userData = store.activeUsers.get(visitorId)!;
         userData.lastSeen = Date.now();
-        if (page) userData.page = page;
+        if (safePage) userData.page = safePage;
       }
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === 'cta_click') {
+      const kindRaw = typeof body.kind === 'string' ? body.kind.slice(0, 32) : 'unknown';
+      const targetRaw = typeof body.target === 'string' ? body.target.slice(0, 200) : '';
+      // Backfill the ctaClicks map if a previously-warm worker did not have it.
+      if (!store.ctaClicks) store.ctaClicks = new Map();
+      const key = `${kindRaw}│${safePage}`;
+      store.ctaClicks.set(key, (store.ctaClicks.get(key) || 0) + 1);
+      store.ctaTotal = (store.ctaTotal || 0) + 1;
+      capMap(store.ctaClicks, 5000);
+      void targetRaw; // currently logged via beacon body only
       return NextResponse.json({ success: true });
     }
     

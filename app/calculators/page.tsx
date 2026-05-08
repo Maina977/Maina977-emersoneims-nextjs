@@ -5,12 +5,17 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import GlassmorphicCard from '@/components/effects/GlassmorphicCard';
 import { calculatePMI, calculateESSA } from '@/app/data/diagnostic/emersonMethodology';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export default function CalculatorsPage() {
   const [activeCalculator, setActiveCalculator] = useState<'roi' | 'load' | 'solar' | 'ups' | 'ac' | 'motor' | 'pmi'>('roi');
 
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.calculators} />
+
       {/* Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
 

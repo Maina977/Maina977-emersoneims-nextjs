@@ -19,6 +19,8 @@ import {
   getRelatedIndustries,
   generateIndustrySEO
 } from '@/lib/seo/industryData';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 interface Props {
   params: Promise<{ industry: string }>;
@@ -63,6 +65,19 @@ export default async function IndustryPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black">
+      {/* B2B Commercial Band */}
+      <B2BCommercialBand profile={{
+        ...B2B_PROFILES.industryDetail,
+        eyebrow: `${industry.shortName} • B2B Power Solutions`,
+        headline: industry.heroTitle,
+        subtitle: industry.heroSubtitle,
+        ctas: [
+          { label: `Request a ${industry.shortName} Proposal`, href: `/contact?topic=industry-${industrySlug}`, variant: 'primary' },
+          { label: 'Book a Free Site Audit', href: `/booking?service=industry-${industrySlug}`, variant: 'secondary' },
+          { label: 'WhatsApp Industry Desk', href: whatsappLink, variant: 'tertiary' },
+        ],
+      }} />
+
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden">
         {/* Background gradient */}

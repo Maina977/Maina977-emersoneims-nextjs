@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import ProBuildingSuiteClient from '@/app/(building)/pro-building-suite/ProBuildingSuiteClient';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // /solutions/building IS the canonical Building Suite page. It mounts the
 // new HTML wizard (eims-building-suite-vYYYYMMDD.html) via a same-origin
@@ -24,6 +26,7 @@ export default function BuildingPage() {
       <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
       <link rel="prefetch" href="/eims-building-suite-v20260503.html" as="document" />
+      <B2BCommercialBand profile={B2B_PROFILES.mepClash} />
       <ProBuildingSuiteClient />
     </>
   );

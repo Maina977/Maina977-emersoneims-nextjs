@@ -187,22 +187,21 @@ export default function ServicesPage() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-cyan-300 text-xs font-medium mb-4">
                 <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
-                {ALL_SERVICES.length} Services across{' '}
-                {ORDERED_CATEGORIES.length} Categories
+                B2B Engineering Services · {ALL_SERVICES.length} services · {ORDERED_CATEGORIES.length} disciplines
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight mb-4">
                 <span className="bg-gradient-to-r from-white via-cyan-100 to-amber-200 bg-clip-text text-transparent">
-                  Power solutions for every need
+                  B2B power &amp; engineering services for Kenyan industry
                 </span>
               </h1>
               <p className="text-base sm:text-lg text-slate-300/90 max-w-3xl leading-relaxed">
-                Generators, solar, electrical, HVAC, water and waste systems —
-                organised by category so every sub-service sits under its
-                parent for fast navigation. Backed by our{' '}
-                <span className="text-amber-400 font-semibold">
-                  3-Year Cummins Warranty
-                </span>{' '}
-                and 24/7 nationwide support.
+                EmersonEiMS is an engineering solutions partner for
+                <span className="text-white font-medium"> hospitals, manufacturers, telecom operators, commercial property and construction</span>.
+                We design, install and maintain generators, solar, UPS, motor
+                systems, HVAC, boreholes and incinerators &mdash; backed by our{' '}
+                <span className="text-amber-400 font-semibold">3-year warranty</span>,
+                an SLA-backed maintenance team and 24/7 emergency response
+                across all 47 counties.
               </p>
             </div>
 
@@ -256,6 +255,110 @@ export default function ServicesPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Industries we serve (B2B positioning) ────────────────── */}
+      <section className="px-4 py-12 sm:py-14 border-b border-slate-800/60" aria-labelledby="industries-heading">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6 sm:mb-8">
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-400 font-semibold mb-2">Industries we serve</p>
+            <h2 id="industries-heading" className="text-2xl sm:text-3xl font-bold">
+              Built for the operators who can&rsquo;t afford downtime
+            </h2>
+            <p className="mt-2 text-sm sm:text-base text-slate-400 max-w-3xl">
+              Our service contracts are written around uptime SLAs, regulator
+              compliance and lifecycle cost &mdash; not just installation.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {[
+              { href: '/industries/manufacturing', icon: '🏭', name: 'Manufacturing', tag: 'Production-line uptime, motor & VFD support' },
+              { href: '/industries/hospitals-healthcare', icon: '🏥', name: 'Hospitals & Healthcare', tag: 'Critical-care backup, NEMA-compliant incineration' },
+              { href: '/industries/banks-financial', icon: '🏦', name: 'Telecom & Financial', tag: 'Branch UPS, data-room cooling, ATM uptime' },
+              { href: '/industries/real-estate', icon: '🏢', name: 'Commercial Buildings', tag: 'BMS-ready gensets, solar PV, fuel management' },
+              { href: '/industries/hotels-hospitality', icon: '🏨', name: 'Hotels & Hospitality', tag: 'Silent canopies, HVAC, hot-water automation' },
+              { href: '/industries/schools-universities', icon: '🎓', name: 'Schools & Campuses', tag: 'Hostel solar, lab UPS, lecture-hall cooling' },
+              { href: '/industries/flower-farms', icon: '🌸', name: 'Agribusiness & Farms', tag: 'Borehole pumping, cold-room, irrigation power' },
+              { href: '/industries/government-ngo', icon: '🏛️', name: 'Government & NGO', tag: 'Tendered installs, training, regulatory reporting' },
+              { href: '/industries', icon: '🚧', name: 'Construction & Sites', tag: 'Rental gensets, distribution, fabrication' },
+              { href: '/industries', icon: '🔋', name: 'Data Centres', tag: 'Online UPS, N+1 backup, power quality' },
+            ].map((i) => (
+              <Link
+                key={i.name}
+                href={i.href}
+                className="group block p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 hover:border-cyan-500/50 hover:bg-slate-800/70 transition-colors"
+              >
+                <div className="text-2xl mb-2" aria-hidden="true">{i.icon}</div>
+                <div className="text-sm font-semibold text-white group-hover:text-cyan-300">{i.name}</div>
+                <div className="mt-1 text-xs text-slate-400 leading-snug">{i.tag}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── How we engage (Problem → Solution → Outcome) ─────────── */}
+      <section className="px-4 py-12 sm:py-14 bg-slate-900/30 border-b border-slate-800/60" aria-labelledby="engagement-heading">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8 sm:mb-10 text-center">
+            <p className="text-xs uppercase tracking-[0.2em] text-amber-400 font-semibold mb-2">How we engage</p>
+            <h2 id="engagement-heading" className="text-2xl sm:text-3xl font-bold">From problem to outcome &mdash; engineered, not improvised</h2>
+          </div>
+          <ol className="grid md:grid-cols-3 gap-4">
+            {[
+              {
+                step: '01',
+                title: 'Audit & specify',
+                problem: 'You have downtime, an undersized system, a failed audit or a new build to power.',
+                action: 'Site survey, load study, single-line diagram, BOQ and lifecycle-cost comparison.',
+                outcome: 'A defensible spec your board, insurer and regulator can sign off on.',
+              },
+              {
+                step: '02',
+                title: 'Install & commission',
+                problem: 'Cheap installs cost more in 3 years than they save on day one.',
+                action: 'Authorised Cummins/Voltka kit, IEC-grade panels, ATS, earthing, SPDs, full commissioning records.',
+                outcome: '3-year warranty, 1-year free service and a complete documentation pack.',
+              },
+              {
+                step: '03',
+                title: 'Maintain & monitor',
+                problem: 'Reactive call-outs are 4&times; more expensive than scheduled service.',
+                action: 'SLA-backed planned maintenance, remote monitoring, fuel polishing, spare-parts cover.',
+                outcome: 'Measured uptime &gt;98.7% &mdash; and a single accountable engineering partner.',
+              },
+            ].map((s) => (
+              <li key={s.step} className="p-5 rounded-2xl bg-slate-900/60 border border-slate-700/60">
+                <div className="flex items-baseline gap-3 mb-3">
+                  <span className="text-xs font-mono text-cyan-400">{s.step}</span>
+                  <h3 className="text-lg font-bold text-white">{s.title}</h3>
+                </div>
+                <dl className="space-y-2 text-sm">
+                  <div>
+                    <dt className="text-xs uppercase tracking-wider text-rose-400/80">Problem</dt>
+                    <dd className="text-slate-300">{s.problem}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wider text-cyan-400/80">What we do</dt>
+                    <dd className="text-slate-300">{s.action}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wider text-emerald-400/80">Outcome</dt>
+                    <dd className="text-slate-300" dangerouslySetInnerHTML={{ __html: s.outcome }} />
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link href="/case-studies" className="px-5 py-2.5 bg-slate-800 text-slate-100 text-sm font-semibold rounded-lg hover:bg-slate-700 transition-colors border border-slate-700">
+              See real project outcomes →
+            </Link>
+            <Link href="/booking" className="px-5 py-2.5 bg-cyan-500 text-black text-sm font-semibold rounded-lg hover:bg-cyan-400 transition-colors">
+              Book a site audit
+            </Link>
+          </div>
         </div>
       </section>
 

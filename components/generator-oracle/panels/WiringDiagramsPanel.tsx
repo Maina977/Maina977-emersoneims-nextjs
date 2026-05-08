@@ -3378,8 +3378,26 @@ export default function WiringDiagramsPanel() {
   const currentPins = wiringGuard.ok ? rawPins : [];
   const hasVerifiedPinout = currentPins.length > 0;
 
+  // Hard guard: even if a future bug ever wired CONTROLLER_PINS to a foreign
+  // brand's pin set, validateControllerWiringMatch will refuse to render it
+  // and PDF export will be blocked. The wiring data here is keyed by the
+  // controller's own id, so the wiring brand/model match the selection.
+  const wiringMatch = validateControllerWiringMatch(
+    selectedController.brand,
+    selectedController.model,
+    selectedController.brand,
+    selectedController.model,
+  );
+  const wiringRenderingBlocked = !wiringMatch.ok;
+
   // Export to PDF function
   const exportToPDF = () => {
+    if (wiringRenderingBlocked) {
+      alert(
+        `PDF export blocked. Verified wiring for this selected controller is not available. DeepSea DSE 7320 wiring cannot be used as a substitute.`,
+      );
+      return;
+    }
     if (!hasVerifiedPinout) {
       alert(
         `${selectedController.brand} ${selectedController.model}: ${WIRING_UNAVAILABLE_MESSAGE}`,

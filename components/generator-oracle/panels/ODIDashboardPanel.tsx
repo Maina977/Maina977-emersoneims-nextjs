@@ -40,15 +40,9 @@ import {
   type ProgrammingLog,
   type ProgrammingOptions
 } from '@/lib/generator-oracle/odi/programmingModule';
-import {
-  searchAllFaultCodes,
-  searchControllerFaults,
-  getTotalFaultCodeCount,
-  getFaultCodesByBrand,
-  getAllFaultCodeStats,
-  CONTROLLER_BRANDS,
-  type ControllerFaultCode
-} from '@/lib/generator-oracle/integratedDiagnosticService';
+// Client-safe metadata only (~5 KB). Heavy fault-code operations are
+// reachable from the client via lib/generator-oracle/client/oracleClient.
+import { CONTROLLER_BRANDS, type ControllerFaultCode } from '@/lib/generator-oracle/controllerMeta';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENTS

@@ -11,6 +11,8 @@ import HolographicLaser from '@/components/effects/HolographicLaser';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import BigHeroImage from '@/components/shared/BigHeroImage';
 import LearnMoreSection from '@/components/shared/LearnMoreSection';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // Lazy load WebGL scene
 const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
@@ -104,6 +106,9 @@ const CompanyTimeline = () => {
 
   return (
     <section className="py-20 bg-gradient-to-b from-black via-gray-900 to-black">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.aboutUs} />
+
       <div className="eims-shell py-0">
         <div className="mb-12">
           <SectionHeading>Our Journey</SectionHeading>

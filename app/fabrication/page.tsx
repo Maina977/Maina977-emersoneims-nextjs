@@ -4,6 +4,8 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // Fabrication services
 const fabricationServices = [
@@ -118,6 +120,9 @@ export default function FabricationPage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.fabricationMain} />
+
       {/* Cinematic Hero Section with Hollywood Color Grading */}
       <section ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden">
         {/* Background Image with Cinematic Scale */}

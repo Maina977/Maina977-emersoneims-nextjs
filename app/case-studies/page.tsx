@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import GlassmorphicCard from '@/components/effects/GlassmorphicCard';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 interface CaseStudy {
   id: string;
@@ -183,6 +185,9 @@ const caseStudies: CaseStudy[] = [
 export default function CaseStudiesPage() {
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.caseStudies} />
+
       {/* Background effects */}
       <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
       <div className="fixed inset-0 opacity-20">

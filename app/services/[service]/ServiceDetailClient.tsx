@@ -35,6 +35,19 @@ const BoreholeAIAnalyzer = dynamic(
   }
 );
 
+// Lazy-loaded technical handbook — rendered only on the hospital-incinerators
+// service page as a continuation below the existing service content.
+const IncineratorConstructionGuide = dynamic(
+  () => import('@/components/incinerators/ConstructionGuide'),
+  {
+    loading: () => (
+      <div className="mx-auto max-w-7xl px-6 py-20 text-center text-gray-500 text-sm">
+        Loading technical guide…
+      </div>
+    ),
+  },
+);
+
 interface ServiceDetailClientProps {
   service: Service;
   relatedServices: Service[];
@@ -881,6 +894,33 @@ export default function ServiceDetailClient({
               ))}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* Hospital-Incinerator Construction & Commissioning Guide
+           Continuation block — appears below the existing service content,
+           above the final CTA. Rendered ONLY for the hospital-incinerators
+           slug so other service pages are unaffected. */}
+      {service.slug === 'hospital-incinerators' && (
+        <section
+          id="hospital-incinerator-technical-guide"
+          aria-label="Hospital incinerator technical construction and commissioning guide"
+          className="border-t border-slate-800 scroll-mt-24"
+        >
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-16 pb-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-orange-400 font-semibold mb-2">
+              Continuation · Engineering Reference
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
+              Technical Construction &amp; Commissioning Guide
+            </h2>
+            <p className="mt-3 text-slate-400 max-w-3xl">
+              A professional Kenya-focused engineering handbook for hospital
+              incinerator planning, fabrication, installation, safety,
+              compliance, commissioning, and maintenance.
+            </p>
+          </div>
+          <IncineratorConstructionGuide />
         </section>
       )}
 

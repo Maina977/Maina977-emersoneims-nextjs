@@ -1585,10 +1585,20 @@ const DEFAULT_WIRING_DIAGRAM: WiringDiagram = {
   ]
 };
 
-// Helper function to get wiring diagram
-function getWiringDiagram(modelId: string): WiringDiagram {
-  return WIRING_DIAGRAMS[modelId] || DEFAULT_WIRING_DIAGRAM;
+// Helper function to get wiring diagram. Returns null when verified wiring
+// for the selected model is not yet available; callers must surface the
+// wiring-unavailable notice rather than silently substituting another
+// controller's pinout (notably DSE 7320). See lib/generator-oracle/wiringGuard.ts.
+function getWiringDiagram(modelId: string): WiringDiagram | null {
+  return WIRING_DIAGRAMS[modelId] ?? null;
 }
+
+// DEFAULT_WIRING_DIAGRAM is intentionally retained as a generic reference
+// dataset only; it MUST NOT be returned by getWiringDiagram() because doing
+// so would silently substitute generic wiring for a brand-specific PDF export.
+// The reference below ensures the constant is treated as used by linters.
+const _UNUSED_DEFAULT_WIRING_DIAGRAM_REF: unknown = DEFAULT_WIRING_DIAGRAM;
+void _UNUSED_DEFAULT_WIRING_DIAGRAM_REF;
 
 // ==================== MAINTENANCE ALARM RESET PROCEDURES ====================
 // Comprehensive guide for clearing maintenance/service alarms on various controllers
@@ -2332,8 +2342,10 @@ const CONTROLLER_DATASHEETS: Record<string, {
   }
 };
 
-// Default datasheet for models without specific data
-const DEFAULT_DATASHEET = CONTROLLER_DATASHEETS['dse-7320'];
+// SAFETY: No DSE 7320 (or any other model) is used as a default datasheet.
+// Substituting one OEM's datasheet for another would mislead technicians and
+// is treated as a wiring-safety hazard. See lib/generator-oracle/wiringGuard.ts.
+type ControllerDatasheet = (typeof CONTROLLER_DATASHEETS)[string];
 
 // ==================== AI DIAGNOSTIC ANALYZER ====================
 interface DiagnosticResult {
@@ -2859,9 +2871,10 @@ export default function ControllerSimulator({
     setSensorValues(prev => ({ ...prev, [paramKey]: value }));
   };
 
-  // Get datasheet
-  const getDatasheet = () => {
-    return CONTROLLER_DATASHEETS[selectedModel.id] || DEFAULT_DATASHEET;
+  // Get datasheet — returns null when verified data is not yet loaded.
+  // Never falls back to DSE 7320 or any other controller's datasheet.
+  const getDatasheet = (): ControllerDatasheet | null => {
+    return CONTROLLER_DATASHEETS[selectedModel.id] ?? null;
   };
 
   // AI Analysis of tech problem - generates solution shown on controller display
@@ -5800,9 +5813,50 @@ function DatasheetModal({
   onClose,
 }: {
   model: { id: string; name: string; display: string };
-  datasheet: typeof CONTROLLER_DATASHEETS[string];
+  datasheet: ControllerDatasheet | null;
   onClose: () => void;
 }) {
+  if (!datasheet) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          exit={{ scale: 0.9 }}
+          className="bg-gray-900 rounded-2xl max-w-xl w-full p-8 border border-amber-500/40"
+          onClick={(e) => e.stopPropagation()}
+          role="alertdialog"
+          aria-labelledby="datasheet-unavailable-title"
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-3xl" aria-hidden="true">⚠</span>
+            <div className="flex-1">
+              <h2 id="datasheet-unavailable-title" className="text-xl font-bold text-amber-300 mb-2">
+                {model.name} — verified datasheet pending
+              </h2>
+              <p className="text-sm text-slate-200 leading-relaxed mb-3">
+                Verified controller-specific datasheet is not yet available for this model.
+                Do not use DeepSea DSE 7320 datasheet as a substitute. Confirm specifications
+                against the OEM controller manual before configuration or installation.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="mt-5 w-full py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-sm font-medium"
+          >
+            Close
+          </button>
+        </motion.div>
+      </motion.div>
+    );
+  }
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -6096,11 +6150,57 @@ function WiringDiagramModal({
   diagram,
   onClose,
 }: {
-  diagram: WiringDiagram;
+  diagram: WiringDiagram | null;
   onClose: () => void;
 }) {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  if (!diagram) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          exit={{ scale: 0.9 }}
+          className="bg-gray-900 rounded-2xl max-w-xl w-full p-8 border border-amber-500/40"
+          onClick={(e) => e.stopPropagation()}
+          role="alertdialog"
+          aria-labelledby="wiring-unavailable-title"
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-3xl" aria-hidden="true">⚠</span>
+            <div className="flex-1">
+              <h2 id="wiring-unavailable-title" className="text-xl font-bold text-amber-300 mb-2">
+                Verified controller wiring is not yet available
+              </h2>
+              <p className="text-sm text-slate-200 leading-relaxed mb-3">
+                Verified controller-specific wiring is not yet available for this model.
+                Do not use DeepSea DSE 7320 wiring as a substitute. Confirm wiring against
+                the OEM controller manual before installation.
+              </p>
+              <p className="text-xs text-slate-400">
+                PDF export is blocked for unsupported controllers to prevent unsafe wiring
+                from leaving the system in a brand-specific document.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="mt-5 w-full py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-sm font-medium"
+          >
+            Close
+          </button>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   // Filter terminals based on search
   const filteredSections = diagram.sections.map(section => ({

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -14,6 +15,12 @@ const ClientWhatsApp = dynamic(() => import('@/components/chat/ClientWhatsApp'),
 const PWAInstallPrompt = dynamic(() => import('@/components/pwa/PWAInstallPrompt'), { ssr: false });
 
 export default function ClientSideComponents() {
+  const pathname = usePathname() || '';
+  // The Solar & UPS Intelligence Hub is a focused engineering workspace.
+  // Suppress the global WhatsApp/PWA floating widgets on /hub/* so they
+  // never overlap simulator inputs, KPI cards, or the governance strip.
+  const isHub = pathname === '/hub' || pathname.startsWith('/hub/');
+
   const [tier1, setTier1] = useState(false); // Essential (1s)
   const [tier2, setTier2] = useState(false); // Nice-to-have (3s)
 
@@ -47,12 +54,14 @@ export default function ClientSideComponents() {
       {tier1 && (
         <>
           <CookieConsent />
-          <ClientWhatsApp />
+          {!isHub && <ClientWhatsApp />}
         </>
       )}
 
-      {/* TIER 2: Nice-to-have - Protection layers */}
-      {tier2 && (
+      {/* TIER 2: Nice-to-have - Protection layers (suppressed on /hub
+          engineering workspace so right-click, Ctrl+C and selection remain
+          available to operators copying values out of the simulator). */}
+      {tier2 && !isHub && (
         <>
           {/* Layer 1: Basic Content Protection (keyboard, right-click, drag) */}
           <ContentProtection />
@@ -68,7 +77,6 @@ export default function ClientSideComponents() {
             showWarnings={false}
           />
 
-          {/* PWA Install Prompt */}
           <PWAInstallPrompt />
         </>
       )}

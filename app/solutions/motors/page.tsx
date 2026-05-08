@@ -2,6 +2,8 @@ import SectionLead from "../../components/generators/SectionLead";
 import InfoCard from "@/components/InfoCard";
 import CTAForm from "@/components/CTAForm";
 import OptimizedImage from "@/components/media/OptimizedImage";
+import B2BCommercialBand from "@/components/b2b/B2BCommercialBand";
+import { B2B_PROFILES } from "@/lib/b2b/pageProfiles";
 
 export const metadata = {
   title: "Motors & rewinding services — EmersonEIMS solutions",
@@ -12,6 +14,7 @@ export const metadata = {
 export default function MotorsPage() {
   return (
     <main>
+      <B2BCommercialBand profile={B2B_PROFILES.motors} />
       <SectionLead
         title="Motors & rewinding services"
         subtitle="AC/DC motors, rewinding, VFD compatibility, bearing failures, and insulation testing."

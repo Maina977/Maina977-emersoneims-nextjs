@@ -78,6 +78,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Length caps to prevent abuse / log flooding / DB bloat. These are well
+    // above any normal contact-form input but block payloads designed to
+    // exhaust storage or downstream notification services.
+    const tooLong =
+      (body.name && body.name.length > 200) ||
+      (body.email && body.email.length > 320) ||
+      (body.phone && body.phone.length > 40) ||
+      (body.company && body.company.length > 200) ||
+      (body.message && body.message.length > 5000) ||
+      (body.service && body.service.length > 80) ||
+      (body.source && body.source.length > 200) ||
+      (body.location && body.location.length > 200);
+    if (tooLong) {
+      return NextResponse.json(
+        { success: false, error: 'One or more fields exceed the maximum length' },
+        { status: 413 }
+      );
+    }
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(body.email)) {

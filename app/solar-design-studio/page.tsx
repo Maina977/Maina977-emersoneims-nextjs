@@ -6,6 +6,8 @@
  */
 
 import dynamic from 'next/dynamic';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 const SolarDesignStudioPro = dynamic(
   () => import('@/components/solar/SolarDesignStudioPro'),
@@ -24,5 +26,10 @@ const SolarDesignStudioPro = dynamic(
 );
 
 export default function SolarDesignStudioPage() {
-  return <SolarDesignStudioPro />;
+  return (
+    <>
+      <B2BCommercialBand profile={B2B_PROFILES.solarDesignStudio} />
+      <SolarDesignStudioPro />
+    </>
+  );
 }

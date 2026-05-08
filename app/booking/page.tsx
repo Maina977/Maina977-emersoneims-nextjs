@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // Service types available for booking
 const SERVICE_TYPES = [
@@ -96,6 +98,9 @@ export default function BookingPage() {
   if (isSubmitted) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+  {/* B2B Commercial Band */}
+  <B2BCommercialBand profile={B2B_PROFILES.booking} />
+
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

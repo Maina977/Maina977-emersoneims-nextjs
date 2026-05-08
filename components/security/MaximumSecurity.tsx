@@ -121,18 +121,12 @@ export default function MaximumSecurity() {
         antiScreenshot();
       }
 
-      // Monitor for clipboard access
-      try {
-        const clipboard = navigator.clipboard;
-        if (clipboard && typeof clipboard.readText === 'function') {
-          clipboard.readText = function () {
-            console.warn('🚨 Clipboard read attempt blocked');
-            return Promise.reject(new Error('Security violation'));
-          };
-        }
-      } catch {
-        // Ignore clipboard patch failures (not available / not writable)
-      }
+      // NOTE: We intentionally do NOT patch `navigator.clipboard.readText`
+      // here. Touching that API on first paint causes Chromium to surface a
+      // “wants to see text and images copied to the clipboard” permission
+      // prompt on every page load — a hostile UX for an engineering tool.
+      // Real clipboard reads are still gated by the browser's own permission
+      // model and require an explicit user gesture.
 
       // Enhanced anti-debugging
       let debugCount = 0;
