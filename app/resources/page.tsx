@@ -104,7 +104,7 @@ export default function ResourcesPage() {
         </div>
 
         {/* Quick Access */}
-        <div className="grid md:grid-cols-4 gap-4 mb-16">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-16">
           <Link
             href="/guides/emergency-response"
             className="p-6 bg-gradient-to-br from-red-900/50 to-red-800/30 border border-red-500/50 rounded-2xl hover:scale-105 transition-transform group"
@@ -120,6 +120,14 @@ export default function ResourcesPage() {
             <span className="text-4xl mb-4 block">🔮</span>
             <h3 className="text-lg font-bold text-amber-400 group-hover:text-amber-300">Generator Oracle</h3>
             <p className="text-sm text-slate-400">Decode any fault code</p>
+          </Link>
+          <Link
+            href="/resources/solar-ups-hub"
+            className="p-6 bg-gradient-to-br from-green-900/50 to-emerald-800/30 border border-green-500/50 rounded-2xl hover:scale-105 transition-transform group"
+          >
+            <span className="text-4xl mb-4 block">🔆</span>
+            <h3 className="text-lg font-bold text-green-400 group-hover:text-green-300">Solar / UPS Hub</h3>
+            <p className="text-sm text-slate-400">Solar + UPS resource workspace</p>
           </Link>
           <Link
             href="/calculators"

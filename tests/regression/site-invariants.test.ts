@@ -45,6 +45,37 @@ describe('site invariants — regression protection', () => {
     expect(resources).toContain('/resources/solar-ups-hub');
   });
 
+  it('2b. Solar / UPS Hub stays prominent (Quick Access band OR first card in its category)', () => {
+    // Discoverability invariant: after a prior incident where the card was buried as the
+    // 6th item of the 3rd section and reported "not visible" on production, freeze its
+    // prominence. It must live either inside the Quick Access band at the top of the
+    // page, or as the FIRST resource of one of the RESOURCE_CATEGORIES blocks.
+    const src = read('app/resources/page.tsx');
+    const HUB = '/resources/solar-ups-hub';
+
+    const quickStart = src.indexOf('{/* Quick Access */}');
+    const quickEnd = src.indexOf('{/* Resource Categories */}');
+    expect(quickStart, 'Quick Access band marker must exist').toBeGreaterThan(0);
+    expect(quickEnd, 'Resource Categories marker must exist').toBeGreaterThan(quickStart);
+    const quickBand = src.slice(quickStart, quickEnd);
+    const inQuickAccess = quickBand.includes(HUB);
+
+    // Fallback: first href inside any `resources: [` block in RESOURCE_CATEGORIES.
+    let firstInAnyCategory = false;
+    const categoryBlocks = src.matchAll(/resources:\s*\[\s*\{\s*href:\s*['"]([^'"]+)['"]/g);
+    for (const m of categoryBlocks) {
+      if (m[1] === HUB) {
+        firstInAnyCategory = true;
+        break;
+      }
+    }
+
+    expect(
+      inQuickAccess || firstInAnyCategory,
+      'Solar / UPS Hub must be in Quick Access OR first card of a category',
+    ).toBe(true);
+  });
+
   it('3. WiringDiagramsPanel never falls back to DSE 7320 wiring', () => {
     const panel = read('components/generator-oracle/panels/WiringDiagramsPanel.tsx');
     // No pattern of `|| CONTROLLER_PINS['dse-7320']` or `?? CONTROLLER_PINS['dse-7320']`.
