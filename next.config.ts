@@ -277,6 +277,18 @@ const nextConfig: NextConfig = {
             key: 'X-Content-Protected',
             value: 'true'
           },
+          // ═══════════════════════════════════════════════════════════
+          // DEPLOYMENT IDENTITY — emitted on every response so any HTTP
+          // probe can directly tie a live response to a specific commit
+          // SHA. Closes the previous "strongly-indicated-but-not-directly-
+          // proven" deployment-identity audit gap. Vercel injects
+          // VERCEL_GIT_COMMIT_SHA at build time; falls back to 'dev' for
+          // local builds where the env var is absent.
+          // ═══════════════════════════════════════════════════════════
+          {
+            key: 'X-App-Commit',
+            value: process.env.VERCEL_GIT_COMMIT_SHA || 'dev'
+          },
           // NOTE: previously emitted `X-Robots-Tag: noarchive, noimageindex,
           // notranslate` here. That header was being applied site-wide
           // (including /sitemap.xml, /robots.txt, county redirect targets)
