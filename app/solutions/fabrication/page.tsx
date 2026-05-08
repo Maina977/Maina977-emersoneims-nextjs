@@ -854,7 +854,7 @@ const FabricationPage = () => {
   ]
 
   return (
-    <main className="min-h-screen bg-black/5">
+    <main className="min-h-screen bg-black text-gray-100">
       <B2BCommercialBand profile={B2B_PROFILES.fabrication} />
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[600px] overflow-hidden">
