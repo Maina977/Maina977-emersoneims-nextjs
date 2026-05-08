@@ -854,7 +854,7 @@ const FabricationPage = () => {
   ]
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-black/5">
       <B2BCommercialBand profile={B2B_PROFILES.fabrication} />
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[600px] overflow-hidden">
@@ -944,7 +944,7 @@ const FabricationPage = () => {
       </section>
 
       {/* Tab Navigation */}
-      <section className="sticky top-0 z-40 bg-white shadow-md">
+      <section className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => {
@@ -956,7 +956,7 @@ const FabricationPage = () => {
                   className={`flex items-center gap-2 px-4 py-4 border-b-2 whitespace-nowrap transition-colors ${
                     activeTab === tab.id
                       ? 'border-orange-500 text-orange-600'
-                      : 'border-transparent text-gray-600 hover:text-orange-600'
+                      : 'border-transparent text-gray-300 hover:text-orange-600'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -983,11 +983,11 @@ const FabricationPage = () => {
               >
                 <div className="grid lg:grid-cols-3 gap-8">
                   <div className="lg:col-span-2 space-y-6">
-                    <h2 className="text-3xl font-bold text-gray-900">
+                    <h2 className="text-3xl font-bold text-white">
                       Industrial Metal Fabrication Excellence
                     </h2>
 
-                    <div className="prose prose-lg max-w-none text-gray-600">
+                    <div className="prose prose-lg max-w-none text-gray-300">
                       <p>
                         Metal fabrication is the cornerstone of industrial infrastructure, transforming
                         raw steel and other metals into the structures, vessels, and equipment that
@@ -1060,7 +1060,7 @@ const FabricationPage = () => {
 
                   <div className="space-y-6">
                     <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Our Capabilities</h3>
+                      <h3 className="text-lg font-semibold text-white mb-4">Our Capabilities</h3>
                       <ul className="space-y-3">
                         {[
                           "Structural steel fabrication",
@@ -1074,7 +1074,7 @@ const FabricationPage = () => {
                         ].map((item, index) => (
                           <li key={index} className="flex items-start gap-2">
                             <CheckCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700">{item}</span>
+                            <span className="text-gray-200">{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -1095,18 +1095,18 @@ const FabricationPage = () => {
                       </ul>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 border border-gray-200">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Contact</h3>
+                    <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                      <h3 className="text-lg font-semibold text-white mb-4">Quick Contact</h3>
                       <div className="space-y-3">
-                        <a href="tel:+254722274914" className="flex items-center gap-2 text-gray-700 hover:text-orange-600">
+                        <a href="tel:+254722274914" className="flex items-center gap-2 text-gray-200 hover:text-orange-600">
                           <Phone className="w-5 h-5" />
                           <span>+254 722 274 914</span>
                         </a>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-gray-300">
                           <Clock className="w-5 h-5" />
                           <span>Mon-Sat: 7:00 AM - 6:00 PM</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-gray-300">
                           <MapPin className="w-5 h-5" />
                           <span>Industrial Area, Nairobi</span>
                         </div>
@@ -1126,7 +1126,7 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Fabrication Services</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Fabrication Services</h2>
 
                 <div className="grid gap-8">
                   {FABRICATION_TYPES.map((service, index) => (
@@ -1135,13 +1135,13 @@ const FabricationPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 overflow-hidden"
                     >
                       <div className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h3 className="text-xl font-semibold text-gray-900">{service.name}</h3>
-                            <p className="text-gray-600">{service.description}</p>
+                            <h3 className="text-xl font-semibold text-white">{service.name}</h3>
+                            <p className="text-gray-300">{service.description}</p>
                           </div>
                           <div className="p-3 bg-orange-100 rounded-lg">
                             <Factory className="w-6 h-6 text-orange-600" />
@@ -1150,10 +1150,10 @@ const FabricationPage = () => {
 
                         <div className="grid md:grid-cols-3 gap-6">
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-2">Applications</h4>
+                            <h4 className="font-medium text-white mb-2">Applications</h4>
                             <ul className="space-y-1">
                               {service.applications.map((app, idx) => (
-                                <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                                <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                                   <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
                                   {app}
                                 </li>
@@ -1162,10 +1162,10 @@ const FabricationPage = () => {
                           </div>
 
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-2">Materials</h4>
+                            <h4 className="font-medium text-white mb-2">Materials</h4>
                             <ul className="space-y-1">
                               {service.materials.map((material, idx) => (
-                                <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                                <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                                   <Layers className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
                                   {material}
                                 </li>
@@ -1174,12 +1174,12 @@ const FabricationPage = () => {
                           </div>
 
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-2">Capabilities</h4>
+                            <h4 className="font-medium text-white mb-2">Capabilities</h4>
                             <div className="space-y-1">
                               {Object.entries(service.capabilities).map(([key, value], idx) => (
                                 <div key={idx} className="text-sm">
-                                  <span className="text-gray-500">{key}:</span>
-                                  <span className="text-gray-900 ml-2">{value}</span>
+                                  <span className="text-gray-400">{key}:</span>
+                                  <span className="text-white ml-2">{value}</span>
                                 </div>
                               ))}
                             </div>
@@ -1201,7 +1201,7 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Fabrication Processes</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Fabrication Processes</h2>
 
                 <div className="space-y-4">
                   {PROCESSES.map((process, index) => (
@@ -1210,21 +1210,21 @@ const FabricationPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 overflow-hidden"
                     >
                       <button
                         onClick={() => setExpandedProcess(
                           expandedProcess === process.name ? null : process.name
                         )}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                       >
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-orange-100 rounded-lg">
                             <Cog className="w-5 h-5 text-orange-600" />
                           </div>
                           <div className="text-left">
-                            <h3 className="font-semibold text-gray-900">{process.name}</h3>
-                            <p className="text-sm text-gray-500">{process.description}</p>
+                            <h3 className="font-semibold text-white">{process.name}</h3>
+                            <p className="text-sm text-gray-400">{process.description}</p>
                           </div>
                         </div>
                         <ChevronDown
@@ -1243,13 +1243,13 @@ const FabricationPage = () => {
                             transition={{ duration: 0.3 }}
                             className="overflow-hidden"
                           >
-                            <div className="px-6 pb-6 border-t border-gray-100 pt-4">
+                            <div className="px-6 pb-6 border-t border-white/10 pt-4">
                               <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                  <h4 className="font-medium text-gray-900 mb-3">Process Steps</h4>
+                                  <h4 className="font-medium text-white mb-3">Process Steps</h4>
                                   <ol className="space-y-2">
                                     {process.steps.map((step, idx) => (
-                                      <li key={idx} className="flex items-start gap-3 text-gray-600">
+                                      <li key={idx} className="flex items-start gap-3 text-gray-300">
                                         <span className="flex-shrink-0 w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-sm font-medium">
                                           {idx + 1}
                                         </span>
@@ -1259,10 +1259,10 @@ const FabricationPage = () => {
                                   </ol>
                                 </div>
                                 <div>
-                                  <h4 className="font-medium text-gray-900 mb-3">Equipment</h4>
+                                  <h4 className="font-medium text-white mb-3">Equipment</h4>
                                   <ul className="space-y-2">
                                     {process.equipment.map((item, idx) => (
-                                      <li key={idx} className="flex items-center gap-2 text-gray-600">
+                                      <li key={idx} className="flex items-center gap-2 text-gray-300">
                                         <Settings className="w-4 h-4 text-orange-500" />
                                         {item}
                                       </li>
@@ -1273,7 +1273,7 @@ const FabricationPage = () => {
 
                               {process.asciiDiagram && (
                                 <div className="mt-6">
-                                  <h4 className="font-medium text-gray-900 mb-3">Process Diagram</h4>
+                                  <h4 className="font-medium text-white mb-3">Process Diagram</h4>
                                   <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                                     <pre className="text-green-400 text-xs md:text-sm font-mono whitespace-pre">
                                       {process.asciiDiagram}
@@ -1300,7 +1300,7 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Materials & Grades</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Materials & Grades</h2>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {MATERIALS.map((material, index) => (
@@ -1309,21 +1309,21 @@ const FabricationPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-orange-100 rounded-lg">
                           <Layers className="w-5 h-5 text-orange-600" />
                         </div>
-                        <h3 className="font-semibold text-gray-900">{material.name}</h3>
+                        <h3 className="font-semibold text-white">{material.name}</h3>
                       </div>
 
                       <div className="space-y-4">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Grades</h4>
+                          <h4 className="text-sm font-medium text-gray-400 mb-1">Grades</h4>
                           <div className="flex flex-wrap gap-1">
                             {material.grades.map((grade, idx) => (
-                              <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                              <span key={idx} className="px-2 py-1 bg-white/10 text-gray-200 text-xs rounded">
                                 {grade}
                               </span>
                             ))}
@@ -1331,15 +1331,15 @@ const FabricationPage = () => {
                         </div>
 
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Thicknesses</h4>
-                          <p className="text-gray-900">{material.thicknesses}</p>
+                          <h4 className="text-sm font-medium text-gray-400 mb-1">Thicknesses</h4>
+                          <p className="text-white">{material.thicknesses}</p>
                         </div>
 
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-1">Applications</h4>
+                          <h4 className="text-sm font-medium text-gray-400 mb-1">Applications</h4>
                           <ul className="space-y-1">
                             {material.applications.map((app, idx) => (
-                              <li key={idx} className="text-gray-600 text-sm flex items-center gap-2">
+                              <li key={idx} className="text-gray-300 text-sm flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
                                 {app}
                               </li>
@@ -1352,11 +1352,11 @@ const FabricationPage = () => {
                 </div>
 
                 <div className="mt-8 bg-orange-50 rounded-xl p-6 border border-orange-100">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Material Sourcing</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Material Sourcing</h3>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Local Stock</h4>
-                      <ul className="text-gray-600 text-sm space-y-1">
+                      <h4 className="font-medium text-white mb-2">Local Stock</h4>
+                      <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Mild steel plates & sections</li>
                         <li>• Galvanized steel</li>
                         <li>• Standard stainless grades</li>
@@ -1364,8 +1364,8 @@ const FabricationPage = () => {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Import (2-4 weeks)</h4>
-                      <ul className="text-gray-600 text-sm space-y-1">
+                      <h4 className="font-medium text-white mb-2">Import (2-4 weeks)</h4>
+                      <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Specialty steel grades</li>
                         <li>• Exotic alloys</li>
                         <li>• Large diameter pipes</li>
@@ -1373,8 +1373,8 @@ const FabricationPage = () => {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Certification</h4>
-                      <ul className="text-gray-600 text-sm space-y-1">
+                      <h4 className="font-medium text-white mb-2">Certification</h4>
+                      <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Mill test certificates (MTR)</li>
                         <li>• EN 10204 3.1 certificates</li>
                         <li>• Material traceability</li>
@@ -1395,7 +1395,7 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Quality Standards</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Quality Standards</h2>
 
                 <div className="space-y-4 mb-8">
                   {QUALITY_STANDARDS.map((standard, index) => (
@@ -1404,20 +1404,20 @@ const FabricationPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 overflow-hidden"
                     >
                       <button
                         onClick={() => setExpandedStandard(
                           expandedStandard === standard.code ? null : standard.code
                         )}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                       >
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-orange-100 rounded-lg">
                             <Award className="w-5 h-5 text-orange-600" />
                           </div>
                           <div className="text-left">
-                            <h3 className="font-semibold text-gray-900">{standard.name}</h3>
+                            <h3 className="font-semibold text-white">{standard.name}</h3>
                             <p className="text-sm text-orange-600 font-medium">{standard.code}</p>
                           </div>
                         </div>
@@ -1437,12 +1437,12 @@ const FabricationPage = () => {
                             transition={{ duration: 0.3 }}
                             className="overflow-hidden"
                           >
-                            <div className="px-6 pb-6 border-t border-gray-100 pt-4">
-                              <p className="text-gray-600 mb-4">{standard.description}</p>
-                              <h4 className="font-medium text-gray-900 mb-2">Key Requirements</h4>
+                            <div className="px-6 pb-6 border-t border-white/10 pt-4">
+                              <p className="text-gray-300 mb-4">{standard.description}</p>
+                              <h4 className="font-medium text-white mb-2">Key Requirements</h4>
                               <ul className="space-y-2">
                                 {standard.requirements.map((req, idx) => (
-                                  <li key={idx} className="flex items-start gap-2 text-gray-600">
+                                  <li key={idx} className="flex items-start gap-2 text-gray-300">
                                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                                     {req}
                                   </li>
@@ -1477,7 +1477,7 @@ const FabricationPage = () => {
                   </div>
 
                   <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Quality Documentation</h3>
+                    <h3 className="text-xl font-semibold text-white mb-4">Quality Documentation</h3>
                     <ul className="space-y-3">
                       {[
                         "Material test reports (MTR)",
@@ -1489,7 +1489,7 @@ const FabricationPage = () => {
                         "Hydro/pneumatic test certificates",
                         "Final inspection and release documentation"
                       ].map((doc, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-gray-700">
+                        <li key={idx} className="flex items-center gap-2 text-gray-200">
                           <FileText className="w-5 h-5 text-orange-500" />
                           {doc}
                         </li>
@@ -1509,7 +1509,7 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Workshop Equipment</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Workshop Equipment</h2>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[
@@ -1579,17 +1579,17 @@ const FabricationPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-orange-100 rounded-lg">
                           <Settings className="w-5 h-5 text-orange-600" />
                         </div>
-                        <h3 className="font-semibold text-gray-900">{category.category}</h3>
+                        <h3 className="font-semibold text-white">{category.category}</h3>
                       </div>
                       <ul className="space-y-2">
                         {category.items.map((item, idx) => (
-                          <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                          <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                             <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
                             {item}
                           </li>
@@ -1632,7 +1632,7 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Project Portfolio</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Project Portfolio</h2>
 
                 <div className="grid md:grid-cols-2 gap-6 mb-8">
                   {[
@@ -1684,21 +1684,21 @@ const FabricationPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{project.title}</h3>
+                      <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
                       <p className="text-orange-600 font-medium mb-4">{project.client}</p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Scope:</span>
-                          <span className="text-gray-900 text-right max-w-[60%]">{project.scope}</span>
+                          <span className="text-gray-400">Scope:</span>
+                          <span className="text-white text-right max-w-[60%]">{project.scope}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Duration:</span>
-                          <span className="text-gray-900">{project.duration}</span>
+                          <span className="text-gray-400">Duration:</span>
+                          <span className="text-white">{project.duration}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Value:</span>
+                          <span className="text-gray-400">Value:</span>
                           <span className="text-orange-600 font-medium">{project.value}</span>
                         </div>
                       </div>
@@ -1707,7 +1707,7 @@ const FabricationPage = () => {
                 </div>
 
                 <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Industries Served</h3>
+                  <h3 className="text-xl font-semibold text-white mb-4">Industries Served</h3>
                   <div className="grid md:grid-cols-4 gap-4">
                     {[
                       "Oil & Gas",
@@ -1723,7 +1723,7 @@ const FabricationPage = () => {
                       "Commercial Buildings",
                       "Telecommunications"
                     ].map((industry, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-gray-700">
+                      <div key={idx} className="flex items-center gap-2 text-gray-200">
                         <Building className="w-4 h-4 text-orange-500" />
                         {industry}
                       </div>
@@ -1742,29 +1742,29 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Fabrication Pricing</h2>
-                <p className="text-gray-600 mb-8">
+                <h2 className="text-3xl font-bold text-white mb-4">Fabrication Pricing</h2>
+                <p className="text-gray-300 mb-8">
                   Indicative pricing for fabrication services. Final quotations depend on specific requirements.
                 </p>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                          <th className="text-left py-4 px-6 font-semibold text-gray-900">Item</th>
-                          <th className="text-left py-4 px-6 font-semibold text-gray-900">Specification</th>
-                          <th className="text-left py-4 px-6 font-semibold text-gray-900">Price Range</th>
-                          <th className="text-left py-4 px-6 font-semibold text-gray-900">Lead Time</th>
+                        <tr className="bg-white/5 border-b border-white/10">
+                          <th className="text-left py-4 px-6 font-semibold text-white">Item</th>
+                          <th className="text-left py-4 px-6 font-semibold text-white">Specification</th>
+                          <th className="text-left py-4 px-6 font-semibold text-white">Price Range</th>
+                          <th className="text-left py-4 px-6 font-semibold text-white">Lead Time</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {PRICING.map((item, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="py-4 px-6 font-medium text-gray-900">{item.item}</td>
-                            <td className="py-4 px-6 text-gray-600">{item.specification}</td>
+                          <tr key={index} className="hover:bg-white/10">
+                            <td className="py-4 px-6 font-medium text-white">{item.item}</td>
+                            <td className="py-4 px-6 text-gray-300">{item.specification}</td>
                             <td className="py-4 px-6 text-orange-600 font-medium">{item.priceRange}</td>
-                            <td className="py-4 px-6 text-gray-600">{item.leadTime}</td>
+                            <td className="py-4 px-6 text-gray-300">{item.leadTime}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1774,8 +1774,8 @@ const FabricationPage = () => {
 
                 <div className="mt-8 grid md:grid-cols-2 gap-6">
                   <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing Factors</h3>
-                    <ul className="space-y-2 text-gray-600">
+                    <h3 className="text-lg font-semibold text-white mb-4">Pricing Factors</h3>
+                    <ul className="space-y-2 text-gray-300">
                       <li className="flex items-start gap-2">
                         <ChevronRight className="w-5 h-5 text-orange-500 flex-shrink-0" />
                         Material grade and thickness
@@ -1836,51 +1836,51 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Delivery & Installation</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Delivery & Installation</h2>
 
                 <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="p-2 bg-orange-100 rounded-lg">
                         <Truck className="w-5 h-5 text-orange-600" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900">Transport Options</h3>
+                      <h3 className="text-xl font-semibold text-white">Transport Options</h3>
                     </div>
                     <div className="space-y-4">
-                      <div className="border-b border-gray-100 pb-4">
-                        <h4 className="font-medium text-gray-900">Standard Truck</h4>
-                        <p className="text-gray-600 text-sm">Up to 25 tons, 12m length</p>
+                      <div className="border-b border-white/10 pb-4">
+                        <h4 className="font-medium text-white">Standard Truck</h4>
+                        <p className="text-gray-300 text-sm">Up to 25 tons, 12m length</p>
                         <p className="text-orange-600 font-medium">KES 25,000 - 45,000 (Nairobi)</p>
                       </div>
-                      <div className="border-b border-gray-100 pb-4">
-                        <h4 className="font-medium text-gray-900">Low-bed Trailer</h4>
-                        <p className="text-gray-600 text-sm">Up to 50 tons, oversized loads</p>
+                      <div className="border-b border-white/10 pb-4">
+                        <h4 className="font-medium text-white">Low-bed Trailer</h4>
+                        <p className="text-gray-300 text-sm">Up to 50 tons, oversized loads</p>
                         <p className="text-orange-600 font-medium">KES 80,000 - 150,000</p>
                       </div>
-                      <div className="border-b border-gray-100 pb-4">
-                        <h4 className="font-medium text-gray-900">Abnormal Load</h4>
-                        <p className="text-gray-600 text-sm">Over-width/height, police escort</p>
+                      <div className="border-b border-white/10 pb-4">
+                        <h4 className="font-medium text-white">Abnormal Load</h4>
+                        <p className="text-gray-300 text-sm">Over-width/height, police escort</p>
                         <p className="text-orange-600 font-medium">Quote on request</p>
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900">Container Export</h4>
-                        <p className="text-gray-600 text-sm">20ft/40ft container, CIF available</p>
+                        <h4 className="font-medium text-white">Container Export</h4>
+                        <p className="text-gray-300 text-sm">20ft/40ft container, CIF available</p>
                         <p className="text-orange-600 font-medium">Quote on request</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="p-2 bg-orange-100 rounded-lg">
                         <Wrench className="w-5 h-5 text-orange-600" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900">Site Installation</h3>
+                      <h3 className="text-xl font-semibold text-white">Site Installation</h3>
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Installation Services</h4>
-                        <ul className="text-gray-600 text-sm space-y-1">
+                        <h4 className="font-medium text-white mb-2">Installation Services</h4>
+                        <ul className="text-gray-300 text-sm space-y-1">
                           <li>• Steel structure erection</li>
                           <li>• Tank erection (field welded)</li>
                           <li>• Pipe spool installation</li>
@@ -1889,8 +1889,8 @@ const FabricationPage = () => {
                         </ul>
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Site Requirements</h4>
-                        <ul className="text-gray-600 text-sm space-y-1">
+                        <h4 className="font-medium text-white mb-2">Site Requirements</h4>
+                        <ul className="text-gray-300 text-sm space-y-1">
                           <li>• Crane access and pad area</li>
                           <li>• Foundation readiness</li>
                           <li>• Power and water connection</li>
@@ -1903,14 +1903,14 @@ const FabricationPage = () => {
                 </div>
 
                 <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Delivery Coverage</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Delivery Coverage</h3>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Kenya</h4>
-                      <p className="text-gray-600 text-sm mb-2">
+                      <h4 className="font-medium text-white mb-2">Kenya</h4>
+                      <p className="text-gray-300 text-sm mb-2">
                         All 47 counties with our own fleet and partner transporters.
                       </p>
-                      <ul className="text-gray-600 text-sm space-y-1">
+                      <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Nairobi - Same day/next day</li>
                         <li>• Mombasa - 2-3 days</li>
                         <li>• Western Kenya - 2-3 days</li>
@@ -1918,11 +1918,11 @@ const FabricationPage = () => {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">East Africa</h4>
-                      <p className="text-gray-600 text-sm mb-2">
+                      <h4 className="font-medium text-white mb-2">East Africa</h4>
+                      <p className="text-gray-300 text-sm mb-2">
                         Export to all neighboring countries.
                       </p>
-                      <ul className="text-gray-600 text-sm space-y-1">
+                      <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Uganda - 3-5 days</li>
                         <li>• Tanzania - 4-6 days</li>
                         <li>• Rwanda - 5-7 days</li>
@@ -1943,7 +1943,7 @@ const FabricationPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Warranty & Guarantees</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Warranty & Guarantees</h2>
 
                 <div className="grid lg:grid-cols-3 gap-6 mb-8">
                   {[
@@ -1989,20 +1989,20 @@ const FabricationPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-orange-100 rounded-lg">
                           <warranty.icon className="w-5 h-5 text-orange-600" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900">{warranty.title}</h3>
+                          <h3 className="font-semibold text-white">{warranty.title}</h3>
                           <p className="text-orange-600 font-medium">{warranty.duration}</p>
                         </div>
                       </div>
                       <ul className="space-y-2">
                         {warranty.coverage.map((item, idx) => (
-                          <li key={idx} className="flex items-center gap-2 text-gray-600">
+                          <li key={idx} className="flex items-center gap-2 text-gray-300">
                             <CheckCircle className="w-4 h-4 text-green-500" />
                             {item}
                           </li>
@@ -2040,35 +2040,35 @@ const FabricationPage = () => {
                   </div>
 
                   <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">After-Sales Support</h3>
+                    <h3 className="text-xl font-semibold text-white mb-4">After-Sales Support</h3>
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
-                        <div className="p-2 bg-white rounded-lg">
+                        <div className="p-2 bg-white/5 rounded-lg">
                           <Phone className="w-5 h-5 text-orange-600" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">Technical Hotline</h4>
+                          <h4 className="font-medium text-white">Technical Hotline</h4>
                           <a href="tel:+254722274914" className="text-orange-600 hover:text-orange-700">
                             +254 722 274 914
                           </a>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
-                        <div className="p-2 bg-white rounded-lg">
+                        <div className="p-2 bg-white/5 rounded-lg">
                           <Wrench className="w-5 h-5 text-orange-600" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">Repair Services</h4>
-                          <p className="text-gray-600">On-site repair and modification services</p>
+                          <h4 className="font-medium text-white">Repair Services</h4>
+                          <p className="text-gray-300">On-site repair and modification services</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
-                        <div className="p-2 bg-white rounded-lg">
+                        <div className="p-2 bg-white/5 rounded-lg">
                           <FileText className="w-5 h-5 text-orange-600" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">Documentation</h4>
-                          <p className="text-gray-600">Replacement documentation and drawings</p>
+                          <h4 className="font-medium text-white">Documentation</h4>
+                          <p className="text-gray-300">Replacement documentation and drawings</p>
                         </div>
                       </div>
                     </div>

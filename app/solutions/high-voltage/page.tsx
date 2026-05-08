@@ -1047,12 +1047,12 @@ const HighVoltagePage = () => {
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200'
       case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'low': return 'bg-green-100 text-green-800 border-green-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      default: return 'bg-white/10 text-gray-100 border-white/10'
     }
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-black/5">
       <B2BCommercialBand profile={B2B_PROFILES.highVoltage} />
       {/* Hero Section */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[600px] overflow-hidden">
@@ -1142,7 +1142,7 @@ const HighVoltagePage = () => {
       </section>
 
       {/* Tab Navigation */}
-      <section className="sticky top-0 z-40 bg-white shadow-md">
+      <section className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => {
@@ -1154,7 +1154,7 @@ const HighVoltagePage = () => {
                   className={`flex items-center gap-2 px-4 py-4 border-b-2 whitespace-nowrap transition-colors ${
                     activeTab === tab.id
                       ? 'border-yellow-500 text-yellow-600'
-                      : 'border-transparent text-gray-600 hover:text-yellow-600'
+                      : 'border-transparent text-gray-300 hover:text-yellow-600'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -1181,11 +1181,11 @@ const HighVoltagePage = () => {
               >
                 <div className="grid lg:grid-cols-3 gap-8">
                   <div className="lg:col-span-2 space-y-6">
-                    <h2 className="text-3xl font-bold text-gray-900">
+                    <h2 className="text-3xl font-bold text-white">
                       High Voltage Infrastructure Solutions
                     </h2>
 
-                    <div className="prose prose-lg max-w-none text-gray-600">
+                    <div className="prose prose-lg max-w-none text-gray-300">
                       <p>
                         High voltage electrical infrastructure forms the backbone of modern power distribution,
                         enabling efficient transmission of electricity from generation sources to end consumers.
@@ -1257,7 +1257,7 @@ const HighVoltagePage = () => {
 
                   <div className="space-y-6">
                     <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Our Capabilities</h3>
+                      <h3 className="text-lg font-semibold text-white mb-4">Our Capabilities</h3>
                       <ul className="space-y-3">
                         {[
                           "Transformer supply & installation",
@@ -1271,7 +1271,7 @@ const HighVoltagePage = () => {
                         ].map((item, index) => (
                           <li key={index} className="flex items-start gap-2">
                             <CheckCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700">{item}</span>
+                            <span className="text-gray-200">{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -1295,9 +1295,9 @@ const HighVoltagePage = () => {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 border border-gray-200">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Our Commitment</h3>
-                      <ul className="space-y-2 text-gray-600">
+                    <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                      <h3 className="text-lg font-semibold text-white mb-4">Our Commitment</h3>
+                      <ul className="space-y-2 text-gray-300">
                         <li>• Professional Installation</li>
                         <li>• Quality Workmanship</li>
                         <li>• Safety Standards Compliance</li>
@@ -1319,7 +1319,7 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">High Voltage Equipment Types</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">High Voltage Equipment Types</h2>
 
                 <div className="grid gap-8">
                   {EQUIPMENT_TYPES.map((equipment, index) => (
@@ -1328,12 +1328,12 @@ const HighVoltagePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 overflow-hidden"
                     >
                       <div className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h3 className="text-xl font-semibold text-gray-900">{equipment.name}</h3>
+                            <h3 className="text-xl font-semibold text-white">{equipment.name}</h3>
                             <p className="text-yellow-600 font-medium">{equipment.voltageRange}</p>
                           </div>
                           <div className="p-3 bg-yellow-100 rounded-lg">
@@ -1343,10 +1343,10 @@ const HighVoltagePage = () => {
 
                         <div className="grid md:grid-cols-3 gap-6">
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-2">Applications</h4>
+                            <h4 className="font-medium text-white mb-2">Applications</h4>
                             <ul className="space-y-1">
                               {equipment.applications.map((app, idx) => (
-                                <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                                <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                                   <ChevronRight className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
                                   {app}
                                 </li>
@@ -1355,10 +1355,10 @@ const HighVoltagePage = () => {
                           </div>
 
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-2">Features</h4>
+                            <h4 className="font-medium text-white mb-2">Features</h4>
                             <ul className="space-y-1">
                               {equipment.features.map((feature, idx) => (
-                                <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                                <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                                   {feature}
                                 </li>
@@ -1367,12 +1367,12 @@ const HighVoltagePage = () => {
                           </div>
 
                           <div>
-                            <h4 className="font-medium text-gray-900 mb-2">Specifications</h4>
+                            <h4 className="font-medium text-white mb-2">Specifications</h4>
                             <div className="space-y-1">
                               {Object.entries(equipment.specifications).map(([key, value], idx) => (
                                 <div key={idx} className="text-sm">
-                                  <span className="text-gray-500">{key}:</span>
-                                  <span className="text-gray-900 ml-2">{value}</span>
+                                  <span className="text-gray-400">{key}:</span>
+                                  <span className="text-white ml-2">{value}</span>
                                 </div>
                               ))}
                             </div>
@@ -1394,7 +1394,7 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">High Voltage System Components</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">High Voltage System Components</h2>
 
                 <div className="space-y-4">
                   {COMPONENTS.map((component, index) => (
@@ -1403,21 +1403,21 @@ const HighVoltagePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 overflow-hidden"
                     >
                       <button
                         onClick={() => setExpandedComponent(
                           expandedComponent === component.name ? null : component.name
                         )}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                       >
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-yellow-100 rounded-lg">
                             <CircuitBoard className="w-5 h-5 text-yellow-600" />
                           </div>
                           <div className="text-left">
-                            <h3 className="font-semibold text-gray-900">{component.name}</h3>
-                            <p className="text-sm text-gray-500">{component.function}</p>
+                            <h3 className="font-semibold text-white">{component.name}</h3>
+                            <p className="text-sm text-gray-400">{component.function}</p>
                           </div>
                         </div>
                         <ChevronDown
@@ -1436,13 +1436,13 @@ const HighVoltagePage = () => {
                             transition={{ duration: 0.3 }}
                             className="overflow-hidden"
                           >
-                            <div className="px-6 pb-6 border-t border-gray-100 pt-4">
+                            <div className="px-6 pb-6 border-t border-white/10 pt-4">
                               <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                  <h4 className="font-medium text-gray-900 mb-3">Types</h4>
+                                  <h4 className="font-medium text-white mb-3">Types</h4>
                                   <ul className="space-y-2">
                                     {component.types.map((type, idx) => (
-                                      <li key={idx} className="flex items-center gap-2 text-gray-600">
+                                      <li key={idx} className="flex items-center gap-2 text-gray-300">
                                         <div className="w-2 h-2 bg-yellow-500 rounded-full" />
                                         {type}
                                       </li>
@@ -1450,14 +1450,14 @@ const HighVoltagePage = () => {
                                   </ul>
                                 </div>
                                 <div>
-                                  <h4 className="font-medium text-gray-900 mb-3">Maintenance</h4>
-                                  <p className="text-gray-600">{component.maintenance}</p>
+                                  <h4 className="font-medium text-white mb-3">Maintenance</h4>
+                                  <p className="text-gray-300">{component.maintenance}</p>
                                 </div>
                               </div>
 
                               {component.asciiDiagram && (
                                 <div className="mt-6">
-                                  <h4 className="font-medium text-gray-900 mb-3">Technical Diagram</h4>
+                                  <h4 className="font-medium text-white mb-3">Technical Diagram</h4>
                                   <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                                     <pre className="text-green-400 text-xs md:text-sm font-mono whitespace-pre">
                                       {component.asciiDiagram}
@@ -1484,8 +1484,8 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">High Voltage Safety Guidelines</h2>
-                <p className="text-gray-600 mb-8 max-w-3xl">
+                <h2 className="text-3xl font-bold text-white mb-4">High Voltage Safety Guidelines</h2>
+                <p className="text-gray-300 mb-8 max-w-3xl">
                   Working with high voltage equipment carries significant risks. These safety guidelines
                   are essential for protecting personnel and ensuring safe operations.
                 </p>
@@ -1514,20 +1514,20 @@ const HighVoltagePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <div className="p-2 bg-yellow-100 rounded-lg">
                           <Shield className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900">{guideline.title}</h3>
-                          <p className="text-sm text-gray-500">{guideline.description}</p>
+                          <h3 className="font-semibold text-white">{guideline.title}</h3>
+                          <p className="text-sm text-gray-400">{guideline.description}</p>
                         </div>
                       </div>
                       <ol className="space-y-2 ml-12">
                         {guideline.steps.map((step, idx) => (
-                          <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                          <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                             <span className="font-medium text-yellow-600">{idx + 1}.</span>
                             {step}
                           </li>
@@ -1542,7 +1542,7 @@ const HighVoltagePage = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-gray-700">
+                        <tr className="border-b border-white/10">
                           <th className="text-left py-3 px-4">Category</th>
                           <th className="text-left py-3 px-4">Cal/cm²</th>
                           <th className="text-left py-3 px-4">PPE Required</th>
@@ -1550,19 +1550,19 @@ const HighVoltagePage = () => {
                         </tr>
                       </thead>
                       <tbody className="text-gray-300">
-                        <tr className="border-b border-gray-800">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4 font-medium">Category 1</td>
                           <td className="py-3 px-4">4 cal/cm²</td>
                           <td className="py-3 px-4">Arc-rated shirt, pants, safety glasses</td>
                           <td className="py-3 px-4">415V switchboards, MCCs</td>
                         </tr>
-                        <tr className="border-b border-gray-800">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4 font-medium">Category 2</td>
                           <td className="py-3 px-4">8 cal/cm²</td>
                           <td className="py-3 px-4">Arc-rated coverall, face shield, hard hat</td>
                           <td className="py-3 px-4">LV switchgear, transformer LV side</td>
                         </tr>
-                        <tr className="border-b border-gray-800">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4 font-medium">Category 3</td>
                           <td className="py-3 px-4">25 cal/cm²</td>
                           <td className="py-3 px-4">Arc flash suit, hood, gloves</td>
@@ -1590,7 +1590,7 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Testing & Commissioning</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Testing & Commissioning</h2>
 
                 <div className="grid md:grid-cols-2 gap-6 mb-8">
                   {TESTING_PROCEDURES.map((procedure, index) => (
@@ -1599,17 +1599,17 @@ const HighVoltagePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-yellow-100 rounded-lg">
                           <Activity className="w-5 h-5 text-yellow-600" />
                         </div>
-                        <h3 className="font-semibold text-gray-900">{procedure.name}</h3>
+                        <h3 className="font-semibold text-white">{procedure.name}</h3>
                       </div>
                       <ul className="space-y-2">
                         {procedure.tests.map((test, idx) => (
-                          <li key={idx} className="flex items-center gap-2 text-gray-600 text-sm">
+                          <li key={idx} className="flex items-center gap-2 text-gray-300 text-sm">
                             <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
                             {test}
                           </li>
@@ -1620,11 +1620,11 @@ const HighVoltagePage = () => {
                 </div>
 
                 <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Testing Equipment Available</h3>
+                  <h3 className="text-xl font-semibold text-white mb-4">Testing Equipment Available</h3>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Transformer Testing</h4>
-                      <ul className="space-y-1 text-sm text-gray-600">
+                      <h4 className="font-medium text-white mb-2">Transformer Testing</h4>
+                      <ul className="space-y-1 text-sm text-gray-300">
                         <li>• Megger 5kV/10kV insulation tester</li>
                         <li>• TTR (Turns ratio tester)</li>
                         <li>• Winding resistance meter</li>
@@ -1633,8 +1633,8 @@ const HighVoltagePage = () => {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Switchgear Testing</h4>
-                      <ul className="space-y-1 text-sm text-gray-600">
+                      <h4 className="font-medium text-white mb-2">Switchgear Testing</h4>
+                      <ul className="space-y-1 text-sm text-gray-300">
                         <li>• Circuit breaker analyzer</li>
                         <li>• Contact resistance tester</li>
                         <li>• SF6 gas analyzer</li>
@@ -1643,8 +1643,8 @@ const HighVoltagePage = () => {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Cable & Protection</h4>
-                      <ul className="space-y-1 text-sm text-gray-600">
+                      <h4 className="font-medium text-white mb-2">Cable & Protection</h4>
+                      <ul className="space-y-1 text-sm text-gray-300">
                         <li>• VLF test set</li>
                         <li>• TDR cable fault locator</li>
                         <li>• Relay test set (Omicron)</li>
@@ -1666,11 +1666,11 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Installation Services</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Installation Services</h2>
 
                 <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Transformer Installation</h3>
+                  <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
+                    <h3 className="text-xl font-semibold text-white mb-4">Transformer Installation</h3>
                     <ol className="space-y-4">
                       {[
                         { step: "Site Preparation", desc: "Foundation, oil containment pit, cable trenches" },
@@ -1687,16 +1687,16 @@ const HighVoltagePage = () => {
                             {idx + 1}
                           </span>
                           <div>
-                            <h4 className="font-medium text-gray-900">{item.step}</h4>
-                            <p className="text-sm text-gray-600">{item.desc}</p>
+                            <h4 className="font-medium text-white">{item.step}</h4>
+                            <p className="text-sm text-gray-300">{item.desc}</p>
                           </div>
                         </li>
                       ))}
                     </ol>
                   </div>
 
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Switchgear Installation</h3>
+                  <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
+                    <h3 className="text-xl font-semibold text-white mb-4">Switchgear Installation</h3>
                     <ol className="space-y-4">
                       {[
                         { step: "Room Preparation", desc: "Ventilation, lighting, fire suppression" },
@@ -1713,8 +1713,8 @@ const HighVoltagePage = () => {
                             {idx + 1}
                           </span>
                           <div>
-                            <h4 className="font-medium text-gray-900">{item.step}</h4>
-                            <p className="text-sm text-gray-600">{item.desc}</p>
+                            <h4 className="font-medium text-white">{item.step}</h4>
+                            <p className="text-sm text-gray-300">{item.desc}</p>
                           </div>
                         </li>
                       ))}
@@ -1727,7 +1727,7 @@ const HighVoltagePage = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-gray-700">
+                        <tr className="border-b border-white/10">
                           <th className="text-left py-3 px-4">Project Type</th>
                           <th className="text-left py-3 px-4">Civil Works</th>
                           <th className="text-left py-3 px-4">Equipment</th>
@@ -1736,21 +1736,21 @@ const HighVoltagePage = () => {
                         </tr>
                       </thead>
                       <tbody className="text-gray-300">
-                        <tr className="border-b border-gray-800">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4">100-500kVA Substation</td>
                           <td className="py-3 px-4">2-3 weeks</td>
                           <td className="py-3 px-4">1-2 weeks</td>
                           <td className="py-3 px-4">3-5 days</td>
                           <td className="py-3 px-4 font-medium text-yellow-400">4-6 weeks</td>
                         </tr>
-                        <tr className="border-b border-gray-800">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4">1-2MVA Substation</td>
                           <td className="py-3 px-4">4-6 weeks</td>
                           <td className="py-3 px-4">2-3 weeks</td>
                           <td className="py-3 px-4">1 week</td>
                           <td className="py-3 px-4 font-medium text-yellow-400">8-10 weeks</td>
                         </tr>
-                        <tr className="border-b border-gray-800">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4">5MVA+ Substation</td>
                           <td className="py-3 px-4">8-12 weeks</td>
                           <td className="py-3 px-4">4-6 weeks</td>
@@ -1780,7 +1780,7 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Maintenance Programs</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Maintenance Programs</h2>
 
                 <div className="grid lg:grid-cols-3 gap-6 mb-8">
                   {[
@@ -1836,18 +1836,18 @@ const HighVoltagePage = () => {
                       className={`rounded-xl p-6 ${
                         plan.popular
                           ? 'bg-yellow-500 text-white ring-4 ring-yellow-200'
-                          : 'bg-white border border-gray-200'
+                          : 'bg-white/5 border border-white/10'
                       }`}
                     >
                       {plan.popular && (
-                        <span className="inline-block px-3 py-1 bg-white text-yellow-600 text-sm font-medium rounded-full mb-4">
+                        <span className="inline-block px-3 py-1 bg-white/5 text-yellow-600 text-sm font-medium rounded-full mb-4">
                           Most Popular
                         </span>
                       )}
-                      <h3 className={`text-xl font-semibold ${plan.popular ? 'text-white' : 'text-gray-900'}`}>
+                      <h3 className={`text-xl font-semibold ${plan.popular ? 'text-white' : 'text-white'}`}>
                         {plan.title}
                       </h3>
-                      <p className={`text-sm ${plan.popular ? 'text-yellow-100' : 'text-gray-500'}`}>
+                      <p className={`text-sm ${plan.popular ? 'text-yellow-100' : 'text-gray-400'}`}>
                         {plan.frequency}
                       </p>
                       <p className={`text-2xl font-bold mt-4 ${plan.popular ? 'text-white' : 'text-yellow-600'}`}>
@@ -1859,7 +1859,7 @@ const HighVoltagePage = () => {
                             <CheckCircle className={`w-5 h-5 flex-shrink-0 ${
                               plan.popular ? 'text-yellow-100' : 'text-green-500'
                             }`} />
-                            <span className={plan.popular ? 'text-yellow-50' : 'text-gray-600'}>
+                            <span className={plan.popular ? 'text-yellow-50' : 'text-gray-300'}>
                               {feature}
                             </span>
                           </li>
@@ -1869,42 +1869,42 @@ const HighVoltagePage = () => {
                   ))}
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Recommended Maintenance Schedule</h3>
+                <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
+                  <h3 className="text-xl font-semibold text-white mb-4">Recommended Maintenance Schedule</h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-gray-200">
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">Equipment</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">Daily</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">Monthly</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">Annually</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">3-5 Years</th>
+                        <tr className="border-b border-white/10">
+                          <th className="text-left py-3 px-4 font-medium text-white">Equipment</th>
+                          <th className="text-left py-3 px-4 font-medium text-white">Daily</th>
+                          <th className="text-left py-3 px-4 font-medium text-white">Monthly</th>
+                          <th className="text-left py-3 px-4 font-medium text-white">Annually</th>
+                          <th className="text-left py-3 px-4 font-medium text-white">3-5 Years</th>
                         </tr>
                       </thead>
-                      <tbody className="text-gray-600">
-                        <tr className="border-b border-gray-100">
+                      <tbody className="text-gray-300">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4 font-medium">Transformer</td>
                           <td className="py-3 px-4">Visual, temp log</td>
                           <td className="py-3 px-4">Oil level, silica gel</td>
                           <td className="py-3 px-4">IR, oil test, thermography</td>
                           <td className="py-3 px-4">DGA, tan delta, SFRA</td>
                         </tr>
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4 font-medium">Circuit Breaker</td>
                           <td className="py-3 px-4">Counter reading</td>
                           <td className="py-3 px-4">SF6 pressure</td>
                           <td className="py-3 px-4">Timing, contact check</td>
                           <td className="py-3 px-4">Major overhaul</td>
                         </tr>
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4 font-medium">RMU</td>
                           <td className="py-3 px-4">-</td>
                           <td className="py-3 px-4">Visual inspection</td>
                           <td className="py-3 px-4">IR, operation test</td>
                           <td className="py-3 px-4">Contact service</td>
                         </tr>
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-white/10">
                           <td className="py-3 px-4 font-medium">Protection Relay</td>
                           <td className="py-3 px-4">LED status</td>
                           <td className="py-3 px-4">Event log check</td>
@@ -1934,7 +1934,7 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Troubleshooting Guide</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Troubleshooting Guide</h2>
 
                 <div className="space-y-4">
                   {FAULTS.map((fault, index) => (
@@ -1943,21 +1943,21 @@ const HighVoltagePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 overflow-hidden"
                     >
                       <button
                         onClick={() => setExpandedFault(
                           expandedFault === fault.code ? null : fault.code
                         )}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                       >
                         <div className="flex items-center gap-4">
                           <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getSeverityColor(fault.severity)}`}>
                             {fault.code}
                           </span>
                           <div className="text-left">
-                            <h3 className="font-semibold text-gray-900">{fault.name}</h3>
-                            <p className="text-sm text-gray-500 capitalize">Severity: {fault.severity}</p>
+                            <h3 className="font-semibold text-white">{fault.name}</h3>
+                            <p className="text-sm text-gray-400 capitalize">Severity: {fault.severity}</p>
                           </div>
                         </div>
                         <ChevronDown
@@ -1976,16 +1976,16 @@ const HighVoltagePage = () => {
                             transition={{ duration: 0.3 }}
                             className="overflow-hidden"
                           >
-                            <div className="px-6 pb-6 border-t border-gray-100 pt-4">
+                            <div className="px-6 pb-6 border-t border-white/10 pt-4">
                               <div className="grid md:grid-cols-3 gap-6">
                                 <div>
-                                  <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                                  <h4 className="font-medium text-white mb-2 flex items-center gap-2">
                                     <AlertTriangle className="w-4 h-4 text-orange-500" />
                                     Symptoms
                                   </h4>
                                   <ul className="space-y-1">
                                     {fault.symptoms.map((symptom, idx) => (
-                                      <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                                      <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                                         <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2" />
                                         {symptom}
                                       </li>
@@ -1993,13 +1993,13 @@ const HighVoltagePage = () => {
                                   </ul>
                                 </div>
                                 <div>
-                                  <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                                  <h4 className="font-medium text-white mb-2 flex items-center gap-2">
                                     <Settings className="w-4 h-4 text-blue-500" />
                                     Causes
                                   </h4>
                                   <ul className="space-y-1">
                                     {fault.causes.map((cause, idx) => (
-                                      <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                                      <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                                         <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2" />
                                         {cause}
                                       </li>
@@ -2007,13 +2007,13 @@ const HighVoltagePage = () => {
                                   </ul>
                                 </div>
                                 <div>
-                                  <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                                  <h4 className="font-medium text-white mb-2 flex items-center gap-2">
                                     <CheckCircle className="w-4 h-4 text-green-500" />
                                     Solutions
                                   </h4>
                                   <ul className="space-y-1">
                                     {fault.solutions.map((solution, idx) => (
-                                      <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
+                                      <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
                                         <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2" />
                                         {solution}
                                       </li>
@@ -2040,29 +2040,29 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Equipment & Service Pricing</h2>
-                <p className="text-gray-600 mb-8">
+                <h2 className="text-3xl font-bold text-white mb-4">Equipment & Service Pricing</h2>
+                <p className="text-gray-300 mb-8">
                   Indicative pricing for high voltage equipment and services. Contact us for detailed quotations.
                 </p>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                          <th className="text-left py-4 px-6 font-semibold text-gray-900">Item</th>
-                          <th className="text-left py-4 px-6 font-semibold text-gray-900">Specification</th>
-                          <th className="text-left py-4 px-6 font-semibold text-gray-900">Price Range</th>
-                          <th className="text-left py-4 px-6 font-semibold text-gray-900">Lead Time</th>
+                        <tr className="bg-white/5 border-b border-white/10">
+                          <th className="text-left py-4 px-6 font-semibold text-white">Item</th>
+                          <th className="text-left py-4 px-6 font-semibold text-white">Specification</th>
+                          <th className="text-left py-4 px-6 font-semibold text-white">Price Range</th>
+                          <th className="text-left py-4 px-6 font-semibold text-white">Lead Time</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {PRICING.map((item, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="py-4 px-6 font-medium text-gray-900">{item.item}</td>
-                            <td className="py-4 px-6 text-gray-600">{item.specification}</td>
+                          <tr key={index} className="hover:bg-white/10">
+                            <td className="py-4 px-6 font-medium text-white">{item.item}</td>
+                            <td className="py-4 px-6 text-gray-300">{item.specification}</td>
                             <td className="py-4 px-6 text-yellow-600 font-medium">{item.priceRange}</td>
-                            <td className="py-4 px-6 text-gray-600">{item.leadTime}</td>
+                            <td className="py-4 px-6 text-gray-300">{item.leadTime}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -2072,8 +2072,8 @@ const HighVoltagePage = () => {
 
                 <div className="mt-8 grid md:grid-cols-2 gap-6">
                   <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing Notes</h3>
-                    <ul className="space-y-2 text-gray-600">
+                    <h3 className="text-lg font-semibold text-white mb-4">Pricing Notes</h3>
+                    <ul className="space-y-2 text-gray-300">
                       <li className="flex items-start gap-2">
                         <ChevronRight className="w-5 h-5 text-yellow-500 flex-shrink-0" />
                         Prices are indicative and subject to change
@@ -2130,58 +2130,58 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Delivery & Logistics</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Delivery & Logistics</h2>
 
                 <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="p-2 bg-yellow-100 rounded-lg">
                         <Truck className="w-5 h-5 text-yellow-600" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900">Delivery Options</h3>
+                      <h3 className="text-xl font-semibold text-white">Delivery Options</h3>
                     </div>
                     <div className="space-y-4">
-                      <div className="border-b border-gray-100 pb-4">
-                        <h4 className="font-medium text-gray-900">Standard Delivery</h4>
-                        <p className="text-gray-600 text-sm">Ex-works collection or delivery within Nairobi</p>
+                      <div className="border-b border-white/10 pb-4">
+                        <h4 className="font-medium text-white">Standard Delivery</h4>
+                        <p className="text-gray-300 text-sm">Ex-works collection or delivery within Nairobi</p>
                         <p className="text-yellow-600 font-medium">Included in price</p>
                       </div>
-                      <div className="border-b border-gray-100 pb-4">
-                        <h4 className="font-medium text-gray-900">Up-country Delivery (Kenya)</h4>
-                        <p className="text-gray-600 text-sm">Mombasa, Kisumu, Nakuru, Eldoret, etc.</p>
+                      <div className="border-b border-white/10 pb-4">
+                        <h4 className="font-medium text-white">Up-country Delivery (Kenya)</h4>
+                        <p className="text-gray-300 text-sm">Mombasa, Kisumu, Nakuru, Eldoret, etc.</p>
                         <p className="text-yellow-600 font-medium">KES 15,000 - 50,000</p>
                       </div>
-                      <div className="border-b border-gray-100 pb-4">
-                        <h4 className="font-medium text-gray-900">Heavy Equipment</h4>
-                        <p className="text-gray-600 text-sm">Transformers &gt;1MVA, requires special transport</p>
+                      <div className="border-b border-white/10 pb-4">
+                        <h4 className="font-medium text-white">Heavy Equipment</h4>
+                        <p className="text-gray-300 text-sm">Transformers &gt;1MVA, requires special transport</p>
                         <p className="text-yellow-600 font-medium">Quote on request</p>
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900">East Africa Export</h4>
-                        <p className="text-gray-600 text-sm">Uganda, Tanzania, Rwanda, Ethiopia</p>
+                        <h4 className="font-medium text-white">East Africa Export</h4>
+                        <p className="text-gray-300 text-sm">Uganda, Tanzania, Rwanda, Ethiopia</p>
                         <p className="text-yellow-600 font-medium">CIF pricing available</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="p-2 bg-yellow-100 rounded-lg">
                         <MapPin className="w-5 h-5 text-yellow-600" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900">Service Coverage</h3>
+                      <h3 className="text-xl font-semibold text-white">Service Coverage</h3>
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Kenya (Full Coverage)</h4>
-                        <p className="text-gray-600 text-sm">
+                        <h4 className="font-medium text-white mb-2">Kenya (Full Coverage)</h4>
+                        <p className="text-gray-300 text-sm">
                           All 47 counties including Nairobi, Mombasa, Kisumu, Nakuru, Eldoret,
                           Thika, Machakos, and remote areas.
                         </p>
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">East Africa</h4>
-                        <ul className="text-gray-600 text-sm space-y-1">
+                        <h4 className="font-medium text-white mb-2">East Africa</h4>
+                        <ul className="text-gray-300 text-sm space-y-1">
                           <li>• Uganda - Kampala, Jinja, Entebbe</li>
                           <li>• Tanzania - Dar es Salaam, Arusha, Mwanza</li>
                           <li>• Rwanda - Kigali</li>
@@ -2195,14 +2195,14 @@ const HighVoltagePage = () => {
                 </div>
 
                 <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Heavy Lift & Special Transport</h3>
-                  <p className="text-gray-600 mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">Heavy Lift & Special Transport</h3>
+                  <p className="text-gray-300 mb-4">
                     Power transformers and large switchgear require specialized transport equipment:
                   </p>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Transport Equipment</h4>
-                      <ul className="text-gray-600 text-sm space-y-1">
+                      <h4 className="font-medium text-white mb-2">Transport Equipment</h4>
+                      <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Low-bed trailers</li>
                         <li>• Multi-axle hydraulic trailers</li>
                         <li>• Crane trucks (25-100 ton)</li>
@@ -2210,8 +2210,8 @@ const HighVoltagePage = () => {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Route Planning</h4>
-                      <ul className="text-gray-600 text-sm space-y-1">
+                      <h4 className="font-medium text-white mb-2">Route Planning</h4>
+                      <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Bridge load assessment</li>
                         <li>• Overhead clearance check</li>
                         <li>• Night movement permits</li>
@@ -2219,8 +2219,8 @@ const HighVoltagePage = () => {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Site Delivery</h4>
-                      <ul className="text-gray-600 text-sm space-y-1">
+                      <h4 className="font-medium text-white mb-2">Site Delivery</h4>
+                      <ul className="text-gray-300 text-sm space-y-1">
                         <li>• Access road preparation</li>
                         <li>• Crane pad setup</li>
                         <li>• Offloading supervision</li>
@@ -2241,7 +2241,7 @@ const HighVoltagePage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Warranty & Support</h2>
+                <h2 className="text-3xl font-bold text-white mb-8">Warranty & Support</h2>
 
                 <div className="grid lg:grid-cols-3 gap-6 mb-8">
                   {[
@@ -2287,20 +2287,20 @@ const HighVoltagePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                      className="bg-white/5 rounded-xl shadow-sm border border-white/10 p-6"
                     >
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-yellow-100 rounded-lg">
                           <warranty.icon className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900">{warranty.title}</h3>
+                          <h3 className="font-semibold text-white">{warranty.title}</h3>
                           <p className="text-yellow-600 font-medium">{warranty.duration}</p>
                         </div>
                       </div>
                       <ul className="space-y-2">
                         {warranty.coverage.map((item, idx) => (
-                          <li key={idx} className="flex items-center gap-2 text-gray-600">
+                          <li key={idx} className="flex items-center gap-2 text-gray-300">
                             <CheckCircle className="w-4 h-4 text-green-500" />
                             {item}
                           </li>
@@ -2342,35 +2342,35 @@ const HighVoltagePage = () => {
                   </div>
 
                   <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Support Channels</h3>
+                    <h3 className="text-xl font-semibold text-white mb-4">Support Channels</h3>
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
-                        <div className="p-2 bg-white rounded-lg">
+                        <div className="p-2 bg-white/5 rounded-lg">
                           <Phone className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">24/7 Emergency Hotline</h4>
+                          <h4 className="font-medium text-white">24/7 Emergency Hotline</h4>
                           <a href="tel:+254722274914" className="text-yellow-600 hover:text-yellow-700">
                             +254 722 274 914
                           </a>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
-                        <div className="p-2 bg-white rounded-lg">
+                        <div className="p-2 bg-white/5 rounded-lg">
                           <Clock className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">Response Time</h4>
-                          <p className="text-gray-600">Critical: 2 hours | Standard: 24 hours</p>
+                          <h4 className="font-medium text-white">Response Time</h4>
+                          <p className="text-gray-300">Critical: 2 hours | Standard: 24 hours</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
-                        <div className="p-2 bg-white rounded-lg">
+                        <div className="p-2 bg-white/5 rounded-lg">
                           <Users className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">Technical Support Team</h4>
-                          <p className="text-gray-600">Qualified HV engineers available nationwide</p>
+                          <h4 className="font-medium text-white">Technical Support Team</h4>
+                          <p className="text-gray-300">Qualified HV engineers available nationwide</p>
                         </div>
                       </div>
                     </div>

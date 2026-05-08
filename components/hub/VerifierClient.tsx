@@ -132,6 +132,14 @@ const PRODUCT_LIBRARY: ProductOption[] = [
   { id: 'ups-delta-30k',      brand: 'Delta',     model: 'Amplon RT-30 30 kVA',      category: 'ups', ratingValue: 30, ratingUnit: 'kVA', priceKes: 1_580_000, authenticityNote: 'High efficiency in ECO mode (Sample)' },
   { id: 'ups-socomec-40k',    brand: 'Socomec',   model: 'ITYS 40 kVA',              category: 'ups', ratingValue: 40, ratingUnit: 'kVA', priceKes: 2_120_000, authenticityNote: 'IGBT rectifier; galvanic isolation option (Sample)' },
 
+  // Budget / balanced / premium reference packages (used by Verifier comparison)
+  { id: 'inv-bud-3k',  brand: 'Generic OEM', model: 'Budget 3 kVA Off-grid',         category: 'inverter', ratingValue: 3,    ratingUnit: 'kVA', priceKes:  58_000, authenticityNote: 'Budget tier — limited surge & SPD; verify warranty (Sample)' },
+  { id: 'bat-bud-2k',  brand: 'Generic AGM', model: 'Budget 2.4 kWh AGM bank',       category: 'battery',  ratingValue: 2.4,  ratingUnit: 'kWh', priceKes:  84_000, authenticityNote: 'Lead-acid; no BMS — short cycle life (Sample)' },
+  { id: 'inv-bal-5k',  brand: 'Victron',     model: 'MultiPlus-II 5 kVA (Balanced)', category: 'inverter', ratingValue: 5,    ratingUnit: 'kVA', priceKes: 245_000, authenticityNote: 'Balanced tier — VE.Bus + handshake with LFP (Sample)' },
+  { id: 'bat-bal-5k',  brand: 'Pylontech',   model: 'US5000 4.8 kWh (Balanced)',     category: 'battery',  ratingValue: 4.8,  ratingUnit: 'kWh', priceKes: 165_000, authenticityNote: 'LFP + integrated BMS; CAN-bus (Sample)' },
+  { id: 'inv-prem-5k', brand: 'SMA',         model: 'Sunny Island 6.0H (Premium)',   category: 'inverter', ratingValue: 6,    ratingUnit: 'kVA', priceKes: 410_000, authenticityNote: 'Premium tier — 10 yr warranty option; grid-forming (Sample)' },
+  { id: 'bat-prem-15', brand: 'BYD',         model: 'B-Box Premium 15.4 kWh',        category: 'battery',  ratingValue: 15.4, ratingUnit: 'kWh', priceKes: 620_000, authenticityNote: 'LFP + factory BMS; partner commissioning (Sample)' },
+
   // Panels (unchanged, for completeness)
   { id: 'pv-jinko', brand: 'Jinko', model: 'Tiger Neo 550 W', category: 'panel', ratingValue: 0.55, ratingUnit: 'kW', priceKes: 18500, authenticityNote: 'Jinko serial + BIS marking required' },
   { id: 'pv-canadian', brand: 'Canadian', model: 'HiKu7 600 W', category: 'panel', ratingValue: 0.6, ratingUnit: 'kW', priceKes: 21000, authenticityNote: 'Canadian Solar QR-code traceability' },
