@@ -174,7 +174,7 @@ export default async function SectorPage({ params }: Props) {
             ))}
           </div>
           <div className="text-center mt-8">
-            <Link href="/counties" className="text-cyan-400 hover:text-cyan-300 text-sm">
+            <Link href="/kenya" className="text-cyan-400 hover:text-cyan-300 text-sm">
               View all counties →
             </Link>
           </div>

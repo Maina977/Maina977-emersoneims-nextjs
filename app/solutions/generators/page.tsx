@@ -1211,7 +1211,7 @@ export default function GeneratorsSolutionHub() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
-                <Link href="/solutions/controls" className="group">
+                <Link href="/services/ats-changeover" className="group">
                   <div className="bg-gradient-to-br from-purple-900/50 to-indigo-900/50 rounded-2xl border border-purple-500/30 p-8 hover:border-purple-400 transition-all duration-300">
                     <span className="text-5xl block mb-4">🎛️</span>
                     <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">DeepSea &amp; PowerWizard</h3>

@@ -2133,7 +2133,7 @@ export default function SolarBible() {
             <div>
               <h4 className="text-white font-bold mb-4">Solar Solutions</h4>
               <ul className="space-y-2">
-                <li><Link href="/solutions/solar" className="text-gray-400 hover:text-amber-400">Solar Installation</Link></li>
+                <li><Link href="/solar" className="text-gray-400 hover:text-amber-400">Solar Installation</Link></li>
                 <li><Link href="/solutions/solar-sizing" className="text-gray-400 hover:text-amber-400">System Sizing</Link></li>
                 <li><Link href="/maintenance-hub/solar" className="text-gray-400 hover:text-amber-400">Solar Maintenance</Link></li>
               </ul>
