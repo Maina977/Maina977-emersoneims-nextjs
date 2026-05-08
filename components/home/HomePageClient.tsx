@@ -43,9 +43,8 @@ function CTASkeleton() {
 }
 
 // Lazy load all heavy sections
-const HeroSection = dynamic(() => import('@/components/home/HeroSection'), {
-  loading: () => null, // Static hero shown in server component
-});
+// NOTE: HeroSection import removed — the cinematic hero with inline autoplay
+// video now lives in app/page.tsx > StaticHeroFallback so it renders at SSR.
 
 const TestimonialsSection = dynamic(
   () => import('@/components/sections/TestimonialsSection'),
@@ -146,8 +145,9 @@ function SolarUpsHubTeaser() {
 export default function HomePageClient() {
   return (
     <>
-      {/* Hero with animations */}
-      <HeroSection />
+      {/* HeroSection is no longer rendered here — the cinematic hero with
+          inline autoplay video lives in app/page.tsx > StaticHeroFallback so
+          it renders at SSR (no hydration wait, no duplicate hero). */}
 
       {/* CUMMINS/VOLTKA - Our Main Generator Brand */}
       <CumminsBanner variant="hero" showPricing={true} showCTA={true} />

@@ -56,18 +56,34 @@ export const metadata: Metadata = {
 function StaticHeroFallback() {
   return (
     <section className="hero-full relative min-h-screen bg-black overflow-hidden content-auto">
-      {/* Static hero image - loads INSTANTLY with optimized loading */}
+      {/* Cinematic background — video plays inline + autoplay-muted (HTML5 native,
+          no JS needed). Image stays as poster + fallback for slow connections,
+          reduced-data, and SEO. Renders at SSR so the client sees the video
+          immediately without waiting for hydration. */}
       <div className="absolute inset-0">
         <Image
           src="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
-          alt="EmersonEIMS Power Solutions - Kenya's #1 Generator Company"
+          alt="EmersonEIMS Power Solutions — Kenya's #1 Generator Company"
           fill
           priority
           fetchPriority="high"
           className="object-cover"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black" />
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
+          aria-hidden="true"
+        >
+          <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(251,191,36,0.18),transparent_60%)]" />
       </div>
 
       {/* Static hero content - Apple-style typography & spacing */}
