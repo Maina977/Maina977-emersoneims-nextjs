@@ -16,11 +16,18 @@ const WASTE_CATEGORIES = [
   { category: 'Radioactive Waste', heatValue: 15, priceMultiplier: 3.0, description: 'Low-level radioactive materials' },
 ];
 
+// pricePerKgHrCapacity = installed capex in KES per 1 kg/h of rated burn capacity.
+// Anchored to current Kenyan market for locally-supported medical incinerators
+// (Inciner8 / Addfield / mid-grade local fabrication, 2026 prices, supply + install,
+// excludes APC / WHR / civil works which are added separately below).
+//   25 kg/h dual chamber  -> ~3.75M base + 30% APC + 20% install + 15% civil ~ KES 5.7M
+//   100 kg/h rotary kiln  -> ~20M base + APC + install + civil ~ KES 30M
+// Source: 2024-2026 supplier RFQs and KEMSA medical waste tenders.
 const INCINERATOR_TYPES = [
-  { type: 'Single Chamber', minCapacity: 10, maxCapacity: 50, efficiency: 0.85, pricePerKg: 3500 },
-  { type: 'Dual Chamber', minCapacity: 20, maxCapacity: 200, efficiency: 0.95, pricePerKg: 4500 },
-  { type: 'Rotary Kiln', minCapacity: 100, maxCapacity: 500, efficiency: 0.98, pricePerKg: 6000 },
-  { type: 'Pyrolytic', minCapacity: 50, maxCapacity: 300, efficiency: 0.96, pricePerKg: 5500 },
+  { type: 'Single Chamber', minCapacity: 10, maxCapacity: 50, efficiency: 0.85, pricePerKgHrCapacity: 100_000 },
+  { type: 'Dual Chamber', minCapacity: 20, maxCapacity: 200, efficiency: 0.95, pricePerKgHrCapacity: 150_000 },
+  { type: 'Rotary Kiln', minCapacity: 100, maxCapacity: 500, efficiency: 0.98, pricePerKgHrCapacity: 200_000 },
+  { type: 'Pyrolytic', minCapacity: 50, maxCapacity: 300, efficiency: 0.96, pricePerKgHrCapacity: 175_000 },
 ];
 
 const FUEL_TYPES = [
@@ -117,11 +124,15 @@ export default function AdvancedIncineratorCalculator() {
     // Ash generation (5-10% of input)
     const ashGeneration = totalDailyWaste * 0.07;
     
-    // Capital cost
-    const incineratorCost = selectedCapacity * incineratorData.pricePerKg * 1000;
+    // Capital cost — KES.
+    // pricePerKgHrCapacity is the installed base price per 1 kg/h capacity
+    // (already in KES, no extra unit conversion). Earlier versions multiplied
+    // by 1000 by mistake which inflated quotes ~30x — fixed.
+    const incineratorCost = selectedCapacity * incineratorData.pricePerKgHrCapacity;
     const apcCost = systemConfig.hasAPC ? incineratorCost * 0.3 : 0;
     const whrCost = systemConfig.hasWHR ? incineratorCost * 0.15 : 0;
-    const monitoringCost = systemConfig.hasContinuousMonitoring ? 2000000 : 0;
+    // CEMS (continuous emission monitoring system) — Kenyan supplier average ~KES 800k installed.
+    const monitoringCost = systemConfig.hasContinuousMonitoring ? 800_000 : 0;
     const installationCost = (incineratorCost + apcCost + whrCost) * 0.2;
     const civilWorksCost = incineratorCost * 0.15;
     

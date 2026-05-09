@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import PricingDisclaimer from '@/components/calculators/PricingDisclaimer';
 
 const AdvancedGeneratorCalculator = dynamic(() => import('@/components/calculators/AdvancedGeneratorCalculator'), {
   loading: () => <div className="p-4 text-center text-gray-400">Loading calculator...</div>,
@@ -356,8 +357,16 @@ function ServiceCalculator({ serviceId }: { serviceId: string }) {
       </div>
     );
   }
-  
-  return <CalculatorComponent />;
+
+  // Single, site-wide pricing disclaimer wraps every advanced calculator
+  // so users always see that figures are indicative Kenyan-market guidance,
+  // not a binding quote. Centralising it here means we never miss a calc.
+  return (
+    <>
+      <PricingDisclaimer scope={serviceId.replace(/-/g, ' ')} />
+      <CalculatorComponent />
+    </>
+  );
 }
 
 // =====================================================
