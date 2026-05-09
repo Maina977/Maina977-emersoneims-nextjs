@@ -13,7 +13,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import {
-  getAllServiceLocationPaths,
+  getIndexedServiceLocationPaths,
   getLocationBySlug,
   getCountyBySlug,
   generateLocationSEO,
@@ -26,9 +26,14 @@ interface Props {
   params: Promise<{ location: string; service: string }>;
 }
 
-// Generate static paths for all service-location combinations
+// Lock to the curated indexed pairs only — anything else returns 404.
+// Eliminates ~8,950 templated near-duplicate pages that previously triggered
+// Google's doorway-page demotion. See lib/seo/kenyaLocations.ts header.
+export const dynamicParams = false;
+
+// Generate static paths for the curated indexed (location, service) pairs.
 export async function generateStaticParams() {
-  const paths = getAllServiceLocationPaths();
+  const paths = getIndexedServiceLocationPaths();
   return paths.map(p => ({
     location: p.location,
     service: p.service

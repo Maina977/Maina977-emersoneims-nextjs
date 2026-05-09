@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getAllServiceSlugs } from '@/lib/services/allServices';
+import { getIndexedServiceLocationPaths } from '@/lib/seo/kenyaLocations';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -39,16 +40,18 @@ const industries = [
 ];
 
 // Services for location combinations.
-// Sourced from the canonical service registry so every service we offer
-// gets a /locations/<city>/<service> entry. Plus a few high-intent
-// long-tail aliases that don't have their own dedicated /services/<slug>
-// page (these resolve via the dynamic [location]/[service] route).
+// NOTE: location × service combos are now sourced from the curated
+// `getIndexedServiceLocationPaths()` registry (top cities × core services
+// only). The free-form `services` list below is unused for that loop and
+// is kept solely for future expansion of dedicated /services/<slug>
+// emission, which already happens via getAllServiceSlugs() at the bottom.
 const services = [
   ...getAllServiceSlugs(),
   'generator-repair',
   'generator-maintenance',
   'generator-installation',
 ];
+void services;
 
 // Blog article slugs
 const blogSlugs = [
@@ -260,17 +263,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // Add location + service combinations for top towns (HIGH-INTENT keywords)
-  const topLocations = ['nairobi', 'mombasa', 'kisumu', 'nakuru', 'eldoret', 'thika', 'westlands', 'karen'];
-  for (const location of topLocations) {
-    for (const service of services) {
-      urls.push({
-        url: `${BASE_URL}/locations/${location}/${service}`,
-        lastModified: currentDate,
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      });
-    }
+  // Add curated location + service combinations (HIGH-INTENT keywords).
+  // Sourced from the same indexed registry the page uses for
+  // generateStaticParams — sitemap stays in lockstep with what's
+  // actually rendered + indexable. Anything outside this list 404s.
+  for (const { location, service } of getIndexedServiceLocationPaths()) {
+    urls.push({
+      url: `${BASE_URL}/locations/${location}/${service}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    });
   }
 
   // Sector landing pages live at /industries/<slug> and are already

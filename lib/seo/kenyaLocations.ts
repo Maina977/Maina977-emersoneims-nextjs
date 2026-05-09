@@ -720,7 +720,57 @@ export function getCountyBySlug(slug: string): County | undefined {
 }
 
 /**
- * Get all service-location combinations for sitemap
+ * INDEXED location × service pairs.
+ * ─────────────────────────────────
+ * Returns ONLY the top-tier (high-intent city × core service) combinations
+ * that are worth a unique static page in Google's index. Generating one
+ * page for every (~1000 location × 9 service) combination = ~9,000
+ * near-duplicate templated pages, which Google's Search Quality Guidelines
+ * classify as "doorway pages" and will demote site-wide.
+ *
+ * Curated list mirrors the sitemap's topLocations × core services. Every
+ * other (loc, svc) pair returns 404 (dynamicParams = false on the page).
+ * If a real, locally-relevant page is needed for a smaller town, add it
+ * here once authored with unique content.
+ */
+const INDEXED_TOP_LOCATIONS = [
+  'nairobi',
+  'mombasa',
+  'kisumu',
+  'nakuru',
+  'eldoret',
+  'thika',
+  'westlands',
+  'karen',
+];
+
+const INDEXED_TOP_SERVICES = [
+  'generators',
+  'solar',
+  'ups',
+  'electrical',
+  'generator-diagnostics',
+];
+
+export function getIndexedServiceLocationPaths(): { service: string; location: string }[] {
+  const paths: { service: string; location: string }[] = [];
+  const locationSet = new Set(getAllLocations().map((l) => l.slug));
+  const serviceSet = new Set(SERVICES.map((s) => s.slug));
+
+  for (const location of INDEXED_TOP_LOCATIONS) {
+    if (!locationSet.has(location)) continue;
+    for (const service of INDEXED_TOP_SERVICES) {
+      if (!serviceSet.has(service)) continue;
+      paths.push({ service, location });
+    }
+  }
+  return paths;
+}
+
+/**
+ * @deprecated Returns the full ~9,000-pair combinatorial set. Retained
+ * only so legacy callers don't break — DO NOT use for static generation
+ * or sitemap emission. Use getIndexedServiceLocationPaths() instead.
  */
 export function getAllServiceLocationPaths(): { service: string; location: string }[] {
   const paths: { service: string; location: string }[] = [];
