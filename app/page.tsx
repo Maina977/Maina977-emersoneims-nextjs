@@ -71,13 +71,17 @@ function StaticHeroFallback() {
           className="object-cover"
           sizes="100vw"
         />
+        {/* Hero video — DESKTOP ONLY. On mobile we ship the static poster
+            image only (~40 KB) so the 18 MB video does not compete with the
+            LCP image for bandwidth. `preload="none"` is safe for muted
+            autoplay (browsers start the stream on play, not on parse). */}
         <video
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover hidden sm:block"
           autoPlay
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="none"
           poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
           aria-hidden="true"
         >
