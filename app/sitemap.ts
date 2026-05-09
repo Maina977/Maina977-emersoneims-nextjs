@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { SECTOR_SLUGS } from '@/lib/sectors/config';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -272,6 +273,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.8,
       });
     }
+  }
+
+  // Solutions-by-Sector landing pages (B2B conversion routes).
+  // Stable date format YYYY-MM-DD so re-deploys don't churn the sitemap.
+  const sectorLastModified = new Date().toISOString().slice(0, 10);
+  for (const sector of SECTOR_SLUGS) {
+    urls.push({
+      url: `${BASE_URL}/solutions/${sector}`,
+      lastModified: sectorLastModified,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    });
   }
 
   return urls;

@@ -10,6 +10,7 @@ import { Metadata } from 'next';
 // Client wrapper for interactive sections
 import HomePageClient from '@/components/home/HomePageClient';
 import HubFeatureBlock from '@/components/home/HubFeatureBlock';
+import SolutionsBySector from '@/components/home/SolutionsBySector';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // STATIC SEO METADATA - Rendered at build time
@@ -696,6 +697,7 @@ export default function HomePage() {
 
       {/* STATIC CONTENT - Renders instantly (no JS needed) */}
       <StaticHeroFallback />
+      <SolutionsBySector />
       <StaticFeaturesSection />
       <HubFeatureBlock />
       <StaticStatsSection />

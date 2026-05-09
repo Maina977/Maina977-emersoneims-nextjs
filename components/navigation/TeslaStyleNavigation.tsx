@@ -12,6 +12,9 @@ const LanguageSwitcher = dynamic(
   { ssr: false }
 );
 
+// Sectors dropdown (feature-flagged via NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS)
+import SolutionsDropdown from '@/components/navigation/SolutionsDropdown';
+
 interface TeslaStyleNavigationProps {
   activeSection?: string;
 }
@@ -405,6 +408,7 @@ export default function TeslaStyleNavigation({
 
               {/* Divider + Language Switcher + CTA */}
               <div className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
+                <SolutionsDropdown />
                 <LanguageSwitcher />
                 <a
                   href="tel:+254768860665"
@@ -632,6 +636,16 @@ export default function TeslaStyleNavigation({
                         {item.label}
                       </Link>
                     )
+                  )}
+                  {/* Sectors (feature-flagged via NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS) */}
+                  {process.env.NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS === 'true' && (
+                    <Link
+                      href="/solutions"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-4 py-3 rounded-xl text-sm font-semibold tracking-wide uppercase text-amber-300 hover:text-amber-200 hover:bg-white/5 transition-colors"
+                    >
+                      SECTORS
+                    </Link>
                   )}
                 </nav>
 

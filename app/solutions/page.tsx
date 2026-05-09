@@ -4,6 +4,10 @@ import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import UnifiedCTA, { CTASection } from "@/components/cta/UnifiedCTA";
+import { SECTOR_LIST } from "@/lib/sectors/config";
+
+const SECTOR_SOLUTIONS_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS === 'true';
 
 const SOLUTIONS_LINKS = [
   { href: "/solutions/generators", label: "Diesel generators", icon: "⚡", description: "Troubleshooting & maintenance" },
@@ -62,6 +66,47 @@ export default function SolutionsHome() {
         colorGrade="hollywood"
         height="h-[50vh]"
       />
+
+      {/* ──────────────────────────────────────────────────────────────────
+          SOLUTIONS BY SECTOR — additive band (feature-flagged).
+          Lists the 6 target sectors so /solutions also acts as a sector index.
+          ────────────────────────────────────────────────────────────────── */}
+      {SECTOR_SOLUTIONS_ENABLED && (
+        <section className="mx-auto max-w-7xl px-6 py-12 sm:py-16 border-b border-white/5">
+          <div className="text-center mb-10">
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs uppercase tracking-[0.2em] text-amber-400 border border-amber-500/30 bg-amber-500/5 mb-4">
+              By sector
+            </span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+              Solutions for your <span className="text-amber-500">industry</span>
+            </h2>
+            <p className="text-gray-400 mt-3 max-w-2xl mx-auto text-sm sm:text-base">
+              Pick your sector for a tailored set of services, pricing context and a
+              direct sector-specific quote request.
+            </p>
+          </div>
+          <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {SECTOR_LIST.map((s) => (
+              <li key={s.slug}>
+                <Link
+                  href={`/solutions/${s.slug}`}
+                  className="group block h-full rounded-xl border border-white/10 bg-white/[0.02] p-5 hover:border-amber-500/40 transition-colors"
+                >
+                  <h3 className="text-base sm:text-lg font-semibold text-white capitalize group-hover:text-amber-300">
+                    {s.slug.replace('-', ' ')}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-400 mt-2 line-clamp-2">
+                    {s.painStatement}
+                  </p>
+                  <span className="block text-xs text-amber-400 mt-3 uppercase tracking-wider">
+                    See solutions →
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-6 pb-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
