@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { getAllServiceSlugs } from '@/lib/services/allServices';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -37,16 +38,16 @@ const industries = [
   'government-ngo'
 ];
 
-// Services for location combinations
+// Services for location combinations.
+// Sourced from the canonical service registry so every service we offer
+// gets a /locations/<city>/<service> entry. Plus a few high-intent
+// long-tail aliases that don't have their own dedicated /services/<slug>
+// page (these resolve via the dynamic [location]/[service] route).
 const services = [
-  'generators',
+  ...getAllServiceSlugs(),
   'generator-repair',
   'generator-maintenance',
   'generator-installation',
-  'solar',
-  'ups',
-  'motor-rewinding',
-  'borehole-pumps'
 ];
 
 // Blog article slugs
@@ -152,12 +153,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // motor-rewinding, borehole-pumps, ac, generators, controls, motors) are
     // omitted here — only the canonical /services/* (or top-level) destinations
     // are listed. The non-redirected /solutions/* slugs are still emitted.
+    // The /services/<slug> URLs themselves are appended below from the
+    // canonical registry (`getAllServiceSlugs`) so this list stays in sync
+    // with what's actually rendered by app/services/[service]/page.tsx.
     { url: `${BASE_URL}/services`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${BASE_URL}/services/ups-systems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/services/motor-rewinding`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/services/borehole-pumps`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/services/ac-installation`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
-    { url: `${BASE_URL}/services/ats-changeover`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/solutions/incinerators`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/solutions/building`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
@@ -278,6 +277,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // emitted earlier in this sitemap (see the `industries` loop). The
   // /solutions/<sector> pages were retired in favour of /industries to
   // avoid duplicate B2B sector hubs.
+
+  // Canonical /services/<slug> pages — one entry per service in the
+  // registry. Keeps the sitemap aligned with the dynamic route at
+  // app/services/[service]/page.tsx so every service we offer is
+  // discoverable, not just the 5 that used to be hardcoded.
+  for (const slug of getAllServiceSlugs()) {
+    urls.push({
+      url: `${BASE_URL}/services/${slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    });
+  }
 
   return urls;
 }

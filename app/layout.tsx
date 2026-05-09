@@ -20,6 +20,7 @@ import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import { ALL_SERVICES } from '@/lib/services/allServices';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PERFORMANCE: All non-critical components loaded AFTER page is interactive
@@ -55,7 +56,7 @@ export const metadata: Metadata = {
     default: "EmersonEIMS | B2B Power & Engineering Partner for Industry, Healthcare & Telecom in Kenya",
     template: "%s | EmersonEIMS — B2B Power & Engineering Solutions Kenya"
   },
-  description: "EmersonEIMS is a B2B power-engineering partner for manufacturers, hospitals, telecom, commercial property and construction in Kenya — generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 3-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Call +254768860665.",
+  description: "EmersonEIMS is a B2B power-engineering partner for manufacturers, hospitals, telecom, commercial property and construction in Kenya \u2014 Cummins generators, generator repairs, ATS / changeover panels, distribution boards, solar PV, UPS systems, motor rewinding, air-conditioning, borehole pumps, hospital incinerators and steel fabrication \u2014 backed by a 3-year warranty, SLA maintenance and 24/7 emergency response across all 47 counties. Call +254768860665.",
   // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
   // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],
@@ -245,97 +246,32 @@ export default async function RootLayout({
     ],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
-      "name": "Energy Solutions",
-      "itemListElement": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Generator Installation & Maintenance",
-            "description": "Professional installation and maintenance of industrial and commercial generators (Diesel, Gas, Used).",
-            "provider": {
-              "@type": "LocalBusiness",
-              "name": "EmersonEIMS"
-            }
-          }
+      "name": "Energy & Engineering Solutions",
+      // Built dynamically from the canonical service registry so every
+      // service we offer is advertised to search engines via schema.org
+      // — each Offer.itemOffered.@id deep-links to its dedicated
+      // /services/<slug> page where the per-service Service + FAQPage
+      // schema lives. White-hat: no keyword stuffing, just a complete
+      // and accurate machine-readable catalog of what we actually do.
+      "itemListElement": ALL_SERVICES.map((svc) => ({
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "@id": `${siteUrl}/services/${svc.slug}#service`,
+          "name": svc.name,
+          "description": svc.description,
+          "url": `${siteUrl}/services/${svc.slug}`,
+          "provider": {
+            "@type": "LocalBusiness",
+            "@id": `${siteUrl}/#organization`,
+            "name": "EmersonEIMS",
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "Kenya",
+          },
         },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Solar Power Systems",
-            "description": "Complete solar energy solutions for residential, commercial, and industrial applications.",
-            "provider": {
-              "@type": "LocalBusiness",
-              "name": "EmersonEIMS"
-            }
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Power Diagnostics & Audits",
-            "description": "Advanced power quality analysis, energy audits, and diagnostic services.",
-            "provider": {
-              "@type": "LocalBusiness",
-              "name": "EmersonEIMS"
-            }
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "UPS & Power Backup Systems",
-            "description": "Uninterruptible Power Supply (UPS) systems for critical infrastructure.",
-            "provider": {
-              "@type": "LocalBusiness",
-              "name": "EmersonEIMS"
-            }
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Fuel Management Systems",
-            "description": "Automated fuel monitoring and management for generator fleets.",
-            "provider": {
-              "@type": "LocalBusiness",
-              "name": "EmersonEIMS"
-            }
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Remote Monitoring",
-            "description": "24/7 remote monitoring of power assets and infrastructure.",
-            "provider": {
-              "@type": "LocalBusiness",
-              "name": "EmersonEIMS"
-            }
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Generator & Solar Spare Parts Supply",
-            "description": "Comprehensive spare parts catalog with 1,560+ genuine parts for generators (Cummins, Perkins, CAT), solar systems, motors, and switchgear. Fast delivery across Kenya.",
-            "provider": {
-              "@type": "LocalBusiness",
-              "name": "EmersonEIMS"
-            },
-            "areaServed": {
-              "@type": "Country",
-              "name": "Kenya"
-            }
-          }
-        }
-      ]
+      })),
     }
   };
 
