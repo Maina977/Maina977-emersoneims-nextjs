@@ -177,13 +177,11 @@ export default async function RootLayout({
     "priceRange": "KES",
     "currenciesAccepted": "KES, USD",
     "paymentAccepted": "Cash, M-Pesa, Bank Transfer, Credit Card",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "247",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
+    // NOTE: AggregateRating intentionally omitted. Google's structured-data
+    // policy prohibits self-asserted aggregate ratings without on-page,
+    // user-generated reviews. We will reintroduce this only when reviews
+    // are sourced from a verifiable third party (Google Business Profile,
+    // Trustpilot) and rendered on the page itself.
     "sameAs": [
       "https://www.facebook.com/EmersonEIMS",
       "https://twitter.com/EmersonEIMS",

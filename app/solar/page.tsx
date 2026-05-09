@@ -2104,7 +2104,7 @@ export default function SolarBible() {
             Ready to Harness the Power of the Sun?
           </h2>
           <p className="text-xl text-amber-100 mb-8">
-            Join 500+ satisfied clients across Kenya. Get your free site survey today.
+            Get a free site survey from our solar engineers. We design to your roof, load profile and budget.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a

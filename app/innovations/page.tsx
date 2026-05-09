@@ -44,13 +44,13 @@ const innovations: Innovation[] = [
     title: 'PMI™ Predictive Maintenance Index',
     category: 'Predictive',
     status: 'Live',
-    description: 'Revolutionary predictive maintenance system built on 15 years of field data from 47 Kenyan counties. Predicts failures 30-90 days in advance, saving millions in downtime costs.',
+    description: 'Predictive maintenance index using climate-region degradation curves and field-data MTBF tracking from EmersonEIMS installations. Surfaces failure-likelihood signals so maintenance can be scheduled ahead of breakdowns.',
     features: [
-      'MTBF data from 500+ installations (2010-2025)',
+      'Field-tracked MTBF (sample size disclosed in audit log)',
       'Climate-specific degradation curves (Coastal, Highland, Arid, Urban)',
       'Failure probability calculation (0-100%)',
-      'Days-to-failure prediction with 88% accuracy',
-      'Cost impact estimation (KES 50K per PMI point)',
+      'Days-to-failure prediction with model-validation accuracy reported per release',
+      'Cost impact estimation (configurable per fleet)',
       'Maintenance scheduling optimization',
       'Real-time monitoring integration'
     ],

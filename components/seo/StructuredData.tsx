@@ -111,13 +111,8 @@ export function LocalBusinessSchema({ county }: { county?: string }) {
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       opens: '00:00',
       closes: '23:59'
-    }],
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '247',
-      bestRating: '5'
-    }
+    }]
+    // AggregateRating omitted per data policy — see app/layout.tsx note.
   };
 
   return <StructuredData data={schema} />;

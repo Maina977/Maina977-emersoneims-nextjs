@@ -362,12 +362,9 @@ export function generateServiceSchema() {
         "warranty": service.warranty
       }))
     },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "512",
-      "bestRating": "5"
-    },
+    // AggregateRating, awards, numberOfEmployees and foundingDate removed —
+    // none had verifiable provenance and Google penalises self-asserted
+    // ratings/awards. Reintroduce only with third-party-sourced data.
     "slogan": "3-Year Generator Warranty | 47 Counties Coverage | 24/7 Emergency Service",
     "knowsAbout": [
       "Generator Installation",
@@ -380,15 +377,6 @@ export function generateServiceSchema() {
       "Electrical Installation",
       "Welding & Fabrication",
       "Plumbing Services"
-    ],
-    "numberOfEmployees": {
-      "@type": "QuantitativeValue",
-      "value": "50+"
-    },
-    "foundingDate": "2012",
-    "award": [
-      "Best Generator Company Kenya 2024",
-      "Top Solar Installer East Africa 2024"
     ]
   };
 }

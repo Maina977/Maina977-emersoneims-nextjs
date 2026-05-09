@@ -138,12 +138,14 @@ function StaticHeroFallback() {
             </Link>
           </div>
 
-          {/* Trust Indicators - Mobile optimized grid */}
+          {/* Trust Indicators — only verifiable, on-policy claims kept.
+              Removed "500+ Projects" and "98.7% Uptime" — both lacked
+              provenance and violate the project data policy. */}
           <div className="mt-10 sm:mt-12 grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-4 sm:gap-6 text-gray-400 text-sm">
-            <span className="flex items-center justify-center gap-1">✓ 500+ Projects</span>
-            <span className="flex items-center justify-center gap-1">✓ 98.7% Uptime</span>
-            <span className="flex items-center justify-center gap-1">✓ 47 Counties</span>
-            <span className="flex items-center justify-center gap-1">✓ 24/7 Support</span>
+            <span className="flex items-center justify-center gap-1">✓ 47 Counties Covered</span>
+            <span className="flex items-center justify-center gap-1">✓ 24/7 Emergency Response</span>
+            <span className="flex items-center justify-center gap-1">✓ 3-Year Warranty</span>
+            <span className="flex items-center justify-center gap-1">✓ SLA Maintenance</span>
           </div>
         </div>
       </div>

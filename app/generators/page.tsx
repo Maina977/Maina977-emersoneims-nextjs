@@ -2230,9 +2230,12 @@ export default function GeneratorPage() {
       <UrgencySection />
 
       {/* ═══════════════════════════════════════════════════════════════════
-          📊 LIVE STATISTICS - Social Proof Numbers
+          📊 LIVE STATISTICS — DISABLED PER DATA POLICY
+          The hardcoded values (150 projects / 85 clients / 99.8% uptime
+          etc.) lacked verifiable provenance. Re-enable once the numbers
+          are pulled from a verifiable source (CRM export, audit log).
       ════════════════════════════════════════════════════════════════ */}
-      <LiveStatisticsCounter />
+      {/* <LiveStatisticsCounter /> */}
 
       {/* ═══════════════════════════════════════════════════════════════════
           💰 TRANSPARENT PRICING - Show Starting Prices
@@ -2446,19 +2449,18 @@ export default function GeneratorPage() {
       <WhyChooseUs />
 
       {/* ═══════════════════════════════════════════════════════════════════
-          ⭐ CLIENT TESTIMONIALS - Social Proof
+          ⭐ CLIENT TESTIMONIALS / 🎬 VIDEO TESTIMONIALS / 📸 BEFORE-AFTER
+          DISABLED PER DATA POLICY. The named-client quotes (St. Austin,
+          Kivukoni, Bigot Flowers, Greenheart Kilifi, NTSA, Sanergy) and
+          before/after metrics (99.8% / 99.9% uptime, KSh 1.2M saved) are
+          held until signed releases and source-document evidence are filed
+          under /docs/case-study-evidence/{id}/. Mirrors the gating shipped
+          for /case-studies (data/caseStudies.ts).
+          To re-enable: file evidence, then uncomment the three mounts.
       ════════════════════════════════════════════════════════════════ */}
-      <ClientTestimonials />
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          🎬 VIDEO TESTIMONIALS - Hear From Clients
-      ════════════════════════════════════════════════════════════════ */}
-      <VideoTestimonials />
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          📸 BEFORE/AFTER - Project Transformations
-      ════════════════════════════════════════════════════════════════ */}
-      <BeforeAfterGallery />
+      {/* <ClientTestimonials /> */}
+      {/* <VideoTestimonials /> */}
+      {/* <BeforeAfterGallery /> */}
 
       {/* Interactive Blobs Section */}
       <section className="relative py-20 bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden">
