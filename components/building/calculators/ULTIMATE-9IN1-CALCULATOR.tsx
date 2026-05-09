@@ -1786,7 +1786,7 @@ export default function Ultimate9In1Calculator() {
   </table>
 
   <div class="footer">
-    <p><strong>EmersonEIMS</strong></p>
+    <p><strong>Emerson Industrial Maintenance Services (EIMS)</strong></p>
     <p>Nairobi, Kenya | www.emersoneims.com</p>
     <p style="margin-top: 10px;">This report is for estimation purposes only. Actual requirements may vary based on site assessment.</p>
   </div>

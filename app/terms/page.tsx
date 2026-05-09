@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Terms of Service | EmersonEIMS',
-  description: 'Terms of service for EmersonEIMS digital services.',
+  title: 'Terms of Service | Emerson EiMS',
+  description: 'Terms of service for Emerson EiMS digital services.',
 };
 
 export default function TermsPage() {
@@ -25,7 +25,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white">Intellectual property</h2>
             <p className="mt-3">
-              Unless stated otherwise, content and branding belong to EmersonEIMS and may not be reused without permission.
+              Unless stated otherwise, content and branding belong to Emerson EiMS and may not be reused without permission.
             </p>
           </section>
 

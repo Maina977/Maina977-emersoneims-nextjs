@@ -65,7 +65,7 @@ const FEATURES = [
 
 // Business Details
 const BUSINESS_INFO = {
-  company: 'EmersonEIMS',
+  company: 'Emerson Industrial Maintenance Services Limited',
   phone: '0782914717',
   whatsapp: '+254782914717',
 };
@@ -85,7 +85,7 @@ const PAYMENT_METHODS = {
     icon: '🏦',
     bank: 'Equity Bank',
     branch: 'Embakasi Branch',
-    accountName: 'EmersonEIMS',
+    accountName: 'Emerson Industrial Maintenance Services Limited',
     accountNumber: '1320285133753',
   },
 };

@@ -6,7 +6,7 @@
  * ║   AQUASCAN PRO™ - THE WORLD'S MOST ADVANCED AI BOREHOLE ANALYZER           ║
  * ║   ═══════════════════════════════════════════════════════════════════════   ║
  * ║                                                                              ║
- * ║   Copyright © 2024-2026 EmersonEIMS        ║
+ * ║   Copyright © 2024-2026 EmersonEIMS / Emerson Industrial Maintenance        ║
  * ║   ALL RIGHTS RESERVED WORLDWIDE - 195+ COUNTRIES COVERAGE                   ║
  * ║                                                                              ║
  * ║   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   ║
@@ -73,7 +73,7 @@ import {
 const AQUASCAN_PRO_LICENSE = {
   product: 'AquaScan Pro™',
   version: '3.0',
-  owner: 'EmersonEIMS',
+  owner: 'EmersonEIMS / Emerson Industrial Maintenance Services',
   copyright: '© 2024-2026 All Rights Reserved Worldwide',
   trademark: 'AquaScan Pro™ is a registered trademark',
   patents: [
@@ -685,7 +685,7 @@ ${result.disclaimers.join('\n')}
            The World's Most Comprehensive AI Borehole Analyzer
 ════════════════════════════════════════════════════════════════════════════════
 
-© 2024-2026 EmersonEIMS
+© 2024-2026 EmersonEIMS / Emerson Industrial Maintenance Services
 All Rights Reserved Worldwide
 
 TRADEMARK: AquaScan Pro™ is a registered trademark of EmersonEIMS

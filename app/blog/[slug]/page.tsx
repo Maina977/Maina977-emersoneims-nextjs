@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${article.title} | EmersonEIMS Blog`,
+    title: `${article.title} | Emerson EiMS Blog`,
     description: article.description,
     keywords: article.tags.join(', '),
     authors: [{ name: article.author }],
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       authors: [article.author],
       tags: article.tags,
       url: `https://www.emersoneims.com/blog/${article.slug}`,
-      siteName: 'EmersonEIMS',
+      siteName: 'Emerson EiMS',
       images: [
         {
           url: article.image || 'https://www.emersoneims.com/images/blog-default.jpg',
@@ -223,7 +223,7 @@ export default async function BlogArticlePage({ params }: Props) {
             },
             publisher: {
               '@type': 'Organization',
-              name: 'EmersonEIMS',
+              name: 'Emerson EiMS',
               logo: {
                 '@type': 'ImageObject',
                 url: 'https://www.emersoneims.com/logo.png'

@@ -54,9 +54,9 @@ export const metadata: Metadata = {
     'preventive maintenance',
     'industrial service Kenya',
   ],
-  authors: [{ name: 'EmersonEIMS' }],
+  authors: [{ name: 'Emerson Industrial Maintenance Services' }],
   creator: 'Emerson EiMS',
-  publisher: 'EmersonEIMS',
+  publisher: 'Emerson Industrial Maintenance Services Limited',
   robots: {
     index: true,
     follow: true,
@@ -104,7 +104,7 @@ const structuredData = {
     {
       '@type': 'Organization',
       '@id': 'https://www.emersoneims.com/#organization',
-      name: 'EmersonEIMS',
+      name: 'Emerson Industrial Maintenance Services',
       alternateName: 'Emerson EiMS',
       url: 'https://www.emersoneims.com',
       logo: 'https://www.emersoneims.com/logo.png',

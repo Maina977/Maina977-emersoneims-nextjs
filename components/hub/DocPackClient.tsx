@@ -236,7 +236,7 @@ export default function DocPackClient() {
           <header className="border-b pb-3 mb-4" style={{ borderColor: 'var(--color-border-subtle)' }}>
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.2em] text-ink-muted">EmersonEIMS</div>
+                <div className="text-[11px] uppercase tracking-[0.2em] text-ink-muted">Emerson Industrial Maintenance Services</div>
                 <h2 className="text-2xl font-semibold mt-1">Installation & Commissioning Pack</h2>
                 <div className="text-sm text-ink-secondary mt-1">{ARCH_LABEL[m.arch]}</div>
               </div>

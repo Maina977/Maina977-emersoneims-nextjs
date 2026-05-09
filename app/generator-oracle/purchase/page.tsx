@@ -23,7 +23,7 @@ const getDaysRemaining = () => Math.max(0, Math.ceil((FREE_TRIAL_END.getTime() -
 
 // Business Details
 const BUSINESS = {
-  company: 'EmersonEIMS',
+  company: 'Emerson Industrial Maintenance Services Limited',
   phone: '0782914717',
   whatsapp: '254782914717',
 };
@@ -36,7 +36,7 @@ const PAYMENT_INFO = {
   },
   bank: {
     bank: 'Equity Bank',
-    accountName: 'EmersonEIMS',
+    accountName: 'Emerson Industrial Maintenance Services Limited',
     accountNumber: '1320285133753',
     branch: 'Embakasi Branch',
     swiftCode: 'EQBLKENA',

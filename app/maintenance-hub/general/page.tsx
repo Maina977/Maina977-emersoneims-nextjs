@@ -974,7 +974,7 @@ export default function GeneralServicesBible() {
       {/* Footer */}
       <footer className="bg-slate-900 border-t border-slate-800 py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-slate-500 text-sm">© 2026 EmersonEIMS</p>
+          <p className="text-slate-500 text-sm">© 2026 Emerson Industrial Maintenance Services Limited</p>
           <p className="text-slate-600 text-xs mt-2">Kenya's Most Comprehensive Maintenance Services Provider</p>
         </div>
       </footer>

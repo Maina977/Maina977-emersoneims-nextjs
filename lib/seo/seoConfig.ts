@@ -315,10 +315,11 @@ export function generateStructuredData(type: 'Organization' | 'LocalBusiness' | 
   if (type === 'Organization') {
     return {
       ...baseSchema,
-      name: 'EmersonEIMS',
+      name: 'Emerson EiMS',
+      alternateName: 'EmersonEIMS',
       url: 'https://www.emersoneims.com',
       logo: 'https://www.emersoneims.com/logo.png',
-      description: 'Kenya-owned power and energy solutions provider serving Kenya and East Africa',
+      description: 'Leading power and energy solutions provider in Kenya and East Africa',
       address: {
         '@type': 'PostalAddress',
         streetAddress: 'P.O. Box 387-00521, Old North Airport Road',

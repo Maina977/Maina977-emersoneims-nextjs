@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Careers | EmersonEIMS',
-  description: 'Careers at EmersonEIMS — engineering excellence for critical infrastructure.',
+  title: 'Careers | Emerson EiMS',
+  description: 'Careers at Emerson EiMS — engineering excellence for critical infrastructure.',
 };
 
 export default function CareersPage() {

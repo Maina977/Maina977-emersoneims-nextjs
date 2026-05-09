@@ -126,7 +126,7 @@ export default function ProBuildingSuiteClient() {
       <iframe
         ref={iframeRef}
         src="/eims-building-suite-v20260503.html"
-        title="EmersonEIMS Building Suite Pro"
+        title="EMERSON EIMS Building Suite Pro"
         onLoad={handleIframeLoad}
         loading="eager"
         // @ts-expect-error fetchpriority is a valid HTML attr but not yet typed in React 19

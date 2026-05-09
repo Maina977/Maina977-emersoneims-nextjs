@@ -43,7 +43,7 @@ function verifyAdminAuth(request: NextRequest): boolean {
  * Payment Verification API Endpoint
  *
  * BUSINESS DETAILS:
- * - Company: EmersonEIMS
+ * - Company: Emerson Industrial Maintenance Services Limited
  * - Bank: Equity Bank, Embakasi Branch
  * - Account: 1320285133753
  * - Phone: 0782914717
@@ -375,7 +375,7 @@ function logPaymentNotification(data: {
   console.log('');
   console.log('Bank Details to Check:');
   console.log('  Equity Bank - 1320285133753 (Embakasi Branch)');
-  console.log('  Account: EmersonEIMS');
+  console.log('  Account: Emerson Industrial Maintenance Services Limited');
   console.log('='.repeat(60));
   console.log('');
 

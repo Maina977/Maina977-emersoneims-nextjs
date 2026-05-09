@@ -142,6 +142,7 @@ export default async function RootLayout({
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "EmersonEIMS",
+    "alternateName": "EmersonEIMS",
     "url": siteUrl,
     "logo": `${siteUrl}/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png`,
     "image": `${siteUrl}/og-image.jpg`,
