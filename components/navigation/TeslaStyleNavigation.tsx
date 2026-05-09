@@ -12,8 +12,9 @@ const LanguageSwitcher = dynamic(
   { ssr: false }
 );
 
-// Sectors dropdown (feature-flagged via NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS)
-import SolutionsDropdown from '@/components/navigation/SolutionsDropdown';
+// Feature flag for the new Sectors landing pages and the SOLUTIONS nav entry.
+const SECTOR_SOLUTIONS_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS === 'true';
 
 interface TeslaStyleNavigationProps {
   activeSection?: string;
@@ -253,6 +254,10 @@ const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
+  // SOLUTIONS by Sector — inserted only when the feature flag is on.
+  ...(SECTOR_SOLUTIONS_ENABLED
+    ? [{ href: '/solutions', label: 'SOLUTIONS', type: 'link', featured: true } as const]
+    : []),
   { key: 'aiPowerhouse', label: 'AI SOLUTIONS', type: 'mega', featured: true },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
@@ -408,7 +413,6 @@ export default function TeslaStyleNavigation({
 
               {/* Divider + Language Switcher + CTA */}
               <div className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
-                <SolutionsDropdown />
                 <LanguageSwitcher />
                 <a
                   href="tel:+254768860665"
@@ -636,16 +640,6 @@ export default function TeslaStyleNavigation({
                         {item.label}
                       </Link>
                     )
-                  )}
-                  {/* Sectors (feature-flagged via NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS) */}
-                  {process.env.NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS === 'true' && (
-                    <Link
-                      href="/solutions"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block px-4 py-3 rounded-xl text-sm font-semibold tracking-wide uppercase text-amber-300 hover:text-amber-200 hover:bg-white/5 transition-colors"
-                    >
-                      SECTORS
-                    </Link>
                   )}
                 </nav>
 
