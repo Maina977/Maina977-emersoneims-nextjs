@@ -11,6 +11,7 @@ import TeslaStyleNavigation from '@/components/navigation/TeslaStyleNavigation';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 import B2BSiteStrip from '@/components/b2b/B2BSiteStrip';
 import { OrganizationSchema, WebSiteSchema, DiagnosticSuiteSchema } from '@/components/seo/StructuredData';
+import AutoBreadcrumb from '@/components/seo/AutoBreadcrumb';
 import FAQSchema from '@/components/seo/FAQSchema';
 import SkipToContent from '@/components/accessibility/SkipToContent';
 import { ScreenReaderAnnouncerProvider } from '@/components/accessibility/ScreenReaderAnnouncer';
@@ -448,6 +449,10 @@ export default async function RootLayout({
         <OrganizationSchema />
         <WebSiteSchema />
         <DiagnosticSuiteSchema />
+        {/* Per-page BreadcrumbList JSON-LD, derived from the request path
+            (set by middleware as `x-pathname`). Lifts SERP CTR by replacing
+            the long URL with a clean Home > Section > Page trail. */}
+        <AutoBreadcrumb />
 
         <nav id="main-navigation" aria-label="Main navigation">
           <TeslaStyleNavigation />

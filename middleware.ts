@@ -616,7 +616,15 @@ export function middleware(request: NextRequest) {
   // ─────────────────────────────────────────────────────────────────────────────
   // 6. PASS THROUGH WITH SECURITY + PERFORMANCE HEADERS
   // ─────────────────────────────────────────────────────────────────────────────
-  const response = NextResponse.next();
+  // Forward the resolved pathname to downstream server components so they can
+  // emit per-page structured data (BreadcrumbList JSON-LD) without needing
+  // every page to opt in. Read on the server via `headers().get('x-pathname')`.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
+
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   // Get preferred locale and set header for the app to use
   const preferredLocale = getPreferredLocale(request);
