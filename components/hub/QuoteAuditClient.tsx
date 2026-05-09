@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 import { Card, SectionHeading, SampleBadge, HubConnectStrip } from '@/components/hub/HubShell';
+import ReportExportButtons from '@/components/hub/ReportExportButtons';
+import type { ExportPayload } from '@/lib/hub/quoteExporters';
 import {
   KPICard,
   LockedChart,
@@ -230,8 +232,80 @@ export default function QuoteAuditClient() {
   const overallDelta = ((result.totalKes - result.expectedKes) / Math.max(1, result.expectedKes)) * 100;
   const overallStatus: StatusKey = resolveStatus(overallDelta, { warning: 8, danger: 18, invert: true });
 
+  // Build the export payload at click-time from current audit state. This
+  // means whatever appears on screen — BoQ, findings, scope coverage, tier
+  // alternatives — is exactly what lands in the PDF and Excel files.
+  const buildExportPayload = React.useCallback((): ExportPayload => ({
+    title: 'Solar + UPS Quotation Audit',
+    lines: lines.map((l) => ({
+      ref: l.ref,
+      description: l.description,
+      scope: SCOPE_LABEL[l.scope],
+      qty: l.qty,
+      unit: l.unit,
+      unitPriceKes: l.unitPriceKes,
+      catalogueKes: l.catalogueKes,
+    })),
+    findings: result.findings.map((f) => ({
+      ref: f.ref,
+      severity: f.severity,
+      rule: f.rule,
+      detail: f.detail,
+      deltaPct: f.deltaPct,
+    })),
+    scopeCoverage: REQUIRED_SCOPES.map((r) => ({
+      label: SCOPE_LABEL[r.scope],
+      present: lines.some((l) => l.scope === r.scope),
+      reason: r.reason,
+      severity: r.severity === 'success' ? 'info' : r.severity,
+    })),
+    tiers: [
+      {
+        tier: 'premium',
+        title: 'Premium',
+        priceKes: Math.round(result.totalKes * 1.18),
+        highlights: [
+          'Tier-1 brand genset (Cummins / Caterpillar)',
+          'Lithium battery + maintenance bypass',
+          '24-month parts + labour warranty',
+          'Remote monitoring + IoT controller',
+        ],
+        tradeoffs: 'Highest CapEx; lowest lifetime risk.',
+      },
+      {
+        tier: 'balanced',
+        title: 'Balanced',
+        priceKes: result.totalKes,
+        highlights: [
+          'Quoted brand genset (as audited)',
+          'AGM battery + manual bypass',
+          '12-month parts warranty',
+          'Local controller + scheduled service',
+        ],
+        tradeoffs: 'Best value at audited spec. Default recommendation.',
+      },
+      {
+        tier: 'budget',
+        title: 'Budget-safe',
+        priceKes: Math.round(result.totalKes * 0.82),
+        highlights: [
+          'Tier-2 genset, manufacturer-authorised',
+          'AGM battery, no bypass (planned outages)',
+          '6-month parts warranty',
+          'Manual changeover or simple ATS',
+        ],
+        tradeoffs: 'Never strips ATS, BMS, earthing, labour, or warranty.',
+      },
+    ],
+    totalKes: result.totalKes,
+    benchmarkKes: result.expectedKes,
+  }), [lines, result]);
+
   return (
     <div className="space-y-6">
+      {/* Comprehensive report download — PDF + Excel */}
+      <ReportExportButtons buildPayload={buildExportPayload} />
+
       {/* Summary KPIs ─────────────────── */}
       <div className="grid gap-3 md:grid-cols-4">
         <KPICard
