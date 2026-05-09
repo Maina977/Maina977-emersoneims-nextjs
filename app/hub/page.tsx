@@ -8,6 +8,8 @@ import {
   SampleBadge,
 } from '@/components/hub/HubShell';
 import { HUB_TOOLS } from '@/components/hub/hub-tools';
+import HubPhoto from '@/components/hub/HubPhoto';
+import { HUB_HERO_PHOTO, HUB_TOOL_PHOTOS } from '@/components/hub/hub-photos';
 import { StatusBar } from '@/components/charts/dataviz';
 import LazyLockedChart from '@/components/charts/LazyLockedChart';
 
@@ -71,7 +73,22 @@ export default function HubLandingPage() {
       active="/hub"
       title="Solar & UPS Intelligence Hub"
       caption="All engineering tools in one workspace. Sizing, audit, product intelligence, diagnostics, solar/UPS and the case library."
-    >
+    >      {/* Hero photo strip — anchors the page in real installations.
+          Image is sourced from components/hub/hub-photos.ts so the file
+          lives at /public/images/hub/hub-hero.webp; until that file is
+          uploaded the gradient placeholder shows automatically. */}
+      <section aria-labelledby="hub-hero-photo" className="mb-8">
+        <h2 id="hub-hero-photo" className="sr-only">
+          Real installations
+        </h2>
+        <HubPhoto
+          photo={HUB_HERO_PHOTO}
+          aspect="aspect-[16/6]"
+          rounded="rounded-2xl"
+          priority
+          sizes="100vw"
+        />
+      </section>
       {/* Flagship tool ─────────────────────────────────────── */}
       <section aria-labelledby="hub-flagship" className="mb-8">
         <SectionHeading
@@ -141,7 +158,9 @@ export default function HubLandingPage() {
           caption="Build order: sizing → audit → intelligence → diagnostics → solar/UPS → library."
         />
         <ol className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {TOOL_CARDS.map((t, i) => (
+          {TOOL_CARDS.map((t, i) => {
+            const photo = HUB_TOOL_PHOTOS[t.href];
+            return (
             <li key={t.href}>
               <Link
                 href={t.href}
@@ -158,6 +177,16 @@ export default function HubLandingPage() {
                   className="pointer-events-none absolute inset-x-0 top-0 h-[2px] opacity-70 transition-opacity group-hover:opacity-100"
                   style={{ background: 'linear-gradient(90deg, #0071e3 0%, #4cd2ee 40%, #c9a64a 80%, transparent 100%)' }}
                 />
+                {photo && (
+                  <HubPhoto
+                    photo={photo}
+                    aspect="aspect-[16/9]"
+                    rounded="rounded-md"
+                    hideCaption
+                    className="mb-3"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                  />
+                )}
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
                     Step {i + 2}
@@ -171,7 +200,8 @@ export default function HubLandingPage() {
                 </span>
               </Link>
             </li>
-          ))}
+            );
+          })}
         </ol>
       </section>
 
