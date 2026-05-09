@@ -1,0 +1,4220 @@
+'use client';
+
+/**
+ * ╔═══════════════════════════════════════════════════════════════════════════════╗
+ * ║   INTERACTIVE DIAGNOSTIC SYSTEM - Generator Oracle                            ║
+ * ║   Copyright © 2024-2026 EmersonEIMS. All Rights Reserved.                    ║
+ * ╚═══════════════════════════════════════════════════════════════════════════════╝
+ *
+ * Complete interactive diagnostic interfaces mimicking CAT ET, VODIA, Cummins INSITE
+ * with clickable diagrams for all generator systems.
+ */
+
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Fuel,
+  Thermometer,
+  Zap,
+  Settings,
+  ToggleLeft,
+  ChevronRight,
+  ChevronDown,
+  Info,
+  AlertTriangle,
+  CheckCircle,
+  HelpCircle,
+  Wrench,
+  Send,
+  X,
+  ArrowLeft,
+  Search,
+  BookOpen,
+  Activity,
+  Gauge,
+  Battery,
+  Fan,
+  Droplets,
+  Flame,
+  CircuitBoard,
+  Cable,
+  Power,
+  RotateCcw,
+  Monitor,
+  Trash2,
+  RefreshCcw,
+  Clock,
+  Menu,
+  Navigation,
+  Cpu,
+} from 'lucide-react';
+import { sanitizeAndFormatContent } from '@/lib/generator-oracle/sanitizeHtml';
+import { SYSTEM_DIAGRAMS } from '../SystemDiagramSVG';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface SystemComponent {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  description: string;
+  function: string;
+  symptoms: string[];
+  troubleshooting: string[];
+  partNumbers: { brand: string; partNo: string; price: string }[];
+  tools: string[];
+  specifications: { name: string; value: string }[];
+  connections: string[];
+  commonFaults: { fault: string; cause: string; solution: string }[];
+  maintenanceInterval?: string;
+  testProcedure?: string[];
+}
+
+interface DiagnosticSystem {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  color: string;
+  description: string;
+  components: SystemComponent[];
+  flowDescription: string;
+  diagram: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPLETE SYSTEM DATA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const DIAGNOSTIC_SYSTEMS: DiagnosticSystem[] = [
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FUEL SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'fuel',
+    name: 'Fuel System',
+    icon: <Fuel className="w-6 h-6" />,
+    color: 'amber',
+    description: 'Complete fuel delivery system from tank to combustion',
+    flowDescription: 'Fuel flows: Tank → Primary Filter → Lift Pump → Secondary Filter → Injection Pump → High Pressure Lines → Injectors → Combustion Chamber. Return fuel goes back to tank.',
+    diagram: 'fuel-system',
+    components: [
+      {
+        id: 'fuel-tank',
+        name: 'Fuel Tank',
+        icon: <Droplets className="w-5 h-5" />,
+        position: { x: 5, y: 40 },
+        size: { width: 12, height: 20 },
+        description: 'Stores diesel fuel for the engine. Includes pickup tube, return line connection, vent, and level sender.',
+        function: 'Fuel storage and supply reservoir. Must be properly vented to prevent vacuum during fuel draw.',
+        symptoms: [
+          'Engine starving for fuel',
+          'Fuel gauge reading incorrect',
+          'Fuel leaks from tank',
+          'Water contamination in fuel',
+          'Air entering fuel system',
+        ],
+        troubleshooting: [
+          'Check fuel level visually (don\'t trust gauge alone)',
+          'Inspect tank for rust, sediment, water at bottom',
+          'Verify vent is not blocked (open cap while running - if runs better, vent is blocked)',
+          'Check pickup tube is not clogged or cracked',
+          'Drain water from tank bottom if equipped with drain',
+        ],
+        partNumbers: [
+          { brand: 'Universal', partNo: 'Fuel Tank Sender', price: '8,500' },
+          { brand: 'Generic', partNo: 'Tank Vent Cap', price: '1,200' },
+          { brand: 'Universal', partNo: 'Pickup Tube Assembly', price: '4,500' },
+        ],
+        tools: ['Fuel transfer pump', 'Clean containers', 'Flashlight', 'Water finding paste'],
+        specifications: [
+          { name: 'Typical Capacity', value: '100-500 liters' },
+          { name: 'Material', value: 'Steel or polyethylene' },
+          { name: 'Pickup Height', value: '25-50mm from bottom' },
+        ],
+        connections: ['Fuel supply line to primary filter', 'Return line from injection pump', 'Vent line to atmosphere', 'Level sender wiring'],
+        commonFaults: [
+          { fault: 'Tank vent blocked', cause: 'Debris, insect nest, kinked vent hose', solution: 'Clean or replace vent assembly' },
+          { fault: 'Water in fuel', cause: 'Condensation, contaminated delivery', solution: 'Drain water, add fuel treatment' },
+          { fault: 'Sediment buildup', cause: 'Age, contaminated fuel', solution: 'Clean tank, install water separator' },
+        ],
+        maintenanceInterval: 'Drain water monthly, clean tank annually',
+      },
+      {
+        id: 'primary-filter',
+        name: 'Primary Fuel Filter (Water Separator)',
+        icon: <Droplets className="w-5 h-5" />,
+        position: { x: 22, y: 35 },
+        size: { width: 10, height: 15 },
+        description: 'First stage filtration with water separation. Removes large particles and water from fuel before lift pump.',
+        function: 'Coarse filtration (10-30 micron) and water separation to protect lift pump and downstream components.',
+        symptoms: [
+          'Low fuel pressure',
+          'Engine hunting/surging',
+          'Hard starting',
+          'Water in fuel bowl',
+          'Reduced power under load',
+        ],
+        troubleshooting: [
+          'Check water in fuel bowl - drain if present',
+          'Check filter restriction indicator if equipped',
+          'Replace filter if more than 500 hours or 6 months',
+          'Prime system after filter change',
+          'Check for air leaks at filter head gasket',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'FS19732', price: '3,500' },
+          { brand: 'CAT', partNo: '326-1644', price: '4,200' },
+          { brand: 'Perkins', partNo: '26560143', price: '2,800' },
+          { brand: 'Racor', partNo: 'R60P', price: '2,500' },
+        ],
+        tools: ['Filter wrench', 'Drain pan', 'Clean rags', 'Hand primer pump'],
+        specifications: [
+          { name: 'Filtration Rating', value: '10-30 microns' },
+          { name: 'Water Separation', value: '95%+ efficiency' },
+          { name: 'Service Interval', value: '500 hours or 6 months' },
+        ],
+        connections: ['Inlet from fuel tank', 'Outlet to lift pump', 'Drain valve for water'],
+        commonFaults: [
+          { fault: 'Filter clogged', cause: 'Contaminated fuel, exceeded service interval', solution: 'Replace filter element' },
+          { fault: 'Water not separating', cause: 'Element saturated, wrong element', solution: 'Replace with correct element' },
+          { fault: 'Air leak at head', cause: 'O-ring damaged, head loose', solution: 'Replace O-ring, tighten properly' },
+        ],
+        maintenanceInterval: 'Drain water daily, replace element every 500 hours',
+      },
+      {
+        id: 'lift-pump',
+        name: 'Fuel Lift Pump (Transfer Pump)',
+        icon: <RotateCcw className="w-5 h-5" />,
+        position: { x: 35, y: 40 },
+        size: { width: 10, height: 12 },
+        description: 'Low pressure pump that draws fuel from tank through primary filter and pushes to injection pump.',
+        function: 'Creates 3-7 PSI (0.2-0.5 bar) to supply fuel to injection pump inlet. Prevents cavitation in injection pump.',
+        symptoms: [
+          'Hard starting',
+          'Engine dies under load',
+          'Air in fuel system',
+          'Fuel starvation at high RPM',
+          'Lift pump not clicking (electric type)',
+        ],
+        troubleshooting: [
+          'Check pump operation - listen for clicking (electric) or feel diaphragm movement (mechanical)',
+          'Measure outlet pressure - should be 3-7 PSI',
+          'Check for inlet restriction (collapsed hose)',
+          'Verify power supply (electric pump) - 12V/24V at connector',
+          'Test check valves if equipped',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '3936316', price: '18,000' },
+          { brand: 'CAT', partNo: '349-1063', price: '25,000' },
+          { brand: 'Perkins', partNo: 'ULPK0038', price: '12,000' },
+          { brand: 'Bosch', partNo: '0440008999', price: '15,000' },
+        ],
+        tools: ['Fuel pressure gauge', 'Multimeter', 'Hand tools', 'Clean containers'],
+        specifications: [
+          { name: 'Output Pressure', value: '3-7 PSI (0.2-0.5 bar)' },
+          { name: 'Flow Rate', value: '60-120 LPH' },
+          { name: 'Type', value: 'Mechanical diaphragm or electric' },
+        ],
+        connections: ['Inlet from primary filter', 'Outlet to secondary filter', 'Power supply (electric)', 'Ground'],
+        commonFaults: [
+          { fault: 'No fuel delivery', cause: 'Diaphragm ruptured, motor failed', solution: 'Replace pump' },
+          { fault: 'Low pressure', cause: 'Worn pump, air leak on suction', solution: 'Replace pump or fix leak' },
+          { fault: 'Intermittent operation', cause: 'Bad connection, failing motor', solution: 'Check wiring, replace if needed' },
+        ],
+        maintenanceInterval: 'Inspect every 1000 hours, replace if weak',
+      },
+      {
+        id: 'secondary-filter',
+        name: 'Secondary Fuel Filter (Fine Filter)',
+        icon: <Droplets className="w-5 h-5" />,
+        position: { x: 48, y: 35 },
+        size: { width: 10, height: 15 },
+        description: 'Final filtration stage before injection pump. Removes fine particles that could damage precision injection components.',
+        function: 'Fine filtration (2-5 micron) to protect injection pump and injectors from microscopic contaminants.',
+        symptoms: [
+          'Gradual power loss',
+          'Injector noise increasing',
+          'Fuel pressure drop',
+          'Injector failure',
+          'Smoke color change',
+        ],
+        troubleshooting: [
+          'Check pressure drop across filter - should be <5 PSI',
+          'Cut open old filter to inspect contamination level',
+          'Replace at recommended interval regardless of appearance',
+          'Bleed air after replacement',
+          'Check for bypass valve operation',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'FF5052', price: '2,800' },
+          { brand: 'CAT', partNo: '1R-0751', price: '3,500' },
+          { brand: 'Perkins', partNo: '26560145', price: '2,200' },
+          { brand: 'Donaldson', partNo: 'P551315', price: '2,000' },
+        ],
+        tools: ['Filter wrench', 'Drain pan', 'Bleed screws tool', 'Clean rags'],
+        specifications: [
+          { name: 'Filtration Rating', value: '2-5 microns' },
+          { name: 'Efficiency', value: '98.7% at rated micron' },
+          { name: 'Service Interval', value: '250-500 hours' },
+        ],
+        connections: ['Inlet from lift pump', 'Outlet to injection pump'],
+        commonFaults: [
+          { fault: 'Restricted flow', cause: 'Clogged element', solution: 'Replace filter' },
+          { fault: 'Injector wear', cause: 'Filter not changed, wrong micron rating', solution: 'Use correct filter, maintain schedule' },
+          { fault: 'Air in system', cause: 'Loose housing, bad O-ring', solution: 'Tighten, replace O-ring' },
+        ],
+        maintenanceInterval: 'Replace every 250-500 hours',
+      },
+      {
+        id: 'injection-pump',
+        name: 'Fuel Injection Pump',
+        icon: <Settings className="w-5 h-5" />,
+        position: { x: 62, y: 30 },
+        size: { width: 14, height: 25 },
+        description: 'High pressure pump that meters and delivers precisely timed fuel to each injector. Heart of the fuel system.',
+        function: 'Generates 150-2000+ bar pressure, meters exact fuel quantity, times delivery to engine position.',
+        symptoms: [
+          'Hard starting (timing off)',
+          'Black smoke (over-fueling)',
+          'White smoke (timing retarded)',
+          'Knocking (timing advanced)',
+          'Loss of power',
+          'Hunting/surging at idle',
+          'Engine won\'t shut off (rack stuck)',
+        ],
+        troubleshooting: [
+          'Check timing marks - pump to engine alignment',
+          'Verify fuel cutoff solenoid operation',
+          'Check delivery valves for leakback',
+          'Inspect governor linkage for binding',
+          'Test fuel delivery rate to each cylinder',
+          'Check for air leaks at inlet',
+          'Verify throttle/rack movement is full range',
+        ],
+        partNumbers: [
+          { brand: 'Bosch', partNo: '0460426401', price: '185,000' },
+          { brand: 'Cummins', partNo: '3977353', price: '220,000' },
+          { brand: 'CAT', partNo: '317-8021', price: '350,000' },
+          { brand: 'Zexel', partNo: '104641-7280', price: '165,000' },
+          { brand: 'Denso', partNo: '096400-1500', price: '175,000' },
+        ],
+        tools: ['Timing tools', 'Dial indicator', 'Fuel pressure gauge', 'Injector tester', 'Torque wrench'],
+        specifications: [
+          { name: 'Pressure (Mechanical)', value: '150-350 bar' },
+          { name: 'Pressure (Common Rail)', value: '1600-2500 bar' },
+          { name: 'Timing Accuracy', value: '±0.5 degrees' },
+          { name: 'Delivery Variance', value: '<3% between cylinders' },
+        ],
+        connections: ['Inlet from secondary filter', 'High pressure lines to injectors', 'Return line to tank', 'Governor linkage', 'Shutoff solenoid', 'Timing drive from engine'],
+        commonFaults: [
+          { fault: 'Timing drift', cause: 'Worn drive coupling, loose mounting', solution: 'Reset timing, replace coupling' },
+          { fault: 'Uneven delivery', cause: 'Worn plungers, delivery valves', solution: 'Overhaul or replace pump' },
+          { fault: 'No shutoff', cause: 'Solenoid failed, rack stuck', solution: 'Replace solenoid, free rack' },
+          { fault: 'Low pressure', cause: 'Worn pump elements, air leak', solution: 'Overhaul pump' },
+        ],
+        maintenanceInterval: 'Overhaul every 8000-12000 hours, calibrate annually',
+        testProcedure: [
+          '1. Check static timing with dial indicator',
+          '2. Connect fuel flow meter to each injector line',
+          '3. Crank engine and measure delivery per stroke',
+          '4. Compare delivery between cylinders (<3% variance)',
+          '5. Test shutoff solenoid - should cut fuel immediately',
+          '6. Check governor response with RPM change',
+        ],
+      },
+      {
+        id: 'injectors',
+        name: 'Fuel Injectors (Nozzles)',
+        icon: <Flame className="w-5 h-5" />,
+        position: { x: 80, y: 25 },
+        size: { width: 10, height: 20 },
+        description: 'Precision spray nozzles that atomize fuel into the combustion chamber at exact timing and spray pattern.',
+        function: 'Convert high pressure fuel into fine mist spray pattern for efficient combustion. Open at preset pressure, close to prevent dribble.',
+        symptoms: [
+          'Black smoke from specific cylinder',
+          'Knocking in one cylinder',
+          'Misfiring',
+          'Power loss',
+          'Increased fuel consumption',
+          'Rough idle',
+          'Exhaust smell of unburned fuel',
+        ],
+        troubleshooting: [
+          'Cylinder cutout test - disconnect one at a time, no RPM change = dead cylinder',
+          'Check exhaust temperature at each port - cold = no combustion',
+          'Back-leak test - should be <10ml/min at rated pressure',
+          'Pop test - check opening pressure (200-250 bar typical)',
+          'Spray pattern test - should be fine mist, symmetrical cone',
+          'Check nozzle tip for carbon buildup',
+        ],
+        partNumbers: [
+          { brand: 'Bosch', partNo: '0432131743', price: '18,000' },
+          { brand: 'Cummins', partNo: '3919350', price: '22,000' },
+          { brand: 'CAT', partNo: '127-8209', price: '35,000' },
+          { brand: 'Denso', partNo: '093400-5571', price: '16,000' },
+          { brand: 'Delphi', partNo: 'EJBR02501Z', price: '15,000' },
+        ],
+        tools: ['Injector tester (pop tester)', 'Torque wrench', 'Injector puller', 'Copper washer set', 'Nozzle cleaning kit'],
+        specifications: [
+          { name: 'Opening Pressure', value: '200-350 bar (varies by engine)' },
+          { name: 'Spray Angle', value: '140-160 degrees' },
+          { name: 'Number of Holes', value: '4-8 holes' },
+          { name: 'Back Leak', value: '<10 ml/min at rated pressure' },
+        ],
+        connections: ['High pressure line from pump', 'Return line to tank', 'Combustion chamber'],
+        commonFaults: [
+          { fault: 'Dribbling', cause: 'Worn needle seat, low opening pressure', solution: 'Replace nozzle' },
+          { fault: 'Poor spray pattern', cause: 'Blocked holes, worn tip', solution: 'Clean or replace nozzle' },
+          { fault: 'Won\'t open', cause: 'Seized needle, blocked inlet', solution: 'Replace injector' },
+          { fault: 'Excessive leak-back', cause: 'Worn needle/barrel', solution: 'Replace injector' },
+        ],
+        maintenanceInterval: 'Test every 2000 hours, replace every 8000 hours or as needed',
+        testProcedure: [
+          '1. Remove injector from engine',
+          '2. Connect to injector test bench',
+          '3. Pump slowly to check opening pressure',
+          '4. Observe spray pattern - should be fine mist, symmetrical',
+          '5. Check for after-dribble - nozzle should cut cleanly',
+          '6. Measure back-leak time at rated pressure',
+          '7. Compare results to specifications',
+        ],
+      },
+      {
+        id: 'governor',
+        name: 'Governor (Speed Control)',
+        icon: <Gauge className="w-5 h-5" />,
+        position: { x: 62, y: 60 },
+        size: { width: 12, height: 15 },
+        description: 'Controls engine speed by adjusting fuel delivery based on load. Maintains stable frequency.',
+        function: 'Senses engine speed, compares to setpoint, adjusts fuel rack/throttle to maintain constant speed regardless of load changes.',
+        symptoms: [
+          'Speed hunting/surging',
+          'Over-speed on load rejection',
+          'Under-speed on load application',
+          'Unstable frequency',
+          'Engine won\'t reach full speed',
+          'Slow response to load changes',
+        ],
+        troubleshooting: [
+          'Check mechanical linkage for binding or wear',
+          'Verify speed sensor signal (electronic governors)',
+          'Adjust gain and stability settings',
+          'Check actuator response - should be smooth, full travel',
+          'Verify fuel rack moves freely',
+          'Check for air in hydraulic governor oil',
+        ],
+        partNumbers: [
+          { brand: 'Woodward', partNo: 'EG3P', price: '85,000' },
+          { brand: 'GAC', partNo: 'ADC225', price: '65,000' },
+          { brand: 'Cummins', partNo: '3408326', price: '120,000' },
+          { brand: 'CAT', partNo: '263-5674', price: '95,000' },
+        ],
+        tools: ['Tachometer', 'Oscilloscope', 'Multimeter', 'Governor adjustment tools'],
+        specifications: [
+          { name: 'Speed Regulation', value: '±0.25% (isochronous)' },
+          { name: 'Droop Setting', value: '3-5% (parallel operation)' },
+          { name: 'Response Time', value: '<0.3 seconds' },
+        ],
+        connections: ['Fuel rack/throttle linkage', 'Speed sensor input', 'Power supply', 'Remote speed adjustment'],
+        commonFaults: [
+          { fault: 'Hunting', cause: 'Gain too high, worn linkage', solution: 'Reduce gain, replace linkage' },
+          { fault: 'Slow response', cause: 'Gain too low, actuator weak', solution: 'Increase gain, check actuator' },
+          { fault: 'Over-speed', cause: 'Governor failure, stuck actuator', solution: 'Replace governor/actuator' },
+        ],
+        maintenanceInterval: 'Calibrate annually, replace actuator every 10000 hours',
+      },
+      {
+        id: 'fuel-actuator',
+        name: 'Fuel Control Actuator',
+        icon: <Settings className="w-5 h-5" />,
+        position: { x: 48, y: 60 },
+        size: { width: 10, height: 12 },
+        description: 'Electric or hydraulic actuator that converts governor signal to mechanical movement of fuel rack.',
+        function: 'Receives signal from governor, moves fuel rack/throttle to commanded position for speed control.',
+        symptoms: [
+          'No throttle response',
+          'Jerky throttle movement',
+          'Can\'t reach full fuel',
+          'Actuator buzzing',
+          'Slow speed changes',
+        ],
+        troubleshooting: [
+          'Check actuator power supply voltage',
+          'Measure signal from governor',
+          'Verify full stroke movement (mechanical)',
+          'Check for binding in linkage',
+          'Test actuator off-engine if possible',
+        ],
+        partNumbers: [
+          { brand: 'Woodward', partNo: '8404-5006', price: '45,000' },
+          { brand: 'GAC', partNo: 'ACT225', price: '35,000' },
+          { brand: 'Cummins', partNo: '3408324', price: '55,000' },
+        ],
+        tools: ['Multimeter', 'Actuator test bench', 'Hand tools'],
+        specifications: [
+          { name: 'Stroke', value: '10-30mm' },
+          { name: 'Response Time', value: '<100ms' },
+          { name: 'Force', value: '20-50N' },
+        ],
+        connections: ['Governor signal wires', 'Fuel rack linkage', 'Position feedback (if equipped)'],
+        commonFaults: [
+          { fault: 'No movement', cause: 'Failed coil, no signal', solution: 'Check signal, replace actuator' },
+          { fault: 'Partial movement', cause: 'Weak actuator, binding', solution: 'Free linkage, replace actuator' },
+          { fault: 'Oscillation', cause: 'Feedback issue, governor settings', solution: 'Adjust governor, check feedback' },
+        ],
+        maintenanceInterval: 'Check annually, replace if sluggish',
+      },
+      {
+        id: 'fuel-shutoff',
+        name: 'Fuel Shutoff Solenoid',
+        icon: <Power className="w-5 h-5" />,
+        position: { x: 75, y: 55 },
+        size: { width: 8, height: 10 },
+        description: 'Electromagnetic valve that enables or disables fuel flow to stop/allow engine operation.',
+        function: 'When energized (or de-energized depending on type), allows fuel to reach injectors. Safety shutdown device.',
+        symptoms: [
+          'Engine won\'t start (no fuel)',
+          'Engine won\'t stop',
+          'Clicking sound, no start',
+          'Intermittent starting',
+        ],
+        troubleshooting: [
+          'Check voltage at solenoid with key ON - should be 12V or 24V',
+          'Listen for click when key turned ON',
+          'Manually push/pull plunger to verify movement',
+          'Check ground circuit continuity',
+          'Verify controller is commanding solenoid ON',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '3935649', price: '12,000' },
+          { brand: 'CAT', partNo: '155-4653', price: '18,000' },
+          { brand: 'Perkins', partNo: '26420472', price: '8,500' },
+          { brand: 'Woodward', partNo: '1504-12C6U1B1', price: '15,000' },
+        ],
+        tools: ['Multimeter', 'Test light', 'Hand tools'],
+        specifications: [
+          { name: 'Voltage', value: '12V or 24V DC' },
+          { name: 'Type', value: 'Pull or push type' },
+          { name: 'Current Draw', value: '1-3A' },
+        ],
+        connections: ['Power from controller', 'Ground', 'Mechanical linkage to fuel rack'],
+        commonFaults: [
+          { fault: 'No click', cause: 'No power, failed coil', solution: 'Check circuit, replace solenoid' },
+          { fault: 'Clicks but no start', cause: 'Weak solenoid, stuck plunger', solution: 'Replace solenoid' },
+          { fault: 'Won\'t shut off', cause: 'Stuck open, broken linkage', solution: 'Replace, fix linkage' },
+        ],
+        maintenanceInterval: 'Test annually, replace if sluggish',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COOLING SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'cooling',
+    name: 'Cooling System',
+    icon: <Thermometer className="w-6 h-6" />,
+    color: 'blue',
+    description: 'Engine temperature regulation through coolant circulation',
+    flowDescription: 'Coolant flows: Water Pump → Engine Block → Cylinder Head → Thermostat → Radiator → Water Pump. Bypass circuit available when cold.',
+    diagram: 'cooling-system',
+    components: [
+      {
+        id: 'radiator',
+        name: 'Radiator',
+        icon: <Fan className="w-5 h-5" />,
+        position: { x: 10, y: 20 },
+        size: { width: 20, height: 30 },
+        description: 'Heat exchanger that transfers heat from coolant to ambient air. Core of the cooling system.',
+        function: 'Dissipates engine heat to atmosphere through large surface area of fins and tubes.',
+        symptoms: [
+          'Engine overheating',
+          'Coolant loss without visible leak',
+          'Reduced cooling capacity',
+          'Visible blockage in core',
+          'Coolant contamination (oil)',
+        ],
+        troubleshooting: [
+          'Check for debris blocking airflow through fins',
+          'Pressure test system - should hold 7-15 PSI',
+          'Check for internal blockage - feel for cold spots',
+          'Verify cap pressure rating is correct',
+          'Inspect for external leaks at tanks and hoses',
+        ],
+        partNumbers: [
+          { brand: 'Generic 500kVA', partNo: 'RAD-500-CU', price: '85,000' },
+          { brand: 'Generic 1000kVA', partNo: 'RAD-1000-AL', price: '145,000' },
+          { brand: 'Cummins', partNo: '3655113', price: '180,000' },
+        ],
+        tools: ['Pressure tester', 'Infrared thermometer', 'Fin comb', 'Pressure washer'],
+        specifications: [
+          { name: 'Material', value: 'Copper/brass or aluminum' },
+          { name: 'Pressure Rating', value: '7-15 PSI (0.5-1 bar)' },
+          { name: 'Temperature Drop', value: '10-15°C across radiator' },
+        ],
+        connections: ['Top hose from engine', 'Bottom hose to water pump', 'Overflow tank'],
+        commonFaults: [
+          { fault: 'External leak', cause: 'Corrosion, damage, loose hose', solution: 'Repair or replace radiator' },
+          { fault: 'Internal blockage', cause: 'Scale buildup, debris', solution: 'Flush or replace core' },
+          { fault: 'Fin damage', cause: 'Physical damage, corrosion', solution: 'Straighten fins or replace' },
+        ],
+        maintenanceInterval: 'Clean fins monthly, flush system annually',
+      },
+      {
+        id: 'water-pump',
+        name: 'Water Pump',
+        icon: <RotateCcw className="w-5 h-5" />,
+        position: { x: 50, y: 50 },
+        size: { width: 12, height: 15 },
+        description: 'Centrifugal pump driven by engine that circulates coolant throughout the cooling system.',
+        function: 'Creates flow of coolant through engine, radiator, and heater circuits. Critical for heat transfer.',
+        symptoms: [
+          'Overheating',
+          'Coolant leak at weep hole',
+          'Noise from pump area',
+          'Low coolant flow',
+          'Bearing play',
+        ],
+        troubleshooting: [
+          'Check for coolant leak at weep hole (indicates seal failure)',
+          'Feel for bearing play by moving pulley',
+          'Listen for grinding or squealing noise',
+          'Verify belt tension and condition',
+          'Check flow by observing movement in expansion tank',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '3800974', price: '35,000' },
+          { brand: 'CAT', partNo: '352-2149', price: '45,000' },
+          { brand: 'Perkins', partNo: 'U5MW0194', price: '28,000' },
+        ],
+        tools: ['Belt tension gauge', 'Coolant flow meter', 'Stethoscope', 'Pulley puller'],
+        specifications: [
+          { name: 'Flow Rate', value: '200-400 LPM' },
+          { name: 'Drive', value: 'Belt or gear driven' },
+          { name: 'Impeller Type', value: 'Centrifugal' },
+        ],
+        connections: ['Inlet from radiator bottom', 'Outlet to engine block', 'Belt drive from crankshaft'],
+        commonFaults: [
+          { fault: 'Seal leak', cause: 'Worn seal, shaft corrosion', solution: 'Replace water pump' },
+          { fault: 'Bearing failure', cause: 'Belt tension wrong, age', solution: 'Replace water pump' },
+          { fault: 'Impeller corrosion', cause: 'Wrong coolant, cavitation', solution: 'Replace pump, use correct coolant' },
+        ],
+        maintenanceInterval: 'Inspect every 2000 hours, replace every 6000 hours',
+      },
+      {
+        id: 'thermostat',
+        name: 'Thermostat',
+        icon: <Thermometer className="w-5 h-5" />,
+        position: { x: 35, y: 25 },
+        size: { width: 10, height: 10 },
+        description: 'Temperature-sensitive valve that controls coolant flow to radiator, maintaining optimal operating temperature.',
+        function: 'Opens progressively as coolant warms up, allowing flow to radiator. Keeps engine at optimal 80-95°C.',
+        symptoms: [
+          'Engine overheating (stuck closed)',
+          'Engine running too cool (stuck open)',
+          'Slow warmup',
+          'Temperature fluctuating',
+          'Heater not working',
+        ],
+        troubleshooting: [
+          'Check engine reaches operating temp (80-95°C)',
+          'Feel upper radiator hose - should get hot when thermostat opens',
+          'Remove and test in hot water - should open at rated temperature',
+          'Check for debris preventing full closure',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '3076489', price: '3,500' },
+          { brand: 'CAT', partNo: '247-7133', price: '4,500' },
+          { brand: 'Perkins', partNo: 'CH11620', price: '2,800' },
+        ],
+        tools: ['Infrared thermometer', 'Pot of water for testing', 'Thermometer'],
+        specifications: [
+          { name: 'Opening Temperature', value: '82-88°C typical' },
+          { name: 'Full Open Temperature', value: '95-100°C' },
+          { name: 'Type', value: 'Wax pellet' },
+        ],
+        connections: ['Coolant outlet from head', 'To radiator and bypass'],
+        commonFaults: [
+          { fault: 'Stuck closed', cause: 'Wax element failed, corrosion', solution: 'Replace thermostat' },
+          { fault: 'Stuck open', cause: 'Wax element failed', solution: 'Replace thermostat' },
+          { fault: 'Partial opening', cause: 'Debris, worn', solution: 'Replace thermostat' },
+        ],
+        maintenanceInterval: 'Replace every 3 years or if issues',
+      },
+      {
+        id: 'coolant-temp-sensor',
+        name: 'Coolant Temperature Sensor',
+        icon: <Thermometer className="w-5 h-5" />,
+        position: { x: 65, y: 30 },
+        size: { width: 8, height: 8 },
+        description: 'Sends coolant temperature signal to ECM and gauges for monitoring and protection.',
+        function: 'Converts temperature to electrical signal. Used for fuel injection timing, fan control, and protection shutdown.',
+        symptoms: [
+          'Gauge reading wrong',
+          'Fan not activating',
+          'Check engine light',
+          'Poor cold start',
+          'Protection not working',
+        ],
+        troubleshooting: [
+          'Compare gauge to actual temp (IR thermometer)',
+          'Measure sensor resistance - should change with temp',
+          'Check wiring for shorts or opens',
+          'Verify ECM is receiving correct signal',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '4954905', price: '4,500' },
+          { brand: 'CAT', partNo: '227-5626', price: '5,800' },
+          { brand: 'Bosch', partNo: '0281002209', price: '3,200' },
+        ],
+        tools: ['Multimeter', 'IR thermometer', 'Sensor socket'],
+        specifications: [
+          { name: 'Type', value: 'NTC thermistor' },
+          { name: 'Resistance at 25°C', value: '2000-3000 ohms typical' },
+          { name: 'Resistance at 80°C', value: '300-400 ohms typical' },
+        ],
+        connections: ['Signal wire to ECM', 'Ground (or signal return)'],
+        commonFaults: [
+          { fault: 'Wrong reading', cause: 'Sensor drift, wiring fault', solution: 'Replace sensor, check wiring' },
+          { fault: 'No reading', cause: 'Open circuit, failed sensor', solution: 'Replace sensor' },
+          { fault: 'Erratic reading', cause: 'Loose connection, intermittent', solution: 'Clean/tighten connections' },
+        ],
+        maintenanceInterval: 'Replace if inaccurate',
+      },
+      {
+        id: 'cooling-fan',
+        name: 'Cooling Fan',
+        icon: <Fan className="w-5 h-5" />,
+        position: { x: 10, y: 55 },
+        size: { width: 15, height: 15 },
+        description: 'Draws air through radiator to provide cooling. May be belt-driven, electric, or hydraulic.',
+        function: 'Provides airflow for heat dissipation when generator is stationary or ambient airflow is insufficient.',
+        symptoms: [
+          'Overheating at low speeds/stationary',
+          'Excessive noise',
+          'Fan not engaging',
+          'Belt squealing',
+          'Vibration',
+        ],
+        troubleshooting: [
+          'Check belt condition and tension',
+          'Verify fan clutch engagement (if equipped)',
+          'Check electric fan motor operation',
+          'Inspect blades for damage or cracks',
+          'Verify fan shroud is intact for proper airflow',
+        ],
+        partNumbers: [
+          { brand: 'Generic', partNo: '6-blade 600mm', price: '12,000' },
+          { brand: 'Horton', partNo: 'Fan Clutch', price: '45,000' },
+          { brand: 'Electric', partNo: '24V 500W motor', price: '28,000' },
+        ],
+        tools: ['Belt tension gauge', 'Multimeter', 'Infrared thermometer'],
+        specifications: [
+          { name: 'Diameter', value: '500-800mm typical' },
+          { name: 'Drive', value: 'Belt, electric, or hydraulic' },
+          { name: 'CFM', value: '5000-15000 CFM' },
+        ],
+        connections: ['Belt to crankshaft', 'Electric wiring (if electric)', 'Fan shroud to radiator'],
+        commonFaults: [
+          { fault: 'Belt slip', cause: 'Belt worn, wrong tension', solution: 'Replace belt, adjust tension' },
+          { fault: 'Clutch not engaging', cause: 'Viscous fluid leaked, bi-metal failed', solution: 'Replace fan clutch' },
+          { fault: 'Blade damage', cause: 'Debris, fatigue', solution: 'Replace fan' },
+        ],
+        maintenanceInterval: 'Inspect belt every 500 hours, replace every 2000 hours',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ELECTRICAL SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'electrical',
+    name: 'Electrical System',
+    icon: <Zap className="w-6 h-6" />,
+    color: 'yellow',
+    description: 'Power generation and control electrical systems',
+    flowDescription: 'Engine drives alternator rotor → Magnetic field induces voltage in stator → AVR regulates excitation → Output power through circuit breakers → Load.',
+    diagram: 'electrical-system',
+    components: [
+      {
+        id: 'alternator',
+        name: 'Main Alternator (Generator End)',
+        icon: <Zap className="w-5 h-5" />,
+        position: { x: 40, y: 20 },
+        size: { width: 20, height: 25 },
+        description: 'Converts mechanical energy from engine to electrical power. Contains stator, rotor, exciter, and diodes.',
+        function: 'Primary power generation. Rotor magnetic field induces AC voltage in stator windings. Exciter provides rotor field current.',
+        symptoms: [
+          'No output voltage',
+          'Low voltage',
+          'Fluctuating voltage',
+          'Overheating',
+          'Unusual noise',
+          'Voltage spikes',
+        ],
+        troubleshooting: [
+          'Check residual voltage with engine running (5-10V indicates magnetism)',
+          'Measure stator resistance - should be balanced between phases',
+          'Check rotor resistance - compare to specs',
+          'Test exciter stator and rotor',
+          'Inspect diode rectifier for shorts/opens',
+          'Verify AVR is receiving sensing voltage',
+        ],
+        partNumbers: [
+          { brand: 'Stamford', partNo: 'UCI274', price: '850,000' },
+          { brand: 'Leroy Somer', partNo: 'LSA 46.2', price: '780,000' },
+          { brand: 'Mecc Alte', partNo: 'ECO38-2L', price: '650,000' },
+          { brand: 'Marathon', partNo: '572RSL6209', price: '720,000' },
+        ],
+        tools: ['Megger (insulation tester)', 'Multimeter', 'Clamp ammeter', 'Oscilloscope'],
+        specifications: [
+          { name: 'Output', value: '415V, 50Hz, 3-phase' },
+          { name: 'Power Factor', value: '0.8 lagging' },
+          { name: 'Efficiency', value: '95%+' },
+          { name: 'Insulation Class', value: 'H (180°C)' },
+        ],
+        connections: ['Coupling to engine', 'Output terminals U/V/W', 'Neutral', 'AVR sensing', 'Exciter field'],
+        commonFaults: [
+          { fault: 'No voltage', cause: 'Lost residual, AVR failed, wiring', solution: 'Flash field, check AVR, inspect wiring' },
+          { fault: 'Low voltage', cause: 'AVR setting, excitation issue', solution: 'Adjust AVR, check exciter' },
+          { fault: 'Winding failure', cause: 'Overload, insulation breakdown', solution: 'Rewind or replace' },
+        ],
+        maintenanceInterval: 'Insulation test annually, bearing replacement every 20000 hours',
+        testProcedure: [
+          '1. Measure stator resistance between phases (should be equal ±5%)',
+          '2. Insulation test stator to ground (>5 megohms)',
+          '3. Measure rotor resistance (compare to nameplate)',
+          '4. Test exciter windings',
+          '5. Check rotating diodes with multimeter',
+          '6. Run generator and measure output voltage balance',
+        ],
+      },
+      {
+        id: 'avr',
+        name: 'Automatic Voltage Regulator (AVR)',
+        icon: <Settings className="w-5 h-5" />,
+        position: { x: 65, y: 30 },
+        size: { width: 12, height: 12 },
+        description: 'Electronic controller that maintains constant output voltage by adjusting excitation current.',
+        function: 'Senses output voltage, compares to setpoint, adjusts field current to maintain stable voltage regardless of load.',
+        symptoms: [
+          'Voltage hunting/oscillating',
+          'Over-voltage',
+          'Under-voltage',
+          'No voltage regulation',
+          'Voltage drop under load',
+        ],
+        troubleshooting: [
+          'Check sensing voltage inputs (should be 415V across phases)',
+          'Adjust VOLT pot - sets no-load voltage',
+          'Adjust STAB pot - reduces hunting',
+          'Adjust DROOP pot - load sharing',
+          'Check field output with clamp ammeter',
+          'Verify power supply to AVR',
+        ],
+        partNumbers: [
+          { brand: 'Stamford', partNo: 'AS440', price: '12,000' },
+          { brand: 'Stamford', partNo: 'SX460', price: '15,000' },
+          { brand: 'Leroy Somer', partNo: 'R448', price: '18,000' },
+          { brand: 'Mecc Alte', partNo: 'DSR', price: '14,000' },
+          { brand: 'Basler', partNo: 'AVC125-10', price: '45,000' },
+        ],
+        tools: ['Multimeter', 'Oscilloscope', 'Small screwdriver for adjustments'],
+        specifications: [
+          { name: 'Voltage Regulation', value: '±0.5% steady state' },
+          { name: 'Sensing Voltage', value: '190-480V AC' },
+          { name: 'Field Current', value: '3-10A DC typical' },
+        ],
+        connections: ['Sensing input (3-phase)', 'Field output (+/-)', 'PMG input (if equipped)', 'Remote adjust'],
+        commonFaults: [
+          { fault: 'Hunting', cause: 'Stability setting wrong, sensing issue', solution: 'Adjust STAB, check sensing' },
+          { fault: 'Over-voltage', cause: 'VOLT pot too high, AVR failure', solution: 'Adjust VOLT, replace AVR' },
+          { fault: 'No output', cause: 'AVR failed, no sensing input', solution: 'Check inputs, replace AVR' },
+        ],
+        maintenanceInterval: 'Calibrate annually',
+      },
+      {
+        id: 'exciter',
+        name: 'Exciter Assembly',
+        icon: <CircuitBoard className="w-5 h-5" />,
+        position: { x: 45, y: 50 },
+        size: { width: 14, height: 12 },
+        description: 'Small generator mounted on main shaft that provides DC field current to main rotor through rotating diodes.',
+        function: 'Converts AVR output to rotating DC supply for main rotor. Eliminates need for brushes and slip rings.',
+        symptoms: [
+          'Low voltage at all loads',
+          'Voltage drops under load',
+          'Exciter field hot',
+          'No voltage buildup',
+        ],
+        troubleshooting: [
+          'Measure exciter stator resistance',
+          'Measure exciter rotor resistance',
+          'Test rotating diodes (forward and reverse)',
+          'Check AVR field output current',
+          'Inspect connections and insulation',
+        ],
+        partNumbers: [
+          { brand: 'Stamford', partNo: 'Exciter Rotor Assembly', price: '85,000' },
+          { brand: 'Stamford', partNo: 'Diode Bridge', price: '35,000' },
+          { brand: 'Generic', partNo: 'Rotating Diode Set', price: '15,000' },
+        ],
+        tools: ['Multimeter', 'Clamp ammeter', 'Insulation tester'],
+        specifications: [
+          { name: 'Output', value: '30-100V AC (before rectification)' },
+          { name: 'Current', value: 'Matches main field requirements' },
+        ],
+        connections: ['Stator to AVR', 'Rotor to rotating diodes', 'Diodes to main field'],
+        commonFaults: [
+          { fault: 'Diode failure', cause: 'Voltage spike, overload', solution: 'Replace diode assembly' },
+          { fault: 'Winding short', cause: 'Overheating, insulation failure', solution: 'Rewind exciter' },
+          { fault: 'Open circuit', cause: 'Connection failure', solution: 'Repair connections' },
+        ],
+        maintenanceInterval: 'Test annually with alternator',
+      },
+      {
+        id: 'mccb',
+        name: 'Main Circuit Breaker (MCCB/ACB)',
+        icon: <ToggleLeft className="w-5 h-5" />,
+        position: { x: 75, y: 20 },
+        size: { width: 12, height: 18 },
+        description: 'Primary protection and disconnection device for generator output. Protects against overload and short circuit.',
+        function: 'Provides automatic overload and short circuit protection. Allows manual connection/disconnection of load.',
+        symptoms: [
+          'Tripping on load',
+          'Won\'t close',
+          'Won\'t trip',
+          'Nuisance tripping',
+          'Contacts damaged',
+        ],
+        troubleshooting: [
+          'Check trip settings match generator rating',
+          'Verify load current is within breaker capacity',
+          'Test trip function with test button',
+          'Inspect contacts for pitting or damage',
+          'Check operating mechanism',
+          'Verify correct coordination with downstream devices',
+        ],
+        partNumbers: [
+          { brand: 'Schneider', partNo: 'NSX630F', price: '125,000' },
+          { brand: 'ABB', partNo: 'SACE Emax 2', price: '180,000' },
+          { brand: 'Siemens', partNo: '3WL1363', price: '165,000' },
+        ],
+        tools: ['Primary injection test set', 'Contact resistance meter', 'Multimeter'],
+        specifications: [
+          { name: 'Rated Current', value: 'Match generator output' },
+          { name: 'Breaking Capacity', value: '36-100kA' },
+          { name: 'Trip Unit', value: 'Electronic or thermal-magnetic' },
+        ],
+        connections: ['Generator output', 'Load cables', 'Trip coil', 'Auxiliary contacts'],
+        commonFaults: [
+          { fault: 'Nuisance trip', cause: 'Wrong setting, inrush current', solution: 'Adjust settings, add inrush delay' },
+          { fault: 'Won\'t close', cause: 'Trip not reset, interlock active', solution: 'Reset trip, check interlocks' },
+          { fault: 'Contact damage', cause: 'Overload, short circuit', solution: 'Replace contacts or breaker' },
+        ],
+        maintenanceInterval: 'Test annually, service every 5 years',
+      },
+      {
+        id: 'battery-system',
+        name: 'Starting Battery System',
+        icon: <Battery className="w-5 h-5" />,
+        position: { x: 10, y: 60 },
+        size: { width: 15, height: 12 },
+        description: 'Provides DC power for engine starting, control systems, and emergency operations.',
+        function: 'Supplies high current for starting motor. Powers controller, fuel solenoid, and safety systems.',
+        symptoms: [
+          'Slow cranking',
+          'No crank',
+          'Controller dead',
+          'Battery not charging',
+          'Short battery life',
+        ],
+        troubleshooting: [
+          'Check battery voltage - should be >12.6V (12V) or >25.2V (24V)',
+          'Load test - should hold >9.6V (12V) during cranking',
+          'Check connections - clean and tight',
+          'Verify charging voltage - 13.8-14.4V (12V) or 27.6-28.8V (24V)',
+          'Check for parasitic drain',
+        ],
+        partNumbers: [
+          { brand: 'Generic', partNo: '12V 100Ah', price: '18,000' },
+          { brand: 'Generic', partNo: '12V 150Ah', price: '25,000' },
+          { brand: 'Exide', partNo: 'N200', price: '35,000' },
+        ],
+        tools: ['Battery load tester', 'Multimeter', 'Battery hydrometer', 'Wire brush'],
+        specifications: [
+          { name: 'Capacity', value: '100-200Ah typical' },
+          { name: 'CCA', value: '600-1000A' },
+          { name: 'Voltage', value: '12V or 24V system' },
+        ],
+        connections: ['Positive to starter and control panel', 'Negative to engine block/chassis', 'Charger connection'],
+        commonFaults: [
+          { fault: 'Dead cell', cause: 'Age, sulfation, overcharge', solution: 'Replace battery' },
+          { fault: 'Poor connection', cause: 'Corrosion, loose terminal', solution: 'Clean and tighten' },
+          { fault: 'Overcharging', cause: 'Charger malfunction', solution: 'Replace charger' },
+        ],
+        maintenanceInterval: 'Check monthly, replace every 3-5 years',
+      },
+      {
+        id: 'starter-motor',
+        name: 'Starter Motor',
+        icon: <RotateCcw className="w-5 h-5" />,
+        position: { x: 30, y: 65 },
+        size: { width: 12, height: 10 },
+        description: 'High-torque DC motor that cranks the engine for starting. Engages flywheel ring gear.',
+        function: 'Converts battery power to mechanical rotation. Pinion engages flywheel, cranks engine to starting speed.',
+        symptoms: [
+          'No cranking - click only',
+          'Slow cranking',
+          'Grinding noise',
+          'Starter stays engaged',
+          'Intermittent operation',
+        ],
+        troubleshooting: [
+          'Check battery voltage during cranking (>9.6V for 12V system)',
+          'Verify solenoid clicks and engages',
+          'Test voltage at starter terminal - should be battery voltage',
+          'Check pinion engagement and retraction',
+          'Inspect ring gear teeth for damage',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '3957593', price: '45,000' },
+          { brand: 'CAT', partNo: '307-7177', price: '85,000' },
+          { brand: 'Perkins', partNo: '2873K632', price: '38,000' },
+          { brand: 'Bosch', partNo: '0001231039', price: '42,000' },
+        ],
+        tools: ['Multimeter', 'Amp clamp', 'Socket set', 'Pry bar'],
+        specifications: [
+          { name: 'Voltage', value: '12V or 24V DC' },
+          { name: 'Power', value: '3-7 kW' },
+          { name: 'Current Draw', value: '150-400A cranking' },
+        ],
+        connections: ['Battery positive', 'Solenoid signal from controller', 'Ground to engine'],
+        commonFaults: [
+          { fault: 'Solenoid failure', cause: 'Worn contacts, coil failure', solution: 'Replace solenoid' },
+          { fault: 'Motor failure', cause: 'Worn brushes, armature damage', solution: 'Rebuild or replace starter' },
+          { fault: 'Pinion damage', cause: 'Incorrect engagement, worn teeth', solution: 'Replace pinion or starter' },
+        ],
+        maintenanceInterval: 'Inspect every 2000 hours, rebuild every 5000 hours',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ENGINE SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'engine',
+    name: 'Engine System',
+    icon: <Settings className="w-6 h-6" />,
+    color: 'red',
+    description: 'Core engine mechanical components and systems',
+    flowDescription: 'Air → Turbo → Intercooler → Intake Manifold → Cylinders (with fuel from injectors) → Combustion → Exhaust → Turbo → Muffler',
+    diagram: 'engine-system',
+    components: [
+      {
+        id: 'turbocharger',
+        name: 'Turbocharger',
+        icon: <Fan className="w-5 h-5" />,
+        position: { x: 70, y: 15 },
+        size: { width: 14, height: 14 },
+        description: 'Exhaust-driven compressor that increases air density for more power. Critical for diesel performance.',
+        function: 'Uses exhaust energy to compress intake air. Increases power density by forcing more air into cylinders.',
+        symptoms: [
+          'Black smoke',
+          'Loss of power',
+          'Turbo whistle or whine',
+          'Oil in intake or exhaust',
+          'Slow boost buildup',
+        ],
+        troubleshooting: [
+          'Check for shaft play - radial and axial movement',
+          'Inspect compressor and turbine wheels for damage',
+          'Verify oil supply and drain lines are clear',
+          'Check boost pressure with gauge',
+          'Listen for unusual sounds',
+          'Check wastegate operation',
+        ],
+        partNumbers: [
+          { brand: 'Holset', partNo: 'HX35', price: '85,000' },
+          { brand: 'Garrett', partNo: 'GT3576', price: '95,000' },
+          { brand: 'BorgWarner', partNo: 'S300', price: '88,000' },
+        ],
+        tools: ['Boost pressure gauge', 'Dial indicator', 'Inspection mirror', 'Pyrometer'],
+        specifications: [
+          { name: 'Boost Pressure', value: '1-2 bar typical' },
+          { name: 'Max Speed', value: '100,000-150,000 RPM' },
+          { name: 'Operating Temp', value: '600-700°C (turbine side)' },
+        ],
+        connections: ['Exhaust manifold inlet', 'Exhaust outlet', 'Air inlet', 'Compressed air outlet to intercooler', 'Oil supply and drain'],
+        commonFaults: [
+          { fault: 'Oil leak', cause: 'Seal failure, drain blocked', solution: 'Rebuild turbo, clear drain' },
+          { fault: 'Wheel damage', cause: 'Foreign object, over-speed', solution: 'Replace turbo core' },
+          { fault: 'Bearing failure', cause: 'Oil starvation, contamination', solution: 'Replace turbo' },
+        ],
+        maintenanceInterval: 'Inspect every 2000 hours, rebuild at 8000-15000 hours',
+      },
+      {
+        id: 'air-filter',
+        name: 'Air Cleaner/Filter',
+        icon: <Fan className="w-5 h-5" />,
+        position: { x: 80, y: 40 },
+        size: { width: 12, height: 15 },
+        description: 'Removes dust and particles from intake air to protect engine internals.',
+        function: 'Filters intake air to 2-10 microns. Prevents abrasive particles from damaging cylinders, rings, and bearings.',
+        symptoms: [
+          'Power loss',
+          'Black smoke',
+          'High restriction indicator',
+          'Turbo damage',
+          'Increased oil consumption',
+        ],
+        troubleshooting: [
+          'Check restriction indicator',
+          'Visual inspection of element',
+          'Check housing seals and clamps',
+          'Verify ducting is intact',
+          'Clean or replace element per schedule',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'AF25139M', price: '8,500' },
+          { brand: 'CAT', partNo: '245-6375', price: '12,000' },
+          { brand: 'Donaldson', partNo: 'P181059', price: '6,500' },
+        ],
+        tools: ['Air filter cleaning kit', 'Compressed air', 'Restriction gauge'],
+        specifications: [
+          { name: 'Filtration', value: '99.9% at 2-10 microns' },
+          { name: 'Max Restriction', value: '6.3 kPa (25" H2O)' },
+        ],
+        connections: ['Intake ducting from atmosphere', 'Clean side to turbo or intake manifold'],
+        commonFaults: [
+          { fault: 'Clogged filter', cause: 'Dusty environment, exceeded interval', solution: 'Replace element' },
+          { fault: 'Damaged seal', cause: 'Installation error, age', solution: 'Replace seal' },
+          { fault: 'Housing leak', cause: 'Damage, loose clamps', solution: 'Repair housing, tighten clamps' },
+        ],
+        maintenanceInterval: 'Check every 250 hours, replace every 500-1000 hours',
+      },
+      {
+        id: 'oil-system',
+        name: 'Lubrication System',
+        icon: <Droplets className="w-5 h-5" />,
+        position: { x: 30, y: 40 },
+        size: { width: 16, height: 18 },
+        description: 'Provides pressurized oil for lubrication and cooling of engine internals.',
+        function: 'Oil pump draws from sump, pressurizes through filter, distributes to bearings, turbo, and other components.',
+        symptoms: [
+          'Low oil pressure',
+          'High oil temperature',
+          'Oil consumption',
+          'Bearing noise',
+          'Oil in coolant',
+        ],
+        troubleshooting: [
+          'Check oil level and condition',
+          'Verify correct oil viscosity',
+          'Replace filter if overdue',
+          'Check pressure at gallery - should be 40-60 PSI hot',
+          'Inspect for leaks',
+          'Check oil cooler if equipped',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'LF9009', price: '3,500' },
+          { brand: 'CAT', partNo: '1R-0739', price: '4,200' },
+          { brand: 'Perkins', partNo: 'CH10929', price: '2,800' },
+        ],
+        tools: ['Oil pressure gauge', 'Thermometer', 'Oil analysis kit', 'Suction gun'],
+        specifications: [
+          { name: 'Pressure', value: '40-60 PSI (hot idle)' },
+          { name: 'Oil Type', value: 'API CI-4 or CJ-4' },
+          { name: 'Capacity', value: 'Varies by engine' },
+        ],
+        connections: ['Sump to oil pump', 'Filter to main gallery', 'Return from components'],
+        commonFaults: [
+          { fault: 'Low pressure', cause: 'Worn bearings, weak pump, low level', solution: 'Diagnose cause, repair' },
+          { fault: 'High consumption', cause: 'Worn rings/guides, leaks', solution: 'Repair or overhaul' },
+          { fault: 'Contamination', cause: 'Coolant leak, fuel dilution', solution: 'Find and fix source' },
+        ],
+        maintenanceInterval: 'Change oil every 250-500 hours, filter at each change',
+      },
+      {
+        id: 'exhaust-system',
+        name: 'Exhaust System',
+        icon: <Flame className="w-5 h-5" />,
+        position: { x: 55, y: 60 },
+        size: { width: 20, height: 12 },
+        description: 'Routes exhaust gases from engine through turbo and muffler to atmosphere.',
+        function: 'Safely removes combustion exhaust, drives turbo, reduces noise, and may include emission controls.',
+        symptoms: [
+          'Excessive backpressure',
+          'Loud exhaust noise',
+          'Power loss',
+          'Exhaust leaks',
+          'DPF regeneration issues',
+        ],
+        troubleshooting: [
+          'Measure backpressure - should be <3" H2O',
+          'Inspect for leaks at gaskets and joints',
+          'Check muffler for internal collapse',
+          'Verify DPF is not clogged (if equipped)',
+          'Inspect flex connections',
+        ],
+        partNumbers: [
+          { brand: 'Generic', partNo: 'Muffler 6" diameter', price: '25,000' },
+          { brand: 'Generic', partNo: 'Exhaust Flex', price: '8,500' },
+          { brand: 'Generic', partNo: 'Gasket Set', price: '3,500' },
+        ],
+        tools: ['Backpressure gauge', 'Pyrometer', 'Inspection mirror'],
+        specifications: [
+          { name: 'Max Backpressure', value: '3" H2O (7.5 kPa)' },
+          { name: 'Temperature', value: '400-600°C' },
+        ],
+        connections: ['Turbo exhaust outlet', 'Flex section', 'Muffler', 'Exhaust pipe to atmosphere'],
+        commonFaults: [
+          { fault: 'High backpressure', cause: 'Clogged muffler/DPF, kinked pipe', solution: 'Replace or clean' },
+          { fault: 'Leak', cause: 'Failed gasket, cracked pipe', solution: 'Replace gasket, repair pipe' },
+          { fault: 'Excessive noise', cause: 'Muffler damage, loose parts', solution: 'Replace muffler' },
+        ],
+        maintenanceInterval: 'Inspect annually, replace muffler if restricted',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ATS (AUTOMATIC TRANSFER SWITCH)
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'ats',
+    name: 'ATS / Transfer Switch',
+    icon: <ToggleLeft className="w-6 h-6" />,
+    color: 'purple',
+    description: 'Automatic Transfer Switch - switches between utility and generator power',
+    flowDescription: 'Monitors utility power → Detects failure → Signals generator to start → Waits for generator ready → Transfers load to generator → Monitors for utility return → Re-transfers to utility → Signals generator shutdown',
+    diagram: 'ats-system',
+    components: [
+      {
+        id: 'ats-controller',
+        name: 'ATS Controller',
+        icon: <CircuitBoard className="w-5 h-5" />,
+        position: { x: 40, y: 15 },
+        size: { width: 20, height: 15 },
+        description: 'Brain of the transfer switch. Monitors utility, controls transfer sequence, and coordinates with generator.',
+        function: 'Senses utility voltage and frequency, manages time delays, controls contactor switching, signals generator.',
+        symptoms: [
+          'No automatic transfer',
+          'Transfer to generator with utility present',
+          'Won\'t return to utility',
+          'Generator not starting',
+          'Display not working',
+        ],
+        troubleshooting: [
+          'Check utility sensing connections',
+          'Verify generator sensing connections',
+          'Check time delay settings',
+          'Test start signal output to generator',
+          'Verify phase rotation is correct',
+          'Check for fault indication',
+        ],
+        partNumbers: [
+          { brand: 'DSE', partNo: 'DSE334', price: '55,000' },
+          { brand: 'ComAp', partNo: 'InteliATS NT', price: '75,000' },
+          { brand: 'ASCO', partNo: '5220 Controller', price: '85,000' },
+        ],
+        tools: ['Multimeter', 'Phase rotation meter', 'Controller software'],
+        specifications: [
+          { name: 'Sensing Voltage', value: '110-480V AC' },
+          { name: 'Frequency', value: '50/60 Hz' },
+          { name: 'Time Delays', value: 'Adjustable 0-300 seconds' },
+        ],
+        connections: ['Utility sensing (3-phase)', 'Generator sensing (3-phase)', 'Start signal to generator', 'Contactor coils', 'Manual override'],
+        commonFaults: [
+          { fault: 'No sensing', cause: 'Blown fuse, loose connection', solution: 'Replace fuse, check wiring' },
+          { fault: 'Wrong transfer', cause: 'Settings incorrect, sensing fault', solution: 'Adjust settings, check sensing' },
+          { fault: 'No start signal', cause: 'Output failed, wiring issue', solution: 'Check output, repair wiring' },
+        ],
+        maintenanceInterval: 'Test monthly, calibrate annually',
+      },
+      {
+        id: 'ats-contactors',
+        name: 'Transfer Contactors',
+        icon: <ToggleLeft className="w-5 h-5" />,
+        position: { x: 35, y: 45 },
+        size: { width: 30, height: 20 },
+        description: 'Heavy-duty contactors that physically switch load between utility and generator sources.',
+        function: 'Mechanically interlocked contactors ensure only one source is connected at a time. Handle full load current.',
+        symptoms: [
+          'Stuck in one position',
+          'Won\'t transfer',
+          'Transfer noise/chattering',
+          'Overheating',
+          'Arc damage',
+        ],
+        troubleshooting: [
+          'Check mechanical interlock operation',
+          'Verify coil voltage when transfer commanded',
+          'Inspect main contacts for pitting',
+          'Check auxiliary contacts',
+          'Test manual transfer mechanism',
+          'Verify no mechanical binding',
+        ],
+        partNumbers: [
+          { brand: 'ASCO', partNo: '940 Contactor', price: '185,000' },
+          { brand: 'ABB', partNo: 'OT Series', price: '145,000' },
+          { brand: 'Schneider', partNo: 'LTMR08', price: '165,000' },
+        ],
+        tools: ['Contact resistance meter', 'Multimeter', 'Mechanical test tools'],
+        specifications: [
+          { name: 'Current Rating', value: 'Match load requirement' },
+          { name: 'Coil Voltage', value: '24VDC, 110VAC, 220VAC' },
+          { name: 'Mechanical Life', value: '10,000+ operations' },
+        ],
+        connections: ['Utility input', 'Generator input', 'Load output', 'Coil power from controller'],
+        commonFaults: [
+          { fault: 'Contact welding', cause: 'Overload, wrong rating', solution: 'Replace contacts, check rating' },
+          { fault: 'Mechanical jam', cause: 'Debris, wear, misalignment', solution: 'Clean, lubricate, align' },
+          { fault: 'Interlock failure', cause: 'Mechanical damage', solution: 'Repair or replace mechanism' },
+        ],
+        maintenanceInterval: 'Inspect every 6 months, exercise monthly',
+      },
+      {
+        id: 'utility-breaker',
+        name: 'Utility Input Breaker',
+        icon: <Power className="w-5 h-5" />,
+        position: { x: 10, y: 40 },
+        size: { width: 12, height: 15 },
+        description: 'Circuit breaker on utility side input providing overcurrent protection.',
+        function: 'Protects against overcurrent from utility side. Allows isolation of utility source.',
+        symptoms: [
+          'Tripping unexpectedly',
+          'Won\'t close',
+          'No utility power to ATS',
+        ],
+        troubleshooting: [
+          'Check trip indication',
+          'Verify utility voltage present before breaker',
+          'Test breaker trip function',
+          'Check for proper rating',
+        ],
+        partNumbers: [
+          { brand: 'Schneider', partNo: 'NSX series', price: '45,000' },
+          { brand: 'ABB', partNo: 'TMAX series', price: '52,000' },
+        ],
+        tools: ['Multimeter', 'Primary injection test set'],
+        specifications: [
+          { name: 'Rating', value: 'Match utility supply' },
+          { name: 'Breaking Capacity', value: 'Match available fault current' },
+        ],
+        connections: ['Utility supply', 'To ATS utility input'],
+        commonFaults: [
+          { fault: 'Nuisance trip', cause: 'Wrong rating, loose connection', solution: 'Check rating, tighten connections' },
+          { fault: 'No power', cause: 'Tripped, failed closed', solution: 'Reset or replace' },
+        ],
+        maintenanceInterval: 'Test annually',
+      },
+      {
+        id: 'gen-breaker',
+        name: 'Generator Input Breaker',
+        icon: <Power className="w-5 h-5" />,
+        position: { x: 72, y: 40 },
+        size: { width: 12, height: 15 },
+        description: 'Circuit breaker on generator side input providing overcurrent protection.',
+        function: 'Protects generator from overload. Allows isolation of generator source.',
+        symptoms: [
+          'Generator trips on transfer',
+          'Won\'t close',
+          'Generator overload',
+        ],
+        troubleshooting: [
+          'Check breaker rating vs generator capacity',
+          'Verify no overload condition',
+          'Test trip settings',
+          'Check connections',
+        ],
+        partNumbers: [
+          { brand: 'Schneider', partNo: 'NSX series', price: '48,000' },
+          { brand: 'ABB', partNo: 'TMAX series', price: '55,000' },
+        ],
+        tools: ['Multimeter', 'Clamp ammeter'],
+        specifications: [
+          { name: 'Rating', value: 'Match generator output' },
+          { name: 'Trip Settings', value: 'Coordinate with generator protection' },
+        ],
+        connections: ['Generator output', 'To ATS generator input'],
+        commonFaults: [
+          { fault: 'Trip on transfer', cause: 'Inrush current, wrong setting', solution: 'Adjust trip curve' },
+          { fault: 'Overload trip', cause: 'Load exceeds generator', solution: 'Reduce load or upsize generator' },
+        ],
+        maintenanceInterval: 'Test annually',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // STARTING SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'starting',
+    name: 'Starting System',
+    icon: <Power className="w-6 h-6" />,
+    color: 'green',
+    description: 'Engine cranking and starting components',
+    flowDescription: 'Key/Controller → Starter Relay → Starter Motor → Ring Gear → Engine Cranks → Fuel + Compression + Timing = Start. Glow plugs preheat combustion chamber for cold starts.',
+    diagram: 'starting-system',
+    components: [
+      {
+        id: 'starter-battery',
+        name: 'Starting Battery Bank',
+        icon: <Battery className="w-5 h-5" />,
+        position: { x: 5, y: 40 },
+        size: { width: 15, height: 20 },
+        description: 'Lead-acid or AGM batteries providing high cranking current for starter motor. Typically 12V or 24V systems.',
+        function: 'Store electrical energy for starting. Must deliver 500-2000+ CCA (Cold Cranking Amps) depending on engine size.',
+        symptoms: [
+          'Slow cranking',
+          'No crank at all',
+          'Clicking sound only',
+          'Battery not holding charge',
+          'Swollen battery case',
+          'Sulfur smell',
+        ],
+        troubleshooting: [
+          'Measure open circuit voltage: 12.6V (12V) or 25.2V (24V) = fully charged',
+          'Load test: voltage should stay above 9.6V (12V) or 19.2V (24V) under load',
+          'Check specific gravity with hydrometer (1.265-1.299 = good)',
+          'Inspect terminals for corrosion - clean with baking soda solution',
+          'Check cable connections at battery and starter',
+          'Verify charger output is 13.8-14.4V (12V) or 27.6-28.8V (24V)',
+        ],
+        partNumbers: [
+          { brand: 'Chloride Exide', partNo: 'N200 (200Ah)', price: '45,000' },
+          { brand: 'Chloride Exide', partNo: 'N150 (150Ah)', price: '35,000' },
+          { brand: 'Hoppecke', partNo: 'Power.bloc', price: '85,000' },
+          { brand: 'Trojan', partNo: 'T-1275 AGM', price: '120,000' },
+        ],
+        tools: ['Multimeter', 'Battery load tester', 'Hydrometer', 'Terminal cleaner', 'Battery charger'],
+        specifications: [
+          { name: 'Voltage', value: '12V or 24V system' },
+          { name: 'Capacity', value: '100-250Ah typical' },
+          { name: 'CCA', value: '500-2000 amps' },
+          { name: 'Reserve Capacity', value: '150-300 minutes' },
+        ],
+        connections: ['Positive to starter solenoid', 'Negative to engine block ground', 'Charger input', 'Controller sensing'],
+        commonFaults: [
+          { fault: 'Dead battery', cause: 'Charger failure, parasitic drain, age', solution: 'Check charger, charge or replace battery' },
+          { fault: 'Sulfation', cause: 'Undercharging, sitting discharged', solution: 'Desulfate or replace' },
+          { fault: 'Cell short', cause: 'Age, vibration damage', solution: 'Replace battery' },
+        ],
+        maintenanceInterval: 'Check electrolyte monthly, load test every 6 months, replace every 3-5 years',
+      },
+      {
+        id: 'starter-motor',
+        name: 'Starter Motor',
+        icon: <RotateCcw className="w-5 h-5" />,
+        position: { x: 50, y: 35 },
+        size: { width: 18, height: 20 },
+        description: 'High-torque DC motor that cranks the engine via the ring gear. Includes solenoid for engagement.',
+        function: 'Converts electrical energy to mechanical rotation. Pinion engages flywheel ring gear to turn engine for starting.',
+        symptoms: [
+          'No cranking',
+          'Slow cranking',
+          'Grinding noise',
+          'Starter spins but engine doesn\'t',
+          'Starter stays engaged',
+          'Smoke from starter',
+        ],
+        troubleshooting: [
+          'Check battery voltage at starter terminals during crank (minimum 9V for 12V system)',
+          'Tap starter with hammer while cranking - if starts, brushes are worn',
+          'Listen for solenoid click - no click = solenoid or wiring issue',
+          'Check pinion engagement - should extend when energized',
+          'Measure current draw - excessive draw = internal short or seized',
+          'Inspect ring gear teeth for damage',
+        ],
+        partNumbers: [
+          { brand: 'Bosch', partNo: '0001241001', price: '125,000' },
+          { brand: 'Delco Remy', partNo: '39MT', price: '145,000' },
+          { brand: 'Denso', partNo: '428000-5510', price: '98,000' },
+          { brand: 'Iskra', partNo: 'AZF4581', price: '85,000' },
+        ],
+        tools: ['Multimeter', 'Clamp ammeter (500A+)', 'Starter bench tester', 'Socket set'],
+        specifications: [
+          { name: 'Voltage', value: '12V or 24V' },
+          { name: 'Power', value: '3-11 kW' },
+          { name: 'Cranking Speed', value: '150-250 RPM' },
+          { name: 'Current Draw', value: '200-600A normal' },
+        ],
+        connections: ['Battery positive to solenoid main terminal', 'Solenoid trigger from controller', 'Ground through mounting'],
+        commonFaults: [
+          { fault: 'Brushes worn', cause: 'Normal wear', solution: 'Replace brushes or starter' },
+          { fault: 'Solenoid contacts burned', cause: 'High current, arcing', solution: 'Replace solenoid' },
+          { fault: 'Pinion not engaging', cause: 'Solenoid weak, pinion stuck', solution: 'Clean or replace' },
+          { fault: 'Ring gear damage', cause: 'Misaligned starter, worn teeth', solution: 'Replace ring gear' },
+        ],
+        maintenanceInterval: 'Inspect every 1000 hours, rebuild every 5000 hours',
+        testProcedure: [
+          '1. Ensure battery is fully charged (12.6V/25.2V)',
+          '2. Connect clamp ammeter around starter cable',
+          '3. Disable fuel system to prevent starting',
+          '4. Crank engine for 10 seconds max',
+          '5. Measure cranking RPM with tachometer',
+          '6. Current should be within spec (check manual)',
+          '7. Voltage at starter should stay above 9V (12V system)',
+        ],
+      },
+      {
+        id: 'glow-plugs',
+        name: 'Glow Plug System',
+        icon: <Flame className="w-5 h-5" />,
+        position: { x: 70, y: 25 },
+        size: { width: 15, height: 15 },
+        description: 'Electric heating elements in each cylinder that preheat the combustion chamber for cold starting.',
+        function: 'Heat combustion chamber to aid diesel ignition in cold conditions. Controlled by timer relay based on temperature.',
+        symptoms: [
+          'Hard starting when cold',
+          'White smoke on cold start',
+          'Extended cranking time',
+          'Rough running when cold',
+          'Check engine light',
+        ],
+        troubleshooting: [
+          'Measure glow plug resistance - typically 0.5-2 ohms each',
+          'Check for 12V/24V at glow plug during preheat cycle',
+          'Verify timer relay is working (should buzz)',
+          'Check bus bar connections for corrosion',
+          'Test each plug individually - failed plug won\'t glow',
+          'Check coolant temp sensor - controls preheat duration',
+        ],
+        partNumbers: [
+          { brand: 'Bosch', partNo: 'GLP070', price: '3,500' },
+          { brand: 'NGK', partNo: 'Y-547AS', price: '4,200' },
+          { brand: 'Beru', partNo: 'GN104', price: '3,800' },
+          { brand: 'Denso', partNo: 'DG-142', price: '4,500' },
+        ],
+        tools: ['Multimeter', 'Glow plug tester', 'Socket (10mm or 12mm deep)', 'Torque wrench'],
+        specifications: [
+          { name: 'Voltage', value: '12V or 24V' },
+          { name: 'Resistance', value: '0.5-2.0 ohms' },
+          { name: 'Preheat Time', value: '5-30 seconds' },
+          { name: 'Surface Temp', value: '850-1000°C' },
+        ],
+        connections: ['Bus bar to all plugs', 'Power from timer relay', 'Ground through cylinder head'],
+        commonFaults: [
+          { fault: 'Plug tip broken', cause: 'Over-torque, carbon buildup', solution: 'Carefully extract and replace' },
+          { fault: 'High resistance', cause: 'Age, internal damage', solution: 'Replace plug' },
+          { fault: 'Timer relay failure', cause: 'Relay contacts worn', solution: 'Replace timer relay' },
+        ],
+        maintenanceInterval: 'Test every 500 hours, replace every 2000-3000 hours',
+      },
+      {
+        id: 'starter-relay',
+        name: 'Starter Relay/Solenoid',
+        icon: <CircuitBoard className="w-5 h-5" />,
+        position: { x: 30, y: 30 },
+        size: { width: 12, height: 12 },
+        description: 'Heavy-duty relay that switches high current to starter motor when activated by controller.',
+        function: 'Isolates low-current control circuit from high-current starter circuit. Protects controller contacts.',
+        symptoms: [
+          'Clicking but no crank',
+          'No response at all',
+          'Intermittent starting',
+          'Relay getting hot',
+        ],
+        troubleshooting: [
+          'Check for 12V/24V at relay coil when start commanded',
+          'Jump relay terminals briefly to test starter directly',
+          'Measure voltage drop across relay - should be <0.5V',
+          'Check relay coil resistance - typically 50-200 ohms',
+          'Inspect high-current terminals for burning',
+        ],
+        partNumbers: [
+          { brand: 'Bosch', partNo: '0332002150', price: '8,500' },
+          { brand: 'Hella', partNo: '4RA 003 437-061', price: '6,500' },
+          { brand: 'Cole Hersee', partNo: '24812', price: '12,000' },
+        ],
+        tools: ['Multimeter', 'Jumper wire', 'Socket set'],
+        specifications: [
+          { name: 'Coil Voltage', value: '12V or 24V' },
+          { name: 'Contact Rating', value: '200-500A' },
+          { name: 'Coil Current', value: '1-3A' },
+        ],
+        connections: ['Coil to controller start output', 'Main contacts: battery to starter'],
+        commonFaults: [
+          { fault: 'Contacts welded', cause: 'High current, arcing', solution: 'Replace relay' },
+          { fault: 'Coil open', cause: 'Overheating', solution: 'Replace relay' },
+          { fault: 'Voltage drop', cause: 'Corroded contacts', solution: 'Clean or replace' },
+        ],
+        maintenanceInterval: 'Check connections every 500 hours',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AIR INTAKE & TURBO SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'airintake',
+    name: 'Air Intake & Turbo',
+    icon: <Fan className="w-6 h-6" />,
+    color: 'cyan',
+    description: 'Air filtration, turbocharging, and charge air cooling',
+    flowDescription: 'Ambient Air → Air Filter → Turbo Compressor → Intercooler → Intake Manifold → Cylinders. Exhaust drives turbine side. Wastegate controls boost pressure.',
+    diagram: 'air-intake-system',
+    components: [
+      {
+        id: 'air-filter',
+        name: 'Air Filter Assembly',
+        icon: <Fan className="w-5 h-5" />,
+        position: { x: 5, y: 35 },
+        size: { width: 15, height: 18 },
+        description: 'Primary and safety filters that remove dust and debris from intake air before turbo compressor.',
+        function: 'Protect turbo and engine from abrasive particles. Typical filtration 99.9% at 2 microns.',
+        symptoms: [
+          'Low power',
+          'Black smoke',
+          'High exhaust temperature',
+          'Turbo surge',
+          'Restriction indicator triggered',
+        ],
+        troubleshooting: [
+          'Check restriction indicator on air cleaner housing',
+          'Measure pressure drop across filter (max 25" H2O)',
+          'Inspect element for damage, holes, or collapse',
+          'Check housing seals and clamps',
+          'Verify inlet ducting is intact',
+        ],
+        partNumbers: [
+          { brand: 'Donaldson', partNo: 'P181050', price: '8,500' },
+          { brand: 'Baldwin', partNo: 'PA2705', price: '6,500' },
+          { brand: 'Fleetguard', partNo: 'AF25708', price: '7,200' },
+          { brand: 'Mann', partNo: 'C30850/2', price: '9,500' },
+        ],
+        tools: ['Restriction gauge', 'Manometer', 'Clean rags'],
+        specifications: [
+          { name: 'Efficiency', value: '99.9% at 2 microns' },
+          { name: 'Max Restriction', value: '25 inches H2O' },
+          { name: 'Type', value: 'Radial seal or bolt-down' },
+        ],
+        connections: ['Inlet from atmosphere', 'Outlet to turbo compressor', 'Restriction switch'],
+        commonFaults: [
+          { fault: 'Collapsed element', cause: 'High restriction, poor quality', solution: 'Replace element' },
+          { fault: 'Dust bypassing', cause: 'Damaged seal, improper install', solution: 'Check seals, reinstall correctly' },
+          { fault: 'Housing damage', cause: 'Impact, vibration', solution: 'Repair or replace housing' },
+        ],
+        maintenanceInterval: 'Inspect every 250 hours, replace when restriction limit reached',
+      },
+      {
+        id: 'turbocharger',
+        name: 'Turbocharger',
+        icon: <Activity className="w-5 h-5" />,
+        position: { x: 35, y: 30 },
+        size: { width: 20, height: 22 },
+        description: 'Exhaust-driven compressor that forces more air into engine for increased power density.',
+        function: 'Turbine powered by exhaust gases drives compressor wheel to boost intake air pressure 1.5-3x atmospheric.',
+        symptoms: [
+          'Loss of power',
+          'Black or blue smoke',
+          'Excessive oil consumption',
+          'Whining or siren noise',
+          'Turbo lag increased',
+          'Oil in intercooler',
+        ],
+        troubleshooting: [
+          'Check for shaft play: radial <0.003", axial <0.002"',
+          'Inspect compressor wheel for blade damage',
+          'Check for oil leaks at compressor and turbine seals',
+          'Verify boost pressure with gauge (compare to spec)',
+          'Check wastegate operation - should hold vacuum',
+          'Inspect exhaust manifold for cracks/leaks',
+        ],
+        partNumbers: [
+          { brand: 'Holset', partNo: 'HX35', price: '185,000' },
+          { brand: 'Garrett', partNo: 'GT3576', price: '220,000' },
+          { brand: 'BorgWarner', partNo: 'S300', price: '195,000' },
+          { brand: 'Schwitzer', partNo: 'S3B', price: '165,000' },
+        ],
+        tools: ['Boost gauge', 'Dial indicator', 'Vacuum pump', 'Pyrometer'],
+        specifications: [
+          { name: 'Boost Pressure', value: '15-35 PSI typical' },
+          { name: 'Max RPM', value: '80,000-150,000 RPM' },
+          { name: 'Turbine Inlet Temp', value: '600-750°C' },
+        ],
+        connections: ['Exhaust manifold to turbine inlet', 'Turbine outlet to exhaust', 'Air filter to compressor', 'Compressor to intercooler', 'Oil supply and drain'],
+        commonFaults: [
+          { fault: 'Shaft play', cause: 'Bearing wear, oil starvation', solution: 'Rebuild or replace turbo' },
+          { fault: 'Compressor surge', cause: 'Restricted filter, throttle snap', solution: 'Check filter, add blow-off valve' },
+          { fault: 'Oil leaks', cause: 'Seal wear, restricted drain', solution: 'Replace seals, check drain line' },
+        ],
+        maintenanceInterval: 'Inspect every 1000 hours, rebuild every 5000-8000 hours',
+        testProcedure: [
+          '1. Remove intake ducting to access compressor',
+          '2. Check wheel for blade damage or contact marks',
+          '3. Measure shaft radial play with dial indicator',
+          '4. Check for oil in compressor housing',
+          '5. Run engine and measure boost at rated speed',
+          '6. Listen for abnormal sounds (whine, siren)',
+          '7. Check EGT - should be within spec at rated load',
+        ],
+      },
+      {
+        id: 'intercooler',
+        name: 'Intercooler (Charge Air Cooler)',
+        icon: <Thermometer className="w-5 h-5" />,
+        position: { x: 60, y: 25 },
+        size: { width: 18, height: 16 },
+        description: 'Air-to-air or air-to-water heat exchanger that cools compressed air from turbo before engine intake.',
+        function: 'Reduce charge air temperature 50-100°C to increase air density and prevent detonation.',
+        symptoms: [
+          'Low power',
+          'High intake manifold temperature',
+          'Detonation/knock',
+          'Black smoke',
+          'Boost leaks',
+        ],
+        troubleshooting: [
+          'Pressure test for leaks (20 PSI, should hold)',
+          'Check temperature drop across cooler (50-100°C)',
+          'Inspect fins for damage or debris blockage',
+          'Check hoses and clamps for leaks',
+          'Look for oil accumulation (indicates turbo seals)',
+        ],
+        partNumbers: [
+          { brand: 'Modine', partNo: '1E5023', price: '145,000' },
+          { brand: 'Behr', partNo: 'ICC-1234', price: '165,000' },
+          { brand: 'AKG', partNo: 'A50023', price: '125,000' },
+        ],
+        tools: ['Pressure tester', 'Pyrometer', 'Inspection mirror'],
+        specifications: [
+          { name: 'Pressure Rating', value: '50 PSI' },
+          { name: 'Temp Reduction', value: '50-100°C' },
+          { name: 'Efficiency', value: '70-90%' },
+        ],
+        connections: ['Turbo compressor outlet', 'Intake manifold inlet', 'Drain (if air-to-water)'],
+        commonFaults: [
+          { fault: 'Internal leak', cause: 'Corrosion, thermal stress', solution: 'Replace cooler' },
+          { fault: 'External damage', cause: 'Debris impact', solution: 'Repair or replace' },
+          { fault: 'Fin blockage', cause: 'Dirt, debris', solution: 'Clean with low pressure air' },
+        ],
+        maintenanceInterval: 'Inspect and clean every 500 hours',
+      },
+      {
+        id: 'wastegate',
+        name: 'Wastegate/Boost Control',
+        icon: <Settings className="w-5 h-5" />,
+        position: { x: 42, y: 55 },
+        size: { width: 12, height: 12 },
+        description: 'Pressure-controlled valve that bypasses exhaust around turbine to limit boost pressure.',
+        function: 'Prevents over-boost by opening at set pressure, allowing exhaust to bypass turbine.',
+        symptoms: [
+          'Over-boost (too much pressure)',
+          'Under-boost (low power)',
+          'Boost fluctuation',
+          'Turbo overspeeding',
+        ],
+        troubleshooting: [
+          'Check wastegate actuator diaphragm for leaks',
+          'Verify linkage moves freely',
+          'Test with hand vacuum pump - should hold vacuum',
+          'Check boost control solenoid if electronically controlled',
+          'Adjust actuator rod length if needed',
+        ],
+        partNumbers: [
+          { brand: 'Holset', partNo: 'WG Actuator', price: '28,000' },
+          { brand: 'Garrett', partNo: 'Actuator Assembly', price: '32,000' },
+          { brand: 'Electronic', partNo: 'Boost Solenoid', price: '8,500' },
+        ],
+        tools: ['Vacuum pump', 'Boost gauge', 'Wrenches'],
+        specifications: [
+          { name: 'Opening Pressure', value: '10-20 PSI typical' },
+          { name: 'Control Type', value: 'Pneumatic or electronic' },
+        ],
+        connections: ['Exhaust housing', 'Compressor outlet (pressure signal)', 'ECM (if electronic)'],
+        commonFaults: [
+          { fault: 'Stuck open', cause: 'Carbon, corrosion', solution: 'Clean or replace' },
+          { fault: 'Stuck closed', cause: 'Binding linkage', solution: 'Free linkage, lubricate' },
+          { fault: 'Diaphragm leak', cause: 'Age, heat damage', solution: 'Replace actuator' },
+        ],
+        maintenanceInterval: 'Inspect every 1000 hours',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // EXHAUST SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'exhaust',
+    name: 'Exhaust System',
+    icon: <Flame className="w-6 h-6" />,
+    color: 'red',
+    description: 'Exhaust gas routing, aftertreatment, and emissions control',
+    flowDescription: 'Cylinders → Exhaust Manifold → Turbo Turbine → DPF (soot filter) → SCR (NOx reduction) → Muffler/Silencer → Atmosphere. Sensors monitor temperature and emissions.',
+    diagram: 'exhaust-system',
+    components: [
+      {
+        id: 'exhaust-manifold',
+        name: 'Exhaust Manifold',
+        icon: <Flame className="w-5 h-5" />,
+        position: { x: 5, y: 35 },
+        size: { width: 18, height: 20 },
+        description: 'Cast iron or steel manifold that collects exhaust from all cylinders and routes to turbo.',
+        function: 'Collect exhaust gases, maintain pulse energy for turbo, withstand 600-750°C continuous.',
+        symptoms: [
+          'Exhaust leak noise (ticking)',
+          'Loss of power',
+          'High EGT on one cylinder',
+          'Visible cracks',
+          'Soot around gaskets',
+        ],
+        troubleshooting: [
+          'Visual inspection for cracks - especially between ports',
+          'Check gasket sealing surfaces',
+          'Tighten manifold bolts to spec',
+          'Use soapy water to find leaks (bubbles)',
+          'Check for warping with straight edge',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '3970066', price: '65,000' },
+          { brand: 'CAT', partNo: '188-3427', price: '85,000' },
+          { brand: 'Perkins', partNo: '3778E051', price: '45,000' },
+        ],
+        tools: ['Torque wrench', 'Straight edge', 'Inspection mirror', 'Soapy water spray'],
+        specifications: [
+          { name: 'Material', value: 'Cast iron or stainless steel' },
+          { name: 'Max Temperature', value: '750°C continuous' },
+          { name: 'Bolt Torque', value: '25-45 Nm typical' },
+        ],
+        connections: ['Cylinder head exhaust ports', 'Turbo turbine inlet', 'EGT sensors'],
+        commonFaults: [
+          { fault: 'Cracked manifold', cause: 'Thermal stress, age', solution: 'Weld repair or replace' },
+          { fault: 'Gasket leak', cause: 'Loose bolts, gasket failure', solution: 'Retorque or replace gaskets' },
+          { fault: 'Warped flange', cause: 'Overheating', solution: 'Machine flat or replace' },
+        ],
+        maintenanceInterval: 'Inspect every 2000 hours, retorque bolts',
+      },
+      {
+        id: 'dpf',
+        name: 'Diesel Particulate Filter (DPF)',
+        icon: <Activity className="w-5 h-5" />,
+        position: { x: 40, y: 30 },
+        size: { width: 20, height: 18 },
+        description: 'Ceramic honeycomb filter that traps soot particles from exhaust. Requires periodic regeneration.',
+        function: 'Capture 85-95% of particulate matter. Soot burns off during regeneration at 550-600°C.',
+        symptoms: [
+          'Regeneration warning light',
+          'Reduced power/derate',
+          'High exhaust backpressure',
+          'Frequent regeneration attempts',
+          'Check engine light',
+        ],
+        troubleshooting: [
+          'Check soot loading with diagnostic tool (should be <80%)',
+          'Verify exhaust backpressure (max 5-8 kPa)',
+          'Check differential pressure sensor operation',
+          'Inspect for cracks or damage in substrate',
+          'Perform forced regeneration if soot is high',
+          'Check for upstream issues causing excessive soot',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'DPF Assembly', price: '450,000' },
+          { brand: 'CAT', partNo: 'DPF Module', price: '520,000' },
+          { brand: 'Donaldson', partNo: 'DPF Element', price: '280,000' },
+        ],
+        tools: ['Diagnostic scanner', 'Pressure gauges', 'Pyrometer', 'DPF cleaning machine'],
+        specifications: [
+          { name: 'Filtration Efficiency', value: '85-95%' },
+          { name: 'Regen Temperature', value: '550-600°C' },
+          { name: 'Max Backpressure', value: '5-8 kPa' },
+          { name: 'Ash Cleaning', value: 'Every 4000-8000 hours' },
+        ],
+        connections: ['Turbo exhaust outlet', 'SCR inlet', 'Diff pressure sensor', 'Temperature sensors'],
+        commonFaults: [
+          { fault: 'Cracked substrate', cause: 'Thermal shock, water', solution: 'Replace DPF' },
+          { fault: 'Ash clogged', cause: 'Normal accumulation', solution: 'Professional cleaning' },
+          { fault: 'Regen failure', cause: 'Sensor fault, fuel issue', solution: 'Diagnose and fix root cause' },
+        ],
+        maintenanceInterval: 'Monitor soot level, clean ash every 4000-8000 hours',
+      },
+      {
+        id: 'scr',
+        name: 'SCR System (Selective Catalytic Reduction)',
+        icon: <Droplets className="w-5 h-5" />,
+        position: { x: 65, y: 35 },
+        size: { width: 18, height: 16 },
+        description: 'Catalytic converter that uses DEF (urea) injection to reduce NOx emissions by 90%+.',
+        function: 'DEF is injected, converts to ammonia, reacts with NOx on catalyst to form nitrogen and water.',
+        symptoms: [
+          'DEF warning light',
+          'Power derate',
+          'Check engine light',
+          'High NOx readings',
+          'DEF crystallization',
+        ],
+        troubleshooting: [
+          'Check DEF level and quality (32.5% urea)',
+          'Verify DEF pump and injector operation',
+          'Check NOx sensors upstream and downstream',
+          'Monitor SCR inlet temperature (must be >200°C)',
+          'Inspect for DEF crystallization at injector',
+          'Check DEF tank heater in cold climates',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'SCR Assembly', price: '380,000' },
+          { brand: 'Bosch', partNo: 'DEF Pump Module', price: '125,000' },
+          { brand: 'Continental', partNo: 'NOx Sensor', price: '45,000' },
+          { brand: 'AdBlue', partNo: 'DEF 1000L', price: '85,000' },
+        ],
+        tools: ['DEF refractometer', 'Diagnostic scanner', 'Pyrometer'],
+        specifications: [
+          { name: 'NOx Reduction', value: '90%+' },
+          { name: 'DEF Consumption', value: '2-5% of fuel' },
+          { name: 'Operating Temp', value: '>200°C' },
+          { name: 'DEF Concentration', value: '32.5% urea' },
+        ],
+        connections: ['DPF outlet', 'DEF tank and pump', 'Injector', 'NOx sensors', 'Temperature sensors'],
+        commonFaults: [
+          { fault: 'Low efficiency', cause: 'Contaminated DEF, catalyst poisoning', solution: 'Replace DEF, check catalyst' },
+          { fault: 'Injector clogged', cause: 'Crystallization', solution: 'Clean or replace injector' },
+          { fault: 'NOx sensor drift', cause: 'Age, contamination', solution: 'Replace sensor' },
+        ],
+        maintenanceInterval: 'Check DEF quality monthly, replace NOx sensors every 4000 hours',
+      },
+      {
+        id: 'silencer',
+        name: 'Exhaust Silencer/Muffler',
+        icon: <Cable className="w-5 h-5" />,
+        position: { x: 85, y: 40 },
+        size: { width: 12, height: 14 },
+        description: 'Sound attenuation device that reduces exhaust noise to acceptable levels.',
+        function: 'Reduce exhaust noise 25-35 dB through absorption and reactive chambers.',
+        symptoms: [
+          'Excessive noise',
+          'Backpressure increase',
+          'Visible damage',
+          'Internal rattle',
+        ],
+        troubleshooting: [
+          'Check for external damage or corrosion',
+          'Measure backpressure contribution',
+          'Listen for internal component failure',
+          'Inspect mounting brackets',
+        ],
+        partNumbers: [
+          { brand: 'Nelson', partNo: 'Global Silencer', price: '85,000' },
+          { brand: 'Donaldson', partNo: 'M120285', price: '72,000' },
+          { brand: 'Maxim', partNo: 'Critical Grade', price: '95,000' },
+        ],
+        tools: ['Sound level meter', 'Backpressure gauge'],
+        specifications: [
+          { name: 'Attenuation', value: '25-35 dB' },
+          { name: 'Grade', value: 'Industrial, Residential, Critical' },
+          { name: 'Max Backpressure', value: '3-6 kPa' },
+        ],
+        connections: ['SCR or DPF outlet', 'Exhaust stack', 'Rain cap'],
+        commonFaults: [
+          { fault: 'Internal failure', cause: 'Corrosion, thermal cycling', solution: 'Replace silencer' },
+          { fault: 'Excessive noise', cause: 'Packing degraded', solution: 'Repack or replace' },
+        ],
+        maintenanceInterval: 'Inspect annually',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ECM & ELECTRONICS SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'ecm',
+    name: 'ECM & Electronics',
+    icon: <Cpu className="w-6 h-6" />,
+    color: 'purple',
+    description: 'Electronic control modules, sensors, and communication networks',
+    flowDescription: 'Sensors → ECM (processing) → Actuators. Communication via J1939 CAN Bus to controller, diagnostics via service tool.',
+    diagram: 'ecm-system',
+    components: [
+      {
+        id: 'ecm-module',
+        name: 'Engine Control Module (ECM)',
+        icon: <Cpu className="w-5 h-5" />,
+        position: { x: 40, y: 25 },
+        size: { width: 20, height: 18 },
+        description: 'Main computer that controls fuel injection timing, quantity, and all engine functions.',
+        function: 'Process sensor inputs, calculate injection parameters, control actuators, store fault codes, communicate on J1939.',
+        symptoms: [
+          'Check engine light',
+          'Engine won\'t start',
+          'Erratic operation',
+          'Communication failure',
+          'Multiple sensor faults',
+        ],
+        troubleshooting: [
+          'Check ECM power supply: key-on voltage 12V/24V',
+          'Verify ground connections are clean and tight',
+          'Read fault codes with service tool',
+          'Check J1939 communication on CAN bus',
+          'Verify software/calibration version',
+          'Check for water intrusion',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'CM2250 ECM', price: '185,000' },
+          { brand: 'CAT', partNo: 'ADEM A4 ECM', price: '220,000' },
+          { brand: 'Volvo', partNo: 'EMS2 ECM', price: '175,000' },
+        ],
+        tools: ['Service tool (INSITE, CAT ET, VODIA)', 'Multimeter', 'Breakout box', 'Oscilloscope'],
+        specifications: [
+          { name: 'Supply Voltage', value: '12V or 24V nominal' },
+          { name: 'Communication', value: 'J1939 CAN @ 250kbps' },
+          { name: 'Operating Temp', value: '-40°C to +85°C' },
+        ],
+        connections: ['Battery power', 'Key switch', 'All sensors', 'All actuators', 'J1939 CAN bus'],
+        commonFaults: [
+          { fault: 'No communication', cause: 'Power issue, CAN bus fault', solution: 'Check power and CAN wiring' },
+          { fault: 'Internal failure', cause: 'Voltage spike, water damage', solution: 'Replace ECM' },
+          { fault: 'Wrong calibration', cause: 'Incorrect programming', solution: 'Flash correct calibration' },
+        ],
+        maintenanceInterval: 'Check connections every 1000 hours',
+      },
+      {
+        id: 'sensors',
+        name: 'Engine Sensors Array',
+        icon: <Gauge className="w-5 h-5" />,
+        position: { x: 15, y: 35 },
+        size: { width: 18, height: 20 },
+        description: 'Collection of sensors monitoring engine parameters: pressure, temperature, position, speed.',
+        function: 'Provide real-time data to ECM for closed-loop control of fuel, timing, and protection.',
+        symptoms: [
+          'Specific fault code',
+          'Incorrect reading',
+          'Out of range signal',
+          'Intermittent faults',
+          'Derate condition',
+        ],
+        troubleshooting: [
+          'Read specific fault code to identify sensor',
+          'Check connector for corrosion or damage',
+          'Measure signal voltage at ECM connector',
+          'Compare reading to known good value',
+          'Check wiring for shorts or opens',
+          'Swap with known good sensor to verify',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: 'Oil Pressure Sensor', price: '12,000' },
+          { brand: 'Cummins', partNo: 'Coolant Temp Sensor', price: '8,500' },
+          { brand: 'CAT', partNo: 'Speed/Timing Sensor', price: '18,000' },
+          { brand: 'Bosch', partNo: 'Rail Pressure Sensor', price: '35,000' },
+        ],
+        tools: ['Multimeter', 'Oscilloscope', 'Service tool', 'Breakout harness'],
+        specifications: [
+          { name: 'Signal Type', value: 'Analog 0-5V or digital frequency' },
+          { name: 'Temperature Sensors', value: 'NTC thermistor' },
+          { name: 'Pressure Sensors', value: '0.5-4.5V output' },
+        ],
+        connections: ['ECM harness connector', 'Shield ground', 'Sensor power supply'],
+        commonFaults: [
+          { fault: 'Open circuit', cause: 'Broken wire, bad connection', solution: 'Repair wiring' },
+          { fault: 'Short circuit', cause: 'Chafed wire, water intrusion', solution: 'Find and repair short' },
+          { fault: 'Drift/inaccurate', cause: 'Sensor worn, contaminated', solution: 'Replace sensor' },
+        ],
+        maintenanceInterval: 'Inspect connectors every 500 hours',
+      },
+      {
+        id: 'injectors',
+        name: 'Electronic Fuel Injectors',
+        icon: <Zap className="w-5 h-5" />,
+        position: { x: 65, y: 30 },
+        size: { width: 16, height: 18 },
+        description: 'High-pressure electronically controlled injectors for precise fuel delivery.',
+        function: 'Convert ECM commands to precise fuel injection events. Control timing, duration, and multiple injection events.',
+        symptoms: [
+          'Rough running',
+          'Smoke (black or white)',
+          'Loss of power',
+          'Misfires',
+          'Fuel knock',
+          'Hard starting',
+        ],
+        troubleshooting: [
+          'Read injector trim codes from ECM',
+          'Perform cylinder cutout test',
+          'Check injector resistance (typically 0.2-2 ohms)',
+          'Measure return fuel quantity per cylinder',
+          'Check injection timing with service tool',
+          'Inspect nozzle spray pattern if removed',
+        ],
+        partNumbers: [
+          { brand: 'Cummins', partNo: '4928260 (ISX)', price: '85,000' },
+          { brand: 'CAT', partNo: '253-0618 (C15)', price: '95,000' },
+          { brand: 'Bosch', partNo: 'CRIN3 Injector', price: '75,000' },
+          { brand: 'Delphi', partNo: 'E3 Injector', price: '68,000' },
+        ],
+        tools: ['Service tool', 'Resistance meter', 'Return flow test kit', 'Nozzle tester'],
+        specifications: [
+          { name: 'Pressure', value: '1800-2500 bar' },
+          { name: 'Response Time', value: '<0.2ms' },
+          { name: 'Spray Holes', value: '6-8 holes' },
+        ],
+        connections: ['High pressure fuel line', 'Return fuel line', 'ECM harness (2-wire solenoid)'],
+        commonFaults: [
+          { fault: 'Stuck open', cause: 'Contamination, wear', solution: 'Replace injector' },
+          { fault: 'Low contribution', cause: 'Nozzle wear, blockage', solution: 'Replace or rebuild' },
+          { fault: 'Electrical fault', cause: 'Solenoid failure', solution: 'Replace injector' },
+        ],
+        maintenanceInterval: 'Check trim codes every 1000 hours, replace every 15000+ hours',
+      },
+      {
+        id: 'canbus',
+        name: 'J1939 CAN Bus Network',
+        icon: <Cable className="w-5 h-5" />,
+        position: { x: 40, y: 55 },
+        size: { width: 20, height: 12 },
+        description: 'Digital communication network connecting ECM to controller and other modules.',
+        function: 'High-speed serial communication at 250kbps. Transmits engine data, receives commands.',
+        symptoms: [
+          'Communication lost to engine',
+          'Intermittent data',
+          'Wrong data displayed',
+          'Multiple ECM faults',
+        ],
+        troubleshooting: [
+          'Check CAN bus termination resistors (60 ohms at each end)',
+          'Measure total bus resistance (should be ~60 ohms)',
+          'Check for CAN-H to CAN-L short',
+          'Verify shield is grounded at one end only',
+          'Check connector pins for damage',
+          'Use oscilloscope to view CAN signals',
+        ],
+        partNumbers: [
+          { brand: 'Generic', partNo: 'CAN Terminator 120Ω', price: '1,500' },
+          { brand: 'Deutsch', partNo: 'DT Connector Kit', price: '3,500' },
+          { brand: 'Generic', partNo: 'Shielded CAN Cable', price: '500/m' },
+        ],
+        tools: ['Multimeter', 'Oscilloscope', 'CAN bus analyzer'],
+        specifications: [
+          { name: 'Speed', value: '250 kbps' },
+          { name: 'Termination', value: '120Ω each end' },
+          { name: 'Cable', value: 'Twisted pair shielded' },
+        ],
+        connections: ['ECM', 'Generator controller', 'Display', 'Other modules'],
+        commonFaults: [
+          { fault: 'No communication', cause: 'Open wire, wrong termination', solution: 'Check wiring and resistors' },
+          { fault: 'Intermittent', cause: 'Loose connection, noise', solution: 'Reseat connectors, check shield' },
+          { fault: 'Errors on bus', cause: 'Damaged node, short', solution: 'Isolate and repair' },
+        ],
+        maintenanceInterval: 'Check connections every 1000 hours',
+      },
+    ],
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI QUESTION HANDLER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface AIQuestion {
+  question: string;
+  component?: SystemComponent;
+  system?: DiagnosticSystem;
+}
+
+const AIQuestionPanel = ({
+  component,
+  system,
+  onClose
+}: {
+  component?: SystemComponent;
+  system?: DiagnosticSystem;
+  onClose: () => void;
+}) => {
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [conversation, setConversation] = useState<{role: string; content: string}[]>([]);
+
+  const handleAsk = async () => {
+    if (!question.trim()) return;
+
+    const userMessage = { role: 'user', content: question };
+    setConversation(prev => [...prev, userMessage]);
+    setIsLoading(true);
+    setQuestion('');
+
+    try {
+      // Build context for the AI
+      let context = '';
+      if (component) {
+        context = `The user is asking about the ${component.name} component.
+
+Description: ${component.description}
+Function: ${component.function}
+Common Symptoms: ${component.symptoms.join(', ')}
+Troubleshooting Steps: ${component.troubleshooting.join('; ')}
+Part Numbers: ${component.partNumbers.map(p => `${p.brand}: ${p.partNo} (KES ${p.price})`).join(', ')}
+Common Faults: ${component.commonFaults.map(f => `${f.fault}: ${f.cause} → ${f.solution}`).join('; ')}`;
+      }
+      if (system) {
+        context += `\n\nThis is part of the ${system.name}. ${system.flowDescription}`;
+      }
+
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...conversation, userMessage],
+          systemPrompt: `You are a generator diagnostic expert. Answer questions about generator components with specific, actionable information.
+
+${context}
+
+Always include:
+- Specific diagnostic steps
+- Part numbers when relevant
+- Tool requirements
+- Safety warnings if applicable
+- Follow-up questions to verify the issue
+
+Be concise but thorough.`
+        }),
+      });
+
+      const data = await response.json();
+      const assistantMessage = { role: 'assistant', content: data.content || data.fallbackContent || 'I apologize, I could not generate a response.' };
+      setConversation(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      setConversation(prev => [...prev, { role: 'assistant', content: 'Sorry, there was an error processing your question. Please try again.' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="fixed bottom-4 right-4 w-96 bg-slate-900 border border-cyan-500/30 rounded-2xl shadow-2xl z-50 overflow-hidden"
+    >
+      <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-gradient-to-r from-cyan-500/10 to-blue-500/10">
+        <div className="flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-cyan-400" />
+          <span className="font-semibold text-white">Ask About {component?.name || system?.name}</span>
+        </div>
+        <button onClick={onClose} className="p-1 hover:bg-slate-800 rounded-lg">
+          <X className="w-5 h-5 text-slate-400" />
+        </button>
+      </div>
+
+      <div className="h-72 overflow-y-auto p-4 space-y-3">
+        {conversation.length === 0 && (
+          <div className="text-center text-slate-500 py-8">
+            <HelpCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p>Ask any question about {component?.name || system?.name}</p>
+            <p className="text-sm mt-2">Examples:</p>
+            <p className="text-xs text-slate-600">"How do I test this?"</p>
+            <p className="text-xs text-slate-600">"What causes failure?"</p>
+          </div>
+        )}
+        {conversation.map((msg, i) => (
+          <div key={i} className={`${msg.role === 'user' ? 'text-right' : ''}`}>
+            <div className={`inline-block max-w-[85%] p-3 rounded-xl ${
+              msg.role === 'user'
+                ? 'bg-cyan-500/20 text-cyan-100'
+                : 'bg-slate-800/50 text-slate-200'
+            }`}>
+              <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex items-center gap-2 text-slate-400">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            >
+              <Settings className="w-4 h-4" />
+            </motion.div>
+            <span className="text-sm">Analyzing...</span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 border-t border-slate-700/50">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
+            placeholder="Ask a question..."
+            className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+          />
+          <button
+            onClick={handleAsk}
+            disabled={isLoading || !question.trim()}
+            className="p-2 bg-cyan-500 hover:bg-cyan-600 disabled:bg-slate-700 rounded-xl transition-colors"
+          >
+            <Send className="w-5 h-5 text-white" />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FAULT CODE LOOKUP COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const FaultCodeLookup = () => {
+  const [faultCode, setFaultCode] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [conversation, setConversation] = useState<{role: string; content: string}[]>([]);
+
+  const searchFaultCode = async () => {
+    if (!faultCode.trim()) return;
+    setIsSearching(true);
+
+    const userMessage = { role: 'user', content: `What does fault code ${faultCode} mean? Give me the full diagnosis, causes, solutions, and part numbers needed.` };
+    setConversation([userMessage]);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [userMessage],
+          systemPrompt: `You are the GENERATOR ORACLE Fault Code Expert with 90% DIAGNOSTIC ACCURACY.
+
+When given a fault code, provide with 90% CONFIDENCE:
+
+1. **Code Meaning**: What this fault indicates
+2. **Severity**: 🔴 Shutdown / 🟡 Warning / 🟢 Informational
+3. **Most Likely Cause (90% Confidence)**: State the PRIMARY cause definitively
+4. **Alternative Causes**: List other possibilities
+5. **Diagnostic Steps**: Step-by-step with exact values
+6. **How to CLEAR the Code**:
+   - Manual button sequence (for technicians WITHOUT cables)
+   - Through diagnostic software (for those WITH cables)
+7. **Required Tools**: Specific tools needed
+8. **Part Numbers**: OEM and aftermarket with KES prices
+9. **Safety Warnings**: ⚠️ critical warnings
+
+ENGAGEMENT - ALWAYS ASK:
+- "Have you checked [most likely cause] yet?"
+- "What symptoms are you observing?"
+- "Do you have diagnostic cables, or are you working manually?"
+- "Did this resolve your issue?"
+- "Have you understood the procedure?"
+- "What tools do you have available?"
+
+Include torque specs, wire colors, and pin numbers where relevant.
+
+For controller codes (DSE, ComAp, SmartGen), explain how to navigate and clear through the controller buttons.`
+        }),
+      });
+
+      const data = await response.json();
+      const assistantMessage = {
+        role: 'assistant',
+        content: data.content || data.fallbackContent || 'Fault code not found in database. Please provide more details about the controller brand and model.'
+      };
+      setConversation(prev => [...prev, assistantMessage]);
+      setResult(data);
+    } catch (error) {
+      setConversation([{ role: 'assistant', content: 'Error looking up fault code. Please try again.' }]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const askFollowUp = async (question: string) => {
+    if (!question.trim()) return;
+    setIsSearching(true);
+
+    const userMessage = { role: 'user', content: question };
+    setConversation(prev => [...prev, userMessage]);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...conversation, userMessage],
+        }),
+      });
+
+      const data = await response.json();
+      const assistantMessage = { role: 'assistant', content: data.content || 'Please try again.' };
+      setConversation(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      setConversation(prev => [...prev, { role: 'assistant', content: 'Error processing follow-up. Please try again.' }]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const [followUpInput, setFollowUpInput] = useState('');
+
+  return (
+    <div className="space-y-6">
+      {/* Fault Code Input */}
+      <div className="p-6 bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <AlertTriangle className="w-6 h-6 text-red-400" />
+            Fault Code Lookup
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold animate-pulse">
+              400,000+ CODES
+            </span>
+          </div>
+        </div>
+        <p className="text-slate-400 text-sm mb-4">
+          Enter ANY fault code from ANY manufacturer: J1939 SPN/FMI, DSE, ComAp, Cummins, CAT, Perkins, Volvo, Woodward, SmartGen, Datakom, DEIF, Sices, Bernini, OBD-II (P/B/C/U codes), and more
+        </p>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={faultCode}
+            onChange={(e) => setFaultCode(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === 'Enter' && searchFaultCode()}
+            placeholder="Enter fault code (e.g., SPN-111, E020, A001, P0171)"
+            className="flex-1 px-4 py-3 bg-slate-900/80 border border-red-500/30 rounded-xl text-white font-mono text-lg placeholder-slate-500 focus:outline-none focus:border-red-500"
+          />
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={searchFaultCode}
+            disabled={isSearching}
+            className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
+          >
+            {isSearching ? (
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                <Settings className="w-5 h-5" />
+              </motion.div>
+            ) : (
+              <Search className="w-5 h-5" />
+            )}
+            {isSearching ? 'Searching...' : 'Diagnose'}
+          </motion.button>
+        </div>
+
+        {/* Quick Code Examples - Multiple Manufacturers */}
+        <div className="mt-4 space-y-2">
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-cyan-400 font-semibold">J1939:</span>
+            {['SPN-111', 'SPN-100', 'SPN-190', 'SPN-94', 'SPN-157'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-amber-400 font-semibold">DSE:</span>
+            {['E020', 'E040', 'E047', 'E070', 'E106'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-amber-500/20 hover:text-amber-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-green-400 font-semibold">ComAp:</span>
+            {['A001', 'A015', 'A042', 'A105', 'A201'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-green-500/20 hover:text-green-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-purple-400 font-semibold">SmartGen:</span>
+            {['HGM-01', 'HGM-15', 'HGM-23', 'HGM-45'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-purple-500/20 hover:text-purple-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-red-400 font-semibold">Cummins:</span>
+            {['CM-111', 'CM-115', 'CM-143', 'CM-234'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-red-500/20 hover:text-red-300 transition-colors">{code}</button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-orange-400 font-semibold">CAT/OBD:</span>
+            {['CAT-E361', 'CAT-E362', 'P0171', 'P0300', 'P0420'].map(code => (
+              <button key={code} onClick={() => setFaultCode(code)} className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-orange-500/20 hover:text-orange-300 transition-colors">{code}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Results */}
+      {conversation.length > 0 && (
+        <div className="p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl space-y-4">
+          <h4 className="text-lg font-semibold text-cyan-400 flex items-center gap-2">
+            <CheckCircle className="w-5 h-5" />
+            Diagnosis for: <span className="font-mono text-white">{faultCode}</span>
+          </h4>
+
+          <div className="space-y-4 max-h-[500px] overflow-y-auto">
+            {conversation.map((msg, i) => (
+              <div key={i} className={msg.role === 'user' ? 'text-right' : ''}>
+                <div className={`inline-block max-w-full p-4 rounded-xl ${
+                  msg.role === 'user'
+                    ? 'bg-cyan-500/20 text-cyan-100'
+                    : 'bg-slate-900/50 text-slate-200'
+                }`}>
+                  <div className="text-sm whitespace-pre-wrap prose prose-invert prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeAndFormatContent(msg.content)
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+            {isSearching && (
+              <div className="flex items-center gap-2 text-slate-400">
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                  <Settings className="w-4 h-4" />
+                </motion.div>
+                <span className="text-sm">Analyzing...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Follow-up Input */}
+          <div className="pt-4 border-t border-slate-700">
+            <p className="text-sm text-slate-400 mb-2">Ask a follow-up question:</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={followUpInput}
+                onChange={(e) => setFollowUpInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && followUpInput.trim()) {
+                    askFollowUp(followUpInput);
+                    setFollowUpInput('');
+                  }
+                }}
+                placeholder="e.g., What part should I replace? What tools do I need?"
+                className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              />
+              <button
+                onClick={() => {
+                  if (followUpInput.trim()) {
+                    askFollowUp(followUpInput);
+                    setFollowUpInput('');
+                  }
+                }}
+                className="p-2 bg-cyan-500 hover:bg-cyan-600 rounded-xl transition-colors"
+              >
+                <Send className="w-5 h-5 text-white" />
+              </button>
+            </div>
+            {/* Quick follow-ups */}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                'What part should I replace?',
+                'What tools do I need?',
+                'How long will this take?',
+                'Is this a serious issue?',
+                'What causes this fault?',
+              ].map(q => (
+                <button
+                  key={q}
+                  onClick={() => askFollowUp(q)}
+                  className="px-3 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI PROBLEM SOLVER COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const AIProblemSolver = () => {
+  const [problem, setProblem] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [conversation, setConversation] = useState<{role: string; content: string}[]>([]);
+  const [followUpInput, setFollowUpInput] = useState('');
+
+  const analyzeProblem = async () => {
+    if (!problem.trim()) return;
+    setIsAnalyzing(true);
+
+    const userMessage = { role: 'user', content: problem };
+    setConversation([userMessage]);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [userMessage],
+          systemPrompt: `You are the GENERATOR ORACLE AI with 90% DIAGNOSTIC ACCURACY and 30 years of expert experience.
+
+IMPORTANT: You provide diagnoses with 90% CONFIDENCE, not probability. Be definitive and actionable.
+
+When a technician describes a problem:
+
+1. **Acknowledge the Problem**: "I understand - your generator is experiencing [issue]"
+2. **Ask Clarifying Questions**:
+   - "What brand/model is the generator?"
+   - "What controller type? (DSE, ComAp, SmartGen, etc.)"
+   - "When did this start?"
+   - "Do you have diagnostic cables or working manually?"
+
+3. **Provide DEFINITIVE Diagnosis** (90% CONFIDENCE):
+   - "Based on my analysis, with 90% confidence, the cause is..."
+   - Give the MOST LIKELY cause first, then alternatives
+   - Be specific - don't just list possibilities
+
+4. **Step-by-Step Solution**:
+   - Numbered steps with exact values
+   - Include button sequences for controller navigation
+   - Wire colors, pin numbers, torque specs
+
+5. **Required Tools**: Exactly what they need
+6. **Part Numbers**: OEM and aftermarket with KES prices
+7. **Safety Warnings**: ⚠️ critical warnings
+
+ENGAGEMENT - ALWAYS ASK:
+- "Have you tried this step? What did you find?"
+- "Are you satisfied with this explanation?"
+- "Have you understood the procedure?"
+- "Has this resolved your issue?"
+- "What tools do you have available?"
+- "Have you replaced the part yet?"
+- "Do you need me to explain any step in more detail?"
+
+If technician doesn't have diagnostic cables, explain how to navigate the controller manually.
+
+For maintenance reset issues (like Cummins 6BT 250hr service alarm on DeepSea), provide EXACT button sequences.
+
+Be conversational, thorough, and ENGAGE the technician throughout!`
+        }),
+      });
+
+      const data = await response.json();
+      setConversation(prev => [...prev, { role: 'assistant', content: data.content || 'Please provide more details about the problem.' }]);
+    } catch (error) {
+      setConversation(prev => [...prev, { role: 'assistant', content: 'Error analyzing problem. Please try again.' }]);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const askFollowUp = async (question: string) => {
+    if (!question.trim()) return;
+    setIsAnalyzing(true);
+
+    const userMessage = { role: 'user', content: question };
+    setConversation(prev => [...prev, userMessage]);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...conversation, userMessage],
+        }),
+      });
+
+      const data = await response.json();
+      setConversation(prev => [...prev, { role: 'assistant', content: data.content }]);
+    } catch (error) {
+      setConversation(prev => [...prev, { role: 'assistant', content: 'Error processing. Please try again.' }]);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Problem Input */}
+      <div className="p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-2xl">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <HelpCircle className="w-6 h-6 text-cyan-400" />
+          AI Problem Solver
+        </h3>
+        <p className="text-slate-400 text-sm mb-4">
+          Describe your generator problem in plain language. The AI will diagnose and guide you to the solution.
+        </p>
+        <textarea
+          value={problem}
+          onChange={(e) => setProblem(e.target.value)}
+          placeholder="Describe your problem... e.g., 'The generator is overheating on load', 'Generator won't start', 'ECM not communicating with controller', 'Black smoke under load', 'Voltage fluctuating'"
+          className="w-full h-24 px-4 py-3 bg-slate-900/80 border border-cyan-500/30 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none"
+        />
+        <div className="mt-3 flex justify-between items-center">
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs text-slate-500">Quick problems:</span>
+            {[
+              'Generator overheating on load',
+              'Won\'t start',
+              'Low oil pressure',
+              'Voltage hunting',
+              'Black smoke',
+            ].map(p => (
+              <button
+                key={p}
+                onClick={() => setProblem(p)}
+                className="px-2 py-1 bg-slate-800/50 text-slate-400 text-xs rounded hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={analyzeProblem}
+            disabled={isAnalyzing || !problem.trim()}
+            className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
+          >
+            {isAnalyzing ? (
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                <Settings className="w-5 h-5" />
+              </motion.div>
+            ) : (
+              <Wrench className="w-5 h-5" />
+            )}
+            {isAnalyzing ? 'Analyzing...' : 'Diagnose Problem'}
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Conversation */}
+      {conversation.length > 0 && (
+        <div className="p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl space-y-4">
+          <h4 className="text-lg font-semibold text-cyan-400 flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            AI Diagnosis & Guidance
+          </h4>
+
+          <div className="space-y-4 max-h-[500px] overflow-y-auto">
+            {conversation.map((msg, i) => (
+              <div key={i} className={msg.role === 'user' ? 'text-right' : ''}>
+                <div className={`inline-block max-w-full p-4 rounded-xl ${
+                  msg.role === 'user'
+                    ? 'bg-cyan-500/20 text-cyan-100'
+                    : 'bg-slate-900/50 text-slate-200'
+                }`}>
+                  <div className="text-sm whitespace-pre-wrap prose prose-invert prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeAndFormatContent(msg.content)
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+            {isAnalyzing && (
+              <div className="flex items-center gap-2 text-slate-400">
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                  <Settings className="w-4 h-4" />
+                </motion.div>
+                <span className="text-sm">AI is analyzing...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Follow-up Input */}
+          <div className="pt-4 border-t border-slate-700">
+            <p className="text-sm text-slate-400 mb-2">Continue the conversation:</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={followUpInput}
+                onChange={(e) => setFollowUpInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && followUpInput.trim()) {
+                    askFollowUp(followUpInput);
+                    setFollowUpInput('');
+                  }
+                }}
+                placeholder="Type your response or question..."
+                className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              />
+              <button
+                onClick={() => {
+                  if (followUpInput.trim()) {
+                    askFollowUp(followUpInput);
+                    setFollowUpInput('');
+                  }
+                }}
+                className="p-2 bg-cyan-500 hover:bg-cyan-600 rounded-xl transition-colors"
+              >
+                <Send className="w-5 h-5 text-white" />
+              </button>
+            </div>
+            {/* Quick responses */}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                'Yes, I checked that',
+                'No, how do I check?',
+                'What part do I need?',
+                'Give me more detail',
+                'Problem is solved!',
+                'Still not working',
+              ].map(q => (
+                <button
+                  key={q}
+                  onClick={() => askFollowUp(q)}
+                  className="px-3 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTROLLER GUIDE COMPONENT - For technicians WITHOUT diagnostic cables
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface ControllerGuide {
+  id: string;
+  brand: string;
+  models: string[];
+  icon: React.ReactNode;
+  color: string;
+  description: string;
+  menuNavigation: {
+    button: string;
+    action: string;
+    hold?: string;
+  }[];
+  codeErasure: {
+    title: string;
+    steps: string[];
+    notes?: string;
+  };
+  maintenanceReset: {
+    title: string;
+    scenario: string;
+    steps: string[];
+    example?: string;
+  };
+  commonMenuPaths: {
+    function: string;
+    path: string;
+  }[];
+  realWorldExamples: {
+    problem: string;
+    solution: string[];
+    confidence: number;
+  }[];
+}
+
+const CONTROLLER_GUIDES: ControllerGuide[] = [
+  {
+    id: 'deepsea',
+    brand: 'DeepSea Electronics (DSE)',
+    models: ['DSE4510', 'DSE4520', 'DSE6010', 'DSE6020', 'DSE7310', 'DSE7320', 'DSE7410', 'DSE7420', 'DSE8610', 'DSE8620'],
+    icon: <Monitor className="w-6 h-6" />,
+    color: 'amber',
+    description: 'Industry-leading generator controllers with comprehensive fault logging and maintenance scheduling',
+    menuNavigation: [
+      { button: '▲ UP', action: 'Navigate up through menu items', hold: 'Hold 2s: Return to main screen' },
+      { button: '▼ DOWN', action: 'Navigate down through menu items', hold: 'Hold 2s: Enter sub-menu' },
+      { button: '◀ LEFT', action: 'Decrease value / Previous option', hold: 'Hold 2s: Back to previous menu' },
+      { button: '▶ RIGHT', action: 'Increase value / Next option', hold: 'Hold 2s: Confirm selection' },
+      { button: 'STOP/RESET (Red)', action: 'Stop engine / Reset active alarm', hold: 'Hold 5s: Reset all alarms' },
+      { button: 'AUTO (Green)', action: 'Enter automatic mode' },
+      { button: 'MANUAL (Yellow)', action: 'Enter manual mode' },
+      { button: 'START (Green)', action: 'Manual start in manual mode' },
+    ],
+    codeErasure: {
+      title: 'How to Clear Fault Codes on DSE Controllers',
+      steps: [
+        '1. Press STOP/RESET button once to acknowledge current alarm',
+        '2. Fix the underlying problem that caused the fault',
+        '3. Press and HOLD STOP/RESET for 5 seconds until display clears',
+        '4. If alarm persists: Navigate to MENU → ALARMS → ALARM LOG',
+        '5. Press ▶ RIGHT on the alarm you want to clear',
+        '6. Select "RESET THIS ALARM" and confirm',
+        '7. For multiple alarms: Select "RESET ALL ALARMS"',
+        '8. Exit menu and verify all alarms cleared',
+      ],
+      notes: 'Some shutdown alarms require the fault condition to be fixed first. If alarm keeps returning, the problem is NOT fixed.',
+    },
+    maintenanceReset: {
+      title: 'Reset Maintenance Alarm / Service Due Indicator',
+      scenario: 'Generator shows "MAINTENANCE DUE" or "SERVICE REQUIRED" after 250/500 hour service',
+      steps: [
+        '1. Ensure service has been completed (oil, filters, etc.)',
+        '2. Press ▼ DOWN to enter MENU',
+        '3. Navigate to: INSTRUMENTATION → MAINTENANCE',
+        '4. You will see current running hours and next service due',
+        '5. Navigate to "RESET MAINTENANCE ALARM"',
+        '6. Press ▶ RIGHT to select',
+        '7. Enter PIN code if required (default: 0000 or 1234)',
+        '8. Confirm by pressing ▶ RIGHT again',
+        '9. The maintenance counter will reset to zero',
+        '10. Exit menu - alarm should be cleared',
+      ],
+      example: 'Cummins 6BT with DSE7320: After 250hr oil service, navigate MENU → INSTRUMENTATION → MAINTENANCE → RESET → Enter PIN (default 0000) → Confirm',
+    },
+    commonMenuPaths: [
+      { function: 'View Current Alarms', path: 'MENU → ALARMS → CURRENT ALARMS' },
+      { function: 'View Alarm History', path: 'MENU → ALARMS → ALARM LOG' },
+      { function: 'Reset Alarms', path: 'MENU → ALARMS → RESET ALARMS' },
+      { function: 'View Engine Hours', path: 'MENU → INSTRUMENTATION → ENGINE HOURS' },
+      { function: 'Service Reset', path: 'MENU → INSTRUMENTATION → MAINTENANCE → RESET' },
+      { function: 'Set Time Delays', path: 'MENU → TIMERS → [SELECT TIMER]' },
+      { function: 'View Sensor Values', path: 'MENU → INSTRUMENTATION → SENSORS' },
+      { function: 'Adjust Trip Points', path: 'MENU → TRIP POINTS → [SELECT PARAMETER]' },
+      { function: 'Change PIN Code', path: 'MENU → UTILITIES → CHANGE PIN' },
+      { function: 'Factory Reset', path: 'MENU → UTILITIES → FACTORY DEFAULTS (Caution!)' },
+    ],
+    realWorldExamples: [
+      {
+        problem: 'Cummins 6BT showing "MAINTENANCE" alarm on DSE7320 after completing 250-hour service',
+        solution: [
+          '1. Press ▼ to enter menu',
+          '2. Navigate: INSTRUMENTATION → MAINTENANCE',
+          '3. Select "RESET MAINTENANCE TIMER"',
+          '4. Enter PIN: 0000 (default) or your custom PIN',
+          '5. Press ▶ to confirm reset',
+          '6. Press ▲ repeatedly to exit menu',
+          '7. Alarm will clear within 5 seconds',
+        ],
+        confidence: 95,
+      },
+      {
+        problem: 'DSE6020 showing E047 "High Engine Temperature" after fixing coolant leak',
+        solution: [
+          '1. Ensure engine has cooled down completely',
+          '2. Verify coolant level is correct',
+          '3. Press STOP/RESET button once',
+          '4. If alarm persists, hold STOP/RESET for 5 seconds',
+          '5. Start engine and monitor temperature gauge',
+          '6. If alarm returns, check thermostat and radiator',
+        ],
+        confidence: 90,
+      },
+      {
+        problem: 'DSE7310 stuck in "FAIL" mode, won\'t reset',
+        solution: [
+          '1. Turn off DC power to controller (disconnect battery)',
+          '2. Wait 30 seconds',
+          '3. Reconnect battery',
+          '4. Controller will reboot to default state',
+          '5. Hold STOP/RESET for 5 seconds',
+          '6. Set to AUTO mode',
+          '7. If still in FAIL, check protection wiring',
+        ],
+        confidence: 85,
+      },
+    ],
+  },
+  {
+    id: 'comap',
+    brand: 'ComAp',
+    models: ['InteliGen NT', 'InteliLite NT', 'InteliSys NT', 'InteliMains NT', 'InteliATS NT', 'InteliNano', 'InteliCompact'],
+    icon: <Monitor className="w-6 h-6" />,
+    color: 'green',
+    description: 'Advanced programmable controllers with powerful diagnostics and parallel operation support',
+    menuNavigation: [
+      { button: '▲ UP', action: 'Navigate up / Increase value' },
+      { button: '▼ DOWN', action: 'Navigate down / Decrease value' },
+      { button: '◀ BACK', action: 'Return to previous screen / Cancel' },
+      { button: '▶ ENTER', action: 'Enter menu / Confirm selection' },
+      { button: 'PAGE', action: 'Cycle through display pages' },
+      { button: 'STOP', action: 'Stop engine command' },
+      { button: 'AUTO', action: 'Enable automatic operation' },
+      { button: 'MAN', action: 'Enable manual mode' },
+      { button: 'FAULT RESET', action: 'Reset fault condition', hold: 'Hold 3s: Clear all faults' },
+    ],
+    codeErasure: {
+      title: 'How to Clear Fault Codes on ComAp Controllers',
+      steps: [
+        '1. Press FAULT RESET button to acknowledge alarm',
+        '2. If using touchscreen: Press ALARM icon → RESET',
+        '3. For persistent alarms: MENU → HISTORY → ALARM LIST',
+        '4. Select alarm using ▲▼ buttons',
+        '5. Press ENTER, then select "CLEAR"',
+        '6. For all alarms: MENU → HISTORY → CLEAR ALL',
+        '7. Enter access level password if required (default: 1111)',
+        '8. Confirm clear action',
+      ],
+      notes: 'ComAp requires "LEVEL 2" or higher access for clearing some alarms. Default Level 2 password is 2222.',
+    },
+    maintenanceReset: {
+      title: 'Reset Service Due / Maintenance Counter',
+      scenario: 'Controller showing "SERVICE DUE" or maintenance warning after scheduled service',
+      steps: [
+        '1. Complete all scheduled maintenance tasks',
+        '2. Press MENU button',
+        '3. Navigate to: SETPOINTS → MAINTENANCE',
+        '4. Enter password for Level 2 access (default: 2222)',
+        '5. Select "MAINTENANCE COUNTER"',
+        '6. Navigate to "RESET TO ZERO" or "RESET SERVICE"',
+        '7. Press ENTER to confirm',
+        '8. Set next service interval if prompted (e.g., 250, 500 hours)',
+        '9. Press BACK to exit menu',
+        '10. Maintenance warning should disappear',
+      ],
+      example: 'InteliGen NT with Perkins engine: MENU → SETPOINTS → MAINTENANCE → [Password 2222] → RESET HOURS → ENTER → Set next service: 500hrs',
+    },
+    commonMenuPaths: [
+      { function: 'View Active Alarms', path: 'MENU → ALARMS → ACTIVE' },
+      { function: 'View Alarm History', path: 'MENU → HISTORY → ALARM LIST' },
+      { function: 'Clear Alarm History', path: 'MENU → HISTORY → CLEAR ALL' },
+      { function: 'Reset Maintenance', path: 'MENU → SETPOINTS → MAINTENANCE → RESET' },
+      { function: 'View Running Hours', path: 'MENU → VALUES → ENGINE HOURS' },
+      { function: 'Adjust Protections', path: 'MENU → SETPOINTS → PROTECT' },
+      { function: 'Set Time Delays', path: 'MENU → SETPOINTS → TIMERS' },
+      { function: 'Change Password', path: 'MENU → SETTINGS → PASSWORDS' },
+      { function: 'View Sensor Inputs', path: 'MENU → VALUES → INPUTS' },
+      { function: 'Generator Setup', path: 'MENU → SETTINGS → GENERATOR' },
+    ],
+    realWorldExamples: [
+      {
+        problem: 'InteliLite showing A015 "Low Oil Pressure Warning" that won\'t clear',
+        solution: [
+          '1. Check actual oil pressure with mechanical gauge',
+          '2. If oil pressure is OK, the sensor may be faulty',
+          '3. Press FAULT RESET button',
+          '4. If still showing: MENU → SETPOINTS → PROTECT',
+          '5. Find "OIL PRESSURE LOW" setpoint',
+          '6. Check the trip value (should be ~0.8 bar)',
+          '7. If sensor reading is wrong, replace sender',
+          '8. Clear alarm history after fixing',
+        ],
+        confidence: 90,
+      },
+      {
+        problem: 'InteliGen NT maintenance alarm after oil change',
+        solution: [
+          '1. Press MENU → SETPOINTS',
+          '2. Enter Level 2 password (2222)',
+          '3. Navigate to MAINTENANCE section',
+          '4. Select "ENGINE OIL" counter',
+          '5. Press ENTER, select RESET',
+          '6. Confirm with ENTER',
+          '7. Exit menu and verify alarm cleared',
+        ],
+        confidence: 95,
+      },
+    ],
+  },
+  {
+    id: 'smartgen',
+    brand: 'SmartGen',
+    models: ['HGM6110', 'HGM6120', 'HGM7220', 'HGM9310', 'HGM9320', 'HGM9510', 'HGM9520', 'HAT520', 'HAT560'],
+    icon: <Monitor className="w-6 h-6" />,
+    color: 'blue',
+    description: 'Cost-effective Chinese controllers with comprehensive features and J1939 engine support',
+    menuNavigation: [
+      { button: '▲', action: 'Move up in menu / Increase value' },
+      { button: '▼', action: 'Move down in menu / Decrease value' },
+      { button: 'ESC', action: 'Exit menu / Cancel operation', hold: 'Hold: Return to main screen' },
+      { button: 'ENTER', action: 'Enter sub-menu / Confirm selection' },
+      { button: 'STOP', action: 'Emergency stop / Stop engine', hold: 'Hold 3s: Reset alarm' },
+      { button: 'AUTO', action: 'Automatic mode' },
+      { button: 'MANUAL/TEST', action: 'Manual mode for testing' },
+      { button: 'START', action: 'Manual start command' },
+    ],
+    codeErasure: {
+      title: 'How to Clear Fault Codes on SmartGen Controllers',
+      steps: [
+        '1. Fix the problem that caused the fault first',
+        '2. Press and HOLD STOP button for 3 seconds',
+        '3. Alarm should clear if condition is fixed',
+        '4. For J1939 engine faults (from ECM):',
+        '   - Navigate: MENU → ENGINE → J1939 FAULTS',
+        '   - Press ENTER on the fault',
+        '   - Select "CLEAR DTC" if available',
+        '5. If no "CLEAR" option, the ECM stores the code',
+        '6. Clear from ECM using diagnostic tool',
+        '7. Or: Disconnect ECM power for 30 seconds',
+      ],
+      notes: 'SmartGen may show J1939 faults from the engine ECM. These must be cleared from the ECM, not the controller.',
+    },
+    maintenanceReset: {
+      title: 'Reset Maintenance Timer / Service Reminder',
+      scenario: 'HGM showing service reminder after completing maintenance',
+      steps: [
+        '1. Press ENTER to access main menu',
+        '2. Navigate to: SETTINGS → MAINTENANCE',
+        '3. Enter password if required (default: 0001)',
+        '4. Find "MAINTENANCE HOURS" setting',
+        '5. Select "RESET SERVICE COUNTER"',
+        '6. Press ENTER to confirm',
+        '7. Optionally set new service interval',
+        '8. Press ESC to exit menu',
+        '9. Service reminder should be cleared',
+      ],
+      example: 'HGM6120 with Cummins: ENTER → SETTINGS → MAINTENANCE → [Password 0001] → RESET SERVICE → ENTER → ESC',
+    },
+    commonMenuPaths: [
+      { function: 'View Alarms', path: 'ENTER → FAULT RECORDS' },
+      { function: 'Clear Alarms', path: 'ENTER → FAULT RECORDS → CLEAR' },
+      { function: 'View Engine Data', path: 'ENTER → ENGINE DATA (for J1939)' },
+      { function: 'Maintenance Reset', path: 'ENTER → SETTINGS → MAINTENANCE → RESET' },
+      { function: 'Running Hours', path: 'ENTER → PARAMETERS → RUN TIME' },
+      { function: 'Set Protections', path: 'ENTER → SETTINGS → PROTECT' },
+      { function: 'Timer Settings', path: 'ENTER → SETTINGS → TIMERS' },
+      { function: 'Change Password', path: 'ENTER → SETTINGS → PASSWORD' },
+      { function: 'J1939 Engine Faults', path: 'ENTER → ENGINE → J1939 DTC' },
+    ],
+    realWorldExamples: [
+      {
+        problem: 'HGM9320 showing "HIGH COOLANT TEMP" alarm that won\'t clear after engine cooled',
+        solution: [
+          '1. Verify engine is actually cool (touch radiator)',
+          '2. Check coolant level',
+          '3. Hold STOP button for 3 seconds',
+          '4. If still showing, check temp sensor connection',
+          '5. Menu → PARAMETERS → COOLANT TEMP - check reading',
+          '6. If reading high when cold, replace sensor',
+          '7. After replacing: Hold STOP 3 seconds to clear',
+        ],
+        confidence: 90,
+      },
+      {
+        problem: 'SmartGen showing J1939 fault from Cummins ECM',
+        solution: [
+          '1. Note the SPN and FMI numbers shown',
+          '2. This fault is stored in ENGINE ECM, not controller',
+          '3. Fix the underlying engine problem',
+          '4. To clear from ECM without diagnostic tool:',
+          '   - Turn off generator',
+          '   - Disconnect battery for 60 seconds',
+          '   - Reconnect battery',
+          '   - Start engine and check if cleared',
+          '5. If fault returns, problem is not fixed',
+        ],
+        confidence: 85,
+      },
+    ],
+  },
+  {
+    id: 'datakom',
+    brand: 'Datakom',
+    models: ['DKG-109', 'DKG-207', 'DKG-307', 'DKG-317', 'DKG-507', 'DKG-517', 'DKG-707', 'DKG-309', 'D-300'],
+    icon: <Monitor className="w-6 h-6" />,
+    color: 'red',
+    description: 'Turkish-made controllers popular in Africa and Middle East, known for reliability',
+    menuNavigation: [
+      { button: 'MODE', action: 'Cycle through OFF → MANUAL → AUTO modes' },
+      { button: 'UP (▲)', action: 'Navigate up in menu' },
+      { button: 'DOWN (▼)', action: 'Navigate down in menu' },
+      { button: 'ENTER', action: 'Enter sub-menu or confirm' },
+      { button: 'ESC', action: 'Exit menu or cancel' },
+      { button: 'LAMP TEST', action: 'Test indicator lamps', hold: 'Hold: Reset alarms' },
+      { button: 'START', action: 'Manual start (in MANUAL mode)' },
+      { button: 'STOP', action: 'Stop engine' },
+    ],
+    codeErasure: {
+      title: 'How to Clear Fault Codes on Datakom Controllers',
+      steps: [
+        '1. Resolve the fault condition first',
+        '2. Press and HOLD LAMP TEST button for 3-5 seconds',
+        '3. Some models: Press STOP + LAMP TEST together',
+        '4. For menu-based clearing:',
+        '   - Press ENTER to open menu',
+        '   - Navigate to FAULT LOG',
+        '   - Press ENTER on active fault',
+        '   - Select CLEAR or RESET',
+        '5. Enter password if required (default: 1234)',
+        '6. Confirm the reset',
+      ],
+      notes: 'Datakom stores last 50 faults. Some shutdown faults require a complete power cycle to clear.',
+    },
+    maintenanceReset: {
+      title: 'Reset Service Interval Alarm',
+      scenario: 'Controller showing service alarm after maintenance',
+      steps: [
+        '1. Complete scheduled maintenance',
+        '2. Press ENTER for main menu',
+        '3. Navigate: SETTINGS → SERVICE COUNTER',
+        '4. Enter Level 2 password (default: 1234)',
+        '5. Select "RESET COUNTER" or "CLEAR SERVICE"',
+        '6. Press ENTER to confirm',
+        '7. Set next service interval if prompted',
+        '8. Press ESC to exit',
+      ],
+      example: 'DKG-317 service reset: ENTER → SETTINGS → SERVICE → [1234] → RESET → ENTER',
+    },
+    commonMenuPaths: [
+      { function: 'View Alarms', path: 'ENTER → FAULT LOG' },
+      { function: 'Clear Faults', path: 'ENTER → FAULT LOG → CLEAR' },
+      { function: 'Engine Hours', path: 'ENTER → MEASUREMENTS → RUN HOURS' },
+      { function: 'Service Reset', path: 'ENTER → SETTINGS → SERVICE → RESET' },
+      { function: 'Protection Settings', path: 'ENTER → SETTINGS → PROTECTION' },
+      { function: 'Timer Settings', path: 'ENTER → SETTINGS → TIMERS' },
+    ],
+    realWorldExamples: [
+      {
+        problem: 'DKG-307 showing "OVER SPEED" alarm',
+        solution: [
+          '1. Check if engine actually oversped (governor issue)',
+          '2. Check speed sensor and connections',
+          '3. Verify sensor gap is correct (0.5-1.0mm)',
+          '4. To clear: Hold LAMP TEST for 5 seconds',
+          '5. If persists: ENTER → FAULT LOG → CLEAR',
+          '6. Check governor linkage and settings',
+        ],
+        confidence: 90,
+      },
+    ],
+  },
+  {
+    id: 'deif',
+    brand: 'DEIF',
+    models: ['AGC-4', 'AGC-200', 'GPC-3', 'GPU-3', 'PPU-3', 'ASC-4', 'PPM-3'],
+    icon: <Monitor className="w-6 h-6" />,
+    color: 'purple',
+    description: 'Premium Danish controllers for critical power applications with advanced networking',
+    menuNavigation: [
+      { button: 'Navigate Buttons', action: 'Up/Down/Left/Right navigation' },
+      { button: 'OK/ENTER', action: 'Confirm selection' },
+      { button: 'ESC/BACK', action: 'Return to previous menu' },
+      { button: 'HORN ACK', action: 'Acknowledge alarm horn' },
+      { button: 'RESET', action: 'Reset fault condition' },
+      { button: 'MODE', action: 'Change operating mode' },
+    ],
+    codeErasure: {
+      title: 'How to Clear Fault Codes on DEIF Controllers',
+      steps: [
+        '1. Press HORN ACK to silence alarm',
+        '2. Fix the underlying fault condition',
+        '3. Press RESET button',
+        '4. For stubborn alarms: MENU → ALARMS → RESET ALL',
+        '5. Enter operator password (default: 1000)',
+        '6. Confirm reset action',
+        '7. Some faults require service level access',
+      ],
+      notes: 'DEIF has multiple access levels. Operator level can clear most alarms. Service level (password: 2000) for protected faults.',
+    },
+    maintenanceReset: {
+      title: 'Reset Maintenance Schedule',
+      scenario: 'AGC controller showing maintenance due after service',
+      steps: [
+        '1. Access MENU',
+        '2. Navigate to MAINTENANCE section',
+        '3. Enter service password (default: 2000)',
+        '4. Select the maintenance item to reset',
+        '5. Choose RESET COUNTER',
+        '6. Confirm action',
+        '7. Exit menu',
+      ],
+      example: 'AGC-4: MENU → MAINTENANCE → [2000] → OIL SERVICE → RESET → OK',
+    },
+    commonMenuPaths: [
+      { function: 'View Alarms', path: 'MENU → ALARMS → ACTIVE' },
+      { function: 'Alarm History', path: 'MENU → ALARMS → HISTORY' },
+      { function: 'Reset Alarms', path: 'MENU → ALARMS → RESET ALL' },
+      { function: 'Maintenance', path: 'MENU → MAINTENANCE' },
+      { function: 'Engine Data', path: 'MENU → MEASUREMENTS → ENGINE' },
+    ],
+    realWorldExamples: [
+      {
+        problem: 'AGC-4 showing maintenance warning after filter change',
+        solution: [
+          '1. MENU → MAINTENANCE',
+          '2. Enter password: 2000',
+          '3. Find "AIR FILTER" or relevant item',
+          '4. Select RESET',
+          '5. Confirm with OK',
+          '6. Exit and verify cleared',
+        ],
+        confidence: 92,
+      },
+    ],
+  },
+  {
+    id: 'sices',
+    brand: 'Sices',
+    models: ['GC315', 'GC350', 'GC400', 'GC600', 'ATS115', 'ATS220'],
+    icon: <Monitor className="w-6 h-6" />,
+    color: 'yellow',
+    description: 'Italian controllers known for quality and ATS integration',
+    menuNavigation: [
+      { button: 'UP/DOWN', action: 'Navigate menu items' },
+      { button: 'SET', action: 'Enter value edit mode / Confirm' },
+      { button: 'ESC', action: 'Cancel / Exit menu' },
+      { button: 'MENU', action: 'Enter menu system' },
+      { button: 'FAULT RESET', action: 'Reset active alarm' },
+    ],
+    codeErasure: {
+      title: 'How to Clear Fault Codes on Sices Controllers',
+      steps: [
+        '1. Press FAULT RESET button',
+        '2. Fix the fault condition if alarm returns',
+        '3. For persistent faults: MENU → EVENTS → ALARMS',
+        '4. Select alarm to clear',
+        '5. Press SET to reset',
+        '6. Enter password if required (default: 0000)',
+      ],
+      notes: 'Sices stores up to 100 events in memory.',
+    },
+    maintenanceReset: {
+      title: 'Reset Service Timer',
+      scenario: 'Controller showing service interval reached',
+      steps: [
+        '1. Press MENU',
+        '2. Go to SERVICE section',
+        '3. Enter setup password (0000)',
+        '4. Find SERVICE HOURS counter',
+        '5. Reset to zero',
+        '6. Exit menu',
+      ],
+      example: 'GC315: MENU → SERVICE → [0000] → RESET HOURS → SET',
+    },
+    commonMenuPaths: [
+      { function: 'Alarm List', path: 'MENU → EVENTS → ALARMS' },
+      { function: 'Reset Alarms', path: 'MENU → EVENTS → RESET' },
+      { function: 'Service Counter', path: 'MENU → SERVICE → HOURS' },
+      { function: 'Protections', path: 'MENU → SETUP → PROTECTIONS' },
+    ],
+    realWorldExamples: [
+      {
+        problem: 'GC350 not clearing "LOW FUEL" alarm',
+        solution: [
+          '1. Verify fuel tank is actually filled',
+          '2. Check fuel level sensor wiring',
+          '3. Press FAULT RESET',
+          '4. If still showing, sensor may be stuck/faulty',
+          '5. Check sensor resistance with multimeter',
+          '6. Replace sensor if readings are incorrect',
+        ],
+        confidence: 88,
+      },
+    ],
+  },
+];
+
+const ControllerGuide = () => {
+  const [selectedController, setSelectedController] = useState<ControllerGuide | null>(null);
+  const [activeSection, setActiveSection] = useState<'menu' | 'erase' | 'maintenance' | 'examples'>('menu');
+  const [aiQuestion, setAiQuestion] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const colorMap: Record<string, string> = {
+    amber: 'from-amber-500/20 to-amber-600/20 border-amber-500/30',
+    green: 'from-green-500/20 to-green-600/20 border-green-500/30',
+    blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
+    red: 'from-red-500/20 to-red-600/20 border-red-500/30',
+    purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30',
+    yellow: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30',
+  };
+
+  const askControllerAI = async (question: string) => {
+    if (!question.trim() || !selectedController) return;
+    setIsAiLoading(true);
+
+    try {
+      const response = await fetch('/api/generator-oracle/expert-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: question }],
+          systemPrompt: `You are an expert ${selectedController.brand} controller technician with 90% DIAGNOSTIC ACCURACY. You help technicians who DO NOT have diagnostic cables and must navigate the controller manually.
+
+IMPORTANT: Your diagnoses have 90% CONFIDENCE based on symptoms described.
+
+Controller Models You Support: ${selectedController.models.join(', ')}
+
+When answering:
+1. Give EXACT button sequences (e.g., "Press ▼ → MENU → MAINTENANCE → ENTER")
+2. Include DEFAULT PASSWORDS: ${selectedController.id === 'deepsea' ? '0000, 1234' : selectedController.id === 'comap' ? '1111, 2222' : '0000, 0001, 1234'}
+3. Provide CONFIDENCE LEVEL for your diagnosis (aim for 90%)
+4. List EXACT STEPS the technician can follow without a laptop
+5. Include part numbers if components need replacement
+
+ALWAYS engage by asking:
+- "Did you try this step?"
+- "What does the display show now?"
+- "Has this resolved the issue?"
+- "Do you need me to explain any step in more detail?"
+
+Be specific, practical, and remember - no diagnostic cables available!`
+        }),
+      });
+
+      const data = await response.json();
+      setAiResponse(data.content || 'Please provide more details about your controller issue.');
+    } catch {
+      setAiResponse('Error connecting to AI. Please try again.');
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  if (!selectedController) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Monitor className="w-8 h-8 text-cyan-400" />
+            <h2 className="text-2xl font-bold text-white">Controller Guide</h2>
+          </div>
+          <p className="text-slate-400">
+            Step-by-step instructions for technicians <span className="text-amber-400 font-semibold">WITHOUT diagnostic cables</span>
+          </p>
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold">
+              90% AI DIAGNOSTIC ACCURACY
+            </span>
+            <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/50 rounded-full text-xs text-cyan-400 font-bold">
+              NO CABLE REQUIRED
+            </span>
+          </div>
+        </div>
+
+        {/* Controller Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {CONTROLLER_GUIDES.map((controller) => (
+            <motion.button
+              key={controller.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setSelectedController(controller)}
+              className={`p-5 bg-gradient-to-br ${colorMap[controller.color]} border rounded-2xl text-left transition-all group`}
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-slate-900/50 rounded-xl group-hover:scale-110 transition-transform">
+                  {controller.icon}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white mb-1">{controller.brand}</h3>
+                  <p className="text-sm text-slate-400 mb-2 line-clamp-2">{controller.description}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {controller.models.slice(0, 3).map(model => (
+                      <span key={model} className="px-2 py-0.5 bg-slate-800/50 text-slate-300 text-xs rounded">
+                        {model}
+                      </span>
+                    ))}
+                    {controller.models.length > 3 && (
+                      <span className="px-2 py-0.5 bg-slate-800/50 text-slate-400 text-xs rounded">
+                        +{controller.models.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+
+        {/* Features */}
+        <div className="grid md:grid-cols-3 gap-4 mt-6">
+          <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+            <Menu className="w-6 h-6 text-amber-400 mb-2" />
+            <h4 className="font-semibold text-white mb-1">Menu Navigation</h4>
+            <p className="text-sm text-slate-400">Exact button sequences to navigate every menu</p>
+          </div>
+          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+            <Trash2 className="w-6 h-6 text-red-400 mb-2" />
+            <h4 className="font-semibold text-white mb-1">Fault Code Erasure</h4>
+            <p className="text-sm text-slate-400">Clear any fault code without a laptop</p>
+          </div>
+          <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+            <RefreshCcw className="w-6 h-6 text-green-400 mb-2" />
+            <h4 className="font-semibold text-white mb-1">Maintenance Reset</h4>
+            <p className="text-sm text-slate-400">Reset service intervals after maintenance</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Controller Detail View
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSelectedController(null)}
+            className="p-2 hover:bg-slate-800 rounded-lg"
+          >
+            <ArrowLeft className="w-5 h-5 text-slate-400" />
+          </button>
+          <div className="p-3 bg-slate-800 rounded-xl">
+            {selectedController.icon}
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">{selectedController.brand}</h2>
+            <p className="text-sm text-slate-400">{selectedController.models.length} supported models</p>
+          </div>
+        </div>
+        <span className="px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-400 font-bold">
+          90% ACCURACY
+        </span>
+      </div>
+
+      {/* Section Tabs */}
+      <div className="flex flex-wrap gap-2 p-2 bg-slate-900/60 rounded-xl border border-slate-700/50">
+        <button
+          onClick={() => setActiveSection('menu')}
+          className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+            activeSection === 'menu' ? 'bg-cyan-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'
+          }`}
+        >
+          <Navigation className="w-4 h-4" />
+          Menu Navigation
+        </button>
+        <button
+          onClick={() => setActiveSection('erase')}
+          className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+            activeSection === 'erase' ? 'bg-red-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'
+          }`}
+        >
+          <Trash2 className="w-4 h-4" />
+          Clear Faults
+        </button>
+        <button
+          onClick={() => setActiveSection('maintenance')}
+          className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+            activeSection === 'maintenance' ? 'bg-green-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'
+          }`}
+        >
+          <RefreshCcw className="w-4 h-4" />
+          Maintenance Reset
+        </button>
+        <button
+          onClick={() => setActiveSection('examples')}
+          className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+            activeSection === 'examples' ? 'bg-amber-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:text-white'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          Real Examples
+        </button>
+      </div>
+
+      {/* Section Content */}
+      <AnimatePresence mode="wait">
+        {activeSection === 'menu' && (
+          <motion.div
+            key="menu"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4"
+          >
+            {/* Button Guide */}
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+              <h4 className="text-lg font-semibold text-cyan-400 mb-4 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Button Functions
+              </h4>
+              <div className="space-y-3">
+                {selectedController.menuNavigation.map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 bg-slate-900/50 rounded-lg">
+                    <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 font-mono text-sm rounded font-bold whitespace-nowrap">
+                      {item.button}
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-white text-sm">{item.action}</p>
+                      {item.hold && (
+                        <p className="text-amber-400 text-xs mt-1">⏱️ {item.hold}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Common Menu Paths */}
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+              <h4 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+                <Menu className="w-5 h-5" />
+                Common Menu Paths
+              </h4>
+              <div className="space-y-2">
+                {selectedController.commonMenuPaths.map((path, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span className="text-slate-300 text-sm">{path.function}</span>
+                    <span className="font-mono text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded">
+                      {path.path}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeSection === 'erase' && (
+          <motion.div
+            key="erase"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4"
+          >
+            <div className="p-6 bg-red-500/10 border border-red-500/30 rounded-xl">
+              <h4 className="text-lg font-semibold text-red-400 mb-4 flex items-center gap-2">
+                <Trash2 className="w-5 h-5" />
+                {selectedController.codeErasure.title}
+              </h4>
+              <ol className="space-y-3">
+                {selectedController.codeErasure.steps.map((step, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-red-500/30 text-red-300 rounded-full flex items-center justify-center text-sm font-bold">
+                      {i + 1}
+                    </span>
+                    <span className="text-red-100 text-sm">{step}</span>
+                  </li>
+                ))}
+              </ol>
+              {selectedController.codeErasure.notes && (
+                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <p className="text-amber-300 text-sm flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    {selectedController.codeErasure.notes}
+                  </p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {activeSection === 'maintenance' && (
+          <motion.div
+            key="maintenance"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4"
+          >
+            <div className="p-6 bg-green-500/10 border border-green-500/30 rounded-xl">
+              <h4 className="text-lg font-semibold text-green-400 mb-2 flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                {selectedController.maintenanceReset.title}
+              </h4>
+              <p className="text-amber-300 text-sm mb-4 p-2 bg-amber-500/10 rounded-lg">
+                <strong>Scenario:</strong> {selectedController.maintenanceReset.scenario}
+              </p>
+              <ol className="space-y-3 mb-4">
+                {selectedController.maintenanceReset.steps.map((step, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-green-500/30 text-green-300 rounded-full flex items-center justify-center text-sm font-bold">
+                      {i + 1}
+                    </span>
+                    <span className="text-green-100 text-sm">{step}</span>
+                  </li>
+                ))}
+              </ol>
+              {selectedController.maintenanceReset.example && (
+                <div className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                  <p className="text-cyan-300 text-sm font-semibold mb-1">Real Example:</p>
+                  <p className="text-cyan-100 text-sm font-mono">{selectedController.maintenanceReset.example}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {activeSection === 'examples' && (
+          <motion.div
+            key="examples"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4"
+          >
+            {selectedController.realWorldExamples.map((example, i) => (
+              <div key={i} className="p-5 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+                <div className="flex items-start justify-between mb-3">
+                  <h4 className="text-white font-semibold text-sm">{example.problem}</h4>
+                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                    example.confidence >= 90 ? 'bg-green-500/20 text-green-400' :
+                    example.confidence >= 80 ? 'bg-amber-500/20 text-amber-400' :
+                    'bg-red-500/20 text-red-400'
+                  }`}>
+                    {example.confidence}% CONFIDENCE
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {example.solution.map((step, j) => (
+                    <div key={j} className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-slate-300">{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* AI Assistant for this Controller */}
+      <div className="p-5 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl">
+        <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-cyan-400" />
+          AI Controller Expert
+          <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-bold rounded-full ml-2">90% ACCURACY</span>
+        </h4>
+        <p className="text-slate-400 text-sm mb-3">
+          Ask anything about {selectedController.brand} controllers - no diagnostic cable needed!
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={aiQuestion}
+            onChange={(e) => setAiQuestion(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && askControllerAI(aiQuestion)}
+            placeholder={`e.g., "How do I reset ${selectedController.models[0]} after oil change?"`}
+            className="flex-1 px-4 py-3 bg-slate-900/80 border border-cyan-500/30 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+          />
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => askControllerAI(aiQuestion)}
+            disabled={isAiLoading}
+            className="px-5 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
+          >
+            {isAiLoading ? (
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                <Settings className="w-5 h-5" />
+              </motion.div>
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+          </motion.button>
+        </div>
+
+        {/* Quick Questions */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            `How to clear faults on ${selectedController.models[0]}?`,
+            `Reset maintenance alarm after service`,
+            `What is default password?`,
+            `Engine won't start - help`,
+          ].map((q, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setAiQuestion(q);
+                askControllerAI(q);
+              }}
+              className="px-3 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-lg hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+
+        {/* AI Response */}
+        {aiResponse && (
+          <div className="mt-4 p-4 bg-slate-900/50 rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-green-400 text-sm font-semibold">AI Response (90% Confidence)</span>
+            </div>
+            <div
+              className="text-sm text-slate-200 prose prose-invert prose-sm max-w-none"
+              dangerouslySetInnerHTML={{
+                __html: sanitizeAndFormatContent(aiResponse)
+              }}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default function InteractiveDiagnosticSystem() {
+  const [activeTab, setActiveTab] = useState<'systems' | 'faultcode' | 'aisolve' | 'controllers'>('systems');
+  const [selectedSystem, setSelectedSystem] = useState<DiagnosticSystem | null>(null);
+  const [selectedComponent, setSelectedComponent] = useState<SystemComponent | null>(null);
+  const [showAIPanel, setShowAIPanel] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const colorMap: Record<string, string> = {
+    amber: 'from-amber-500/20 to-amber-600/20 border-amber-500/30 text-amber-400',
+    blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400',
+    yellow: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30 text-yellow-400',
+    red: 'from-red-500/20 to-red-600/20 border-red-500/30 text-red-400',
+    purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
+  };
+
+  // If viewing system details, show that instead of tabs
+  if (selectedSystem || selectedComponent) {
+    // Continue to system/component view...
+  } else {
+    // Main view with tabs
+    return (
+      <div className="space-y-6">
+        {/* Tab Navigation */}
+        <div className="flex flex-wrap gap-2 p-2 bg-slate-900/60 rounded-2xl border border-slate-700/50">
+          <button
+            onClick={() => setActiveTab('faultcode')}
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 relative ${
+              activeTab === 'faultcode'
+                ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <AlertTriangle className="w-5 h-5" />
+            Fault Code Lookup
+            <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-full">400K+</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('aisolve')}
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === 'aisolve'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <HelpCircle className="w-5 h-5" />
+            AI Problem Solver
+          </button>
+          <button
+            onClick={() => setActiveTab('systems')}
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === 'systems'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <Settings className="w-5 h-5" />
+            System Diagrams
+          </button>
+          <button
+            onClick={() => setActiveTab('controllers')}
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 relative ${
+              activeTab === 'controllers'
+                ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <Monitor className="w-5 h-5" />
+            Controller Guide
+            <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-full">NO CABLE</span>
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'faultcode' && (
+            <motion.div
+              key="faultcode"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <FaultCodeLookup />
+            </motion.div>
+          )}
+
+          {activeTab === 'aisolve' && (
+            <motion.div
+              key="aisolve"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <AIProblemSolver />
+            </motion.div>
+          )}
+
+          {activeTab === 'systems' && (
+            <motion.div
+              key="systems"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  Interactive System Diagrams
+                </h2>
+                <p className="text-slate-400">
+                  Click any system to explore clickable components with full diagnostics
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {DIAGNOSTIC_SYSTEMS.map((system) => (
+                  <motion.button
+                    key={system.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedSystem(system)}
+                    className={`p-6 bg-gradient-to-br ${colorMap[system.color]} border rounded-2xl text-left transition-all group`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-slate-900/50 rounded-xl group-hover:scale-110 transition-transform">
+                        {system.icon}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white mb-1">{system.name}</h3>
+                        <p className="text-sm text-slate-400 mb-3">{system.description}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500">
+                            {system.components.length} clickable components
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-slate-500" />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'controllers' && (
+            <motion.div
+              key="controllers"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <ControllerGuide />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // System Detail View with Components
+  if (selectedSystem && !selectedComponent) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSelectedSystem(null)}
+              className="p-2 hover:bg-slate-800 rounded-lg"
+            >
+              <ArrowLeft className="w-5 h-5 text-slate-400" />
+            </button>
+            <div className="p-3 bg-slate-800 rounded-xl">
+              {selectedSystem.icon}
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">{selectedSystem.name}</h2>
+              <p className="text-sm text-slate-400">{selectedSystem.components.length} interactive components</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowAIPanel(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-cyan-400 hover:bg-cyan-500/30"
+          >
+            <HelpCircle className="w-5 h-5" />
+            Ask AI About {selectedSystem.name}
+          </button>
+        </div>
+
+        {/* Flow Description */}
+        <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+          <h4 className="text-sm font-medium text-slate-300 mb-2">System Flow:</h4>
+          <p className="text-sm text-slate-400">{selectedSystem.flowDescription}</p>
+        </div>
+
+        {/* Visual SVG Diagram - Click components directly */}
+        {SYSTEM_DIAGRAMS[selectedSystem.id] && (
+          <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4">
+            <h4 className="text-sm font-medium text-slate-300 mb-4 flex items-center gap-2">
+              <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
+              Interactive Visual Diagram - Click any component
+            </h4>
+            {(() => {
+              const DiagramComponent = SYSTEM_DIAGRAMS[selectedSystem.id];
+              return (
+                <DiagramComponent
+                  onComponentClick={(componentId) => {
+                    const component = selectedSystem.components.find(c => c.id === componentId);
+                    if (component) setSelectedComponent(component);
+                  }}
+                  selectedComponent={undefined}
+                />
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Interactive Diagram - Components as clickable cards */}
+        <div>
+          <h4 className="text-sm font-medium text-slate-300 mb-4">Component Details - Click to explore:</h4>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {selectedSystem.components.map((component) => (
+            <motion.button
+              key={component.id}
+              whileHover={{ scale: 1.02, y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setSelectedComponent(component)}
+              className={`p-4 bg-gradient-to-br ${colorMap[selectedSystem.color]} border rounded-xl text-left transition-all relative overflow-hidden group`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-slate-900/50 rounded-lg">
+                    {component.icon}
+                  </div>
+                  <span className="font-medium text-white text-sm">{component.name}</span>
+                </div>
+                <p className="text-xs text-slate-400 line-clamp-2 mb-3">{component.description}</p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500">{component.commonFaults.length} common faults</span>
+                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+
+        {/* AI Panel */}
+        <AnimatePresence>
+          {showAIPanel && (
+            <AIQuestionPanel
+              system={selectedSystem}
+              onClose={() => setShowAIPanel(false)}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // Component Detail View
+  if (selectedComponent) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSelectedComponent(null)}
+              className="p-2 hover:bg-slate-800 rounded-lg"
+            >
+              <ArrowLeft className="w-5 h-5 text-slate-400" />
+            </button>
+            <div className="p-3 bg-slate-800 rounded-xl">
+              {selectedComponent.icon}
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">{selectedComponent.name}</h2>
+              <p className="text-sm text-slate-400">{selectedSystem?.name}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowAIPanel(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-cyan-400 hover:bg-cyan-500/30"
+          >
+            <HelpCircle className="w-5 h-5" />
+            Ask AI
+          </button>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Left Column - Description & Function */}
+          <div className="space-y-4">
+            {/* Description */}
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+              <h4 className="text-sm font-semibold text-cyan-400 mb-2 flex items-center gap-2">
+                <Info className="w-4 h-4" /> Description
+              </h4>
+              <p className="text-slate-300 text-sm">{selectedComponent.description}</p>
+            </div>
+
+            {/* Function */}
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+              <h4 className="text-sm font-semibold text-green-400 mb-2 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" /> Function
+              </h4>
+              <p className="text-slate-300 text-sm">{selectedComponent.function}</p>
+            </div>
+
+            {/* Specifications */}
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+              <h4 className="text-sm font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                <Activity className="w-4 h-4" /> Specifications
+              </h4>
+              <div className="space-y-2">
+                {selectedComponent.specifications.map((spec, i) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span className="text-slate-400">{spec.name}</span>
+                    <span className="text-white font-mono">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Connections */}
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+              <h4 className="text-sm font-semibold text-purple-400 mb-3 flex items-center gap-2">
+                <Cable className="w-4 h-4" /> Connections
+              </h4>
+              <ul className="space-y-1">
+                {selectedComponent.connections.map((conn, i) => (
+                  <li key={i} className="text-sm text-slate-300 flex items-center gap-2">
+                    <ChevronRight className="w-3 h-3 text-slate-500" />
+                    {conn}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Right Column - Symptoms & Troubleshooting */}
+          <div className="space-y-4">
+            {/* Symptoms */}
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+              <h4 className="text-sm font-semibold text-red-400 mb-3 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" /> Symptoms of Failure
+              </h4>
+              <ul className="space-y-2">
+                {selectedComponent.symptoms.map((symptom, i) => (
+                  <li key={i} className="text-sm text-red-200 flex items-start gap-2">
+                    <span className="text-red-400 mt-1">•</span>
+                    {symptom}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Troubleshooting */}
+            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+              <h4 className="text-sm font-semibold text-amber-400 mb-3 flex items-center gap-2">
+                <Wrench className="w-4 h-4" /> Troubleshooting Steps
+              </h4>
+              <ol className="space-y-2">
+                {selectedComponent.troubleshooting.map((step, i) => (
+                  <li key={i} className="text-sm text-amber-200 flex items-start gap-2">
+                    <span className="text-amber-400 font-bold">{i + 1}.</span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* Tools Required */}
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+              <h4 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                <Wrench className="w-4 h-4" /> Tools Required
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {selectedComponent.tools.map((tool, i) => (
+                  <span key={i} className="px-2 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-lg">
+                    {tool}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Common Faults */}
+        <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+          <h4 className="text-sm font-semibold text-orange-400 mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" /> Common Faults & Solutions
+          </h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-slate-400 text-left border-b border-slate-700">
+                  <th className="pb-2 pr-4">Fault</th>
+                  <th className="pb-2 pr-4">Cause</th>
+                  <th className="pb-2">Solution</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedComponent.commonFaults.map((fault, i) => (
+                  <tr key={i} className="border-b border-slate-700/50">
+                    <td className="py-3 pr-4 text-red-300">{fault.fault}</td>
+                    <td className="py-3 pr-4 text-slate-300">{fault.cause}</td>
+                    <td className="py-3 text-green-300">{fault.solution}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Part Numbers */}
+        <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+          <h4 className="text-sm font-semibold text-cyan-400 mb-4 flex items-center gap-2">
+            <BookOpen className="w-4 h-4" /> Part Numbers & Pricing (KES)
+          </h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-slate-400 text-left border-b border-slate-700">
+                  <th className="pb-2 pr-4">Brand</th>
+                  <th className="pb-2 pr-4">Part Number</th>
+                  <th className="pb-2">Price (KES)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedComponent.partNumbers.map((part, i) => (
+                  <tr key={i} className="border-b border-slate-700/50">
+                    <td className="py-2 pr-4 text-white">{part.brand}</td>
+                    <td className="py-2 pr-4 font-mono text-cyan-300">{part.partNo}</td>
+                    <td className="py-2 text-green-300">{part.price}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Test Procedure */}
+        {selectedComponent.testProcedure && (
+          <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+            <h4 className="text-sm font-semibold text-green-400 mb-3 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" /> Test Procedure
+            </h4>
+            <ol className="space-y-2">
+              {selectedComponent.testProcedure.map((step, i) => (
+                <li key={i} className="text-sm text-green-200">{step}</li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        {/* Maintenance */}
+        {selectedComponent.maintenanceInterval && (
+          <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+            <h4 className="text-sm font-semibold text-blue-400 mb-2 flex items-center gap-2">
+              <Activity className="w-4 h-4" /> Maintenance Interval
+            </h4>
+            <p className="text-sm text-blue-200">{selectedComponent.maintenanceInterval}</p>
+          </div>
+        )}
+
+        {/* AI Panel */}
+        <AnimatePresence>
+          {showAIPanel && (
+            <AIQuestionPanel
+              component={selectedComponent}
+              system={selectedSystem || undefined}
+              onClose={() => setShowAIPanel(false)}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  return null;
+}

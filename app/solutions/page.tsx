@@ -4,10 +4,6 @@ import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import UnifiedCTA, { CTASection } from "@/components/cta/UnifiedCTA";
-import { SECTOR_LIST } from "@/lib/sectors/config";
-
-const SECTOR_SOLUTIONS_ENABLED =
-  process.env.NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS === 'true';
 
 const SOLUTIONS_LINKS = [
   { href: "/solutions/generators", label: "Diesel generators", icon: "⚡", description: "Troubleshooting & maintenance" },
@@ -68,45 +64,34 @@ export default function SolutionsHome() {
       />
 
       {/* ──────────────────────────────────────────────────────────────────
-          SOLUTIONS BY SECTOR — additive band (feature-flagged).
-          Lists the 6 target sectors so /solutions also acts as a sector index.
+          B2B sector hub now lives at /industries (powered by
+          lib/seo/industryData.ts). The previous /solutions/<sector>
+          experiment was retired to avoid duplicating that hub. A single
+          link below funnels visitors who arrived here looking for sector
+          solutions to the canonical destination.
           ────────────────────────────────────────────────────────────────── */}
-      {SECTOR_SOLUTIONS_ENABLED && (
-        <section className="mx-auto max-w-7xl px-6 py-12 sm:py-16 border-b border-white/5">
-          <div className="text-center mb-10">
-            <span className="inline-block px-4 py-1.5 rounded-full text-xs uppercase tracking-[0.2em] text-amber-400 border border-amber-500/30 bg-amber-500/5 mb-4">
+      <section className="mx-auto max-w-7xl px-6 py-10 sm:py-14 border-b border-white/5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs uppercase tracking-[0.2em] text-amber-400 border border-amber-500/30 bg-amber-500/5 mb-3">
               By sector
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
-              Solutions for your <span className="text-amber-500">industry</span>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              Looking for solutions tailored to your <span className="text-amber-500">industry</span>?
             </h2>
-            <p className="text-gray-400 mt-3 max-w-2xl mx-auto text-sm sm:text-base">
-              Pick your sector for a tailored set of services, pricing context and a
-              direct sector-specific quote request.
+            <p className="text-gray-400 mt-2 max-w-2xl text-sm">
+              Hospitals, hotels, schools, factories, farms, real estate and more —
+              full sector pages with pain points, offers and pricing live at /industries.
             </p>
           </div>
-          <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {SECTOR_LIST.map((s) => (
-              <li key={s.slug}>
-                <Link
-                  href={`/solutions/${s.slug}`}
-                  className="group block h-full rounded-xl border border-white/10 bg-white/[0.02] p-5 hover:border-amber-500/40 transition-colors"
-                >
-                  <h3 className="text-base sm:text-lg font-semibold text-white capitalize group-hover:text-amber-300">
-                    {s.slug.replace('-', ' ')}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-400 mt-2 line-clamp-2">
-                    {s.painStatement}
-                  </p>
-                  <span className="block text-xs text-amber-400 mt-3 uppercase tracking-wider">
-                    See solutions →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+          <Link
+            href="/industries"
+            className="shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-full bg-amber-500 text-black font-semibold text-sm hover:bg-amber-400 transition-colors"
+          >
+            Browse Industries →
+          </Link>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

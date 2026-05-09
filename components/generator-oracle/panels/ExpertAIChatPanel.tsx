@@ -895,15 +895,35 @@ Tell me about your generator problem, or choose a quick action below to get star
  * card (make, model, controller, serial, firmware) is collected before
  * the user can talk to the model. The card is then passed into every
  * /api/generator-oracle/expert-chat call.
+ *
+ * IMPORTANT: when the local AI stack is not configured for the
+ * deployment we render the deterministic `RuleBasedAssistantPanel`
+ * directly, BYPASSING the asset-card gate. The rule-based engine works
+ * from symptom text + fault-code lookups and does not need the full
+ * card. Forcing the card here was the reason "Ask AI" appeared totally
+ * unresponsive on production — users would land on the gate, not fill
+ * 5 fields, and never see any assistant at all.
  */
-export default function ExpertAIChatPanel({
-  className = '',
-}: {
-  className?: string;
-}) {
+function AskAIBootstrap({ className }: { className?: string }) {
+  const aiAvailability = useAIAvailable();
+
+  if (aiAvailability === 'unavailable') {
+    return <RuleBasedAssistantPanel mode="chat" className={className} />;
+  }
+
+  // 'loading' and 'available' both go through the asset-card gate, then
+  // hand off to the inner chat panel which handles the live conversation.
   return (
     <AssetCardGate feature="Expert AI Chat">
       {(card) => <ExpertAIChatPanelInner className={className} card={card} />}
     </AssetCardGate>
   );
+}
+
+export default function ExpertAIChatPanel({
+  className = '',
+}: {
+  className?: string;
+}) {
+  return <AskAIBootstrap className={className} />;
 }

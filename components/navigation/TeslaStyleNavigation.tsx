@@ -12,10 +12,6 @@ const LanguageSwitcher = dynamic(
   { ssr: false }
 );
 
-// Feature flag for the new Sectors landing pages and the SOLUTIONS nav entry.
-const SECTOR_SOLUTIONS_ENABLED =
-  process.env.NEXT_PUBLIC_ENABLE_SECTOR_SOLUTIONS === 'true';
-
 interface TeslaStyleNavigationProps {
   activeSection?: string;
 }
@@ -254,10 +250,10 @@ const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
-  // SOLUTIONS by Sector — inserted only when the feature flag is on.
-  ...(SECTOR_SOLUTIONS_ENABLED
-    ? [{ href: '/solutions', label: 'SOLUTIONS', type: 'link', featured: true } as const]
-    : []),
+  // INDUSTRIES — direct link to the live B2B sector hub at /industries.
+  // (We previously experimented with a parallel /solutions/<sector> system;
+  // that was retired to avoid duplicating /industries.)
+  { href: '/industries', label: 'INDUSTRIES', type: 'link' },
   { key: 'aiPowerhouse', label: 'AI SOLUTIONS', type: 'mega', featured: true },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },

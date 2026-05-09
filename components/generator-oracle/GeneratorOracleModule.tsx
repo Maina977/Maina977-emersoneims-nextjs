@@ -1467,25 +1467,37 @@ export default function GeneratorOracleModule() {
                   </div>
                 </div>
 
-                {/* CONSOLIDATED 8 SUPER-TABS - Clean & Professional Navigation */}
-                {/* Controllers & Diagnostic Tools prominently placed for technicians */}
-                <nav className="hidden xl:flex items-center gap-2 p-2 bg-slate-900/80 rounded-2xl border border-cyan-500/30">
-                  <PremiumNavTab icon="🎛️" label="Command" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
-                  <PremiumNavTab icon="🖥️" label="Controllers & Simulators" active={activeScreen === 'controllers'} onClick={() => setActiveScreen('controllers')} />
-                  <PremiumNavTab icon="🔧" label="Fault Center" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
-                  <PremiumNavTab icon="🧠" label="AI Diagnostics" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
-                  <PremiumNavTab icon="🏭" label="Systems" active={activeScreen === 'systems'} onClick={() => setActiveScreen('systems')} />
-                  <PremiumNavTab icon="📐" label="Wiring & Manuals" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
-                  <PremiumNavTab icon="📊" label="Monitoring" active={activeScreen === 'monitoring'} onClick={() => setActiveScreen('monitoring')} />
-                  <PremiumNavTab icon="🛠️" label="Tools & Reports" active={activeScreen === 'tools'} onClick={() => setActiveScreen('tools')} />
+                {/* CONSOLIDATED 8 SUPER-TABS — horizontally scrollable at every viewport.
+                    Previously this was hidden below xl: which made the tabs disappear on
+                    laptops/tablets. Now we always render the same scroll strip and let
+                    flex-nowrap + overflow-x-auto handle width. The visible scrollbar
+                    is styled thin so the swipe affordance is obvious on touch devices. */}
+                <nav
+                  aria-label="Generator Oracle sections"
+                  className="flex-1 min-w-0 flex items-center gap-2 p-2 bg-slate-900/80 rounded-2xl border border-cyan-500/30 overflow-x-auto flex-nowrap [scrollbar-width:thin] [scrollbar-color:rgba(6,182,212,0.5)_transparent] snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
+                  style={{ WebkitOverflowScrolling: 'touch' }}
+                >
+                  <div className="flex items-center gap-2 shrink-0">
+                    <PremiumNavTab icon="🎛️" label="Command" active={activeScreen === 'command'} onClick={() => setActiveScreen('command')} />
+                    <PremiumNavTab icon="🖥️" label="Controllers & Simulators" active={activeScreen === 'controllers'} onClick={() => setActiveScreen('controllers')} />
+                    <PremiumNavTab icon="🔧" label="Fault Center" active={activeScreen === 'faults'} onClick={() => setActiveScreen('faults')} badge={2} />
+                    <PremiumNavTab icon="🧠" label="AI Diagnostics" active={activeScreen === 'ai'} onClick={() => setActiveScreen('ai')} />
+                    <PremiumNavTab icon="🏭" label="Systems" active={activeScreen === 'systems'} onClick={() => setActiveScreen('systems')} />
+                    <PremiumNavTab icon="📐" label="Wiring & Manuals" active={activeScreen === 'wiring'} onClick={() => setActiveScreen('wiring')} />
+                    <PremiumNavTab icon="📊" label="Monitoring" active={activeScreen === 'monitoring'} onClick={() => setActiveScreen('monitoring')} />
+                    <PremiumNavTab icon="🛠️" label="Tools & Reports" active={activeScreen === 'tools'} onClick={() => setActiveScreen('tools')} />
+                  </div>
                 </nav>
 
-                {/* Mobile nav - Consolidated 8 Sections */}
-                <div className="xl:hidden">
+                {/* Compact mobile fallback — the <select> is kept as a quick jump
+                    for narrow phone screens where horizontal scrolling can be awkward. */}
+                <div className="sm:hidden">
+                  <label htmlFor="oracle-section-jump" className="sr-only">Jump to section</label>
                   <select
+                    id="oracle-section-jump"
                     value={activeScreen}
                     onChange={(e) => setActiveScreen(e.target.value as typeof activeScreen)}
-                    className="bg-slate-900/60 text-cyan-400 px-4 py-2.5 rounded-xl border border-cyan-500/30 font-medium"
+                    className="bg-slate-900/60 text-cyan-400 px-3 py-2 rounded-xl border border-cyan-500/30 font-medium text-sm"
                   >
                     <option value="command">🎛️ Command Center</option>
                     <option value="controllers">🖥️ Controllers & Simulators</option>
@@ -2266,7 +2278,50 @@ export default function GeneratorOracleModule() {
                         </div>
                       </HolographicGlassPanel>
                     )}
-                    {toolsSubTab === 'parts' && <PartsOrderPanel />}
+                    {toolsSubTab === 'parts' && (
+                      <HolographicGlassPanel
+                        title="Spare Parts Catalog"
+                        subtitle="Browse the full Spare Parts shop — generators, solar, UPS, motors"
+                        icon="🔩"
+                        accentColor="amber"
+                        variant="glow"
+                      >
+                        <div className="flex flex-col items-center text-center gap-4 py-6">
+                          <p className="text-slate-300 max-w-xl">
+                            The Generator Oracle parts lookup now opens directly in our
+                            full Spare Parts catalog — with live stock, M-Pesa checkout,
+                            cross-references and OEM part numbers.
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <a
+                              href="/generators/spare-parts"
+                              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-black font-bold hover:from-amber-400 hover:to-orange-500 transition-colors"
+                            >
+                              🔩 Open Spare Parts Catalog →
+                            </a>
+                            <a
+                              href="/generators/spare-parts?category=engine"
+                              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-slate-600 text-slate-200 hover:border-amber-500/50 hover:text-white transition-colors"
+                            >
+                              Engine Parts
+                            </a>
+                            <a
+                              href="/generators/spare-parts?category=electrical"
+                              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-slate-600 text-slate-200 hover:border-amber-500/50 hover:text-white transition-colors"
+                            >
+                              Electrical & Controllers
+                            </a>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-2">
+                            Tip: jump to specific parts via
+                            {' '}
+                            <a href="/generators/spare-parts" className="text-amber-400 hover:text-amber-300 underline">
+                              /generators/spare-parts
+                            </a>.
+                          </p>
+                        </div>
+                      </HolographicGlassPanel>
+                    )}
                     {toolsSubTab === 'techinput' && <TechnicianInputDiagnostics />}
                     {toolsSubTab === 'assistant' && <TechnicianAssistantPanel />}
                     {toolsSubTab === 'settings' && (

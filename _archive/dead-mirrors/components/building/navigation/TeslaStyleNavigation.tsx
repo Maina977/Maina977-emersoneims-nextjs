@@ -1,0 +1,531 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Dynamically import language switcher (client-only)
+const LanguageSwitcher = dynamic(
+  () => import('@/components/shared/LanguageSwitcher'),
+  { ssr: false }
+);
+
+interface TeslaStyleNavigationProps {
+  activeSection?: string;
+}
+
+// Mega Menu Data - Professional Structure
+const MEGA_MENUS = {
+  generators: {
+    title: 'Generator Solutions',
+    description: 'Complete power solutions from sales to maintenance',
+    sections: [
+      {
+        title: 'Products',
+        items: [
+          { href: '/generators', label: 'All Generators', icon: '⚡', desc: 'Browse our full range' },
+          { href: '/generators/used', label: 'Used Generators', icon: '♻️', desc: 'Quality pre-owned units' },
+          { href: '/brands', label: 'Generator Brands', icon: '🏷️', desc: 'Cummins, Perkins, CAT & more' },
+        ],
+      },
+      {
+        title: 'Services',
+        items: [
+          { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: '8-phase professional setup' },
+          { href: '/generators/maintenance', label: 'Maintenance', icon: '🛠️', desc: '32 common issues solved' },
+          { href: '/generators/rental', label: 'Rental', icon: '📦', desc: '7.5kVA to 2MVA' },
+        ],
+      },
+      {
+        title: 'Support & Maintenance',
+        items: [
+          { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🔧', desc: 'Complete maintenance center', badge: 'NEW' },
+          { href: '/maintenance-hub/generators', label: 'Generator Maintenance Hub', icon: '🛠️', desc: 'Engine Room Command Center' },
+          { href: '/generators/maintenance-companion', label: 'Maintenance Companion', icon: '🤖', desc: 'AI repair guides' },
+          { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'Genuine & OEM parts' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Get a Quote', phone: '+254 768 860 665' },
+  },
+  solar: {
+    title: 'Solar Solutions',
+    description: 'Clean energy for homes, businesses & industries',
+    sections: [
+      {
+        title: 'Systems',
+        items: [
+          { href: '/solar', label: 'Solar Overview', icon: '☀️', desc: 'Complete solutions' },
+          { href: '/solutions/solar', label: 'Commercial Solar', icon: '🏢', desc: 'Business & industrial' },
+          { href: '/solutions/solar-sizing', label: 'System Sizing', icon: '📐', desc: 'Calculate your needs' },
+        ],
+      },
+      {
+        title: 'Maintenance & Support',
+        items: [
+          { href: '/maintenance-hub/solar', label: 'Solar Maintenance Hub', icon: '🔆', desc: 'Complete solar diagnostics & repair' },
+          { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Nationwide coverage' },
+          { href: '/solar#calculator', label: 'ROI Calculator', icon: '💰', desc: 'See your savings' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Free Consultation', phone: '+254782914717' },
+  },
+  aiPowerhouse: {
+    title: 'AI Powerhouse',
+    description: 'World-class AI-powered tools for professionals',
+    sections: [
+      {
+        title: 'AI Tools Suite',
+        items: [
+          { href: '/eims-pro', label: 'EIMS PRO', icon: '🏛️', desc: 'Live workspace — http://127.0.0.1:5000 in iframe', badge: 'LIVE' },
+          { href: '/solutions/building', label: 'Pro Building Suite™ (full AI)', icon: '📐', desc: 'In-browser AI reports & BOQ', badge: 'AI' },
+          { href: '/generator-oracle', label: 'Generator Oracle™', icon: '🔮', desc: '400,000+ fault codes, AI diagnostics', badge: 'AI' },
+          { href: '/solar-genius-pro', label: 'Solar Genius Pro™', icon: '☀️', desc: '56 AI Engines, <3 min quotes - #1 WORLDWIDE', badge: '#1' },
+          { href: '/aquascan-pro-v3', label: 'AquaScan Pro™', icon: '💧', desc: '26 AI Engines, NASA/Google Earth - #1 WORLDWIDE', badge: '#1' },
+        ],
+      },
+      {
+        title: 'AI Tools Hub',
+        items: [
+          { href: '/ai-tools/capabilities', label: 'All Capabilities', icon: '📊', desc: 'Full accuracy tables for all tools', badge: 'NEW' },
+          { href: '/ai-tools', label: 'All AI Tools', icon: '🤖', desc: 'Central hub for all AI-powered tools' },
+          { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🧙', desc: 'Interactive problem solver' },
+          { href: '/resources', label: 'Learning Hub', icon: '📚', desc: 'All guides & resources' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Get Started', phone: '+254 768 860 665' },
+  },
+  services: {
+    title: 'Our Services',
+    description: 'Complete power and electrical solutions',
+    sections: [
+      {
+        title: 'Tools & Calculators',
+        items: [
+          { href: '/calculators', label: 'Power Calculators', icon: '🧮', desc: 'ROI, Load, Solar, UPS, AC, Motor sizing', badge: 'ALL-IN-ONE' },
+          { href: '/troubleshooting', label: 'Troubleshooting Wizard', icon: '🔧', desc: 'Interactive problem solver' },
+          { href: '/maintenance-hub', label: 'Universal Maintenance Hub', icon: '🛠️', desc: 'All equipment maintenance center' },
+        ],
+      },
+      {
+        title: 'Maintenance Hubs',
+        items: [
+          { href: '/maintenance-hub/generators', label: 'Generator Hub', icon: '⚡', desc: 'Generator maintenance & repair' },
+          { href: '/maintenance-hub/motors', label: 'Motors Hub', icon: '🔄', desc: 'Motor rewinding & service' },
+          { href: '/maintenance-hub/hvac', label: 'HVAC Hub', icon: '❄️', desc: 'AC & refrigeration' },
+          { href: '/maintenance-hub/electrical', label: 'Electrical Hub', icon: '🔌', desc: 'Electrical systems' },
+          { href: '/maintenance-hub/solar', label: 'Solar Hub', icon: '☀️', desc: 'Solar system maintenance' },
+        ],
+      },
+      {
+        title: 'Power Solutions',
+        items: [
+          { href: '/solutions/generators', label: 'Generator Services', icon: '⚡', desc: 'Sales & maintenance' },
+          { href: '/solutions/ups', label: 'UPS Systems', icon: '🔋', desc: 'Backup power' },
+          { href: '/solutions/controls', label: 'Control Systems', icon: '🎛️', desc: 'Automation & controls' },
+          { href: '/solutions/motor-rewinding', label: 'Motor Rewinding', icon: '🔄', desc: 'Motor repair' },
+          { href: '/solutions/borehole-pumps', label: 'Borehole Pumps', icon: '💧', desc: 'Water solutions' },
+          { href: '/solutions', label: 'All Solutions', icon: '💡', desc: 'View all our solutions' },
+        ],
+      },
+    ],
+    cta: { href: '/booking', label: 'Book Now', phone: '+254782914717' },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROFESSIONAL NAVBAR - 8 Items (Industry Standard)
+// All pages accessible via mega menus or direct links
+// ═══════════════════════════════════════════════════════════════════════════════
+// BRANDS → Inside GENERATORS mega menu > Products
+// SOLUTIONS → Inside SERVICES mega menu > Solutions (+ direct link)
+// GALLERY → Inside SERVICES mega menu > Company
+// ═══════════════════════════════════════════════════════════════════════════════
+const NAV_ITEMS = [
+  { href: '/', label: 'HOME', type: 'link' },
+  { key: 'generators', label: 'GENERATORS', type: 'mega' },
+  { key: 'solar', label: 'SOLAR', type: 'mega' },
+  { key: 'aiPowerhouse', label: 'AI POWERHOUSE', type: 'mega', featured: true },
+  { href: '/aquascan-pro-v3', label: 'AQUASCAN PRO', type: 'link' },
+  { href: '/solar-genius-pro', label: 'SOLAR GENIUS PRO', type: 'link' },
+  { href: '/eims-pro', label: 'EIMS PRO', type: 'link' },
+  { key: 'services', label: 'SERVICES', type: 'mega' },
+  { href: '/calculators', label: 'CALCULATORS', type: 'link' },
+  { href: '/about-us', label: 'ABOUT', type: 'link' },
+  { href: '/contact', label: 'CONTACT', type: 'link' },
+];
+
+export default function TeslaStyleNavigation({
+  activeSection = 'hero',
+}: TeslaStyleNavigationProps) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeMega, setActiveMega] = useState<string | null>(null);
+  const [mobileSubmenu, setMobileSubmenu] = useState<string | null>(null);
+  const megaTimeout = useRef<NodeJS.Timeout | null>(null);
+  const mobileMenuId = 'tesla-primary-mobile-menu';
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+      if (activeMega) setActiveMega(null);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeMega]);
+
+  // Close menu on Escape + prevent background scroll while open
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMenuOpen(false);
+        setActiveMega(null);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    const previousOverflow = document.body.style.overflow;
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMenuOpen]);
+
+  const handleMegaEnter = (key: string) => {
+    if (megaTimeout.current) clearTimeout(megaTimeout.current);
+    setActiveMega(key);
+  };
+
+  const handleMegaLeave = () => {
+    megaTimeout.current = setTimeout(() => setActiveMega(null), 150);
+  };
+
+  return (
+    <>
+      <nav
+        data-active-section={activeSection}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? 'bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/30'
+            : 'bg-gradient-to-b from-black/90 via-black/70 to-transparent'
+        }`}
+      >
+        <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-16 py-4">
+          <div className="flex items-center justify-between gap-8">
+            {/* Logo - Large & Clear */}
+            <Link
+              href="/"
+              aria-label="Emerson EiMS - Reliable Power. Without Limits."
+              className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-lg group"
+            >
+              <Image
+                src="/images/logo-tagline.png"
+                alt="EmersonEIMS - Reliable Power. Without Limits."
+                width={320}
+                height={80}
+                priority
+                quality={100}
+                sizes="(max-width: 640px) 180px, (max-width: 768px) 220px, (max-width: 1024px) 280px, 320px"
+                className="h-16 sm:h-[72px] lg:h-20 xl:h-24 w-auto object-contain brightness-110 contrast-105 drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)] transition-all duration-300 group-hover:scale-105 group-hover:brightness-125"
+              />
+            </Link>
+
+            {/* Desktop Navigation - Properly Spaced */}
+            <div className="hidden lg:flex items-center gap-2 xl:gap-3 flex-1 justify-end">
+              {NAV_ITEMS.map((item) =>
+                item.type === 'mega' && item.key ? (
+                  <div
+                    key={item.key}
+                    className="relative"
+                    onMouseEnter={() => handleMegaEnter(item.key!)}
+                    onMouseLeave={handleMegaLeave}
+                  >
+                    <button
+                      className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 rounded-lg flex items-center gap-1.5 whitespace-nowrap ${
+                        activeMega === item.key
+                          ? 'text-white bg-white/10 border border-white/20'
+                          : 'text-white/80 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
+                      }`}
+                    >
+                      {item.label}
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform duration-300 ${activeMega === item.key ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href!}
+                    className={`px-4 py-2.5 text-xs xl:text-sm font-semibold transition-all duration-300 whitespace-nowrap rounded-lg border ${
+                      (item as { featured?: boolean }).featured
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-400/50 hover:from-cyan-400 hover:to-blue-400 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 animate-pulse hover:animate-none'
+                        : 'text-white/80 hover:text-white hover:bg-white/5 border-transparent hover:border-white/10'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              )}
+
+              {/* Language Switcher with Clear Separation */}
+              <div className="ml-4 pl-4 border-l border-white/20">
+                <LanguageSwitcher />
+              </div>
+            </div>
+
+            {/* Mobile Menu Button - Better Positioned */}
+            <button
+              type="button"
+              className="lg:hidden relative p-3 text-white/90 hover:text-white transition-colors rounded-xl hover:bg-white/10 border border-transparent hover:border-white/20"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
+              aria-controls={mobileMenuId}
+            >
+              <motion.div
+                animate={isMenuOpen ? 'open' : 'closed'}
+                className="w-6 h-6 flex flex-col justify-center items-center"
+              >
+                <motion.span
+                  variants={{
+                    closed: { rotate: 0, y: 0 },
+                    open: { rotate: 45, y: 6 },
+                  }}
+                  className="w-6 h-0.5 bg-current block mb-1.5 origin-center transition-all rounded-full"
+                />
+                <motion.span
+                  variants={{
+                    closed: { opacity: 1 },
+                    open: { opacity: 0 },
+                  }}
+                  className="w-6 h-0.5 bg-current block mb-1.5 rounded-full"
+                />
+                <motion.span
+                  variants={{
+                    closed: { rotate: 0, y: 0 },
+                    open: { rotate: -45, y: -6 },
+                  }}
+                  className="w-6 h-0.5 bg-current block origin-center transition-all rounded-full"
+                />
+              </motion.div>
+            </button>
+          </div>
+        </div>
+
+        {/* Mega Menu Dropdowns */}
+        <AnimatePresence>
+          {activeMega && MEGA_MENUS[activeMega as keyof typeof MEGA_MENUS] && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute left-0 right-0 bg-gray-900/98 backdrop-blur-xl border-b border-white/10 shadow-2xl"
+              onMouseEnter={() => handleMegaEnter(activeMega)}
+              onMouseLeave={handleMegaLeave}
+            >
+              <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8">
+                {(() => {
+                  const menu = MEGA_MENUS[activeMega as keyof typeof MEGA_MENUS];
+                  return (
+                    <div className="grid lg:grid-cols-4 gap-8">
+                      {/* Menu Sections */}
+                      {menu.sections.map((section) => (
+                        <div key={section.title}>
+                          <h3 className="text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
+                            {section.title}
+                          </h3>
+                          <ul className="space-y-2">
+                            {section.items.map((item) => (
+                              <li key={item.href}>
+                                <Link
+                                  href={item.href}
+                                  className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-300"
+                                  onClick={() => setActiveMega(null)}
+                                >
+                                  <span className="text-2xl">{item.icon}</span>
+                                  <div>
+                                    <div className="font-semibold text-white group-hover:text-amber-400 transition-colors">
+                                      {item.label}
+                                    </div>
+                                    <div className="text-xs text-white/50">{item.desc}</div>
+                                  </div>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                      
+                      {/* CTA Section */}
+                      <div className="lg:border-l lg:border-white/10 lg:pl-8">
+                        <h3 className="text-xs font-bold text-white/50 uppercase tracking-wider mb-4">
+                          Get Started
+                        </h3>
+                        <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-2xl p-6 border border-amber-500/20">
+                          <h4 className="text-lg font-bold text-white mb-2">{menu.title}</h4>
+                          <p className="text-sm text-white/70 mb-4">{menu.description}</p>
+                          <Link
+                            href={menu.cta.href}
+                            className="block w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold rounded-xl text-center hover:from-amber-500 hover:to-amber-600 transition-all transform hover:scale-[1.02] shadow-lg shadow-amber-500/30"
+                            onClick={() => setActiveMega(null)}
+                          >
+                            {menu.cta.label}
+                          </Link>
+                          <a
+                            href={`tel:${menu.cta.phone.replace(/\s/g, '')}`}
+                            className="block mt-3 text-center text-amber-400 hover:text-amber-300 transition-colors"
+                          >
+                            📞 {menu.cta.phone}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setIsMenuOpen(false)}
+            />
+            <motion.div
+              id={mobileMenuId}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-gray-900 z-50 lg:hidden overflow-y-auto"
+            >
+              <div className="p-6">
+                {/* Mobile Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <span className="text-lg font-bold text-white">Menu</span>
+                  <button
+                    onClick={() => setIsMenuOpen(false)}
+                    className="p-2 text-white/60 hover:text-white rounded-lg hover:bg-white/10"
+                  >
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Mobile Nav Items */}
+                <nav className="space-y-2">
+                  {NAV_ITEMS.map((item) =>
+                    item.type === 'mega' && item.key ? (
+                      <div key={item.key}>
+                        <button
+                          onClick={() => setMobileSubmenu(mobileSubmenu === item.key ? null : item.key!)}
+                          className="w-full flex items-center justify-between px-4 py-3 text-white/80 hover:text-white rounded-xl hover:bg-white/5 transition-all"
+                        >
+                          <span className="font-semibold">{item.label}</span>
+                          <motion.svg
+                            animate={{ rotate: mobileSubmenu === item.key ? 180 : 0 }}
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </motion.svg>
+                        </button>
+                        
+                        <AnimatePresence>
+                          {mobileSubmenu === item.key && MEGA_MENUS[item.key as keyof typeof MEGA_MENUS] && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="pl-4 py-2 space-y-1">
+                                {MEGA_MENUS[item.key as keyof typeof MEGA_MENUS].sections.map((section) =>
+                                  section.items.map((subItem) => (
+                                    <Link
+                                      key={subItem.href}
+                                      href={subItem.href}
+                                      onClick={() => setIsMenuOpen(false)}
+                                      className="flex items-center gap-3 px-4 py-2.5 text-white/60 hover:text-white rounded-lg hover:bg-white/5 transition-all"
+                                    >
+                                      <span className="text-lg">{subItem.icon}</span>
+                                      <span className="text-sm">{subItem.label}</span>
+                                    </Link>
+                                  ))
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ) : (
+                      <Link
+                        key={item.href}
+                        href={item.href!}
+                        onClick={() => setIsMenuOpen(false)}
+                        className={`block px-4 py-3 rounded-xl transition-all ${
+                          (item as { featured?: boolean }).featured
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold border border-cyan-400/50 shadow-lg shadow-cyan-500/30'
+                            : 'text-white/80 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    )
+                  )}
+                </nav>
+
+                {/* Mobile CTA */}
+                <div className="mt-8 p-4 bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-2xl border border-amber-500/20">
+                  <h4 className="font-bold text-white mb-2">Need Help?</h4>
+                  <p className="text-sm text-white/60 mb-4">Call us for immediate assistance</p>
+                  <a
+                    href="tel:+254768860665"
+                    className="block w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold rounded-xl text-center"
+                  >
+                    📞 +254 768 860 665
+                  </a>
+                </div>
+
+                {/* Mobile Language */}
+                <div className="mt-6 pt-6 border-t border-white/10">
+                  <LanguageSwitcher />
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+
+
