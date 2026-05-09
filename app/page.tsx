@@ -71,12 +71,13 @@ function StaticHeroFallback() {
           className="object-cover"
           sizes="100vw"
         />
-        {/* Hero video — DESKTOP ONLY. On mobile we ship the static poster
-            image only (~40 KB) so the 18 MB video does not compete with the
-            LCP image for bandwidth. `preload="none"` is safe for muted
-            autoplay (browsers start the stream on play, not on parse). */}
+        {/* Hero video — TABLET+ ONLY (md↑, ≥768px). Most phones in
+            landscape are 700-900px wide, so we now gate at `md:` instead of
+            `sm:` to keep the 18 MB video off every phone, including
+            landscape. Image stays as poster + fallback for phones, slow
+            connections and SEO. */}
         <video
-          className="absolute inset-0 w-full h-full object-cover hidden sm:block"
+          className="absolute inset-0 w-full h-full object-cover hidden md:block"
           autoPlay
           muted
           loop

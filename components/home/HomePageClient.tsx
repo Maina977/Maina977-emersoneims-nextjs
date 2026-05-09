@@ -7,6 +7,7 @@
 
 import { Suspense, lazy } from 'react';
 import dynamic from 'next/dynamic';
+import LazyOnVisible from '@/components/perf/LazyOnVisible';
 
 // Lightweight loading skeleton
 function SectionSkeleton({ title }: { title: string }) {
@@ -158,23 +159,45 @@ export default function HomePageClient() {
       {/* Solar / UPS Hub — restores the previously-missing homepage teaser */}
       <SolarUpsHubTeaser />
 
-      {/* Lazy loaded sections */}
-      <PremiumServicesShowcase />
-      <TrustBadgesSection />
-      <CaseStudiesSection />
-      <TestimonialsSection />
-      <IndustryLeadingTrust />
-      <LiveOperationsDashboard />
-      <CompetitiveAdvantage />
+      {/*
+        BELOW-THE-FOLD: each heavy section is mounted only when it scrolls
+        near the viewport. This reclaims a lot of main-thread time on mobile
+        because hydration of these eight sections no longer competes with
+        the hero image, fonts and navigation on first paint. Skeletons
+        reserve enough vertical space to keep CLS near zero.
+      */}
+      <LazyOnVisible minHeight="min-h-[600px]">
+        <PremiumServicesShowcase />
+      </LazyOnVisible>
+      <LazyOnVisible minHeight="min-h-[400px]">
+        <TrustBadgesSection />
+      </LazyOnVisible>
+      <LazyOnVisible minHeight="min-h-[600px]">
+        <CaseStudiesSection />
+      </LazyOnVisible>
+      <LazyOnVisible minHeight="min-h-[500px]">
+        <TestimonialsSection />
+      </LazyOnVisible>
+      <LazyOnVisible minHeight="min-h-[400px]">
+        <IndustryLeadingTrust />
+      </LazyOnVisible>
+      <LazyOnVisible minHeight="min-h-[600px]">
+        <LiveOperationsDashboard />
+      </LazyOnVisible>
+      <LazyOnVisible minHeight="min-h-[500px]">
+        <CompetitiveAdvantage />
+      </LazyOnVisible>
 
       {/* Final CTA */}
-      <CTASection
-        title="Ready to Power Your Future?"
-        subtitle="Get a free consultation with our engineering team."
-        primaryAction="consultation"
-        secondaryAction="diagnostic"
-        showEmergency={true}
-      />
+      <LazyOnVisible minHeight="min-h-[400px]">
+        <CTASection
+          title="Ready to Power Your Future?"
+          subtitle="Get a free consultation with our engineering team."
+          primaryAction="consultation"
+          secondaryAction="diagnostic"
+          showEmergency={true}
+        />
+      </LazyOnVisible>
 
       {/* Floating Emergency CTA - Always visible for quick conversion */}
       <EmergencyCTA variant="floating" />
