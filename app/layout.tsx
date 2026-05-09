@@ -276,7 +276,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang={locale} className="scroll-smooth">
+    <html lang={locale} className={inter.variable}>
       <head>
         {/* Structured Data - LocalBusiness Schema */}
         <script

@@ -335,9 +335,14 @@ export default function PremiumFooter() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-gray-500">
-            © {currentYear} Emerson EiMS. All rights reserved.
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-gray-500">
+              © {currentYear} Emerson EiMS. All rights reserved.
+            </p>
+            <span className="ml-3 px-2 py-1 rounded bg-brand-gold/10 text-xs font-semibold text-brand-gold border border-brand-gold/30" title="Protected by Generator Oracle / EmersonEIMS">
+              PROTECTED BY GENERATOR ORACLE / EMERSONEIMS
+            </span>
+          </div>
           <div className="flex gap-6">
             {FOOTER_LINKS.legal.map((link) => (
               <Link

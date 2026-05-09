@@ -11,6 +11,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ───────────────────────────────────────────────
+   IMAGE-PROTECTION (light, accessibility-safe)
+   We deliberately do NOT disable text selection or
+   right-click globally — buyers must be able to copy
+   our phone number, email and addresses, and screen
+   readers / translation tools must keep working.
+   Real anti-scrape protection lives in middleware.ts
+   (UA + rate-limit + domain auth + copyright header)
+   plus the legal notice in the footer.
+──────────────────────────────────────────────── */
+img.no-save,
+[data-protected="true"] img {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ðŸš€ WORLD'S #1 FASTEST WEBSITE - PERFORMANCE CRITICAL CSS
    Target: Sub-500ms FCP, Zero Layout Shift, 100/100 Lighthouse
