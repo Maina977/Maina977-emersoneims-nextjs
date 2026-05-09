@@ -421,9 +421,22 @@ export default async function RootLayout({
         <meta name="msapplication-TileColor" content="#0EA5E9" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
         
-        {/* Multilingual Support - hreflang tags */}
+        {/* Multilingual Support - hreflang tags
+            Must match the `locales` array in middleware.ts (11 locales).
+            `en` is the default locale and is served at the root (no /en
+            prefix), all others are served at /<locale>. */}
+        <link rel="alternate" hrefLang="en-KE" href={`${siteUrl}`} />
         <link rel="alternate" hrefLang="en" href={`${siteUrl}`} />
         <link rel="alternate" hrefLang="sw" href={`${siteUrl}/sw`} />
+        <link rel="alternate" hrefLang="fr" href={`${siteUrl}/fr`} />
+        <link rel="alternate" hrefLang="de" href={`${siteUrl}/de`} />
+        <link rel="alternate" hrefLang="es" href={`${siteUrl}/es`} />
+        <link rel="alternate" hrefLang="pt" href={`${siteUrl}/pt`} />
+        <link rel="alternate" hrefLang="zh" href={`${siteUrl}/zh`} />
+        <link rel="alternate" hrefLang="nl" href={`${siteUrl}/nl`} />
+        <link rel="alternate" hrefLang="am" href={`${siteUrl}/am`} />
+        <link rel="alternate" hrefLang="so" href={`${siteUrl}/so`} />
+        <link rel="alternate" hrefLang="ar" href={`${siteUrl}/ar`} />
         <link rel="alternate" hrefLang="x-default" href={`${siteUrl}`} />
       </head>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning lang={locale}>
