@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA | EmersonEIMS',
     description: 'Kenya\'s leading generator supplier. Cummins authorized dealer. NEW generators with warranty + 1 year free maintenance. All 47 counties.',
     type: 'website',
-    url: 'https://emersoneims.com/generators',
+    url: 'https://www.emersoneims.com/generators',
     siteName: 'EmersonEIMS',
     images: [
       {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     description: 'Buy NEW Cummins generators in Kenya. 10kVA-2000kVA. 1 year free service.',
   },
   alternates: {
-    canonical: 'https://emersoneims.com/generators',
+    canonical: 'https://www.emersoneims.com/generators',
   },
   robots: {
     index: true,

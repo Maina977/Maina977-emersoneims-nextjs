@@ -2,9 +2,13 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Emerson Energy - Generators & Solar Power Kenya',
-    short_name: 'Emerson',
-    description: 'Kenya\'s #1 generator and solar power company. 20+ years experience, 47 counties, 24/7 support. Call +254 768 860 665.',
+    name: 'EmersonEIMS — Generators, Solar & Engineering Intelligence',
+    short_name: 'EmersonEIMS',
+    // Audit 2026-05-09: removed unverifiable "#1" superiority claim and
+    // "20+ years" tenure claim (founding date is not publicly documented;
+    // see data-policy.md — unlabelled estimates treated as sabotage).
+    description:
+      'EmersonEIMS — generators, solar and UPS sales, installation and 24/7 maintenance across Kenya, plus free engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro). Call +254 768 860 665.',
     start_url: '/',
     display: 'standalone',
     background_color: '#000000',
