@@ -45,7 +45,11 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000, // 1 year cache
     dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
+    // FIX (audit 2026-05-09): was 'attachment' which forced every image
+    // served by next/image to arrive with Content-Disposition: attachment,
+    // i.e. as a download. That broke inline display and rich social
+    // previews. 'inline' is the correct value for site imagery.
+    contentDispositionType: 'inline',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
@@ -244,22 +248,41 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()'
           },
+          // FIX (audit 2026-05-09): X-XSS-Protection is deprecated and was
+          // removed from modern browsers; OWASP recommends sending `0` or
+          // omitting it entirely because some legacy versions had bugs that
+          // could *introduce* XSS via this header. Real XSS protection is
+          // delivered by the Content-Security-Policy above.
           {
             key: 'X-XSS-Protection',
-            value: '1; mode=block'
+            value: '0'
           },
           // Cross-Origin policies
           {
             key: 'Cross-Origin-Opener-Policy',
             value: 'same-origin'
           },
+          // FIX (audit 2026-05-09): was 'same-origin' which blocked
+          // LinkedIn / Slack / WhatsApp / Twitter / Facebook from fetching
+          // og-image.jpg for link previews — a direct B2B conversion hit.
+          // 'cross-origin' lets social previewers and search-engine image
+          // crawlers read public assets while the rest of the security
+          // stack (CSP, X-Frame-Options, frame-ancestors) keeps the page
+          // itself protected.
           {
             key: 'Cross-Origin-Resource-Policy',
-            value: 'same-origin'
+            value: 'cross-origin'
           },
+          // FIX (audit 2026-05-09): was 'credentialless'. COEP is only
+          // useful when the app needs SharedArrayBuffer (we don't); the
+          // strict value silently broke every embedded YouTube / Google
+          // Maps / Vimeo on every page that wasn't /pro-building-suite or
+          // /eims-pro (which already had per-route overrides). Setting
+          // 'unsafe-none' restores third-party embeds without weakening
+          // anything we actually rely on.
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: 'credentialless'
+            value: 'unsafe-none'
           },
           // Cache Control
           {
