@@ -1053,7 +1053,7 @@ export default function MotorsBible() {
       <footer className="border-t border-white/10 py-8 px-4 mt-12">
         <div className="max-w-7xl mx-auto text-center text-gray-400">
           <p>The Motors Bible - Kenya's Most Comprehensive Motor Maintenance Guide</p>
-          <p className="text-sm mt-2">Part of Emerson EIMS Maintenance Hub</p>
+          <p className="text-sm mt-2">Part of EmersonEIMS Maintenance Hub</p>
         </div>
       </footer>
     </div>

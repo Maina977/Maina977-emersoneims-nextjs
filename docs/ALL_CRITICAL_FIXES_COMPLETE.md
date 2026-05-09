@@ -266,7 +266,7 @@ const testimonials = [
     company: 'ABC Industries',
     videoUrl: '/videos/testimonial-1.mp4',
     thumbnail: '/images/testimonials/john.jpg',
-    quote: 'Emerson EIMS transformed our energy infrastructure...',
+    quote: 'EmersonEIMS transformed our energy infrastructure...',
     rating: 5,
   },
   // ... more testimonials

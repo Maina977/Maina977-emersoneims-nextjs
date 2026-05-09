@@ -857,7 +857,7 @@ export default function AdvancedDiagnosticsPanel() {
             <span className="text-2xl">🏆</span>
             <div>
               <div className="text-sm font-bold text-white">World's Most Advanced Generator Diagnostic System</div>
-              <div className="text-xs text-slate-400">Features never seen in any diagnostic machine • Exclusively by Emerson EIMS</div>
+              <div className="text-xs text-slate-400">Features never seen in any diagnostic machine • Exclusively by EmersonEIMS</div>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-2">

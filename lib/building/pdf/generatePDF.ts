@@ -1,5 +1,5 @@
 /**
- * PDF Generation Utility for Emerson EIMS
+ * PDF Generation Utility for EmersonEIMS
  * Generates downloadable PDF reports for calculator results, quotes, and service reports
  */
 
@@ -50,7 +50,7 @@ export function generateQuotePDF(quote: GeneratorQuote): void {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Emerson EIMS - ${quote.calculatorType.toUpperCase()} Calculator Report</title>
+  <title>EmersonEIMS - ${quote.calculatorType.toUpperCase()} Calculator Report</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
@@ -215,7 +215,7 @@ export function generateQuotePDF(quote: GeneratorQuote): void {
   </div>
 
   <div class="footer">
-    <p><strong>Emerson Electrical & Industrial Maintenance Services (EIMS)</strong></p>
+    <p><strong>EmersonEIMS</strong></p>
     <p>Nairobi, Kenya | www.emersoneims.com</p>
     <p style="margin-top: 10px;">This report is for estimation purposes only. Actual requirements may vary based on site assessment.</p>
   </div>
@@ -259,7 +259,7 @@ export function generateServiceReportPDF(report: ServiceReport): void {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Emerson EIMS - Service Report ${report.serviceId}</title>
+  <title>EmersonEIMS - Service Report ${report.serviceId}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
@@ -427,7 +427,7 @@ export function generateServiceReportPDF(report: ServiceReport): void {
   </div>
 
   <div class="footer">
-    <p><strong>Emerson Electrical & Industrial Maintenance Services (EIMS)</strong></p>
+    <p><strong>EmersonEIMS</strong></p>
     <p>Phone: +254768860665 | Email: info@emersoneims.com</p>
     <p>www.emersoneims.com</p>
   </div>

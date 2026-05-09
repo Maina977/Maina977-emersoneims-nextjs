@@ -1,4 +1,4 @@
-# 🚀 QUICK START - Deploy Emerson EIMS to www.emersoneims.com
+# 🚀 QUICK START - Deploy EmersonEIMS to www.emersoneims.com
 
 ## ONE-CLICK DEPLOYMENT
 

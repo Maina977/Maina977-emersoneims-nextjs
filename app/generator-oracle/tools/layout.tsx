@@ -50,9 +50,9 @@ export const metadata: Metadata = {
     'coolant temp sensor wiring',
     'generator starting circuit',
   ],
-  authors: [{ name: 'Emerson Industrial Maintenance Services' }],
+  authors: [{ name: 'EmersonEIMS' }],
   creator: 'Emerson EiMS',
-  publisher: 'Emerson Industrial Maintenance Services Limited',
+  publisher: 'EmersonEIMS',
   robots: {
     index: true,
     follow: true,
@@ -113,7 +113,7 @@ const structuredData = {
       ],
       author: {
         '@type': 'Organization',
-        name: 'Emerson Industrial Maintenance Services',
+        name: 'EmersonEIMS',
       },
     },
     {

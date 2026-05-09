@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * EMERSON ENERGY - Contact & Forms E2E Tests
+ * EmersonEIMS - Contact & Forms E2E Tests
  */
 
 test.describe('Contact Page', () => {

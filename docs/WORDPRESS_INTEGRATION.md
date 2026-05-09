@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide explains how to integrate the Emerson EIMS Next.js application with WordPress.
+This guide explains how to integrate the EmersonEIMS Next.js application with WordPress.
 
 ## Integration Methods
 
@@ -78,8 +78,8 @@ Create a WordPress plugin to embed the Next.js app.
 ```php
 <?php
 /**
- * Plugin Name: Emerson EIMS Integration
- * Description: Integrates Next.js Emerson EIMS application
+ * Plugin Name: EmersonEIMS Integration
+ * Description: Integrates Next.js EmersonEIMS application
  * Version: 1.0.0
  */
 

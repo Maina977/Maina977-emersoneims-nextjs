@@ -183,7 +183,7 @@ export const mediaLibrary: MediaItem[] = [
   // Videos
   {
     src: '/videos/FOR%20TRIALS%20IN%20KADENCE.mp4',
-    alt: 'Emerson EIMS Showcase Video',
+    alt: 'EmersonEIMS Showcase Video',
     width: 1920,
     height: 1080,
     priority: true,

@@ -4,7 +4,7 @@
  * ║   SOLARGENIUS PRO™ - WORLD'S MOST ADVANCED SOLAR AI PLATFORM                ║
  * ║   ═══════════════════════════════════════════════════════════════════════   ║
  * ║                                                                              ║
- * ║   Copyright © 2024-2026 EmersonEIMS / Emerson Industrial Maintenance        ║
+ * ║   Copyright © 2024-2026 EmersonEIMS        ║
  * ║   ALL RIGHTS RESERVED WORLDWIDE - 195+ COUNTRIES COVERAGE                   ║
  * ║                                                                              ║
  * ║   MORE ADVANCED THAN AURORA SOLAR - GENERATES QUOTES IN UNDER 5 MINUTES     ║

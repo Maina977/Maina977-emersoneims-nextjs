@@ -82,13 +82,13 @@
     "awwwardsWinningInterface": "Awwwards获奖界面 - 通用诊断机（所有9项服务）"
   },
   "footer": {
-    "copyright": "© 2025 Emerson EIMS。保留所有权利。",
+    "copyright": "© 2025 EmersonEIMS。保留所有权利。",
     "privacy": "隐私政策",
     "terms": "服务条款",
     "contact": "联系我们"
   },
   "seo": {
-    "title": "Emerson EIMS - 能源基础设施管理系统",
+    "title": "EmersonEIMS - 能源基础设施管理系统",
     "description": "专业的能源基础设施管理解决方案，包括发电机、太阳能系统、UPS和全面诊断",
     "keywords": "能源, 基础设施, 发电机, 太阳能, UPS, 诊断, 管理"
   }

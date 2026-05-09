@@ -1639,7 +1639,7 @@ WE PROVIDE:
       },
       {
         title: 'Leading Brands',
-        description: 'We supply APC, Eaton, Vertiv (Emerson), Riello, and other quality brands.',
+        description: 'We supply APC, Eaton, Vertiv, Riello, and other quality brands.',
         icon: '✅'
       },
       {

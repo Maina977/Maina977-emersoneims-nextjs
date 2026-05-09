@@ -131,7 +131,7 @@ export function ScreenReaderAnnouncerProvider({ children }: { children: React.Re
 // Helper function to get readable page name from path
 function getPageNameFromPath(path: string): string {
   const pathMap: Record<string, string> = {
-    '/': 'Home - Emerson EIMS Power Solutions',
+    '/': 'Home - EmersonEIMS Power Solutions',
     '/about': 'About Us',
     '/about-us': 'About Our Company',
     '/contact': 'Contact Us',

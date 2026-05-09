@@ -166,7 +166,7 @@ function LoginScreen({ navigation }) {
         <View style={styles.logoContainer}>
           <Text style={styles.logoText}>☀️</Text>
           <Text style={styles.title}>SolarGenius Pro</Text>
-          <Text style={styles.subtitle}>by Emerson EIMS</Text>
+          <Text style={styles.subtitle}>by EmersonEIMS</Text>
         </View>
 
         <View style={styles.formContainer}>

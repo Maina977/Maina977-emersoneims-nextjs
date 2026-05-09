@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * EMERSON ENERGY - SEO & Performance E2E Tests
+ * EmersonEIMS - SEO & Performance E2E Tests
  * Tests for SEO elements and Core Web Vitals
  */
 

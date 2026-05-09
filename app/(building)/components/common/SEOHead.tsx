@@ -43,7 +43,7 @@ export default function SEOHead({ title, description, canonical, openGraph }: SE
     "@type": "Organization",
     "name": "EmersonEIMS",
     "url": "https://www.emersoneims.com",
-    "logo": "https://www.emersoneims.com/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png",
+    "logo": "https://www.emersoneims.com/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png",
     "contactPoint": [
       {
         "@type": "ContactPoint",

@@ -1,7 +1,7 @@
 {
   "name": "emerson-eims",
   "version": "1.0.0",
-  "description": "Emerson EIMS - Energy Infrastructure Management System with WordPress Integration",
+  "description": "EmersonEIMS - Energy Infrastructure Management System with WordPress Integration",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -50,6 +50,6 @@
     "three.js",
     "webgl"
   ],
-  "author": "Emerson EIMS",
+  "author": "EmersonEIMS",
   "license": "MIT"
 }

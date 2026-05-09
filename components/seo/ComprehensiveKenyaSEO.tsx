@@ -32,7 +32,7 @@ export default function ComprehensiveKenyaSEO() {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
     "name": "EmersonEIMS",
-    "alternateName": ["Emerson EIMS", "Emerson Energy Infrastructure", "EmersonEIMS Kenya"],
+    "alternateName": ["EmersonEIMS", "EmersonEIMS", "EmersonEIMS Kenya"],
     "description": `Kenya's #1 Power Solutions Provider with 3-YEAR WARRANTY on generators. Serving ${KENYA_STATS.counties} counties, ${KENYA_STATS.hospitals.toLocaleString()}+ hospitals, ${KENYA_STATS.hotels.toLocaleString()}+ hotels, ${KENYA_STATS.schools.toLocaleString()}+ schools.`,
     "url": "https://www.emersoneims.com",
     "logo": "https://www.emersoneims.com/images/logo-tagline.png",
@@ -183,7 +183,7 @@ export default function ComprehensiveKenyaSEO() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "EmersonEIMS",
-    "alternateName": "Emerson Energy Infrastructure Management Solutions",
+    "alternateName": "EmersonEIMS",
     "url": "https://www.emersoneims.com",
     "description": `Kenya's #1 Power Solutions Provider. 3-Year Generator Warranty. ${KENYA_STATS.counties} Counties. ${KENYA_STATS.hospitals.toLocaleString()}+ Hospitals. ${KENYA_STATS.hotels.toLocaleString()}+ Hotels.`,
     "potentialAction": {

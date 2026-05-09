@@ -486,9 +486,9 @@ public/
   - **Use Case**: Water systems, Field operations, Service showcase
   - **Description**: Active borehole drilling with foamy drilling mud flowing from drill bit
   
-- `/images/premium/borehole-drilling-emerson.jpg` - Emerson EIMS drilling
+- `/images/premium/borehole-drilling-emerson.jpg` - EmersonEIMS drilling
   - **Use Case**: Company operations, Water systems, Field work
-  - **Description**: Drilling operation with Emerson EIMS DIESEL branded worker and drill pipes
+  - **Description**: Drilling operation with EmersonEIMS DIESEL branded worker and drill pipes
 
 ### **19. SOLAR CARPORTS** ☀️🚗
 - `/images/premium/solar-carport-underside.jpg` - Solar carport structure

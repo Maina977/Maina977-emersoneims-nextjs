@@ -1713,7 +1713,7 @@ export default function Ultimate9In1Calculator() {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Emerson EIMS - ${calcNames[activeCalc]} Calculator Report</title>
+  <title>EmersonEIMS - ${calcNames[activeCalc]} Calculator Report</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, sans-serif; color: #1a1a2e; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; }
@@ -1778,7 +1778,7 @@ export default function Ultimate9In1Calculator() {
   ` : ''}
 
   <h2>📞 Get Professional Quote</h2>
-  <p>Contact Emerson EIMS for a detailed quote and professional installation:</p>
+  <p>Contact EmersonEIMS for a detailed quote and professional installation:</p>
   <table>
     <tr><td>Phone</td><td><strong>+254 722 274 914</strong></td></tr>
     <tr><td>WhatsApp</td><td><strong>+254 722 274 914</strong></td></tr>
@@ -1786,7 +1786,7 @@ export default function Ultimate9In1Calculator() {
   </table>
 
   <div class="footer">
-    <p><strong>Emerson Industrial Maintenance Services (EIMS)</strong></p>
+    <p><strong>EmersonEIMS</strong></p>
     <p>Nairobi, Kenya | www.emersoneims.com</p>
     <p style="margin-top: 10px;">This report is for estimation purposes only. Actual requirements may vary based on site assessment.</p>
   </div>

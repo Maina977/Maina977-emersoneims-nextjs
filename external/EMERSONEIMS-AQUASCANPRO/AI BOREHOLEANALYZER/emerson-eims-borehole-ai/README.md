@@ -1,4 +1,4 @@
-# Emerson EIMS Borehole AI
+# EmersonEIMS Borehole AI
 
 AI-powered borehole site analysis and recommendation system for Africa.
 

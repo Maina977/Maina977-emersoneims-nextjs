@@ -486,7 +486,7 @@ Sitemap: https://www.emersoneims.com/sitemap.xml
 # COPYRIGHT NOTICE
 # ═══════════════════════════════════════════════════════════════════════════════
 # 
-# © 2012-2026 EmersonEIMS - Emerson Electrical & Instrumentation Management Services
+# © 2012-2026 EmersonEIMS
 # All Rights Reserved.
 # 
 # Unauthorized crawling, scraping, copying, or reproduction of this website

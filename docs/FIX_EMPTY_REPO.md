@@ -34,7 +34,7 @@ This will:
 
 1. Go to: **https://github.com/new**
 2. Repository name: `emersoneims-nextjs`
-3. Description: `Emerson EIMS - Awwwards 9.8/10 Website`
+3. Description: `EmersonEIMS - Awwwards 9.8/10 Website`
 4. Make it: **Public** or **Private** (your choice)
 5. **IMPORTANT:** DO NOT check:
    - ❌ Add a README file

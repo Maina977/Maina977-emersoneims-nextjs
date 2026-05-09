@@ -109,7 +109,7 @@ export default function LiveChat({
     setTimeout(() => {
       const response: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Hello! This is Sarah from Emerson EIMS. How can I help you today?',
+        text: 'Hello! This is Sarah from EmersonEIMS. How can I help you today?',
         sender: 'human',
         timestamp: new Date(),
       };

@@ -18,7 +18,7 @@ export default function AdvancedPreloader() {
     // Preload critical images
     const images = [
       '/og-image.jpg',
-      '/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png',
+      '/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png',
     ];
 
     // Preload critical routes

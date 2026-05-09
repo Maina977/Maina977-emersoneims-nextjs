@@ -92,7 +92,7 @@ export default function SciFiFooter() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src="/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png"
+                  src="/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png"
                   alt="EmersonEIMS Logo"
                   className="h-16 w-auto object-contain"
                   style={{

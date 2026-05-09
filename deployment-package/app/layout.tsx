@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Emerson EIMS - Energy Infrastructure Management System",
-    template: "%s | Emerson EIMS",
+    default: "EmersonEIMS - Energy Infrastructure Management System",
+    template: "%s | EmersonEIMS",
   },
   description: "Professional energy infrastructure management solutions including generators, solar systems, UPS, and comprehensive diagnostics.",
   keywords: [
@@ -25,11 +25,11 @@ export const metadata: Metadata = {
     "UPS",
     "power infrastructure",
     "diagnostics",
-    "Emerson EIMS",
+    "EmersonEIMS",
   ],
-  authors: [{ name: "Emerson EIMS" }],
-  creator: "Emerson EIMS",
-  publisher: "Emerson EIMS",
+  authors: [{ name: "EmersonEIMS" }],
+  creator: "EmersonEIMS",
+  publisher: "EmersonEIMS",
   formatDetection: {
     email: false,
     address: false,
@@ -40,21 +40,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.emersoneims.com",
-    siteName: "Emerson EIMS",
-    title: "Emerson EIMS - Energy Infrastructure Management System",
+    siteName: "EmersonEIMS",
+    title: "EmersonEIMS - Energy Infrastructure Management System",
     description: "Professional energy infrastructure management solutions",
     images: [
       {
         url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.emersoneims.com"}/og-image.jpg`,
         width: 1200,
         height: 630,
-        alt: "Emerson EIMS - Energy Infrastructure Management System",
+        alt: "EmersonEIMS - Energy Infrastructure Management System",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Emerson EIMS - Energy Infrastructure Management System",
+    title: "EmersonEIMS - Energy Infrastructure Management System",
     description: "Professional energy infrastructure management solutions",
     images: [`${process.env.NEXT_PUBLIC_SITE_URL || "https://www.emersoneims.com"}/twitter-image.jpg`],
   },

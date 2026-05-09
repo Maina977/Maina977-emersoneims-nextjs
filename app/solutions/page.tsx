@@ -29,8 +29,8 @@ export default function SolutionsHome() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'VideoObject',
-            name: 'Power Solutions in Action - Emerson EiMS Kenya',
-            description: 'Watch how Emerson EiMS delivers world-class power solutions including generators, solar systems, and energy infrastructure across Kenya and East Africa.',
+            name: 'Power Solutions in Action - EmersonEIMS Kenya',
+            description: 'Watch how EmersonEIMS delivers world-class power solutions including generators, solar systems, and energy infrastructure across Kenya and East Africa.',
             thumbnailUrl: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
             uploadDate: '2024-01-01',
             contentUrl: 'https://www.emersoneims.com/videos/Solution(1).mp4',
@@ -38,10 +38,10 @@ export default function SolutionsHome() {
             duration: 'PT60S',
             publisher: {
               '@type': 'Organization',
-              name: 'Emerson EiMS',
+              name: 'EmersonEIMS',
               logo: {
                 '@type': 'ImageObject',
-                url: 'https://www.emersoneims.com/images/Emerson EIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png',
+                url: 'https://www.emersoneims.com/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png',
                 width: 400,
                 height: 200
               }

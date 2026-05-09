@@ -354,7 +354,7 @@ export default async function BrandLocationPage({ params }: Props) {
               },
               seller: {
                 '@type': 'LocalBusiness',
-                name: 'Emerson EIMS',
+                name: 'EmersonEIMS',
                 telephone: '+254768860665',
                 address: {
                   '@type': 'PostalAddress',

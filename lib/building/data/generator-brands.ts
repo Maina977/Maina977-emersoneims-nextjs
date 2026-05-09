@@ -56,7 +56,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
     faqs: [
       {
         question: 'Where can I buy Cummins generators in {location}?',
-        answer: 'Emerson EIMS is an authorized Cummins dealer in {location}. We supply new Cummins generators from 7.5kVA to 3500kVA with warranty and support.'
+        answer: 'EmersonEIMS is an authorized Cummins dealer in {location}. We supply new Cummins generators from 7.5kVA to 3500kVA with warranty and support.'
       },
       {
         question: 'How much do Cummins generators cost in {location}?',

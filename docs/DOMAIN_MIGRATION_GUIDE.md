@@ -1,4 +1,4 @@
-# 🌐 Domain Migration Guide: Emerson EIMS
+# 🌐 Domain Migration Guide: EmersonEIMS
 
 ## Overview
 Migrating from `my-app-ten-rouge-96.vercel.app` to **`www.emersoneims.com`**

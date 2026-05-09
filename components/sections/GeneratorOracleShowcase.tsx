@@ -577,7 +577,7 @@ export default function GeneratorOracleShowcase() {
           className="mt-16 pt-8 border-t border-slate-800"
         >
           <p className="text-slate-600 text-xs text-center max-w-4xl mx-auto leading-relaxed">
-            <strong>Disclaimer:</strong> Generator Oracle is an independent diagnostic assistant developed by Emerson EIMS.
+            <strong>Disclaimer:</strong> Generator Oracle is an independent diagnostic assistant developed by EmersonEIMS.
             Compatible with controllers from DSE (Deep Sea Electronics), ComAp, Woodward, SmartGen, Caterpillar PowerWizard,
             Datakom, Lovato Electric, Siemens, ENKO, and Volvo Penta VODIA.
             These are trademarks of their respective owners. This tool is not affiliated with or endorsed by these companies.

@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 // /pro-building-suite is kept as a permanent redirect so any existing links,
 // service-worker prefetches, or browser bookmarks land on the right page.
 export const metadata: Metadata = {
-  title: 'Building Suite Pro | Emerson EIMS',
+  title: 'Building Suite Pro | EmersonEIMS',
   robots: { index: false, follow: true },
   alternates: { canonical: '/solutions/building' },
 };

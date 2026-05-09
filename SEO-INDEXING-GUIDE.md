@@ -81,7 +81,7 @@ Your website is NOT showing up on Google or Bing because **search engines don't 
 1. **Go to**: https://www.google.com/business/
 2. **Click**: "Manage now"
 3. **Sign in** with Google account
-4. **Enter business name**: "Emerson EIMS" or "EmersonEIMS"
+4. **Enter business name**: "EmersonEIMS" or "EmersonEIMS"
 5. **Click**: "Next"
 
 ### Fill Out Business Information:

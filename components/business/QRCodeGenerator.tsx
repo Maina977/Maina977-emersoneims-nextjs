@@ -38,7 +38,7 @@ interface QRCodeProps {
 // Company contact info - UPDATED WITH REAL EMERSONEIMS DETAILS
 const COMPANY_INFO = {
   name: 'EmersonEIMS',
-  fullName: 'Emerson Electrical & Instrumentation Management Services',
+  fullName: 'EmersonEIMS',
   website: 'https://www.emersoneims.com',
   phone: '+254782914717',
   whatsapp: '+254768860665', // Primary WhatsApp number

@@ -1,4 +1,4 @@
-# Emerson EIMS - Energy Infrastructure Management System
+# EmersonEIMS - Energy Infrastructure Management System
 
 **Awwwards 9.8/10 Website** - Production Ready
 
@@ -124,7 +124,7 @@ MIT
 
 ## 👤 Author
 
-Emerson EIMS
+EmersonEIMS
 
 ---
 

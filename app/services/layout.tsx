@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     'electrical contractor Kenya',
     'industrial electrician Kenya'
   ],
-  authors: [{ name: 'Emerson Industrial Maintenance Services' }],
+  authors: [{ name: 'EmersonEIMS' }],
   creator: 'EmersonEIMS',
-  publisher: 'Emerson Industrial Maintenance Services Limited',
+  publisher: 'EmersonEIMS',
   robots: {
     index: true,
     follow: true,
@@ -92,7 +92,7 @@ const structuredData = {
     {
       '@type': 'LocalBusiness',
       '@id': 'https://www.emersoneims.com/#organization',
-      name: 'Emerson Industrial Maintenance Services',
+      name: 'EmersonEIMS',
       description: 'Kenya\'s leading provider of power solutions including Cummins generators, solar systems, electrical services, and HVAC.',
       url: 'https://www.emersoneims.com',
       telephone: '+254768860665',

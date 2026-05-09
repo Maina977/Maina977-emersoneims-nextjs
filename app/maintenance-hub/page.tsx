@@ -582,7 +582,7 @@ export default function UniversalCommandBridge() {
             <span className="text-cyan-400 text-sm">COMMAND BRIDGE v3.0</span>
           </div>
           <p className="text-slate-500 text-xs mt-4">
-            © 2024 Emerson EIMS • World's Most Comprehensive Maintenance Platform
+            © 2024 EmersonEIMS • World's Most Comprehensive Maintenance Platform
           </p>
         </motion.div>
       </div>

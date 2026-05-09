@@ -1549,7 +1549,7 @@ export default function SettingsPanel({
                 </div>
 
                 <div className="text-center text-slate-500 text-sm py-4">
-                  © 2026 Emerson EIMS. All rights reserved.
+                  © 2026 EmersonEIMS. All rights reserved.
                 </div>
               </motion.div>
             )}

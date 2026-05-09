@@ -2165,7 +2165,7 @@ export default function SolarBible() {
           </div>
           <div className="pt-8 border-t border-slate-800 text-center">
             <p className="text-slate-500 text-sm">
-              © 2026 Emerson Industrial Maintenance Services Limited. All rights reserved.
+              © 2026 EmersonEIMS. All rights reserved.
             </p>
           </div>
         </div>

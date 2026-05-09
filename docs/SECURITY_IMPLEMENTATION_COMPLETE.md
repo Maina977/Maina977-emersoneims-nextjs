@@ -163,7 +163,7 @@ Config access (.env, .git, .htaccess)
 ## ⚠️ LEGAL DISCLAIMER
 
 ```
-© 2012-2026 EmersonEIMS - Emerson Electrical & Instrumentation Management Services
+© 2012-2026 EmersonEIMS
 All Rights Reserved.
 
 This website and all its contents are protected by international copyright law.

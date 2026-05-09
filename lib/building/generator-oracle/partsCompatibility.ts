@@ -2,7 +2,7 @@
  * Generator Oracle - Parts Compatibility Matrix
  *
  * EMERSON EIMS PROPRIETARY SYSTEM
- * All parts purchasing directed to Emerson EIMS Parts Department
+ * All parts purchasing directed to EmersonEIMS Parts Department
  * No external supplier marketing
  *
  * Cross-reference system for generator parts:
@@ -179,7 +179,7 @@ export const PART_CATEGORIES: Record<PartCategory, { name: string; icon: string;
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PARTS DATABASE - All purchasing directed to Emerson EIMS
+// PARTS DATABASE - All purchasing directed to EmersonEIMS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const PARTS_DATABASE: GeneratorPart[] = [
@@ -947,7 +947,7 @@ export function getPartsCompatibilityService(): PartsCompatibilityService {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CONTACT SALES FUNCTION - All purchases through Emerson EIMS
+// CONTACT SALES FUNCTION - All purchases through EmersonEIMS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function getPartsContactInfo(): {

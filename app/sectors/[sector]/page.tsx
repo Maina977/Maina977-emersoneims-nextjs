@@ -250,7 +250,7 @@ export default async function SectorPage({ params }: Props) {
             description: sector.description,
             provider: {
               '@type': 'Organization',
-              name: 'Emerson EIMS',
+              name: 'EmersonEIMS',
               telephone: '+254768860665',
             },
             areaServed: {

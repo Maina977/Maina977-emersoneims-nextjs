@@ -11,7 +11,7 @@ import { type License } from '@/lib/generator-oracle/licensing';
 
 // Business Details
 const BUSINESS = {
-  company: 'Emerson Industrial Maintenance Services Limited',
+  company: 'EmersonEIMS',
   phone: '0782914717',
   whatsapp: '254782914717',
 };
@@ -24,7 +24,7 @@ const PAYMENT_INFO = {
   bank: {
     bank: 'Equity Bank',
     branch: 'Embakasi Branch',
-    accountName: 'Emerson Industrial Maintenance Services Limited',
+    accountName: 'EmersonEIMS',
     accountNumber: '1320285133753',
   },
 };

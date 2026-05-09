@@ -58,7 +58,7 @@ export interface EducationalContent {
   proTips?: string[];
   commonMistakes?: string[];
   whenToCallProfessional?: string[];
-  partsPageLink?: string; // Link to Emerson EIMS parts
+  partsPageLink?: string; // Link to EmersonEIMS parts
   lastUpdated: string;
 }
 

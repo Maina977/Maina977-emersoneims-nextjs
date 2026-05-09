@@ -255,7 +255,7 @@ export default async function BrandPage({ params }: Props) {
               availability: 'https://schema.org/InStock',
               seller: {
                 '@type': 'Organization',
-                name: 'Emerson EIMS',
+                name: 'EmersonEIMS',
                 telephone: '+254768860665',
               },
             },

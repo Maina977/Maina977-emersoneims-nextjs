@@ -1,4 +1,4 @@
-# Deployment Guide - Emerson EIMS
+# Deployment Guide - EmersonEIMS
 
 Quick deployment guide for `www.emersoneims.com` to Vercel.
 

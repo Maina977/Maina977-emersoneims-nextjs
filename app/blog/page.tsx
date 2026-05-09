@@ -5,7 +5,7 @@ import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 export const metadata: Metadata = {
-  title: 'Generator & Solar Blog | Expert Insights Kenya | Emerson EiMS',
+  title: 'Generator & Solar Blog | Expert Insights Kenya | EmersonEIMS',
   description: 'Expert articles on generator maintenance, solar power, cost savings, and safety tips for Kenya. Free guides from 15+ years of experience. Updated weekly.',
   keywords: [
     'generator blog Kenya',
@@ -18,11 +18,11 @@ export const metadata: Metadata = {
     'generator buying guide Kenya',
   ].join(', '),
   openGraph: {
-    title: 'Generator & Solar Power Blog | Emerson EiMS Kenya',
+    title: 'Generator & Solar Power Blog | EmersonEIMS Kenya',
     description: 'Expert articles and guides on generators and solar power for Kenya. Free tips from industry professionals.',
     type: 'website',
     url: 'https://www.emersoneims.com/blog',
-    siteName: 'Emerson EiMS',
+    siteName: 'EmersonEIMS',
   },
   alternates: {
     canonical: 'https://www.emersoneims.com/blog',
@@ -45,12 +45,12 @@ export default function BlogPage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Blog',
-            name: 'Emerson EiMS Power Solutions Blog',
+            name: 'EmersonEIMS Power Solutions Blog',
             description: 'Expert articles on generators, solar power, and energy solutions in Kenya',
             url: 'https://www.emersoneims.com/blog',
             publisher: {
               '@type': 'Organization',
-              name: 'Emerson EiMS',
+              name: 'EmersonEIMS',
               url: 'https://www.emersoneims.com',
               logo: {
                 '@type': 'ImageObject',
@@ -295,7 +295,7 @@ export default function BlogPage() {
           </h2>
           <p className="text-gray-400 mb-8">
             Subscribe to receive free guides, maintenance reminders, and exclusive
-            offers from Emerson EiMS. No spam, unsubscribe anytime.
+            offers from EmersonEIMS. No spam, unsubscribe anytime.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">

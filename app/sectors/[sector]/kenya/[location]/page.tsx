@@ -317,7 +317,7 @@ export default async function SectorLocationPage({ params }: Props) {
             description: `${sector.description}. Serving ${county.name} County, Kenya.`,
             provider: {
               '@type': 'LocalBusiness',
-              name: 'Emerson EIMS',
+              name: 'EmersonEIMS',
               telephone: '+254768860665',
               address: {
                 '@type': 'PostalAddress',

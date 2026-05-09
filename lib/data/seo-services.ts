@@ -282,7 +282,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'What are the best generator maintenance companies in {location}?',
-        answer: 'Emerson EIMS is a leading generator maintenance company in {location}, offering comprehensive preventive maintenance and AMC contracts for all generator brands.'
+        answer: 'EmersonEIMS is a leading generator maintenance company in {location}, offering comprehensive preventive maintenance and AMC contracts for all generator brands.'
       },
       {
         question: 'Do generator maintenance companies in {location} offer AMC?',
@@ -588,7 +588,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'What is the best solar company in {location}?',
-        answer: 'Emerson EIMS is the leading solar company in {location}, offering complete solar solutions with professional installation and after-sales support.'
+        answer: 'EmersonEIMS is the leading solar company in {location}, offering complete solar solutions with professional installation and after-sales support.'
       },
       {
         question: 'Do solar companies in {location} offer financing?',
@@ -596,7 +596,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'How do I choose a solar company in {location}?',
-        answer: 'Look for licensed installers, quality products, good warranties, and local after-sales support. Emerson EIMS ticks all boxes in {location}.'
+        answer: 'Look for licensed installers, quality products, good warranties, and local after-sales support. EmersonEIMS ticks all boxes in {location}.'
       }
     ]
   },
@@ -629,7 +629,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'How do I find solar experts in {location}?',
-        answer: 'Emerson EIMS has certified solar experts serving {location}. We provide free consultations and professional solar system design.'
+        answer: 'EmersonEIMS has certified solar experts serving {location}. We provide free consultations and professional solar system design.'
       },
       {
         question: 'What qualifications should solar experts have?',
@@ -796,7 +796,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'How do I find certified solar technicians in {location}?',
-        answer: 'Emerson EIMS employs certified solar technicians in {location}. All our installers are trained and licensed for solar installations.'
+        answer: 'EmersonEIMS employs certified solar technicians in {location}. All our installers are trained and licensed for solar installations.'
       },
       {
         question: 'What certifications should solar technicians have?',
@@ -1124,7 +1124,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'Where can I buy solar parts in {location}?',
-        answer: 'Emerson EIMS stocks all solar spare parts in {location}. We offer fast delivery and competitive prices on components.'
+        answer: 'EmersonEIMS stocks all solar spare parts in {location}. We offer fast delivery and competitive prices on components.'
       },
       {
         question: 'Do you sell MC4 connectors in {location}?',
@@ -1211,7 +1211,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'What is the best motor rewinding company in {location}?',
-        answer: 'Emerson EIMS is the leading motor rewinding company in {location}, handling all types of electric motors with quality guarantee.'
+        answer: 'EmersonEIMS is the leading motor rewinding company in {location}, handling all types of electric motors with quality guarantee.'
       },
       {
         question: 'Do motor rewinding companies in {location} collect motors?',
@@ -1219,7 +1219,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'How do I choose a motor rewinding company in {location}?',
-        answer: 'Look for experience, quality materials, fast turnaround, and warranty. Emerson EIMS meets all these criteria in {location}.'
+        answer: 'Look for experience, quality materials, fast turnaround, and warranty. EmersonEIMS meets all these criteria in {location}.'
       }
     ]
   },
@@ -1457,7 +1457,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'Where can I buy motor bearings in {location}?',
-        answer: 'Emerson EIMS stocks all motor bearings in {location}. SKF, NSK, FAG, and other quality brands available.'
+        answer: 'EmersonEIMS stocks all motor bearings in {location}. SKF, NSK, FAG, and other quality brands available.'
       },
       {
         question: 'Do you stock motor capacitors in {location}?',
@@ -1577,7 +1577,7 @@ export const SEO_SERVICES: SEOService[] = [
     },
     features: ['Licensed AC contractors', 'All major brands', 'Residential & commercial', 'Installation & repairs', 'Maintenance contracts', '24/7 emergency service'],
     faqs: [
-      { question: 'What is the best AC company in {location}?', answer: 'Emerson EIMS is a leading AC company in {location}, offering professional installation, repair, and maintenance for all AC brands.' },
+      { question: 'What is the best AC company in {location}?', answer: 'EmersonEIMS is a leading AC company in {location}, offering professional installation, repair, and maintenance for all AC brands.' },
       { question: 'Do AC companies in {location} offer free quotes?', answer: 'Yes, we provide free site assessments and quotes for AC installation in {location}. No obligation.' },
       { question: 'Which AC brands do you install in {location}?', answer: 'We install all major brands including Daikin, Samsung, LG, Carrier, Midea, and more in {location}.' }
     ]

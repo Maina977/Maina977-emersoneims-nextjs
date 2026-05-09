@@ -56,7 +56,7 @@ export const CopyrightNotice: React.FC<CopyrightNoticeProps> = ({
       <div className="border-t border-gray-800 pt-6 mt-6">
         {/* Main Copyright */}
         <p className="text-sm font-semibold text-white mb-2">
-          © {yearDisplay} EmersonEIMS - Emerson Electrical & Instrumentation Management Services
+          © {yearDisplay} EmersonEIMS
         </p>
         
         {/* Legal Statement */}

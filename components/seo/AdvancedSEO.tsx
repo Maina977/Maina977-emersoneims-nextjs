@@ -42,7 +42,7 @@ export default function AdvancedSEO() {
             '@type': 'Organization',
             '@id': 'https://www.emersoneims.com/#organization',
             name: 'EmersonEIMS - Best Generator Company in Kenya',
-            alternateName: ['EmersonEIMS', 'Emerson Energy & Infrastructure Management Solutions', 'Generator Companies in Kenya', 'Generator Suppliers Kenya'],
+            alternateName: ['EmersonEIMS', 'EmersonEIMS', 'Generator Companies in Kenya', 'Generator Suppliers Kenya'],
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/images/logo-tagline.png',
             description: 'Kenya\'s #1 Generator Company - Sales, Installation, Maintenance & Repairs. Cummins, Perkins, FG Wilson Authorized Dealer. Solar, UPS, Motor Rewinding. 12+ Years Experience, 500+ Projects, 47 Counties.',

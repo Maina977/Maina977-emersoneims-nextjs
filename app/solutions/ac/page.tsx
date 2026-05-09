@@ -60,7 +60,7 @@ const AC_OVERVIEW = [
   },
   {
     title: "Our Comprehensive AC Services",
-    content: `Emerson Industrial Maintenance Services provides complete air conditioning solutions across Kenya and East Africa. Our services include system design and load calculations, supply of quality equipment from leading brands, professional installation with proper commissioning, preventive maintenance contracts, emergency repair services, refrigerant handling and recharging, compressor repairs and replacements, control system upgrades, and energy efficiency consulting. We service all AC types including split systems, cassettes, ducted systems, VRF/VRV, and chillers. Our technicians are factory-trained on major brands including Daikin, LG, Samsung, Midea, Carrier, and others. With fully equipped service vehicles and well-stocked spare parts inventory, we provide fast, reliable service to minimize your downtime.`
+    content: `EmersonEIMS provides complete air conditioning solutions across Kenya and East Africa. Our services include system design and load calculations, supply of quality equipment from leading brands, professional installation with proper commissioning, preventive maintenance contracts, emergency repair services, refrigerant handling and recharging, compressor repairs and replacements, control system upgrades, and energy efficiency consulting. We service all AC types including split systems, cassettes, ducted systems, VRF/VRV, and chillers. Our technicians are factory-trained on major brands including Daikin, LG, Samsung, Midea, Carrier, and others. With fully equipped service vehicles and well-stocked spare parts inventory, we provide fast, reliable service to minimize your downtime.`
   }
 ];
 

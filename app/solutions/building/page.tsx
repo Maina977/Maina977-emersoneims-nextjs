@@ -8,7 +8,7 @@ import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 // iframe — exactly the same component used by /pro-building-suite. There is
 // only ONE building-suite UI in this codebase and this is its home.
 export const metadata: Metadata = {
-  title: 'Pro Building Suite | Emerson EIMS',
+  title: 'Pro Building Suite | EmersonEIMS',
   description:
     'Full EIMS engineering, quantity surveying, BIM, and professional reports — Building Suite Pro.',
   robots: { index: true, follow: true },

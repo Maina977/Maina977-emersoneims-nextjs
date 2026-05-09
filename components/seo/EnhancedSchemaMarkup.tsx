@@ -246,7 +246,7 @@ export function LocalBusinessWithAreasSchema() {
     '@type': 'LocalBusiness',
     '@id': 'https://www.emersoneims.com/#organization',
     name: 'EmersonEIMS',
-    alternateName: 'Emerson Energy Infrastructure Management Solutions',
+    alternateName: 'EmersonEIMS',
     url: 'https://www.emersoneims.com',
     logo: 'https://www.emersoneims.com/images/logo-tagline.png',
     image: 'https://www.emersoneims.com/og-image.jpg',

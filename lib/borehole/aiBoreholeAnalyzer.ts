@@ -4,7 +4,7 @@
  * ║   AQUASCAN PRO™ - AI BOREHOLE PRE-ASSESSMENT ANALYZER                       ║
  * ║   The World's Most Comprehensive AI-Powered Groundwater Analysis System     ║
  * ║                                                                              ║
- * ║   Copyright © 2024-2026 EmersonEIMS / Emerson Industrial Maintenance        ║
+ * ║   Copyright © 2024-2026 EmersonEIMS        ║
  * ║   All Rights Reserved Worldwide                                              ║
  * ║                                                                              ║
  * ║   PROPRIETARY AND CONFIDENTIAL                                               ║
@@ -42,7 +42,7 @@
 // ANTI-THEFT PROTECTION - DO NOT REMOVE
 const AQUASCAN_LICENSE = {
   product: 'AquaScan Pro™',
-  owner: 'EmersonEIMS / Emerson Industrial Maintenance Services',
+  owner: 'EmersonEIMS',
   copyright: '© 2024-2026 All Rights Reserved',
   trademark: 'AquaScan Pro™ is a registered trademark',
   patent: 'Patent Pending - Groundwater AI Analysis Methods',

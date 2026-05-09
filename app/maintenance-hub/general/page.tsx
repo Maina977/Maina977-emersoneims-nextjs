@@ -953,7 +953,7 @@ export default function GeneralServicesBible() {
 
         {/* Why Choose Us */}
         <section className="mb-12">
-          <h3 className="text-xl font-bold text-white mb-6 text-center">Why Choose Emerson EIMS?</h3>
+          <h3 className="text-xl font-bold text-white mb-6 text-center">Why Choose EmersonEIMS?</h3>
           <div className="grid md:grid-cols-4 gap-4">
             {[
               { icon: '🏆', title: 'Expert Technicians', desc: 'Certified professionals with 10+ years experience' },
@@ -974,7 +974,7 @@ export default function GeneralServicesBible() {
       {/* Footer */}
       <footer className="bg-slate-900 border-t border-slate-800 py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-slate-500 text-sm">© 2026 Emerson Industrial Maintenance Services Limited</p>
+          <p className="text-slate-500 text-sm">© 2026 EmersonEIMS</p>
           <p className="text-slate-600 text-xs mt-2">Kenya's Most Comprehensive Maintenance Services Provider</p>
         </div>
       </footer>

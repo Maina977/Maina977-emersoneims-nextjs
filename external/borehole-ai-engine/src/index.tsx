@@ -7843,7 +7843,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       })}
                     </div>
                     <div style={{marginTop:12,fontSize:11,color:'#64748b',textAlign:'center'}}>
-                      Audit timestamp: {audit.timestamp} — 10 checks enforced per Emerson EIMS quality policy
+                      Audit timestamp: {audit.timestamp} — 10 checks enforced per EmersonEIMS quality policy
                     </div>
                   </div>
                 );
@@ -8493,7 +8493,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
         {activeView==='feedback' && renderFeedback()}
       </main>
       <footer className="app-footer">
-        <span>&copy; {new Date().getFullYear()} Emerson EIMS &mdash; AquaScan Pro v3.0 &bull; {SCI.TOTAL_CAPABILITIES} Capabilities &bull; 7 Scientific Domains &bull; 8 AI Subsystems</span>
+        <span>&copy; {new Date().getFullYear()} EmersonEIMS &mdash; AquaScan Pro v3.0 &bull; {SCI.TOTAL_CAPABILITIES} Capabilities &bull; 7 Scientific Domains &bull; 8 AI Subsystems</span>
       </footer>
     </div>
   );

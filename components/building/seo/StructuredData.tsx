@@ -27,7 +27,7 @@ export function OrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Emerson EiMS',
-    alternateName: 'Emerson Energy & Infrastructure Management Solutions',
+    alternateName: 'EmersonEIMS',
     url: 'https://www.emersoneims.com',
     logo: 'https://www.emersoneims.com/logo.png',
     description: 'Leading power and energy solutions provider in Kenya and East Africa. Generators, Solar, UPS, Electrical Services.',
@@ -410,7 +410,7 @@ export function WebSiteSchema() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'EmersonEIMS',
-    alternateName: 'Emerson Energy Infrastructure Management Solutions',
+    alternateName: 'EmersonEIMS',
     url: 'https://www.emersoneims.com',
     potentialAction: {
       '@type': 'SearchAction',
@@ -810,7 +810,7 @@ export function AboutPageSchema() {
     mainEntity: {
       '@type': 'Organization',
       name: 'EmersonEIMS',
-      alternateName: 'Emerson Energy Infrastructure Management Solutions',
+      alternateName: 'EmersonEIMS',
       foundingDate: '2012',
       foundingLocation: {
         '@type': 'Place',

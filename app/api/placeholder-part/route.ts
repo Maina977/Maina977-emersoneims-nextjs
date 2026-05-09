@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       <rect x="50" y="380" width="300" height="3" rx="1.5" fill="url(#accent)" opacity="0.5"/>
 
       <!-- EmersonEIMS watermark -->
-      <text x="200" y="360" font-family="Arial, sans-serif" font-size="10" fill="#444" text-anchor="middle">EMERSON EIMS - Genuine Parts</text>
+      <text x="200" y="360" font-family="Arial, sans-serif" font-size="10" fill="#444" text-anchor="middle">EmersonEIMS - Genuine Parts</text>
     </svg>
   `;
 

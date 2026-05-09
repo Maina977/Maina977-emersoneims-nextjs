@@ -1,4 +1,4 @@
-# 🚀 Vercel Deployment Guide - Emerson EIMS
+# 🚀 Vercel Deployment Guide - EmersonEIMS
 
 ## ✅ Pre-Deployment Checklist
 

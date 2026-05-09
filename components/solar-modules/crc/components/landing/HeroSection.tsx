@@ -149,7 +149,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <View style={styles.trustSection}>
         <Text style={styles.trustTitle}>Trusted by Industry Leaders</Text>
         <View style={styles.trustLogos}>
-          <Text style={styles.trustLogo}>🏢 Emerson EIMS</Text>
+          <Text style={styles.trustLogo}>🏢 EmersonEIMS</Text>
           <Text style={styles.trustLogo}>⚡ Kenya Power</Text>
           <Text style={styles.trustLogo}>🌍 UNEP</Text>
         </View>

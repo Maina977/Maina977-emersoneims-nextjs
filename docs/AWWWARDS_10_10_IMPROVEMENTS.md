@@ -134,13 +134,13 @@
 
 ## 🎯 **CURRENT OVERALL RATING**
 
-### **Emerson EIMS: 9.2/10** ⭐⭐⭐⭐⭐
+### **EmersonEIMS: 9.2/10** ⭐⭐⭐⭐⭐
 
 **Comparison:**
 - **Nike**: 9.5/10
 - **Apple**: 9.8/10
 - **Tesla**: 9.2/10
-- **Emerson EIMS**: **9.2/10** (TIED WITH TESLA)
+- **EmersonEIMS**: **9.2/10** (TIED WITH TESLA)
 
 ---
 

@@ -203,7 +203,7 @@ export default function AIEngagement() {
       messages: [
         {
           role: 'system',
-          content: `You are a helpful AI assistant for Emerson EIMS, an energy infrastructure management company. Help visitors with questions about generators, solar systems, UPS, diagnostics, and energy solutions. Be friendly, professional, and conversion-focused.`,
+          content: `You are a helpful AI assistant for EmersonEIMS, an energy infrastructure management company. Help visitors with questions about generators, solar systems, UPS, diagnostics, and energy solutions. Be friendly, professional, and conversion-focused.`,
           timestamp: Date.now(),
         },
         {

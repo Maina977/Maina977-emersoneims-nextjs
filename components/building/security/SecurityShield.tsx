@@ -214,7 +214,7 @@ export const AntiScrapingMeta: React.FC = () => {
             '@context': 'https://schema.org',
             '@type': 'Organization',
             'name': 'EmersonEIMS',
-            'legalName': 'Emerson Electrical & Instrumentation Management Services',
+            'legalName': 'EmersonEIMS',
             'url': 'https://emersoneims.com',
             'logo': 'https://emersoneims.com/images/logo.png',
             'foundingDate': '2012',

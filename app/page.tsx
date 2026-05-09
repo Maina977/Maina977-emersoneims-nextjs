@@ -474,7 +474,7 @@ export default function HomePage() {
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'EmersonEIMS',
-            alternateName: 'Emerson EiMS Power Solutions',
+            alternateName: 'EmersonEIMS Power Solutions',
             description: "East Africa's most advanced AI-powered generator and solar solutions platform. Featuring Generator Oracle AI with 90% diagnostic accuracy and Solar Solution School with 10 AI engines covering 15 African countries.",
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/logo.png',

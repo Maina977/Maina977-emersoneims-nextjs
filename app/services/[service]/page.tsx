@@ -86,7 +86,7 @@ function generateStructuredData(service: NonNullable<ReturnType<typeof getServic
         provider: {
           '@type': 'LocalBusiness',
           '@id': 'https://www.emersoneims.com/#organization',
-          name: 'Emerson Industrial Maintenance Services',
+          name: 'EmersonEIMS',
           telephone: BUSINESS_CONTACT.phoneIntl,
           email: BUSINESS_CONTACT.email,
           address: {

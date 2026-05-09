@@ -63,7 +63,7 @@ export const valuePropositions = {
 
 export const testimonials = {
   hospital: {
-    quote: "Emerson EIMS didn't just install a generator—they saved lives. Zero interruptions in two years. That's not just service, that's dedication.",
+    quote: "EmersonEIMS didn't just install a generator—they saved lives. Zero interruptions in two years. That's not just service, that's dedication.",
     author: "Dr. Sarah Wanjiku",
     role: "Chief Medical Officer",
     organization: "Nairobi Hospital",
@@ -75,7 +75,7 @@ export const testimonials = {
     organization: "Bamburi Cement",
   },
   agriculture: {
-    quote: "Solar transformed our business. Export revenue up 60%, spoilage down to 2%. Emerson EIMS didn't just install panels—they transformed our future.",
+    quote: "Solar transformed our business. Export revenue up 60%, spoilage down to 2%. EmersonEIMS didn't just install panels—they transformed our future.",
     author: "Mary Wanjala",
     role: "Farm Manager",
     organization: "Teso Flower Farm",

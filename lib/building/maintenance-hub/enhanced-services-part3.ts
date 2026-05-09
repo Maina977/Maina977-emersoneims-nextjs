@@ -37,7 +37,7 @@ Emergency repair services respond to UPS failures that threaten critical operati
 
 Battery replacement is the most common UPS service requirement. Batteries typically last 3-5 years depending on quality, temperature, and charging practices. We offer battery testing services that identify batteries approaching end of life, allowing planned replacement before failure. Our battery replacement services include removal of old batteries, installation of new batteries, functional testing, and proper disposal of replaced batteries.`,
 
-      whyChooseUs: `Our multi-brand expertise means we can service whatever UPS equipment you have installed, without the limitations of single-brand service providers. We maintain training and documentation for APC, Eaton, Schneider Electric, Vertiv (Emerson/Liebert), Riello, and numerous other brands. This breadth of knowledge also allows us to recommend the best solution when new equipment is needed, without brand bias.
+      whyChooseUs: `Our multi-brand expertise means we can service whatever UPS equipment you have installed, without the limitations of single-brand service providers. We maintain training and documentation for APC, Eaton, Schneider Electric, Vertiv, Riello, and numerous other brands. This breadth of knowledge also allows us to recommend the best solution when new equipment is needed, without brand bias.
 
 Battery testing capability sets us apart from service providers who simply recommend replacement based on age. Our conductance testers identify weak cells within battery strings, allowing targeted replacement that optimizes cost while maintaining reliability. We can often extend battery life by replacing only failed cells rather than entire strings.
 

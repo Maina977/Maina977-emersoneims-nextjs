@@ -58,7 +58,7 @@ const imageRenameMap = {
   '75.png': 'waste-management-system.png',
 };
 
-console.log('🖼️  Emerson Energy - Image SEO Rename Script');
+console.log('🖼️  EmersonEIMS - Image SEO Rename Script');
 console.log('='.repeat(50));
 
 // Step 1: Rename physical files

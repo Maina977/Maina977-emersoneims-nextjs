@@ -1,6 +1,6 @@
 ========================================
   QUICK DEPLOYMENT INSTRUCTIONS
-  Emerson EIMS - www.emersoneims.com
+  EmersonEIMS - www.emersoneims.com
 ========================================
 
 SIMPLE METHOD (Recommended):

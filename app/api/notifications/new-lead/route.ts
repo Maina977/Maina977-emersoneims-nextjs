@@ -236,7 +236,7 @@ function generateEmailHTML(notification: LeadNotification): string {
         <pre>${JSON.stringify(notification.data, null, 2)}</pre>
       </div>
       <div class="footer">
-        <p>This is an automated notification from Emerson EIMS Analytics System.</p>
+        <p>This is an automated notification from EmersonEIMS Analytics System.</p>
       </div>
     </body>
     </html>
