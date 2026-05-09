@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     title: 'Generator Rental Kenya | 7.5kVA - 2MVA | All 47 Counties',
     description: 'Rent generators for any occasion. 50+ units available. Same-day delivery. Silent units for events. 24/7 support. Best rates in Kenya.',
     type: 'website',
-    url: 'https://emersoneims.com/generators/rental',
+    url: 'https://www.emersoneims.com/generators/rental',
     siteName: 'EmersonEIMS',
     images: [
       {
@@ -86,7 +86,7 @@ export const metadata: Metadata = {
     description: 'Rent generators 7.5kVA-2MVA. Events, construction, emergencies. All 47 counties.',
   },
   alternates: {
-    canonical: 'https://emersoneims.com/generators/rental',
+    canonical: 'https://www.emersoneims.com/generators/rental',
   },
   robots: {
     index: true,
@@ -100,13 +100,13 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'Service',
-      '@id': 'https://emersoneims.com/generators/rental/#service',
+      '@id': 'https://www.emersoneims.com/generators/rental/#service',
       name: 'Generator Rental Services',
       serviceType: 'Equipment Rental',
       provider: {
         '@type': 'Organization',
         name: 'EmersonEIMS',
-        '@id': 'https://emersoneims.com/#organization',
+        '@id': 'https://www.emersoneims.com/#organization',
       },
       areaServed: { '@type': 'Country', name: 'Kenya' },
       description: 'Generator rental from 7.5kVA to 2MVA for events, construction, and emergencies across all 47 Kenya counties.',
@@ -124,8 +124,8 @@ const jsonLd = {
     },
     {
       '@type': 'RentalCarReservation', // Using generic rental schema
-      '@id': 'https://emersoneims.com/generators/rental/#rental',
-      provider: { '@id': 'https://emersoneims.com/#organization' },
+      '@id': 'https://www.emersoneims.com/generators/rental/#rental',
+      provider: { '@id': 'https://www.emersoneims.com/#organization' },
       itemOffered: {
         '@type': 'Product',
         name: 'Generator Rental Fleet',
@@ -135,7 +135,7 @@ const jsonLd = {
     },
     {
       '@type': 'FAQPage',
-      '@id': 'https://emersoneims.com/generators/rental/#faq',
+      '@id': 'https://www.emersoneims.com/generators/rental/#faq',
       mainEntity: [
         {
           '@type': 'Question',
@@ -166,9 +166,9 @@ const jsonLd = {
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://emersoneims.com' },
-        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://emersoneims.com/generators' },
-        { '@type': 'ListItem', position: 3, name: 'Rental', item: 'https://emersoneims.com/generators/rental' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.emersoneims.com' },
+        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://www.emersoneims.com/generators' },
+        { '@type': 'ListItem', position: 3, name: 'Rental', item: 'https://www.emersoneims.com/generators/rental' },
       ],
     },
   ],

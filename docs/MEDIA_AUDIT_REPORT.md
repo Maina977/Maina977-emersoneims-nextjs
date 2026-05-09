@@ -222,7 +222,7 @@ public/
 
 ### **External Image Sources**
 - **Primary:** https://www.emersoneims.com/wp-content/uploads/
-- **Secondary:** https://emersoneims.com/wp-content/uploads/
+- **Secondary:** https://www.emersoneims.com/wp-content/uploads/
 - **Third-party:** https://assets.mixkit.co/
 
 ### **External Video Sources**

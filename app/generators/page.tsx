@@ -2614,7 +2614,7 @@ export default function GeneratorPage() {
             viewport={{ once: true }}
           >
             <OptimizedImage
-              src="https://emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp"
+              src="https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp"
               alt="Generator spare parts inventory - EmersonEIMS"
               width={1920}
               height={1080}

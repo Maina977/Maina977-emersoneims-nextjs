@@ -431,7 +431,7 @@ Scale: scale [1, 1.2, 1], duration 2s, repeat infinite
 - **WhatsApp:** +254768860655
 - **Phone:** +254768860655
 - **Email:** support@emersoneims.com
-- **Website:** https://emersoneims.com
+- **Website:** https://www.emersoneims.com
 
 ---
 

@@ -47,7 +47,7 @@
 ## 🔍 Current Configuration
 
 ### **Environment Variables:**
-- `NEXT_PUBLIC_SITE_URL`: `https://emersoneims.com` (non-www)
+- `NEXT_PUBLIC_SITE_URL`: `https://www.emersoneims.com` (non-www)
 - `WORDPRESS_SITE_URL`: `https://www.emersoneims.com` (www)
 
 ### **Redirect Strategy:**
@@ -74,7 +74,7 @@ curl -I https://www.emersoneims.com
 
 # Should return:
 # HTTP/1.1 301 Moved Permanently
-# Location: https://emersoneims.com
+# Location: https://www.emersoneims.com
 ```
 
 ---

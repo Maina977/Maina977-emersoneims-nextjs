@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Solar Sizing Calculator Kenya | Free Design Tool | EmersonEIMS",
     description: "Calculate exact solar panel, battery, and inverter sizes for your Kenya location. Includes PSH data and design examples.",
-    url: "https://emersoneims.com/solutions/solar-sizing",
+    url: "https://www.emersoneims.com/solutions/solar-sizing",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/solar-sizing" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/solar-sizing" },
 };
 
 export default function SolarSizingLayout({ children }: { children: React.ReactNode }) {

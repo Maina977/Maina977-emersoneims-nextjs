@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AC Solutions Kenya | Installation, BTU Sizing, Repairs | EmersonEIMS",
     description: "Kenya's comprehensive AC resource. BTU sizing guides, refrigerant information, installation procedures, troubleshooting.",
-    url: "https://emersoneims.com/solutions/ac",
+    url: "https://www.emersoneims.com/solutions/ac",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/ac" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/ac" },
 };
 
 export default function ACSolutionsLayout({ children }: { children: React.ReactNode }) {

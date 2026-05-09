@@ -67,7 +67,7 @@ export default defineConfig({
 
   // Run your local dev server before starting the tests.
   // Skip when PW_NO_SERVER=1 (used for runs against an external
-  // PLAYWRIGHT_BASE_URL such as https://emersoneims.com) so live
+  // PLAYWRIGHT_BASE_URL such as https://www.emersoneims.com) so live
   // verification doesn't try to spawn a local Next dev server.
   webServer: process.env.PW_NO_SERVER === '1' ? undefined : {
     command: 'npm run dev:3020',

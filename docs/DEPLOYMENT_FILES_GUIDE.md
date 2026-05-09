@@ -51,7 +51,7 @@ git push -u origin main
   "env": {
     "WORDPRESS_SITE_URL": "https://www.emersoneims.com",
     "WORDPRESS_API_URL": "https://www.emersoneims.com/wp-json/wp/v2",
-    "NEXT_PUBLIC_SITE_URL": "https://emersoneims.com"
+    "NEXT_PUBLIC_SITE_URL": "https://www.emersoneims.com"
   },
   "rewrites": [
     {
@@ -130,7 +130,7 @@ git push -u origin main
    - **Install Command:** `npm install --legacy-peer-deps` (from vercel.json)
 
 5. **Set Environment Variables:**
-   - `NEXT_PUBLIC_SITE_URL` = `https://emersoneims.com`
+   - `NEXT_PUBLIC_SITE_URL` = `https://www.emersoneims.com`
    - `WORDPRESS_SITE_URL` = `https://www.emersoneims.com`
    - `WORDPRESS_API_URL` = `https://www.emersoneims.com/wp-json/wp/v2`
    - `NEXT_PUBLIC_GA_ID` = `G-XXXXXXXXXX` (optional)
@@ -175,7 +175,7 @@ npm run deploy:preview
 
 ### Required Variables:
 ```
-NEXT_PUBLIC_SITE_URL=https://emersoneims.com
+NEXT_PUBLIC_SITE_URL=https://www.emersoneims.com
 WORDPRESS_SITE_URL=https://www.emersoneims.com
 WORDPRESS_API_URL=https://www.emersoneims.com/wp-json/wp/v2
 ```

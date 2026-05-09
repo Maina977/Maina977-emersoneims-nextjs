@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Generator Controller Solutions | DeepSea & PowerWizard Experts | EmersonEIMS",
     description: "Kenya's leading DeepSea and PowerWizard controller specialists. Fault code lookup, configuration, repairs.",
-    url: "https://emersoneims.com/solutions/controls",
+    url: "https://www.emersoneims.com/solutions/controls",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/controls" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/controls" },
 };
 
 export default function ControlsSolutionsLayout({ children }: { children: React.ReactNode }) {

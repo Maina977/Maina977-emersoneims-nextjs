@@ -215,8 +215,8 @@ export const AntiScrapingMeta: React.FC = () => {
             '@type': 'Organization',
             'name': 'EmersonEIMS',
             'legalName': 'EmersonEIMS',
-            'url': 'https://emersoneims.com',
-            'logo': 'https://emersoneims.com/images/logo.png',
+            'url': 'https://www.emersoneims.com',
+            'logo': 'https://www.emersoneims.com/images/logo.png',
             'foundingDate': '2012',
             'copyrightHolder': {
               '@type': 'Organization',

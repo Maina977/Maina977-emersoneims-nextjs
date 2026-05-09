@@ -142,7 +142,7 @@ sudo dscacheutil -flushcache
 - [ ] DNS propagated (check with nslookup)
 - [ ] Domain verified in Vercel
 - [ ] SSL certificate issued (automatic)
-- [ ] Site accessible at https://emersoneims.com
+- [ ] Site accessible at https://www.emersoneims.com
 
 ---
 

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     title: 'Buy Generator Spare Parts Online Kenya | 2000+ Parts | M-Pesa | EmersonEIMS',
     description: 'Shop 2000+ genuine generator spare parts online. Oil filters, fuel filters, AVR, controllers, engine parts. Pay via M-Pesa (0768860665). Same-day delivery in Nairobi.',
     type: 'website',
-    url: 'https://emersoneims.com/generators/spare-parts',
+    url: 'https://www.emersoneims.com/generators/spare-parts',
     siteName: 'EmersonEIMS',
   },
   alternates: {
@@ -37,7 +37,7 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'ItemList',
-      '@id': 'https://emersoneims.com/generators/spare-parts/#itemlist',
+      '@id': 'https://www.emersoneims.com/generators/spare-parts/#itemlist',
       name: 'Generator Spare Parts Categories',
       numberOfItems: 12,
       itemListElement: [
@@ -57,7 +57,7 @@ const jsonLd = {
     },
     {
       '@type': 'Store',
-      '@id': 'https://emersoneims.com/generators/spare-parts/#store',
+      '@id': 'https://www.emersoneims.com/generators/spare-parts/#store',
       name: 'EmersonEIMS Generator Parts Store',
       description: 'Kenya\'s largest inventory of 2000+ genuine generator spare parts for Cummins, Caterpillar, Perkins, FG Wilson, and all major brands. Shop online with M-Pesa payment.',
       telephone: '+254768860665',
@@ -76,9 +76,9 @@ const jsonLd = {
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://emersoneims.com' },
-        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://emersoneims.com/generators' },
-        { '@type': 'ListItem', position: 3, name: 'Spare Parts', item: 'https://emersoneims.com/generators/spare-parts' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.emersoneims.com' },
+        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://www.emersoneims.com/generators' },
+        { '@type': 'ListItem', position: 3, name: 'Spare Parts', item: 'https://www.emersoneims.com/generators/spare-parts' },
       ],
     },
   ],

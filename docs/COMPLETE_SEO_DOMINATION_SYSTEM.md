@@ -135,7 +135,7 @@ Each county page includes:
   openGraph: {
     type: "website",
     locale: "en_KE",
-    url: "https://emersoneims.com/[page]",
+    url: "https://www.emersoneims.com/[page]",
     siteName: "Emerson EiMS",
     images: [{ url: "[service-image]", width: 1200, height: 630 }]
   },
@@ -153,7 +153,7 @@ Each county page includes:
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "name": "Emerson EiMS",
-  "image": "https://emersoneims.com/og-image.jpg",
+  "image": "https://www.emersoneims.com/og-image.jpg",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Old North Airport Road",
@@ -185,14 +185,14 @@ Each county page includes:
 
 ### 4. **URL Structure**
 ```
-✅ https://emersoneims.com/                    (Homepage)
-✅ https://emersoneims.com/counties/           (Counties Hub)
-✅ https://emersoneims.com/counties/nairobi    (County Page)
-✅ https://emersoneims.com/generators          (Service)
-✅ https://emersoneims.com/solar               (Service)
-✅ https://emersoneims.com/solution            (Solutions)
-✅ https://emersoneims.com/diagnostic-qa       (Q&A)
-✅ https://emersoneims.com/sitemap.xml         (Sitemap)
+✅ https://www.emersoneims.com/                    (Homepage)
+✅ https://www.emersoneims.com/counties/           (Counties Hub)
+✅ https://www.emersoneims.com/counties/nairobi    (County Page)
+✅ https://www.emersoneims.com/generators          (Service)
+✅ https://www.emersoneims.com/solar               (Service)
+✅ https://www.emersoneims.com/solution            (Solutions)
+✅ https://www.emersoneims.com/diagnostic-qa       (Q&A)
+✅ https://www.emersoneims.com/sitemap.xml         (Sitemap)
 ```
 
 ### 5. **Keyword Targeting Strategy**

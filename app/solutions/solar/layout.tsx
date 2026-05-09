@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Solar Solutions Kenya | Installation, Maintenance & Repairs | EmersonEIMS",
     description: "Kenya's most comprehensive solar resource. Installation guides, inverter troubleshooting, maintenance schedules.",
-    url: "https://emersoneims.com/solutions/solar",
+    url: "https://www.emersoneims.com/solutions/solar",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/solar" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/solar" },
 };
 
 export default function SolarLayout({ children }: { children: React.ReactNode }) {

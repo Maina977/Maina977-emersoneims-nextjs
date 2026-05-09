@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     title: 'Generator Maintenance & Engine Overhaul | All 47 Counties | EmersonEIMS',
     description: 'Kenya\'s leading generator maintenance company. Expert engine overhauls, repairs & servicing for all brands across all 47 counties.',
     type: 'website',
-    url: 'https://emersoneims.com/generators/maintenance',
+    url: 'https://www.emersoneims.com/generators/maintenance',
     siteName: 'EmersonEIMS',
   },
   alternates: {
@@ -33,13 +33,13 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'Service',
-      '@id': 'https://emersoneims.com/generators/maintenance/#service',
+      '@id': 'https://www.emersoneims.com/generators/maintenance/#service',
       name: 'Generator Maintenance Services',
       serviceType: 'Generator Maintenance',
       provider: {
         '@type': 'Organization',
         name: 'EmersonEIMS',
-        '@id': 'https://emersoneims.com/#organization',
+        '@id': 'https://www.emersoneims.com/#organization',
       },
       areaServed: {
         '@type': 'Country',
@@ -57,7 +57,7 @@ const jsonLd = {
     },
     {
       '@type': 'FAQPage',
-      '@id': 'https://emersoneims.com/generators/maintenance/#faq',
+      '@id': 'https://www.emersoneims.com/generators/maintenance/#faq',
       mainEntity: [
         {
           '@type': 'Question',
@@ -88,9 +88,9 @@ const jsonLd = {
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://emersoneims.com' },
-        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://emersoneims.com/generators' },
-        { '@type': 'ListItem', position: 3, name: 'Maintenance', item: 'https://emersoneims.com/generators/maintenance' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.emersoneims.com' },
+        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://www.emersoneims.com/generators' },
+        { '@type': 'ListItem', position: 3, name: 'Maintenance', item: 'https://www.emersoneims.com/generators/maintenance' },
       ],
     },
   ],

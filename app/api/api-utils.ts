@@ -137,7 +137,7 @@ export function createUnauthorizedResponse(error: string): NextResponse {
 // Allowed origins for CORS - whitelist approach for security
 const ALLOWED_ORIGINS = [
   'https://www.emersoneims.com',
-  'https://emersoneims.com',
+  'https://www.emersoneims.com',
   'https://generator-oracle.vercel.app',
   ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000', 'http://localhost:3010'] : []),
 ];

@@ -19,7 +19,7 @@
 
 ## Environment Variables (Set in Vercel Dashboard)
 
-- [ ] `NEXT_PUBLIC_SITE_URL` = `https://emersoneims.com`
+- [ ] `NEXT_PUBLIC_SITE_URL` = `https://www.emersoneims.com`
 - [ ] `WORDPRESS_SITE_URL` = `https://www.emersoneims.com`
 - [ ] `WORDPRESS_API_URL` = `https://www.emersoneims.com/wp-json/wp/v2`
 

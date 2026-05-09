@@ -73,7 +73,7 @@ vercel --prod
 Set these in **Vercel Dashboard > Settings > Environment Variables**:
 
 ```
-NEXT_PUBLIC_SITE_URL=https://emersoneims.com
+NEXT_PUBLIC_SITE_URL=https://www.emersoneims.com
 WORDPRESS_SITE_URL=https://www.emersoneims.com
 WORDPRESS_API_URL=https://www.emersoneims.com/wp-json/wp/v2
 ```

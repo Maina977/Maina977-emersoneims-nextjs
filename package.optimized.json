@@ -14,7 +14,7 @@
     "optimize:videos": "ts-node scripts/optimizeVideos.ts",
     "optimize:all": "npm run optimize:images && npm run optimize:videos",
     "audit": "ts-node scripts/auditWebsite.ts",
-    "audit:prod": "ts-node scripts/auditWebsite.ts https://emersoneims.com",
+    "audit:prod": "ts-node scripts/auditWebsite.ts https://www.emersoneims.com",
     "preflight": "npm run test && npm run optimize:all",
     "deploy:test": "npm run preflight && npm run build && npm run audit",
     "deploy:vercel": "vercel --prod",

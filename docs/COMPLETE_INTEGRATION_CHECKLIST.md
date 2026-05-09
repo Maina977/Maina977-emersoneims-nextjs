@@ -55,7 +55,7 @@
 - [ ] **Add Environment Variables**
   In Vercel Dashboard → Settings → Environment Variables:
   ```
-  NEXT_PUBLIC_SITE_URL=https://emersoneims.com
+  NEXT_PUBLIC_SITE_URL=https://www.emersoneims.com
   WORDPRESS_SITE_URL=https://www.emersoneims.com
   WORDPRESS_API_URL=https://www.emersoneims.com/wp-json/wp/v2
   ```
@@ -141,10 +141,10 @@
 
 - [ ] **Configure CORS** (if needed)
   - Install CORS plugin in WordPress
-  - Allow origin: `https://emersoneims.com`
+  - Allow origin: `https://www.emersoneims.com`
 
 - [ ] **Test WordPress Connection**
-  - Visit: https://emersoneims.com/api/wordpress
+  - Visit: https://www.emersoneims.com/api/wordpress
   - Should connect to WordPress API
 
 ---
@@ -152,7 +152,7 @@
 ### ✅ Step 7: Final Verification
 
 - [ ] **Test Root Domain**
-  - Visit: https://emersoneims.com
+  - Visit: https://www.emersoneims.com
   - Should show Next.js site
   - SSL certificate working (padlock icon)
 
@@ -165,12 +165,12 @@
   - Should load WordPress admin
 
 - [ ] **Test All Pages**
-  - Homepage: https://emersoneims.com
-  - Services: https://emersoneims.com/service
-  - Generators: https://emersoneims.com/generators
-  - Diagnostics: https://emersoneims.com/diagnostics
-  - Solar: https://emersoneims.com/solar
-  - Contact: https://emersoneims.com/contact
+  - Homepage: https://www.emersoneims.com
+  - Services: https://www.emersoneims.com/service
+  - Generators: https://www.emersoneims.com/generators
+  - Diagnostics: https://www.emersoneims.com/diagnostics
+  - Solar: https://www.emersoneims.com/solar
+  - Contact: https://www.emersoneims.com/contact
 
 - [ ] **Check Performance**
   - Run Lighthouse audit

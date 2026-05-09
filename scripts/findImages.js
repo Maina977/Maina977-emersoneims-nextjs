@@ -129,7 +129,7 @@ Expected locations:
    3. Did the upload complete successfully?
 
 📝 Most images in imageAssets.ts are hosted on WordPress:
-   - https://emersoneims.com/wp-content/uploads/
+   - https://www.emersoneims.com/wp-content/uploads/
    - These don't need to be in the project folder
 
 🎯 To process local images:

@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: 'en',
     },
     alternates: {
-      canonical: `https://emersoneims.com/${country.slug}/${city.slug}`,
+      canonical: `https://www.emersoneims.com/${country.slug}/${city.slug}`,
     },
   };
 }
@@ -124,7 +124,7 @@ export default async function InternationalCityPage({ params }: Props) {
       <LocalBusinessSchema
         name={`EmersonEIMS ${city.name}`}
         description={`Leading provider of generators and power solutions in ${city.name}, ${country.name}.`}
-        url={`https://emersoneims.com/${country.slug}/${city.slug}`}
+        url={`https://www.emersoneims.com/${country.slug}/${city.slug}`}
         address={{
           addressLocality: city.name,
           addressCountry: country.name
@@ -375,7 +375,7 @@ export default async function InternationalCityPage({ params }: Props) {
             '@type': 'LocalBusiness',
             name: `EmersonEIMS ${city.name}`,
             description: `Generator supplier and power solutions provider in ${city.name}, ${country.name}.`,
-            url: `https://emersoneims.com/${country.slug}/${city.slug}`,
+            url: `https://www.emersoneims.com/${country.slug}/${city.slug}`,
             telephone: '+254768860665',
             address: {
               '@type': 'PostalAddress',

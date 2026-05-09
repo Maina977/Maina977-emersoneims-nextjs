@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     title: 'Professional Generator Installation Services | EmersonEIMS Kenya',
     description: 'Complete generator installation from site assessment to commissioning. 1,200+ installations completed. 47 counties coverage. 100% compliance rate.',
     type: 'website',
-    url: 'https://emersoneims.com/generators/installation',
+    url: 'https://www.emersoneims.com/generators/installation',
     siteName: 'EmersonEIMS',
     images: [
       {
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     description: 'Professional generator installation services. 8-phase process. All brands. 47 counties.',
   },
   alternates: {
-    canonical: 'https://emersoneims.com/generators/installation',
+    canonical: 'https://www.emersoneims.com/generators/installation',
   },
   robots: {
     index: true,
@@ -94,13 +94,13 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'Service',
-      '@id': 'https://emersoneims.com/generators/installation/#service',
+      '@id': 'https://www.emersoneims.com/generators/installation/#service',
       name: 'Generator Installation Services',
       serviceType: 'Generator Installation',
       provider: {
         '@type': 'Organization',
         name: 'EmersonEIMS',
-        '@id': 'https://emersoneims.com/#organization',
+        '@id': 'https://www.emersoneims.com/#organization',
       },
       areaServed: { '@type': 'Country', name: 'Kenya' },
       description: 'Professional generator installation services including site assessment, foundation construction, electrical wiring, ATS installation, and commissioning.',
@@ -118,7 +118,7 @@ const jsonLd = {
     },
     {
       '@type': 'HowTo',
-      '@id': 'https://emersoneims.com/generators/installation/#howto',
+      '@id': 'https://www.emersoneims.com/generators/installation/#howto',
       name: 'Generator Installation Process',
       description: 'Our 8-phase professional generator installation process',
       totalTime: 'P14D',
@@ -136,9 +136,9 @@ const jsonLd = {
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://emersoneims.com' },
-        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://emersoneims.com/generators' },
-        { '@type': 'ListItem', position: 3, name: 'Installation', item: 'https://emersoneims.com/generators/installation' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.emersoneims.com' },
+        { '@type': 'ListItem', position: 2, name: 'Generators', item: 'https://www.emersoneims.com/generators' },
+        { '@type': 'ListItem', position: 3, name: 'Installation', item: 'https://www.emersoneims.com/generators/installation' },
       ],
     },
   ],

@@ -6343,7 +6343,7 @@ export class SiteAutoDetector {
         `${this.nominatimUrl}?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1&zoom=18&namedetails=1`,
         {
           headers: {
-            'User-Agent': 'AquaScanPro/4.0 (https://emersoneims.com)',
+            'User-Agent': 'AquaScanPro/4.0 (https://www.emersoneims.com)',
             'Accept-Language': 'en',
           }
         }

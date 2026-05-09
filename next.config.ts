@@ -210,7 +210,7 @@ const nextConfig: NextConfig = {
       base-uri 'self';
       form-action 'self';
       frame-ancestors 'self';
-      frame-src 'self' https://www.google.com https://maps.google.com https://*.google.com https://www.openstreetmap.org https://*.openstreetmap.org https://www.youtube.com https://player.vimeo.com https://www.emersoneims.com https://emersoneims.com https://*.emersoneims.com http://127.0.0.1:5000 http://localhost:5000;
+      frame-src 'self' https://www.google.com https://maps.google.com https://*.google.com https://www.openstreetmap.org https://*.openstreetmap.org https://www.youtube.com https://player.vimeo.com https://emersoneims.com https://www.emersoneims.com https://*.emersoneims.com http://127.0.0.1:5000 http://localhost:5000;
     `.replace(/\s{2,}/g, ' ').trim();
 
     return [

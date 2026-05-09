@@ -3,7 +3,7 @@
 Date: 2025-12-29
 
 ## Live deployment
-- Live domain (aliased): https://emersoneims.com
+- Live domain (aliased): https://www.emersoneims.com
 - Production deployment URL (Vercel): https://my-cdrujify3-emerson-industrial-maintenance-ss-projects.vercel.app
 
 ## Deployment-critical fixes applied (so the site could deploy)

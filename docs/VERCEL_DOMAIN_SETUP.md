@@ -87,7 +87,7 @@ Value: cname.vercel-dns.com
 
 Add these for production:
 ```
-NEXT_PUBLIC_SITE_URL=https://emersoneims.com
+NEXT_PUBLIC_SITE_URL=https://www.emersoneims.com
 WORDPRESS_SITE_URL=https://www.emersoneims.com
 WORDPRESS_API_URL=https://www.emersoneims.com/wp-json/wp/v2
 ```
@@ -104,7 +104,7 @@ After setup, verify:
    ```
 
 2. **Site loads:**
-   - Visit: `https://emersoneims.com`
+   - Visit: `https://www.emersoneims.com`
    - Should show your Next.js site
 
 3. **SSL works:**

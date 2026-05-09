@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "UPS Solutions Kenya | Installation, Maintenance, Repairs | EmersonEIMS",
     description: "Kenya's comprehensive UPS resource. Installation guides, battery care, sizing calculators, troubleshooting.",
-    url: "https://emersoneims.com/solutions/ups",
+    url: "https://www.emersoneims.com/solutions/ups",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/ups" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/ups" },
 };
 
 export default function UPSSolutionsLayout({ children }: { children: React.ReactNode }) {

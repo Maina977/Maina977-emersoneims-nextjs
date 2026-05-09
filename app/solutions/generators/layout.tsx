@@ -7,11 +7,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Generator Solutions Hub | Expert Installation & Repairs | EmersonEIMS Kenya",
     description: "Kenya's most comprehensive generator resource. Installation guides, maintenance schedules, fault codes & troubleshooting. 24/7 emergency service.",
-    url: "https://emersoneims.com/solutions/generators",
+    url: "https://www.emersoneims.com/solutions/generators",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
-    images: [{ url: "https://emersoneims.com/og/generator-solutions.jpg", width: 1200, height: 630, alt: "Generator Solutions Kenya" }],
+    images: [{ url: "https://www.emersoneims.com/og/generator-solutions.jpg", width: 1200, height: 630, alt: "Generator Solutions Kenya" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     description: "Complete generator installation, maintenance & repair solutions. Expert technicians, 24/7 service.",
   },
   alternates: {
-    canonical: "https://emersoneims.com/solutions/generators",
+    canonical: "https://www.emersoneims.com/solutions/generators",
   },
   robots: {
     index: true,
@@ -34,20 +34,20 @@ export default function GeneratorSolutionsLayout({ children }: { children: React
     "@graph": [
       {
         "@type": "WebPage",
-        "@id": "https://emersoneims.com/solutions/generators",
-        "url": "https://emersoneims.com/solutions/generators",
+        "@id": "https://www.emersoneims.com/solutions/generators",
+        "url": "https://www.emersoneims.com/solutions/generators",
         "name": "Generator Solutions Kenya - Installation, Maintenance, Repairs",
         "description": "Complete generator solutions including installation, maintenance schedules, fault diagnosis, and emergency repairs.",
-        "isPartOf": { "@id": "https://emersoneims.com/#website" },
-        "breadcrumb": { "@id": "https://emersoneims.com/solutions/generators#breadcrumb" }
+        "isPartOf": { "@id": "https://www.emersoneims.com/#website" },
+        "breadcrumb": { "@id": "https://www.emersoneims.com/solutions/generators#breadcrumb" }
       },
       {
         "@type": "BreadcrumbList",
-        "@id": "https://emersoneims.com/solutions/generators#breadcrumb",
+        "@id": "https://www.emersoneims.com/solutions/generators#breadcrumb",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "item": { "@id": "https://emersoneims.com", "name": "Home" } },
-          { "@type": "ListItem", "position": 2, "item": { "@id": "https://emersoneims.com/solutions", "name": "Solutions" } },
-          { "@type": "ListItem", "position": 3, "item": { "@id": "https://emersoneims.com/solutions/generators", "name": "Generators" } }
+          { "@type": "ListItem", "position": 1, "item": { "@id": "https://www.emersoneims.com", "name": "Home" } },
+          { "@type": "ListItem", "position": 2, "item": { "@id": "https://www.emersoneims.com/solutions", "name": "Solutions" } },
+          { "@type": "ListItem", "position": 3, "item": { "@id": "https://www.emersoneims.com/solutions/generators", "name": "Generators" } }
         ]
       },
       {

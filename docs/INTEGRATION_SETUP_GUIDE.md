@@ -71,7 +71,7 @@ Install these WordPress plugins on your Scalahosting WordPress:
 
 2. **CORS Headers**
    - Allows Vercel to access WordPress API
-   - Configure: Allow origin: `https://emersoneims.com`
+   - Configure: Allow origin: `https://www.emersoneims.com`
 
 ### 2.3 WordPress Settings
 
@@ -111,7 +111,7 @@ In WordPress Admin (`www.emersoneims.com/wp-admin`):
 Add these in Vercel Dashboard → Settings → Environment Variables:
 
 ```
-NEXT_PUBLIC_SITE_URL=https://emersoneims.com
+NEXT_PUBLIC_SITE_URL=https://www.emersoneims.com
 WORDPRESS_SITE_URL=https://www.emersoneims.com
 WORDPRESS_API_URL=https://www.emersoneims.com/wp-json/wp/v2
 ```
@@ -208,7 +208,7 @@ The `vercel.json` already includes rewrites for WordPress paths:
 
 After deployment, test:
 ```bash
-curl https://emersoneims.com/api/wordpress
+curl https://www.emersoneims.com/api/wordpress
 ```
 
 ---
@@ -221,7 +221,7 @@ curl https://emersoneims.com/api/wordpress
 1. Go to **Settings** → **Environment Variables**
 2. Add/Update:
    ```
-   NEXT_PUBLIC_SITE_URL=https://emersoneims.com
+   NEXT_PUBLIC_SITE_URL=https://www.emersoneims.com
    WORDPRESS_SITE_URL=https://www.emersoneims.com
    WORDPRESS_API_URL=https://www.emersoneims.com/wp-json/wp/v2
    ```
@@ -234,7 +234,7 @@ curl https://emersoneims.com/api/wordpress
    - `VERCEL_TOKEN` - Get from Vercel → Settings → Tokens
    - `VERCEL_ORG_ID` - Get from Vercel API
    - `VERCEL_PROJECT_ID` - Get from Vercel project settings
-   - `NEXT_PUBLIC_SITE_URL` - `https://emersoneims.com`
+   - `NEXT_PUBLIC_SITE_URL` - `https://www.emersoneims.com`
    - `WORDPRESS_SITE_URL` - `https://www.emersoneims.com`
    - `WORDPRESS_API_URL` - `https://www.emersoneims.com/wp-json/wp/v2`
 
@@ -296,7 +296,7 @@ curl https://emersoneims.com/api/wordpress
 - [ ] Domain verified in Vercel
 - [ ] SSL certificate issued (automatic)
 - [ ] WordPress API accessible from Vercel
-- [ ] Site loads at `https://emersoneims.com`
+- [ ] Site loads at `https://www.emersoneims.com`
 - [ ] Automatic deployments working
 
 ---

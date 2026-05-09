@@ -790,5 +790,5 @@ export function generateShareLink(design: SolarDesign3D): string {
     systemSize: design.panels.length * 0.545,
   })).toString('base64');
 
-  return `https://emersoneims.com/solar/design/${encoded}`;
+  return `https://www.emersoneims.com/solar/design/${encoded}`;
 }

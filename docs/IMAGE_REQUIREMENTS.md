@@ -222,7 +222,7 @@ public/
 ## 🔗 **EXTERNAL IMAGE SOURCES**
 
 ### **WordPress Media Library:**
-- Base URL: `https://emersoneims.com/wp-content/uploads/`
+- Base URL: `https://www.emersoneims.com/wp-content/uploads/`
 - Base URL: `https://www.emersoneims.com/wp-content/uploads/`
 - **Status**: ✅ Working, no changes needed
 

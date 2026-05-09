@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Generator Automation Kenya | AMF Panels & ATS Systems | EmersonEIMS",
     description: "Automate your generator with AMF panels and ATS systems. Remote monitoring, auto-start, load management.",
-    url: "https://emersoneims.com/solutions/diesel-automation",
+    url: "https://www.emersoneims.com/solutions/diesel-automation",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/diesel-automation" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/diesel-automation" },
 };
 
 export default function DieselAutomationLayout({ children }: { children: React.ReactNode }) {

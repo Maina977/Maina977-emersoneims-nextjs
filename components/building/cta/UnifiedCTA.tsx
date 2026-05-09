@@ -127,7 +127,7 @@ export default function UnifiedCTA({
   // Build final href with tracking params
   let finalHref = href || config.href;
   if (service || location) {
-    const url = new URL(finalHref, 'https://emersoneims.com');
+    const url = new URL(finalHref, 'https://www.emersoneims.com');
     if (service) url.searchParams.set('service', service);
     if (location) url.searchParams.set('location', location);
     finalHref = url.pathname + url.search;

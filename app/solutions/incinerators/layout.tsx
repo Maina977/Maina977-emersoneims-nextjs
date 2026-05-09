@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Incinerator Solutions Kenya | Medical & Industrial Waste | EmersonEIMS",
     description: "Professional incinerator installation, maintenance, and NEMA compliance services in Kenya.",
-    url: "https://emersoneims.com/solutions/incinerators",
+    url: "https://www.emersoneims.com/solutions/incinerators",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/incinerators" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/incinerators" },
 };
 
 export default function IncineratorsLayout({ children }: { children: React.ReactNode }) {

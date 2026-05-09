@@ -345,7 +345,7 @@ vercel domains add www.emersoneims.com
 
 #### Step 4.4: Verify Deployment
 ```
-✅ Check: https://emersoneims.com
+✅ Check: https://www.emersoneims.com
 ✅ All pages load
 ✅ Videos play
 ✅ Images display
@@ -411,7 +411,7 @@ Target scores:
 #### Step 5.4: SEO Verification
 ```
 1. Google Search Console
-   - Submit sitemap: https://emersoneims.com/sitemap.xml
+   - Submit sitemap: https://www.emersoneims.com/sitemap.xml
    - Request indexing for key pages
    - Monitor coverage
 
@@ -482,7 +482,7 @@ Submit when you achieve:
 ### Submission Process
 1. Go to: https://www.awwwards.com/submit/
 2. Fill in details:
-   - Site URL: https://emersoneims.com
+   - Site URL: https://www.emersoneims.com
    - Category: Corporate, Technology, Engineering
    - Tags: Power Solutions, Kenya, East Africa
    - Description: Comprehensive power solutions with world-class UX

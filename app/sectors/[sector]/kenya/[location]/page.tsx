@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: 'en_KE',
     },
     alternates: {
-      canonical: `https://emersoneims.com/sectors/${sector.slug}/kenya/${county.slug}`,
+      canonical: `https://www.emersoneims.com/sectors/${sector.slug}/kenya/${county.slug}`,
     },
   };
 }

@@ -23,7 +23,7 @@ export const MEDIA_ASSETS: Record<string, MediaAsset> = {
     category: 'solar',
   },
   'battery-5': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/11/BAT-5.png',
+    url: 'https://www.emersoneims.com/wp-content/uploads/2025/11/BAT-5.png',
     type: 'image',
     alt: 'Battery system installation',
     usedIn: [],
@@ -53,14 +53,14 @@ export const MEDIA_ASSETS: Record<string, MediaAsset> = {
   
   // General Images
   'installation-photo': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/11/IMG_20221119_172228_822-scaled.jpg',
+    url: 'https://www.emersoneims.com/wp-content/uploads/2025/11/IMG_20221119_172228_822-scaled.jpg',
     type: 'image',
     alt: 'EmersonEIMS installation project',
     usedIn: [],
     category: 'general',
   },
   'spare-parts': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp',
+    url: 'https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp',
     type: 'image',
     alt: 'Generator spare parts inventory',
     usedIn: [],
@@ -78,7 +78,7 @@ export const MEDIA_ASSETS: Record<string, MediaAsset> = {
   
   // SVG Graphics
   'design-4': {
-    url: 'https://emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg',
+    url: 'https://www.emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg',
     type: 'image',
     alt: 'EmersonEIMS design graphic',
     usedIn: [],

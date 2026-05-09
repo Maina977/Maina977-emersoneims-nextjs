@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Power Quality Solutions Kenya | Surge & Voltage Protection | EmersonEIMS",
     description: "Protect your equipment from power problems. Surge protectors, voltage stabilizers, and power conditioners for Kenya.",
-    url: "https://emersoneims.com/solutions/power-interruptions",
+    url: "https://www.emersoneims.com/solutions/power-interruptions",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/power-interruptions" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/power-interruptions" },
 };
 
 export default function PowerInterruptionsLayout({ children }: { children: React.ReactNode }) {

@@ -23,7 +23,7 @@ export default function OpenGraph({
   url,
   type = 'website',
 }: OpenGraphProps) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
   const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
   const fullImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
 

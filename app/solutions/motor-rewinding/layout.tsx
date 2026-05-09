@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Motor Rewinding Kenya | Expert Repair & Diagnostics | EmersonEIMS",
     description: "Professional motor rewinding, diagnostics, and VFD integration services in Kenya. All motor sizes.",
-    url: "https://emersoneims.com/solutions/motor-rewinding",
+    url: "https://www.emersoneims.com/solutions/motor-rewinding",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/motor-rewinding" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/motor-rewinding" },
 };
 
 export default function MotorRewindingLayout({ children }: { children: React.ReactNode }) {

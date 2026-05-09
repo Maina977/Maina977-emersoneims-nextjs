@@ -11,7 +11,7 @@ import { test, expect, type Page } from '@playwright/test';
  *      the production backend reports aiConfigured=false (current prod state).
  *
  * These tests target the live deployment by default
- * (PLAYWRIGHT_BASE_URL=https://emersoneims.com) but also work against the
+ * (PLAYWRIGHT_BASE_URL=https://www.emersoneims.com) but also work against the
  * local dev server when run without env override.
  */
 

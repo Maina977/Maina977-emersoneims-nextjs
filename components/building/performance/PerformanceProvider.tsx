@@ -248,8 +248,8 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
             data={{
               '@type': 'Organization',
               name: 'Emerson EiMS',
-              url: process.env.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com',
-              logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://emersoneims.com'}/logo.svg`,
+              url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com',
+              logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com'}/logo.svg`,
               description: 'Professional energy infrastructure management solutions',
               address: {
                 '@type': 'PostalAddress',

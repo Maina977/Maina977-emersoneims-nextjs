@@ -26,7 +26,7 @@
 
 ## 4. Deployment
 - **Status**: Successfully deployed to Vercel Production.
-- **Live URL**: https://emersoneims.com
+- **Live URL**: https://www.emersoneims.com
 
 ## Verification
 - **Navigation**: Visible on all pages.

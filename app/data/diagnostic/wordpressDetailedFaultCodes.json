@@ -44,8 +44,8 @@
     "preventiveMaintenance": "Weekly coolant level check, monthly radiator cleaning, quarterly thermostat test, annual system flush",
     "relatedCodes": ["1235 - Low coolant level", "1236 - Fan belt failure", "1237 - Water pump failure"],
     "expertTips": "In Nairobi's highland climate (1800m altitude), coolant boiling point drops to 98°C at 15 PSI. Use 60/40 glycol mix for better altitude performance. Coastal areas (Mombasa) require corrosion inhibitors due to salt air.",
-    "videoGuide": "https://emersoneims.com/guides/cummins-kta50-cooling-system",
-    "pdfManual": "https://emersoneims.com/manuals/cummins-kta50-service-manual.pdf"
+    "videoGuide": "https://www.emersoneims.com/guides/cummins-kta50-cooling-system",
+    "pdfManual": "https://www.emersoneims.com/manuals/cummins-kta50-service-manual.pdf"
   },
   {
     "brand": "Perkins",
@@ -91,8 +91,8 @@
     "preventiveMaintenance": "Every 500 hours: fuel filter change, injector cleaning. Every 2000 hours: solenoid valve inspection, wiring harness inspection.",
     "relatedCodes": ["P0191 - Fuel rail pressure sensor", "P0093 - Large fuel leak detected", "P0087 - Fuel rail pressure too low"],
     "expertTips": "Kenya's dusty conditions accelerate harness wear. Apply dielectric grease to all connectors during assembly. In Nairobi altitude (1800m), fuel pressure targets are 5% lower - adjust ECM parameters accordingly.",
-    "videoGuide": "https://emersoneims.com/guides/perkins-1104d-injection-timing",
-    "pdfManual": "https://emersoneims.com/manuals/perkins-1104d-workshop-manual.pdf"
+    "videoGuide": "https://www.emersoneims.com/guides/perkins-1104d-injection-timing",
+    "pdfManual": "https://www.emersoneims.com/manuals/perkins-1104d-workshop-manual.pdf"
   },
   {
     "brand": "Caterpillar",
@@ -146,8 +146,8 @@
     "preventiveMaintenance": "Daily: Check oil level before start. Every 250 hours: Oil and filter change. Every 500 hours: Oil analysis. Every 2000 hours: Oil pump inspection. Every 10,000 hours: Bearing inspection.",
     "relatedCodes": ["E351 - High oil temperature", "E352 - Oil level low", "E353 - Oil pressure sensor circuit", "E354 - Oil filter restriction"],
     "expertTips": "Cat C15 engines in Kenya often face accelerated bearing wear due to dusty conditions and high ambient temps (25-35°C). Use premium CI-4+ or CJ-4 oil for better wear protection. In Nairobi altitude (1800m), oil pressure runs 5-10% lower than sea level - this is normal. Coastal generators (Mombasa) require more frequent oil changes (200 hrs vs 250 hrs) due to salt contamination.",
-    "videoGuide": "https://emersoneims.com/guides/caterpillar-c15-oil-pressure-diagnosis",
-    "pdfManual": "https://emersoneims.com/manuals/cat-c15-service-manual.pdf",
+    "videoGuide": "https://www.emersoneims.com/guides/caterpillar-c15-oil-pressure-diagnosis",
+    "pdfManual": "https://www.emersoneims.com/manuals/cat-c15-service-manual.pdf",
     "emergencyContact": "EmersonEIMS 24/7 Hotline: +254 768 860 655"
   }
 ]

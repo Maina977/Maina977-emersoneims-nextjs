@@ -46,12 +46,12 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'Organization',
-      '@id': 'https://emersoneims.com/#organization',
+      '@id': 'https://www.emersoneims.com/#organization',
       name: 'EmersonEIMS',
-      url: 'https://emersoneims.com',
+      url: 'https://www.emersoneims.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://emersoneims.com/logo.png',
+        url: 'https://www.emersoneims.com/logo.png',
       },
       contactPoint: [
         {
@@ -84,16 +84,16 @@ const jsonLd = {
     },
     {
       '@type': 'WebPage',
-      '@id': 'https://emersoneims.com/generators/#webpage',
-      url: 'https://emersoneims.com/generators',
+      '@id': 'https://www.emersoneims.com/generators/#webpage',
+      url: 'https://www.emersoneims.com/generators',
       name: 'Generators - Cummins & Voltka Diesel Generators Kenya',
-      isPartOf: { '@id': 'https://emersoneims.com/#website' },
-      about: { '@id': 'https://emersoneims.com/#organization' },
+      isPartOf: { '@id': 'https://www.emersoneims.com/#website' },
+      about: { '@id': 'https://www.emersoneims.com/#organization' },
       description: 'Buy NEW Cummins & Voltka diesel generators in Kenya. 10kVA to 2000kVA with warranty and free maintenance.',
     },
     {
       '@type': 'Product',
-      '@id': 'https://emersoneims.com/generators/#product',
+      '@id': 'https://www.emersoneims.com/generators/#product',
       name: 'Cummins Diesel Generators by Voltka - Authorized Dealer Kenya',
       image: 'https://www.emersoneims.com/wp-content/uploads/2024/09/cummins-generator.jpg',
       brand: {
@@ -111,7 +111,7 @@ const jsonLd = {
         lowPrice: '850000',
         highPrice: '48000000',
         availability: 'https://schema.org/InStock',
-        seller: { '@id': 'https://emersoneims.com/#organization' },
+        seller: { '@id': 'https://www.emersoneims.com/#organization' },
         offerCount: '50',
         warranty: '3 Years Comprehensive Warranty + 1 Year Free Service',
       },
@@ -123,9 +123,9 @@ const jsonLd = {
     },
     {
       '@type': 'LocalBusiness',
-      '@id': 'https://emersoneims.com/#localbusiness',
+      '@id': 'https://www.emersoneims.com/#localbusiness',
       name: 'EmersonEIMS - Generator Sales & Services',
-      image: 'https://emersoneims.com/logo.png',
+      image: 'https://www.emersoneims.com/logo.png',
       telephone: '+254768860665',
       email: 'info@emersoneims.com',
       address: {
@@ -140,7 +140,7 @@ const jsonLd = {
         latitude: -1.3200,
         longitude: 36.8900,
       },
-      url: 'https://emersoneims.com',
+      url: 'https://www.emersoneims.com',
       priceRange: '$$',
       openingHoursSpecification: [
         {
@@ -163,19 +163,19 @@ const jsonLd = {
     },
     {
       '@type': 'BreadcrumbList',
-      '@id': 'https://emersoneims.com/generators/#breadcrumb',
+      '@id': 'https://www.emersoneims.com/generators/#breadcrumb',
       itemListElement: [
         {
           '@type': 'ListItem',
           position: 1,
           name: 'Home',
-          item: 'https://emersoneims.com',
+          item: 'https://www.emersoneims.com',
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'Generators',
-          item: 'https://emersoneims.com/generators',
+          item: 'https://www.emersoneims.com/generators',
         },
       ],
     },

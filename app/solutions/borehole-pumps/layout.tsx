@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Borehole Pump Solutions Kenya | Installation & VFD Systems | EmersonEIMS",
     description: "Expert borehole pump installation, VFD integration, and maintenance services across Kenya.",
-    url: "https://emersoneims.com/solutions/borehole-pumps",
+    url: "https://www.emersoneims.com/solutions/borehole-pumps",
     siteName: "EmersonEIMS",
     locale: "en_KE",
     type: "website",
   },
-  alternates: { canonical: "https://emersoneims.com/solutions/borehole-pumps" },
+  alternates: { canonical: "https://www.emersoneims.com/solutions/borehole-pumps" },
 };
 
 export default function BoreholePumpsLayout({ children }: { children: React.ReactNode }) {

@@ -60,8 +60,8 @@ Generated: 2025-12-29T17:53:53.212Z
 
 ### app/generators/page.tsx
 
-- [wp-content/uploads] L426: https://emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp
-- [any http(s) media] L426: https://emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp
+- [wp-content/uploads] L426: https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp
+- [any http(s) media] L426: https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp
 
 ### app/generators/used/page.tsx
 
@@ -130,8 +130,8 @@ Generated: 2025-12-29T17:53:53.212Z
 
 ### app/service/page.tsx
 
-- [wp-content/uploads] L336: https://emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg
-- [any http(s) media] L336: https://emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg
+- [wp-content/uploads] L336: https://www.emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg
+- [any http(s) media] L336: https://www.emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg
 
 ### app/services/page.tsx
 
@@ -186,19 +186,19 @@ Generated: 2025-12-29T17:53:53.212Z
 
 - [wp-content/uploads] L72: https://www.emersoneims.com/wp-content/uploads/2025/11/1-1.png
 - [any http(s) media] L72: https://www.emersoneims.com/wp-content/uploads/2025/11/1-1.png
-- [wp-content/uploads] L79: https://emersoneims.com/wp-content/uploads/2025/11/BAT-5.png
-- [any http(s) media] L79: https://emersoneims.com/wp-content/uploads/2025/11/BAT-5.png
+- [wp-content/uploads] L79: https://www.emersoneims.com/wp-content/uploads/2025/11/BAT-5.png
+- [any http(s) media] L79: https://www.emersoneims.com/wp-content/uploads/2025/11/BAT-5.png
 
 ### lib/data/mediaAssets.ts
 
-- [wp-content/uploads] L26: https://emersoneims.com/wp-content/uploads/2025/11/BAT-5.png
-- [any http(s) media] L26: https://emersoneims.com/wp-content/uploads/2025/11/BAT-5.png
-- [wp-content/uploads] L56: https://emersoneims.com/wp-content/uploads/2025/11/IMG_20221119_172228_822-scaled.jpg
-- [any http(s) media] L56: https://emersoneims.com/wp-content/uploads/2025/11/IMG_20221119_172228_822-scaled.jpg
-- [wp-content/uploads] L63: https://emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp
-- [any http(s) media] L63: https://emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp
-- [wp-content/uploads] L81: https://emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg
-- [any http(s) media] L81: https://emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg
+- [wp-content/uploads] L26: https://www.emersoneims.com/wp-content/uploads/2025/11/BAT-5.png
+- [any http(s) media] L26: https://www.emersoneims.com/wp-content/uploads/2025/11/BAT-5.png
+- [wp-content/uploads] L56: https://www.emersoneims.com/wp-content/uploads/2025/11/IMG_20221119_172228_822-scaled.jpg
+- [any http(s) media] L56: https://www.emersoneims.com/wp-content/uploads/2025/11/IMG_20221119_172228_822-scaled.jpg
+- [wp-content/uploads] L63: https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp
+- [any http(s) media] L63: https://www.emersoneims.com/wp-content/uploads/2025/10/SPARES_300dpi.-fotor-enhance-20250821225707-1-1920x1080-1.webp
+- [wp-content/uploads] L81: https://www.emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg
+- [any http(s) media] L81: https://www.emersoneims.com/wp-content/uploads/2025/10/Untitled-design-4.svg
 
 ### lib/data/services.ts
 
