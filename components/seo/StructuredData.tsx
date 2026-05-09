@@ -79,7 +79,11 @@ export function OrganizationSchema() {
       { '@type': 'Country', name: 'Tanzania' },
       { '@type': 'Country', name: 'Uganda' },
       { '@type': 'Country', name: 'Rwanda' }
-    ]
+    ],
+    // Cookie-based i18n: same URL serves 11 languages. Declaring language
+    // support via knownLanguage is the proper Schema.org signal here
+    // (hreflang link tags would mis-signal duplicate URLs to Google).
+    knowsLanguage: ['en', 'sw', 'fr', 'de', 'es', 'pt', 'zh', 'nl', 'am', 'so', 'ar']
   };
 
   return <StructuredData data={schema} />;
@@ -412,6 +416,7 @@ export function WebSiteSchema() {
     name: 'EmersonEIMS',
     alternateName: 'Emerson Energy Infrastructure Management Solutions',
     url: 'https://www.emersoneims.com',
+    inLanguage: ['en', 'sw', 'fr', 'de', 'es', 'pt', 'zh', 'nl', 'am', 'so', 'ar'],
     potentialAction: {
       '@type': 'SearchAction',
       target: {

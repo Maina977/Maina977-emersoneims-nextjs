@@ -700,6 +700,26 @@ export default function HomePage() {
         }}
       />
 
+      {/* Speakable schema — flags H1 + lead paragraph as voice-friendly so
+          Google Assistant / Alexa can read them aloud in audio answers.
+          Targets the standard semantic landmarks present on this page. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'EmersonEIMS — B2B Power & Engineering Partner Kenya',
+            url: 'https://www.emersoneims.com',
+            inLanguage: 'en-KE',
+            speakable: {
+              '@type': 'SpeakableSpecification',
+              cssSelector: ['h1', '[data-speakable]'],
+            },
+          }),
+        }}
+      />
+
       {/* STATIC CONTENT - Renders instantly (no JS needed) */}
       <StaticHeroFallback />
       <SolutionsBySector />
