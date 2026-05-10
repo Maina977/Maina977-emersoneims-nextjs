@@ -1,7 +1,7 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════════════════╗
  * ║                                                                              ║
- * ║   SOLARGENIUS PRO™ V2 - WORLD'S #1 SOLAR AI PLATFORM                        ║
+ * ║   SOLARGENIUS PRO™ V2 - SOLAR AI PLATFORM                                   ║
  * ║   ═══════════════════════════════════════════════════════════════════════   ║
  * ║                                                                              ║
  * ║   Copyright © 2024-2026 EmersonEIMS - ALL RIGHTS RESERVED                   ║

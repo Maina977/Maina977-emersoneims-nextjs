@@ -45,8 +45,8 @@ export default function AdvancedSEO() {
             alternateName: ['EmersonEIMS', 'EmersonEIMS', 'Generator Companies in Kenya', 'Generator Suppliers Kenya'],
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/images/logo-tagline.png',
-            description: 'Kenya\'s #1 Generator Company - Sales, Installation, Maintenance & Repairs. Cummins, Perkins, FG Wilson Authorized Dealer. Solar, UPS, Motor Rewinding. 12+ Years Experience, 500+ Projects, 47 Counties.',
-            foundingDate: '2012',
+            description: 'Kenya\'s #1 Generator Company - Sales, Installation, Maintenance & Repairs. Cummins, Perkins, FG Wilson Authorized Dealer. Solar, UPS, Motor Rewinding. 47 Counties.',
+
             numberOfEmployees: '50+',
             slogan: 'Reliable Power. Without Limits.',
             sameAs: [

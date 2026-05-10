@@ -447,7 +447,7 @@ export function generateFAQSchema() {
 // ═══════════════════════════════════════════════════════════════════════════════
 export const PAGE_META = {
   home: {
-    title: "EmersonEIMS - #1 Generator Company Kenya | 3-Year Warranty | 47 Counties",
+    title: "EmersonEIMS \u2014 B2B Generator Partner Kenya | 3-Year Warranty | 47 Counties",
     description: "Kenya's Best Generator Company. 3-YEAR WARRANTY on all generators. Cummins, Perkins, FG Wilson authorized. Solar, UPS, Motor Rewinding. Serving 9,458+ hospitals, 16,245+ hotels. 24/7 Emergency Service. Call +254768860665"
   },
   generators: {

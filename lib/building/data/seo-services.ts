@@ -573,7 +573,7 @@ export const SEO_SERVICES: SEOService[] = [
     icon: 'Sun',
     category: 'solar',
     metaTemplate: {
-      title: 'Solar Companies in {location} | #1 Solar Energy Company Kenya',
+      title: 'Solar Companies in {location} | Solar Energy Provider Kenya',
       description: 'Best solar companies in {location}. Professional solar installation, panels, batteries & inverters. KPLC net metering experts. Call +254768860665',
       h1: 'Solar Companies in {location}'
     },

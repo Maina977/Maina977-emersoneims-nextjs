@@ -102,7 +102,7 @@ export function generateImageAlt(
     'hero.solar': 'Solar Energy Systems by EmersonEIMS',
     'hero.generators': 'Diesel Generators by EmersonEIMS',
     'caseStudies.bigotFlowers': 'Bigot Flowers - Power Solutions Case Study',
-    'caseStudies.stAustin': 'St. Austin Academy - Energy Infrastructure',
+    'caseStudies.stAustin': 'St. Austin Academy — Power & Engineering',
     'caseStudies.kivukoni': 'Kivukoni International School - Solar Solutions',
     'caseStudies.greenheart': 'Greenheart Kilifi - Hospitality Energy Solutions',
     'caseStudies.ntsa': 'NTSA - Government Power Infrastructure',

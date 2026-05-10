@@ -250,7 +250,7 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
               name: 'Emerson EiMS',
               url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com',
               logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com'}/logo.svg`,
-              description: 'Professional energy infrastructure management solutions',
+              description: 'B2B power and engineering services',
               address: {
                 '@type': 'PostalAddress',
                 streetAddress: 'Embakasi, off Airport North Road',

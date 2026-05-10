@@ -17,7 +17,7 @@ import SolutionsBySector from '@/components/home/SolutionsBySector';
 // ═══════════════════════════════════════════════════════════════════════════════
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.emersoneims.com'),
-  title: "EmersonEIMS | #1 Generator & Solar Company Kenya | AI-Powered | 3-Year Warranty",
+  title: "EmersonEIMS | B2B Generators, Solar & Engineering Partner — Kenya | 3-Year Warranty",
   description: "EmersonEIMS — B2B power & engineering for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators. 3-year warranty, SLA-backed maintenance, 24/7 emergency response across 47 counties. Authorised Cummins / Perkins / FG Wilson dealer. Call +254768860665.",
   openGraph: {
     title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
@@ -648,58 +648,14 @@ export default function HomePage() {
         }}
       />
 
-      {/* Structured Data - FAQs for Rich Results */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: [
-              {
-                '@type': 'Question',
-                name: 'What is Generator Oracle AI?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Generator Oracle is EmersonEIMS\'s AI-powered diagnostic assistant. It analyses generator symptoms, looks them up against an extensive fault-code database and provides real-time analysis and repair recommendations. Voice activation is supported.'
-                }
-              },
-              {
-                '@type': 'Question',
-                name: 'What is Solar Solution School?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Solar Solution School is a solar design platform featuring 10 AI engines including 3D design, voice commands, neural optimisation, permit generation and 25-year production projections. Country presets cover 15 African markets with local irradiance data.'
-                }
-              },
-              {
-                '@type': 'Question',
-                name: 'How many AI engines does EmersonEIMS have?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'EmersonEIMS features 10 AI engines: AI Depth Estimator, Neural Panel Optimizer, AI Permit Generator, Satellite Roof Analyzer, AI Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, and Grid Analyzer.'
-                }
-              },
-              {
-                '@type': 'Question',
-                name: 'Which countries does EmersonEIMS serve?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'EmersonEIMS serves 15 African countries including Kenya, Tanzania, Uganda, Rwanda, Ethiopia, Burundi, South Sudan, Somalia, DR Congo, Cameroon, Central African Republic, Gabon, Congo, Chad, Madagascar, Mauritius, and Seychelles.'
-                }
-              },
-              {
-                '@type': 'Question',
-                name: 'Can you do borehole site analysis without a site visit?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: "Yes \u2014 EmersonEIMS has AquaScan Pro, an AI-assisted Borehole Analyser that performs rock mapping and groundwater analysis using public-source datasets (NASA GLDAS, Sentinel-2, Landsat-8, MODIS, ORNL DAAC), LiDAR terrain analysis, hyperspectral rock classification and virtual VES/ERT geophysical surveys. The tool analyses your site remotely without an in-person survey. Country presets cover 195+ countries across 6 continents."
-                }
-              }
-            ]
-          }),
-        }}
-      />
+      {/* FAQPage schema removed from the homepage 2026-05-09.
+          Google Rich Results Test was flagging 2 of 5 entries as invalid
+          because Google requires the answer text to be visibly rendered
+          on the same page that declares the schema. The dedicated /faq
+          route owns its own (valid) FAQPage schema; declaring a second
+          one here for content that is not visible was both a duplicate
+          and a policy violation. Reference:
+          https://developers.google.com/search/docs/appearance/structured-data/faqpage */}
 
       {/* Speakable schema — flags H1 + lead paragraph as voice-friendly so
           Google Assistant / Alexa can read them aloud in audio answers.

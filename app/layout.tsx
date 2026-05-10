@@ -62,7 +62,7 @@ export const metadata: Metadata = {
   // SEO is achieved through quality content, proper H1-H6 structure, and semantic HTML
   authors: [{ name: "EmersonEIMS" }],
   creator: "EmersonEIMS",
-  publisher: "EmersonEIMS - Energy Infrastructure Management Solutions",
+  publisher: "EmersonEIMS",
   formatDetection: {
     email: false,
     address: false,
@@ -327,7 +327,7 @@ export default async function RootLayout({
 
         {/* Author & Publisher */}
         <meta name="author" content="EmersonEIMS" />
-        <meta name="publisher" content="EmersonEIMS - Energy Infrastructure Management Solutions" />
+        <meta name="publisher" content="EmersonEIMS" />
         <meta name="copyright" content="© 2026 EmersonEIMS. All rights reserved." />
 
         {/* Mobile App Meta Tags */}

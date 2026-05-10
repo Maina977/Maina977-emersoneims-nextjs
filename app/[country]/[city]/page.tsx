@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     return {
       title: `Energy Solutions in ${cityName}, ${countryName} | EmersonEIMS`,
-      description: `Leading provider of generators, solar power, and energy infrastructure in ${cityName}, ${countryName}. Serving East Africa with premium power engineering.`,
+      description: `B2B power and engineering services in ${cityName}, ${countryName}: generators, solar, UPS, motors and HVAC. Serving East Africa.`,
     };
   }
 

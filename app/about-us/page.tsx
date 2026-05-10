@@ -349,7 +349,7 @@ const MissionVisionValues = () => {
             <div className="text-5xl mb-4">👁️</div>
             <h3 className="text-2xl font-bold text-white mb-4">Our Vision</h3>
             <p className="text-gray-300">
-              To be Africa's leading energy infrastructure management company, recognized for innovation, reliability, and transformative impact.
+              To be a trusted B2B power and engineering partner across Kenya and East Africa, recognised for engineering integrity, reliability and measurable client outcomes.
             </p>
           </motion.div>
 
@@ -428,7 +428,7 @@ export default function AboutUsPage() {
               '@context': 'https://schema.org',
               '@type': 'VideoObject',
               name: 'EmersonEIMS - Our Work in Action Kenya',
-              description: 'Real projects, real results. Watch how Emerson EiMS delivers power solutions across Kenya. Over a decade of powering Kenya with generators, solar, and energy infrastructure.',
+              description: 'Real projects, real results. Watch how EmersonEIMS delivers B2B power solutions across Kenya — generators, solar, UPS and engineering.',
               thumbnailUrl: 'https://www.emersoneims.com/images/solar%20power%20farms.png',
               uploadDate: '2024-01-01',
               contentUrl: 'https://www.emersoneims.com/videos/FOR%20TRIALS%20IN%20KADENCE.mp4',
@@ -471,7 +471,7 @@ export default function AboutUsPage() {
         src="/images/solar%20power%20farms.png"
         alt="EmersonEIMS - Kenya's Leading Energy Solutions Provider"
         title="About EmersonEIMS"
-        subtitle="Powering Kenya with intelligent energy infrastructure solutions since 2013"
+        subtitle="B2B power & engineering partner for Kenyan industry, healthcare, telecom and commercial property"
         height="full"
         overlay="gradient"
         parallax={true}
@@ -543,7 +543,7 @@ export default function AboutUsPage() {
               <SectionHeading>Join Us in Powering Kenya's Future</SectionHeading>
             </div>
           <p className="text-xl text-gray-300 mb-8">
-            Ready to transform your energy infrastructure? Let's build something extraordinary together.
+            Ready to upgrade your power and engineering systems? Let's scope it together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 

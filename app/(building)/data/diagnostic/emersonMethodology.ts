@@ -252,7 +252,7 @@ export const COPYRIGHT_NOTICE = `
 EMERSONEIMS DIAGNOSTIC METHODOLOGY™ - PROPRIETARY SYSTEM
 ═══════════════════════════════════════════════════════════════════════
 
-Copyright © 2025 EmersonEIMS (Energy Infrastructure Management Solutions)
+Copyright © 2025 EmersonEIMS
 Patent Pending: KE/P/2025/XXXXX
 All Rights Reserved
 

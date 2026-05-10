@@ -9,7 +9,7 @@ import Link from 'next/link';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
-// Dynamic import for SolarGenius Pro Hub V2 - World's #1 Solar AI Platform
+// Dynamic import for SolarGenius Pro Hub V2 — solar AI platform
 const SolarGeniusProHub = dynamic(() => import('@/components/solar/SolarGeniusProHubV2'), {
   loading: () => (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center">

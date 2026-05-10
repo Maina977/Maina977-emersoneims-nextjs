@@ -30,7 +30,7 @@ export default function SolutionsHome() {
             '@context': 'https://schema.org',
             '@type': 'VideoObject',
             name: 'Power Solutions in Action - Emerson EiMS Kenya',
-            description: 'Watch how Emerson EiMS delivers world-class power solutions including generators, solar systems, and energy infrastructure across Kenya and East Africa.',
+            description: 'Watch how EmersonEIMS delivers B2B power and engineering solutions — generators, solar, UPS and motors — across Kenya and East Africa.',
             thumbnailUrl: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
             uploadDate: '2024-01-01',
             contentUrl: 'https://www.emersoneims.com/videos/Solution(1).mp4',

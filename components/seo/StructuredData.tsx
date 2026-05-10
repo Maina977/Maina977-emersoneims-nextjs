@@ -811,7 +811,7 @@ export function AboutPageSchema() {
       '@type': 'Organization',
       name: 'EmersonEIMS',
       alternateName: 'EmersonEIMS',
-      foundingDate: '2012',
+
       foundingLocation: {
         '@type': 'Place',
         name: 'Nairobi, Kenya'
