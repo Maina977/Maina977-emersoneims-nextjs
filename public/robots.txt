@@ -25,8 +25,10 @@ Allow: /blog
 Allow: /sitemap.xml
 Disallow: /api/
 Disallow: /admin/
-Disallow: /_next/static/
-Disallow: /_next/image/
+# DO NOT block /_next/static/ or /_next/image/ — Googlebot must fetch
+# CSS/JS to render the page (mobile-first indexing requirement). Blocking
+# them is the documented #1 cause of "Crawled — currently not indexed".
+# Reference: https://developers.google.com/search/mobile-sites/mobile-first-indexing
 Disallow: /private/
 
 # Google Images - Full image access
@@ -93,7 +95,7 @@ Allow: /spare-parts
 Allow: /blog
 Disallow: /api/
 Disallow: /admin/
-Disallow: /_next/
+# Bingbot must also be allowed to fetch /_next/* for rendering.
 Crawl-delay: 1
 
 # Bing Preview Bot
@@ -419,7 +421,6 @@ User-agent: YandexBot
 Allow: /
 Disallow: /api/
 Disallow: /admin/
-Disallow: /_next/
 Crawl-delay: 2
 
 # Baidu (China) - Allow for international traffic
@@ -427,7 +428,6 @@ User-agent: Baiduspider
 Allow: /
 Disallow: /api/
 Disallow: /admin/
-Disallow: /_next/
 Crawl-delay: 3
 
 # Sogou (China)
@@ -469,7 +469,7 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin/
-Disallow: /_next/
+# Do NOT block /_next/ — search engines must fetch CSS/JS for rendering.
 Disallow: /private/
 Disallow: /scripts/
 Disallow: /*.json$

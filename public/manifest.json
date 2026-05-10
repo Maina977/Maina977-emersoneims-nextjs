@@ -1,14 +1,14 @@
 {
-  "name": "EmersonEIMS - Energy Infrastructure Management",
+  "name": "EmersonEIMS",
   "short_name": "EmersonEIMS",
-  "description": "Professional energy infrastructure management solutions including generators, solar systems, UPS, and comprehensive diagnostics",
+  "description": "EmersonEIMS — B2B power & engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 3-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#FFD166",
   "orientation": "any",
-  "lang": "en-US",
+  "lang": "en-KE",
   "dir": "ltr",
   "prefer_related_applications": false,
   "icons": [

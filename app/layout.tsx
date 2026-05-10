@@ -174,7 +174,7 @@ export default async function RootLayout({
         "closes": "16:00"
       }
     ],
-    "priceRange": "KES",
+    "priceRange": "$$$",
     "currenciesAccepted": "KES, USD",
     "paymentAccepted": "Cash, M-Pesa, Bank Transfer, Credit Card",
     // NOTE: AggregateRating intentionally omitted. Google's structured-data
