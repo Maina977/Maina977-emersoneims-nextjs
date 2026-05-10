@@ -193,7 +193,7 @@ export default function PremiumFooter() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-400">
             © {currentYear} Emerson EiMS. All rights reserved.
           </p>
           <div className="flex gap-6">
@@ -201,7 +201,7 @@ export default function PremiumFooter() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs text-gray-500 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                className="text-xs text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
               >
                 {link.label}
               </Link>

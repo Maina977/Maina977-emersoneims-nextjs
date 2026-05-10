@@ -481,14 +481,13 @@ export default function HomePage() {
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'EmersonEIMS',
-            alternateName: 'Emerson EiMS Power Solutions',
-            description: "AI-assisted power-engineering platform for B2B clients in Kenya. Includes Generator Oracle (diagnostic assistant), Solar Solution School (design suite with 10 AI engines), AquaScan Pro (borehole analyser) and Building Suite Pro — backed by certified field engineers and a 3-year warranty.",
+            description: "B2B power-engineering partner for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators with a 3-year warranty, SLA-backed maintenance and 24/7 emergency response across 47 counties. Includes engineering intelligence tools (Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro).",
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/logo.png',
             image: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
-            foundingDate: '2012',
-            numberOfEmployees: '50-100',
-            slogan: 'AI-Powered Power Solutions for Africa',
+            // foundingDate, numberOfEmployees, slogan and alternateName removed
+            // 2026-05-09: data-policy.md — do not assert facts that cannot be
+            // independently verified by an external auditor.
             contactPoint: [
               {
                 '@type': 'ContactPoint',

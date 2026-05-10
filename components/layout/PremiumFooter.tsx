@@ -300,7 +300,7 @@ export default function PremiumFooter() {
                           aria-label={`${entry.label} \u2014 ${entry.address}`}
                           className="block hover:text-brand-gold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
                         >
-                          <span className="block text-xs text-gray-500 uppercase tracking-wider">
+                          <span className="block text-xs text-gray-400 uppercase tracking-wider">
                             {entry.label}
                           </span>
                           <span className="block text-sm">{entry.address}</span>
@@ -336,7 +336,7 @@ export default function PremiumFooter() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-400">
               © {currentYear} Emerson EiMS. All rights reserved.
             </p>
             <span className="ml-3 px-2 py-1 rounded bg-brand-gold/10 text-xs font-semibold text-brand-gold border border-brand-gold/30" title="Protected by Generator Oracle / EmersonEIMS">
@@ -348,7 +348,7 @@ export default function PremiumFooter() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs text-gray-500 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
+                className="text-xs text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm"
               >
                 {link.label}
               </Link>

@@ -210,17 +210,17 @@ export default function SciFiFooter() {
           viewport={{ once: true }}
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-gray-500 text-sm font-mono">
+            <div className="text-gray-400 text-sm font-mono">
               © 2025 EmersonEIMS. All rights reserved.
             </div>
             <div className="flex gap-6 text-sm font-mono">
-              <Link href="/privacy" className="text-gray-500 hover:text-cyan-300 transition-colors">
+              <Link href="/privacy" className="text-gray-400 hover:text-cyan-300 transition-colors">
                 Privacy
               </Link>
-              <Link href="/terms" className="text-gray-500 hover:text-cyan-300 transition-colors">
+              <Link href="/terms" className="text-gray-400 hover:text-cyan-300 transition-colors">
                 Terms
               </Link>
-              <Link href="/sitemap" className="text-gray-500 hover:text-cyan-300 transition-colors">
+              <Link href="/sitemap" className="text-gray-400 hover:text-cyan-300 transition-colors">
                 Sitemap
               </Link>
             </div>
