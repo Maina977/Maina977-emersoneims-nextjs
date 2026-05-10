@@ -18,10 +18,10 @@ import SolutionsBySector from '@/components/home/SolutionsBySector';
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.emersoneims.com'),
   title: "EmersonEIMS | #1 Generator & Solar Company Kenya | AI-Powered | 3-Year Warranty",
-  description: "Kenya's #1 Generator & Solar Company with 3-Year Warranty. AI Generator Oracle (90% accuracy). Solar Solution School with 10 AI engines. Covers 15 African countries. Enterprise integrations. Cummins, Perkins, FG Wilson Authorized. Call +254768860665",
+  description: "EmersonEIMS — B2B power & engineering for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators. 3-year warranty, SLA-backed maintenance, 24/7 emergency response across 47 counties. Authorised Cummins / Perkins / FG Wilson dealer. Call +254768860665.",
   openGraph: {
-    title: "EmersonEIMS | Kenya's #1 AI-Powered Generator & Solar Company",
-    description: "3-Year Warranty. AI Generator Oracle with 90% accuracy. Solar Solution School with 10 AI engines. 15 African countries. Enterprise integrations (Salesforce, DocuSign). Authorized Cummins dealer.",
+    title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
+    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. 3-year warranty, SLA maintenance, 24/7 emergency. Authorised Cummins dealer. AI-assisted diagnostic and design tools.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
     type: 'website',
     locale: 'en_KE',
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EmersonEIMS | #1 Generator & Solar Kenya | AI-Powered',
-    description: '3-Year Warranty. AI Generator Oracle (90% accuracy). Solar AI with 10 engines. 15 countries. Call +254768860665',
+    title: 'EmersonEIMS | B2B Power & Engineering — Kenya',
+    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. 3-year warranty, SLA maintenance, 24/7 emergency. Authorised Cummins dealer. Call +254768860665',
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
   alternates: {
@@ -64,7 +64,7 @@ function StaticHeroFallback() {
       <div className="absolute inset-0">
         <Image
           src="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
-          alt="EmersonEIMS Power Solutions — Kenya's #1 Generator Company"
+          alt="EmersonEIMS Power Solutions — B2B Generator, Solar & Engineering Partner, Kenya"
           fill
           priority
           fetchPriority="high"
@@ -110,7 +110,7 @@ function StaticHeroFallback() {
           {/* Subtitle - Apple-style subheadline */}
           <p className="apple-subheadline text-gray-200 mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
             Generators · Solar · UPS · Boreholes · Buildings — one AI-native platform.
-            <span className="text-amber-400 font-medium"> 12+ Years</span> powering East Africa, now with Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro &amp; the Solar &amp; UPS Intelligence Hub.
+            <span className="text-amber-400 font-medium"> Engineering-grade</span> reliability for East Africa, now with Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro &amp; the Solar &amp; UPS Intelligence Hub.
           </p>
 
           {/* CTAs - Apple-style buttons with mobile optimization */}
@@ -161,17 +161,22 @@ function StaticHeroFallback() {
 }
 
 function StaticStatsSection() {
+  // Data-policy compliance (audit 2026-05-09): replaced fabricated
+  // headline counters ("500+ projects", "98.7% uptime", "12+ years")
+  // with claims that are either contractual (warranty / SLA window) or
+  // verifiable public facts (Kenya county count, kVA range we install).
+  // No unlabelled estimates per /memories/data-policy.md.
   const stats = [
-    { num: '500+', label: 'Projects Delivered', icon: '🔧' },
-    { num: '98.7%', label: 'System Uptime', icon: '📊' },
-    { num: '47', label: 'Counties Served', icon: '🌍' },
-    { num: '12+', label: 'Years Experience', icon: '🏆' },
+    { num: '47', label: 'Counties Covered', icon: '🌍' },
+    { num: '24/7', label: 'Emergency Response', icon: '🚨' },
+    { num: '3-Year', label: 'Warranty', icon: '🛡️' },
+    { num: '20–2000', label: 'kVA Range Installed', icon: '⚡' },
   ];
 
   return (
     <section className="py-16 sm:py-20 lg:py-24 bg-black content-auto">
       <div className="max-w-full-content mx-auto px-4 sm:px-6 lg:px-8">
-        <p className="apple-caption text-center text-amber-500 mb-8 sm:mb-12">By The Numbers</p>
+        <p className="apple-caption text-center text-amber-500 mb-8 sm:mb-12">Service Standards</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
           {stats.map((stat, i) => (
             <div
@@ -200,9 +205,10 @@ function StaticFeaturesSection() {
           <span className="text-amber-500">Meets Reliability</span>
         </h2>
         <p className="apple-body text-gray-300 max-w-3xl">
-          Over <span className="text-white font-semibold">12 years</span> powering East Africa's critical infrastructure.
-          From <span className="text-amber-400">20kVA</span> residential systems to <span className="text-amber-400">2000kVA</span> industrial installations.
-          <span className="text-white font-semibold"> 98.7%</span> uptime guaranteed.
+          Powering East Africa's critical infrastructure across
+          manufacturing, healthcare, telecom and commercial property.
+          From <span className="text-amber-400">20kVA</span> commercial systems to <span className="text-amber-400">2000kVA</span> industrial installations,
+          backed by a <span className="text-white font-semibold">3-year warranty</span> and SLA-bound maintenance.
         </p>
       </div>
     </section>
@@ -215,8 +221,9 @@ function AITechnologyShowcase() {
       id: 'generator-oracle',
       title: 'Generator Oracle',
       subtitle: 'AI Diagnostic System',
-      description: 'World-class AI that diagnoses generator problems with 90% accuracy. Analyzes symptoms, provides solutions, and connects you with certified technicians.',
-      features: ['90% Diagnostic Accuracy', 'Voice-Activated', '400,000+ Fault Codes', 'Real-time Analysis'],
+      description: 'AI-assisted diagnostic assistant that analyses generator symptoms, looks them up against an extensive fault-code database, and connects you with certified technicians.',
+      description: 'AI-powered diagnostic assistant that analyses generator symptoms, looks them up against an extensive fault-code database and connects you with certified technicians.',
+      features: ['Symptom-based Diagnosis', 'Voice-Activated', 'Fault Code Database', 'Real-time Analysis'],
       icon: '🔧',
       gradient: 'from-amber-500 to-orange-600',
       link: '/generator-oracle',
@@ -231,13 +238,13 @@ function AITechnologyShowcase() {
       icon: '💧',
       gradient: 'from-cyan-500 to-teal-500',
       link: '/services/borehole-pumps',
-      badge: "WORLD'S #1"
+      badge: "AI BOREHOLE TOOL"
     },
     {
       id: 'solar-school',
       title: 'Solar Solution School',
       subtitle: '10 AI Engines',
-      description: 'The world\'s most advanced solar design platform. 3D modeling, AI optimization, voice control, and coverage across 15 African countries.',
+      description: 'Solar design platform with 3D modelling, AI-assisted optimisation and voice control. Country presets cover 15 African markets.',
       features: ['3D AI Design', 'Voice Commands', '25-Year Predictions', '15 Countries'],
       icon: '☀️',
       gradient: 'from-blue-500 to-cyan-500',
@@ -270,9 +277,9 @@ function AITechnologyShowcase() {
 
   const achievements = [
     { number: '11', label: 'AI Engines', icon: '🤖' },
-    { number: '90%', label: 'AI Accuracy', icon: '🎯' },
-    { number: '195+', label: 'Countries Covered', icon: '🌍' },
-    { number: "World's #1", label: 'AI Borehole Tool', icon: '💧' },
+    { number: '47', label: 'Counties Covered', icon: '🌍' },
+    { number: '24/7', label: 'Emergency Response', icon: '🚨' },
+    { number: '3-Year', label: 'Warranty', icon: '🛡️' },
   ];
 
   return (
@@ -475,7 +482,7 @@ export default function HomePage() {
             '@type': 'Organization',
             name: 'EmersonEIMS',
             alternateName: 'Emerson EiMS Power Solutions',
-            description: "East Africa's most advanced AI-powered generator and solar solutions platform. Featuring Generator Oracle AI with 90% diagnostic accuracy and Solar Solution School with 10 AI engines covering 15 African countries.",
+            description: "AI-assisted power-engineering platform for B2B clients in Kenya. Includes Generator Oracle (diagnostic assistant), Solar Solution School (design suite with 10 AI engines), AquaScan Pro (borehole analyser) and Building Suite Pro — backed by certified field engineers and a 3-year warranty.",
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/logo.png',
             image: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
@@ -525,7 +532,7 @@ export default function HomePage() {
                   itemOffered: {
                     '@type': 'SoftwareApplication',
                     name: 'Generator Oracle AI',
-                    description: 'AI-powered generator diagnostic system with 90% accuracy, voice activation, and 400,000+ fault codes database',
+                    description: 'AI-powered generator diagnostic system with voice activation and an extensive fault-code database',
                     applicationCategory: 'BusinessApplication',
                     operatingSystem: 'Web Browser',
                     offers: { '@type': 'Offer', price: '0', priceCurrency: 'KES' }
@@ -588,12 +595,11 @@ export default function HomePage() {
               'CRM Integration',
               'Voice Recognition'
             ],
-            award: [
-              'Most Advanced Solar AI Platform in Africa',
-              "World's Most Comprehensive AI Borehole Analyzer (AquaScan Pro) - 195+ Countries",
-              '11 AI Engines',
-              '90% Diagnostic Accuracy'
-            ]
+            // 'award' array removed (audit 2026-05-09): all entries were
+            // self-asserted superlatives ("Most Advanced", "World's Most
+            // Comprehensive") with no third-party citation. Schema.org
+            // `award` requires a verifiable issuing body — omitting until
+            // a real award (e.g. KEPSA, ASNT, AHK) is documented.
           }),
         }}
       />
@@ -608,7 +614,7 @@ export default function HomePage() {
               '@type': 'SoftwareApplication',
               name: 'Generator Oracle AI',
               applicationCategory: 'BusinessApplication',
-              description: 'AI-powered generator diagnostic tool that analyzes symptoms and provides solutions with 90% accuracy. Features voice activation, 400,000+ fault codes, and real-time analysis.',
+              description: 'AI-powered generator diagnostic tool that analyses symptoms and suggests solutions, backed by an extensive fault-code database. Features voice activation and real-time analysis.',
               operatingSystem: 'Any (Web-based)',
               url: 'https://www.emersoneims.com/generator-oracle',
               offers: {
@@ -616,20 +622,18 @@ export default function HomePage() {
                 price: '0',
                 priceCurrency: 'KES'
               },
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.9',
-                ratingCount: '500',
-                bestRating: '5'
-              },
-              featureList: '90% Diagnostic Accuracy, Voice Activation, 400,000+ Fault Codes, Real-time Analysis, AI-Powered Recommendations'
+              // aggregateRating removed (audit 2026-05-09): Google's
+              // structured-data policy requires on-page user-generated
+              // reviews for self-asserted ratings — we don't have them
+              // yet, so emitting one is a policy violation.
+              featureList: 'Voice Activation, Fault Code Database, Real-time Analysis, AI-Powered Recommendations'
             },
             {
               '@context': 'https://schema.org',
               '@type': 'SoftwareApplication',
               name: 'Solar Solution School',
               applicationCategory: 'BusinessApplication',
-              description: 'The world\'s most advanced solar design platform featuring 10 AI engines, 3D modeling, voice commands, 25-year production predictions, and coverage across 15 African countries.',
+              description: 'Solar design platform featuring 10 AI engines, 3D modelling, voice commands and 25-year production projections. Country presets cover 15 African markets.',
               operatingSystem: 'Any (Web-based)',
               url: 'https://www.emersoneims.com/solar',
               offers: {
@@ -637,13 +641,9 @@ export default function HomePage() {
                 price: '0',
                 priceCurrency: 'KES'
               },
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.8',
-                ratingCount: '350',
-                bestRating: '5'
-              },
-              featureList: '10 AI Engines, 3D Design Studio, Voice Commands, 25-Year Predictions, 15 Countries Coverage, Enterprise Integrations'
+              // aggregateRating removed (audit 2026-05-09) — see note
+              // above. Self-asserted ratings without UGC violate policy.
+              featureList: '10 AI Engines, 3D Design Studio, Voice Commands, 25-Year Predictions, Enterprise Integrations'
             }
           ]),
         }}
@@ -662,7 +662,7 @@ export default function HomePage() {
                 name: 'What is Generator Oracle AI?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Generator Oracle is EmersonEIMS\'s AI-powered diagnostic system that can diagnose generator problems with 90% accuracy. It features voice activation, access to 400,000+ fault codes, and provides real-time analysis and repair recommendations.'
+                  text: 'Generator Oracle is EmersonEIMS\'s AI-powered diagnostic assistant. It analyses generator symptoms, looks them up against an extensive fault-code database and provides real-time analysis and repair recommendations. Voice activation is supported.'
                 }
               },
               {
@@ -670,7 +670,7 @@ export default function HomePage() {
                 name: 'What is Solar Solution School?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: 'Solar Solution School is the world\'s most advanced solar design platform, featuring 10 AI engines including 3D design, voice commands, neural optimization, permit generation, and 25-year production predictions. It covers 15 African countries with local data.'
+                  text: 'Solar Solution School is a solar design platform featuring 10 AI engines including 3D design, voice commands, neural optimisation, permit generation and 25-year production projections. Country presets cover 15 African markets with local irradiance data.'
                 }
               },
               {
@@ -694,7 +694,7 @@ export default function HomePage() {
                 name: 'Can you do borehole site analysis without a site visit?',
                 acceptedAnswer: {
                   '@type': 'Answer',
-                  text: "Yes! EmersonEIMS has AquaScan Pro - the world's most comprehensive AI Borehole Analyzer that performs rock mapping and groundwater analysis using NASA GLDAS data, satellite imagery (Sentinel-2, Landsat-8, MODIS), LiDAR terrain analysis, hyperspectral rock classification, and virtual VES/ERT geophysical surveys. No expensive site surveys required - the AI analyzes your site remotely with 85%+ accuracy covering 195+ countries across 6 continents."
+                  text: "Yes \u2014 EmersonEIMS has AquaScan Pro, an AI-assisted Borehole Analyser that performs rock mapping and groundwater analysis using public-source datasets (NASA GLDAS, Sentinel-2, Landsat-8, MODIS, ORNL DAAC), LiDAR terrain analysis, hyperspectral rock classification and virtual VES/ERT geophysical surveys. The tool analyses your site remotely without an in-person survey. Country presets cover 195+ countries across 6 continents."
                 }
               }
             ]
