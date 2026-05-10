@@ -62,13 +62,16 @@ function StaticHeroFallback() {
           reduced-data, and SEO. Renders at SSR so the client sees the video
           immediately without waiting for hydration. */}
       <div className="absolute inset-0">
+        {/* Reserve space for hero image to prevent CLS. Use explicit width/height for LCP. */}
         <Image
           src="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
           alt="EmersonEIMS Power Solutions — B2B Generator, Solar & Engineering Partner, Kenya"
-          fill
+          width={1920}
+          height={1080}
           priority
           fetchPriority="high"
-          className="object-cover"
+          className="object-cover w-full h-full"
+          style={{ aspectRatio: '16/9', width: '100%', height: '100%' }}
           sizes="100vw"
         />
         {/* Hero video — TABLET+ ONLY (md↑, ≥768px). Most phones in

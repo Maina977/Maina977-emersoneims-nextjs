@@ -1,4 +1,9 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+// World-class font and resource preloading
+const FontOptimizer = dynamic(() => import("@/components/building/performance/FontOptimizer"), { ssr: false });
+const ResourcePreloader = dynamic(() => import("@/components/building/performance/ResourcePreloader"), { ssr: false });
+const AdvancedPreloader = dynamic(() => import("@/components/building/performance/AdvancedPreloader"), { ssr: false });
 import { Inter } from "next/font/google";
 import "./globals.css";
 import "@/styles/accessibility.css"; // WCAG 2.1 AAA Accessibility Styles
@@ -277,6 +282,10 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={inter.variable}>
       <head>
+        {/* World-class font and resource preloading (client-only) */}
+        <FontOptimizer />
+        <ResourcePreloader />
+        <AdvancedPreloader />
         {/* Structured Data - LocalBusiness Schema */}
         <script
           type="application/ld+json"
