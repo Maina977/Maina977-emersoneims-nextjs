@@ -27,13 +27,9 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
       priceCurrency: 'KES',
       availability: 'https://schema.org/InStock',
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '847',
-      bestRating: '5',
-      worstRating: '1',
-    },
+    // No self-asserted aggregateRating — violates Google's structured-data
+    // policy without on-page UGC reviews, and triggers "multiple aggregate
+    // ratings" when several schema blocks coexist on one URL.
     author: {
       '@type': 'Organization',
       name: 'EmersonEIMS',

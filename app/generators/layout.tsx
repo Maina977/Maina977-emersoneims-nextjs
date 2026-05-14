@@ -115,11 +115,9 @@ const jsonLd = {
         offerCount: '50',
         warranty: '3 Years Comprehensive Warranty + 1 Year Free Service',
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.9',
-        reviewCount: '847',
-      },
+      // No self-asserted aggregateRating — violates Google's structured-data
+      // policy without on-page UGC reviews, and triggered "Review has multiple
+      // aggregate ratings" in Search Console alongside other schema on /generators.
     },
     {
       '@type': 'LocalBusiness',

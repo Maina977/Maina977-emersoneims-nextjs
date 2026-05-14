@@ -116,7 +116,12 @@ const BLOCKED_USER_AGENTS = [
 // scraping / headless / pattern checks below. Includes every Google fetcher
 // variant + major search engines + social previewers.
 const ALLOWED_BOTS = [
-  // Google family
+  // Google family — every documented Google crawler/fetcher token.
+  // `googlebot` also substring-matches the full desktop/mobile UA strings
+  // (".../Googlebot/2.1..."). `googleother` and `google-safety` are newer
+  // Google crawlers that were missing here — they were falling through to
+  // the rate-limit / scraping checks and getting 403'd, which is a direct
+  // contributor to Search Console's "Blocked due to access forbidden (403)".
   'googlebot',
   'googlebot-image',
   'googlebot-video',
@@ -129,6 +134,11 @@ const ALLOWED_BOTS = [
   'google-read-aloud',
   'google-site-verification',
   'google-extended',
+  'googleother',
+  'googleother-image',
+  'googleother-video',
+  'google-safety',
+  'googleweblight',
   'apis-google',
   'feedfetcher-google',
   // Bing / Yahoo / others
@@ -475,7 +485,15 @@ export function middleware(request: NextRequest) {
   //     pipeline and emit a SEO-friendly response.
   // ─────────────────────────────────────────────────────────────────────────────
   if (isVerifiedCrawler(userAgent)) {
-    const crawlerResponse = NextResponse.next();
+    // Forward x-pathname so the root layout's generateMetadata() can emit a
+    // correct self-referential canonical for crawlers too — without this the
+    // crawler fast-path skipped header injection and every crawled page fell
+    // back to the homepage canonical.
+    const crawlerRequestHeaders = new Headers(request.headers);
+    crawlerRequestHeaders.set('x-pathname', pathname);
+    const crawlerResponse = NextResponse.next({
+      request: { headers: crawlerRequestHeaders },
+    });
     crawlerResponse.headers.set('X-Robots-Tag', 'index, follow');
     crawlerResponse.headers.set('X-Crawler-Bypass', '1');
     // Allow CDN to cache HTML for crawlers (matches /kenya/* + general SEO).

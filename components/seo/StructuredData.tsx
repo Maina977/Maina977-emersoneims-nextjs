@@ -187,13 +187,9 @@ export function DiagnosticSuiteSchema() {
       priceCurrency: 'KES',
       availability: 'https://schema.org/InStock'
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '500',
-      bestRating: '5',
-      worstRating: '1'
-    },
+    // No self-asserted aggregateRating — violates Google's structured-data
+    // policy without on-page UGC reviews, and triggers "multiple aggregate
+    // ratings" when several schema blocks coexist on one URL.
     description: 'Professional generator diagnostic tool with 400,000+ error codes covering Cummins, Caterpillar, Perkins, DeepSea, PowerWizard and more. AI-powered fault analysis with step-by-step repair guides.',
     featureList: [
       '400,000+ Error Codes Database',
@@ -258,13 +254,7 @@ export function GeneratorProductSchema({
         name: 'EmersonEIMS'
       }
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '350',
-      bestRating: '5',
-      worstRating: '1'
-    },
+    // No self-asserted aggregateRating — see note in DiagnosticSuiteSchema.
     category: 'Power Generation Equipment',
     manufacturer: {
       '@type': 'Organization',
@@ -480,13 +470,8 @@ export function ProfessionalServiceSchema({
           name: serviceName
         }
       }]
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '247',
-      bestRating: '5'
     }
+    // No self-asserted aggregateRating — see note in DiagnosticSuiteSchema.
   };
 
   return <StructuredData data={schema} />;
@@ -522,13 +507,9 @@ export function ReviewSchema({
         bestRating: 5
       },
       datePublished: review.datePublished
-    })),
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: reviews.length.toString(),
-      bestRating: '5'
-    }
+    }))
+    // No hard-coded aggregateRating — Google derives the aggregate from the
+    // real review[] entries above; a self-asserted value is a policy violation.
   };
 
   return <StructuredData data={schema} />;
@@ -576,12 +557,8 @@ export function ProductWithReviewsSchema({
       },
       priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: reviews?.length || 50,
-      bestRating: '5'
-    },
+    // No hard-coded aggregateRating — Google derives it from the real
+    // review[] entries below; a self-asserted value is a policy violation.
     review: reviews?.map(review => ({
       '@type': 'Review',
       author: { '@type': 'Person', name: review.author },
@@ -673,13 +650,7 @@ export function ComprehensiveLocalBusinessSchema({
         }
       }))
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '247',
-      bestRating: '5',
-      worstRating: '1'
-    },
+    // No self-asserted aggregateRating — see note in DiagnosticSuiteSchema.
     sameAs: [
       'https://www.facebook.com/emersoneims',
       'https://twitter.com/emersoneims',

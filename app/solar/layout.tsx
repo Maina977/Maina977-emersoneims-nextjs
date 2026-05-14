@@ -68,12 +68,9 @@ const structuredData = {
         price: '0',
         priceCurrency: 'KES',
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.9',
-        ratingCount: '500',
-        bestRating: '5',
-      },
+      // No self-asserted aggregateRating — violates Google's structured-data
+      // policy without on-page UGC reviews, and triggers "multiple aggregate
+      // ratings" when several schema blocks coexist on one URL.
       featureList: '10 AI Engines, 3D Design Studio, Voice Commands, 25-Year Predictions, 15 Countries Coverage, Enterprise Integrations, Neural Optimization, Permit Generation, Drone Planning, Grid Analysis',
       provider: {
         '@type': 'Organization',

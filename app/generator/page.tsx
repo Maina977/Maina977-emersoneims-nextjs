@@ -28,7 +28,7 @@ export default function GeneratorPage() {
             name: 'Cummins Generators - Power Solutions Kenya | Emerson EiMS',
             description: 'Premium Cummins diesel generators from 20kVA to 2000kVA. Verified specs, professional installation, and engineering excellence for Kenya.',
             thumbnailUrl: 'https://www.emersoneims.com/images/GEN%202-1920x1080.png',
-            uploadDate: '2024-01-01',
+            uploadDate: '2024-01-01T00:00:00+03:00',
             contentUrl: 'https://www.emersoneims.com/videos/Solution(1).mp4',
             embedUrl: 'https://www.emersoneims.com/generator',
             duration: 'PT60S',

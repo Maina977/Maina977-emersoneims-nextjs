@@ -76,13 +76,9 @@ export function LocationServiceSchema({
         position: i + 1
       }))
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '150',
-      bestRating: '5',
-      worstRating: '1'
-    },
+    // No self-asserted aggregateRating — violates Google's structured-data
+    // policy without on-page UGC reviews, and triggers "multiple aggregate
+    // ratings" when several schema blocks coexist on one URL.
     sameAs: [
       'https://www.facebook.com/emersoneims',
       'https://twitter.com/emersoneims',

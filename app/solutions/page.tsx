@@ -32,7 +32,7 @@ export default function SolutionsHome() {
             name: 'Power Solutions in Action - Emerson EiMS Kenya',
             description: 'Watch how EmersonEIMS delivers B2B power and engineering solutions — generators, solar, UPS and motors — across Kenya and East Africa.',
             thumbnailUrl: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
-            uploadDate: '2024-01-01',
+            uploadDate: '2024-01-01T00:00:00+03:00',
             contentUrl: 'https://www.emersoneims.com/videos/Solution(1).mp4',
             embedUrl: 'https://www.emersoneims.com/solutions',
             duration: 'PT60S',

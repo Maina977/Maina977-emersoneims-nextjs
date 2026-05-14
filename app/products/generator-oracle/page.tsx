@@ -474,11 +474,6 @@ export default function GeneratorOracleProductPage() {
               "priceCurrency": "KES",
               "description": "Free trial available"
             },
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "4.9",
-              "ratingCount": "247"
-            },
             "description": "Africa's #1 generator diagnostic platform with 400,000+ fault codes, AI-powered diagnosis, and step-by-step repair guides.",
             "provider": {
               "@type": "Organization",

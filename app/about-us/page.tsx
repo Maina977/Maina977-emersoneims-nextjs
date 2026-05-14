@@ -430,7 +430,7 @@ export default function AboutUsPage() {
               name: 'EmersonEIMS - Our Work in Action Kenya',
               description: 'Real projects, real results. Watch how EmersonEIMS delivers B2B power solutions across Kenya — generators, solar, UPS and engineering.',
               thumbnailUrl: 'https://www.emersoneims.com/images/solar%20power%20farms.png',
-              uploadDate: '2024-01-01',
+              uploadDate: '2024-01-01T00:00:00+03:00',
               contentUrl: 'https://www.emersoneims.com/videos/FOR%20TRIALS%20IN%20KADENCE.mp4',
               embedUrl: 'https://www.emersoneims.com/about-us',
               duration: 'PT45S',

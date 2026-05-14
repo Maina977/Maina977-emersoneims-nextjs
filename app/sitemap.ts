@@ -1,24 +1,13 @@
 import { MetadataRoute } from 'next';
 import { getAllServiceSlugs } from '@/lib/services/allServices';
 import { getIndexedServiceLocationPaths } from '@/lib/seo/kenyaLocations';
+import { getIndexableKenyaUrls } from '@/lib/seo/kenyaIndexable';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BASE_URL = 'https://www.emersoneims.com';
-
-// All 47 Kenya Counties
-const counties = [
-  'nairobi', 'mombasa', 'kilifi', 'kwale', 'lamu', 'taita-taveta', 'tana-river',
-  'kiambu', 'nyeri', 'muranga', 'kirinyaga', 'nyandarua',
-  'nakuru', 'uasin-gishu', 'narok', 'kericho', 'bomet', 'baringo', 'laikipia',
-  'kajiado', 'trans-nzoia', 'nandi', 'elgeyo-marakwet', 'west-pokot', 'turkana', 'samburu',
-  'kakamega', 'bungoma', 'busia', 'vihiga',
-  'kisumu', 'kisii', 'nyamira', 'homa-bay', 'migori', 'siaya',
-  'machakos', 'meru', 'embu', 'kitui', 'makueni', 'tharaka-nithi', 'isiolo', 'marsabit',
-  'garissa', 'wajir', 'mandera'
-];
 
 // Major Towns
 const majorTowns = [
@@ -240,16 +229,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // Add county pages
-  for (const county of counties) {
-    // NOTE: /counties/{slug} is permanently redirected to /kenya/{slug} in
-    // next.config.ts — listing both in the sitemap created "Page with
-    // redirect" entries in Search Console. Emit only the canonical /kenya path.
+  // Add the curated, indexable /kenya/* pages — counties, county+service,
+  // and (for priority counties) constituency + constituency+service. This
+  // is the SAME set generateStaticParams() builds in
+  // app/kenya/[county]/[...slug]/page.tsx, sourced from kenyaIndexable.ts,
+  // so the sitemap can never list a URL that 404s. Village and
+  // village-service doorway pages are intentionally excluded.
+  for (const path of getIndexableKenyaUrls()) {
+    const depth = path.split('/').filter(Boolean).length; // 2=county, 3, 4
     urls.push({
-      url: `${BASE_URL}/kenya/${county}`,
+      url: `${BASE_URL}${path}`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
-      priority: 0.85,
+      priority: depth <= 2 ? 0.85 : depth === 3 ? 0.8 : 0.7,
     });
   }
 

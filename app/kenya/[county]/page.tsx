@@ -3,10 +3,17 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { KENYA_LOCATIONS, getCountyBySlug } from '@/lib/data/kenya-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
+import { CORE_SERVICE_SLUGS, isPriorityCounty } from '@/lib/seo/kenyaIndexable';
 
 type Props = {
   params: Promise<{ county: string }>;
 };
+
+// Only these services have indexable /kenya/<county>/<service> pages — see
+// kenyaIndexable.ts. Every county-page link must point inside this set.
+const CORE_SERVICES = SEO_SERVICES.filter((s) =>
+  CORE_SERVICE_SLUGS.includes(s.slug)
+);
 
 // Generate static params for all counties
 export async function generateStaticParams() {
@@ -68,6 +75,11 @@ export default async function CountyPage({ params }: Props) {
     .filter(c => c.region === county.region && c.slug !== county.slug)
     .slice(0, 4);
 
+  // Constituency landing pages are only generated for priority counties
+  // (see kenyaIndexable.ts). For other counties, show the names as plain
+  // text so we never link to a 404.
+  const showConstituencyLinks = isPriorityCounty(county.slug);
+
   return (
     <div className="eims-section min-h-screen pt-24 pb-12">
       {/* Schema.org JSON-LD */}
@@ -90,7 +102,7 @@ export default async function CountyPage({ params }: Props) {
             hasOfferCatalog: {
               '@type': 'OfferCatalog',
               name: 'Generator Services',
-              itemListElement: SEO_SERVICES.map((service, i) => ({
+              itemListElement: CORE_SERVICES.map((service, i) => ({
                 '@type': 'Offer',
                 itemOffered: {
                   '@type': 'Service',
@@ -153,7 +165,7 @@ export default async function CountyPage({ params }: Props) {
             Our Services in {county.name} County
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {SEO_SERVICES.map((service) => (
+            {CORE_SERVICES.map((service) => (
               <Link
                 key={service.id}
                 href={`/kenya/${county.slug}/${service.slug}`}
@@ -179,17 +191,26 @@ export default async function CountyPage({ params }: Props) {
             We provide generator services in all {county.constituencies.length} constituencies
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {county.constituencies.map((constituency) => (
-              <Link
-                key={constituency.slug}
-                href={`/kenya/${county.slug}/${constituency.slug}`}
-                className="p-3 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-400/50 hover:bg-white/10 transition-all group text-center"
-              >
-                <span className="text-white group-hover:text-cyan-400 transition-colors text-sm">
-                  {constituency.name}
-                </span>
-              </Link>
-            ))}
+            {county.constituencies.map((constituency) =>
+              showConstituencyLinks ? (
+                <Link
+                  key={constituency.slug}
+                  href={`/kenya/${county.slug}/${constituency.slug}`}
+                  className="p-3 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-400/50 hover:bg-white/10 transition-all group text-center"
+                >
+                  <span className="text-white group-hover:text-cyan-400 transition-colors text-sm">
+                    {constituency.name}
+                  </span>
+                </Link>
+              ) : (
+                <div
+                  key={constituency.slug}
+                  className="p-3 rounded-lg bg-white/5 border border-white/10 text-center"
+                >
+                  <span className="text-white text-sm">{constituency.name}</span>
+                </div>
+              )
+            )}
           </div>
         </div>
 
@@ -199,20 +220,13 @@ export default async function CountyPage({ params }: Props) {
             Popular Generator Services in {county.name}
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { service: 'generator-companies', label: `Generator Companies in ${county.name}` },
-              { service: 'generator-repairs', label: `Generator Repairs in ${county.name}` },
-              { service: 'generator-maintenance', label: `Generator Maintenance in ${county.name}` },
-              { service: 'generator-lease', label: `Generator Rental in ${county.name}` },
-              { service: 'diesel-generators', label: `Diesel Generators in ${county.name}` },
-              { service: 'generator-spare-parts', label: `Generator Parts in ${county.name}` },
-            ].map((item) => (
+            {CORE_SERVICES.slice(0, 6).map((service) => (
               <Link
-                key={item.service}
-                href={`/kenya/${county.slug}/${item.service}`}
+                key={service.id}
+                href={`/kenya/${county.slug}/${service.slug}`}
                 className="p-4 rounded-xl bg-black/30 border border-white/10 hover:border-amber-400/50 hover:bg-white/5 transition-all flex items-center justify-between"
               >
-                <span className="text-white">{item.label}</span>
+                <span className="text-white">{service.shortName} in {county.name}</span>
                 <span className="text-amber-400">&rarr;</span>
               </Link>
             ))}

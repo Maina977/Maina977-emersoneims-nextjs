@@ -178,11 +178,9 @@ const structuredData = {
           },
         ],
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        reviewCount: '156',
-      },
+      // No self-asserted aggregateRating — violates Google's structured-data
+      // policy without on-page UGC reviews, and triggers "multiple aggregate
+      // ratings" when several schema blocks coexist on one URL.
     },
     {
       '@type': 'BreadcrumbList',

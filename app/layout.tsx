@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import PerformanceBoot from "@/components/performance/PerformanceBoot";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -52,7 +53,16 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com
 const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 const yandexVerification = process.env.NEXT_PUBLIC_YANDEX_VERIFICATION;
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  // Self-referential canonical derived from the request path (middleware sets
+  // `x-pathname`). Pages that declare their own alternates.canonical override
+  // this. Previously the root layout hard-coded the canonical to the site root,
+  // so every page canonicalised to the homepage — the root cause of Search
+  // Console's "Duplicate without user-selected canonical".
+  const pathname = (await headers()).get("x-pathname") || "/";
+  const canonical = pathname === "/" ? siteUrl : `${siteUrl}${pathname}`;
+
+  return {
   metadataBase: new URL(siteUrl),
   title: {
     default: "EmersonEIMS | B2B Power & Engineering Partner for Industry, Healthcare & Telecom in Kenya",
@@ -124,10 +134,11 @@ export const metadata: Metadata = {
     ...(yandexVerification ? { yandex: yandexVerification } : {}),
   },
   alternates: {
-    canonical: siteUrl,
+    canonical,
   },
   category: 'technology',
-};
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -293,8 +304,10 @@ export default async function RootLayout({
         ════════════════════════════════════════════════════════════════════ */}
         <AntiScrapingMeta />
         
-        {/* Canonical & Theme */}
-        <link rel="canonical" href={siteUrl} />
+        {/* Theme. The canonical link is emitted per-page via the Metadata API
+            (see generateMetadata above) — a hard-coded <link rel="canonical">
+            here pointed every page at the homepage and fought the per-page
+            canonical, causing "Duplicate without user-selected canonical". */}
         <meta name="theme-color" content="#0EA5E9" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

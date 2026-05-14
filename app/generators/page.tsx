@@ -2058,7 +2058,7 @@ export default function GeneratorPage() {
             name: 'Industrial Diesel Generators Kenya - Emerson EiMS',
             description: 'Premium diesel generators from 20kVA to 2000kVA for industrial and commercial use in Kenya. Cummins, Perkins, and CAT generators with installation and maintenance.',
             thumbnailUrl: 'https://www.emersoneims.com/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
-            uploadDate: '2024-01-01',
+            uploadDate: '2024-01-01T00:00:00+03:00',
             contentUrl: 'https://www.emersoneims.com/videos/VID-20250930-WA0000%20(3).mp4',
             embedUrl: 'https://www.emersoneims.com/generators',
             duration: 'PT45S',
@@ -2187,37 +2187,10 @@ export default function GeneratorPage() {
       ════════════════════════════════════════════════════════════════ */}
       <CumminsBanner variant="hero" showPricing={true} showCTA={true} />
 
-      {/* Cummins Structured Data for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Product",
-            "name": "Cummins Diesel Generators Kenya",
-            "description": "Authorized Cummins/Voltka dealer in Kenya. 10-2000KVA diesel generators with 3-year warranty and 1 year free service.",
-            "brand": { "@type": "Brand", "name": "Cummins" },
-            "manufacturer": { "@type": "Organization", "name": "Voltka" },
-            "offers": {
-              "@type": "AggregateOffer",
-              "priceCurrency": "KES",
-              "lowPrice": "850000",
-              "highPrice": "48000000",
-              "availability": "https://schema.org/InStock",
-              "seller": {
-                "@type": "Organization",
-                "name": "EmersonEIMS",
-                "url": "https://www.emersoneims.com"
-              }
-            },
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "4.9",
-              "reviewCount": "127"
-            }
-          })
-        }}
-      />
+      {/* Cummins Product structured data is declared once in app/generators/layout.tsx
+          (Product @id .../generators/#product). A second Product block here
+          duplicated it and carried a separate aggregateRating, which produced
+          Search Console's "Review has multiple aggregate ratings" error. */}
 
       {/* ═══════════════════════════════════════════════════════════════════
           BIBLE OF GENERATORS - COMPREHENSIVE NAVIGATION HUB
