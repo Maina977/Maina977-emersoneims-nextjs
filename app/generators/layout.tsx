@@ -108,7 +108,7 @@ const jsonLd = {
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',
-        lowPrice: '850000',
+        lowPrice: '500000',
         highPrice: '48000000',
         availability: 'https://schema.org/InStock',
         seller: { '@id': 'https://www.emersoneims.com/#organization' },

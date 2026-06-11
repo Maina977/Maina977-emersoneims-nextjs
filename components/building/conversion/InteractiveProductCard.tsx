@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef } from 'react';
 import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'framer-motion';
@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 /**
- * 🎮 INTERACTIVE 3D PRODUCT CARD - GAMIFIED SELLING
+ * ðŸŽ® INTERACTIVE 3D PRODUCT CARD - GAMIFIED SELLING
  *
  * Interactive product cards that beg to be touched
  * Features:
@@ -169,7 +169,7 @@ export default function InteractiveProductCard({
             } : {}}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            {product.inStock ? `✓ ${product.stock} In Stock` : '⚠️ Low Stock'}
+            {product.inStock ? `âœ“ ${product.stock} In Stock` : 'âš ï¸ Low Stock'}
           </motion.div>
         </div>
 
@@ -182,9 +182,9 @@ export default function InteractiveProductCard({
 
           {/* Power Rating */}
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-amber-400 text-sm font-semibold">⚡ {product.power}</span>
-            <span className="text-gray-500 text-xs">• Diesel</span>
-            <span className="text-gray-500 text-xs">• Industrial</span>
+            <span className="text-amber-400 text-sm font-semibold">âš¡ {product.power}</span>
+            <span className="text-gray-500 text-xs">â€¢ Diesel</span>
+            <span className="text-gray-500 text-xs">â€¢ Industrial</span>
           </div>
 
           {/* Features - Show on hover */}
@@ -205,7 +205,7 @@ export default function InteractiveProductCard({
                       transition={{ delay: index * 0.1 }}
                       className="text-gray-400 text-sm flex items-center gap-2"
                     >
-                      <span className="text-green-400">✓</span>
+                      <span className="text-green-400">âœ“</span>
                       {feature}
                     </motion.li>
                   ))}
@@ -260,7 +260,7 @@ export default function InteractiveProductCard({
             <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            <span>Warranty Included • Free Installation Quote</span>
+            <span>Warranty Included â€¢ Free Installation Quote</span>
           </motion.div>
         </div>
 
@@ -288,7 +288,7 @@ export const sampleProducts: Product[] = [
       'Genuine Cummins Engine',
       'Automatic Transfer Switch',
       'Soundproof Canopy',
-      '2-Year Warranty',
+      '3-Year Warranty',
     ],
     inStock: true,
   },
@@ -304,7 +304,7 @@ export const sampleProducts: Product[] = [
       'Genuine Cummins Engine',
       'Automatic Transfer Switch',
       'Weather-Resistant Canopy',
-      '2-Year Warranty',
+      '3-Year Warranty',
     ],
     inStock: true,
   },

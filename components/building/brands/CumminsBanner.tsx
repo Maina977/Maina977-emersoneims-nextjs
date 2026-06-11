@@ -252,12 +252,12 @@ export default function CumminsBanner({
                     className="mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"
                   >
                     {[
-                      { kva: '20KVA', price: 'KES 1.1M' },
+                      { kva: '20KVA', price: 'KES 500K' },
                       { kva: '50KVA', price: 'KES 1.6M' },
                       { kva: '100KVA', price: 'KES 2.3M' },
                       { kva: '250KVA', price: 'KES 5.5M' },
                       { kva: '500KVA', price: 'KES 9.5M' },
-                      { kva: '1000KVA', price: 'KES 22M' },
+                      { kva: '1000KVA', price: 'KES 16M' },
                     ].map((item, i) => (
                       <motion.div
                         key={i}

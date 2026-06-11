@@ -11,6 +11,8 @@ import { Metadata } from 'next';
 import HomePageClient from '@/components/home/HomePageClient';
 import HubFeatureBlock from '@/components/home/HubFeatureBlock';
 import SolutionsBySector from '@/components/home/SolutionsBySector';
+import VoltkaCinematicShowcase from '@/components/home/VoltkaCinematicShowcase';
+import CinematicVideoSection from '@/components/home/CinematicVideoSection';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // STATIC SEO METADATA - Rendered at build time
@@ -70,7 +72,8 @@ function StaticHeroFallback() {
           height={1080}
           priority
           fetchPriority="high"
-          className="object-cover w-full h-full"
+          quality={90}
+          className="object-cover w-full h-full [filter:brightness(1.14)_contrast(1.07)_saturate(1.15)]"
           style={{ aspectRatio: '16/9', width: '100%', height: '100%' }}
           sizes="100vw"
         />
@@ -80,7 +83,7 @@ function StaticHeroFallback() {
             landscape. Image stays as poster + fallback for phones, slow
             connections and SEO. */}
         <video
-          className="absolute inset-0 w-full h-full object-cover hidden md:block"
+          className="absolute inset-0 w-full h-full object-cover hidden md:block [filter:brightness(1.14)_contrast(1.07)_saturate(1.15)]"
           autoPlay
           muted
           loop
@@ -91,8 +94,10 @@ function StaticHeroFallback() {
         >
           <source src="/videos/FOR%20TRIALS%20IN%20KADENCE.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(251,191,36,0.18),transparent_60%)]" />
+        {/* Lighter grade than before (70/40 → 55/25): keeps text legible while
+            letting the 4K-graded footage read bright and cinematic. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/90" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(251,191,36,0.22),transparent_60%)]" />
       </div>
 
       {/* Static hero content - Apple-style typography & spacing */}
@@ -682,11 +687,17 @@ export default function HomePage() {
 
       {/* STATIC CONTENT - Renders instantly (no JS needed) */}
       <StaticHeroFallback />
+      {/* VOLTKA Cummins cinematic showcase — flagship product directly
+          under the hero so generator buyers see it before anything else. */}
+      <VoltkaCinematicShowcase />
       <SolutionsBySector />
       <StaticFeaturesSection />
       <HubFeatureBlock />
       <StaticStatsSection />
       <AITechnologyShowcase />
+      {/* Services film on a dedicated stage — visible on phones too
+          (the hero video is tablet-and-up only). Click-to-play. */}
+      <CinematicVideoSection />
       <StaticCountiesSection />
 
       {/* CLIENT INTERACTIVE SECTIONS - Load after static content */}

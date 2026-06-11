@@ -24,17 +24,17 @@ export const GENERATOR_WARRANTIES: {
 } = {
   new: [
     {
-      duration: "2 Years",
+      duration: "3 Years",
       coverage: [
         "Cummins engine components and factory defects",
         "Alternator and starter motor coverage",
         "Control panel and electrical wiring",
-        "Free maintenance for first 6 months",
+        "Free service for the first 1 year",
         "24/7 emergency breakdown support"
       ],
       type: "product",
       highlight: true,
-      details: "Comprehensive 2-year warranty on all new generators with Cummins engines",
+      details: "Comprehensive 3-year warranty on all new generators with Cummins engines",
       claimProcess: [
         "Call 0768 860 665 or 0782 914 717",
         "Provide serial number and issue description",

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -165,7 +165,7 @@ export default function GeneratorSizingCalculator() {
           className="text-center mb-12"
         >
           <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 bg-clip-text text-transparent">
-            ⚡ Generator Sizing Calculator
+            âš¡ Generator Sizing Calculator
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Professional generator sizing with accurate load calculation, fuel costs, and real Kenyan market products
@@ -302,7 +302,7 @@ export default function GeneratorSizingCalculator() {
                     disabled={loads.length === 0}
                     className="px-8 py-3 bg-gradient-to-r from-orange-400 to-red-500 text-white font-bold rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform"
                   >
-                    Next: Usage Pattern →
+                    Next: Usage Pattern â†’
                   </button>
                 </div>
               </GlassmorphicCard>
@@ -408,13 +408,13 @@ export default function GeneratorSizingCalculator() {
                     onClick={() => setStep(1)}
                     className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-full transition-all"
                   >
-                    ← Back
+                    â† Back
                   </button>
                   <button
                     onClick={() => setStep(3)}
                     className="px-8 py-3 bg-gradient-to-r from-orange-400 to-red-500 text-white font-bold rounded-full hover:scale-105 transition-transform"
                   >
-                    Next: Options →
+                    Next: Options â†’
                   </button>
                 </div>
               </GlassmorphicCard>
@@ -436,7 +436,7 @@ export default function GeneratorSizingCalculator() {
                 <div className="mb-6 p-6 bg-white/5 border border-white/10 rounded-lg">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white mb-2">🔇 Sound Attenuated Canopy</h3>
+                      <h3 className="text-xl font-bold text-white mb-2">ðŸ”‡ Sound Attenuated Canopy</h3>
                       <p className="text-gray-400 text-sm mb-2">
                         Reduces noise by 15-30 dB, protects from weather, improves aesthetics
                       </p>
@@ -452,7 +452,7 @@ export default function GeneratorSizingCalculator() {
                           : 'bg-white/5 text-gray-400 border-2 border-white/10'
                       }`}
                     >
-                      {needsCanopy ? '✓ Included' : 'Add'}
+                      {needsCanopy ? 'âœ“ Included' : 'Add'}
                     </button>
                   </div>
                   {needsCanopy && (
@@ -466,7 +466,7 @@ export default function GeneratorSizingCalculator() {
                 <div className="mb-6 p-6 bg-white/5 border border-white/10 rounded-lg">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white mb-2">🔄 Automatic Transfer Switch (ATS)</h3>
+                      <h3 className="text-xl font-bold text-white mb-2">ðŸ”„ Automatic Transfer Switch (ATS)</h3>
                       <p className="text-gray-400 text-sm mb-2">
                         Automatic switching between grid and generator power (10-15 sec transfer time)
                       </p>
@@ -482,7 +482,7 @@ export default function GeneratorSizingCalculator() {
                           : 'bg-white/5 text-gray-400 border-2 border-white/10'
                       }`}
                     >
-                      {needsATS ? '✓ Included' : 'Add'}
+                      {needsATS ? 'âœ“ Included' : 'Add'}
                     </button>
                   </div>
                   {needsATS && (
@@ -518,13 +518,13 @@ export default function GeneratorSizingCalculator() {
                     onClick={() => setStep(2)}
                     className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-full transition-all"
                   >
-                    ← Back
+                    â† Back
                   </button>
                   <button
                     onClick={() => setStep(4)}
                     className="px-8 py-3 bg-gradient-to-r from-orange-400 to-red-500 text-white font-bold rounded-full hover:scale-105 transition-transform"
                   >
-                    View Recommendations →
+                    View Recommendations â†’
                   </button>
                 </div>
               </GlassmorphicCard>
@@ -548,25 +548,25 @@ export default function GeneratorSizingCalculator() {
                 
                 <div className="grid md:grid-cols-4 gap-6 mb-8">
                   <div className="p-6 bg-gradient-to-br from-orange-500/20 to-red-500/10 border border-orange-500/30 rounded-xl text-center">
-                    <div className="text-4xl mb-2">⚡</div>
+                    <div className="text-4xl mb-2">âš¡</div>
                     <div className="text-3xl font-bold text-orange-400">{calculations.recommendedKVA} kVA</div>
                     <div className="text-sm text-gray-300 mt-1">Generator Size</div>
                     <div className="text-xs text-gray-400 mt-1">{calculations.loadPercentage.toFixed(0)}% loaded</div>
                   </div>
                   <div className="p-6 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 rounded-xl text-center">
-                    <div className="text-4xl mb-2">⛽</div>
+                    <div className="text-4xl mb-2">â›½</div>
                     <div className="text-3xl font-bold text-blue-400">{calculations.fuelConsumptionLPH.toFixed(1)} L/h</div>
                     <div className="text-sm text-gray-300 mt-1">Fuel Consumption</div>
                     <div className="text-xs text-gray-400 mt-1">At {calculations.loadPercentage.toFixed(0)}% load</div>
                   </div>
                   <div className="p-6 bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30 rounded-xl text-center">
-                    <div className="text-4xl mb-2">💰</div>
+                    <div className="text-4xl mb-2">ðŸ’°</div>
                     <div className="text-3xl font-bold text-green-400">KES {(calculations.monthlyFuelCostKES / 1000).toFixed(0)}K</div>
                     <div className="text-sm text-gray-300 mt-1">Monthly Fuel Cost</div>
                     <div className="text-xs text-gray-400 mt-1">{runHours}h/day usage</div>
                   </div>
                   <div className="p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/10 border border-purple-500/30 rounded-xl text-center">
-                    <div className="text-4xl mb-2">🔧</div>
+                    <div className="text-4xl mb-2">ðŸ”§</div>
                     <div className="text-3xl font-bold text-purple-400">KES {(calculations.totalInvestment / 1000000).toFixed(2)}M</div>
                     <div className="text-sm text-gray-300 mt-1">Total Investment</div>
                     <div className="text-xs text-gray-400 mt-1">Turn-key solution</div>
@@ -612,7 +612,7 @@ export default function GeneratorSizingCalculator() {
                     <div>
                       <div className="text-2xl font-bold text-blue-400">KES {(calculations.annualFuelCostKES / 1000000).toFixed(2)}M</div>
                       <div className="text-sm text-gray-300">Fuel Cost</div>
-                      <div className="text-xs text-gray-500">{runHours}h/day × 365 days</div>
+                      <div className="text-xs text-gray-500">{runHours}h/day Ã— 365 days</div>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-blue-400">KES 125K</div>
@@ -631,7 +631,7 @@ export default function GeneratorSizingCalculator() {
               {/* Recommended Generators */}
               {calculations.recommendedGenerators.length > 0 && (
                 <GlassmorphicCard intensity="medium" className="p-8">
-                  <h3 className="text-2xl font-bold mb-6 text-orange-400">⚡ Recommended Generators</h3>
+                  <h3 className="text-2xl font-bold mb-6 text-orange-400">âš¡ Recommended Generators</h3>
                   <div className="grid md:grid-cols-3 gap-6">
                     {calculations.recommendedGenerators.map((gen, i) => (
                       <div key={i} className="p-6 bg-white/5 border border-white/10 hover:border-orange-500/50 rounded-xl transition-all duration-300 hover:scale-105">
@@ -698,7 +698,7 @@ export default function GeneratorSizingCalculator() {
 
               {/* Maintenance Schedule */}
               <GlassmorphicCard intensity="medium" className="p-8">
-                <h3 className="text-2xl font-bold mb-6 text-blue-400">🔧 Maintenance Schedule</h3>
+                <h3 className="text-2xl font-bold mb-6 text-blue-400">ðŸ”§ Maintenance Schedule</h3>
                 <div className="space-y-3">
                   {calculations.maintenanceSchedule.map((item, i) => (
                     <div key={i} className="p-4 bg-white/5 border border-white/10 rounded-lg flex justify-between items-center">
@@ -716,10 +716,10 @@ export default function GeneratorSizingCalculator() {
                 </div>
                 <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <div className="text-sm text-gray-400 mb-2">
-                    📋 <strong>Annual maintenance cost:</strong> Approximately KES 125,000 - 150,000 depending on usage
+                    ðŸ“‹ <strong>Annual maintenance cost:</strong> Approximately KES 125,000 - 150,000 depending on usage
                   </div>
                   <div className="text-sm text-gray-400">
-                    💡 <strong>Tip:</strong> Regular maintenance extends generator life from 15,000h to 25,000+ hours
+                    ðŸ’¡ <strong>Tip:</strong> Regular maintenance extends generator life from 15,000h to 25,000+ hours
                   </div>
                 </div>
               </GlassmorphicCard>
@@ -734,23 +734,23 @@ export default function GeneratorSizingCalculator() {
                     rel="noopener noreferrer"
                     className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-green-500/50 text-center"
                   >
-                    📞 Request Quote
+                    ðŸ“ž Request Quote
                   </a>
                   <a
                     href="/contact?type=site-survey&service=generator"
                     className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-orange-500/50 text-center"
                   >
-                    📅 Schedule Site Survey
+                    ðŸ“… Schedule Site Survey
                   </a>
                   <a
                     href="/contact?type=pdf-report&service=generator"
                     className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-lg shadow-purple-500/50 text-center"
                   >
-                    📄 Download Full Report
+                    ðŸ“„ Download Full Report
                   </a>
                 </div>
                 <div className="mt-6 text-center text-gray-400 text-sm">
-                  <p>⚡ Installation within 5-10 days | 🛡️ 2-year warranty | 🔧 24/7 emergency support | 📱 Free load bank testing</p>
+                  <p>âš¡ Installation within 5-10 days | ðŸ›¡ï¸ 3-Year Warranty | ðŸ”§ 24/7 emergency support | ðŸ“± Free load bank testing</p>
                 </div>
               </GlassmorphicCard>
 
@@ -763,7 +763,7 @@ export default function GeneratorSizingCalculator() {
                   }}
                   className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-full transition-all"
                 >
-                  ← Start New Calculation
+                  â† Start New Calculation
                 </button>
               </div>
             </motion.div>

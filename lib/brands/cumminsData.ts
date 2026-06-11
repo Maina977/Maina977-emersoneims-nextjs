@@ -87,7 +87,7 @@ export const CUMMINS_BRAND_INFO = {
   models: [
     { kva: 10, price: 'KES 850,000', application: 'Small Office/Home' },
     { kva: 15, price: 'KES 950,000', application: 'Small Business' },
-    { kva: 20, price: 'KES 1,100,000', application: 'Retail/Office' },
+    { kva: 20, price: 'KES 500,000', application: 'Retail/Office' },
     { kva: 30, price: 'KES 1,350,000', application: 'Medium Business' },
     { kva: 50, price: 'KES 1,600,000', application: 'Large Office' },
     { kva: 60, price: 'KES 1,850,000', application: 'Small Factory' },
@@ -101,7 +101,7 @@ export const CUMMINS_BRAND_INFO = {
     { kva: 500, price: 'KES 9,500,000', application: 'Power Plant' },
     { kva: 600, price: 'KES 12,000,000', application: 'Data Center' },
     { kva: 750, price: 'KES 15,000,000', application: 'Hospital/Mall' },
-    { kva: 1000, price: 'KES 22,000,000', application: 'Major Industrial' },
+    { kva: 1000, price: 'KES 16,000,000', application: 'Major Industrial' },
     { kva: 1250, price: 'KES 28,000,000', application: 'Power Station' },
     { kva: 1500, price: 'KES 35,000,000', application: 'Grid Support' },
     { kva: 2000, price: 'KES 48,000,000', application: 'Utility Scale' },
