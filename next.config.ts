@@ -41,6 +41,9 @@ const nextConfig: NextConfig = {
   // Image optimization - MAXIMUM COMPRESSION + QUALITY - 96% Target
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Next 16 only honours quality values whitelisted here — without this,
+    // every quality prop silently falls back to 75 (soft hero/showcase art).
+    qualities: [75, 84, 85, 88, 90],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000, // 1 year cache

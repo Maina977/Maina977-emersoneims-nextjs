@@ -1,193 +1,209 @@
 'use client';
 
 /**
- * VOLTKA CUMMINS CINEMATIC SHOWCASE
- * Premium Ken Burns slideshow of real VOLTKA Cummins deliveries,
- * changeover switchgear and genuine engine detail — graded 2.5K WebP.
- * Additive section: sits directly under the hero to put the flagship
- * product (Cummins generators) in front of buyers immediately.
+ * VOLTKA CUMMINS CINEMATIC SHOWCASE — Tesla-style full-bleed stage.
+ * 7 shots from one 4080x3072 shoot, all exported at exactly 2560x1440
+ * so every frame is identical in size, proportion and resolution.
+ * All slides stay mounted and crossfade via opacity (no remount flash),
+ * static frames (no zoom), headline top center, twin Tesla-proportion
+ * pill CTAs, swipe / keyboard / chevron navigation.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const SLIDES = [
   {
-    src: '/images/voltka/voltka-vks44-dispatch-crane.webp',
-    alt: 'VOLTKA Cummins VKS 44 super silent generator crane-loaded for delivery at EmersonEIMS Nairobi warehouse',
-    tag: 'DISPATCH DAY',
-    title: 'Brand New VOLTKA Cummins, Crane-Loaded & On Its Way',
-    copy: 'Every unit leaves our Nairobi warehouse tested, fueled and ready to take load.',
+    src: '/images/voltka/voltka-vks44-hero-profile.webp',
+    alt: 'VOLTKA Cummins VKS 44 super silent generator side profile with VOLTKA branding at EmersonEIMS Nairobi warehouse',
+    kicker: 'VOLTKA · POWERED BY CUMMINS',
+    title: 'VKS Series',
+    sub: 'Super silent. Genuine Cummins engine. 10–2000 kVA.',
   },
   {
-    src: '/images/voltka/voltka-vks44-night-delivery.webp',
-    alt: 'VOLTKA Cummins VKS 44 generator delivered at night in Kenya',
-    tag: 'DELIVERED ON TIME',
-    title: 'Night Delivery — Powered Before the Morning Shift',
-    copy: 'When a client needs power by morning, our crews deliver and commission overnight.',
+    src: '/images/voltka/voltka-warehouse-fleet.webp',
+    alt: 'Fleet of VOLTKA Cummins generators in stock at EmersonEIMS warehouse in Nairobi, Kenya',
+    kicker: 'IN STOCK · NAIROBI',
+    title: 'Every Size. On the Floor.',
+    sub: 'VKS 44 to VKS 275 — ready for inspection today, not on order.',
   },
   {
-    src: '/images/voltka/voltka-vks40-studio.webp',
-    alt: 'VOLTKA VKS 40 Cummins super silent diesel generator studio shot',
-    tag: 'SUPER SILENT RANGE',
-    title: 'VOLTKA VKS Series — 10kVA to 2000kVA',
-    copy: 'Genuine Cummins engines in super silent canopies. 3-year warranty, 1 year free service.',
+    src: '/images/voltka/voltka-vks44-crane-dispatch-wide.webp',
+    alt: 'VOLTKA Cummins VKS 44 generator crane-loaded onto a delivery truck at EmersonEIMS Nairobi warehouse',
+    kicker: 'DISPATCH DAY',
+    title: 'Delivered in 48 Hours',
+    sub: 'Crane-loaded, fueled and tested before it leaves Nairobi.',
   },
   {
-    src: '/images/voltka/cummins-engine-detail.webp',
-    alt: 'Genuine Cummins diesel engine with Fleetguard filtration inside a VOLTKA canopy',
-    tag: 'GENUINE CUMMINS INSIDE',
-    title: 'Open the Canopy — Verify the Engine Yourself',
-    copy: 'Genuine Cummins blocks with Fleetguard filtration. We show you before you buy.',
+    src: '/images/voltka/voltka-vks165-stock-forklift.webp',
+    alt: 'VOLTKA VKS 165 and VKS 188 generators in stock with forklift at EmersonEIMS warehouse',
+    kicker: 'INDUSTRIAL RANGE',
+    title: 'VKS 165 · VKS 188 · VKS 275',
+    sub: 'Three-phase industrial sets with 3-year warranty, 1 year free service.',
   },
   {
-    src: '/images/voltka/ats-changeover-panel-4k.webp',
-    alt: 'Automatic transfer switch changeover panel commissioned and running on load, 401V across three phases',
-    tag: 'ATS & CHANGEOVERS',
-    title: 'Commissioned, On Load, 401V Across All Three Phases',
-    copy: 'We wire the ATS, test the changeover and hand over a running system — not boxes.',
+    src: '/images/voltka/voltka-vks44-crane-lift.webp',
+    alt: 'VOLTKA VKS 44 generator lifted by crane above a delivery truck, front angle showing VOLTKA branding',
+    kicker: 'BUILT TO MOVE',
+    title: 'From Our Floor to Your Site',
+    sub: 'Rigging, transport and offloading handled by our own crew.',
   },
   {
-    src: '/images/voltka/kivukoni-cummins-install.webp',
-    alt: 'Cummins generator installed at Kivukoni School',
-    tag: 'REAL INSTALLATIONS',
-    title: 'Trusted by Schools, Hospitals, Factories & Farms',
-    copy: 'From Kivukoni School to industrial plants — documented installs in all 47 counties.',
+    src: '/images/voltka/voltka-vks165-vks188-delivery.webp',
+    alt: 'VOLTKA VKS 165 and VKS 188 generators staged for delivery beside the truck at EmersonEIMS',
+    kicker: 'COMMISSIONED, NOT COURIERED',
+    title: 'We Hand Over Running Systems',
+    sub: 'ATS wired, changeover tested, on load — in all 47 counties.',
+  },
+  {
+    src: '/images/voltka/voltka-vks44-crane-side.webp',
+    alt: 'VOLTKA VKS 44 super silent generator lowered onto a delivery truck at EmersonEIMS Nairobi',
+    kicker: 'ON ITS WAY',
+    title: 'Yours Could Be Next',
+    sub: 'Order today, on your site this week — anywhere in Kenya.',
   },
 ];
 
-const SLIDE_MS = 5500;
+const SLIDE_MS = 6000;
 
 export default function VoltkaCinematicShowcase() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
 
-  const next = useCallback(() => setIndex((i) => (i + 1) % SLIDES.length), []);
+  const go = useCallback(
+    (dir: 1 | -1) => setIndex((i) => (i + dir + SLIDES.length) % SLIDES.length),
+    []
+  );
 
   useEffect(() => {
     if (paused) return;
-    const t = setInterval(next, SLIDE_MS);
+    const t = setInterval(() => go(1), SLIDE_MS);
     return () => clearInterval(t);
-  }, [paused, next]);
+  }, [paused, go]);
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') go(1);
+    if (e.key === 'ArrowLeft') go(-1);
+  };
 
   const slide = SLIDES[index];
 
   return (
     <section
-      className="relative bg-black content-auto overflow-hidden"
-      aria-label="VOLTKA Cummins generators cinematic showcase"
+      className="relative bg-black content-auto overflow-hidden h-[88svh] min-h-[560px] sm:h-screen"
+      aria-label="VOLTKA Cummins generators showcase"
+      aria-roledescription="carousel"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onKeyDown={onKeyDown}
+      onTouchStart={(e) => {
+        touchX.current = e.touches[0].clientX;
+        setPaused(true);
+      }}
+      onTouchEnd={(e) => {
+        if (touchX.current !== null) {
+          const dx = e.changedTouches[0].clientX - touchX.current;
+          if (Math.abs(dx) > 48) go(dx < 0 ? 1 : -1);
+        }
+        touchX.current = null;
+        setPaused(false);
+      }}
     >
-      {/* Section heading */}
-      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 text-center">
-        <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm">
-          <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-          <span className="text-xs sm:text-sm text-amber-300 tracking-wider uppercase font-medium">
-            Authorized Cummins · Powered by VOLTKA
-          </span>
+      {/* Full-bleed stage — every slide stays mounted, pure opacity
+          crossfade. No remount flash, no zoom: crisp, Tesla-static. */}
+      {SLIDES.map((s, i) => (
+        <div
+          key={s.src}
+          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+            i === index ? 'opacity-100' : 'opacity-0'
+          }`}
+          aria-hidden={i !== index}
+        >
+          <Image
+            src={s.src}
+            alt={s.alt}
+            fill
+            sizes="100vw"
+            quality={90}
+            className="object-cover"
+            priority={i === 0}
+          />
         </div>
-        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
-          The Generators That{' '}
-          <span className="text-amber-500">Keep Kenya Running</span>
-        </h2>
-        <p className="mt-4 text-base sm:text-xl text-gray-300 max-w-3xl mx-auto">
-          Real deliveries. Real installations. Real changeover panels on load —
-          shot on our own sites, not stock photos.
-        </p>
+      ))}
+
+      {/* Gentle grading — image stays bright, text stays legible */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/55 pointer-events-none" />
+
+      {/* Headline — top center, Tesla typography */}
+      <div className="absolute top-0 left-0 right-0 pt-14 sm:pt-[8vh] px-4 text-center pointer-events-none">
+        <motion.div
+          key={slide.title}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.55, ease: 'easeOut' }}
+        >
+          <p className="text-[10px] sm:text-xs font-medium tracking-[0.3em] text-amber-300 uppercase mb-3">
+            {slide.kicker}
+          </p>
+          <h2 className="text-[34px] sm:text-5xl lg:text-[54px] font-medium text-white tracking-tight leading-[1.08]">
+            {slide.title}
+          </h2>
+          <p className="mt-2.5 text-sm sm:text-base text-white/85 font-light max-w-xl mx-auto">
+            {slide.sub}
+          </p>
+        </motion.div>
       </div>
 
-      {/* Cinematic stage */}
-      <div className="max-w-full-content mx-auto px-4 sm:px-6 lg:px-8 mt-10 sm:mt-14 pb-16 sm:pb-20">
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.8)]">
-          <div className="relative aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9]">
-            <AnimatePresence mode="popLayout">
-              <motion.div
-                key={slide.src}
-                className="absolute inset-0"
-                initial={{ opacity: 0, scale: 1 }}
-                animate={{
-                  opacity: 1,
-                  scale: 1.08,
-                  transition: {
-                    opacity: { duration: 0.9 },
-                    scale: { duration: SLIDE_MS / 1000 + 1.5, ease: 'linear' },
-                  },
-                }}
-                exit={{ opacity: 0, transition: { duration: 0.9 } }}
-              >
-                <Image
-                  src={slide.src}
-                  alt={slide.alt}
-                  fill
-                  sizes="(min-width: 1536px) 1400px, 100vw"
-                  quality={90}
-                  className="object-cover"
-                  priority={index === 0}
-                />
-              </motion.div>
-            </AnimatePresence>
+      {/* Twin CTAs — Tesla proportions: 264px, slim, 4px radius */}
+      <div className="absolute bottom-16 sm:bottom-[7vh] left-0 right-0 px-6 flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center items-center">
+        <a
+          href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20want%20today%27s%20best%20offer%20on%20a%20VOLTKA%20Cummins%20generator"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full sm:w-[264px] py-2.5 rounded bg-white text-[#171a20] text-sm font-medium text-center hover:bg-white/90 transition-colors duration-200 tap-scale touch-target shadow-[0_2px_16px_rgba(0,0,0,0.3)]"
+        >
+          Get Today&apos;s Offer
+        </a>
+        <Link
+          href="/generators"
+          className="w-full sm:w-[264px] py-2.5 rounded bg-[#171a20]/70 text-white text-sm font-medium text-center backdrop-blur-sm hover:bg-[#171a20]/85 transition-colors duration-200 tap-scale touch-target"
+        >
+          Explore All Models
+        </Link>
+      </div>
 
-            {/* Cinematic grading */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/30 pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(251,191,36,0.12),transparent_55%)] pointer-events-none" />
+      {/* Chevrons — desktop only */}
+      <button
+        onClick={() => go(-1)}
+        aria-label="Previous slide"
+        className="hidden sm:flex absolute left-5 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-black/25 text-white/75 backdrop-blur-sm hover:bg-black/50 hover:text-white transition-all duration-200"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+      </button>
+      <button
+        onClick={() => go(1)}
+        aria-label="Next slide"
+        className="hidden sm:flex absolute right-5 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-black/25 text-white/75 backdrop-blur-sm hover:bg-black/50 hover:text-white transition-all duration-200"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+      </button>
 
-            {/* Caption */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-10">
-              <motion.div
-                key={slide.title}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35, duration: 0.6 }}
-              >
-                <span className="inline-block mb-3 px-3 py-1 rounded-full bg-amber-500 text-black text-[10px] sm:text-xs font-bold tracking-[0.18em]">
-                  {slide.tag}
-                </span>
-                <h3 className="text-xl sm:text-3xl lg:text-4xl font-bold text-white max-w-3xl leading-tight">
-                  {slide.title}
-                </h3>
-                <p className="mt-2 text-sm sm:text-lg text-gray-300 max-w-2xl">
-                  {slide.copy}
-                </p>
-              </motion.div>
-            </div>
-
-            {/* Progress dots */}
-            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex gap-2">
-              {SLIDES.map((s, i) => (
-                <button
-                  key={s.src}
-                  onClick={() => setIndex(i)}
-                  aria-label={`Show slide ${i + 1}: ${s.tag}`}
-                  aria-current={i === index}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === index ? 'w-8 bg-amber-400' : 'w-3 bg-white/30 hover:bg-white/60'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* CTAs under the stage */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-          <a
-            href="https://wa.me/254768860665?text=Hi%20EmersonEIMS%2C%20I%20want%20today%27s%20best%20offer%20on%20a%20VOLTKA%20Cummins%20generator"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto px-6 sm:px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-base sm:text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-green-500/25 text-center tap-scale touch-target"
-          >
-            Get Today&apos;s Generator Offer
-          </a>
-          <Link
-            href="/generators"
-            className="w-full sm:w-auto px-6 sm:px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold text-base sm:text-lg rounded-full hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-amber-500/25 text-center tap-scale touch-target"
-          >
-            Explore All Models →
-          </Link>
-        </div>
+      {/* Dots — bottom center, slim */}
+      <div className="absolute bottom-6 sm:bottom-7 left-0 right-0 flex justify-center gap-2">
+        {SLIDES.map((s, i) => (
+          <button
+            key={s.src}
+            onClick={() => setIndex(i)}
+            aria-label={`Show slide ${i + 1}: ${s.title}`}
+            aria-current={i === index}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/70'
+            }`}
+          />
+        ))}
       </div>
     </section>
   );

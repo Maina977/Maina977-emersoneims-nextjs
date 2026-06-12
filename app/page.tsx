@@ -12,6 +12,7 @@ import HomePageClient from '@/components/home/HomePageClient';
 import HubFeatureBlock from '@/components/home/HubFeatureBlock';
 import SolutionsBySector from '@/components/home/SolutionsBySector';
 import VoltkaCinematicShowcase from '@/components/home/VoltkaCinematicShowcase';
+import { VoltkaBillboard, VoltkaDuoGrid } from '@/components/home/VoltkaShowroomGrid';
 import CinematicVideoSection from '@/components/home/CinematicVideoSection';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -692,9 +693,15 @@ export default function HomePage() {
       <VoltkaCinematicShowcase />
       <SolutionsBySector />
       <StaticFeaturesSection />
+      {/* Nike-style editorial image cards — ATS commissioning + genuine
+          Cummins engine, keeping the product in view mid-scroll. */}
+      <VoltkaDuoGrid />
       <HubFeatureBlock />
       <StaticStatsSection />
       <AITechnologyShowcase />
+      {/* Full-width night-delivery billboard — emergency-response story
+          told Nike-billboard style before the services film. */}
+      <VoltkaBillboard />
       {/* Services film on a dedicated stage — visible on phones too
           (the hero video is tablet-and-up only). Click-to-play. */}
       <CinematicVideoSection />
