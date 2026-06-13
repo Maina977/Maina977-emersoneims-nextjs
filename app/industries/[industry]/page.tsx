@@ -21,6 +21,7 @@ import {
 } from '@/lib/seo/industryData';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import IndustryDeepDive from '@/components/industries/IndustryDeepDive';
 
 interface Props {
   params: Promise<{ industry: string }>;
@@ -432,6 +433,9 @@ export default async function IndustryPage({ params }: Props) {
           </p>
         </div>
       </section>
+
+      {/* ENGINEERING REFERENCE — unique per industry */}
+      <IndustryDeepDive slug={industry.slug} />
 
       {/* Schema Markup */}
       <script
