@@ -17,6 +17,7 @@ import CinematicVideoSection from '@/components/home/CinematicVideoSection';
 import HeroCinematicFX from '@/components/home/HeroCinematicFX';
 import RingGallery from '@/components/home/RingGallery';
 import HomeEngineeringAuthority from '@/components/home/HomeEngineeringAuthority';
+import AIToolsPromo from '@/components/ai/AIToolsPromo';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
 // 3D ring showcase — sister piece to the About page spiral gallery.
@@ -742,6 +743,10 @@ export default function HomePage() {
       {/* ENGINEERING AUTHORITY — crawlable editorial band + internal links to
           every service deep-dive. Additive; on-brand premium dark/amber. */}
       <HomeEngineeringAuthority />
+
+      {/* 6 AI TOOLS — crawlable marketing band with internal links (does not
+          modify any tool; gives them link equity from the homepage). */}
+      <AIToolsPromo />
 
       {/* CLIENT INTERACTIVE SECTIONS - Load after static content */}
       <HomePageClient />

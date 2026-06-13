@@ -89,7 +89,9 @@ export default function OrbitalGallery({
       host.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
-      scene.fog = new THREE.Fog(0x000000, 14, 34);
+      // Softer/pushed-back fog so orbiting images stay clear far longer instead
+      // of fading to black on the back of their orbit.
+      scene.fog = new THREE.Fog(0x000000, 22, 52);
 
       const camera = new THREE.PerspectiveCamera(52, host.clientWidth / host.clientHeight, 0.1, 100);
       const camZ = () => 15 + Math.max(0, (1 - camera.aspect) * 9);
@@ -98,16 +100,17 @@ export default function OrbitalGallery({
       const system = new THREE.Group();
       scene.add(system);
 
-      // Glowing core (the "sun")
+      // Glowing core (the "sun") — kept smaller and softer so it never washes
+      // out images that orbit across the centre of the view.
       const coreMat = new THREE.SpriteMaterial({
-        color: 0xfbbf24, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending,
+        color: 0xfbbf24, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending,
       });
       const core = new THREE.Sprite(coreMat);
-      core.scale.set(4, 4, 1);
+      core.scale.set(2.6, 2.6, 1);
       system.add(core);
-      const coreGlowMat = new THREE.SpriteMaterial({ color: 0xff8c2a, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending });
+      const coreGlowMat = new THREE.SpriteMaterial({ color: 0xff8c2a, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending });
       const coreGlow = new THREE.Sprite(coreGlowMat);
-      coreGlow.scale.set(9, 9, 1);
+      coreGlow.scale.set(5.5, 5.5, 1);
       system.add(coreGlow);
 
       // Star field
@@ -222,7 +225,7 @@ export default function OrbitalGallery({
         bodies.forEach((b) => { b.pivot.rotation.y += dt * b.speed; });
         system.rotation.y += dt * 0.03;
         stars.rotation.y += dt * 0.01;
-        coreGlow.material.opacity = 0.3 + Math.sin(t * 1.5) * 0.08;
+        coreGlow.material.opacity = 0.16 + Math.sin(t * 1.5) * 0.05;
 
         // gentle whole-system tilt from pointer
         system.rotation.z += ((pointer.x * 0.12) - system.rotation.z) * 0.04;
@@ -240,7 +243,9 @@ export default function OrbitalGallery({
           mesh.lookAt(camera.position);
           (frame as import('three').Mesh).lookAt(camera.position);
           if (d < nearestDist) { nearestDist = d; nearest = idx; }
-          const op = THREE.MathUtils.clamp(1.2 - (d - (camZ() - 12)) * 0.05, 0.3, 1);
+          // Gentler depth fade with a higher floor so EVERY image stays clearly
+          // visible as it orbits (was fading to 0.3 and disappearing).
+          const op = THREE.MathUtils.clamp(1.3 - (d - (camZ() - 12)) * 0.03, 0.72, 1);
           b.material.opacity = op;
         });
         if (nearest !== state.lastIndex && nearest >= 0) {
@@ -293,7 +298,13 @@ export default function OrbitalGallery({
   return (
     <section ref={sectionRef} className="relative bg-black overflow-hidden h-[100svh] min-h-[640px] content-auto" aria-label={heading}>
       <div ref={hostRef} className="absolute inset-0" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_38%,rgba(0,0,0,0.9)_100%)]" />
+      {/* Lighter edge vignette so images near the orbit edges stay visible
+          (was a near-opaque 90% black ring that swallowed peripheral images). */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_62%,rgba(0,0,0,0.55)_100%)]" />
+      {/* Slim scrims only behind the headline and caption keep text legible
+          without darkening the middle band where the images orbit. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/75 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/80 to-transparent" />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 pt-16 md:pt-20 text-center px-4">
         <p className="text-[11px] md:text-xs tracking-[0.4em] uppercase text-amber-400/90 mb-3">{eyebrow}</p>
