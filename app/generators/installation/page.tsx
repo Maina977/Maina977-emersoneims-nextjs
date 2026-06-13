@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { GeneratorEducationCompact } from '@/components/generators/GeneratorEducationPanel';
+import GeneratorInstallationSizer from '@/components/generators/GeneratorInstallationSizer';
+import GeneratorInstallationGuide from '@/components/generators/GeneratorInstallationGuide';
 
 // Comprehensive Installation Knowledge Database
 const installationPhases = [
@@ -888,6 +890,12 @@ export default function GeneratorInstallationPage() {
           <GeneratorEducationCompact />
         </div>
       </section>
+
+      {/* AUTOSMART INSTALLATION SIZER — intelligent cable/breaker/ATS/fuel/exhaust/plinth */}
+      <GeneratorInstallationSizer />
+
+      {/* INSTALLATION ENGINEERING — materials, changeover, PF, fuel, exhaust, cage, plinth */}
+      <GeneratorInstallationGuide />
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-green-900/50 to-blue-900/50">
