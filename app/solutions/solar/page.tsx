@@ -7,6 +7,7 @@ import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import SolarFaultEngineeringDeepDive from '@/components/solutions/SolarFaultEngineeringDeepDive';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // Dynamic import for SolarGenius Pro Hub V2 — solar AI platform
@@ -962,6 +963,9 @@ export default function SolarSolutionHub() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ENGINEERING REFERENCE — solar fault diagnosis & performance */}
+      <SolarFaultEngineeringDeepDive />
 
       {/* CTA Section */}
       <section className="mx-auto max-w-7xl px-6 py-16">

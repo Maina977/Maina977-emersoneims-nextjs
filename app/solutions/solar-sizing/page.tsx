@@ -6,6 +6,7 @@ import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import SolarSizingEngineeringDeepDive from '@/components/solutions/SolarSizingEngineeringDeepDive';
 
 // =====================================================
 // COMPREHENSIVE SOLAR SIZING SOLUTIONS HUB
@@ -786,6 +787,9 @@ export default function SolarSizingHub() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ENGINEERING REFERENCE — step-by-step sizing method */}
+      <SolarSizingEngineeringDeepDive />
 
       {/* CTA Section */}
       <section className="mx-auto max-w-7xl px-6 py-16">
