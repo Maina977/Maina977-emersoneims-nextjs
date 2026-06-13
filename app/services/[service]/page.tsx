@@ -20,6 +20,7 @@ import {
 } from '@/lib/services/allServices';
 import { getServiceDiagnostics } from '@/lib/services/serviceDiagnostics';
 import { getServiceBible } from '@/lib/services/serviceBibles';
+import ServiceDeepDive from '@/components/services/ServiceDeepDive';
 
 // Import client components
 import ServiceDetailClient from './ServiceDetailClient';
@@ -187,6 +188,11 @@ export default async function ServiceDetailPage({ params }: Props) {
         diagnostics={diagnostics}
         bible={bible}
       />
+
+      {/* ENGINEERING REFERENCE — surfaces deep-dives for service slugs whose
+          /solutions/* equivalents redirect here (ups, motor-rewinding, ac,
+          borehole, ats). Renders nothing for other slugs. */}
+      <ServiceDeepDive slug={service.slug} />
     </>
   );
 }
