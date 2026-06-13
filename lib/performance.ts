@@ -22,10 +22,10 @@ export const lazyLoadImage = (src: string, placeholder = '/placeholder.svg') => 
 export const preloadCriticalAssets = () => {
   if (typeof window === 'undefined') return;
 
+  // Only assets that exist in /public — '/fonts/inter-var.woff2' and
+  // '/hero-bg.jpg' were missing and produced 404s / runtime NetworkErrors.
   const criticalAssets = [
-    '/fonts/inter-var.woff2',
     '/logo.svg',
-    '/hero-bg.jpg',
   ];
 
   criticalAssets.forEach((asset) => {

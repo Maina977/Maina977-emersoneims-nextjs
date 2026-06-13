@@ -15,26 +15,25 @@ export default function ResourcePreloader({ resources }: ResourcePreloaderProps)
   useEffect(() => {
     const preloadResources = () => {
       const defaultResources = {
+        // Only assets that actually exist in /public — preloading missing
+        // files produced 404s on every page and surfaced as a runtime
+        // "NetworkError" in the dev overlay. Fonts are handled by next/font,
+        // not raw /fonts/*.woff2 (those files don't exist).
         images: [
           '/logo.svg',
-          '/hero-bg.jpg',
-          '/favicon.ico',
         ],
-        fonts: [
-          '/fonts/space-grotesk.woff2',
-          '/fonts/playfair-display.woff2',
-          '/fonts/inter.woff2',
-          '/fonts/geist-sans.woff2',
-        ],
-        scripts: [],
-        styles: [],
+        fonts: [] as string[],
+        scripts: [] as string[],
+        styles: [] as string[],
       };
 
       const allResources = { ...defaultResources, ...resources };
 
-      // Preload images
+      // Preload images — swallow errors so a missing asset can never bubble
+      // up as a runtime NetworkError.
       allResources.images?.forEach(src => {
         const img = new Image();
+        img.onerror = () => { /* ignore missing preload target */ };
         img.src = src;
         img.loading = 'eager';
       });
@@ -102,38 +101,8 @@ export default function ResourcePreloader({ resources }: ResourcePreloaderProps)
     // Preload resources immediately
     preloadResources();
 
-    // Preload additional resources on idle
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => {
-        // Preload non-critical resources during idle time
-        const additionalImages = [
-          '/about-hero.jpg',
-          '/service-hero.jpg',
-          '/contact-hero.jpg',
-        ];
-
-        additionalImages.forEach(src => {
-          const img = new Image();
-          img.src = src;
-          img.loading = 'lazy';
-        });
-      });
-    } else {
-      // Fallback for browsers without requestIdleCallback
-      setTimeout(() => {
-        const additionalImages = [
-          '/about-hero.jpg',
-          '/service-hero.jpg',
-          '/contact-hero.jpg',
-        ];
-
-        additionalImages.forEach(src => {
-          const img = new Image();
-          img.src = src;
-          img.loading = 'lazy';
-        });
-      }, 2000);
-    }
+    // (Removed idle preloads of /about-hero.jpg, /service-hero.jpg and
+    // /contact-hero.jpg — those files don't exist and only produced 404s.)
 
   }, [resources]);
 

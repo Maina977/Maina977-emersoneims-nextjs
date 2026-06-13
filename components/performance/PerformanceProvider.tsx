@@ -127,27 +127,12 @@ export default function PerformanceProvider({ children }: PerformanceProviderPro
 
     // Preload critical resources
     const preloadResources = () => {
-      // Preload fonts
-      const fontLinks = [
-        '/fonts/space-grotesk.woff2',
-        '/fonts/playfair-display.woff2',
-        '/fonts/inter.woff2',
-      ];
+      // Font preloads removed — the raw /fonts/*.woff2 files don't exist
+      // (fonts are served by next/font), so preloading them only 404'd.
 
-      fontLinks.forEach(href => {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.href = href;
-        link.as = 'font';
-        link.type = 'font/woff2';
-        link.crossOrigin = 'anonymous';
-        document.head.appendChild(link);
-      });
-
-      // Preload critical images
+      // Preload critical images that actually exist in /public.
       const imageLinks = [
-        '/logo.png',
-        '/hero-bg.jpg',
+        '/logo.svg',
       ];
 
       imageLinks.forEach(href => {
