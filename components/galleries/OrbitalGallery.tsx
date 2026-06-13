@@ -100,17 +100,32 @@ export default function OrbitalGallery({
       const system = new THREE.Group();
       scene.add(system);
 
-      // Glowing core (the "sun") — kept smaller and softer so it never washes
-      // out images that orbit across the centre of the view.
+      // Soft radial-gradient texture so the core reads as a round glow, not a
+      // hard square sprite (an untextured sprite renders as a solid square that
+      // obstructs images crossing the centre).
+      const glowCanvas = document.createElement('canvas');
+      glowCanvas.width = glowCanvas.height = 128;
+      const gctx = glowCanvas.getContext('2d')!;
+      const grad = gctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      gctx.fillStyle = grad;
+      gctx.fillRect(0, 0, 128, 128);
+      const glowTex = new THREE.CanvasTexture(glowCanvas);
+      glowTex.colorSpace = THREE.SRGBColorSpace;
+
+      // Glowing core (the "sun") — soft round glow, kept small so it never
+      // washes out or covers images that orbit across the centre of the view.
       const coreMat = new THREE.SpriteMaterial({
-        color: 0xfbbf24, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending,
+        map: glowTex, color: 0xfbbf24, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false,
       });
       const core = new THREE.Sprite(coreMat);
-      core.scale.set(2.6, 2.6, 1);
+      core.scale.set(3, 3, 1);
       system.add(core);
-      const coreGlowMat = new THREE.SpriteMaterial({ color: 0xff8c2a, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending });
+      const coreGlowMat = new THREE.SpriteMaterial({ map: glowTex, color: 0xff8c2a, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false });
       const coreGlow = new THREE.Sprite(coreGlowMat);
-      coreGlow.scale.set(5.5, 5.5, 1);
+      coreGlow.scale.set(7, 7, 1);
       system.add(coreGlow);
 
       // Star field
@@ -133,7 +148,7 @@ export default function OrbitalGallery({
       const loader = new THREE.TextureLoader();
       const planeGeo = new THREE.PlaneGeometry(PLANE_W, PLANE_H);
       const frameGeo = new THREE.PlaneGeometry(PLANE_W + 0.1, PLANE_H + 0.1);
-      const disposables: { dispose: () => void }[] = [planeGeo, frameGeo, starGeo, starMat, coreMat, coreGlowMat];
+      const disposables: { dispose: () => void }[] = [planeGeo, frameGeo, starGeo, starMat, coreMat, coreGlowMat, glowTex];
 
       // Distribute items across 3 tilted orbits
       const orbitDefs = [
@@ -168,7 +183,7 @@ export default function OrbitalGallery({
         pivot.rotation.y = startAngle;
         system.add(pivot);
 
-        const material = new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, side: THREE.DoubleSide });
+        const material = new THREE.MeshBasicMaterial({ color: 0x2a2a2a, transparent: true, side: THREE.DoubleSide });
         disposables.push(material);
         loader.load(textureUrl(item.src), (tex) => {
           tex.colorSpace = THREE.SRGBColorSpace;
