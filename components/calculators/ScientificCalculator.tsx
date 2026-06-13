@@ -133,7 +133,7 @@ export default function ScientificCalculator() {
       const rpn = toRPN(tokenize(fx));
       for (let i = 0; i <= n; i++) {
         const x = xmin + ((xmax - xmin) * i) / n;
-        const y = evalRPN(rpn, { x }, deg);
+        const y = evalRPN(rpn, { x }, false); // grapher always uses radians (convention)
         if (Number.isFinite(y)) { pts.push({ x, y }); if (y < ymin) ymin = y; if (y > ymax) ymax = y; }
       }
     } catch { return null; }
@@ -146,7 +146,7 @@ export default function ScientificCalculator() {
     const y0 = ymin <= 0 && ymax >= 0 ? sy(0) : null;
     const x0 = xmin <= 0 && xmax >= 0 ? sx(0) : null;
     return { d, W, H, y0, x0, ymin: +ymin.toPrecision(4), ymax: +ymax.toPrecision(4) };
-  }, [fx, xmin, xmax, deg]);
+  }, [fx, xmin, xmax]);
 
   const btns = ['7', '8', '9', '/', 'sin(', '4', '5', '6', '*', 'cos(', '1', '2', '3', '-', 'tan(', '0', '.', '^', '+', 'sqrt(', '(', ')', 'pi', 'e', 'ln('];
 
@@ -202,7 +202,7 @@ export default function ScientificCalculator() {
             )}
           </div>
         </div>
-        <p className="mt-4 text-center text-xs text-white/40">Functions: sin cos tan asin acos atan sqrt cbrt ln log exp abs floor ceil round pow min max · constants: pi e · use x for graphing</p>
+        <p className="mt-4 text-center text-xs text-white/40">Functions: sin cos tan asin acos atan sqrt cbrt ln log exp abs floor ceil round pow min max · constants: pi e · use x for graphing (graph in radians)</p>
       </div>
     </section>
   );
