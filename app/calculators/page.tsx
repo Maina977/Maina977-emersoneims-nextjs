@@ -7,6 +7,7 @@ import GlassmorphicCard from '@/components/effects/GlassmorphicCard';
 import { calculatePMI, calculateESSA } from '@/app/data/diagnostic/emersonMethodology';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import ScientificCalculator from '@/components/calculators/ScientificCalculator';
 
 export default function CalculatorsPage() {
   const [activeCalculator, setActiveCalculator] = useState<'roi' | 'load' | 'solar' | 'ups' | 'ac' | 'motor' | 'pmi'>('roi');
@@ -80,6 +81,11 @@ export default function CalculatorsPage() {
 
         {/* PMI Predictor */}
         {activeCalculator === 'pmi' && <PMICalculator />}
+      </div>
+
+      {/* SCIENTIFIC CALCULATOR & FUNCTION GRAPHER (dependency-free) */}
+      <div className="relative z-10">
+        <ScientificCalculator />
       </div>
     </main>
   );

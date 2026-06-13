@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { GeneratorEducationCompact } from '@/components/generators/GeneratorEducationPanel';
 import WavesGallery from '@/components/galleries/WavesGallery';
 import GeneratorSynchronizationGuide from '@/components/generators/GeneratorSynchronizationGuide';
+import SynchronizationVideo from '@/components/generators/SynchronizationVideo';
 
 // 16 real generator repair / electrical-repair images (optimised webp in /images/repairs)
 const REPAIR_WAVE_ITEMS = [
@@ -929,6 +930,9 @@ export default function GeneratorMaintenancePage() {
           </div>
         </div>
       </section>
+
+      {/* ANIMATED SYNCHRONIZATION EXPLAINER ("video") — autoplay step-by-step */}
+      <SynchronizationVideo />
 
       {/* GENERATOR SYNCHRONIZATION — complete teaching reference (50+ paragraphs,
           diagrams, animated synchroscope, all controllers, troubleshooting) */}
