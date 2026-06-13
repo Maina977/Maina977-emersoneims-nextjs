@@ -20,6 +20,7 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import SparePartsModule from '@/components/parts/SparePartsModule';
+import SparePartsConversion from '@/components/parts/SparePartsConversion';
 
 export default function SparePartsPage() {
   const heroRef = useRef<HTMLElement>(null);
@@ -171,6 +172,9 @@ export default function SparePartsPage() {
 
       {/* Spare Parts Module */}
       <SparePartsModule />
+
+      {/* CONVERSION + SEO — WhatsApp parts-quote flow, categories, genuine-parts content */}
+      <SparePartsConversion />
     </main>
   );
 }
