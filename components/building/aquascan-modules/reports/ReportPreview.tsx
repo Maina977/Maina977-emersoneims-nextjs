@@ -193,7 +193,7 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({ analysisId, previe
         reportId={previewData.report_id}
         analysisId={analysisId}
         customerEmail="customer@example.com"
-        customerPhone="254700000000"
+        customerPhone="254768860665"
         customerName="Customer Name"
       />
     </div>

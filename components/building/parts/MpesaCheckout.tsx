@@ -291,7 +291,7 @@ Please process this order. Customer will pay via M-Pesa to ${MPESA_PHONE}.`
                         type="tel"
                         value={phoneNumber}
                         onChange={(e) => handlePhoneChange(e.target.value)}
-                        placeholder="0712 345 678"
+                        placeholder="0768 860 665"
                         className={`w-full pl-12 pr-4 py-3 bg-gray-800 border rounded-xl text-white placeholder-gray-500 focus:outline-none transition-colors ${
                           phoneError ? 'border-red-500' : 'border-gray-700 focus:border-green-500'
                         }`}

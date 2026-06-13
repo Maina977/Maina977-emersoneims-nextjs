@@ -157,7 +157,7 @@ const SolarGeniusProHub: React.FC = () => {
         {
           name: 'Customer',
           email: 'customer@email.com',
-          phone: '+254 700 000 000',
+          phone: '+254 768 860 665',
           address: `${country.name}`
         },
         countryCode,

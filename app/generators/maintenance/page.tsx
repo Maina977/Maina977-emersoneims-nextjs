@@ -827,7 +827,7 @@ export default function GeneratorMaintenancePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number *</label>
-                <input type="tel" className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white" placeholder="0712 345 678" />
+                <input type="tel" className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white" placeholder="0768 860 665" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>

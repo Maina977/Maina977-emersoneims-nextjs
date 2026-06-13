@@ -16,8 +16,8 @@ export default function QuickContact({ location, service, showForm = false }: Qu
   const [submitted, setSubmitted] = useState(false);
 
   // Company contact details
-  const COMPANY_PHONE = '+254720123456';
-  const COMPANY_WHATSAPP = '254720123456';
+  const COMPANY_PHONE = '+254768860665';
+  const COMPANY_WHATSAPP = '254768860665';
   const COMPANY_EMAIL = 'info@emersoneims.com';
 
   // Pre-fill message for WhatsApp

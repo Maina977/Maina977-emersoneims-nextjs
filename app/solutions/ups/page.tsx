@@ -6,6 +6,7 @@ import Image from 'next/image';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import UPSEngineeringDeepDive from '@/components/solutions/UPSEngineeringDeepDive';
 
 const TABS = [
   { id: 'overview', label: 'Overview', color: 'cyan' },
@@ -502,8 +503,8 @@ export default function UPSPage() {
             <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.2, delay: 1 }} className="mt-8 h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} className="mt-8 flex flex-wrap gap-4 justify-center">
-              <UnifiedCTA action="custom" href="https://wa.me/254722274914?text=UPS%20System%20Inquiry" label="WhatsApp Quote" />
-              <UnifiedCTA action="custom" href="tel:+254722274914" variant="secondary" label="Call Now" />
+              <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=UPS%20System%20Inquiry" label="WhatsApp Quote" />
+              <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" label="Call Now" />
             </motion.div>
           </motion.div>
         </motion.div>
@@ -831,8 +832,8 @@ export default function UPSPage() {
                 <h3 className="text-2xl font-bold text-white mb-4">Need UPS Service?</h3>
                 <p className="text-gray-400 mb-6">Contact us to arrange collection or get a repair quote.</p>
                 <div className="flex flex-wrap gap-4 justify-center">
-                  <UnifiedCTA action="custom" href="https://wa.me/254722274914?text=UPS%20Repair%20Request" label="WhatsApp Us" />
-                  <UnifiedCTA action="custom" href="tel:+254722274914" variant="secondary" label="Call Now" />
+                  <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=UPS%20Repair%20Request" label="WhatsApp Us" />
+                  <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" label="Call Now" />
                 </div>
               </div>
             </motion.div>
@@ -869,14 +870,17 @@ export default function UPSPage() {
         </AnimatePresence>
       </div>
 
+      {/* ENGINEERING REFERENCE */}
+      <UPSEngineeringDeepDive />
+
       {/* CTA Section */}
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-3xl p-8 md:p-12 border border-purple-500/30 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Need UPS Solutions?</h2>
           <p className="text-gray-400 max-w-2xl mx-auto mb-8">Professional UPS supply, installation, battery replacement, and maintenance. All sizes from 650VA to 500kVA. 12-24 months warranty.</p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <UnifiedCTA action="custom" href="https://wa.me/254722274914?text=UPS%20Quote%20Request" size="lg" label="Get Free Quote" />
-            <UnifiedCTA action="custom" href="tel:+254722274914" variant="secondary" size="lg" label="Call Us Now" />
+            <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=UPS%20Quote%20Request" size="lg" label="Get Free Quote" />
+            <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" size="lg" label="Call Us Now" />
             <UnifiedCTA action="site-survey" variant="secondary" size="lg" label="Request Site Survey" />
           </div>
         </div>

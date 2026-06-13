@@ -18,6 +18,7 @@ import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import RingGallery from '@/components/home/RingGallery';
+import SolarEngineeringDeepDive from '@/components/solar/SolarEngineeringDeepDive';
 
 // Strictly-solar rotating gallery (like the landing page ring)
 // Deterministic particle layout — fixed values so SSR and client render
@@ -1221,6 +1222,9 @@ export default function SolarBible() {
         </div>
       </section>
 
+      {/* ==================== ENGINEERING REFERENCE ==================== */}
+      <SolarEngineeringDeepDive />
+
       {/* ==================== FAQ SECTION ==================== */}
       <section className="py-20 bg-black/50">
         <div className="max-w-4xl mx-auto px-6">
@@ -2185,7 +2189,7 @@ export default function SolarBible() {
               <h4 className="text-white font-bold mb-4">Contact</h4>
               <ul className="space-y-2">
                 <li className="text-gray-400">📞 +254 768 860 665</li>
-                <li className="text-gray-400">📞 +254 793 573 208</li>
+                <li className="text-gray-400">📞 +254 768 860 665</li>
                 <li className="text-gray-400">📧 info@emersoneims.com</li>
               </ul>
             </div>

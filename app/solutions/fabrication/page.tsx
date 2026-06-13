@@ -6,6 +6,7 @@ import Image from 'next/image'
 import UnifiedCTA from '@/components/cta/UnifiedCTA'
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand'
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles'
+import FabricationEngineeringDeepDive from '@/components/solutions/FabricationEngineeringDeepDive'
 import {
   Hammer,
   Shield,
@@ -903,14 +904,14 @@ const FabricationPage = () => {
               <div className="flex flex-wrap gap-4">
                 <UnifiedCTA
                   action="custom"
-                  href="https://wa.me/254722274914?text=Fabrication%20Project%20Inquiry"
+                  href="https://wa.me/254768860665?text=Fabrication%20Project%20Inquiry"
                   label="WhatsApp Quote"
                 />
                 <UnifiedCTA
                   action="custom"
-                  href="tel:+254722274914"
+                  href="tel:+254768860665"
                   variant="secondary"
-                  label="Call: +254 722 274 914"
+                  label="Call: +254 768 860 665"
                 />
               </div>
             </motion.div>
@@ -1098,9 +1099,9 @@ const FabricationPage = () => {
                     <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                       <h3 className="text-lg font-semibold text-white mb-4">Quick Contact</h3>
                       <div className="space-y-3">
-                        <a href="tel:+254722274914" className="flex items-center gap-2 text-gray-200 hover:text-orange-300">
+                        <a href="tel:+254768860665" className="flex items-center gap-2 text-gray-200 hover:text-orange-300">
                           <Phone className="w-5 h-5" />
-                          <span>+254 722 274 914</span>
+                          <span>+254 768 860 665</span>
                         </a>
                         <div className="flex items-center gap-2 text-gray-300">
                           <Clock className="w-5 h-5" />
@@ -1812,12 +1813,12 @@ const FabricationPage = () => {
                     <div className="space-y-3">
                       <UnifiedCTA
                         action="custom"
-                        href="https://wa.me/254722274914?text=Fabrication%20Quote%20Request"
+                        href="https://wa.me/254768860665?text=Fabrication%20Quote%20Request"
                         label="WhatsApp Quote"
                       />
                       <UnifiedCTA
                         action="custom"
-                        href="tel:+254722274914"
+                        href="tel:+254768860665"
                         variant="secondary"
                         label="Call for Quote"
                       />
@@ -2048,8 +2049,8 @@ const FabricationPage = () => {
                         </div>
                         <div>
                           <h4 className="font-medium text-white">Technical Hotline</h4>
-                          <a href="tel:+254722274914" className="text-orange-300 hover:text-orange-300">
-                            +254 722 274 914
+                          <a href="tel:+254768860665" className="text-orange-300 hover:text-orange-300">
+                            +254 768 860 665
                           </a>
                         </div>
                       </div>
@@ -2080,6 +2081,9 @@ const FabricationPage = () => {
         </div>
       </section>
 
+      {/* ENGINEERING REFERENCE */}
+      <FabricationEngineeringDeepDive />
+
       {/* Final CTA Section */}
       <section className="bg-gray-900 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -2093,14 +2097,14 @@ const FabricationPage = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <UnifiedCTA
               action="custom"
-              href="https://wa.me/254722274914?text=Fabrication%20Project%20Inquiry"
+              href="https://wa.me/254768860665?text=Fabrication%20Project%20Inquiry"
               label="WhatsApp Quote Request"
             />
             <UnifiedCTA
               action="custom"
-              href="tel:+254722274914"
+              href="tel:+254768860665"
               variant="secondary"
-              label="Call: +254 722 274 914"
+              label="Call: +254 768 860 665"
             />
           </div>
         </div>

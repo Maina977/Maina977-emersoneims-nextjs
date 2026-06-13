@@ -121,8 +121,8 @@ async function seedInitialSuppliers(): Promise<void> {
   const suppliers = [
     {
       name: 'PowerGen Parts Kenya',
-      phone: '+254 720 123 456',
-      whatsapp: '+254720123456',
+      phone: '+254 768 860 665',
+      whatsapp: '+254768860665',
       email: 'sales@powergenparts.co.ke',
       location: 'Industrial Area, Nairobi',
       city: 'Nairobi',
@@ -134,8 +134,8 @@ async function seedInitialSuppliers(): Promise<void> {
     },
     {
       name: 'Generator Spares East Africa',
-      phone: '+254 733 456 789',
-      whatsapp: '+254733456789',
+      phone: '+254 768 860 665',
+      whatsapp: '+254768860665',
       email: 'info@genspares.co.ke',
       location: 'Mombasa Road, Nairobi',
       city: 'Nairobi',
@@ -147,8 +147,8 @@ async function seedInitialSuppliers(): Promise<void> {
     },
     {
       name: 'Coast Power Solutions',
-      phone: '+254 741 234 567',
-      whatsapp: '+254741234567',
+      phone: '+254 768 860 665',
+      whatsapp: '+254768860665',
       email: 'parts@coastpower.co.ke',
       location: 'Nyali, Mombasa',
       city: 'Mombasa',
@@ -160,8 +160,8 @@ async function seedInitialSuppliers(): Promise<void> {
     },
     {
       name: 'Western Generator Parts',
-      phone: '+254 712 345 678',
-      whatsapp: '+254712345678',
+      phone: '+254 768 860 665',
+      whatsapp: '+254768860665',
       location: 'Eldoret Town',
       city: 'Eldoret',
       specialties: ['Agricultural Generators', 'Small Parts'],
@@ -171,8 +171,8 @@ async function seedInitialSuppliers(): Promise<void> {
     },
     {
       name: 'FG Wilson Parts Direct',
-      phone: '+254 722 111 222',
-      whatsapp: '+254722111222',
+      phone: '+254 768 860 665',
+      whatsapp: '+254768860665',
       email: 'parts@fgwilsonkenya.com',
       location: 'Westlands, Nairobi',
       city: 'Nairobi',
@@ -531,8 +531,8 @@ function getDefaultSuppliers(): Supplier[] {
     {
       id: 1,
       name: 'PowerGen Parts Kenya',
-      phone: '+254 720 123 456',
-      whatsapp: '+254720123456',
+      phone: '+254 768 860 665',
+      whatsapp: '+254768860665',
       email: 'sales@powergenparts.co.ke',
       location: 'Industrial Area, Nairobi',
       city: 'Nairobi',
@@ -545,8 +545,8 @@ function getDefaultSuppliers(): Supplier[] {
     {
       id: 2,
       name: 'Generator Spares East Africa',
-      phone: '+254 733 456 789',
-      whatsapp: '+254733456789',
+      phone: '+254 768 860 665',
+      whatsapp: '+254768860665',
       email: 'info@genspares.co.ke',
       location: 'Mombasa Road, Nairobi',
       city: 'Nairobi',

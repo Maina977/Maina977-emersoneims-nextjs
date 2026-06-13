@@ -210,7 +210,7 @@ export default function PricingPlans({
       {/* Support */}
       <div className="text-center mt-6">
         <a
-          href="https://wa.me/254720123456"
+          href="https://wa.me/254768860665"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white"

@@ -44,13 +44,13 @@ interface IndustriesExperienceProps {
 
 // Real EmersonEIMS project photography per industry
 const INDUSTRY_IMAGES: Record<string, string> = {
-  'hotels-hospitality': '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg',
+  'hotels-hospitality': '/images/voltka/voltka-warehouse-fleet.webp',
   'hospitals-healthcare': '/images/ups-power-protection-system.png',
   'schools-universities': '/images/ST-AUSTIN-4K-CINEMATIC.jpg',
   'banks-financial': '/images/ups-battery-bank.png',
   'manufacturing-industries': '/images/SANERGY-FG-WILSON-4K-CINEMATIC.jpg',
   'flower-farms': '/images/BIGOT-FLOWERS-4K-CINEMATIC.jpg',
-  'real-estate-construction': '/images/structural-steel-work.png',
+  'real-estate-construction': '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg',
   'churches-religious': '/images/GEN 2-1920x1080.png',
   'government-ngos': '/images/NTSA-4K-CINEMATIC.jpg',
 };

@@ -321,7 +321,7 @@ export async function PATCH(request: NextRequest) {
         company: {
           name: 'EmersonEIMS',
           address: 'Nairobi, Kenya',
-          phone: '+254 700 000 000',
+          phone: '+254 768 860 665',
           email: 'info@emersoneims.co.ke',
           website: 'www.emersoneims.co.ke',
         },

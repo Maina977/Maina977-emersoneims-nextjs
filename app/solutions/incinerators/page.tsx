@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import IncineratorEngineeringDeepDive from '@/components/solutions/IncineratorEngineeringDeepDive';
 
 // Lazy-loaded technical guide section (rendered below existing content).
 // Code-split to keep the initial Incinerator page bundle small. The same
@@ -479,8 +480,8 @@ export default function IncineratorsPage() {
             <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.2, delay: 1 }} className="mt-8 h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} className="mt-8 flex flex-wrap gap-4 justify-center">
-              <UnifiedCTA action="custom" href="https://wa.me/254722274914?text=Incinerator%20Inquiry" label="WhatsApp Quote" />
-              <UnifiedCTA action="custom" href="tel:+254722274914" variant="secondary" label="Call Now" />
+              <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=Incinerator%20Inquiry" label="WhatsApp Quote" />
+              <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" label="Call Now" />
             </motion.div>
           </motion.div>
         </motion.div>
@@ -827,14 +828,17 @@ export default function IncineratorsPage() {
          ============================================================ */}
       <ConstructionGuide />
 
+      {/* ENGINEERING REFERENCE */}
+      <IncineratorEngineeringDeepDive />
+
       {/* CTA Section */}
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="bg-gradient-to-r from-orange-900/30 to-red-900/30 rounded-3xl p-8 md:p-12 border border-orange-500/30 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Need Incinerator Solutions?</h2>
           <p className="text-gray-400 max-w-2xl mx-auto mb-8">Complete incinerator supply, installation, and maintenance. Medical, industrial, and general waste. NEMA compliant. 12-24 months warranty.</p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <UnifiedCTA action="custom" href="https://wa.me/254722274914?text=Incinerator%20Quote%20Request" size="lg" label="Get Free Quote" />
-            <UnifiedCTA action="custom" href="tel:+254722274914" variant="secondary" size="lg" label="Call Us Now" />
+            <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=Incinerator%20Quote%20Request" size="lg" label="Get Free Quote" />
+            <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" size="lg" label="Call Us Now" />
             <UnifiedCTA action="site-survey" variant="secondary" size="lg" label="Request Site Survey" />
           </div>
         </div>

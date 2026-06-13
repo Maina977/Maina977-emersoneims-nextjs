@@ -246,7 +246,7 @@ export default function LeadCaptureForm({
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="0712 345 678"
+                  placeholder="0768 860 665"
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                   required
                 />

@@ -993,7 +993,7 @@ export class AIQuantitySurveyor {
       contractor: {
         name: contractorName,
         address: 'Nairobi, Kenya',
-        contact: '+254 700 000 000',
+        contact: '+254 768 860 665',
         registration: 'NCA/2024/00001',
       },
       project: {

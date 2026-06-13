@@ -8,8 +8,8 @@ export default function FloatingContact() {
   const [isOpen, setIsOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const COMPANY_PHONE = '+254720123456';
-  const COMPANY_WHATSAPP = '254720123456';
+  const COMPANY_PHONE = '+254768860665';
+  const COMPANY_WHATSAPP = '254768860665';
 
   useEffect(() => {
     const handleScroll = () => {

@@ -44,7 +44,7 @@ const SolarGeniusPro: React.FC = () => {
   const clientInfo = {
     name: 'Customer Name',
     email: 'customer@example.com',
-    phone: '+254 700 000 000',
+    phone: '+254 768 860 665',
     address: 'Nairobi, Kenya'
   };
 

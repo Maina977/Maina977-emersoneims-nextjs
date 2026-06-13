@@ -193,7 +193,7 @@ export default function PaymentModal({
                       type="tel"
                       value={phoneNumber}
                       onChange={e => setPhoneNumber(e.target.value)}
-                      placeholder="0712 345 678"
+                      placeholder="0768 860 665"
                       className="w-full bg-gray-800 border border-gray-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500"
                     />
                   </div>

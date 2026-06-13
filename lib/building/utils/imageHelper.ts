@@ -104,7 +104,7 @@ export function generateImageAlt(
     'caseStudies.bigotFlowers': 'Bigot Flowers - Power Solutions Case Study',
     'caseStudies.stAustin': 'St. Austin Academy - Energy Infrastructure',
     'caseStudies.kivukoni': 'Kivukoni International School - Solar Solutions',
-    'caseStudies.greenheart': 'Greenheart Kilifi - Hospitality Energy Solutions',
+    'caseStudies.greenheart': 'Greenheart Kilifi - Real Estate Development Power Solutions',
     'caseStudies.ntsa': 'NTSA - Government Power Infrastructure',
     'caseStudies.afrhearb': 'AfRhearb Limited - Industrial Power Systems',
     'caseStudies.kimfay': 'Kimfay Limited - Commercial Energy Solutions',

@@ -121,7 +121,7 @@ const CASE_STUDIES: CaseStudy[] = [
     location: 'Westlands, Nairobi',
     date: '2023',
     icon: Hotel,
-    image: '/images/enhanced/GREENHEART KILIFI GENERATOR-4K-CINEMATIC.jpg',
+    image: '/images/voltka/voltka-warehouse-fleet.webp',
     problem: 'Aging power infrastructure causing frequent outages affecting guest experience. HVAC systems failing during peak loads, and no backup for critical systems like elevators and kitchen.',
     solution: 'Complete electrical infrastructure upgrade including new 800kVA generator, smart distribution boards, HVAC optimization, and centralized BMS for real-time monitoring.',
     results: [

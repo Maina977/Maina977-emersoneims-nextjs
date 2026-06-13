@@ -107,7 +107,7 @@ export const CUMMINS_BRAND_INFO = {
     { kva: 2000, price: 'KES 48,000,000', application: 'Utility Scale' },
   ],
   contact: {
-    phone: '+254 793 573 208',
+    phone: '+254 768 860 665',
     whatsapp: '254768860665',
     email: 'sales@emersoneims.com'
   },

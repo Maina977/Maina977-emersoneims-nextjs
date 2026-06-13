@@ -1780,8 +1780,8 @@ export default function Ultimate9In1Calculator() {
   <h2>📞 Get Professional Quote</h2>
   <p>Contact EmersonEIMS for a detailed quote and professional installation:</p>
   <table>
-    <tr><td>Phone</td><td><strong>+254 722 274 914</strong></td></tr>
-    <tr><td>WhatsApp</td><td><strong>+254 722 274 914</strong></td></tr>
+    <tr><td>Phone</td><td><strong>+254 768 860 665</strong></td></tr>
+    <tr><td>WhatsApp</td><td><strong>+254 768 860 665</strong></td></tr>
     <tr><td>Email</td><td><strong>info@emersoneims.com</strong></td></tr>
   </table>
 

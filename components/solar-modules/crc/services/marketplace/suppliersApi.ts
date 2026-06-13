@@ -126,7 +126,7 @@ class SuppliersApiService {
         certified: true,
         leadTime: 5,
         paymentTerms: '30% deposit, 70% on delivery',
-        contact: { name: 'John Mwangi', email: 'sales@solarafrica.co.ke', phone: '0700-123-456' },
+        contact: { name: 'John Mwangi', email: 'sales@solarafrica.co.ke', phone: '0768-860-665' },
         products: [
           { id: 'p1', name: 'JA Solar 485W', brand: 'JA Solar', model: 'JAM54S30-485', price: 12500, currency: 'KES', stock: 500, warranty: 25, specifications: { wattage: 485, efficiency: 21.5 } },
           { id: 'p2', name: 'Deye 6kW Inverter', brand: 'Deye', model: 'SUN-6K-SG01LP1', price: 95000, currency: 'KES', stock: 100, warranty: 10, specifications: { power: 6000, efficiency: 97.5 } }
@@ -141,7 +141,7 @@ class SuppliersApiService {
         certified: true,
         leadTime: 7,
         paymentTerms: '50% deposit, 50% on delivery',
-        contact: { name: 'Sarah Wanjiku', email: 'info@greentech.co.ke', phone: '0711-234-567' },
+        contact: { name: 'Sarah Wanjiku', email: 'info@greentech.co.ke', phone: '0768-860-665' },
         products: [
           { id: 'p3', name: 'Longi 540W', brand: 'Longi', model: 'LR5-54HPH-540M', price: 13800, currency: 'KES', stock: 300, warranty: 25, specifications: { wattage: 540, efficiency: 21.8 } },
           { id: 'p4', name: 'Solis 5kW Inverter', brand: 'Solis', model: 'S5-GR1P5K', price: 78000, currency: 'KES', stock: 80, warranty: 10, specifications: { power: 5000, efficiency: 97.2 } }

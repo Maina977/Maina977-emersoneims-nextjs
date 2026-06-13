@@ -430,7 +430,7 @@ export default function AquaScanProComplete() {
       includeQuotation: true,
       companyName: 'EmersonEIMS Engineering',
       companyAddress: 'Westlands Business Park, Nairobi, Kenya',
-      companyPhone: '+254 700 123 456',
+      companyPhone: '+254 768 860 665',
       companyEmail: 'info@emersoneims.com',
       clientName: 'Valued Client',
       clientPhone: '+254 7XX XXX XXX',

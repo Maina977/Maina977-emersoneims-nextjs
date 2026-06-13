@@ -19,6 +19,7 @@ import { generatorServices } from "@/app/lib/data/generatorservices";
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
+import GeneratorEngineeringDeepDive from '@/components/generators/GeneratorEngineeringDeepDive';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HEAVY COMPONENTS - Lazy loaded (Chart.js ~70KB, GSAP ~30KB saved)
@@ -657,9 +658,9 @@ const BeforeAfterGallery = () => {
     },
     {
       client: 'Greenheart Kilifi',
-      location: 'Kilifi',
-      before: 'Resort guests experiencing power issues',
-      after: 'Flawless power with 44kVA Cummins Voltka',
+      location: 'Kilifi County',
+      before: 'Real-estate development units hit by frequent grid outages',
+      after: 'Flawless estate-wide power with 44kVA Cummins Voltka',
       image: '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg',
       savings: '30% maintenance cost reduction'
     },
@@ -1201,8 +1202,8 @@ const ClientTestimonials = () => {
       role: 'General Manager',
       company: 'Greenheart Kilifi',
       rating: 5,
-      text: 'Our guests never experience power issues. The 44kVA Cummins Voltka system is flawless. Maintenance cost reduced by 30% and energy efficiency improved significantly.',
-      location: 'Kilifi',
+      text: 'Our residents never experience power issues. The 44kVA Cummins Voltka system is flawless. Maintenance cost reduced by 30% and energy efficiency improved significantly.',
+      location: 'Kilifi County',
       service: '44kVA Cummins Voltka'
     },
     {
@@ -2861,6 +2862,12 @@ export default function GeneratorPage() {
 
       {/* EDUCATIONAL CONTENT - Generator Knowledge Center */}
       <GeneratorEducationPanel />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          ENGINEERING REFERENCE — sizing, derating, fuel, power quality, TCO
+          Reference-grade, server-rendered technical content (SEO + authority)
+      ════════════════════════════════════════════════════════════════ */}
+      <GeneratorEngineeringDeepDive />
 
       {/* ═══════════════════════════════════════════════════════════════════
           GENERATOR SYSTEMS - Educational Hub

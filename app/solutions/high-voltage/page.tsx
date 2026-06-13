@@ -6,6 +6,7 @@ import Image from 'next/image'
 import UnifiedCTA from '@/components/cta/UnifiedCTA'
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand'
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles'
+import HighVoltageEngineeringDeepDive from '@/components/solutions/HighVoltageEngineeringDeepDive'
 import {
   Zap,
   Shield,
@@ -1101,14 +1102,14 @@ const HighVoltagePage = () => {
               <div className="flex flex-wrap gap-4">
                 <UnifiedCTA
                   action="custom"
-                  href="https://wa.me/254722274914?text=High%20Voltage%20Infrastructure%20Inquiry"
+                  href="https://wa.me/254768860665?text=High%20Voltage%20Infrastructure%20Inquiry"
                   label="WhatsApp Consultation"
                 />
                 <UnifiedCTA
                   action="custom"
-                  href="tel:+254722274914"
+                  href="tel:+254768860665"
                   variant="secondary"
-                  label="Call: +254 722 274 914"
+                  label="Call: +254 768 860 665"
                 />
               </div>
             </motion.div>
@@ -1284,9 +1285,9 @@ const HighVoltagePage = () => {
                         24/7 for critical situations.
                       </p>
                       <div className="space-y-3">
-                        <a href="tel:+254722274914" className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300">
+                        <a href="tel:+254768860665" className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300">
                           <Phone className="w-5 h-5" />
-                          <span>+254 722 274 914</span>
+                          <span>+254 768 860 665</span>
                         </a>
                         <div className="flex items-center gap-2 text-gray-300">
                           <Clock className="w-5 h-5" />
@@ -2106,12 +2107,12 @@ const HighVoltagePage = () => {
                     <div className="space-y-3">
                       <UnifiedCTA
                         action="custom"
-                        href="https://wa.me/254722274914?text=High%20Voltage%20Quote%20Request"
+                        href="https://wa.me/254768860665?text=High%20Voltage%20Quote%20Request"
                         label="WhatsApp Quote"
                       />
                       <UnifiedCTA
                         action="custom"
-                        href="tel:+254722274914"
+                        href="tel:+254768860665"
                         variant="secondary"
                         label="Call for Quote"
                       />
@@ -2350,8 +2351,8 @@ const HighVoltagePage = () => {
                         </div>
                         <div>
                           <h4 className="font-medium text-white">24/7 Emergency Hotline</h4>
-                          <a href="tel:+254722274914" className="text-yellow-400 hover:text-yellow-300">
-                            +254 722 274 914
+                          <a href="tel:+254768860665" className="text-yellow-400 hover:text-yellow-300">
+                            +254 768 860 665
                           </a>
                         </div>
                       </div>
@@ -2382,6 +2383,9 @@ const HighVoltagePage = () => {
         </div>
       </section>
 
+      {/* ENGINEERING REFERENCE */}
+      <HighVoltageEngineeringDeepDive />
+
       {/* Final CTA Section */}
       <section className="bg-gray-900 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -2395,14 +2399,14 @@ const HighVoltagePage = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <UnifiedCTA
               action="custom"
-              href="https://wa.me/254722274914?text=High%20Voltage%20Project%20Inquiry"
+              href="https://wa.me/254768860665?text=High%20Voltage%20Project%20Inquiry"
               label="WhatsApp Consultation"
             />
             <UnifiedCTA
               action="custom"
-              href="tel:+254722274914"
+              href="tel:+254768860665"
               variant="secondary"
-              label="Call: +254 722 274 914"
+              label="Call: +254 768 860 665"
             />
           </div>
         </div>

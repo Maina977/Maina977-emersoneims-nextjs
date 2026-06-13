@@ -4,6 +4,7 @@ import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import UnifiedCTA, { CTASection } from "@/components/cta/UnifiedCTA";
+import SolutionsEngineeringDeepDive from "@/components/solutions/SolutionsEngineeringDeepDive";
 
 const SOLUTIONS_LINKS = [
   { href: "/solutions/generators", label: "Diesel generators", icon: "⚡", description: "Troubleshooting & maintenance" },
@@ -268,6 +269,9 @@ export default function SolutionsHome() {
           </motion.div>
         </div>
       </section>
+
+      {/* ENGINEERING REFERENCE — the delivery methodology */}
+      <SolutionsEngineeringDeepDive />
     </main>
   );
 }

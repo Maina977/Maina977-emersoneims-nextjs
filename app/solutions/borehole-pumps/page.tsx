@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import BoreholePumpEngineeringDeepDive from '@/components/solutions/BoreholePumpEngineeringDeepDive';
 
 // Dynamic import for AI Borehole Analyzer
 const BoreholeAIAnalyzer = dynamic(
@@ -794,8 +795,8 @@ export default function BoreholePumpsPage() {
             <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.2, delay: 1 }} className="mt-8 h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} className="mt-8 flex flex-wrap gap-4 justify-center">
-              <UnifiedCTA action="custom" href="https://wa.me/254722274914?text=Borehole%20Pump%20Inquiry" label="WhatsApp Quote" />
-              <UnifiedCTA action="custom" href="tel:+254722274914" variant="secondary" label="Call Now" />
+              <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=Borehole%20Pump%20Inquiry" label="WhatsApp Quote" />
+              <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" label="Call Now" />
             </motion.div>
           </motion.div>
         </motion.div>
@@ -1739,8 +1740,8 @@ export default function BoreholePumpsPage() {
                 <h3 className="text-2xl font-bold text-white mb-4">Ready to Send Your Pump?</h3>
                 <p className="text-gray-400 mb-6">Contact us to arrange collection or get shipping instructions.</p>
                 <div className="flex flex-wrap gap-4 justify-center">
-                  <UnifiedCTA action="custom" href="https://wa.me/254722274914?text=Pump%20Collection%20Request" label="WhatsApp Us" />
-                  <UnifiedCTA action="custom" href="tel:+254722274914" variant="secondary" label="Call for Pickup" />
+                  <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=Pump%20Collection%20Request" label="WhatsApp Us" />
+                  <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" label="Call for Pickup" />
                 </div>
               </div>
             </motion.div>
@@ -1833,14 +1834,17 @@ export default function BoreholePumpsPage() {
         </AnimatePresence>
       </div>
 
+      {/* ENGINEERING REFERENCE */}
+      <BoreholePumpEngineeringDeepDive />
+
       {/* CTA Section */}
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-3xl p-8 md:p-12 border border-cyan-500/30 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Need Borehole Pump Services?</h2>
           <p className="text-gray-400 max-w-2xl mx-auto mb-8">Professional installation, VFD setup, maintenance, and repairs. All pump sizes from 0.5HP to 75HP. 12-24 months warranty.</p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <UnifiedCTA action="custom" href="https://wa.me/254722274914?text=Borehole%20Pump%20Quote" size="lg" label="Get Free Quote" />
-            <UnifiedCTA action="custom" href="tel:+254722274914" variant="secondary" size="lg" label="Call Us Now" />
+            <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=Borehole%20Pump%20Quote" size="lg" label="Get Free Quote" />
+            <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" size="lg" label="Call Us Now" />
             <UnifiedCTA action="site-survey" variant="secondary" size="lg" label="Request Site Survey" />
           </div>
         </div>

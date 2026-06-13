@@ -18,6 +18,7 @@ import ErrorBoundary from '@/components/error/ErrorBoundary';
 import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import AboutCapabilityDeepDive from '@/components/about/AboutCapabilityDeepDive';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import SpiralGallery, { SpiralGalleryItem } from '@/components/about/SpiralGallery';
 import { gsap } from 'gsap';
@@ -396,7 +397,7 @@ function GeneratorBrands() {
             </a>
           </div>
           <p className="text-gray-500 text-sm mt-5">
-            Can&apos;t find your brand? We service ALL generator makes and models. Call +254 727 631 316
+            Can&apos;t find your brand? We service ALL generator makes and models. Call +254 768 860 665
           </p>
         </Reveal>
       </div>
@@ -523,7 +524,7 @@ export default function AboutUsPage() {
     { src: '/images/BIGOT-FLOWERS-4K-CINEMATIC.jpg', title: 'Bigot Flowers — 300kVA Caterpillar', subtitle: 'Naivasha, Kenya' },
     { src: '/images/NTSA-4K-CINEMATIC.jpg', title: 'NTSA Headquarters — 300kVA Atlas Copco', subtitle: 'Nairobi, Kenya' },
     { src: '/images/SANERGY-FG-WILSON-4K-CINEMATIC.jpg', title: 'Sanergy — 250kVA FG Wilson', subtitle: 'Nairobi, Kenya' },
-    { src: '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg', title: 'Greenheart Resort — 44kVA Cummins', subtitle: 'Kilifi, Kenya' },
+    { src: '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg', title: 'Greenheart Kilifi (Real Estate) — 44kVA Cummins', subtitle: 'Kilifi County, Kenya' },
     { src: '/images/voltka/voltka-vks44-hero-profile.webp', title: 'VOLTKA VKS44 — Cummins Powered', subtitle: 'New Fleet, Nairobi' },
     { src: '/images/voltka/voltka-warehouse-fleet.webp', title: 'Generator Fleet — Ready Stock', subtitle: 'Nairobi Warehouse' },
     { src: '/images/solar power farms.png', title: 'Solar Power Farms', subtitle: 'Turkana, Kenya' },
@@ -608,6 +609,9 @@ export default function AboutUsPage() {
 
         {/* Video Showcase */}
         <VideoShowcase />
+
+        {/* ENGINEERING CAPABILITY — operational proof behind the promise */}
+        <AboutCapabilityDeepDive />
 
         {/* CTA Section (content preserved) */}
         <section className="relative py-32 overflow-hidden">

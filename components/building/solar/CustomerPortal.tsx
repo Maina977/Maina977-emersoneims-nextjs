@@ -95,7 +95,7 @@ const sampleProject: Project = {
   startDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
   estimatedCompletion: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   installer: 'James Omondi',
-  installerPhone: '+254 722 123 456',
+  installerPhone: '+254 768 860 665',
   milestones: [
     { name: 'Site Survey', completed: true, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) },
     { name: 'Materials Delivery', completed: true, date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
@@ -700,7 +700,7 @@ const CustomerPortal: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { title: 'Call Us', icon: '📞', action: '+254 722 123 456', desc: 'Mon-Fri 8AM-6PM' },
+              { title: 'Call Us', icon: '📞', action: '+254 768 860 665', desc: 'Mon-Fri 8AM-6PM' },
               { title: 'WhatsApp', icon: '💬', action: 'Chat Now', desc: '24/7 Support' },
               { title: 'Email', icon: '📧', action: 'support@emersoneims.co.ke', desc: 'Response within 24hrs' },
             ].map((item, i) => (

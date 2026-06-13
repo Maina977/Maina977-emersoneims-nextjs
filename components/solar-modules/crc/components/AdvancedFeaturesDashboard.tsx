@@ -1674,7 +1674,7 @@ const PortalJwtRunner: React.FC<{ ctx: RunnerCtx }> = ({ ctx }) => {
   const r = useRunner();
   const [projectId, setProjectId] = useState('PRJ-' + Date.now().toString().slice(-6));
   const [client, setClient] = useState(ctx.metrics?.clientName || 'Client');
-  const [phone, setPhone] = useState('+254700000000');
+  const [phone, setPhone] = useState('+254768860665');
   const [scope, setScope] = useState<'read'|'comment'>('read');
   const [ttl, setTtl] = useState(90);
   return (

@@ -1095,7 +1095,7 @@ export class ProQuantitySurveyor {
           name: 'BuildMaster Pro™ Approved Contractor',
           address: 'Nairobi, Kenya',
           registration: 'NCA/2024/00001',
-          contact: '+254 700 000 000',
+          contact: '+254 768 860 665',
         },
         client: {
           name: this.input.client,

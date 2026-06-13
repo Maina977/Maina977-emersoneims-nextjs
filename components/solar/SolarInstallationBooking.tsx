@@ -212,7 +212,7 @@ Please schedule a site assessment.`
                   value={formData.phone}
                   onChange={(e) => updateForm('phone', e.target.value)}
                   className="w-full pl-12 pr-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white focus:border-amber-500 focus:outline-none"
-                  placeholder="0712 345 678"
+                  placeholder="0768 860 665"
                 />
               </div>
             </div>

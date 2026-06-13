@@ -52,7 +52,7 @@ const generateSampleLeads = (): Lead[] => [
   {
     id: 'L001',
     name: 'John Kamau',
-    phone: '+254 722 123 456',
+    phone: '+254 768 860 665',
     email: 'john.kamau@email.com',
     location: 'Karen, Nairobi',
     systemSize: '10 kW',
@@ -69,7 +69,7 @@ const generateSampleLeads = (): Lead[] => [
   {
     id: 'L002',
     name: 'Mary Wanjiku',
-    phone: '+254 733 234 567',
+    phone: '+254 768 860 665',
     email: 'mary.w@company.co.ke',
     location: 'Westlands, Nairobi',
     systemSize: '25 kW',
@@ -86,7 +86,7 @@ const generateSampleLeads = (): Lead[] => [
   {
     id: 'L003',
     name: 'Peter Mwangi',
-    phone: '+254 711 345 678',
+    phone: '+254 768 860 665',
     email: 'peter.mwangi@gmail.com',
     location: 'Kilimani, Nairobi',
     systemSize: '5 kW',
@@ -103,7 +103,7 @@ const generateSampleLeads = (): Lead[] => [
   {
     id: 'L004',
     name: 'Grace Hotel Ltd',
-    phone: '+254 700 456 789',
+    phone: '+254 768 860 665',
     email: 'procurement@gracehotel.co.ke',
     location: 'Diani, Mombasa',
     systemSize: '100 kW',
@@ -120,7 +120,7 @@ const generateSampleLeads = (): Lead[] => [
   {
     id: 'L005',
     name: 'Samson Ochieng',
-    phone: '+254 720 567 890',
+    phone: '+254 768 860 665',
     email: 'samson.o@yahoo.com',
     location: 'Kisumu',
     systemSize: '3 kW',

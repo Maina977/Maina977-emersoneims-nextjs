@@ -264,7 +264,7 @@ export default function BookingPage() {
                         value={formData.phone}
                         onChange={(e) => updateForm('phone', e.target.value)}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="0712 345 678"
+                        placeholder="0768 860 665"
                         required
                       />
                     </div>

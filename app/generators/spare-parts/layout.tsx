@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Generator Spare Parts Kenya | 2000+ Parts | M-Pesa Payment | EmersonEIMS',
-  description: 'Buy 2000+ genuine generator spare parts online in Kenya. Oil filters, fuel filters, engine parts, AVR, controllers for Cummins, Caterpillar, Perkins. Pay via M-Pesa. Same-day delivery in Nairobi. Call +254 793 573 208.',
+  description: 'Buy 2000+ genuine generator spare parts online in Kenya. Oil filters, fuel filters, engine parts, AVR, controllers for Cummins, Caterpillar, Perkins. Pay via M-Pesa. Same-day delivery in Nairobi. Call +254 768 860 665.',
   keywords: [
     'generator oil filter Kenya', 'generator fuel filter', 'generator air filter', 'oil filter Cummins',
     'fuel filter Perkins', 'air filter Caterpillar', 'coolant filter generator', 'hydraulic filter',

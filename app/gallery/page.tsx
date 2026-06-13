@@ -55,10 +55,10 @@ const GALLERY_DATA = {
       category: 'generators',
       title: 'Greenheart Kilifi - 44kVA Cummins Voltka',
       location: 'Kilifi, Kenya',
-      description: 'Resort generator installation with 44kVA Cummins Voltka, load management and resort systems integration.',
+      description: 'Real-estate development standby power: 44kVA Cummins Voltka with load management and estate-wide distribution integration in Kilifi County.',
       image: '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg',
       year: 2024,
-      highlights: ['44kVA Cummins Voltka', 'Load Management', 'Resort Integration', '30% Cost Reduction']
+      highlights: ['44kVA Cummins Voltka', 'Load Management', 'Estate Distribution', '30% Cost Reduction']
     },
     {
       id: 5,

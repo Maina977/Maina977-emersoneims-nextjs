@@ -174,7 +174,7 @@ export async function initiateSTKPush(request: STKPushRequest): Promise<STKPushR
   if (!isValidKenyanPhone(request.phoneNumber)) {
     return {
       success: false,
-      error: 'Invalid phone number. Use format: 0712345678 or 254712345678',
+      error: 'Invalid phone number. Use format: 0768860665 or 254768860665',
     };
   }
 

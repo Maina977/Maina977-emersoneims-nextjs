@@ -15,6 +15,9 @@ export default function CTAForm() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // wa.me deep link returned by the API so the visitor can reach us instantly
+  // even if server-side email/WhatsApp delivery isn't configured.
+  const [whatsappFallback, setWhatsappFallback] = useState<string | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +43,7 @@ export default function CTAForm() {
 
       if (data.success) {
         setSubmitted(true);
+        if (data.whatsappFallback) setWhatsappFallback(data.whatsappFallback);
         setFormData({
           name: '',
           email: '',
@@ -88,7 +92,16 @@ export default function CTAForm() {
           <span className="text-4xl">✓</span>
         </motion.div>
         <h3 className="text-2xl font-bold text-white mb-3">Thank You!</h3>
-        <p className="text-gray-400">We&apos;ll get back to you within 2 hours.</p>
+        <p className="text-gray-400 mb-6">We&apos;ll get back to you within 2 hours. For an instant reply, message us on WhatsApp.</p>
+        <a
+          href={whatsappFallback || 'https://wa.me/254768860665'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-black font-bold rounded-xl hover:brightness-110 transition-all"
+        >
+          <span className="text-xl">💬</span>
+          <span>Continue on WhatsApp</span>
+        </a>
       </motion.div>
     );
   }

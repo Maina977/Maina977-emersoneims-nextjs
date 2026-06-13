@@ -71,7 +71,7 @@ const EMAIL_TEMPLATES = {
         </div>
         <div class="footer">
           <p>EmersonEIMS - Kenya's Leading Solar Solutions Provider</p>
-          <p>Phone: +254 700 000 000 | Email: info@emersoneims.co.ke</p>
+          <p>Phone: +254 768 860 665 | Email: info@emersoneims.co.ke</p>
         </div>
       </div>
     </body>

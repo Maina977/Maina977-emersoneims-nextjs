@@ -135,7 +135,7 @@ export const SUPPLIERS: Supplier[] = [
     type: 'distributor',
     brands: ['LONGi', 'JinkoSolar', 'Canadian Solar', 'Trina Solar'],
     rating: { overall: 4.5, quality: 4.7, delivery: 4.3, pricing: 4.4, support: 4.6, reviewCount: 156, lastUpdated: '2026-03-15' },
-    contacts: { email: 'sales@sunpowerea.com', phone: '+254 700 123 456', website: 'www.sunpowereastafrica.com' },
+    contacts: { email: 'sales@sunpowerea.com', phone: '+254 768 860 665', website: 'www.sunpowereastafrica.com' },
     logistics: { leadTimeDays: 14, shippingMethods: ['Air Freight', 'Sea Freight', 'Local Pickup'], minimumOrder: 5000, currency: 'USD' },
     certifications: ['ISO 9001', 'IEC Certified Partner'],
     activeStatus: true
@@ -171,7 +171,7 @@ export const SUPPLIERS: Supplier[] = [
     type: 'retailer',
     brands: ['Felicity', 'Must', 'Narada', 'Ritar'],
     rating: { overall: 4.0, quality: 4.1, delivery: 4.2, pricing: 4.5, support: 3.8, reviewCount: 67, lastUpdated: '2026-03-12' },
-    contacts: { email: 'sales@greenenergy.co.ke', phone: '+254 722 987 654', website: 'www.greenenergy.co.ke' },
+    contacts: { email: 'sales@greenenergy.co.ke', phone: '+254 768 860 665', website: 'www.greenenergy.co.ke' },
     logistics: { leadTimeDays: 3, shippingMethods: ['Local Delivery', 'Pickup'], minimumOrder: 500, currency: 'KES' },
     certifications: ['KEBS Certified'],
     activeStatus: true

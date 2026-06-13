@@ -11,8 +11,31 @@ import { getPostgresPool } from '@/lib/db';
 import { timingSafeEqual } from 'crypto';
 
 // Sales team notification settings
-const SALES_EMAIL = process.env.SALES_EMAIL || 'sales@emersoneims.com';
-const SALES_PHONE = process.env.SALES_PHONE || '+254720000000';
+const SALES_EMAIL = process.env.SALES_EMAIL || 'emersoneimservices@gmail.com';
+// Real EmersonEIMS business line — used for SMS/WhatsApp sales alerts AND as the
+// public WhatsApp fallback returned to the browser. Was previously a placeholder
+// (+254768860665) that delivered alerts nowhere.
+const SALES_PHONE = process.env.SALES_PHONE || '+254768860665';
+// Digits-only WhatsApp number a visitor can message directly if server-side
+// delivery is not configured — guarantees a lead is never silently lost.
+const BUSINESS_WHATSAPP = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '254768860665').replace(/[^0-9]/g, '');
+
+/**
+ * Build a wa.me deep link with the enquiry pre-filled, so the front-end can
+ * always offer a one-tap WhatsApp path to the business regardless of whether
+ * email/SMS/WhatsApp-API channels are configured on the server.
+ */
+function buildWhatsAppFallback(data: ContactFormData): string {
+  const lines = [
+    `Hello EmersonEIMS, I'm ${data.name}.`,
+    data.company ? `Company: ${data.company}` : '',
+    data.service && data.service !== 'general' ? `Service: ${data.service}` : '',
+    data.location ? `Location: ${data.location}` : '',
+    '',
+    data.message,
+  ].filter(Boolean);
+  return `https://wa.me/${BUSINESS_WHATSAPP}?text=${encodeURIComponent(lines.join('\n'))}`;
+}
 
 /**
  * Verify admin authorization for protected endpoints
@@ -119,21 +142,42 @@ export async function POST(request: NextRequest) {
       referer: referer || 'direct',
     });
 
-    // Send email notification to sales team
-    await sendEmailNotification(body, leadId);
+    // Fire every configured delivery channel and record which actually worked.
+    // We run them in parallel so a slow provider can't delay the response.
+    const [emailOk, smsOk, whatsappOk, webhookOk] = await Promise.all([
+      sendEmailNotification(body, leadId),
+      body.phone ? sendSMSNotification(body) : Promise.resolve(false),
+      sendWhatsAppNotification(body),
+      sendWebhookNotification(body, leadId),
+    ]);
 
-    // Send SMS notification for urgent leads (if phone provided)
-    if (body.phone) {
-      await sendSMSNotification(body);
+    const dbStored = leadId > 0;
+    const delivered = dbStored || emailOk || smsOk || whatsappOk || webhookOk;
+
+    // The browser ALWAYS gets a working WhatsApp deep link so a visitor can
+    // reach us directly even if no server channel is configured.
+    const whatsappFallback = buildWhatsAppFallback(body);
+
+    if (!delivered) {
+      // Nothing durable happened — log loudly so this surfaces in monitoring,
+      // and tell the client to push the visitor to the WhatsApp fallback.
+      console.error(
+        '🚨 LEAD NOT DELIVERED — no DB and no notification channel configured. ' +
+        'Set RESEND_API_KEY, LEAD_WEBHOOK_URL, AFRICASTALKING_* or WHATSAPP_* in the environment. Lead:',
+        { name: body.name, email: body.email, phone: body.phone, service: body.service }
+      );
     }
-
-    // Send WhatsApp notification
-    await sendWhatsAppNotification(body);
 
     return NextResponse.json({
       success: true,
-      message: 'Thank you! Our team will contact you within 2 hours.',
+      delivered,
+      message: delivered
+        ? 'Thank you! Our team will contact you within 2 hours.'
+        : 'Thank you! For the fastest response, message us directly on WhatsApp.',
       leadId,
+      whatsappFallback,
+      phone: SALES_PHONE,
+      email: SALES_EMAIL,
     });
 
   } catch (error) {
@@ -212,8 +256,8 @@ async function storeLead(data: ContactFormData & { ip: string; userAgent: string
   }
 }
 
-// Send email notification to sales team
-async function sendEmailNotification(data: ContactFormData, leadId: number): Promise<void> {
+// Send email notification to sales team. Returns true only if Resend accepted it.
+async function sendEmailNotification(data: ContactFormData, leadId: number): Promise<boolean> {
   try {
     const serviceLabels: Record<string, string> = {
       'general': 'General Inquiry',
@@ -234,7 +278,7 @@ async function sendEmailNotification(data: ContactFormData, leadId: number): Pro
         subject: `NEW LEAD: ${data.name} - ${serviceLabels[data.service || 'general']}`,
         leadId,
       });
-      return;
+      return false;
     }
 
     // Send via Resend API
@@ -329,14 +373,17 @@ async function sendEmailNotification(data: ContactFormData, leadId: number): Pro
 
     if (!response.ok) {
       console.error('Failed to send email via Resend:', await response.text());
+      return false;
     }
+    return true;
   } catch (error) {
     console.error('Failed to send email notification:', error);
+    return false;
   }
 }
 
-// Send SMS notification (using Africa's Talking or similar)
-async function sendSMSNotification(data: ContactFormData): Promise<void> {
+// Send SMS notification (using Africa's Talking or similar). Returns delivery status.
+async function sendSMSNotification(data: ContactFormData): Promise<boolean> {
   try {
     // Use Africa's Talking API for SMS
     const africastalkingApiKey = process.env.AFRICASTALKING_API_KEY;
@@ -344,12 +391,12 @@ async function sendSMSNotification(data: ContactFormData): Promise<void> {
 
     if (!africastalkingApiKey || !africastalkingUsername) {
       console.log('SMS credentials not configured, skipping SMS notification');
-      return;
+      return false;
     }
 
     const message = `🔥 NEW LEAD!\nName: ${data.name}\nPhone: ${data.phone}\nService: ${data.service || 'General'}\n\nCall them NOW!`;
 
-    await fetch('https://api.africastalking.com/version1/messaging', {
+    const res = await fetch('https://api.africastalking.com/version1/messaging', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -362,23 +409,25 @@ async function sendSMSNotification(data: ContactFormData): Promise<void> {
         message: message,
       }),
     });
+    return res.ok;
   } catch (error) {
     console.error('Failed to send SMS notification:', error);
+    return false;
   }
 }
 
-// Send WhatsApp notification via WhatsApp Business API
-async function sendWhatsAppNotification(data: ContactFormData): Promise<void> {
+// Send WhatsApp notification via WhatsApp Business API. Returns delivery status.
+async function sendWhatsAppNotification(data: ContactFormData): Promise<boolean> {
   try {
     const whatsappToken = process.env.WHATSAPP_ACCESS_TOKEN;
     const whatsappPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
     if (!whatsappToken || !whatsappPhoneId) {
       console.log('WhatsApp credentials not configured, skipping WhatsApp notification');
-      return;
+      return false;
     }
 
-    await fetch(`https://graph.facebook.com/v18.0/${whatsappPhoneId}/messages`, {
+    const res = await fetch(`https://graph.facebook.com/v18.0/${whatsappPhoneId}/messages`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${whatsappToken}`,
@@ -393,8 +442,42 @@ async function sendWhatsAppNotification(data: ContactFormData): Promise<void> {
         }
       }),
     });
+    return res.ok;
   } catch (error) {
     console.error('Failed to send WhatsApp notification:', error);
+    return false;
+  }
+}
+
+// Send lead to a generic JSON webhook. This is the ZERO-COST, no-paid-API channel:
+// point LEAD_WEBHOOK_URL at a Google Apps Script, Zapier/Make hook, or a
+// Slack/Discord incoming webhook and leads arrive instantly with no provider
+// account. Returns delivery status.
+async function sendWebhookNotification(data: ContactFormData, leadId: number): Promise<boolean> {
+  try {
+    const webhookUrl = process.env.LEAD_WEBHOOK_URL;
+    if (!webhookUrl) {
+      console.log('LEAD_WEBHOOK_URL not configured, skipping webhook notification');
+      return false;
+    }
+
+    const summary =
+      `🔥 NEW LEAD #${leadId || '-'}\n` +
+      `Name: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || '—'}\n` +
+      `Company: ${data.company || '—'}\nService: ${data.service || 'general'}\n` +
+      `Location: ${data.location || '—'}\nSource: ${data.source || 'contact_form'}\n\n${data.message}`;
+
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // `text`/`content` cover Slack & Discord; the full object covers
+      // Apps Script / Zapier / Make consumers.
+      body: JSON.stringify({ text: summary, content: summary, lead: { leadId, ...data } }),
+    });
+    return res.ok;
+  } catch (error) {
+    console.error('Failed to send webhook notification:', error);
+    return false;
   }
 }
 

@@ -11,6 +11,7 @@ import { Metadata } from 'next';
 import { getAllIndustries, INDUSTRY_STATS } from '@/lib/seo/industryData';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import IndustriesExperience from '@/components/industries/IndustriesExperience';
+import IndustriesEngineeringDeepDive from '@/components/industries/IndustriesEngineeringDeepDive';
 
 export const metadata: Metadata = {
   title: 'Industries We Serve | Generator & Power Solutions for Every Sector | EmersonEIMS',
@@ -119,6 +120,9 @@ export default function IndustriesPage() {
           </p>
         </div>
       </section>
+
+      {/* ENGINEERING REFERENCE — power reliability by sector */}
+      <IndustriesEngineeringDeepDive />
     </div>
   );
 }

@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
       if (!isValidKenyanPhone(phoneNumber)) {
         return NextResponse.json(
-          { success: false, error: 'Invalid phone number. Use format: 0712345678' },
+          { success: false, error: 'Invalid phone number. Use format: 0768860665' },
           { status: 400 }
         );
       }

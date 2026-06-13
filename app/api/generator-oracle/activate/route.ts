@@ -42,7 +42,7 @@ const DEMO_LICENSES = new Map<string, {
   // Demo license for testing
   ['EIMS-TEST-0001-DEMO', {
     email: 'test@example.com',
-    phone: '+254700000000',
+    phone: '+254768860665',
     createdAt: new Date().toISOString(),
     maxDevices: 1, // ONE device only
     activatedDevices: [],

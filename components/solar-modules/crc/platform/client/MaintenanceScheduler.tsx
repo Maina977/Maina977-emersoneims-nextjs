@@ -90,7 +90,7 @@ export const MaintenanceScheduler = ({ systemId }: { systemId: string }) => {
       name: 'SolarCare Kenya',
       rating: 4.8,
       specialties: ['Cleaning', 'Inspection', 'Repair'],
-      phone: '0700-123-456',
+      phone: '0768-860-665',
       email: 'care@solarkenya.co.ke'
     },
     {
@@ -98,7 +98,7 @@ export const MaintenanceScheduler = ({ systemId }: { systemId: string }) => {
       name: 'EcoPower Solutions',
       rating: 4.6,
       specialties: ['Inverter Service', 'Battery Service'],
-      phone: '0711-234-567',
+      phone: '0768-860-665',
       email: 'service@ecopower.co.ke'
     }
   ]);

@@ -16,6 +16,7 @@ import { VoltkaBillboard, VoltkaDuoGrid } from '@/components/home/VoltkaShowroom
 import CinematicVideoSection from '@/components/home/CinematicVideoSection';
 import HeroCinematicFX from '@/components/home/HeroCinematicFX';
 import RingGallery from '@/components/home/RingGallery';
+import HomeEngineeringAuthority from '@/components/home/HomeEngineeringAuthority';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
 // 3D ring showcase — sister piece to the About page spiral gallery.
@@ -25,7 +26,7 @@ const RING_GALLERY_ITEMS = [
   { src: '/images/BIGOT-FLOWERS-4K-CINEMATIC.jpg', title: 'Bigot Flowers — 300kVA Caterpillar', subtitle: 'Naivasha, Kenya' },
   { src: '/images/NTSA-4K-CINEMATIC.jpg', title: 'NTSA Headquarters — 300kVA Atlas Copco', subtitle: 'Nairobi, Kenya' },
   { src: '/images/SANERGY-FG-WILSON-4K-CINEMATIC.jpg', title: 'Sanergy — 250kVA FG Wilson', subtitle: 'Nairobi, Kenya' },
-  { src: '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg', title: 'Greenheart Resort — 44kVA Cummins', subtitle: 'Kilifi, Kenya' },
+  { src: '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg', title: 'Greenheart Kilifi (Real Estate) — 44kVA Cummins', subtitle: 'Kilifi County, Kenya' },
   { src: '/images/voltka/voltka-vks44-hero-profile.webp', title: 'VOLTKA VKS44 — Cummins Powered', subtitle: 'New Fleet, Nairobi' },
   { src: '/images/voltka/voltka-warehouse-fleet.webp', title: 'Generator Fleet — Ready Stock', subtitle: 'Nairobi Warehouse' },
   { src: '/images/voltka/voltka-vks44-night-delivery.webp', title: 'Night Delivery — 48hr Response', subtitle: 'Emergency Dispatch' },
@@ -737,6 +738,10 @@ export default function HomePage() {
           (the hero video is tablet-and-up only). Click-to-play. */}
       <CinematicVideoSection />
       <StaticCountiesSection />
+
+      {/* ENGINEERING AUTHORITY — crawlable editorial band + internal links to
+          every service deep-dive. Additive; on-brand premium dark/amber. */}
+      <HomeEngineeringAuthority />
 
       {/* CLIENT INTERACTIVE SECTIONS - Load after static content */}
       <HomePageClient />
