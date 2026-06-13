@@ -5,6 +5,28 @@ import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import { GeneratorEducationCompact } from '@/components/generators/GeneratorEducationPanel';
+import WavesGallery from '@/components/galleries/WavesGallery';
+import GeneratorSynchronizationGuide from '@/components/generators/GeneratorSynchronizationGuide';
+
+// 16 real generator repair / electrical-repair images (optimised webp in /images/repairs)
+const REPAIR_WAVE_ITEMS = [
+  { src: '/images/repairs/repair-01.webp', caption: 'Diesel engine block overhaul — cylinder liner & injector service' },
+  { src: '/images/repairs/repair-02.webp', caption: 'Industrial generator engine inspection & rebuild' },
+  { src: '/images/repairs/repair-03.webp', caption: 'Generator engine top-end repair' },
+  { src: '/images/repairs/repair-04.webp', caption: 'Cummins generator engine servicing' },
+  { src: '/images/repairs/repair-05.webp', caption: 'Generator fuel system & injector repair' },
+  { src: '/images/repairs/repair-06.webp', caption: 'Generator engine reassembly in workshop' },
+  { src: '/images/repairs/repair-07.webp', caption: 'Diesel generator overhaul on the bench' },
+  { src: '/images/repairs/repair-08.webp', caption: 'Generator cooling & component service' },
+  { src: '/images/repairs/repair-09.webp', caption: 'Generator engine component repair' },
+  { src: '/images/repairs/repair-10.webp', caption: 'Generator mechanical repair' },
+  { src: '/images/repairs/repair-11.webp', caption: 'Generator engine-bay servicing' },
+  { src: '/images/repairs/repair-12.webp', caption: 'Generator set field repair' },
+  { src: '/images/repairs/repair-13.webp', caption: 'Generator control panel rebuild & wiring' },
+  { src: '/images/repairs/repair-14.webp', caption: 'Switchgear & changeover panel servicing' },
+  { src: '/images/repairs/repair-15.webp', caption: 'Alternator / electrical winding repair' },
+  { src: '/images/repairs/repair-16.webp', caption: 'Electrical diagnostics & load testing' },
+];
 
 // Metadata moved to layout or generateMetadata for client components
 // SEO metadata is in the head section below
@@ -684,6 +706,14 @@ export default function GeneratorMaintenancePage() {
         <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/20 to-transparent blur-sm" />
       </section>
 
+      {/* REAL REPAIR IMAGES — moving in waves (not spiral/rotate) */}
+      <WavesGallery
+        items={REPAIR_WAVE_ITEMS}
+        eyebrow="Real workshop & field repairs"
+        heading="Generator Repairs in Motion"
+        subheading="Engine overhauls, fuel and cooling system work, control-panel rebuilds, switchgear and electrical winding repairs — across all 47 counties."
+      />
+
       {/* Service Packages Section */}
       <section className="py-20 bg-black/50">
         <div className="max-w-7xl mx-auto px-6">
@@ -899,6 +929,10 @@ export default function GeneratorMaintenancePage() {
           </div>
         </div>
       </section>
+
+      {/* GENERATOR SYNCHRONIZATION — complete teaching reference (50+ paragraphs,
+          diagrams, animated synchroscope, all controllers, troubleshooting) */}
+      <GeneratorSynchronizationGuide />
 
       {/* Educational Content - Troubleshooting Knowledge */}
       <section className="py-16 bg-gradient-to-b from-black to-slate-900">
