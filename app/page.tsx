@@ -14,6 +14,29 @@ import SolutionsBySector from '@/components/home/SolutionsBySector';
 import VoltkaCinematicShowcase from '@/components/home/VoltkaCinematicShowcase';
 import { VoltkaBillboard, VoltkaDuoGrid } from '@/components/home/VoltkaShowroomGrid';
 import CinematicVideoSection from '@/components/home/CinematicVideoSection';
+import HeroCinematicFX from '@/components/home/HeroCinematicFX';
+import RingGallery from '@/components/home/RingGallery';
+
+// Real EmersonEIMS project photography (see /gallery) for the rotating
+// 3D ring showcase — sister piece to the About page spiral gallery.
+const RING_GALLERY_ITEMS = [
+  { src: '/images/ST-AUSTIN-4K-CINEMATIC.jpg', title: 'St. Austin Academy — 50kVA Perkins', subtitle: 'Nairobi, Kenya' },
+  { src: '/images/KIVUKONI-4K-CINEMATIC.jpg', title: 'Kivukoni School — 60kVA Cummins', subtitle: 'Nairobi, Kenya' },
+  { src: '/images/BIGOT-FLOWERS-4K-CINEMATIC.jpg', title: 'Bigot Flowers — 300kVA Caterpillar', subtitle: 'Naivasha, Kenya' },
+  { src: '/images/NTSA-4K-CINEMATIC.jpg', title: 'NTSA Headquarters — 300kVA Atlas Copco', subtitle: 'Nairobi, Kenya' },
+  { src: '/images/SANERGY-FG-WILSON-4K-CINEMATIC.jpg', title: 'Sanergy — 250kVA FG Wilson', subtitle: 'Nairobi, Kenya' },
+  { src: '/images/GREENHEART-KILIFI-4K-CINEMATIC.jpg', title: 'Greenheart Resort — 44kVA Cummins', subtitle: 'Kilifi, Kenya' },
+  { src: '/images/voltka/voltka-vks44-hero-profile.webp', title: 'VOLTKA VKS44 — Cummins Powered', subtitle: 'New Fleet, Nairobi' },
+  { src: '/images/voltka/voltka-warehouse-fleet.webp', title: 'Generator Fleet — Ready Stock', subtitle: 'Nairobi Warehouse' },
+  { src: '/images/voltka/voltka-vks44-night-delivery.webp', title: 'Night Delivery — 48hr Response', subtitle: 'Emergency Dispatch' },
+  { src: '/images/voltka/ats-changeover-panel-4k.webp', title: 'ATS Changeover Commissioning', subtitle: 'Automatic Transfer' },
+  { src: '/images/solar power farms.png', title: 'Solar Power Farms', subtitle: 'Turkana, Kenya' },
+  { src: '/images/solar for flower farms.png', title: 'Solar for Flower Farms', subtitle: 'Naivasha, Kenya' },
+  { src: '/images/switchgear-panel.png', title: 'Medium-Voltage Switchgear', subtitle: 'Athi River, Kenya' },
+  { src: '/images/ups-power-protection-system.png', title: 'Enterprise UPS — N+1 Redundancy', subtitle: 'Nairobi CBD' },
+  { src: '/images/steel-fabrication-workshop.png', title: 'Steel Fabrication Workshop', subtitle: 'Nairobi, Kenya' },
+  { src: '/images/borehole-pump-installation.png', title: 'Borehole Pump Installation', subtitle: 'Various Counties' },
+];
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // STATIC SEO METADATA - Rendered at build time
@@ -100,6 +123,10 @@ function StaticHeroFallback() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/90" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(251,191,36,0.22),transparent_60%)]" />
       </div>
+
+      {/* Awwwards ambient layer — GSAP parallax + lazy Three.js embers.
+          Loads after idle; zero impact on LCP, content untouched. */}
+      <HeroCinematicFX />
 
       {/* Static hero content - Apple-style typography & spacing */}
       <div className="relative z-20 h-full min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 text-center py-section">
@@ -693,6 +720,10 @@ export default function HomePage() {
       <VoltkaCinematicShowcase />
       <SolutionsBySector />
       <StaticFeaturesSection />
+      {/* Auto-rotating 3D ring of real project photography — images "go
+          round" (sister piece to the About page spiral). three.js loads
+          only when the section nears the viewport. */}
+      <RingGallery items={RING_GALLERY_ITEMS} />
       {/* Nike-style editorial image cards — ATS commissioning + genuine
           Cummins engine, keeping the product in view mid-scroll. */}
       <VoltkaDuoGrid />

@@ -66,7 +66,7 @@ const SLIDES = [
   },
 ];
 
-const SLIDE_MS = 6000;
+const SLIDE_MS = 4000; // faster automatic slide cadence
 
 export default function VoltkaCinematicShowcase() {
   const [index, setIndex] = useState(0);
