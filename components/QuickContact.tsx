@@ -36,6 +36,14 @@ export default function QuickContact({ location, service, showForm = false }: Qu
 
     setIsSubmitting(true);
 
+    // GUARANTEED DELIVERY: open a WhatsApp chat to the business with the callback
+    // request pre-filled (popup-safe, before await), so it reaches us even if no
+    // server notification channel is configured.
+    const waText = `Hello EmersonEIMS, please call me back${service ? ` about ${service}` : ''}${location ? ` (from ${location})` : ''}. My number: ${phone}`;
+    if (typeof window !== 'undefined') {
+      window.open(`https://wa.me/254768860665?text=${encodeURIComponent(waText)}`, '_blank', 'noopener,noreferrer');
+    }
+
     try {
       await fetch('/api/contact', {
         method: 'POST',

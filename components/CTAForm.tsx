@@ -23,8 +23,32 @@ export default function CTAForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Minimal client validation (form uses noValidate)
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setError('Please fill in your name, email and message.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
+
+    // GUARANTEED DELIVERY: open a WhatsApp chat to the business with the enquiry
+    // pre-filled, on the user's click (popup-safe, before any await). This makes
+    // every submission reach us on WhatsApp even if no server channel is configured.
+    const waText = [
+      `Hello EmersonEIMS, I'm ${formData.name}.`,
+      formData.company ? `Company: ${formData.company}` : '',
+      formData.service && formData.service !== 'general' ? `Service: ${formData.service}` : '',
+      formData.phone ? `Phone: ${formData.phone}` : '',
+      '',
+      formData.message,
+    ].filter(Boolean).join('\n');
+    const waLink = `https://wa.me/254768860665?text=${encodeURIComponent(waText)}`;
+    if (typeof window !== 'undefined') {
+      window.open(waLink, '_blank', 'noopener,noreferrer');
+    }
+    setWhatsappFallback(waLink);
 
     try {
       const response = await fetch('/api/contact', {

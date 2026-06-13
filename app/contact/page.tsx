@@ -294,19 +294,59 @@ function SciFiContactForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    // Require the essentials (form has no native validation)
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setSubmitStatus('error');
+      setTimeout(() => setSubmitStatus('idle'), 4000);
+      return;
+    }
+
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
+    // GUARANTEED DELIVERY: open a WhatsApp chat to the business with the enquiry
+    // pre-filled, on the user's click (popup-safe, before any await). Previously
+    // this form only simulated a submit — leads went nowhere.
+    const waText = [
+      `Hello EmersonEIMS, I'm ${formData.name}.`,
+      formData.service ? `Service: ${formData.service}` : '',
+      formData.phone ? `Phone: ${formData.phone}` : '',
+      formData.urgency && formData.urgency !== 'normal' ? `Urgency: ${formData.urgency}` : '',
+      '',
+      formData.message,
+    ].filter(Boolean).join('\n');
+    if (typeof window !== 'undefined') {
+      window.open(`https://wa.me/254768860665?text=${encodeURIComponent(waText)}`, '_blank', 'noopener,noreferrer');
+    }
+
+    // Also send to the lead API (DB + any configured email/SMS/webhook channel)
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          service: formData.service || 'general',
+          message: formData.urgency && formData.urgency !== 'normal'
+            ? `${formData.message}\n\n[Urgency: ${formData.urgency}]`
+            : formData.message,
+          source: 'contact_page',
+          location: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        }),
+      });
+    } catch {
+      // WhatsApp already opened, so the lead still reaches us.
+    }
+
     setIsSubmitting(false);
     setSubmitStatus('success');
-    
-    // Reset after 3 seconds
+
     setTimeout(() => {
       setSubmitStatus('idle');
       setFormData({ name: '', email: '', phone: '', service: '', message: '', urgency: 'normal' });
-    }, 3000);
+    }, 4000);
   };
 
   const inputClasses = (field: string) => `
