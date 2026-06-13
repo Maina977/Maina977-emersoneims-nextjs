@@ -59,7 +59,10 @@ const blogSlugs = [
   'generator-servicing-cost-kenya',
   'generator-altitude-derating-kenya',
   'true-cost-per-kwh-kenya',
-  'ups-sizing-runtime-kenya'
+  'ups-sizing-runtime-kenya',
+  'power-factor-correction-kenya',
+  'borehole-pump-selection-kenya',
+  'hv-intake-upgrade-kenya'
 ];
 
 // Fault codes for SEO (sample - full list is in faultCodes.ts)

@@ -3355,6 +3355,226 @@ Size on watts, respect the battery's non-linear runtime, choose the topology you
 **Tell us your critical load (kW and VA), the autonomy you need and your downtime cost, and we will return a UPS sizing, runtime calculation and redundancy recommendation. Call +254 768 860 665 or +254 782 914 717.**
     `
   },
+
+  // Article 19: Power factor correction
+  {
+    id: 'power-factor-correction-kenya',
+    slug: 'power-factor-correction-kenya',
+    title: 'Power Factor Correction in Kenya: How to Cut Your KPLC Bill',
+    excerpt: 'If your KPLC bill carries a reactive-power penalty, a capacitor bank can pay for itself within a year. Here is what power factor is, how the penalty works, and the maths for sizing the correction.',
+    description: 'Power factor correction for Kenyan businesses: what power factor is, how the KPLC reactive-energy penalty works, the kVAr sizing formula, detuned banks for sites with harmonics, and typical payback. From Emerson EiMS.',
+    category: 'Cost Savings',
+    tags: ['power factor', 'capacitor bank', 'KPLC bill', 'energy cost', 'Kenya'],
+    date: '2026-06-13',
+    readTime: '10 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: false,
+    image: '/images/blog/generator-maintenance.jpg',
+    imageAlt: 'Automatic power factor correction capacitor bank in a Kenyan factory',
+    relatedServices: ['power-factor-correction', 'electrical-installation'],
+    relatedCounties: ['nairobi', 'mombasa', 'nakuru'],
+    faqs: [
+      {
+        question: 'What is a good power factor for a business in Kenya?',
+        answer: 'Aim for 0.95 or better. Many industrial sites full of motors run at 0.7-0.8, which draws excess reactive current and attracts a KPLC reactive-energy charge. Correcting to ~0.95 typically removes the penalty and frees up transformer and cable capacity.'
+      },
+      {
+        question: 'How quickly does power factor correction pay for itself?',
+        answer: 'On a site that is currently being penalised, an automatic capacitor bank often pays back within 12 months purely on the avoided reactive-energy charge — before counting the freed capacity and reduced losses.'
+      },
+      {
+        question: 'Can capacitors cause problems with VFDs?',
+        answer: 'Yes. On sites with significant harmonics from VFDs or rectifiers, plain capacitors can resonate and make things worse. The fix is a detuned (reactor-protected) bank, which is why the harmonic content should be measured before specifying correction.'
+      }
+    ],
+    content: `
+## What power factor actually is
+
+Motors, transformers and fluorescent gear draw two kinds of current: the **real** current that does useful work (kW) and the **reactive** current that builds the magnetic fields they need but does no work (kVAr). Together they make the **apparent** current the supply must actually carry (kVA). **Power factor** is the ratio of useful to total — kW ÷ kVA — and a low power factor means you are drawing a lot of reactive current for not much useful output.
+
+A site full of induction motors can sit at a power factor of 0.7-0.8. That reactive current still heats your cables, loads your transformer and travels back to KPLC — who charge you for it.
+
+## How the KPLC penalty works
+
+Kenya Power meters reactive energy and applies a **reactive-power charge** when your power factor falls below a threshold. The poorer your power factor, the bigger the penalty line on your bill. Many businesses pay this every month without realising it is both avoidable and a symptom of wasted capacity.
+
+## The fix: a capacitor bank
+
+A **power factor correction (PFC) capacitor bank** supplies the reactive power locally, right where the motors need it, so it no longer has to be drawn from (and paid to) the grid. An **automatic** bank switches capacitor steps in and out to track the changing load, holding the power factor near target all day.
+
+The result is a smaller measured demand (kVA), a lower or eliminated reactive charge, reduced voltage drop, and freed-up transformer and cable capacity — sometimes deferring an expensive supply upgrade.
+
+## Sizing the correction
+
+The reactive power (kVAr) of capacitors needed to move from an existing power factor to a target is:
+
+**Q_c = P × (tan φ₁ − tan φ₂)**
+
+…where P is your real power (kW), φ₁ is the angle at your current power factor and φ₂ the angle at the target.
+
+**Worked example:** correcting a 200 kW load from 0.75 to 0.95 needs Q_c = 200 × (0.882 − 0.329) ≈ **111 kVAr** of capacitors.
+
+## The harmonics caveat
+
+On modern sites with VFDs, UPS rectifiers and lots of electronics, plain capacitors can **resonate** with the harmonic currents and amplify them — causing more trouble than they cure. The solution is a **detuned (reactor-protected)** bank. This is why we always measure the harmonic content before specifying correction, rather than just bolting on capacitors.
+
+## The bottom line
+
+If your KPLC bill shows a reactive-power charge, you are paying a penalty that a correctly sized capacitor bank usually eliminates within a year — while making your whole installation run cooler and freeing capacity for growth.
+
+**Send us a recent KPLC bill and we will tell you whether you are being penalised and size the correction. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
+
+  // Article 20: Borehole pump selection & test pumping
+  {
+    id: 'borehole-pump-selection-kenya',
+    slug: 'borehole-pump-selection-kenya',
+    title: 'Borehole Pump Selection in Kenya: Test-Pumping, Head & Not Burning Out Your Pump',
+    excerpt: 'The commonest way a borehole pump dies young is being sized above the well\'s yield. Here is how test-pumping, total dynamic head and duty-point matching keep your pump alive and your power bill sane.',
+    description: 'How to select a borehole pump in Kenya: why test-pumping (yield and drawdown) comes first, calculating total dynamic head, matching the duty point, dry-run protection, and specific energy. From Emerson EiMS.',
+    category: 'Buying Guide',
+    tags: ['borehole pump', 'submersible pump', 'water', 'pump sizing', 'Kenya'],
+    date: '2026-06-13',
+    readTime: '10 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: false,
+    image: '/images/blog/generator-maintenance.jpg',
+    imageAlt: 'Submersible borehole pump being lowered into a borehole in Kenya',
+    relatedServices: ['borehole-pumps', 'pump-installation'],
+    relatedCounties: ['kajiado', 'machakos', 'kitui'],
+    faqs: [
+      {
+        question: 'Why do borehole pumps burn out so often in Kenya?',
+        answer: 'The leading cause is over-pumping — a pump sized above the borehole\'s sustainable yield draws the water level down to the pump intake, the motor loses its cooling water and runs dry, and it burns out. The fix is sizing to the tested yield plus dry-run (low-water) protection.'
+      },
+      {
+        question: 'Do I really need a test-pumping (step) test before buying a pump?',
+        answer: 'Yes. A step-drawdown test measures how far the water level falls at increasing flows, revealing the borehole\'s sustainable yield and the pumping water level. Without it you are guessing both the pump size and the depth to set it — the two things that decide whether it survives.'
+      },
+      {
+        question: 'Can I run my borehole pump on solar?',
+        answer: 'Often yes, and it fits beautifully: the sun is strongest when tanks are being drawn down, and storing water in a tank is far cheaper than storing energy in batteries. A solar-direct pump with a variable-speed drive fills storage through the day with almost no running cost.'
+      }
+    ],
+    content: `
+## Size the pump to the WELL, not the demand
+
+The single biggest borehole mistake is buying a pump for how much water you *want* rather than how much the borehole can *give*. Every borehole has a **sustainable yield** — the flow it can deliver continuously without the water level drawing down to the pump. Exceed it and the pump sucks the level down to its intake, loses the water that cools its motor, and burns out. This is the commonest way a borehole pump dies young.
+
+## Step 1: Test-pumping (do this first)
+
+A **step-drawdown test** pumps the borehole at increasing flow rates and measures how far the water level falls at each step. From it you learn:
+
+- the **resting water level** (before pumping),
+- the **pumping water level** (how far it draws down under load),
+- the **sustainable yield** (the flow the borehole can give continuously).
+
+The Water Resources Authority (WRA) requires test-pumping for good reason — it is the data the whole pump selection rests on.
+
+## Step 2: Calculate total dynamic head (TDH)
+
+A pump does not lift water from the borehole's drilled depth — it lifts from the **pumping water level**, and must also overcome pipe friction and any pressure needed at the surface. Add them up:
+
+**TDH = static lift to pumping level + drawdown + friction loss + surface pressure head**
+
+Size the rising main generously: undersized pipe adds friction head, so the pump works harder and burns more power forever. Calculate TDH at the *worst* (deepest) pumping level the borehole reaches in a dry season, not the easy resting level.
+
+## Step 3: Match the duty point
+
+Every pump has a curve (more flow = less head). Where it crosses your system's demand is the **duty point** — the flow and head you will actually get. Choose a pump whose duty point sits near its **best-efficiency point**, so you get both the flow you need and the lowest energy per cubic metre. A pump with "plenty of head" that operates far from its best point wastes power and wears out.
+
+## Step 4: Protect the motor
+
+Two protections keep a borehole pump alive: **dry-run (low-water) protection** that stops the pump before the level reaches the intake, and adequate **cooling flow** past the submersible motor (a flow sleeve where the borehole is wide or the pump sits below the inflow). Where demand exceeds yield, the answer is a smaller pump running longer into storage tanks — not a bigger pump fighting the well.
+
+## The running-cost number: specific energy
+
+The honest running-cost metric is **specific energy** — kWh to lift one cubic metre to the surface. It rises with head and falls with pump efficiency. On deep, high-head boreholes this number — and the monthly bill it implies — is exactly what a well-matched pump (and often a solar array) transforms.
+
+## The bottom line
+
+Test first, size to the yield, calculate the real head, match the duty point, and protect against dry running. Do that and a borehole pump lasts; skip it and you will be replacing burnt-out motors.
+
+**Send us your borehole's test data (yield, water levels, depth) and daily demand and we will select the right pump and depth — and a solar option if it suits. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
+
+  // Article 21: When to upgrade to an HV intake
+  {
+    id: 'hv-intake-upgrade-kenya',
+    slug: 'hv-intake-upgrade-kenya',
+    title: 'When to Upgrade to an 11kV/33kV Intake in Kenya (and the Transformer Maths)',
+    excerpt: 'A growing factory eventually outgrows its low-voltage supply. Here is how to know when it is time for your own 11kV or 33kV intake and transformer — and how transformer losses quietly shape the decision.',
+    description: 'A guide for growing Kenyan industries on upgrading from an overloaded LV supply to a dedicated 11kV/33kV HV intake and transformer: the signs, KPLC liaison, transformer sizing and losses, and tariff benefits. From Emerson EiMS.',
+    category: 'Buying Guide',
+    tags: ['high voltage', 'transformer', '11kV', '33kV', 'KPLC', 'Kenya'],
+    date: '2026-06-13',
+    readTime: '10 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: false,
+    image: '/images/blog/generator-maintenance.jpg',
+    imageAlt: 'Distribution transformer at a Kenyan industrial HV intake substation',
+    relatedServices: ['high-voltage', 'transformer-installation'],
+    relatedCounties: ['nairobi', 'kiambu', 'machakos'],
+    faqs: [
+      {
+        question: 'How do I know I have outgrown my low-voltage supply?',
+        answer: 'Signs include: the voltage sags badly at the far end of the plant under load, KPLC connection/capacity charges for a large LV load become uneconomic, you keep tripping the main, or you simply cannot get more LV capacity at the site. At that point a dedicated 11kV or 33kV intake with your own transformer is usually the answer.'
+      },
+      {
+        question: 'Why does a transformer lose energy even when nothing is running?',
+        answer: 'A transformer has iron (no-load) losses that are present every second it is energised, just to magnetise the core, plus copper (load) losses that rise with the square of the load. This is why a grossly oversized transformer wastes money continuously through standing iron loss.'
+      },
+      {
+        question: 'Does an HV intake change my tariff?',
+        answer: 'Often yes — taking supply at 11kV or 33kV typically moves you into a more favourable industrial tariff band, which is part of the business case alongside the capacity and voltage-quality benefits.'
+      }
+    ],
+    content: `
+## Why transmit high and use low
+
+Power is voltage times current, but the losses in a cable rise with the **square of the current**. Push the same power at a higher voltage and the current — and therefore the loss and the conductor size — falls dramatically. That is why Kenya's grid steps up to 220kV and 400kV for transmission, distributes at 33kV and 11kV, and only drops to 415/240V at the customer transformer.
+
+## The signs you have outgrown LV
+
+A growing industrial or commercial site eventually hits the limits of a low-voltage supply:
+
+- the **voltage sags** badly at the far end of the plant when big loads run,
+- KPLC **capacity charges** for a large LV connection become uneconomic,
+- you keep **tripping the main** as load grows,
+- you simply **cannot get more LV capacity** at the site.
+
+At that point the fix is a dedicated **11kV or 33kV intake** with your own transformer — which also typically unlocks a better tariff band.
+
+## Sizing the transformer (and why bigger isn't better)
+
+A transformer has two loss streams:
+
+- **Iron (no-load) losses** — present every second it is energised, magnetising the core, whether or not it serves any load.
+- **Copper (load) losses** — rise with the square of the load current.
+
+A transformer is most efficient where these two are roughly equal, usually around 40-60% of rating. Grossly oversizing it wastes money continuously through standing iron loss; undersizing it overheats and shortens its life. The efficiency at a load fraction x is:
+
+**η = (x·S·PF) ÷ (x·S·PF + P_iron + x²·P_cu)**
+
+For sites heavy in VFDs and rectifiers, specify a **K-rated** transformer built to tolerate harmonic heating, and choose the cooling class (ONAN/ONAF) for the Kenyan ambient — a unit comfortable in a European basement can run hot in a Mombasa switch-room.
+
+## Capitalised losses: the cheap transformer can be the expensive one
+
+Over a 25-year life, a cheaper transformer with higher losses can cost far more than a low-loss unit that costs more upfront. Always compare the **capitalised loss** (the lifetime cost of the iron and copper losses), not just the purchase price — the same lifetime-cost logic we apply to generators and motors.
+
+## The project: more than a transformer
+
+A proper HV intake includes the transformer, the HV switchgear and protection (graded so a fault trips the nearest device), the earthing (tested for step and touch potential), the KPLC liaison and the metering. Done right, it gives you reliable capacity for years of growth and a better tariff; done cheaply, it is a safety and reliability liability.
+
+## The bottom line
+
+If your LV supply is sagging, tripping or capped, it is probably time for your own HV intake. The decision turns on your load growth, the tariff benefit and the transformer's lifetime losses — not just the connection cost.
+
+**Tell us your current and projected load and we will advise whether an 11kV/33kV intake makes sense, size the transformer and handle the KPLC liaison. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
 ];
 
 // Helper function to get article by slug
