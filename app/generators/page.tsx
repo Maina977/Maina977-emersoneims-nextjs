@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import HeroCinematicFX from '@/components/home/HeroCinematicFX';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PERFORMANCE OPTIMIZED IMPORTS
@@ -693,14 +695,19 @@ const BeforeAfterGallery = () => {
               transition={{ delay: index * 0.1 }}
               className="bg-slate-900/50 rounded-2xl overflow-hidden border border-slate-800"
             >
-              {/* Project Image */}
-              <div className="relative h-48 bg-gradient-to-br from-gray-800 to-gray-900">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-6xl opacity-30">⚡</span>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80">
-                  <h3 className="text-xl font-bold text-white">{project.client}</h3>
-                  <p className="text-gray-400 text-sm">📍 {project.location}</p>
+              {/* Project Image — real installation photography */}
+              <div className="relative h-48 overflow-hidden">
+                <Image
+                  src={project.image}
+                  alt={`${project.client} — EmersonEIMS generator installation`}
+                  fill
+                  className="object-cover transition-transform duration-700 hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-xl font-bold text-white drop-shadow">{project.client}</h3>
+                  <p className="text-gray-300 text-sm">📍 {project.location}</p>
                 </div>
               </div>
 
@@ -796,11 +803,16 @@ const VideoTestimonials = () => {
               className="group cursor-pointer"
               onClick={() => setActiveVideo(video.id)}
             >
-              {/* Thumbnail */}
-              <div className="relative h-48 rounded-xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 mb-4">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-6xl opacity-30">🎬</span>
-                </div>
+              {/* Thumbnail — real client site photography */}
+              <div className="relative h-48 rounded-xl overflow-hidden mb-4">
+                <Image
+                  src={video.thumbnail}
+                  alt={`${video.client} — EmersonEIMS project`}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 {/* Play Button */}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
                   <div className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -904,6 +916,12 @@ const BrandComparisonTable = () => {
   );
 };
 
+// Deterministic thousands-separator — locale-independent so SSR and client
+// always produce the SAME string (e.g. always "600,000", never "600.000").
+// toLocaleString() without a fixed locale caused a hydration mismatch.
+const formatKES = (n: number): string =>
+  Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
 // 💳 FINANCING CALCULATOR
 const FinancingCalculator = () => {
   const [price, setPrice] = useState(2000000);
@@ -996,10 +1014,10 @@ const FinancingCalculator = () => {
           <div className="bg-black/50 rounded-xl p-6 text-center">
             <p className="text-gray-400 mb-2">Your Monthly Payment</p>
             <div className="text-5xl font-bold text-green-400 mb-2">
-              KES {monthlyPayment.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+              KES {formatKES(monthlyPayment)}
             </div>
             <p className="text-gray-500 text-sm">
-              for {months} months after KES {depositAmount.toLocaleString()} deposit
+              for {months} months after KES {formatKES(depositAmount)} deposit
             </p>
           </div>
 
@@ -1812,7 +1830,6 @@ const generatorGalleryImages = [
 
 // GSAP will be loaded dynamically in useEffect
 
-const FloatingUFOs = lazy(() => import('@/components/webgl/FloatingUFOs'));
 const InteractiveBlobs = lazy(() => import('@/components/webgl/InteractiveBlobs'));
 const AbstractFloatingShapes = lazy(() => import('@/components/webgl/AbstractFloatingShapes'));
 
@@ -2073,16 +2090,8 @@ export default function GeneratorPage() {
       {/* Holographic Laser Overlay */}
       {!isLite && <HolographicLaser intensity="medium" color="#fbbf24" />}
       
-      {/* 3D Background Scene with Floating UFOs */}
-      {!isLite && (
-        <Suspense fallback={null}>
-          <div className="fixed inset-0 -z-10 opacity-20">
-            <ErrorBoundary fallback={null}>
-              <FloatingUFOs className="w-full h-full" interactive={false} />
-            </ErrorBoundary>
-          </div>
-        </Suspense>
-      )}
+      {/* UFO background removed — off-brand for an industrial sales page.
+          The hero gets a professional amber ember field instead (below). */}
       {/* Enhanced Hero Video - Hollywood Cinematic Grade */}
       <motion.section
         className="relative w-full h-screen overflow-hidden bg-black"
@@ -2134,7 +2143,10 @@ export default function GeneratorPage() {
 
         {/* Dark Gradient Overlay for Text Readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 pointer-events-none z-[5]" />
-        
+
+        {/* Awwwards ambient layer — GSAP parallax + lazy Three.js amber embers */}
+        <HeroCinematicFX />
+
         <motion.div
           className="relative z-10 eims-shell flex flex-col items-center justify-center h-full text-center"
           initial={{ opacity: 0, y: 30 }}

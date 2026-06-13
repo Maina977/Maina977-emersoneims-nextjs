@@ -1,14 +1,12 @@
 ﻿'use client'
 
-import { useState, useRef, Suspense, lazy } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from 'next/image';
 import OptimizedImage from "@/components/media/OptimizedImage";
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import { SectionLead } from "@/components/generators";
-
-// Lazy load WebGL scene
-const SimpleThreeScene = lazy(() => import('@/components/webgl/SimpleThreeScene'));
+import HeroCinematicFX from '@/components/home/HeroCinematicFX';
 
 const usedGenerators = [
   {
@@ -19,7 +17,11 @@ const usedGenerators = [
     features: ["Fully serviced", "Load tested", "OEM parts", "6-month service history"],
     status: "In Stock",
     statusColor: "bg-green-500",
-    images: [],
+    images: [
+      '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg',
+      '/images/voltka/voltka-cummins-engine-open-canopy.webp',
+      '/images/voltka/cummins-engine-detail.webp',
+    ],
   },
   {
     brand: "Perkins",
@@ -29,7 +31,10 @@ const usedGenerators = [
     features: ["Fuel efficient", "Low hours", "New filters", "Painted"],
     status: "Limited Stock",
     statusColor: "bg-yellow-500",
-    images: [],
+    images: [
+      '/images/enhanced/ST AUSTINS ACADEMY 50KVA PERKINS ENGINE-4K-CINEMATIC.jpg',
+      '/images/PERKINS-ENGINE-PARTS.jpg',
+    ],
   },
   {
     brand: "Caterpillar",
@@ -39,7 +44,11 @@ const usedGenerators = [
     features: ["Heavy-duty", "Low hours", "Full service", "Canopy available"],
     status: "In Stock",
     statusColor: "bg-green-500",
-    images: [],
+    images: [
+      '/images/enhanced/BIGOT CATERPILLAR 30KVA-4K-CINEMATIC.jpg',
+      '/images/voltka/cat-canopy-studio.webp',
+      '/images/voltka/cat-open-frame.webp',
+    ],
   },
   {
     brand: "Volvo Penta",
@@ -49,7 +58,10 @@ const usedGenerators = [
     features: ["Low emissions", "Advanced controls", "Soundproofed", "Containerized"],
     status: "Available Soon",
     statusColor: "bg-blue-500",
-    images: [],
+    images: [
+      '/images/gen00011.jpg',
+      '/images/GEN 2-1920x1080.png',
+    ],
   },
   {
     brand: "SDMO",
@@ -59,7 +71,10 @@ const usedGenerators = [
     features: ["French engineered", "Robust design", "Easy maintenance", "Export ready"],
     status: "In Stock",
     statusColor: "bg-green-500",
-    images: [],
+    images: [
+      '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
+      '/images/generator-canopy-fabrication.png',
+    ],
   },
   {
     brand: "Wei Chai",
@@ -69,7 +84,10 @@ const usedGenerators = [
     features: ["Cost effective", "Fully tested", "New batteries", "Serviced"],
     status: "In Stock",
     statusColor: "bg-green-500",
-    images: [],
+    images: [
+      '/images/voltka/voltka-warehouse-fleet.webp',
+      '/images/voltka/voltka-vks165-stock-forklift.webp',
+    ],
   },
 ];
 
@@ -182,45 +200,9 @@ const ImageGallery = ({ images, brand }: { images: string[]; brand: string }) =>
   );
 };
 
-// Virtual Tour Component
-const VirtualTour = ({ brand }: { brand: string }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  return (
-    <div className="mt-6 bg-gradient-to-br from-gray-900 to-black rounded-xl border border-gray-800 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="text-lg font-bold text-white">Virtual Inspection Tour</h4>
-        <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full border border-blue-500/30">
-          🎥 Available
-        </span>
-      </div>
-      <div className="relative h-64 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          {isPlaying ? (
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-white">Loading virtual tour...</p>
-            </div>
-          ) : (
-            <div className="text-center">
-              <button
-                onClick={() => setIsPlaying(true)}
-                className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center text-3xl hover:bg-amber-600 transition-all transform hover:scale-110"
-                aria-label="Start virtual tour"
-              >
-                {'\u25B6'}
-              </button>
-              <p className="text-white mt-4">Click to start 360° inspection</p>
-            </div>
-          )}
-        </div>
-      </div>
-      <p className="text-gray-400 text-sm mt-4">
-        Interactive 360° virtual tour showing all angles and components of the {brand} generator
-      </p>
-    </div>
-  );
-};
+// Virtual Tour component removed - it promised a 360-degree inspection but only
+// showed an endless loading spinner. Real unit photography (ImageGallery with
+// lightbox) replaced it; physical on-site inspection is offered in the cards.
 
 type UsedGeneratorFilters = {
   brand: string;
@@ -479,6 +461,9 @@ export default function UsedGeneratorsPage() {
 
         {/* Cinematic Anamorphic Lens Flare */}
         <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-500/20 to-transparent blur-sm" />
+
+        {/* Awwwards ambient layer — GSAP parallax + lazy Three.js amber embers */}
+        {!isLite && <HeroCinematicFX />}
       </section>
 
       {/* Main Content */}
@@ -537,14 +522,11 @@ export default function UsedGeneratorsPage() {
               <p className="text-white/80 mt-2">Warranty: {gen.warranty}</p>
               <p className="text-white font-bold mt-2">{gen.priceRange}</p>
               
-              {/* Image Gallery */}
+              {/* Image Gallery — real unit photography with lightbox */}
               {gen.images && gen.images.length > 0 && (
                 <ImageGallery images={gen.images} brand={gen.brand} />
               )}
-              
-              {/* Virtual Tour */}
-              <VirtualTour brand={gen.brand} />
-              
+
               <ul className="mt-6 space-y-2">
                 {gen.features.map((feature, idx) => (
                   <li key={idx} className="flex items-center text-white/80">

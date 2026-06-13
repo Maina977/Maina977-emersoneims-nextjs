@@ -465,19 +465,26 @@ export default function SOTDWinningHomepage() {
                 transition={{ duration: 1 }}
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/20 via-amber-400/10 to-cyan-400/20 flex items-center justify-center">
-                  <div className="text-center">
-                    <motion.div
-                      className="w-40 h-40 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-cyan-400/30 to-amber-400/30 border-2 border-cyan-400/50"
-                      animate={{ rotate: [0, 360] }}
-                      transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                    />
-                    <p className="text-text-secondary text-sm uppercase tracking-wider">
-                      3D Specification View
-                    </p>
-                  </div>
+                {/* Real cinematic Cummins generator photography */}
+                <Image
+                  src={cumminsImage}
+                  alt="Cummins generator — engineered for reliability"
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{ filter: 'contrast(1.1) saturate(1.2) brightness(0.92)' }}
+                />
+                {/* Hollywood teal/gold grade + readability */}
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/15 via-transparent to-amber-500/15 mix-blend-overlay" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_45%,_rgba(0,0,0,0.5)_100%)]" />
+
+                {/* Spec caption overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <span className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-400">Cummins Power</span>
+                  <p className="mt-2 text-2xl font-display font-bold text-white">10–2000 kVA · Diesel / Gas / Hybrid</p>
                 </div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,255,255,0.15)_100%)]" />
+
                 <motion.div
                   className="absolute inset-0 border-2 border-cyan-400/0 group-hover:border-cyan-400/50 transition-all duration-500"
                   style={{ pointerEvents: 'none' }}
