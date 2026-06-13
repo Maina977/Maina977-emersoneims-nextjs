@@ -3575,6 +3575,216 @@ If your LV supply is sagging, tripping or capped, it is probably time for your o
 **Tell us your current and projected load and we will advise whether an 11kV/33kV intake makes sense, size the transformer and handle the KPLC liaison. Call +254 768 860 665 or +254 782 914 717.**
     `
   },
+
+  // Article 22: Battery chemistries
+  {
+    id: 'solar-battery-chemistries-kenya',
+    slug: 'solar-battery-chemistries-kenya',
+    title: 'Lead-Acid vs Lithium (LiFePO4): Choosing Solar & UPS Batteries in Kenya',
+    excerpt: 'Lithium costs more upfront but cycles far deeper for far longer, so it is often the cheaper battery per usable kWh over its life. Here is how to choose battery chemistry for solar and UPS in Kenya.',
+    description: 'A practical comparison of battery chemistries for solar and UPS in Kenya: flooded and AGM lead-acid versus LiFePO4 and NMC lithium, covering depth of discharge, cycle life, heat tolerance and cost per usable kWh. From Emerson EiMS.',
+    category: 'Buying Guide',
+    tags: ['battery', 'lithium', 'LiFePO4', 'solar storage', 'UPS', 'Kenya'],
+    date: '2026-06-13',
+    readTime: '10 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: false,
+    image: '/images/blog/solar-energy.jpg',
+    imageAlt: 'Lithium and lead-acid battery banks for solar storage in Kenya',
+    relatedServices: ['solar-installation', 'ups-systems'],
+    relatedCounties: ['nairobi', 'mombasa', 'nakuru'],
+    faqs: [
+      {
+        question: 'Is lithium worth the extra cost over lead-acid in Kenya?',
+        answer: 'For anything that cycles daily (solar storage), usually yes. LiFePO4 uses 80-90% of its capacity for thousands of cycles, while lead-acid should only use ~50% and lasts far fewer cycles. Per usable kWh delivered over its life, lithium is often cheaper despite the higher sticker price.'
+      },
+      {
+        question: 'Does heat damage solar batteries in Kenya?',
+        answer: 'Yes, especially lead-acid: battery life roughly halves for every 8-10 degC above 20-25 degC. Site batteries in the coolest, ventilated location you can. LiFePO4 tolerates heat better than lead-acid but still prefers a cool, dry spot.'
+      },
+      {
+        question: 'How many years will a solar battery last?',
+        answer: 'It depends on chemistry and how hard you cycle it. A good LiFePO4 bank, cycled daily and kept cool, commonly lasts 8-12+ years (3,000-6,000 cycles). Lead-acid in daily cycling may last only 2-4 years, which is why its lower price can be deceptive.'
+      }
+    ],
+    content: `
+## The number that matters: cost per USABLE kWh over life
+
+Comparing battery prices by their kWh rating is misleading, because you cannot use all of a battery and different chemistries last very different numbers of cycles. The honest metric is **cost per usable kWh delivered over the battery life** — the purchase price divided by (usable capacity x cycles). On that basis, the expensive battery is often the cheap one.
+
+## Depth of discharge: how much you can actually use
+
+- **Lead-acid** (flooded, AGM, gel) hates deep cycling. Draw it below ~50% routinely and its life collapses. So a "200 Ah" lead-acid battery really gives you ~100 Ah per cycle.
+- **LiFePO4 (lithium iron phosphate)** comfortably uses **80-90%** of its capacity every cycle, for thousands of cycles. A "200 Ah" LiFePO4 gives you ~170-180 Ah, and keeps doing so for years.
+
+## Cycle life: where lithium pulls away
+
+| Chemistry | Usable DoD | Cycle life | Best for |
+|---|---|---|---|
+| Flooded lead-acid | ~50% | 500-800 | Lowest upfront, occasional backup |
+| Sealed AGM / gel | ~50% | 600-1,200 | Maintenance-free standby (UPS) |
+| LiFePO4 (LFP) | 80-90% | 3,000-6,000 | Daily solar cycling, best lifetime cost |
+| NMC lithium | 80-90% | 2,000-4,000 | Compact, weight-sensitive sites |
+
+For a system that charges and discharges every single day (solar self-consumption), those cycle numbers translate directly into years of service — and lithium wins decisively.
+
+## Heat: the Kenyan factor
+
+Battery life is temperature-sensitive. For lead-acid especially, life roughly **halves for every 8-10 degC above 20-25 degC**. In a hot, unventilated container or comms room, a lead-acid bank can fail in a fraction of its rated life. LiFePO4 tolerates heat better but still prefers cool and dry. We always specify the battery location and ventilation as part of the design, not an afterthought.
+
+## So which should you choose?
+
+- **Daily solar cycling:** LiFePO4 almost always — lowest lifetime cost, deep usable capacity, long life.
+- **Occasional UPS standby (rarely discharged):** sealed AGM lead-acid can still be cost-effective, since cycle life matters less when you rarely cycle.
+- **Weight or space constrained:** lithium (LFP or NMC) for its energy density.
+- **Tightest upfront budget, infrequent use:** flooded lead-acid, accepting shorter life.
+
+## The bottom line
+
+Do not buy batteries on sticker price. Work out the usable kWh and the cycles you will get, factor in your site temperature, and compare cost per usable kWh over the life. For daily-cycling solar in Kenya, that maths usually points to lithium.
+
+**Tell us your daily energy and how often the battery will cycle and we will recommend the right chemistry and size with a lifetime-cost comparison. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
+
+  // Article 23: Earthing & lightning protection
+  {
+    id: 'earthing-lightning-protection-kenya',
+    slug: 'earthing-lightning-protection-kenya',
+    title: 'Earthing & Lightning Protection for Kenyan Buildings: The Invisible Safety System',
+    excerpt: 'A good earth is invisible until the half-second of a fault or a lightning strike, when it decides whether equipment survives and whether people are safe. Here is what proper earthing and surge protection involve in Kenya.',
+    description: 'Why earthing and lightning/surge protection matter for Kenyan buildings and equipment: soil resistivity, earth electrodes, step and touch potential, surge protective devices, and why a poor earth undermines everything. From Emerson EiMS.',
+    category: 'Safety',
+    tags: ['earthing', 'lightning protection', 'surge protection', 'electrical safety', 'Kenya'],
+    date: '2026-06-13',
+    readTime: '9 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: false,
+    image: '/images/blog/generator-maintenance.jpg',
+    imageAlt: 'Earth electrode and lightning protection installation on a Kenyan building',
+    relatedServices: ['electrical-installation', 'high-voltage'],
+    relatedCounties: ['nairobi', 'kisumu', 'nakuru'],
+    faqs: [
+      {
+        question: 'Why does earthing matter so much?',
+        answer: 'A low-impedance earth does three critical jobs: it gives fault current a safe path so protection can trip and clear the fault, it provides a clean reference for sensitive electronics, and it limits the touch and step voltages a person could be exposed to during a fault. A poor earth is both a shock hazard and a reason protection may fail to operate.'
+      },
+      {
+        question: 'Do I need lightning protection in Kenya?',
+        answer: 'Many parts of Kenya have high lightning activity, and a direct or nearby strike can destroy electronics across a building in an instant. Tall or exposed structures, and sites with valuable electronics, benefit from a lightning protection system plus surge protective devices (SPDs) at the distribution boards.'
+      },
+      {
+        question: 'How is earth quality measured?',
+        answer: 'By measuring soil resistivity and the resulting earth electrode resistance with proper test instruments. Kenyan soils vary from conductive coastal and black-cotton soils to high-resistivity rock and laterite, so we measure on site rather than assume, and re-test periodically because earths degrade.'
+      }
+    ],
+    content: `
+## The system you never see until you need it
+
+Earthing does its most important work in the half-second of a fault or the microseconds of a lightning strike. The rest of the time it is invisible, which is exactly why it is so often neglected, under-built or left to corrode. When it fails, the consequences are severe: equipment destroyed, protection that does not trip, and a genuine risk to life.
+
+## What a good earth actually does
+
+- **Clears faults safely.** When a fault dumps current to earth, a low-impedance earth path lets the protective device see the fault and trip. A poor earth can leave a fault undetected and metalwork live.
+- **References sensitive electronics.** IT, medical and control equipment need a clean earth reference to work reliably and to let surge protection function.
+- **Limits step and touch potential.** During a fault, current spreading through the soil creates voltage gradients across the ground. A properly designed earthing grid keeps the touch voltage (hand-to-feet) and step voltage (foot-to-foot) below dangerous levels.
+
+## Soil resistivity: measure, do not assume
+
+The performance of an earth electrode depends heavily on the soil. Kenyan soils range from conductive coastal and black-cotton soils to high-resistivity rock and laterite. We measure soil resistivity on site and design the electrode system (rods, plates, or a grid, with the right depth and spacing) to achieve a low, stable earth resistance. Where the soil is poor, deeper electrodes, multiple rods or ground-enhancing material are used.
+
+## Lightning: protecting against the strike
+
+A lightning protection system gives a strike a controlled path to earth (air terminals, down conductors, a dedicated earth) instead of letting it find its own destructive route through the building and its wiring. For high lightning-activity regions and exposed or tall structures, this is important protection for both the building and its occupants.
+
+## Surge protection: the everyday defence
+
+Most equipment damage comes not from direct strikes but from **transient surges** — from nearby strikes, switching events and the grid. **Surge protective devices (SPDs)** installed at the main and sub-distribution boards clamp these spikes before they reach equipment. SPDs only work properly on a good earth, which is why earthing and surge protection are designed together, not separately.
+
+## Why it ties into power quality and HV
+
+Earthing underpins the whole electrical installation: it is the foundation for protection coordination, for power-quality mitigation (surge protection, sensitive-electronics reference) and for high-voltage safety (step and touch potential at substations). Building good power on a bad earth is building on sand.
+
+## The bottom line
+
+Earthing and lightning/surge protection are not optional extras — they are the safety system that decides whether a fault or a strike is a non-event or a disaster. They should be measured, designed to standard, documented and re-tested.
+
+**We test, design and certify earthing, lightning and surge protection for Kenyan buildings and substations. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
+
+  // Article 24: HVAC cooling load sizing
+  {
+    id: 'hvac-cooling-load-sizing-kenya',
+    slug: 'hvac-cooling-load-sizing-kenya',
+    title: 'How Big an Air Conditioner Do You Need? Cooling Load Sizing in Kenya',
+    excerpt: 'Sizing AC by floor area is why so many Kenyan rooms end up cold and clammy or short-cycling. Here is how cooling load is actually calculated, and why bigger is worse.',
+    description: 'A practical guide to air-conditioning sizing in Kenya: sensible vs latent heat, why floor-area rules fail, the oversizing/short-cycling trap, inverter units, and how design conditions differ between Nairobi and Mombasa. From Emerson EiMS.',
+    category: 'Buying Guide',
+    tags: ['air conditioning', 'HVAC', 'cooling load', 'BTU sizing', 'Kenya'],
+    date: '2026-06-13',
+    readTime: '9 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: false,
+    image: '/images/blog/generator-maintenance.jpg',
+    imageAlt: 'Air-conditioning installation in a Kenyan commercial building',
+    relatedServices: ['ac-installation', 'hvac'],
+    relatedCounties: ['nairobi', 'mombasa', 'kisumu'],
+    faqs: [
+      {
+        question: 'Can I size an air conditioner by floor area alone?',
+        answer: 'No, and it is the most common cause of poor results. Cooling load depends on solar gain through glass and orientation, occupancy, equipment, lighting, fresh-air ventilation and the local climate, not just floor area. A west-facing glazed room in Mombasa can need double the cooling of an identical north-facing room in Nairobi.'
+      },
+      {
+        question: 'Why is an oversized AC a bad thing?',
+        answer: 'An oversized unit cools the air to setpoint so fast that it switches off before it has dehumidified, so it short-cycles. The result is a room that is cold but clammy, with poor humidity control, more wear on the compressor, and higher running and purchase cost. Correct sizing beats oversizing on comfort, bill and lifespan.'
+      },
+      {
+        question: 'What is a ton of cooling?',
+        answer: 'A refrigeration ton (TR) is about 3.517 kW of cooling, or 12,000 BTU/h. It is a unit of cooling capacity, not weight. Sizing matches the units cooling capacity (in tons or kW) to the calculated cooling load of the space.'
+      }
+    ],
+    content: `
+## Why "so many BTU per square metre" fails
+
+Floor area is only one input to a cooling load, and using it alone is why so many Kenyan rooms end up either freezing and humid or unable to cope on a hot afternoon. The heat an air conditioner must remove comes from many sources, and two rooms of identical size can have very different loads.
+
+## Sensible vs latent heat
+
+A cooling load has two parts:
+
+- **Sensible heat** changes air temperature: sun through glass, people, lights, computers, hot outside air leaking in.
+- **Latent heat** removes moisture: from occupants, open doors, and humid outside air (a big factor at the coast).
+
+An air conditioner sized for sensible heat alone leaves a space cold but clammy, because it has not been sized to dehumidify. A proper calculation totals both.
+
+## What actually drives the load
+
+- **Solar gain:** glazing area and orientation. A west-facing glass wall takes the full afternoon sun.
+- **Occupancy:** each person adds sensible and latent heat; a packed boardroom is a big load.
+- **Equipment and lighting:** servers, kitchen equipment and old lighting all add heat.
+- **Ventilation:** fresh air for health (per ASHRAE 62.1) must be cooled too.
+- **Climate:** Nairobi highland conditions differ greatly from humid coastal Mombasa.
+
+## The reference unit
+
+Cooling capacity is quoted in **tons of refrigeration (TR)** or kW: **1 TR is about 3.517 kW (12,000 BTU/h)**. Sizing matches the equipment capacity to the calculated load — not to a rule of thumb.
+
+## The oversizing trap: bigger is worse
+
+It is tempting to "buy a size up to be safe." For air conditioning that is the wrong instinct. An oversized unit cools to setpoint so fast that it switches off before it dehumidifies, so it **short-cycles** — leaving the room cold and damp, wearing the compressor with constant stop-start, and costing more to buy and run. A correctly sized **inverter (variable-speed)** unit modulates to match the load, holding temperature and humidity steady while using far less energy.
+
+## Nairobi vs Mombasa: same room, different machine
+
+Because climate is a major input, the same room needs a different unit in different cities. A humid coastal location carries a far larger latent (dehumidification) load than the dry highlands, so a Mombasa installation must be sized and selected with that in mind. This is exactly why a calculated load, not a generic chart, gives a comfortable, efficient result.
+
+## The bottom line
+
+Air conditioning is sized by physics, not floor area. Calculate the sensible and latent load for the worst design hour, size the equipment to it (ideally an efficient inverter unit), and you get comfort, humidity control and a lower bill. Guess it, and you get a cold, clammy, expensive room.
+
+**Send us your room or building details, glazing, occupancy and city and we will calculate the cooling load and recommend the right, efficient system. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
 ];
 
 // Helper function to get article by slug

@@ -62,7 +62,10 @@ const blogSlugs = [
   'ups-sizing-runtime-kenya',
   'power-factor-correction-kenya',
   'borehole-pump-selection-kenya',
-  'hv-intake-upgrade-kenya'
+  'hv-intake-upgrade-kenya',
+  'solar-battery-chemistries-kenya',
+  'earthing-lightning-protection-kenya',
+  'hvac-cooling-load-sizing-kenya'
 ];
 
 // Fault codes for SEO (sample - full list is in faultCodes.ts)
