@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import SectorPowerContent from '@/components/seo/SectorPowerContent';
 import {
   TARGET_SECTORS,
   getSectorBySlug,
@@ -155,6 +156,9 @@ export default async function SectorPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* UNIQUE PER-SECTOR ENGINEERING CONTENT (category + sector-data driven) */}
+      <SectorPowerContent sector={sector} />
 
       {/* Find in Your Location */}
       <section className="py-16 border-t border-white/5">

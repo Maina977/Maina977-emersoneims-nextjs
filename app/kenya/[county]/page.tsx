@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { KENYA_LOCATIONS, getCountyBySlug } from '@/lib/data/kenya-locations';
+import CountyPowerContent from '@/components/seo/CountyPowerContent';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 import { CORE_SERVICE_SLUGS, isPriorityCounty } from '@/lib/seo/kenyaIndexable';
 
@@ -282,6 +283,9 @@ export default async function CountyPage({ params }: Props) {
             </div>
           </div>
         )}
+
+        {/* UNIQUE PER-COUNTY ENGINEERING CONTENT (region/altitude/towns-driven) */}
+        <CountyPowerContent county={county} />
 
         {/* CTA */}
         <div className="text-center bg-gradient-to-r from-amber-500/20 to-cyan-500/20 p-8 md:p-12 rounded-3xl border border-white/10">
