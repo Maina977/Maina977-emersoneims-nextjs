@@ -34,6 +34,8 @@ import {
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
+import StandardsReferenceDeepDive from '@/components/content/StandardsReferenceDeepDive';
+
 // Dynamic import for heavy technical content
 const TechnicalBibleHub = dynamic(
   () => import('@/components/technical/TechnicalBibleHub'),
@@ -148,6 +150,9 @@ export default function TechnicalBiblePage() {
           </div>
         </div>
       </section>
+
+      {/* CRAWLABLE REFERENCE — standards, units, formula index (server-rendered) */}
+      <StandardsReferenceDeepDive />
 
       {/* Technical Bible Content */}
       <Suspense fallback={
