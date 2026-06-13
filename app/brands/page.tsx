@@ -24,9 +24,42 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import RingGallery from '@/components/home/RingGallery';
+
+// Rotating cylindrical showcase of the brands/models we sell (distinct set)
+const BRANDS_RING = [
+  { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins — Super Silent', subtitle: 'Authorised dealer · 10–2000 kVA' },
+  { src: '/images/voltka/voltka-vks44-hero-profile.webp', title: 'VOLTKA VKS Series', subtitle: 'Cummins-powered, 3-year warranty' },
+  { src: '/images/enhanced/BIGOT CATERPILLAR 30KVA-4K-CINEMATIC.jpg', title: 'Caterpillar', subtitle: 'Heavy-duty industrial power' },
+  { src: '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg', title: 'FG Wilson · Perkins', subtitle: 'Commercial workhorses' },
+  { src: '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg', title: 'Atlas Copco', subtitle: 'Quiet, efficient standby' },
+  { src: '/images/voltka/cat-canopy-studio.webp', title: 'Sound-Attenuated Canopies', subtitle: 'Studio-grade enclosures' },
+  { src: '/images/voltka/voltka-cummins-engine-open-canopy.webp', title: 'Genuine Cummins Engines', subtitle: 'Open-canopy detail' },
+  { src: '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg', title: 'Installed & Commissioned', subtitle: 'Across all 47 counties' },
+  { src: '/images/voltka/voltka-vks44-crane-side.webp', title: 'Delivered Nationwide', subtitle: 'Crane dispatch & install' },
+  { src: '/images/desktop/generators/voltka-vks44-night.jpg', title: '48-Hour Emergency Supply', subtitle: 'Day or night delivery' },
+];
 
 // Cinematic Cummins generator image with Hollywood color grading
 const cumminsImage = '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg';
+
+// Varied real generator photography so the 26 catalog cards no longer repeat
+// a single image. Cards index into this pool (distinct from other pages).
+const BRAND_IMAGE_POOL = [
+  '/images/desktop/generators/cummins-teal-canopy.jpg',
+  '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg',
+  '/images/voltka/voltka-vks44-hero-profile.webp',
+  '/images/enhanced/BIGOT CATERPILLAR 30KVA-4K-CINEMATIC.jpg',
+  '/images/voltka/voltka-cummins-engine-open-canopy.webp',
+  '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg',
+  '/images/voltka/cat-canopy-studio.webp',
+  '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg',
+  '/images/voltka/voltka-vks44-crane-side.webp',
+  '/images/desktop/generators/voltka-vks44-night.jpg',
+  '/images/voltka/cummins-engine-detail.webp',
+  '/images/enhanced/GREENHEART KILIFI GENERATOR-4K-CINEMATIC.jpg',
+];
+const brandImageFor = (i: number) => BRAND_IMAGE_POOL[i % BRAND_IMAGE_POOL.length];
 
 // GSAP will be loaded dynamically in components that need it
 
@@ -313,6 +346,13 @@ export default function SOTDWinningHomepage() {
             </div>
           </motion.div>
         </motion.section>
+
+        {/* ROTATING BRAND SHOWCASE - cylindrical/round 3D gallery */}
+        <RingGallery
+          items={BRANDS_RING}
+          eyebrow="The Brands We Sell & Service"
+          heading="Every Major Generator Brand"
+        />
 
         {/* BRAND STORYTELLING - Immersive Scroll-Driven Narrative */}
         <section id="story" className="relative py-40 md:py-60 bg-black">
@@ -618,10 +658,10 @@ export default function SOTDWinningHomepage() {
 
                   {/* Generator Image Area - Hollywood Cinematic Treatment */}
                   <div className="relative h-48 overflow-hidden">
-                    {/* Actual Cummins Generator Image with Hollywood Color Grading */}
+                    {/* Varied real generator photography (no longer one repeated image) */}
                     <div className="absolute inset-0">
                       <Image
-                        src={cumminsImage}
+                        src={brandImageFor(i)}
                         alt={`Cummins ${gen.model} Generator - ${gen.standby} KVA`}
                         fill
                         className="object-cover transition-all duration-700 group-hover:scale-110"

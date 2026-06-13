@@ -7,6 +7,17 @@ import OptimizedImage from "@/components/media/OptimizedImage";
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import { SectionLead } from "@/components/generators";
 import HeroCinematicFX from '@/components/home/HeroCinematicFX';
+import TeslaSlideGallery from '@/components/galleries/TeslaSlideGallery';
+
+// Tesla-style big slides of real used / pre-owned inventory (distinct set)
+const USED_SLIDES = [
+  { src: '/images/voltka/voltka-warehouse-fleet.webp', title: 'Certified Pre-Owned Fleet', subtitle: 'Fully serviced, load-tested, ready to run', ctaHref: '/contact', ctaLabel: 'Request Stock List' },
+  { src: '/images/voltka/voltka-vks165-stock-forklift.webp', title: 'Ready Stock — Nairobi', subtitle: 'Same-week delivery across all 47 counties' },
+  { src: '/images/enhanced/FG-WILSON-GENERATOR-4K-CINEMATIC.jpg', title: 'FG Wilson · Perkins Power', subtitle: 'Low-hours commercial units' },
+  { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins Super Silent', subtitle: 'Workshop-inspected, repainted, warrantied' },
+  { src: '/images/enhanced/NTSA- ATLAS COPCO GENERATOR-4K-CINEMATIC.jpg', title: 'Atlas Copco — Heavy Duty', subtitle: 'Industrial-grade standby power' },
+  { src: '/images/desktop/overhaul/engine-bay-service.jpg', title: '21-Point Inspection', subtitle: 'Every unit tested before it leaves the yard', ctaHref: '/contact?type=tradein', ctaLabel: 'Get Trade-In Value' },
+];
 
 const usedGenerators = [
   {
@@ -465,6 +476,9 @@ export default function UsedGeneratorsPage() {
         {/* Awwwards ambient layer — GSAP parallax + lazy Three.js amber embers */}
         {!isLite && <HeroCinematicFX />}
       </section>
+
+      {/* Tesla-style big slide showcase of real pre-owned inventory */}
+      <TeslaSlideGallery slides={USED_SLIDES} eyebrow="Pre-Owned Inventory — Inspected & Warrantied" />
 
       {/* Main Content */}
       <div className="eims-shell relative z-10 py-16">

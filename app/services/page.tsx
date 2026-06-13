@@ -20,6 +20,24 @@ import {
   BUSINESS_CONTACT,
   type Service,
 } from '@/lib/services/allServices';
+import OrbitalGallery from '@/components/galleries/OrbitalGallery';
+
+// Distinct image per service discipline (no recycling across pages) — drawn
+// from the freshly curated Desktop field photography + graded marketing set.
+const SERVICES_ORBIT = [
+  { src: '/images/desktop/generators/cummins-teal-canopy.jpg', title: 'Cummins & Voltka Generators', subtitle: 'Sales · Install · ATS · 10–2000 kVA' },
+  { src: '/images/solar power farms.png', title: 'Solar PV & Hybrid', subtitle: 'Grid-tie, off-grid & storage' },
+  { src: '/images/ups-power-protection-system.png', title: 'UPS Power Protection', subtitle: 'Enterprise N+1 systems' },
+  { src: '/images/desktop/motor/rewinding-1.png', title: 'Motor Rewinding', subtitle: 'All sizes · load tested' },
+  { src: '/images/desktop/changeovers/changeover-board-1.jpg', title: 'Changeovers & Distribution', subtitle: 'ATS & IEC-grade boards' },
+  { src: '/images/desktop/hvac/air-conditioner-1.png', title: 'Air Conditioning & HVAC', subtitle: 'Split, VRF & cold rooms' },
+  { src: '/images/desktop/borehole/drilling-1.png', title: 'Borehole Drilling', subtitle: 'Survey to commissioning' },
+  { src: '/images/desktop/borehole/pumps-1.png', title: 'Borehole Pumps', subtitle: 'Solar-ready submersibles' },
+  { src: '/images/desktop/incinerator/incinerator-1.png', title: 'Incinerators', subtitle: 'NEMA-compliant, medical-grade' },
+  { src: '/images/desktop/waterheaters/heater-1.png', title: 'Water Heating', subtitle: 'Solar & commercial systems' },
+  { src: '/images/desktop/overhaul/engine-liner-overhaul.jpg', title: 'Generator Overhauls', subtitle: 'Factory-spec engine rebuilds' },
+  { src: '/images/steel-fabrication-workshop.png', title: 'Steel Fabrication', subtitle: 'Canopies, frames & enclosures' },
+];
 
 const CATEGORY_META: Record<
   string,
@@ -361,6 +379,15 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Universe gallery: every service, rotating like a galaxy ── */}
+      <OrbitalGallery
+        items={SERVICES_ORBIT}
+        eyebrow="Every Service We Deliver — In Orbit"
+        heading="One Universe of Engineering"
+        ctaHref="#cat-power"
+        ctaLabel="Browse All Services"
+      />
 
       {/* ── Sticky category jumplinks ─────────────────────────────── */}
       <nav

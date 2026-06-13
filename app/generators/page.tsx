@@ -2010,6 +2010,51 @@ const GeneratorComparison = () => {
   );
 };
 
+// Big auto-rotating hero slides (replaces the broken hero video). Real
+// generator product + overhaul photography, full-bleed with a slow Ken-Burns
+// push. Deterministic initial index (0) so SSR/client hydrate identically.
+const GENERATOR_HERO_IMAGES = [
+  '/images/desktop/generators/voltka-vks44-crane.jpg',
+  '/images/desktop/generators/cummins-teal-canopy.jpg',
+  '/images/enhanced/KIVUKONI SCHOOL CUMMINS GENERATOR -4K-CINEMATIC.jpg',
+  '/images/enhanced/BIGOT CATERPILLAR 30KVA-4K-CINEMATIC.jpg',
+  '/images/desktop/generators/voltka-vks44-night.jpg',
+  '/images/desktop/overhaul/engine-liner-overhaul.jpg',
+];
+
+const GeneratorHeroSlides = () => {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIndex((i) => (i + 1) % GENERATOR_HERO_IMAGES.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <>
+      {GENERATOR_HERO_IMAGES.map((src, i) => (
+        <div
+          key={src}
+          className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${i === index ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden={i !== index}
+        >
+          <Image
+            src={src}
+            alt="EmersonEIMS generators — sales, installation and repair"
+            fill
+            priority={i === 0}
+            sizes="100vw"
+            className={`object-cover ${i === index ? 'gen-hero-kenburns' : ''}`}
+            style={{ filter: 'contrast(1.12) saturate(1.2) brightness(0.95)' }}
+          />
+        </div>
+      ))}
+      <style>{`
+        @keyframes genHeroKenBurns { from { transform: scale(1.02); } to { transform: scale(1.12); } }
+        .gen-hero-kenburns { animation: genHeroKenBurns 5.5s ease-out forwards; }
+      `}</style>
+    </>
+  );
+};
+
 export default function GeneratorPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { isLite } = usePerformanceTier();
@@ -2097,22 +2142,10 @@ export default function GeneratorPage() {
         className="relative w-full h-screen overflow-hidden bg-black"
         style={{ opacity: heroOpacity, scale: heroScale }}
       >
-        {/* Cinematic Video Background */}
+        {/* Cinematic auto-rotating big-image background (replaced the
+            unreliable hero video — same Hollywood grade, much sharper). */}
         <div className="absolute inset-0 w-full h-full">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster="/images/tnpl-diesal-generator-1000x1000-1920x1080.webp"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              filter: 'contrast(1.15) saturate(1.25) brightness(0.95) sepia(0.08)',
-            }}
-          >
-            <source src="/videos/VID-20250930-WA0000 (3).mp4" type="video/mp4" />
-          </video>
+          <GeneratorHeroSlides />
 
           {/* Hollywood Orange/Teal Color Grade Overlay */}
           <div

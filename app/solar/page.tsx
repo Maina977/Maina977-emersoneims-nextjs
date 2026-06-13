@@ -17,6 +17,29 @@ import { AnalogClock, AnalogCalendar, WeatherWidget } from '@/components/ui/Anal
 import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import RingGallery from '@/components/home/RingGallery';
+
+// Strictly-solar rotating gallery (like the landing page ring)
+// Deterministic particle layout — fixed values so SSR and client render
+// identically (Math.random() in render caused a hydration mismatch).
+const SOLAR_HERO_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  left: ((i * 37 + 11) % 100),
+  top: ((i * 53 + 7) % 100),
+  duration: 3 + ((i * 7) % 20) / 10,
+  delay: ((i * 13) % 20) / 10,
+}));
+
+const SOLAR_RING = [
+  { src: '/images/solar power farms.png', title: 'Solar Power Farms', subtitle: 'Utility-scale PV, Turkana' },
+  { src: '/images/solar for flower farms.png', title: 'Solar for Flower Farms', subtitle: 'Irrigation & cold-room, Naivasha' },
+  { src: '/images/solar power for farms.png', title: 'Agricultural Solar', subtitle: 'Dairy, poultry & greenhouse' },
+  { src: '/images/solar hotel heaters.png', title: 'Solar Hotel Water Heating', subtitle: '80% energy savings' },
+  { src: '/images/solar-water-pumping.png', title: 'Solar Water Pumping', subtitle: 'Borehole & irrigation, no fuel' },
+  { src: '/images/solar changeover control.png', title: 'Solar Changeover Control', subtitle: 'Smart grid-tie switching' },
+  { src: '/images/desktop/waterheaters/heater-1.png', title: 'Solar Thermal Heating', subtitle: 'Commercial hot-water systems' },
+  { src: '/images/desktop/waterheaters/heater-2.png', title: 'Hot-Water Storage', subtitle: 'Insulated tanks & controls' },
+  { src: '/images/desktop/waterheaters/heater-3.png', title: 'Heating Installations', subtitle: 'Hotels, hostels & estates' },
+];
 
 // ==================== DYNAMIC IMPORTS ====================
 const SolarBibleEngine = dynamic(() => import('@/components/solar/SolarBibleEngine'), {
@@ -742,22 +765,19 @@ export default function SolarBible() {
         {/* Animated Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-black to-orange-900/20" />
         <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
+          {SOLAR_HERO_PARTICLES.map((p, i) => (
             <motion.div
               key={i}
               className="absolute w-2 h-2 bg-amber-400/30 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
+              style={{ left: `${p.left}%`, top: `${p.top}%` }}
               animate={{
                 y: [-20, 20],
                 opacity: [0.3, 0.8, 0.3],
               }}
               transition={{
-                duration: 3 + Math.random() * 2,
+                duration: p.duration,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: p.delay,
               }}
             />
           ))}
@@ -864,6 +884,13 @@ export default function SolarBible() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* ==================== ROTATING SOLAR GALLERY ==================== */}
+      <RingGallery
+        items={SOLAR_RING}
+        eyebrow="Solar Projects Across Kenya"
+        heading="Powered by the Sun"
+      />
 
       {/* ==================== WHY SOLAR IN KENYA ==================== */}
       <section className="py-16 bg-gradient-to-b from-amber-900/10 to-transparent">
