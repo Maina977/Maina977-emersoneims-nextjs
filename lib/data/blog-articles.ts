@@ -3119,6 +3119,242 @@ While cheaper alternatives exist, genuine parts:
 **Request your free quote today - we match or beat competitors on genuine parts!**
     `
   },
+
+  // Article 16: Generator altitude derating in Kenya
+  {
+    id: 'generator-altitude-derating-kenya',
+    slug: 'generator-altitude-derating-kenya',
+    title: 'Why Your Generator Loses Power in Nairobi & Eldoret: Altitude Derating Explained',
+    excerpt: 'A "100 kVA" generator delivered to Eldoret can be a real 92 kVA machine. Here is the altitude and temperature derating maths every Kenyan buyer should know — before they overload a set that was never the size they paid for.',
+    description: 'Generator altitude derating in Kenya explained: why diesel sets lose 3-4% output per 300m above 1000m, a derate table for Nairobi, Nakuru, Eldoret and the coast, the formula, and how to size correctly. From Emerson EiMS.',
+    category: 'Buying Guide',
+    tags: ['generator sizing', 'altitude derating', 'diesel generator', 'Kenya', 'kVA'],
+    date: '2026-06-13',
+    readTime: '11 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: true,
+    image: '/images/blog/generator-maintenance.jpg',
+    imageAlt: 'Diesel generator installed at high altitude in the Kenyan highlands',
+    relatedServices: ['generator-installation', 'generator-sizing'],
+    relatedCounties: ['nairobi', 'nakuru', 'uasin-gishu'],
+    faqs: [
+      {
+        question: 'How much power does a generator lose at altitude in Kenya?',
+        answer: 'As a rule of thumb a naturally-aspirated diesel engine loses about 3-4% of its rated output for every 300 m above 1,000 m, plus roughly 1-2% for every 5-6 degC above the rating reference temperature. At Nairobi (~1,795 m) that is about 5-6%; at Eldoret (~2,100 m) about 7-8%. Turbocharged engines tolerate altitude better but are not immune.'
+      },
+      {
+        question: 'Does this mean I should always buy a bigger generator?',
+        answer: 'Not blindly. You should size against the site-corrected rating for your altitude and worst-case temperature, after a proper load study. Oversizing wastes fuel and causes wet stacking; the right answer is the correct size for your real, derated conditions — not simply "the next model up".'
+      },
+      {
+        question: 'Is altitude a problem at the coast (Mombasa, Diani)?',
+        answer: 'No — the coast is near sea level, so altitude derating is negligible. There the derate is driven by high ambient temperature and salt-laden humidity, which also dictate the corrosion-protection specification.'
+      }
+    ],
+    content: `
+## The mistake that overloads "oversized" generators
+
+Most generators sold in Kenya are rated at the international reference condition of sea level and 25-40 degC. The trouble is that almost nobody in this country operates there. A diesel engine breathes air, and the thinner air of the Kenyan plateau carries less oxygen, so the engine simply makes less power.
+
+The result is a quiet, expensive surprise: a factory buys a "100 kVA" set, installs it in Eldoret, and then cannot understand why it trips on overload every time the compressors and chillers run together. The capacity was never there. It was de-rated away by physics the supplier ignored.
+
+## The derating rule of thumb
+
+For a naturally-aspirated diesel engine:
+
+- **Altitude:** lose roughly **3-4% of rated output for every 300 m above 1,000 m**.
+- **Temperature:** lose a further **~1-2% for every 5-6 degC above the reference** (often 25-40 degC).
+
+A useful approximation of the usable power at your site is:
+
+**P_site ≈ P_rated × (1 − altitude_derate) × (1 − temperature_derate)**
+
+Worked example — a 100 kVA set in Eldoret (~2,100 m, 30 degC): altitude loss ≈ 7.7%, temperature loss ≈ 1%, so usable output ≈ 100 × 0.923 × 0.99 ≈ **91 kVA**, before any canopy airflow restriction.
+
+## Derate across major Kenyan towns
+
+| Location | Elevation | Approx. altitude derate | A 100 kVA set delivers ≈ |
+|---|---|---|---|
+| Mombasa / Diani | ~15 m | 0% | 100 kVA |
+| Kisumu | ~1,130 m | ~1% | 99 kVA |
+| Nairobi | ~1,795 m | ~5.5% | 94 kVA |
+| Nakuru | ~1,850 m | ~6% | 94 kVA |
+| Nyeri | ~1,750 m | ~5% | 95 kVA |
+| Eldoret | ~2,100 m | ~7.7% | 92 kVA |
+
+(Indicative, naturally-aspirated diesel. Turbocharged engines lose less; always confirm against the engine manufacturer's derate curve.)
+
+## How to size correctly for Kenyan conditions
+
+1. **Do a load study first.** Size in kW against your real demand profile, including the largest motor that can start while everything else runs.
+2. **Apply the site correction.** Use the altitude and worst-case radiator air-on temperature (not shade temperature) for your location.
+3. **Allow for the canopy.** An acoustic enclosure with restricted airflow adds its own small derate.
+4. **Then choose the rating** (standby / prime / continuous per ISO 8528) that matches your duty.
+
+## The bottom line
+
+A generator's brochure kVA is a sea-level promise. In Nairobi, Nakuru or Eldoret the machine you actually own is several percent smaller — and that gap is exactly the margin that disappears on the hottest afternoon when your heaviest loads coincide.
+
+**Send us your location, altitude and largest motors and we will return a site-corrected sizing — free, and in writing. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
+
+  // Article 17: True cost per kWh — solar vs diesel vs grid
+  {
+    id: 'true-cost-per-kwh-kenya',
+    slug: 'true-cost-per-kwh-kenya',
+    title: 'Solar vs Diesel vs Grid: The True Cost per kWh in Kenya (2026)',
+    excerpt: 'Diesel generation costs roughly KSh 40-55 per kWh; commercial grid power is far less; well-designed solar lands around KSh 8-15. Here is the maths behind those numbers — and why it changes how you should power your business.',
+    description: 'A clear cost-per-kWh comparison of solar PV, diesel generators and grid electricity for Kenyan businesses in 2026, with the formulas, assumptions and the case for solar-plus-generator hybrids. From Emerson EiMS.',
+    category: 'Cost Savings',
+    tags: ['cost per kWh', 'solar Kenya', 'diesel generator', 'energy cost', 'LCOE'],
+    date: '2026-06-13',
+    readTime: '12 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: true,
+    image: '/images/blog/solar-energy.jpg',
+    imageAlt: 'Solar panels and a diesel generator powering a Kenyan commercial site',
+    relatedServices: ['solar-installation', 'generator-installation'],
+    relatedCounties: ['nairobi', 'mombasa', 'nakuru'],
+    faqs: [
+      {
+        question: 'How much does it cost to generate a kWh with a diesel generator in Kenya?',
+        answer: 'Once you include fuel (around KSh 165/litre), oil and maintenance, diesel generation typically costs KSh 40-55 per kWh — and more at light load, where engines burn far more fuel per useful unit. That is why a generator should be backup, not your main daytime supply.'
+      },
+      {
+        question: 'Is solar really cheaper per kWh than the grid in Kenya?',
+        answer: 'Over a 25-year life, a well-designed solar PV system delivers electricity at roughly KSh 8-15 per kWh (its levelised cost), which is below typical commercial grid tariffs and far below diesel. The catch is upfront capital — but for daytime-heavy commercial loads the payback is often 3-5 years.'
+      },
+      {
+        question: 'Should I replace my generator with solar?',
+        answer: 'Usually you pair them. Solar carries the cheap daytime load, the generator becomes true backup for outages and night peaks, and a battery bridges where the tariff justifies it. This hybrid approach commonly cuts a site\'s diesel bill by 40-70% while keeping full resilience.'
+      }
+    ],
+    content: `
+## Why "cost per kWh" is the only fair comparison
+
+Comparing a generator's price to a solar system's price tells you almost nothing — they buy different things, over different lifespans. The honest comparison is **cost per kilowatt-hour (kWh)** delivered over the life of the system, including fuel and maintenance. That single number reframes the whole energy decision.
+
+## Diesel generation: KSh 40-55 per kWh
+
+A modern diesel set burns roughly **0.25-0.30 litres of diesel per kWh at full load** — and significantly more at light load, because the engine still has fixed friction and pumping losses to overcome. A set idling at 25% load can burn nearly twice as much fuel per useful kWh as the same set at 80%.
+
+**Cost per kWh ≈ (litres/hour × fuel price) ÷ kW delivered + maintenance share.**
+
+At 75% load on a 100 kVA set burning ~17 L/h, with diesel near KSh 165/litre: 17 × 165 ÷ 60 kW ≈ **KSh 47/kWh** before maintenance. That is the real cost of "just running the generator" as primary power — and it is why the cheapest kWh is the one you never generate on diesel.
+
+## Grid electricity: cheaper, but not always there
+
+Commercial grid tariffs in Kenya sit well below diesel per kWh, which is why the grid should carry base load wherever it is reliable. The problem is reliability — outages and voltage events push businesses onto expensive diesel exactly when they can least afford the disruption.
+
+## Solar PV: KSh 8-15 per kWh over its life
+
+A well-built solar system in Kenya's strong sun (5.0-6.0 peak sun hours across most of the country) delivers electricity at a **levelised cost of roughly KSh 8-15 per kWh over 25 years**. After payback, the marginal cost of a solar kWh is essentially zero.
+
+**Levelised cost ≈ total lifetime cost ÷ total lifetime kWh generated.**
+
+Indicative cost per kWh (lifetime levelised):
+
+| Source | Approx. KSh/kWh |
+|---|---|
+| Solar PV (well designed) | 8-15 |
+| Grid (commercial) | ~25-30 |
+| Diesel generator | 40-55 |
+
+## The winning architecture: solar + generator hybrid
+
+For most Kenyan businesses the answer is not one source but the right mix:
+
+- **Solar** carries the cheap daytime base load.
+- **Grid** supplements where reliable.
+- **A correctly sized generator** becomes genuine backup for outages and night peaks — running far fewer hours, so its fuel bill collapses.
+- **Battery storage** is added where the tariff and outage profile justify it.
+
+This hybrid commonly cuts a site's diesel spend by **40-70%** while keeping full resilience — the diesel you do not burn is the cheapest saving of all.
+
+## The bottom line
+
+Treat your generator as insurance, not as your power station. Put your base load on the cheapest reliable kWh — increasingly your own solar — and size the generator to cover the gaps.
+
+**Send us your last 12 utility bills and your location and we will model your real cost per kWh and a solar-plus-generator option with payback — free. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
+
+  // Article 18: UPS sizing & runtime for Kenyan businesses
+  {
+    id: 'ups-sizing-runtime-kenya',
+    slug: 'ups-sizing-runtime-kenya',
+    title: 'UPS Sizing & Runtime for Kenyan Businesses: VA, Watts and the Battery Truth',
+    excerpt: 'Why a "3000 VA" UPS may only carry 2100 W, why runtime collapses faster than you expect when you load it harder, and how to size a UPS that actually protects your servers, tills and medical equipment.',
+    description: 'A practical guide to sizing UPS systems for Kenyan offices, data rooms, clinics and shops: VA vs watts, power factor, battery runtime and Peukert\'s law, topology choice and redundancy. From Emerson EiMS.',
+    category: 'Buying Guide',
+    tags: ['UPS', 'UPS sizing', 'battery backup', 'power protection', 'Kenya'],
+    date: '2026-06-13',
+    readTime: '11 min read',
+    author: 'Emerson EiMS Technical Team',
+    featured: false,
+    image: '/images/blog/generator-maintenance.jpg',
+    imageAlt: 'UPS battery cabinet protecting servers in a Kenyan data room',
+    relatedServices: ['ups-systems', 'ups-installation'],
+    relatedCounties: ['nairobi', 'mombasa', 'kisumu'],
+    faqs: [
+      {
+        question: 'What is the difference between VA and watts on a UPS?',
+        answer: 'VA (volt-amps) is apparent power; watts is real power. The ratio between them is the UPS output power factor. A "3000 VA" unit at power factor 0.7 only delivers about 2100 W. Always match the UPS to your real load in watts, not just the headline VA figure.'
+      },
+      {
+        question: 'Why does my UPS runtime drop so much when I add load?',
+        answer: 'Battery runtime is not linear with load — this is Peukert\'s law. Draw the battery harder and you get proportionally less energy out, so doubling the load can more than halve the runtime. Heat makes it worse: battery life roughly halves for every 8-10 degC above 20-25 degC.'
+      },
+      {
+        question: 'What UPS type do I need for servers or medical equipment?',
+        answer: 'For servers, PLCs, lab freezers and medical equipment, use an online double-conversion (VFI) UPS — it gives a continuously clean, regulated output with zero transfer time. Line-interactive units are fine for networks, CCTV and point-of-sale; offline units only for a single PC.'
+      }
+    ],
+    content: `
+## Start with watts, not VA
+
+The most common UPS sizing mistake is reading only the big **VA** number on the box. A UPS is rated in two figures — **VA (apparent power)** and **W (real power)** — and the gap between them is the output power factor. Older units quoted 0.6-0.7, so a "3000 VA" unit might only deliver **2100 W**. Modern IT loads draw near power factor 0.9-1.0, so you must match the UPS to **both** ratings, whichever you hit first.
+
+**Required VA ≈ total watts ÷ load power factor.** A 4,000 W server load at PF 0.9 needs about 4,444 VA — so choose a 6 kVA/6 kW unit so neither rating sits above ~75%.
+
+Never load a UPS past about 80% of rating: leave room for growth, for the inrush of switch-mode power supplies (crest factor), and for charging the batteries.
+
+## Runtime is not linear — Peukert's law
+
+This is the surprise that catches everyone. Battery capacity is quoted at a gentle discharge; pull it hard and you get proportionally less out. This is **Peukert's law** — double the discharge current and you may keep far less than half the runtime. So a UPS that backs a 50% load for 20 minutes will not back a 100% load for 10; it will manage rather less.
+
+A rough runtime estimate:
+
+**t ≈ (usable battery Wh × inverter efficiency) ÷ load watts**
+
+…where usable Wh = battery volts × amp-hours × usable depth of discharge. Then expect somewhat less at high load because of Peukert, and remember that heat shortens battery life dramatically (roughly halving it for every 8-10 degC above 20-25 degC). Site batteries in the coolest practical spot and load-test them — an untested UPS runtime is a guess.
+
+## When you need hours, you need a generator
+
+If the autonomy you need runs to hours rather than minutes, the honest answer is **a generator with a short-runtime UPS to bridge the start**, not a battery room sized for the impossible. The UPS holds the load clean for the few seconds the generator takes to start and accept load; the generator then carries the outage. Designing the two together is the key to real resilience.
+
+## Choosing the topology
+
+| Topology | Transfer time | Conditioning | Use for |
+|---|---|---|---|
+| Offline / standby | 2-10 ms | Minimal | Single PC, till point |
+| Line-interactive | 2-6 ms | Voltage regulation | Networks, CCTV, POS |
+| Online double-conversion | 0 ms | Full (voltage + frequency) | Servers, medical, PLC, lab |
+
+Much of Kenya's grid is not just outage-prone but *dirty* — sags, spikes and frequency wander that age sensitive electronics. For anything critical, online double-conversion is the safe choice because the load is fully isolated from the incoming supply.
+
+## Redundancy for the things that cannot fail
+
+A single UPS is a single point of failure. Critical sites add redundancy: **N+1** (one spare module so any one can fail or be serviced with no loss) for clinics and SME data rooms, **2N** (fully duplicated) for hospitals, banks and serious data centres. Match the redundancy to the cost of downtime, not to prestige.
+
+## The bottom line
+
+Size on watts, respect the battery's non-linear runtime, choose the topology your load actually needs, and design the UPS and the generator as one system.
+
+**Tell us your critical load (kW and VA), the autonomy you need and your downtime cost, and we will return a UPS sizing, runtime calculation and redundancy recommendation. Call +254 768 860 665 or +254 782 914 717.**
+    `
+  },
 ];
 
 // Helper function to get article by slug

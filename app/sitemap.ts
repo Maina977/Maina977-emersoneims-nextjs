@@ -56,7 +56,10 @@ const blogSlugs = [
   'generator-roi-analysis-kenya',
   'solar-installation-tips-kenya',
   'generator-procurement-kenya',
-  'generator-servicing-cost-kenya'
+  'generator-servicing-cost-kenya',
+  'generator-altitude-derating-kenya',
+  'true-cost-per-kwh-kenya',
+  'ups-sizing-runtime-kenya'
 ];
 
 // Fault codes for SEO (sample - full list is in faultCodes.ts)
