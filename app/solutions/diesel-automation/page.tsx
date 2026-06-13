@@ -6,6 +6,7 @@ import SectionLead from "../../components/generators/SectionLead";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import DieselFuelSystemsDeepDive from '@/components/solutions/DieselFuelSystemsDeepDive';
 
 const TABS = [
   { id: 'amf', label: '⚡ AMF Panels', color: 'blue' },
@@ -235,6 +236,9 @@ export default function DieselAutomationHub() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ENGINEERING REFERENCE — diesel fuel systems & plant automation */}
+      <DieselFuelSystemsDeepDive />
 
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-3xl p-8 md:p-12 border border-amber-500/30 text-center">

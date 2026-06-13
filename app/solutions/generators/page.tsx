@@ -7,6 +7,7 @@ import SectionLead from "../../components/generators/SectionLead";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import Link from 'next/link';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
+import GeneratorTroubleshootingDeepDive from '@/components/solutions/GeneratorTroubleshootingDeepDive';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
 // =====================================================
@@ -1233,6 +1234,9 @@ export default function GeneratorsSolutionHub() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ENGINEERING REFERENCE — generator fault diagnosis */}
+      <GeneratorTroubleshootingDeepDive />
 
       {/* CTA Section */}
       <section className="mx-auto max-w-7xl px-6 py-16">
