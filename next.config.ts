@@ -288,9 +288,15 @@ const nextConfig: NextConfig = {
             value: 'unsafe-none'
           },
           // Cache Control
+          // Previously s-maxage=86400 cached every page at the edge for 24h, so
+          // fresh/updated content (and Google's re-crawl of it) lagged a full day.
+          // Now: serve instantly from cache but revalidate every ~10 min, with a
+          // long stale-while-revalidate window so there is no latency penalty —
+          // new content surfaces within minutes, not a day. (Per-asset immutable
+          // caching for /_next static files is unaffected — set elsewhere.)
           {
             key: 'Cache-Control',
-            value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=59'
+            value: 'public, max-age=0, s-maxage=600, stale-while-revalidate=86400'
           },
           // ═══════════════════════════════════════════════════════════
           // COPYRIGHT & ANTI-COPY PROTECTION
