@@ -7,6 +7,7 @@ import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import ControlsEngineeringDeepDive from '@/components/solutions/ControlsEngineeringDeepDive';
 
 // =====================================================
 // COMPREHENSIVE DEEPSEA & POWERWIZARD SOLUTIONS HUB
@@ -1026,6 +1027,9 @@ export default function ControlsSolutionHub() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ENGINEERING REFERENCE — AMF, transfer, synchronisation, telemetry */}
+      <ControlsEngineeringDeepDive />
 
       {/* CTA Section */}
       <section className="mx-auto max-w-7xl px-6 py-16">

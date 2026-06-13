@@ -6,6 +6,7 @@ import CinematicHeroImage from "@/components/hero/CinematicHeroImage";
 import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import PowerQualityEngineeringDeepDive from '@/components/solutions/PowerQualityEngineeringDeepDive';
 
 const TABS = [
   { id: 'power-quality', label: '⚡ Power Quality', color: 'blue' },
@@ -224,6 +225,9 @@ export default function PowerInterruptionsHub() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ENGINEERING REFERENCE — power-quality disturbances & mitigation */}
+      <PowerQualityEngineeringDeepDive />
 
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-3xl p-8 md:p-12 border border-blue-500/30 text-center">

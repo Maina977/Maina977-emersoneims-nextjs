@@ -4,6 +4,7 @@ import CTAForm from "@/components/CTAForm";
 import OptimizedImage from "@/components/media/OptimizedImage";
 import B2BCommercialBand from "@/components/b2b/B2BCommercialBand";
 import { B2B_PROFILES } from "@/lib/b2b/pageProfiles";
+import MotorSelectionEngineeringDeepDive from "@/components/solutions/MotorSelectionEngineeringDeepDive";
 
 export const metadata = {
   title: "Motors & rewinding services — EmersonEIMS solutions",
@@ -72,6 +73,10 @@ export default function MotorsPage() {
           { label: "Load testing", detail: "No-load/full-load tests, efficiency, temperature rise" },
         ]}/>
       </section>
+
+      {/* ENGINEERING REFERENCE — motor selection, efficiency, drives, protection */}
+      <MotorSelectionEngineeringDeepDive />
+
       <section className="mx-auto max-w-7xl px-6 pb-12"><CTAForm /></section>
     </main>
   );
