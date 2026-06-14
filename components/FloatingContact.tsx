@@ -9,9 +9,7 @@ export default function FloatingContact() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const COMPANY_PHONE = '+254768860665';
-  // Primary WhatsApp line, then the alternate — both offered as options.
-  const COMPANY_WHATSAPP = '254782914717';
-  const COMPANY_WHATSAPP_ALT = '254768860665';
+  const COMPANY_WHATSAPP = '254768860665';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,7 +64,7 @@ export default function FloatingContact() {
                 <span className="font-semibold">Call Now</span>
               </motion.a>
 
-              {/* WhatsApp Button (primary line) */}
+              {/* WhatsApp Button */}
               <motion.a
                 href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent('Hi EmersonEIMS, I need assistance with your services.')}`}
                 target="_blank"
@@ -76,20 +74,7 @@ export default function FloatingContact() {
                 whileTap={{ scale: 0.95 }}
               >
                 <MessageCircle className="w-5 h-5" />
-                <span className="font-semibold">WhatsApp 0782 914 717</span>
-              </motion.a>
-
-              {/* WhatsApp Button (alternate line) */}
-              <motion.a
-                href={`https://wa.me/${COMPANY_WHATSAPP_ALT}?text=${encodeURIComponent('Hi EmersonEIMS, I need assistance with your services.')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 px-4 py-3 bg-[#128C7E] text-white rounded-full shadow-lg hover:bg-[#0f7a6e] transition-colors whitespace-nowrap"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <MessageCircle className="w-5 h-5" />
-                <span className="font-semibold">WhatsApp 0768 860 665</span>
+                <span className="font-semibold">WhatsApp</span>
               </motion.a>
             </motion.div>
           )}

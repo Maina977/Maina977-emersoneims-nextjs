@@ -35,9 +35,9 @@ const SERVICE_LABELS: Record<string, string> = {
 // public WhatsApp fallback returned to the browser. Was previously a placeholder
 // (+254768860665) that delivered alerts nowhere.
 const SALES_PHONE = process.env.SALES_PHONE || '+254768860665';
-// Digits-only PRIMARY WhatsApp line a visitor can message directly if server-side
+// Digits-only WhatsApp number a visitor can message directly if server-side
 // delivery is not configured — guarantees a lead is never silently lost.
-const BUSINESS_WHATSAPP = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '254782914717').replace(/[^0-9]/g, '');
+const BUSINESS_WHATSAPP = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '254768860665').replace(/[^0-9]/g, '');
 
 /**
  * Build a wa.me deep link with the enquiry pre-filled, so the front-end can
