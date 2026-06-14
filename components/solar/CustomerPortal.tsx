@@ -702,7 +702,7 @@ const CustomerPortal: React.FC = () => {
             {[
               { title: 'Call Us', icon: '📞', action: '+254 768 860 665', desc: 'Mon-Fri 8AM-6PM' },
               { title: 'WhatsApp', icon: '💬', action: 'Chat Now', desc: '24/7 Support' },
-              { title: 'Email', icon: '📧', action: 'support@emersoneims.co.ke', desc: 'Response within 24hrs' },
+              { title: 'Email', icon: '📧', action: 'support@emersoneims.com', desc: 'Response within 24hrs' },
             ].map((item, i) => (
               <div key={i} className="bg-slate-800/50 rounded-xl p-6 border border-slate-700 text-center">
                 <div className="text-4xl mb-3">{item.icon}</div>

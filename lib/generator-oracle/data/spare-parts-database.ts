@@ -1142,7 +1142,7 @@ export const PARTS_ORDER_INFO = {
   contactPage: '/contact',
   phone: '+254 XXX XXX XXX',  // Your company phone
   whatsapp: '+254 XXX XXX XXX',  // Your WhatsApp
-  email: 'parts@emersoneims.co.ke'  // Your parts email
+  email: 'parts@emersoneims.com'  // Your parts email
 };
 
 // ==================== HELPER FUNCTIONS ====================

@@ -249,10 +249,10 @@ async function main() {
   console.log('👤 Seeding admin user...');
 
   await prisma.user.upsert({
-    where: { email: 'admin@emersoneims.co.ke' },
+    where: { email: 'admin@emersoneims.com' },
     update: {},
     create: {
-      email: 'admin@emersoneims.co.ke',
+      email: 'admin@emersoneims.com',
       name: 'EmersonEIMS Admin',
       role: 'ADMIN',
       company: 'EmersonEIMS',

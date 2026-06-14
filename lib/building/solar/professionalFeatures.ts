@@ -678,7 +678,7 @@ export class ESignatureService {
     console.log(`Creating ${this.provider} signature request:`, request);
 
     const requestId = `esign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const signingUrl = `https://sign.emersoneims.co.ke/document/${requestId}`;
+    const signingUrl = `https://sign.emersoneims.com/document/${requestId}`;
 
     // Store request in localStorage for demo
     const requests = JSON.parse(localStorage.getItem('esign_requests') || '[]');
@@ -1046,7 +1046,7 @@ export function generatePDFReportHTML(data: PDFReportData): string {
 
     <div class="footer">
       <p>EmersonEIMS Solar Solutions | East & Central Africa's Premier Solar Provider</p>
-      <p>+254 768 860 665 | info@emersoneims.co.ke | www.emersoneims.co.ke</p>
+      <p>+254 768 860 665 | info@emersoneims.com | www.emersoneims.com</p>
     </div>
   </div>
 </body>
@@ -1193,7 +1193,7 @@ export class EmersonEIMSAPI {
   private baseUrl: string;
   private apiKey: string;
 
-  constructor(apiKey: string, baseUrl: string = 'https://api.emersoneims.co.ke') {
+  constructor(apiKey: string, baseUrl: string = 'https://api.emersoneims.com') {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
   }
