@@ -9,9 +9,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPostgresPool } from '@/lib/db';
 import { timingSafeEqual } from 'crypto';
+import nodemailer from 'nodemailer';
 
 // Sales team notification settings
 const SALES_EMAIL = process.env.SALES_EMAIL || 'emersoneimservices@gmail.com';
+// Team mailboxes that receive lead alerts sent from EmersonEIMS's OWN mail
+// server (mail.emersoneims.com). Override with LEAD_RECIPIENTS (comma-separated).
+const LEAD_RECIPIENTS = (process.env.LEAD_RECIPIENTS || 'info@emersoneims.com,sally@emersoneims.com')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+// Friendly labels for the service field, shared by every email channel.
+const SERVICE_LABELS: Record<string, string> = {
+  general: 'General Inquiry',
+  generators: 'Generators',
+  solar: 'Solar Energy',
+  ups: 'UPS Systems',
+  automation: 'Automation',
+  pumps: 'Pumps',
+  incinerators: 'Incinerators',
+  motors: 'Motors',
+};
 // Real EmersonEIMS business line — used for SMS/WhatsApp sales alerts AND as the
 // public WhatsApp fallback returned to the browser. Was previously a placeholder
 // (+254768860665) that delivered alerts nowhere.
@@ -144,7 +163,8 @@ export async function POST(request: NextRequest) {
 
     // Fire every configured delivery channel and record which actually worked.
     // We run them in parallel so a slow provider can't delay the response.
-    const [emailOk, smsOk, whatsappOk, webhookOk, formSubmitOk] = await Promise.all([
+    const [smtpOk, emailOk, smsOk, whatsappOk, webhookOk, formSubmitOk] = await Promise.all([
+      sendSmtpNotification(body, leadId),
       sendEmailNotification(body, leadId),
       body.phone ? sendSMSNotification(body) : Promise.resolve(false),
       sendWhatsAppNotification(body),
@@ -153,7 +173,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     const dbStored = leadId > 0;
-    const delivered = dbStored || emailOk || smsOk || whatsappOk || webhookOk || formSubmitOk;
+    const delivered = dbStored || smtpOk || emailOk || smsOk || whatsappOk || webhookOk || formSubmitOk;
 
     // The browser ALWAYS gets a working WhatsApp deep link so a visitor can
     // reach us directly even if no server channel is configured.
@@ -258,43 +278,10 @@ async function storeLead(data: ContactFormData & { ip: string; userAgent: string
   }
 }
 
-// Send email notification to sales team. Returns true only if Resend accepted it.
-async function sendEmailNotification(data: ContactFormData, leadId: number): Promise<boolean> {
-  try {
-    const serviceLabels: Record<string, string> = {
-      'general': 'General Inquiry',
-      'generators': 'Generators',
-      'solar': 'Solar Energy',
-      'ups': 'UPS Systems',
-      'automation': 'Automation',
-      'pumps': 'Pumps',
-      'incinerators': 'Incinerators',
-      'motors': 'Motors',
-    };
-
-    // Check if Resend API key is configured
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      console.log('📧 Email notification (Resend not configured):', {
-        to: SALES_EMAIL,
-        subject: `NEW LEAD: ${data.name} - ${serviceLabels[data.service || 'general']}`,
-        leadId,
-      });
-      return false;
-    }
-
-    // Send via Resend API
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'EmersonEIMS Leads <leads@emersoneims.com>',
-        to: SALES_EMAIL,
-        subject: `🔥 NEW LEAD: ${data.name} - ${serviceLabels[data.service || 'general']}`,
-        html: `
+// Shared branded HTML for lead-alert emails (used by both the SMTP own-server
+// channel and the Resend channel).
+function buildLeadEmailHtml(data: ContactFormData, leadId: number): string {
+  return `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 20px; text-align: center;">
               <h1 style="color: white; margin: 0;">🎯 New Lead Alert!</h1>
@@ -332,7 +319,7 @@ async function sendEmailNotification(data: ContactFormData, leadId: number): Pro
                   <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Service:</td>
                   <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
                     <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px;">
-                      ${serviceLabels[data.service || 'general']}
+                      ${SERVICE_LABELS[data.service || 'general']}
                     </span>
                   </td>
                 </tr>
@@ -369,7 +356,80 @@ async function sendEmailNotification(data: ContactFormData, leadId: number): Pro
               </div>
             </div>
           </div>
-        `,
+        `;
+}
+
+// PRIMARY CHANNEL — send the lead alert from EmersonEIMS's OWN mail server
+// (mail.emersoneims.com) via SMTP, e.g. from info@emersoneims.com to the team
+// mailboxes (info@ + sally@). Requires SMTP_HOST/SMTP_USER/SMTP_PASSWORD set in
+// Vercel. Returns true only if the server accepted the message.
+async function sendSmtpNotification(data: ContactFormData, leadId: number): Promise<boolean> {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASSWORD;
+
+  if (!host || !user || !pass) {
+    console.log('📧 SMTP (own mail server) not configured — set SMTP_HOST/SMTP_USER/SMTP_PASSWORD');
+    return false;
+  }
+
+  const port = parseInt(process.env.SMTP_PORT || '465', 10);
+  const fromEmail = process.env.SMTP_FROM_EMAIL || user;
+  const fromName = process.env.SMTP_FROM_NAME || 'EmersonEIMS Website Leads';
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465, // SSL for 465, STARTTLS for 587
+      auth: { user, pass },
+    });
+
+    await transporter.sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
+      to: LEAD_RECIPIENTS.join(', '),
+      replyTo: data.email, // team can reply straight to the customer
+      subject: `🔥 NEW WEBSITE LEAD: ${data.name} — ${SERVICE_LABELS[data.service || 'general']}`,
+      html: buildLeadEmailHtml(data, leadId),
+      text:
+        `NEW WEBSITE LEAD #${leadId || '-'}\n` +
+        `Name: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || '—'}\n` +
+        `Company: ${data.company || '—'}\nService: ${data.service || 'general'}\n` +
+        `Location: ${data.location || '—'}\nSource: ${data.source || 'contact_form'}\n\n${data.message}`,
+    });
+    return true;
+  } catch (error) {
+    console.error('Failed to send lead email via own SMTP server:', error);
+    return false;
+  }
+}
+
+// Send email notification to sales team via Resend. Returns true only if Resend accepted it.
+async function sendEmailNotification(data: ContactFormData, leadId: number): Promise<boolean> {
+  try {
+    // Check if Resend API key is configured
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      console.log('📧 Email notification (Resend not configured):', {
+        to: SALES_EMAIL,
+        subject: `NEW LEAD: ${data.name} - ${SERVICE_LABELS[data.service || 'general']}`,
+        leadId,
+      });
+      return false;
+    }
+
+    // Send via Resend API
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'EmersonEIMS Leads <leads@emersoneims.com>',
+        to: SALES_EMAIL,
+        subject: `🔥 NEW LEAD: ${data.name} - ${SERVICE_LABELS[data.service || 'general']}`,
+        html: buildLeadEmailHtml(data, leadId),
       }),
     });
 
