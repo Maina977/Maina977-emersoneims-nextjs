@@ -144,15 +144,16 @@ export async function POST(request: NextRequest) {
 
     // Fire every configured delivery channel and record which actually worked.
     // We run them in parallel so a slow provider can't delay the response.
-    const [emailOk, smsOk, whatsappOk, webhookOk] = await Promise.all([
+    const [emailOk, smsOk, whatsappOk, webhookOk, formSubmitOk] = await Promise.all([
       sendEmailNotification(body, leadId),
       body.phone ? sendSMSNotification(body) : Promise.resolve(false),
       sendWhatsAppNotification(body),
       sendWebhookNotification(body, leadId),
+      sendFormSubmitNotification(body, leadId),
     ]);
 
     const dbStored = leadId > 0;
-    const delivered = dbStored || emailOk || smsOk || whatsappOk || webhookOk;
+    const delivered = dbStored || emailOk || smsOk || whatsappOk || webhookOk || formSubmitOk;
 
     // The browser ALWAYS gets a working WhatsApp deep link so a visitor can
     // reach us directly even if no server channel is configured.
@@ -162,8 +163,9 @@ export async function POST(request: NextRequest) {
       // Nothing durable happened — log loudly so this surfaces in monitoring,
       // and tell the client to push the visitor to the WhatsApp fallback.
       console.error(
-        '🚨 LEAD NOT DELIVERED — no DB and no notification channel configured. ' +
-        'Set RESEND_API_KEY, LEAD_WEBHOOK_URL, AFRICASTALKING_* or WHATSAPP_* in the environment. Lead:',
+        '🚨 LEAD NOT DELIVERED — no DB and no channel succeeded. The free FormSubmit ' +
+        'channel needs a ONE-TIME "Activate Form" click in the ' + SALES_EMAIL + ' inbox. ' +
+        'Or set RESEND_API_KEY, LEAD_WEBHOOK_URL, AFRICASTALKING_* or WHATSAPP_* in the environment. Lead:',
         { name: body.name, email: body.email, phone: body.phone, service: body.service }
       );
     }
@@ -445,6 +447,66 @@ async function sendWhatsAppNotification(data: ContactFormData): Promise<boolean>
     return res.ok;
   } catch (error) {
     console.error('Failed to send WhatsApp notification:', error);
+    return false;
+  }
+}
+
+// Send lead via FormSubmit.co — a FREE, no-account, no-API-key, no-env-var email
+// relay. This is the DEFAULT always-on channel so leads reach the business inbox
+// even when NOTHING is configured in Vercel. It works server-side as long as an
+// Origin/Referer header is present (FormSubmit blocks raw file/script posts).
+//
+// ONE-TIME ACTIVATION: the first email FormSubmit ever sends to an address is an
+// "Activate Form" link — click it once in that inbox and every future lead is
+// delivered. Until activated, this returns false (success:"false") and the route
+// falls back to the WhatsApp deep link, so no lead is ever lost.
+async function sendFormSubmitNotification(data: ContactFormData, leadId: number): Promise<boolean> {
+  try {
+    const target = SALES_EMAIL; // defaults to emersoneimservices@gmail.com
+    const serviceLabel = data.service || 'general';
+
+    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(target)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        // Required: FormSubmit rejects posts without a referring web origin.
+        'Origin': 'https://www.emersoneims.com',
+        'Referer': 'https://www.emersoneims.com/contact',
+      },
+      body: JSON.stringify({
+        _subject: `🔥 NEW WEBSITE LEAD #${leadId || '-'}: ${data.name} — ${serviceLabel}`,
+        _template: 'table',
+        // Setting the visitor's email as reply-to lets the team reply directly.
+        _replyto: data.email,
+        Name: data.name,
+        Email: data.email,
+        Phone: data.phone || '—',
+        Company: data.company || '—',
+        Service: serviceLabel,
+        Location: data.location || '—',
+        Source: data.source || 'contact_form',
+        Message: data.message,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error('FormSubmit relay HTTP error:', res.status, await res.text().catch(() => ''));
+      return false;
+    }
+
+    const json = await res.json().catch(() => null) as { success?: string | boolean; message?: string } | null;
+    const ok = !!json && (json.success === 'true' || json.success === true);
+    if (!ok) {
+      // Most common reason: the address hasn't been activated yet.
+      console.warn(
+        `FormSubmit not delivered for ${target} — click the "Activate Form" link emailed to that inbox once. Message:`,
+        json?.message
+      );
+    }
+    return ok;
+  } catch (error) {
+    console.error('Failed to send FormSubmit notification:', error);
     return false;
   }
 }
