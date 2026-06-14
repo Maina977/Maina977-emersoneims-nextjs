@@ -316,7 +316,7 @@ function SciFiContactForm() {
       formData.message,
     ].filter(Boolean).join('\n');
     if (typeof window !== 'undefined') {
-      window.open(`https://wa.me/254768860665?text=${encodeURIComponent(waText)}`, '_blank', 'noopener,noreferrer');
+      window.open(`https://wa.me/254782914717?text=${encodeURIComponent(waText)}`, '_blank', 'noopener,noreferrer');
     }
 
     // Also send to the lead API (DB + any configured email/SMS/webhook channel)
@@ -878,7 +878,7 @@ export default function SciFiContactPage() {
               title="INSTANT_LINK"
               value="WhatsApp"
               subtext="Quick response channel for urgent queries and real-time support."
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254782914717"
               delay={0.2}
               gradient="from-green-600 to-green-700"
             />
@@ -929,7 +929,7 @@ export default function SciFiContactPage() {
                 <div className="bg-white p-2 rounded-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwa.me%2F254768860665%3Ftext%3DHello%2520EmersonEIMS&color=22c55e&format=png"
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwa.me%2F254782914717%3Ftext%3DHello%2520EmersonEIMS&color=22c55e&format=png"
                     alt="Scan to WhatsApp"
                     width={120}
                     height={120}

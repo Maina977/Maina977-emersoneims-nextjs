@@ -118,7 +118,7 @@ export default function CTAForm() {
         <h3 className="text-2xl font-bold text-white mb-3">Thank You!</h3>
         <p className="text-gray-400 mb-6">We&apos;ll get back to you within 2 hours. For an instant reply, message us on WhatsApp.</p>
         <a
-          href={whatsappFallback || 'https://wa.me/254768860665'}
+          href={whatsappFallback || 'https://wa.me/254782914717'}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-black font-bold rounded-xl hover:brightness-110 transition-all"

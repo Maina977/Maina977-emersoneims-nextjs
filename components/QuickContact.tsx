@@ -41,7 +41,7 @@ export default function QuickContact({ location, service, showForm = false }: Qu
     // server notification channel is configured.
     const waText = `Hello EmersonEIMS, please call me back${service ? ` about ${service}` : ''}${location ? ` (from ${location})` : ''}. My number: ${phone}`;
     if (typeof window !== 'undefined') {
-      window.open(`https://wa.me/254768860665?text=${encodeURIComponent(waText)}`, '_blank', 'noopener,noreferrer');
+      window.open(`https://wa.me/254782914717?text=${encodeURIComponent(waText)}`, '_blank', 'noopener,noreferrer');
     }
 
     try {
