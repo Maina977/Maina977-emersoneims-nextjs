@@ -163,17 +163,18 @@ export async function POST(request: NextRequest) {
 
     // Fire every configured delivery channel and record which actually worked.
     // We run them in parallel so a slow provider can't delay the response.
-    const [smtpOk, emailOk, smsOk, whatsappOk, webhookOk, formSubmitOk] = await Promise.all([
+    const [smtpOk, emailOk, smsOk, whatsappOk, webhookOk, formSubmitOk, erpOk] = await Promise.all([
       sendSmtpNotification(body, leadId),
       sendEmailNotification(body, leadId),
       body.phone ? sendSMSNotification(body) : Promise.resolve(false),
       sendWhatsAppNotification(body),
       sendWebhookNotification(body, leadId),
       sendFormSubmitNotification(body, leadId),
+      sendErpQuoteRequest(body),
     ]);
 
     const dbStored = leadId > 0;
-    const delivered = dbStored || smtpOk || emailOk || smsOk || whatsappOk || webhookOk || formSubmitOk;
+    const delivered = dbStored || smtpOk || emailOk || smsOk || whatsappOk || webhookOk || formSubmitOk || erpOk;
 
     // The browser ALWAYS gets a working WhatsApp deep link so a visitor can
     // reach us directly even if no server channel is configured.
@@ -567,6 +568,49 @@ async function sendFormSubmitNotification(data: ContactFormData, leadId: number)
     return ok;
   } catch (error) {
     console.error('Failed to send FormSubmit notification:', error);
+    return false;
+  }
+}
+
+// Send the enquiry to EmersonEIMS ERP PRO as a quote request. The ERP exposes
+// POST /api/public/quote-request which registers the request and creates a DRAFT
+// quotation held for authorization (CRM & Sales → Quote Requests). The ERP runs
+// on the office LAN (port 8088), so the public site reaches it via a tunnel URL
+// (e.g. cloudflared → https://…trycloudflare.com). Set the full public endpoint
+// in ERP_QUOTE_ENDPOINT, e.g. https://eims-erp.trycloudflare.com/api/public/quote-request
+// Returns true only if the ERP accepted the request.
+async function sendErpQuoteRequest(data: ContactFormData): Promise<boolean> {
+  const endpoint = process.env.ERP_QUOTE_ENDPOINT;
+  if (!endpoint) {
+    console.log('ERP_QUOTE_ENDPOINT not configured, skipping ERP quote-request');
+    return false;
+  }
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Matches the ERP contract: {name,email,phone,service,message,source}.
+      // company/location are extra context the ERP can ignore safely.
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        phone: data.phone || '',
+        company: data.company || '',
+        service: data.service || 'general',
+        message: data.message,
+        location: data.location || '',
+        source: data.source || 'website',
+      }),
+      // The tunnel can be slow/asleep — cap the wait so it never delays the reply.
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      console.error('ERP quote-request failed:', res.status, await res.text().catch(() => ''));
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to send ERP quote-request:', error);
     return false;
   }
 }
