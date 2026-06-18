@@ -43,7 +43,10 @@ export async function initPostgresPool() {
       ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       max: 20, // Maximum number of clients in the pool
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      // Neon (and other serverless Postgres) auto-suspend when idle and can take
+      // several seconds to wake; 2s was too short and caused intermittent
+      // "DB unavailable" on the first request after a quiet period.
+      connectionTimeoutMillis: 10000,
     });
 
     // Test connection

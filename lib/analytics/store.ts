@@ -442,7 +442,9 @@ export async function getStats(days: number): Promise<AnalyticsStats> {
         [liveSince],
       ),
       pool.query(
-        `SELECT to_char(day,'YYYY-MM-DD') day, site,
+        // NOTE: alias as "d" not the bare keyword "day" — `... ) day` is a parse
+        // error on Postgres, which (via Promise.all) zeroed the ENTIRE stats payload.
+        `SELECT to_char(day,'YYYY-MM-DD') AS d, site,
            SUM(CASE WHEN type='pageview' THEN 1 ELSE 0 END) views,
            COUNT(DISTINCT visitor) visitors
          FROM web_analytics_events
@@ -535,7 +537,7 @@ export async function getStats(days: number): Promise<AnalyticsStats> {
       },
       live_visitors: num(liveRow.n),
       series: seriesRes.rows.map((r) => ({
-        day: String(r.day ?? ''),
+        day: String(r.d ?? ''),
         site: String(r.site ?? ''),
         views: num(r.views),
         visitors: num(r.visitors),
