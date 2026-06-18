@@ -76,6 +76,64 @@ function clientGeo(request: NextRequest): {
   return { country, region, city };
 }
 
+// Per-process cache so we never re-query the same visitor IP repeatedly (a
+// visitor browsing many pages, or 60s pings, costs at most one lookup per
+// serverless instance lifetime).
+const geoCache = new Map<string, { v: { country: string; region: string; city: string }; exp: number }>();
+const GEO_TTL_MS = 6 * 60 * 60 * 1000; // 6h
+
+/** Skip private / loopback / unset IPs — they can't be geolocated. */
+function isPublicIp(ip: string): boolean {
+  if (!ip || ip === '0.0.0.0' || ip === '::1') return false;
+  if (/^(10\.|127\.|192\.168\.|169\.254\.|::1)/.test(ip)) return false;
+  const m = ip.match(/^172\.(\d+)\./);
+  if (m) {
+    const o = Number(m[1]);
+    if (o >= 16 && o <= 31) return false;
+  }
+  return true;
+}
+
+/**
+ * Vercel's edge reliably resolves COUNTRY but often returns no region/city for
+ * African IPs (Kenya included). When that happens we enrich from ipwho.is — a
+ * free, key-less, HTTPS service that permits commercial use — to fill the
+ * county (region) and town (city). Cached per IP, short timeout, never throws;
+ * on any failure we simply keep whatever the edge gave us.
+ */
+async function enrichGeoFromIp(
+  ip: string,
+): Promise<{ country: string; region: string; city: string } | null> {
+  if (!isPublicIp(ip)) return null;
+  const now = Date.now();
+  const hit = geoCache.get(ip);
+  if (hit && hit.exp > now) return hit.v;
+  try {
+    const res = await fetch(
+      `https://ipwho.is/${encodeURIComponent(ip)}?fields=success,country_code,region,city`,
+      { signal: AbortSignal.timeout(2500) },
+    );
+    if (!res.ok) return null;
+    const j = (await res.json()) as {
+      success?: boolean;
+      country_code?: string;
+      region?: string;
+      city?: string;
+    };
+    if (!j || j.success === false) return null;
+    const v = {
+      country: String(j.country_code || ''),
+      region: String(j.region || ''),
+      city: String(j.city || ''),
+    };
+    if (geoCache.size > 5000) geoCache.clear(); // bound memory
+    geoCache.set(ip, { v, exp: now + GEO_TTL_MS });
+    return v;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     let raw: Record<string, unknown> = {};
@@ -101,7 +159,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const ip = clientIp(request);
     const ua = request.headers.get('user-agent') ?? '';
-    const { country, region, city } = clientGeo(request);
+    let { country, region, city } = clientGeo(request);
+
+    // The edge often gives only a country for KE IPs — fill the county/city from
+    // a free IP lookup so "region" and "location" actually populate.
+    if (!region || !city) {
+      const enriched = await enrichGeoFromIp(ip);
+      if (enriched) {
+        country = country || enriched.country;
+        region = region || enriched.region;
+        city = city || enriched.city;
+      }
+    }
 
     // Result is intentionally ignored — drops must stay silent.
     await recordEvent({ type, path, host, ref, label, ip, ua, country, region, city });
