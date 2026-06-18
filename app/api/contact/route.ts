@@ -108,6 +108,34 @@ interface ContactFormData {
   location?: string; // For location-specific pages
 }
 
+/**
+ * Geolocation derived server-side from edge headers — never trusted from the
+ * client. Vercel populates these on every request at no cost. We also accept the
+ * generic Cloudflare / common-proxy header names so this keeps working if the
+ * site ever moves off Vercel. `region` is the first-level subdivision, which for
+ * Kenya is the county. Mirrors the helper in /api/analytics/collect.
+ */
+function clientGeoFromHeaders(request: NextRequest): {
+  country: string;
+  region: string;
+  city: string;
+} {
+  const h = request.headers;
+  const country = (
+    h.get('x-vercel-ip-country') || h.get('cf-ipcountry') || h.get('x-geo-country') || ''
+  ).trim();
+  const region = (
+    h.get('x-vercel-ip-country-region') ||
+    h.get('x-geo-region') ||
+    h.get('cf-region') ||
+    ''
+  ).trim();
+  const city = (
+    h.get('x-vercel-ip-city') || h.get('cf-ipcity') || h.get('x-geo-city') || ''
+  ).trim();
+  return { country, region, city };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: ContactFormData = await request.json();
@@ -161,9 +189,12 @@ export async function POST(request: NextRequest) {
       referer: referer || 'direct',
     });
 
+    // Server-side geo from edge headers — attached to the durable Sheet lead.
+    const geo = clientGeoFromHeaders(request);
+
     // Fire every configured delivery channel and record which actually worked.
     // We run them in parallel so a slow provider can't delay the response.
-    const [smtpOk, emailOk, smsOk, whatsappOk, webhookOk, formSubmitOk, erpOk] = await Promise.all([
+    const [smtpOk, emailOk, smsOk, whatsappOk, webhookOk, formSubmitOk, erpOk, sheetOk] = await Promise.all([
       sendSmtpNotification(body, leadId),
       sendEmailNotification(body, leadId),
       body.phone ? sendSMSNotification(body) : Promise.resolve(false),
@@ -171,10 +202,11 @@ export async function POST(request: NextRequest) {
       sendWebhookNotification(body, leadId),
       sendFormSubmitNotification(body, leadId),
       sendErpQuoteRequest(body),
+      sendSheetLead(body, geo, leadId),
     ]);
 
     const dbStored = leadId > 0;
-    const delivered = dbStored || smtpOk || emailOk || smsOk || whatsappOk || webhookOk || formSubmitOk || erpOk;
+    const delivered = dbStored || smtpOk || emailOk || smsOk || whatsappOk || webhookOk || formSubmitOk || erpOk || sheetOk;
 
     // The browser ALWAYS gets a working WhatsApp deep link so a visitor can
     // reach us directly even if no server channel is configured.
@@ -643,6 +675,61 @@ async function sendWebhookNotification(data: ContactFormData, leadId: number): P
     return res.ok;
   } catch (error) {
     console.error('Failed to send webhook notification:', error);
+    return false;
+  }
+}
+
+// DURABLE CHANNEL — append the lead as a row to a Google Sheet via the Apps Script
+// web app. This is the free, laptop-independent datastore that records every
+// enquiry even when no Postgres is configured. Set SHEET_WEBAPP_URL (the Apps
+// Script /exec URL) and SHEET_TOKEN (shared secret) in Vercel. Payload matches the
+// canonical contract section 2B. Never throws — returns res.ok or false.
+async function sendSheetLead(
+  data: ContactFormData,
+  geo: { country: string; region: string; city: string },
+  leadId: number
+): Promise<boolean> {
+  const url = process.env.SHEET_WEBAPP_URL;
+  const token = process.env.SHEET_TOKEN;
+  if (!url || !token) {
+    console.log('📊 Google Sheet lead channel not configured — set SHEET_WEBAPP_URL/SHEET_TOKEN');
+    return false;
+  }
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Apps Script /exec replies with a 302 to script.googleusercontent.com —
+      // follow it so we read the real {"ok":true} response.
+      redirect: 'follow',
+      body: JSON.stringify({
+        kind: 'lead',
+        token,
+        lead: {
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          company: data.company || '',
+          service: data.service || 'general',
+          message: data.message,
+          source: data.source || 'contact_form',
+          location: data.location || '',
+          country: geo.country,
+          region: geo.region,
+          city: geo.city,
+          received_at: new Date().toISOString(),
+        },
+      }),
+      // Apps Script can be slow — cap the wait so it never delays the reply.
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      console.error('Google Sheet lead append failed:', res.status, await res.text().catch(() => ''));
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to append lead to Google Sheet:', error);
     return false;
   }
 }

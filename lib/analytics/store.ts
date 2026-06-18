@@ -147,17 +147,156 @@ export function cleanGeo(value: string | undefined | null): string {
   return v;
 }
 
+// --- Google Sheets backend ---------------------------------------------------
+//
+// When there is NO Postgres pool but SHEET_WEBAPP_URL + SHEET_TOKEN are set, the
+// store reads/writes through a Google Apps Script web app fronting a Sheet (see
+// integrations/google-sheets/CONTRACT.md). Env is read at call time (not module
+// load) so Vercel/runtime values are picked up reliably.
+
+/** The normalized event row shipped to the Sheet (matches CONTRACT §2A). */
+type SheetEvent = {
+  ts: number;
+  day: string;
+  site: string;
+  host: string;
+  path: string;
+  type: string;
+  ref: string;
+  label: string;
+  visitor: string;
+  country: string;
+  region: string;
+  city: string;
+};
+
+/** True when both Sheet env vars are present and non-empty. */
+function sheetConfigured(): boolean {
+  return Boolean(
+    (process.env.SHEET_WEBAPP_URL || '').trim() &&
+      (process.env.SHEET_TOKEN || '').trim(),
+  );
+}
+
+/**
+ * POST one analytics event to the Apps Script web app. Never throws; returns
+ * false on any error. Apps Script 302-redirects /exec to googleusercontent, so
+ * we rely on fetch's default redirect: 'follow'.
+ */
+async function postEventToSheet(event: SheetEvent): Promise<boolean> {
+  const url = (process.env.SHEET_WEBAPP_URL || '').trim();
+  const token = (process.env.SHEET_TOKEN || '').trim();
+  if (!url || !token) return false;
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: 'event', token, event }),
+      signal: AbortSignal.timeout(6000),
+      // default: redirect: 'follow' (must follow Apps Script 302)
+    });
+    return res.ok;
+  } catch (error) {
+    console.error('❌ analytics postEventToSheet error:', error);
+    return false;
+  }
+}
+
+/**
+ * GET aggregated stats from the Apps Script web app. Coerces every field into a
+ * valid AnalyticsStats using the same num()/array-mapping style as the Postgres
+ * getStats so the shape is guaranteed. Throws on transport or contract errors
+ * (caller falls back to zeroedStats).
+ */
+async function getStatsFromSheet(days: number): Promise<AnalyticsStats> {
+  const url = (process.env.SHEET_WEBAPP_URL || '').trim();
+  const token = (process.env.SHEET_TOKEN || '').trim();
+  if (!url || !token) throw new Error('sheet not configured');
+
+  const endpoint = `${url}?action=stats&token=${encodeURIComponent(token)}&days=${days}`;
+  const res = await fetch(endpoint, {
+    method: 'GET',
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) throw new Error(`sheet stats HTTP ${res.status}`);
+
+  const data: unknown = await res.json();
+  const d = (data && typeof data === 'object' ? data : {}) as Record<string, unknown>;
+  if ('error' in d || !('totals' in d)) {
+    throw new Error(`sheet stats error: ${String(d.error ?? 'missing totals')}`);
+  }
+
+  const totals = (d.totals || {}) as Record<string, unknown>;
+  const today = (d.today || {}) as Record<string, unknown>;
+  const asArr = (x: unknown): Record<string, unknown>[] =>
+    Array.isArray(x) ? (x as Record<string, unknown>[]) : [];
+
+  return {
+    generated_at:
+      typeof d.generated_at === 'string' ? d.generated_at : new Date().toISOString(),
+    window_days: num(d.window_days) || days,
+    totals: {
+      views: num(totals.views),
+      clicks: num(totals.clicks),
+      visitors: num(totals.visitors),
+    },
+    today: {
+      views: num(today.views),
+      visitors: num(today.visitors),
+    },
+    live_visitors: num(d.live_visitors),
+    series: asArr(d.series).map((r) => ({
+      day: String(r.day ?? ''),
+      site: String(r.site ?? ''),
+      views: num(r.views),
+      visitors: num(r.visitors),
+    })),
+    top_pages: asArr(d.top_pages).map((r) => ({
+      site: String(r.site ?? ''),
+      path: String(r.path ?? ''),
+      views: num(r.views),
+      visitors: num(r.visitors),
+    })),
+    per_site: asArr(d.per_site).map((r) => ({
+      site: String(r.site ?? ''),
+      views: num(r.views),
+      visitors: num(r.visitors),
+    })),
+    top_clicks: asArr(d.top_clicks).map((r) => ({
+      label: String(r.label ?? ''),
+      site: String(r.site ?? ''),
+      clicks: num(r.clicks),
+    })),
+    top_countries: asArr(d.top_countries).map((r) => ({
+      country: String(r.country ?? ''),
+      views: num(r.views),
+      visitors: num(r.visitors),
+    })),
+    top_regions: asArr(d.top_regions).map((r) => ({
+      country: String(r.country ?? ''),
+      region: String(r.region ?? ''),
+      views: num(r.views),
+      visitors: num(r.visitors),
+    })),
+    top_cities: asArr(d.top_cities).map((r) => ({
+      country: String(r.country ?? ''),
+      region: String(r.region ?? ''),
+      city: String(r.city ?? ''),
+      views: num(r.views),
+      visitors: num(r.visitors),
+    })),
+  };
+}
+
 // --- Write path --------------------------------------------------------------
 
 export async function recordEvent(
   input: AnalyticsEventInput,
 ): Promise<{ ok: boolean; dropped?: 'bot' | 'invalid' | 'nodb' }> {
-  const pool = await getPostgresPool();
-  if (!pool) return { ok: false, dropped: 'nodb' };
-
   try {
-    await ensureTable(pool);
-
+    // Bot filtering + field normalization happen BEFORE choosing a backend so
+    // every backend stores identically-shaped, identically-cleaned rows.
     if (isBot(input.ua)) return { ok: false, dropped: 'bot' };
 
     const type =
@@ -182,13 +321,38 @@ export async function recordEvent(
     const region = cleanGeo(input.region);
     const city = cleanGeo(input.city);
 
-    await pool.query(
-      `INSERT INTO web_analytics_events (ts, day, site, host, path, type, ref, label, visitor, country, region, city)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-      [ts, day, site, host, path, type, ref, label, visitor, country, region, city],
-    );
+    const pool = await getPostgresPool();
 
-    return { ok: true };
+    if (pool) {
+      await ensureTable(pool);
+      await pool.query(
+        `INSERT INTO web_analytics_events (ts, day, site, host, path, type, ref, label, visitor, country, region, city)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+        [ts, day, site, host, path, type, ref, label, visitor, country, region, city],
+      );
+      return { ok: true };
+    }
+
+    if (sheetConfigured()) {
+      const event: SheetEvent = {
+        ts,
+        day,
+        site,
+        host,
+        path,
+        type,
+        ref,
+        label,
+        visitor,
+        country,
+        region,
+        city,
+      };
+      const ok = await postEventToSheet(event);
+      return ok ? { ok: true } : { ok: false, dropped: 'invalid' };
+    }
+
+    return { ok: false, dropped: 'nodb' };
   } catch (error) {
     console.error('❌ analytics recordEvent error:', error);
     return { ok: false, dropped: 'invalid' };
@@ -224,7 +388,17 @@ export async function getStats(days: number): Promise<AnalyticsStats> {
   window = Math.max(1, Math.min(365, window));
 
   const pool = await getPostgresPool();
-  if (!pool) return zeroedStats(window);
+  if (!pool) {
+    if (sheetConfigured()) {
+      try {
+        return await getStatsFromSheet(window);
+      } catch (error) {
+        console.error('❌ analytics getStatsFromSheet error:', error);
+        return zeroedStats(window);
+      }
+    }
+    return zeroedStats(window);
+  }
 
   try {
     await ensureTable(pool);
