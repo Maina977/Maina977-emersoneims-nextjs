@@ -8,7 +8,8 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const CACHE_VERSION = 'v9-20260503-wizard-bump';
+const CACHE_VERSION = 'v10-20260618-offline-realfix';
+const OFFLINE_URL = '/offline.html';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const IMAGES_CACHE = `images-${CACHE_VERSION}`;
 const PAGES_CACHE = `pages-${CACHE_VERSION}`;
@@ -19,10 +20,12 @@ const FONTS_CACHE = `fonts-${CACHE_VERSION}`;
 // ═══════════════════════════════════════════════════════════════════════════════
 // CRITICAL ASSETS - Precache for INSTANT loading
 // ═══════════════════════════════════════════════════════════════════════════════
+// Offline fallback page is precached FIRST and is non-negotiable — it is what
+// makes the "works offline" promise real for pages the user hasn't visited yet.
 const PRECACHE_ASSETS = [
+  OFFLINE_URL,
   '/',
   '/manifest.webmanifest',
-  '/favicon.ico',
   '/images/logo-tagline.png',
   '/generators',
   '/solar',
@@ -33,7 +36,6 @@ const PRECACHE_ASSETS = [
   '/booking',
   '/brands',
   '/ai-tools',
-  '/products/generator-oracle',
 ];
 
 // Performance tracking
@@ -52,12 +54,20 @@ self.addEventListener('install', (event) => {
 
   event.waitUntil(
     Promise.all([
-      caches.open(STATIC_CACHE).then((cache) => {
-        return cache.addAll(PRECACHE_ASSETS).catch((err) => {
-          console.warn('⚠️ SW: Some assets failed to precache:', err);
-          return Promise.resolve();
-        });
-      }),
+      caches.open(STATIC_CACHE).then((cache) =>
+        // Per-item add() instead of addAll() — addAll is atomic, so a single
+        // 404 would reject the WHOLE precache and leave the site with nothing
+        // cached (and a broken offline experience). Per-item, one bad URL can't
+        // poison the rest. The offline page is added explicitly so we know it
+        // succeeded even if a route precache fails.
+        Promise.all(
+          PRECACHE_ASSETS.map((url) =>
+            cache.add(url).catch((err) => {
+              console.warn('⚠️ SW: precache skipped', url, err && err.message);
+            })
+          )
+        )
+      ),
       // Pre-warm DNS and connections
       warmupConnections(),
     ])
@@ -166,8 +176,14 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    // Page navigations - Stale while revalidate for instant loads
-    event.respondWith(staleWhileRevalidate(request, PAGES_CACHE));
+    // Page navigations — NETWORK FIRST, then cache, then offline page.
+    // Why not stale-while-revalidate: cached HTML references content-hashed
+    // /_next/static chunk URLs. After a deploy those hashes change, so serving
+    // stale HTML points the browser at deleted chunks → hydration / chunk-load
+    // errors (the documented "service-worker-stale-chunks" bug). Network-first
+    // means online users ALWAYS get fresh HTML matching the live chunks; the
+    // cache is only a fallback when the network genuinely fails.
+    event.respondWith(navigationNetworkFirst(request));
     return;
   }
 
@@ -288,6 +304,39 @@ async function staleWhileRevalidate(request, cacheName) {
   // Wait for network if no cache
   const networkResponse = await fetchPromise;
   return networkResponse || new Response('Offline', { status: 503 });
+}
+
+/**
+ * Navigation Network First — fresh HTML when online, cache/offline when not.
+ * 1) Try the network. On success, cache a copy and return it.
+ * 2) If the network fails, return the cached copy of this exact page if we have
+ *    one (so previously-visited pages work offline).
+ * 3) Otherwise return the branded offline fallback page.
+ */
+async function navigationNetworkFirst(request) {
+  const cache = await caches.open(PAGES_CACHE);
+  try {
+    perfMetrics.networkRequests++;
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    const cachedPage = await cache.match(request);
+    if (cachedPage) {
+      perfMetrics.cacheHits++;
+      return cachedPage;
+    }
+    const offline = await caches.match(OFFLINE_URL);
+    return (
+      offline ||
+      new Response('You are offline.', {
+        status: 503,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      })
+    );
+  }
 }
 
 /**

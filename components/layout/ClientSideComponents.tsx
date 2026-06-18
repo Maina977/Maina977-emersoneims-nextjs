@@ -13,6 +13,15 @@ const DMCAProtection = dynamic(() => import('@/components/security/DMCAProtectio
 const CookieConsent = dynamic(() => import('@/components/compliance/CookieConsent'), { ssr: false });
 const ClientWhatsApp = dynamic(() => import('@/components/chat/ClientWhatsApp'), { ssr: false });
 const PWAInstallPrompt = dynamic(() => import('@/components/pwa/PWAInstallPrompt'), { ssr: false });
+// Accessibility toolbar (font size / contrast / spacing / cursor / link highlight).
+// Mounted site-wide so the visually-impaired support we advertise is REAL: the
+// Alt+A shortcut and the "Accessibility" skip link both target the button this
+// renders (aria-label="Open accessibility settings", id="accessibility-settings").
+const AccessibilityWidget = dynamic(() => import('@/components/AccessibilityWidget'), { ssr: false });
+// Service worker registration — makes the offline/PWA capability REAL. Deferred
+// to tier-2 so it never competes with first paint. sw.js uses network-first for
+// HTML (always fresh when online) so it cannot serve stale chunks.
+const ServiceWorkerRegistration = dynamic(() => import('@/components/pwa/ServiceWorkerRegistration'), { ssr: false });
 
 export default function ClientSideComponents() {
   const pathname = usePathname() || '';
@@ -50,10 +59,14 @@ export default function ClientSideComponents() {
 
   return (
     <>
-      {/* TIER 1: Essential - Cookie Consent (GDPR required) */}
+      {/* TIER 1: Essential - Cookie Consent (GDPR required) + Accessibility.
+          The accessibility toolbar is mounted on EVERY page (including /hub) so
+          visually-impaired users always have it; it sits bottom-left and does
+          not overlap the bottom-right hub widgets. */}
       {tier1 && (
         <>
           <CookieConsent />
+          <AccessibilityWidget />
           {!isHub && <ClientWhatsApp />}
         </>
       )}
@@ -80,6 +93,10 @@ export default function ClientSideComponents() {
           <PWAInstallPrompt />
         </>
       )}
+
+      {/* Service worker — registered on every page (tier 2) so offline support
+          works site-wide, not just where the protection layers are active. */}
+      {tier2 && <ServiceWorkerRegistration />}
     </>
   );
 }

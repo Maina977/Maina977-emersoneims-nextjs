@@ -26,7 +26,9 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'maskable',
       },
       {
-        src: '/icon-512x512.png',
+        // File on disk is icon-512.png (icon-512x512.png does not exist) — a
+        // wrong path here makes Chrome reject the install / drop the splash icon.
+        src: '/icon-512.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'maskable',
@@ -38,48 +40,46 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'any',
       },
       {
-        src: '/icon-512x512.png',
+        src: '/icon-512.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any',
       },
     ],
     categories: ['business', 'productivity', 'utilities', 'shopping'],
+    // Shortcut icons removed: /icon-generator.png, /icon-solar.png, etc. do not
+    // exist in /public, so referencing them produced broken icon fetches. The
+    // shortcuts still work without per-item icons (the app icon is used).
     shortcuts: [
       {
         name: 'Generators',
         short_name: 'Generators',
         description: 'Browse generator solutions from 5kVA to 2000kVA',
         url: '/generators',
-        icons: [{ src: '/icon-generator.png', sizes: '96x96' }],
       },
       {
         name: 'Solar Power',
         short_name: 'Solar',
         description: 'Explore solar panel and battery systems',
         url: '/solar',
-        icons: [{ src: '/icon-solar.png', sizes: '96x96' }],
       },
       {
         name: 'Services',
         short_name: 'Services',
         description: 'Maintenance, installation, and repairs',
         url: '/services',
-        icons: [{ src: '/icon-services.png', sizes: '96x96' }],
       },
       {
         name: 'Contact Us',
         short_name: 'Contact',
         description: 'Call +254 768 860 665 or +254 782 914 717',
         url: '/contact',
-        icons: [{ src: '/icon-contact.png', sizes: '96x96' }],
       },
       {
         name: 'Blog',
         short_name: 'Blog',
         description: 'Expert articles on generators and solar',
         url: '/blog',
-        icons: [{ src: '/icon-blog.png', sizes: '96x96' }],
       },
     ],
     related_applications: [],
