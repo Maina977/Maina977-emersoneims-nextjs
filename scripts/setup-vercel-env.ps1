@@ -44,7 +44,7 @@ Write-Host "Logged in to Vercel as: $who" -ForegroundColor Green
 # --- Gather values -----------------------------------------------------------
 $smtpPass = Read-EnvValue $CampaignEnv 'SMTP_PASSWORD'
 $analyticsToken = Read-EnvValue $CampaignEnv 'ANALYTICS_READ_TOKEN'
-if (-not $analyticsToken) { $analyticsToken = '2b18c1d4c54198cb8b4e1f6c08ab6271b3a1c6d0548320f4' }
+if (-not $analyticsToken) { $analyticsToken = Read-Host "ANALYTICS_READ_TOKEN not found in CampaignPilot .env — paste it" }
 if (-not $smtpPass) {
   $smtpPass = Read-Host "SMTP_PASSWORD (Gmail app password) not found in CampaignPilot .env — paste it"
 }

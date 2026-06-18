@@ -69,7 +69,7 @@ LEAD_DIAG_TOKEN           = <long random string>    ★ (unlocks /api/contact/he
 ### Analytics (the real-time counter + geo)
 ```
 DATABASE_URL              = postgres://…            (same DB; stores web_analytics_events)
-ANALYTICS_READ_TOKEN      = 2b18c1d4c54198cb8b4e1f6c08ab6271b3a1c6d0548320f4
+ANALYTICS_READ_TOKEN      = <rotated secret — set in Vercel + CampaignPilot .env; never committed>
 ANALYTICS_SALT            = <any stable random string>   (privacy hash salt)
 ```
 The `ANALYTICS_READ_TOKEN` **must match** the one in the CampaignPilot app's
