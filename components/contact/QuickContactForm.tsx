@@ -37,21 +37,35 @@ export default function QuickContactForm() {
 
     setStatus('sending');
     try {
-      await fetch('/api/notifications/new-lead', {
+      // The single "contact" field may hold a phone OR an email. Route the lead
+      // through the SAME /api/contact pipeline every other form uses (DB + SMTP +
+      // ERP + WhatsApp + FormSubmit) so it is never silently dropped. Map the
+      // contact value to the right field and always keep it visible in the body.
+      const contact = form.contact.trim();
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          conversionType: 'form_submit',
-          data: {
-            name: form.name,
-            contact: form.contact,
-            message: form.message,
-            source: 'quick_contact_form',
-          },
+          name: form.name.trim(),
+          // /api/contact requires a syntactically valid email; when the visitor
+          // gave a phone, use a routable internal address so the lead is accepted
+          // and still delivered — the real phone is captured below.
+          email: isEmail ? contact : 'quickform@emersoneims.com',
+          phone: isEmail ? '' : contact,
+          message: `${form.message.trim()}\n\nPreferred contact: ${contact}`,
+          service: 'general',
+          source: 'quick_contact_form',
+          location: typeof window !== 'undefined' ? window.location.pathname : undefined,
         }),
       });
-      setStatus('sent');
-      setForm({ name: '', contact: '', message: '' });
+      const data = await res.json().catch(() => ({ success: res.ok }));
+      if (data.success) {
+        setStatus('sent');
+        setForm({ name: '', contact: '', message: '' });
+      } else {
+        setStatus('error');
+      }
     } catch {
       setStatus('error');
     }
