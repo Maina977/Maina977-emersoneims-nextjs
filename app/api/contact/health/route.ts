@@ -31,6 +31,10 @@ export const dynamic = 'force-dynamic';
 
 const NO_STORE: Record<string, string> = { 'Cache-Control': 'no-store, max-age=0' };
 
+// Per-process cooldown between real `?send=1` test-lead submissions.
+const TEST_SEND_COOLDOWN_MS = 30_000;
+let lastTestSendAt = 0;
+
 function json(body: unknown, status = 200): NextResponse {
   return NextResponse.json(body, { status, headers: NO_STORE });
 }
@@ -204,7 +208,15 @@ function probeFormSubmit(): Channel {
 
 /** Run a real, clearly-marked TEST lead through the live /api/contact pipeline. */
 async function endToEndTest(request: NextRequest): Promise<unknown> {
-  const origin = request.nextUrl.origin;
+  // SECURITY: pin the self-call target to a server-configured origin rather than
+  // request.nextUrl.origin (which is derived from the attacker-influenceable Host
+  // / x-forwarded-host headers — middleware excludes /api so it isn't guarded).
+  // Only fall back to the request origin for local development.
+  const isProd = (process.env.VERCEL_ENV || process.env.NODE_ENV) === 'production';
+  const origin =
+    process.env.SITE_ORIGIN ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (isProd ? 'https://www.emersoneims.com' : request.nextUrl.origin);
   const stamp = new Date().toISOString();
   try {
     const res = await fetch(`${origin}/api/contact`, {
@@ -275,7 +287,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   };
 
   if (request.nextUrl.searchParams.get('send') === '1') {
-    result.end_to_end_test = await endToEndTest(request);
+    // Throttle real test-lead sends so an accidental/abusive loop can't spam every
+    // delivery channel (each send fans out to SMTP/ERP/WhatsApp/FormSubmit).
+    const now = Date.now();
+    if (now - lastTestSendAt < TEST_SEND_COOLDOWN_MS) {
+      result.end_to_end_test = {
+        skipped: 'cooldown',
+        retry_after_seconds: Math.ceil((TEST_SEND_COOLDOWN_MS - (now - lastTestSendAt)) / 1000),
+      };
+    } else {
+      lastTestSendAt = now;
+      result.end_to_end_test = await endToEndTest(request);
+    }
   }
 
   return json(result, 200);
