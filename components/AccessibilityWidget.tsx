@@ -213,10 +213,11 @@ export default function AccessibilityWidget() {
 
       {/* Floating Accessibility Button - ALWAYS VISIBLE - Positioned ABOVE stats counter */}
       <motion.button
+        id="accessibility-settings"
         onClick={() => setIsOpen(true)}
         className="fixed bottom-24 left-4 z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-3 px-5 py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"
-        aria-label="Open Accessibility Options - We fully support visually impaired users with screen readers, high contrast, large text and more"
-        title="♿ Accessibility Options - Click here for visually impaired support. WCAG 2.1 AAA Compliant"
+        aria-label="Open accessibility settings"
+        title="♿ Accessibility Options - Click here for visually impaired support: high contrast, large text, line spacing, large cursor and link highlighting"
         whileHover={{ scale: 1.08, boxShadow: '0 25px 50px rgba(37, 99, 235, 0.5)' }}
         whileTap={{ scale: 0.98 }}
         initial={{ opacity: 1, scale: 1, x: 0 }}
