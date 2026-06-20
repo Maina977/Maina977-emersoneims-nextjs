@@ -14,6 +14,8 @@ import {
  * Transparency builds trust and captures leads
  */
 
+import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
+
 interface GeneratorListing {
   brand: string;
   models: {
@@ -24,7 +26,24 @@ interface GeneratorListing {
   }[];
 }
 
+// VOLTKA house brand — built LIVE from the authoritative price table in
+// lib/brands/cumminsData.ts so there is one source of truth for VOLTKA prices.
+const VOLTKA_POPULAR = new Set([20, 30, 100, 250]);
+const VOLTKA_LISTING: GeneratorListing = {
+  brand: 'VOLTKA',
+  models: CUMMINS_BRAND_INFO.models.map((m) => {
+    const price = Number(String(m.price).replace(/[^\d]/g, '')) || 0;
+    return {
+      kva: m.kva,
+      phase: (m.kva <= 15 ? '1-Phase' : '3-Phase') as '1-Phase' | '3-Phase',
+      priceRange: { min: price, max: price },
+      popular: VOLTKA_POPULAR.has(m.kva),
+    };
+  }),
+};
+
 const GENERATOR_PRICES: GeneratorListing[] = [
+  VOLTKA_LISTING,
   {
     brand: 'Cummins',
     models: [
@@ -187,7 +206,9 @@ export default function GeneratorPriceList() {
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <div className="text-white font-medium">
-                              KES {model.priceRange.min.toLocaleString()} - {model.priceRange.max.toLocaleString()}
+                              {model.priceRange.min === model.priceRange.max
+                                ? `KES ${model.priceRange.min.toLocaleString()}`
+                                : `KES ${model.priceRange.min.toLocaleString()} - ${model.priceRange.max.toLocaleString()}`}
                             </div>
                           </div>
                           <a

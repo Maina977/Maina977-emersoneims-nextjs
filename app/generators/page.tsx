@@ -596,9 +596,10 @@ const TransparentPricing = () => {
             VOLTKA Generators from KES 500,000
           </h3>
           <p className="text-gray-300 max-w-3xl mx-auto">
-            New VOLTKA diesel generators start at <strong>KES 500,000 for 20&nbsp;kVA</strong> and scale up to
-            <strong> KES 5,000,000 for 500&nbsp;kVA</strong> — supplied, installed and backed by our warranty on
-            both the job and the parts used. Figures are indicative; your exact figure is generated on our ERP.
+            New VOLTKA diesel generators start at <strong>KES 500,000 for 20&nbsp;kVA</strong> and scale across the
+            full <strong>20–2000&nbsp;kVA</strong> range — priced per model (see the price list below). Every unit is
+            supplied, installed and backed by our warranty on both the job and the parts used. Figures are indicative;
+            your exact figure is generated on our ERP.
           </p>
           <a
             href="/contact?generator=VOLTKA"

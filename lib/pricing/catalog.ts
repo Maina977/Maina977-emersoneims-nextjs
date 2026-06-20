@@ -1,4 +1,24 @@
 import type { PriceItem } from './types';
+import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
+
+// Parse 'KES 500,000' → 500000
+const toKes = (s: string): number => Number(String(s).replace(/[^\d]/g, '')) || 0;
+
+// VOLTKA / Cummins generator range — sourced LIVE from the authoritative
+// price table already maintained in lib/brands/cumminsData.ts (the same data
+// shown on the brand pages). Single source of truth — no duplicated numbers.
+const VOLTKA_GENERATORS: PriceItem[] = CUMMINS_BRAND_INFO.models.map((m) => ({
+  id: `voltka-${m.kva}kva`,
+  category: 'generator-new' as const,
+  brand: 'VOLTKA',
+  name: `VOLTKA ${m.kva} kVA diesel generator`,
+  spec: `${m.kva} kVA`,
+  priceFromKes: toKes(m.price),
+  unit: 'each' as const,
+  indicative: true,
+  asOf: '2026-06',
+  source: 'repo-seed' as const,
+}));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SEED / FALLBACK PRICE CATALOG
@@ -16,11 +36,8 @@ import type { PriceItem } from './types';
 const ASOF = '2026-06';
 
 export const SEED_CATALOG: PriceItem[] = [
-  // ── New generators — VOLTKA house brand (owner-confirmed anchors) ──────────────
-  { id: 'voltka-20kva',  category: 'generator-new', brand: 'VOLTKA', name: 'VOLTKA 20 kVA diesel generator',  spec: '20 kVA',  priceFromKes: 500_000,   unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-  { id: 'voltka-500kva', category: 'generator-new', brand: 'VOLTKA', name: 'VOLTKA 500 kVA diesel generator', spec: '500 kVA', priceFromKes: 5_000_000, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-  // VOLTKA spans 20→500 kVA, KES 500k→5M. Intermediate sizes are quoted on the
-  // ERP — intentionally NOT invented here.
+  // ── New generators — VOLTKA full range, from lib/brands/cumminsData.ts ─────────
+  ...VOLTKA_GENERATORS,
 
   // ── Used / pre-owned generators (owner: from KES 200,000) ─────────────────────
   { id: 'used-generator-entry', category: 'generator-used', name: 'Used / refurbished generator', spec: 'from 20 kVA', priceFromKes: 200_000, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
