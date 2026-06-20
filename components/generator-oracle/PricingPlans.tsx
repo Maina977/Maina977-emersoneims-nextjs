@@ -18,6 +18,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { SUBSCRIPTION_PLANS, YEARLY_PLANS, type SubscriptionPlan } from '@/lib/generator-oracle/subscriptionTypes';
+import { AI_TOOLS_FREE } from '@/lib/featureFlags';
 
 interface PricingPlansProps {
   currentPlanId?: string;
@@ -31,6 +32,32 @@ export default function PricingPlans({
   isLoading = false,
 }: PricingPlansProps) {
   const [interval, setInterval] = useState<'monthly' | 'yearly'>('monthly');
+
+  // FREE MODE: hide all subscription tiers/prices and show a single free panel.
+  // Re-enable paid plans via NEXT_PUBLIC_AI_TOOLS_PAID=true (see lib/featureFlags.ts).
+  if (AI_TOOLS_FREE) {
+    return (
+      <div className="py-12 text-center max-w-2xl mx-auto px-4">
+        <div className="inline-flex p-3 rounded-full mb-4 bg-orange-500/20 text-orange-500">
+          <Zap className="w-7 h-7" />
+        </div>
+        <h2 className="text-3xl font-bold text-white mb-2">Generator Oracle is Free</h2>
+        <p className="text-gray-400 mb-6">
+          Every feature — fault-code search, AI diagnostics, wiring diagrams and PDF service
+          reports — is free to use right now. No subscription, no limits.
+        </p>
+        <a
+          href="https://wa.me/254768860665"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-500 transition-colors"
+        >
+          <MessageCircle className="w-5 h-5" />
+          Talk to an engineer
+        </a>
+      </div>
+    );
+  }
 
   const plans = interval === 'yearly'
     ? [...SUBSCRIPTION_PLANS.filter(p => p.id === 'free'), ...YEARLY_PLANS]

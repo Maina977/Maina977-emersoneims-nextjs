@@ -10,6 +10,7 @@
  */
 
 import { initDatabase, saveSetting, getSetting, isDatabaseAvailable } from './indexedDBService';
+import { AI_TOOLS_FREE } from '@/lib/featureFlags';
 
 // License key format: EIMS-XXXX-XXXX-XXXX
 export interface License {
@@ -40,6 +41,7 @@ const LICENSE_STORE_KEY = 'oracleLicense';
  * Check if license is expired
  */
 export function isLicenseExpired(license: License): boolean {
+  if (AI_TOOLS_FREE) return false; // Free mode — licences never expire
   if (!license.expiresAt) return false; // Lifetime license
   return new Date(license.expiresAt) < new Date();
 }
@@ -58,6 +60,7 @@ export function getDaysUntilExpiry(license: License): number {
  * Check if license needs renewal warning (within 30 days of expiry)
  */
 export function needsRenewalWarning(license: License): boolean {
+  if (AI_TOOLS_FREE) return false; // Free mode — no renewal nags
   const daysLeft = getDaysUntilExpiry(license);
   return daysLeft > 0 && daysLeft <= LICENSE_CONFIG.expiryWarningDays;
 }

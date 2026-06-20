@@ -41,9 +41,25 @@ export default function FaultCodesPage() {
     });
   }, [search, selectedBrand]);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Would send to CRM/email service
+    // Deliver the signup as a real lead via /api/contact (email/SMS/ERP/sheet).
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Fault-code alerts subscriber',
+          email,
+          phone: '',
+          service: 'Fault Code Alerts',
+          message: 'Requested fault-code database updates / alerts.',
+          source: 'faults_newsletter',
+        }),
+      });
+    } catch {
+      // Non-blocking — still confirm to the user.
+    }
     setSubscribed(true);
   };
 

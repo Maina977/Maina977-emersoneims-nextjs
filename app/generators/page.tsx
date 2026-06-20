@@ -582,6 +582,32 @@ const TransparentPricing = () => {
           </p>
         </motion.div>
 
+        {/* VOLTKA house-brand value band — anchored to real EmersonEIMS pricing */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-10 p-6 md:p-8 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-orange-500/5 text-center"
+        >
+          <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full mb-3">
+            ⚡ VOLTKA — OUR OWN BRAND, BEST VALUE
+          </span>
+          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
+            VOLTKA Generators from KES 500,000
+          </h3>
+          <p className="text-gray-300 max-w-3xl mx-auto">
+            New VOLTKA diesel generators start at <strong>KES 500,000 for 20&nbsp;kVA</strong> and scale up to
+            <strong> KES 5,000,000 for 500&nbsp;kVA</strong> — supplied, installed and backed by our warranty on
+            both the job and the parts used. Figures are indicative; your exact figure is generated on our ERP.
+          </p>
+          <a
+            href="/contact?generator=VOLTKA"
+            className="inline-block mt-4 px-6 py-2.5 bg-amber-500 text-black font-semibold rounded-lg hover:bg-amber-400 transition-all"
+          >
+            Get my VOLTKA quote
+          </a>
+        </motion.div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {priceRanges.map((range, index) => (
             <motion.div
@@ -621,8 +647,9 @@ const TransparentPricing = () => {
         </div>
 
         <div className="text-center text-gray-400 text-sm">
-          <p>* Prices vary based on brand (Cummins, Perkins, CAT), phase, and features</p>
-          <p>* All prices include: Delivery + Installation + ATS + Commissioning + 1-Year Service + 3-Year Warranty</p>
+          <p>* Ranges above are for premium imported brands (Cummins, Perkins, CAT); our VOLTKA house brand is more affordable — from KES 500,000.</p>
+          <p>* All prices include: Delivery + Installation + ATS + Commissioning + 1-Year Service + Warranty on job &amp; parts</p>
+          <p>* Indicative only — every exact quote is generated on our ERP.</p>
         </div>
       </div>
     </section>

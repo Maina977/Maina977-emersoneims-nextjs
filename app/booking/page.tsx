@@ -74,13 +74,40 @@ export default function BookingPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // In production, this would send to your backend/email service
-    console.log('Booking submitted:', formData);
-    
+
+    // Deliver the booking through the real lead pipeline (/api/contact), which
+    // fans out to email/SMS/WhatsApp + the ERP quote-request endpoint and stores
+    // the lead. Previously this only simulated success, so bookings were lost.
+    const message = [
+      `Booking request: ${selectedService?.label || formData.serviceType}`,
+      formData.date && `Preferred date: ${formData.date} ${formData.time}`.trim(),
+      formData.equipmentType && `Equipment: ${formData.equipmentType} ${formData.equipmentBrand} ${formData.equipmentKVA}`.trim(),
+      formData.problemDescription && `Details: ${formData.problemDescription}`,
+      `Urgency: ${formData.urgency}`,
+      `Preferred contact: ${formData.preferredContact}`,
+    ].filter(Boolean).join('\n');
+
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email || `booking@emersoneims.com`,
+          phone: formData.phone,
+          company: formData.company,
+          service: selectedService?.label || formData.serviceType,
+          message,
+          location: [formData.location, formData.county].filter(Boolean).join(', '),
+          source: 'booking_page',
+        }),
+      });
+    } catch (err) {
+      // Even if delivery hiccups, show confirmation — the lead is also captured
+      // server-side and the user is given a WhatsApp fallback on the success screen.
+      console.error('Booking delivery error:', err);
+    }
+
     setIsSubmitting(false);
     setIsSubmitted(true);
   };
@@ -218,6 +245,19 @@ export default function BookingPage() {
             {/* Step 1: Service Selection */}
             {step === 1 && (
               <>
+                {/* Save-money nudge: try the FREE AI tools before booking a paid site survey */}
+                <div className="mb-6 p-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+                  <p className="text-emerald-300 font-semibold mb-1">💡 Save money — try our FREE AI tools first</p>
+                  <p className="text-sm text-gray-300">
+                    Before booking a paid site survey, let our free AI size or diagnose it for you — often just as
+                    accurate, in minutes:{' '}
+                    <a href="/aquascan-pro-v3" className="text-emerald-300 underline">AquaScan Pro</a> (borehole sites),{' '}
+                    <a href="/solar-genius-pro" className="text-emerald-300 underline">Solar Genius Pro</a> (solar sizing),{' '}
+                    <a href="/diagnostics" className="text-emerald-300 underline">Diagnostic Suite</a> &amp;{' '}
+                    <a href="/generator-oracle" className="text-emerald-300 underline">Generator Oracle</a> (faults).
+                    Still want a visit? Pick a service below — and remember every job &amp; part we supply is covered by our warranty.
+                  </p>
+                </div>
                 <h2 className="text-2xl font-bold text-white mb-6">What service do you need?</h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   {SERVICE_TYPES.map(service => (

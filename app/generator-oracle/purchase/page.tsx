@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { generateDeviceFingerprint } from '@/lib/generator-oracle/licensing';
+import { AI_TOOLS_FREE } from '@/lib/featureFlags';
 
 type PaymentMethod = 'mpesa' | 'bank';
 type Step = 'info' | 'payment' | 'verification' | 'success';
@@ -53,6 +54,39 @@ export default function PurchasePage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // FREE MODE: Generator Oracle is free right now — no purchase needed.
+  // Re-enable the paid purchase flow via NEXT_PUBLIC_AI_TOOLS_PAID=true.
+  if (AI_TOOLS_FREE) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <div className="max-w-lg w-full bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
+          <div className="text-6xl mb-4">🎉</div>
+          <h1 className="text-3xl font-bold text-white mb-3">It&apos;s Free!</h1>
+          <p className="text-gray-300 mb-6">
+            Generator Oracle is completely free to use right now — no payment, no licence key,
+            no limits. Just open the tool and start diagnosing.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/generator-oracle"
+              className="px-6 py-3 bg-orange-600 text-white font-bold rounded-full hover:bg-orange-500 transition-colors"
+            >
+              Open Generator Oracle →
+            </Link>
+            <a
+              href="https://wa.me/254768860665"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition-colors"
+            >
+              Talk to an engineer
+            </a>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

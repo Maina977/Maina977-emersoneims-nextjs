@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PaymentModal } from '../payment/PaymentModal';
+import { AI_TOOLS_FREE } from '@/lib/featureFlags';
 
 interface ReportPreviewProps {
   analysisId: string;
@@ -11,6 +12,15 @@ interface ReportPreviewProps {
 
 export const ReportPreview: React.FC<ReportPreviewProps> = ({ analysisId, previewData, onPaymentComplete }) => {
   const [showPayment, setShowPayment] = useState(false);
+
+  // FREE MODE: AquaScan Pro is free for now — unlock the full report automatically
+  // instead of showing the 70% paywall. Re-enable paid mode via NEXT_PUBLIC_AI_TOOLS_PAID=true.
+  useEffect(() => {
+    if (AI_TOOLS_FREE && previewData) {
+      onPaymentComplete();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewData]);
 
   if (!previewData) return <div>Loading preview...</div>;
 

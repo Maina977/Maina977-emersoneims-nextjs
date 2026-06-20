@@ -1630,9 +1630,28 @@ export default function BoreholePumpsPage() {
           {/* Pricing Tab */}
           {activeTab === 'pricing' && (
             <motion.div key="pricing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
-              <div className="text-center mb-12">
+              <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-white mb-4">Borehole Pump Pricing Guide</h2>
-                <p className="text-gray-400 max-w-3xl mx-auto">Estimated costs for pump supply, installation, and complete systems.</p>
+                <p className="text-gray-400 max-w-3xl mx-auto">Indicative ballpark ranges for pump supply, installation, and complete systems — to help you budget.</p>
+              </div>
+
+              {/* Indicative pricing + ERP quote banner */}
+              <div className="mb-8 p-5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-center max-w-3xl mx-auto">
+                <p className="text-gray-200">
+                  The figures below are <strong>indicative ranges only</strong>. Your exact price depends on pump brand,
+                  depth, head and site conditions — and your final quotation is generated on our ERP. Tell us your
+                  borehole details and we&apos;ll send an exact quote, with our warranty on the job and the parts used.
+                </p>
+                <a
+                  href="/contact?service=Borehole%20Pump&quote=erp"
+                  className="inline-block mt-4 px-6 py-2.5 bg-cyan-500 text-black font-semibold rounded-lg hover:bg-cyan-400 transition-all"
+                >
+                  Request my exact quote
+                </a>
+                <p className="text-xs text-gray-400 mt-3">
+                  💡 Not sure what size you need? Use our free AquaScan Pro &amp; sizing tools first — they size the
+                  pump for you and can save you a paid site survey.
+                </p>
               </div>
 
               <div className="overflow-x-auto">

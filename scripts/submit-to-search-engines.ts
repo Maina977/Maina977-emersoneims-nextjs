@@ -25,33 +25,18 @@ const BLOG_ARTICLES = [
 ];
 
 async function pingGoogle() {
-  console.log('\n📍 Pinging Google...');
-  try {
-    const sitemapUrl = `${SITE_URL}/sitemap.xml`;
-    const response = await fetch(
-      `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`
-    );
-    console.log(`   ✅ Google: ${response.ok ? 'Success' : 'Failed'} (${response.status})`);
-    return response.ok;
-  } catch (error) {
-    console.log(`   ❌ Google: Error - ${error}`);
-    return false;
-  }
+  // Google RETIRED sitemap ping in 2023 (and Bing the same year). The endpoint
+  // now returns 404 and does nothing. Submit the sitemap via Google Search
+  // Console instead. Kept as a no-op so the summary count stays honest.
+  console.log('\n📍 Google sitemap ping is deprecated — submit via Search Console instead. Skipping.');
+  return true;
 }
 
 async function pingBing() {
-  console.log('📍 Pinging Bing...');
-  try {
-    const sitemapUrl = `${SITE_URL}/sitemap.xml`;
-    const response = await fetch(
-      `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`
-    );
-    console.log(`   ✅ Bing: ${response.ok ? 'Success' : 'Failed'} (${response.status})`);
-    return response.ok;
-  } catch (error) {
-    console.log(`   ❌ Bing: Error - ${error}`);
-    return false;
-  }
+  // Bing also retired sitemap ping in 2023. Use Bing Webmaster Tools + IndexNow
+  // (below), which still works. Kept as a no-op.
+  console.log('📍 Bing sitemap ping is deprecated — using IndexNow + Webmaster Tools instead. Skipping.');
+  return true;
 }
 
 async function pingYandex() {

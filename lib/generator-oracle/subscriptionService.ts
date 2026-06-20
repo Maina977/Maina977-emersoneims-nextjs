@@ -6,6 +6,7 @@
  */
 
 import { getPostgresPool } from '@/lib/db';
+import { AI_TOOLS_FREE } from '@/lib/featureFlags';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SUBSCRIPTION PLANS
@@ -466,6 +467,12 @@ export async function checkUsageLimit(
   userId: number,
   type: 'diagnosis' | 'ai_diagnosis' | 'report'
 ): Promise<{ allowed: boolean; remaining: number; limit: number }> {
+  // FREE MODE: all AI tools are free for now — never block on usage limits.
+  // Re-enable paid mode by setting NEXT_PUBLIC_AI_TOOLS_PAID=true (see lib/featureFlags.ts).
+  if (AI_TOOLS_FREE) {
+    return { allowed: true, remaining: -1, limit: -1 };
+  }
+
   const subscription = await getUserSubscription(userId);
   const usage = await getUserUsage(userId);
   const plan = [...SUBSCRIPTION_PLANS, ...YEARLY_PLANS].find(

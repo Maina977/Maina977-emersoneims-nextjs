@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { AI_TOOLS_FREE } from '@/lib/featureFlags';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -56,8 +57,15 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   ];
 
   const handlePayment = async () => {
+    // FREE MODE: skip payment entirely and unlock immediately.
+    if (AI_TOOLS_FREE) {
+      onSuccess();
+      onClose();
+      return;
+    }
+
     setIsProcessing(true);
-    
+
     try {
       const response = await fetch('/api/v1/payments/initialize', {
         method: 'POST',

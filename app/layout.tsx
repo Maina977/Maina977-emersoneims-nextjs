@@ -52,6 +52,10 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com
 
 const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 const yandexVerification = process.env.NEXT_PUBLIC_YANDEX_VERIFICATION;
+// Bing/MSN ownership verification. Set NEXT_PUBLIC_BING_SITE_VERIFICATION to the
+// real token from Bing Webmaster Tools. Until then we emit nothing — a fake
+// placeholder token previously shipped here and never verified the site.
+const bingSiteVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
 
 export async function generateMetadata(): Promise<Metadata> {
   // Self-referential canonical derived from the request path (middleware sets
@@ -312,8 +316,10 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-        {/* Bing & MSN-specific meta tags */}
-        <meta name="msvalidate.01" content="8F9B2C3D4E5F6A7B8C9D0E1F2A3B4C5D" />
+        {/* Bing & MSN-specific meta tags. Only emit a real verification token. */}
+        {bingSiteVerification ? (
+          <meta name="msvalidate.01" content={bingSiteVerification} />
+        ) : null}
         <meta name="rating" content="general" />
         <meta name="distribution" content="global" />
         <meta name="coverage" content="Worldwide" />

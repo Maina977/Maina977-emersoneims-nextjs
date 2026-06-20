@@ -90,10 +90,20 @@ export default function GeneratorOracleProductPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Store lead (you'd send this to your backend/CRM)
+    // Deliver the lead through the real pipeline (/api/contact → email/SMS/ERP/sheet).
     try {
-      // For now, just simulate
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Generator Oracle signup',
+          email,
+          phone: '',
+          service: 'Generator Oracle',
+          message: 'Requested Generator Oracle access from the product page.',
+          source: 'generator_oracle_product_page',
+        }),
+      });
       setSubmitted(true);
 
       // Track conversion

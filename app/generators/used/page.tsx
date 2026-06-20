@@ -89,9 +89,9 @@ const usedGenerators = [
   },
   {
     brand: "Wei Chai",
-    kvaRange: "50–1000 kVA",
+    kvaRange: "30–1000 kVA",
     warranty: "6 months",
-    priceRange: "KSh 300,000 – 6M",
+    priceRange: "KSh 200,000 – 6M",
     features: ["Cost effective", "Fully tested", "New batteries", "Serviced"],
     status: "In Stock",
     statusColor: "bg-green-500",

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
@@ -18,5 +19,19 @@ export const metadata: Metadata = {
 };
 
 export default function DiagnosticsLayout({ children }: { children: ReactNode }) {
-  return children;
+  return (
+    <>
+      <FlagshipProductSchema
+        name="EmersonEIMS Diagnostic Suite"
+        url={`${siteUrl}/diagnostics`}
+        description="Multi-service equipment diagnostics and sizing calculators: generators, solar, UPS, motors, AC, borehole pumps, high voltage, fabrication and incinerators — with fault-code search and quick-fix guidance."
+        category="Equipment Diagnostics"
+        applicationCategory="EngineeringApplication"
+        keywords={['Generator Diagnostics', 'Fault Code Lookup', 'Solar Diagnostics', 'UPS Sizing', 'Pump Sizing', 'Equipment Troubleshooting']}
+        industry="Technicians, Facility Managers, Engineers"
+        priceKes="Free"
+      />
+      {children}
+    </>
+  );
 }
