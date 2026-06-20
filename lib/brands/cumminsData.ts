@@ -85,8 +85,8 @@ export const CUMMINS_BRAND_INFO = {
     'Voltka Kenya dealer'
   ],
   models: [
-    { kva: 10, price: 'KES 850,000', application: 'Small Office/Home' },
-    { kva: 15, price: 'KES 950,000', application: 'Small Business' },
+    { kva: 10, price: 'KES 350,000', application: 'Small Office/Home' },
+    { kva: 15, price: 'KES 430,000', application: 'Small Business' },
     { kva: 20, price: 'KES 500,000', application: 'Retail/Office' },
     { kva: 30, price: 'KES 1,350,000', application: 'Medium Business' },
     { kva: 50, price: 'KES 1,600,000', application: 'Large Office' },
@@ -126,7 +126,7 @@ export const CUMMINS_BRAND_INFO = {
     "offers": {
       "@type": "AggregateOffer",
       "priceCurrency": "KES",
-      "lowPrice": "850000",
+      "lowPrice": "350000",
       "highPrice": "48000000",
       "offerCount": "20"
     },
