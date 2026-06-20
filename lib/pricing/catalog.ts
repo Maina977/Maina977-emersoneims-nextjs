@@ -1,8 +1,11 @@
 import type { PriceItem } from './types';
 import { CUMMINS_BRAND_INFO } from '@/lib/brands/cumminsData';
+import { SOLAR_PANELS, INVERTERS, BATTERIES } from '@/lib/solar-data';
+import { PUMP_PRICING } from '@/lib/data/pumpPricing';
 
 // Parse 'KES 500,000' → 500000
 const toKes = (s: string): number => Number(String(s).replace(/[^\d]/g, '')) || 0;
+const slug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 // VOLTKA / Cummins generator range — sourced LIVE from the authoritative
 // price table already maintained in lib/brands/cumminsData.ts (the same data
@@ -35,6 +38,37 @@ const VOLTKA_GENERATORS: PriceItem[] = CUMMINS_BRAND_INFO.models.map((m) => ({
 
 const ASOF = '2026-06';
 
+// ── Solar panels / inverters / batteries — from lib/solar-data.ts (real data) ──
+const SOLAR_PANEL_ITEMS: PriceItem[] = SOLAR_PANELS.map((p) => ({
+  id: `panel-${slug(p.brand)}-${slug(p.model)}`,
+  category: 'solar', brand: p.brand, name: `${p.brand} ${p.model} ${p.watts}W solar panel`,
+  spec: `${p.watts}W`, priceFromKes: p.price, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed',
+}));
+
+const INVERTER_ITEMS: PriceItem[] = INVERTERS.map((i) => ({
+  id: `inverter-${slug(i.brand)}-${slug(i.model)}`,
+  category: 'inverter', brand: i.brand, name: `${i.brand} ${i.model} ${(i.power / 1000)}kW ${i.type} inverter`,
+  spec: `${(i.power / 1000)}kW`, priceFromKes: i.price, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed',
+}));
+
+const BATTERY_ITEMS: PriceItem[] = BATTERIES.map((b) => ({
+  id: `battery-${slug(b.brand)}-${slug(b.model)}`,
+  category: 'battery', brand: b.brand, name: `${b.brand} ${b.model} ${b.capacity}kWh ${b.chemistry}`,
+  spec: `${b.capacity}kWh`, priceFromKes: b.price, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed',
+}));
+
+// ── Borehole pumps — from lib/data/pumpPricing.ts (real indicative ranges) ─────
+const PUMP_ITEMS: PriceItem[] = PUMP_PRICING.map((row) => {
+  const m = row.pumpPrice.match(/[\d,]+/g) || [];
+  const from = toKes(m[0] || '');
+  const to = toKes(m[1] || m[0] || '');
+  return {
+    id: `pump-${slug(row.size)}`,
+    category: 'pump' as const, name: `Submersible pump ${row.size}`, spec: row.size,
+    priceFromKes: from, priceToKes: to, unit: 'each' as const, indicative: true, asOf: ASOF, source: 'repo-seed' as const,
+  };
+});
+
 export const SEED_CATALOG: PriceItem[] = [
   // ── New generators — VOLTKA full range, from lib/brands/cumminsData.ts ─────────
   ...VOLTKA_GENERATORS,
@@ -42,17 +76,11 @@ export const SEED_CATALOG: PriceItem[] = [
   // ── Used / pre-owned generators (owner: from KES 200,000) ─────────────────────
   { id: 'used-generator-entry', category: 'generator-used', name: 'Used / refurbished generator', spec: 'from 20 kVA', priceFromKes: 200_000, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
 
-  // ── Borehole pumps (indicative ranges; brands incl. Doyin quoted on ERP) ──────
-  { id: 'pump-0p5hp', category: 'pump', name: 'Submersible pump 0.5 HP', spec: '0.5 HP (0.37 kW)', priceFromKes: 25_000,  priceToKes: 35_000,  unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-  { id: 'pump-1hp',   category: 'pump', name: 'Submersible pump 1 HP',   spec: '1 HP (0.75 kW)',  priceFromKes: 35_000,  priceToKes: 50_000,  unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-  { id: 'pump-3hp',   category: 'pump', name: 'Submersible pump 3 HP',   spec: '3 HP (2.2 kW)',   priceFromKes: 75_000,  priceToKes: 110_000, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-  { id: 'pump-10hp',  category: 'pump', name: 'Submersible pump 10 HP',  spec: '10 HP (7.5 kW)',  priceFromKes: 250_000, priceToKes: 380_000, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-
-  // ── Solar (Deye/Felicity entries already in the site — confirm on ERP) ────────
-  { id: 'deye-5kw-inverter',   category: 'inverter', brand: 'Deye',     name: 'Deye 5 kW hybrid inverter',  spec: '5 kW',  priceFromKes: 110_000, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-  { id: 'deye-8kw-inverter',   category: 'inverter', brand: 'Deye',     name: 'Deye 8 kW hybrid inverter',  spec: '8 kW',  priceFromKes: 165_000, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-  { id: 'felicity-5kwh-batt',  category: 'battery',  brand: 'Felicity', name: 'Felicity 5.12 kWh LiFePO4',  spec: '5.12 kWh', priceFromKes: 85_000,  unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
-  { id: 'felicity-10kwh-batt', category: 'battery',  brand: 'Felicity', name: 'Felicity 10.24 kWh LiFePO4', spec: '10.24 kWh', priceFromKes: 165_000, unit: 'each', indicative: true, asOf: ASOF, source: 'repo-seed' },
+  // ── Solar, inverters, batteries, pumps — all from the site's real data ────────
+  ...SOLAR_PANEL_ITEMS,
+  ...INVERTER_ITEMS,
+  ...BATTERY_ITEMS,
+  ...PUMP_ITEMS,
 ];
 
 export function seedById(): Map<string, PriceItem> {
