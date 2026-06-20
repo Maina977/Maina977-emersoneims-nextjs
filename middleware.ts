@@ -725,6 +725,10 @@ export const config = {
      * - public folder files (images, fonts, videos)
      * - api routes
      */
-    '/((?!_next/static|_next/image|api|favicon.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|images|fonts|videos|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$).*)',
+    // NOTE: .txt and .xml are excluded so static verification / key files
+    // (BingSiteAuth.xml, IndexNow key .txt, ads.txt, etc.) are NEVER bot-blocked
+    // — search-engine verifiers and the IndexNow API fetch these with non-browser
+    // user-agents and must always get a 200.
+    '/((?!_next/static|_next/image|api|favicon.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|images|fonts|videos|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$|.*\\.txt$|.*\\.xml$).*)',
   ],
 };
