@@ -14,6 +14,10 @@ import { getPostgresPool } from '@/lib/db';
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
+const NO_STORE = { 'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate' } as const;
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -46,8 +50,8 @@ export async function GET(request: Request) {
         LIMIT $2`,
       [sinceId, limit],
     );
-    return NextResponse.json({ ok: true, count: result.rows.length, leads: result.rows });
+    return NextResponse.json({ ok: true, count: result.rows.length, leads: result.rows }, { headers: NO_STORE });
   } catch (err) {
-    return NextResponse.json({ ok: false, count: 0, leads: [], error: String(err) }, { status: 200 });
+    return NextResponse.json({ ok: false, count: 0, leads: [], error: String(err) }, { status: 200, headers: NO_STORE });
   }
 }

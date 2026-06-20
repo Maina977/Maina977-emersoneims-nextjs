@@ -63,10 +63,10 @@ async function runOnce() {
     return;
   }
   const lastId = await getLastId();
-  const url = `${SITE_URL}/api/leads/export?token=${encodeURIComponent(LEAD_TOKEN)}&sinceId=${lastId}`;
+  const url = `${SITE_URL}/api/leads/export?token=${encodeURIComponent(LEAD_TOKEN)}&sinceId=${lastId}&_=${Date.now()}`;
   let data;
   try {
-    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    const res = await fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
     data = await res.json();
     if (!data.ok) { console.error('❌ Export error:', data.error || res.status); return; }
   } catch (e) {
