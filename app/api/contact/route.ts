@@ -204,11 +204,12 @@ export async function POST(request: NextRequest) {
 
     // Fire every configured delivery channel and record which actually worked.
     // We run them in parallel so a slow provider can't delay the response.
-    const [smtpOk, emailOk, smsOk, whatsappOk, webhookOk, formSubmitOk, erpOk, sheetOk] = await Promise.all([
+    const [smtpOk, emailOk, smsOk, whatsappOk, callMeBotOk, webhookOk, formSubmitOk, erpOk, sheetOk] = await Promise.all([
       sendSmtpNotification(body, leadId),
       sendEmailNotification(body, leadId),
       body.phone ? sendSMSNotification(body) : Promise.resolve(false),
       sendWhatsAppNotification(body),
+      sendCallMeBotWhatsApp(body, leadId),
       sendWebhookNotification(body, leadId),
       sendFormSubmitNotification(body, leadId),
       sendErpQuoteRequest(body),
@@ -216,7 +217,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     const dbStored = leadId > 0;
-    const delivered = dbStored || smtpOk || emailOk || smsOk || whatsappOk || webhookOk || formSubmitOk || erpOk || sheetOk;
+    const delivered = dbStored || smtpOk || emailOk || smsOk || whatsappOk || callMeBotOk || webhookOk || formSubmitOk || erpOk || sheetOk;
 
     // The browser ALWAYS gets a working WhatsApp deep link so a visitor can
     // reach us directly even if no server channel is configured.
@@ -428,9 +429,14 @@ async function sendSmtpNotification(data: ContactFormData, leadId: number): Prom
       auth: { user, pass },
     });
 
+    // CC the business Gmail (SALES_EMAIL) so there's always a copy in the
+    // monitored inbox alongside the primary mailboxes (info@ + sally@).
+    const ccList = SALES_EMAIL && !LEAD_RECIPIENTS.includes(SALES_EMAIL) ? SALES_EMAIL : undefined;
+
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
       to: LEAD_RECIPIENTS.join(', '),
+      cc: ccList,
       replyTo: data.email, // team can reply straight to the customer
       subject: `🔥 NEW WEBSITE LEAD: ${data.name} — ${serviceLabel(data.service)}`,
       html: buildLeadEmailHtml(data, leadId),
@@ -550,6 +556,46 @@ async function sendWhatsAppNotification(data: ContactFormData): Promise<boolean>
     return res.ok;
   } catch (error) {
     console.error('Failed to send WhatsApp notification:', error);
+    return false;
+  }
+}
+
+// FREE WhatsApp ALERT to the business line (e.g. 0768860665) WITHOUT Meta's
+// WhatsApp Business API — uses CallMeBot, which delivers to a number that has
+// opted in once. This is the only zero-cost way to push a WhatsApp to a normal
+// (non-API) line. ONE-TIME SETUP by the owner:
+//   1. From the phone using 0768860665, send "I allow callmebot to send me messages"
+//      to +34 644 84 71 89 on WhatsApp.
+//   2. CallMeBot replies with an API key.
+//   3. Set CALLMEBOT_PHONE=254768860665 and CALLMEBOT_APIKEY=<that key> in Vercel.
+// Returns true only if CallMeBot accepted the message.
+async function sendCallMeBotWhatsApp(data: ContactFormData, leadId: number): Promise<boolean> {
+  const phone = (process.env.CALLMEBOT_PHONE || '').replace(/[^0-9]/g, '');
+  const apikey = process.env.CALLMEBOT_APIKEY;
+  if (!phone || !apikey) {
+    console.log('📲 CallMeBot WhatsApp not configured — set CALLMEBOT_PHONE/CALLMEBOT_APIKEY');
+    return false;
+  }
+  try {
+    const text =
+      `🔥 NEW WEBSITE LEAD #${leadId || '-'}\n` +
+      `Name: ${data.name}\n` +
+      `Phone: ${data.phone || '—'}\n` +
+      `Company: ${data.company || '—'}\n` +
+      `Service: ${serviceLabel(data.service)}\n` +
+      `Location: ${data.location || '—'}\n\n` +
+      `${data.message}\n\nReply within 2 hours.`;
+    const url =
+      `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}` +
+      `&text=${encodeURIComponent(text)}&apikey=${encodeURIComponent(apikey)}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) {
+      console.error('CallMeBot WhatsApp failed:', res.status, await res.text().catch(() => ''));
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to send CallMeBot WhatsApp:', error);
     return false;
   }
 }
