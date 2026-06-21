@@ -20,7 +20,9 @@ import * as Sentry from '@sentry/nextjs';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const HEAL_FLAG = 'aquascan-self-heal-attempted';
+// Bump the suffix whenever the heal logic gets stronger, so devices that already
+// ran an older (weaker) heal get one fresh automatic attempt with the new logic.
+const HEAL_FLAG = 'aquascan-self-heal-attempted-v2';
 
 function isChunkLoadError(err: Error): boolean {
   const name = err?.name || '';
@@ -33,6 +35,27 @@ function isChunkLoadError(err: Error): boolean {
     /error loading dynamically imported module/i.test(msg) ||
     /Importing a module script failed/i.test(msg)
   );
+}
+
+/**
+ * Remove every AquaScan-saved blob from localStorage/sessionStorage. The engine
+ * persists report history, drilling outcomes, calibration and regional models
+ * under `aquascan_*` keys; if any one is corrupt or from an incompatible older
+ * schema, it can throw when the engine reads it — and that crash survives a cache
+ * clear, so it only hits devices that have USED the tool. We scope to `aquascan_`
+ * so unrelated site data (and the self-heal flag) is preserved.
+ */
+function clearAquaScanStorage(): void {
+  for (const store of [globalThis.localStorage, globalThis.sessionStorage]) {
+    try {
+      const keys: string[] = [];
+      for (let i = 0; i < store.length; i++) {
+        const k = store.key(i);
+        if (k && k.startsWith('aquascan_')) keys.push(k);
+      }
+      keys.forEach((k) => store.removeItem(k));
+    } catch {/* ignore */}
+  }
 }
 
 async function purgeCachesAndSW(): Promise<void> {
@@ -48,6 +71,7 @@ async function purgeCachesAndSW(): Promise<void> {
       await Promise.all(keys.map((k) => caches.delete(k)));
     }
   } catch {/* ignore */}
+  clearAquaScanStorage();
 }
 
 export default function AquaScanError({
@@ -116,15 +140,20 @@ export default function AquaScanError({
           AquaScan Pro <span className="text-cyan-400">couldn’t load</span>
         </h2>
         <p className="text-gray-400 mb-6">
-          This is almost always an out-of-date cached copy on this device. The button below
-          clears it and reloads the latest version.
+          The button below clears this device’s AquaScan data &amp; cache and reloads the
+          latest version. If it keeps failing, copy the technical details below to support.
         </p>
 
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg text-left">
-            <p className="text-red-400 text-sm font-mono break-all">{error.message}</p>
-          </div>
-        )}
+        {/* Always shown (prod included) so a persistent crash is finally diagnosable. */}
+        <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg text-left">
+          <p className="text-red-300 text-xs uppercase tracking-wider mb-1">Technical details</p>
+          <p className="text-red-400 text-sm font-mono break-all">
+            {error?.name ? `${error.name}: ` : ''}{error?.message || 'Unknown error'}
+          </p>
+          {error?.digest && (
+            <p className="text-red-400/70 text-xs font-mono mt-1 break-all">digest: {error.digest}</p>
+          )}
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
