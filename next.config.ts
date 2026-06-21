@@ -30,6 +30,15 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   generateEtags: true,
 
+  // Strip console.* from production bundles (keep error/warn for ops triage).
+  // Smaller, faster JS in prod; no effect on dev. SWC-level, zero runtime cost.
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? { exclude: ['error', 'warn'] }
+        : false,
+  },
+
   // ═══════════════════════════════════════════════════════════════════
   // PRODUCTION BUNDLE OPTIMIZATION
   // ═══════════════════════════════════════════════════════════════════
@@ -44,7 +53,9 @@ const nextConfig: NextConfig = {
     // Next 16 only honours quality values whitelisted here — without this,
     // every quality prop silently falls back to 75 (soft hero/showcase art).
     qualities: [75, 84, 85, 88, 90],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    // 3840 added (from perf variant) so 4K / high-DPI displays get a sized
+    // candidate instead of upscaling the 2048 source.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000, // 1 year cache
     dangerouslyAllowSVG: true,
@@ -207,7 +218,7 @@ const nextConfig: NextConfig = {
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
       img-src 'self' blob: data: https: http:;
       font-src 'self' https://fonts.gstatic.com data: https://cdnjs.cloudflare.com;
-      connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app http://127.0.0.1:5000 http://localhost:5000 ws://127.0.0.1:5000 ws://localhost:5000 https://image.pollinations.ai;
+      connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app http://127.0.0.1:5000 http://localhost:5000 ws://127.0.0.1:5000 ws://localhost:5000 https://image.pollinations.ai https://tfhub.dev https://www.kaggle.com https://storage.googleapis.com;
       media-src 'self' blob: https:;
       object-src 'none';
       base-uri 'self';
