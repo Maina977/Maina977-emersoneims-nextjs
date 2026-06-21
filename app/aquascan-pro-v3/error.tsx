@@ -21,8 +21,44 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 // Bump the suffix whenever the heal logic gets stronger, so devices that already
-// ran an older (weaker) heal get one fresh automatic attempt with the new logic.
-const HEAL_FLAG = 'aquascan-self-heal-attempted-v2';
+// ran an older (weaker) heal get fresh automatic attempts with the new logic.
+const HEAL_COUNT = 'aquascan-self-heal-count-v3';
+const MAX_HEALS = 2;
+
+function getHealCount(): number {
+  try { return parseInt(sessionStorage.getItem(HEAL_COUNT) || '0', 10) || 0; } catch { return 0; }
+}
+function setHealCount(n: number): void {
+  try { sessionStorage.setItem(HEAL_COUNT, String(n)); } catch {/* ignore */}
+}
+
+/**
+ * Pull every /_next/static asset URL out of the error so we can repair them.
+ * A ChunkLoadError message looks like:
+ *   "Failed to load chunk /_next/static/chunks/5962c3274b2602e3.css?dpl=… from module …"
+ */
+function extractChunkUrls(err: Error & { digest?: string }): string[] {
+  const text = `${err?.message || ''}\n${err?.stack || ''}`;
+  const out = new Set<string>();
+  const re = /\/_next\/static\/[^\s"')]+/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) out.add(m[0]);
+  return [...out];
+}
+
+/**
+ * THE actual repair: a browser will keep serving a broken `immutable` chunk from
+ * its HTTP cache forever — clearing the service worker or Cache API does NOT touch
+ * that cache, which is why a normal reload stays broken. `fetch(url,{cache:'reload'})`
+ * bypasses the HTTP cache, hits the network, and OVERWRITES the cached entry with a
+ * good copy. After this, the next reload loads the chunk successfully.
+ */
+async function repairChunks(err: Error & { digest?: string }): Promise<void> {
+  const urls = extractChunkUrls(err);
+  await Promise.all(
+    urls.map((u) => fetch(u, { cache: 'reload', credentials: 'same-origin' }).catch(() => {})),
+  );
+}
 
 function isChunkLoadError(err: Error): boolean {
   const name = err?.name || '';
@@ -90,20 +126,20 @@ export default function AquaScanError({
     console.error('AquaScan Pro error:', error);
 
     let cancelled = false;
-    const alreadyHealed = (() => {
-      try { return sessionStorage.getItem(HEAL_FLAG) === '1'; } catch { return false; }
-    })();
+    const attempts = getHealCount();
 
-    // Auto self-heal once for ANY first failure: clear the stale SW/cache that
-    // points at dead chunks, then hard-reload to fetch the live build. A stale
-    // cache is by far the dominant cause here, and the heal is harmless for other
-    // errors. Guarded by sessionStorage so it can never loop.
-    if (!alreadyHealed) {
+    // Auto-recover up to MAX_HEALS times: re-fetch the failed chunk with
+    // cache:'reload' to OVERWRITE the broken HTTP-cache copy, drop SW/Cache-API
+    // state, then hard-reload onto the repaired assets. Counter-guarded so it can
+    // never loop forever — after MAX_HEALS it falls through to the manual UI.
+    if (attempts < MAX_HEALS) {
       setHealing(true);
-      try { sessionStorage.setItem(HEAL_FLAG, '1'); } catch {/* ignore */}
-      purgeCachesAndSW().finally(() => {
+      setHealCount(attempts + 1);
+      (async () => {
+        await repairChunks(error);
+        await purgeCachesAndSW();
+      })().finally(() => {
         if (!cancelled) {
-          // Cache-busting reload so even an intermediary cache can't re-serve stale HTML.
           const u = new URL(window.location.href);
           u.searchParams.set('_fresh', String(Date.now()));
           window.location.replace(u.toString());
@@ -159,7 +195,8 @@ export default function AquaScanError({
           <button
             onClick={async () => {
               setHealing(true);
-              try { sessionStorage.removeItem(HEAL_FLAG); } catch {/* ignore */}
+              setHealCount(0);
+              await repairChunks(error);
               await purgeCachesAndSW();
               const u = new URL(window.location.href);
               u.searchParams.set('_fresh', String(Date.now()));
@@ -167,7 +204,7 @@ export default function AquaScanError({
             }}
             className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-sky-600 rounded-lg font-semibold hover:opacity-90 transition"
           >
-            🔄 Clear cache & reload
+            🔄 Repair & reload
           </button>
 
           <button
