@@ -74,15 +74,21 @@ export default function AccessibilityWidget() {
   });
   const [mounted, setMounted] = useState(false);
 
-  // Load settings from localStorage on mount
+  // Load settings from localStorage on mount.
+  // Guarded: Edge Tracking Prevention / strict privacy modes make even READING
+  // localStorage throw a SecurityError, which (in this site-wide widget) would
+  // crash the whole page via the error boundary. Blocked storage must degrade
+  // gracefully to "defaults, no persistence".
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem('accessibility-settings');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setSettings(parsed);
-      applySettings(parsed);
-    }
+    try {
+      const saved = window.localStorage.getItem('accessibility-settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setSettings(parsed);
+        applySettings(parsed);
+      }
+    } catch { /* storage blocked or corrupt — use defaults */ }
   }, []);
 
   // Apply settings to document
@@ -118,7 +124,7 @@ export default function AccessibilityWidget() {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     applySettings(newSettings);
-    localStorage.setItem('accessibility-settings', JSON.stringify(newSettings));
+    try { window.localStorage.setItem('accessibility-settings', JSON.stringify(newSettings)); } catch { /* storage blocked */ }
   };
 
   // Cycle through options
@@ -141,7 +147,7 @@ export default function AccessibilityWidget() {
     };
     setSettings(defaultSettings);
     applySettings(defaultSettings);
-    localStorage.removeItem('accessibility-settings');
+    try { window.localStorage.removeItem('accessibility-settings'); } catch { /* storage blocked */ }
   };
 
   const fontSizeLabels = ['Normal', 'Large', 'Extra Large'];

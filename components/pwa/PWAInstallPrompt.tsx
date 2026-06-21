@@ -18,8 +18,11 @@ export default function PWAInstallPrompt() {
       return;
     }
 
-    // Check if user dismissed prompt before
-    const dismissed = localStorage.getItem('pwa-prompt-dismissed');
+    // Check if user dismissed prompt before. Guarded — blocked storage (Edge
+    // Tracking Prevention / strict privacy) makes reading localStorage throw,
+    // which would crash the page from this site-wide component.
+    let dismissed: string | null = null;
+    try { dismissed = window.localStorage.getItem('pwa-prompt-dismissed'); } catch { /* storage blocked */ }
     if (dismissed) {
       const dismissedTime = parseInt(dismissed);
       const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
@@ -61,7 +64,7 @@ export default function PWAInstallPrompt() {
   };
 
   const handleDismiss = () => {
-    localStorage.setItem('pwa-prompt-dismissed', Date.now().toString());
+    try { window.localStorage.setItem('pwa-prompt-dismissed', Date.now().toString()); } catch { /* storage blocked */ }
     setShowPrompt(false);
   };
 

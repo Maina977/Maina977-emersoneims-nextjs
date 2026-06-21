@@ -5,23 +5,38 @@ import { X } from 'lucide-react';
 
 /**
  * Cookie Consent Banner - GDPR Compliance
- * Shows on first visit, stores preference in localStorage
+ * Shows on first visit, stores preference in localStorage.
+ *
+ * IMPORTANT: every localStorage access is wrapped. Edge's Tracking Prevention
+ * (and Firefox/Brave strict modes, private windows with storage blocked, etc.)
+ * makes even *reading* `localStorage` throw a SecurityError. Because this banner
+ * is mounted site-wide, an unguarded access here threw inside a passive effect
+ * and took the WHOLE page down via the error boundary ("Oops! Error"). Guard
+ * everything so blocked storage degrades to "banner just shows" instead of a crash.
  */
+function safeGet(key: string): string | null {
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+function safeSet(key: string, value: string): void {
+  try { window.localStorage.setItem(key, value); } catch { /* storage blocked — ignore */ }
+}
+
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
     // Check if user has already consented
-    const consent = localStorage.getItem('cookie-consent');
+    const consent = safeGet('cookie-consent');
     if (!consent) {
       // Show banner after 2 seconds
-      setTimeout(() => setShowBanner(true), 2000);
+      const t = setTimeout(() => setShowBanner(true), 2000);
+      return () => clearTimeout(t);
     }
   }, []);
 
   const acceptCookies = () => {
-    localStorage.setItem('cookie-consent', 'accepted');
-    localStorage.setItem('cookie-consent-date', new Date().toISOString());
+    safeSet('cookie-consent', 'accepted');
+    safeSet('cookie-consent-date', new Date().toISOString());
     setShowBanner(false);
     
     // Initialize analytics after consent
@@ -34,8 +49,8 @@ export default function CookieConsent() {
   };
 
   const declineCookies = () => {
-    localStorage.setItem('cookie-consent', 'essential');
-    localStorage.setItem('cookie-consent-date', new Date().toISOString());
+    safeSet('cookie-consent', 'essential');
+    safeSet('cookie-consent-date', new Date().toISOString());
     setShowBanner(false);
     // Disable analytics
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -47,8 +62,8 @@ export default function CookieConsent() {
   };
 
   const rejectAllCookies = () => {
-    localStorage.setItem('cookie-consent', 'rejected');
-    localStorage.setItem('cookie-consent-date', new Date().toISOString());
+    safeSet('cookie-consent', 'rejected');
+    safeSet('cookie-consent-date', new Date().toISOString());
     setShowBanner(false);
     // Optionally clear all non-essential cookies here if needed
     if (typeof window !== 'undefined' && (window as any).gtag) {
