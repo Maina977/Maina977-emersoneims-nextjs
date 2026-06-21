@@ -26,11 +26,21 @@ const SERVICE_LABELS: Record<string, string> = {
   generators: 'Generators',
   solar: 'Solar Energy',
   ups: 'UPS Systems',
-  automation: 'Automation',
-  pumps: 'Pumps',
+  automation: 'Controls & Automation',
+  pumps: 'Borehole & Water Systems',
   incinerators: 'Incinerators',
-  motors: 'Motors',
+  motors: 'Motor Rewinding & Repair',
+  hvac: 'HVAC & Air Conditioning',
+  highvoltage: 'High Voltage Infrastructure',
+  fabrication: 'Steel Fabrication',
 };
+
+// Friendly label for a service key — falls back to the raw value (Title-cased)
+// so an unmapped key never renders as "undefined" in a lead alert.
+function serviceLabel(service?: string): string {
+  const key = service || 'general';
+  return SERVICE_LABELS[key] || key.charAt(0).toUpperCase() + key.slice(1);
+}
 // Real EmersonEIMS business line — used for SMS/WhatsApp sales alerts AND as the
 // public WhatsApp fallback returned to the browser. Was previously a placeholder
 // (+254768860665) that delivered alerts nowhere.
@@ -352,7 +362,7 @@ function buildLeadEmailHtml(data: ContactFormData, leadId: number): string {
                   <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Service:</td>
                   <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
                     <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px;">
-                      ${SERVICE_LABELS[data.service || 'general']}
+                      ${serviceLabel(data.service)}
                     </span>
                   </td>
                 </tr>
@@ -422,7 +432,7 @@ async function sendSmtpNotification(data: ContactFormData, leadId: number): Prom
       from: `"${fromName}" <${fromEmail}>`,
       to: LEAD_RECIPIENTS.join(', '),
       replyTo: data.email, // team can reply straight to the customer
-      subject: `🔥 NEW WEBSITE LEAD: ${data.name} — ${SERVICE_LABELS[data.service || 'general']}`,
+      subject: `🔥 NEW WEBSITE LEAD: ${data.name} — ${serviceLabel(data.service)}`,
       html: buildLeadEmailHtml(data, leadId),
       text:
         `NEW WEBSITE LEAD #${leadId || '-'}\n` +
@@ -445,7 +455,7 @@ async function sendEmailNotification(data: ContactFormData, leadId: number): Pro
     if (!resendApiKey) {
       console.log('📧 Email notification (Resend not configured):', {
         to: SALES_EMAIL,
-        subject: `NEW LEAD: ${data.name} - ${SERVICE_LABELS[data.service || 'general']}`,
+        subject: `NEW LEAD: ${data.name} - ${serviceLabel(data.service)}`,
         leadId,
       });
       return false;
@@ -461,7 +471,7 @@ async function sendEmailNotification(data: ContactFormData, leadId: number): Pro
       body: JSON.stringify({
         from: 'EmersonEIMS Leads <leads@emersoneims.com>',
         to: SALES_EMAIL,
-        subject: `🔥 NEW LEAD: ${data.name} - ${SERVICE_LABELS[data.service || 'general']}`,
+        subject: `🔥 NEW LEAD: ${data.name} - ${serviceLabel(data.service)}`,
         html: buildLeadEmailHtml(data, leadId),
       }),
     });

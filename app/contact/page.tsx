@@ -265,109 +265,211 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
   return <span>{count}{suffix}</span>;
 }
 
-// Main Contact Form with Sci-Fi styling
+// Main Contact Form — premium, B2B-grade, multi-channel delivery.
+// Submits to /api/contact (which fans out to email, ERP, WhatsApp API, Google
+// Sheet, webhook and a free FormSubmit relay). It NEVER force-opens WhatsApp;
+// instead it confirms delivery from the API response and always offers a one-tap
+// WhatsApp / call / email path so a lead is never lost.
+const CONTACT_PHONE = '+254 768 860 665';
+const CONTACT_WHATSAPP = '254768860665';
+const CONTACT_EMAIL = 'emersoneimservices@gmail.com';
+
+// value = backend service key (keeps lead emails/ERP records clean); label = shown to user.
+const SERVICE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'generators', label: 'Diesel Generators' },
+  { value: 'solar', label: 'Solar Energy Systems' },
+  { value: 'ups', label: 'UPS & Power Protection' },
+  { value: 'hvac', label: 'HVAC & Air Conditioning' },
+  { value: 'motors', label: 'Motor Rewinding & Repair' },
+  { value: 'pumps', label: 'Borehole & Water Systems' },
+  { value: 'highvoltage', label: 'High Voltage Infrastructure' },
+  { value: 'fabrication', label: 'Steel Fabrication' },
+  { value: 'incinerators', label: 'Incinerators' },
+  { value: 'automation', label: 'Controls & Automation' },
+  { value: 'general', label: 'Other / General Inquiry' },
+];
+
 function SciFiContactForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
+    company: '',
     service: '',
     message: '',
     urgency: 'normal',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [whatsappLink, setWhatsappLink] = useState('');
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  const services = [
-    'Diesel Generators',
-    'Solar Energy Systems',
-    'UPS & Power Protection',
-    'HVAC & Air Conditioning',
-    'Motor Rewinding',
-    'Borehole & Water Systems',
-    'High Voltage Infrastructure',
-    'Steel Fabrication',
-    'Incinerators',
-    'Other Services',
-  ];
+  // Build a wa.me deep link with the enquiry pre-filled — used as the guaranteed
+  // fallback if the server can't be reached, and offered as a one-tap option on success.
+  const buildWhatsAppLink = () => {
+    const serviceLabel = SERVICE_OPTIONS.find((s) => s.value === formData.service)?.label;
+    const lines = [
+      `Hello EmersonEIMS, I'm ${formData.name || 'a prospective client'}.`,
+      formData.company ? `Company: ${formData.company}` : '',
+      serviceLabel ? `Service: ${serviceLabel}` : '',
+      formData.phone ? `Phone: ${formData.phone}` : '',
+      formData.urgency && formData.urgency !== 'normal' ? `Priority: ${formData.urgency}` : '',
+      '',
+      formData.message,
+    ].filter(Boolean);
+    return `https://wa.me/${CONTACT_WHATSAPP}?text=${encodeURIComponent(lines.join('\n'))}`;
+  };
+
+  const resetForm = () => {
+    setFormData({ name: '', email: '', phone: '', company: '', service: '', message: '', urgency: 'normal' });
+    setSubmitStatus('idle');
+    setErrorMsg('');
+    setWhatsappLink('');
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Require the essentials (form has no native validation)
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setErrorMsg('Please add your name, email and a short message so we can help.');
       setSubmitStatus('error');
-      setTimeout(() => setSubmitStatus('idle'), 4000);
+      setWhatsappLink(buildWhatsAppLink());
       return;
     }
 
     setIsSubmitting(true);
+    setErrorMsg('');
+    const fallback = buildWhatsAppLink();
 
-    // GUARANTEED DELIVERY: open a WhatsApp chat to the business with the enquiry
-    // pre-filled, on the user's click (popup-safe, before any await). Previously
-    // this form only simulated a submit — leads went nowhere.
-    const waText = [
-      `Hello EmersonEIMS, I'm ${formData.name}.`,
-      formData.service ? `Service: ${formData.service}` : '',
-      formData.phone ? `Phone: ${formData.phone}` : '',
-      formData.urgency && formData.urgency !== 'normal' ? `Urgency: ${formData.urgency}` : '',
-      '',
-      formData.message,
-    ].filter(Boolean).join('\n');
-    if (typeof window !== 'undefined') {
-      window.open(`https://wa.me/254768860665?text=${encodeURIComponent(waText)}`, '_blank', 'noopener,noreferrer');
-    }
-
-    // Also send to the lead API (DB + any configured email/SMS/webhook channel)
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
+          company: formData.company,
           service: formData.service || 'general',
           message: formData.urgency && formData.urgency !== 'normal'
-            ? `${formData.message}\n\n[Urgency: ${formData.urgency}]`
+            ? `${formData.message}\n\n[Priority: ${formData.urgency}]`
             : formData.message,
           source: 'contact_page',
           location: typeof window !== 'undefined' ? window.location.pathname : undefined,
         }),
       });
+      const json = await res.json().catch(() => null) as
+        | { success?: boolean; whatsappFallback?: string }
+        | null;
+
+      if (res.ok && json?.success) {
+        setWhatsappLink(json.whatsappFallback || fallback);
+        setSubmitStatus('success');
+      } else {
+        throw new Error('delivery_unconfirmed');
+      }
     } catch {
-      // WhatsApp already opened, so the lead still reaches us.
+      // Server couldn't confirm — never lose the lead: surface the direct paths.
+      setWhatsappLink(fallback);
+      setErrorMsg('We couldn’t confirm delivery just now. Reach us instantly on WhatsApp, phone or email below — your details are saved here.');
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
-    setSubmitStatus('success');
-
-    setTimeout(() => {
-      setSubmitStatus('idle');
-      setFormData({ name: '', email: '', phone: '', service: '', message: '', urgency: 'normal' });
-    }, 4000);
   };
 
   const inputClasses = (field: string) => `
     w-full bg-black/50 border-2 rounded-xl px-5 py-4 text-white placeholder-gray-500
     transition-all duration-300 outline-none backdrop-blur-sm
-    ${focusedField === field 
-      ? 'border-amber-500 shadow-[0_0_20px_rgba(251,191,36,0.3)]' 
+    ${focusedField === field
+      ? 'border-amber-500 shadow-[0_0_20px_rgba(251,191,36,0.3)]'
       : 'border-white/10 hover:border-white/30'}
   `;
+  const labelClasses = 'block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-2';
 
+  // ── SUCCESS STATE ──────────────────────────────────────────────────────────
+  if (submitStatus === 'success') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center py-6"
+      >
+        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/15 border border-green-500/40 flex items-center justify-center">
+          <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 className="text-2xl font-bold text-white mb-2">Message received</h3>
+        <p className="text-gray-300 max-w-md mx-auto mb-8">
+          Thank you, {formData.name.split(' ')[0] || 'there'}. Our engineering team will respond
+          within <span className="text-amber-400 font-semibold">2 working hours</span>. For an
+          immediate response, reach us directly:
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+          <a
+            href={whatsappLink || buildWhatsAppLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#25D366] text-black font-semibold hover:opacity-90 transition"
+          >
+            💬 WhatsApp
+          </a>
+          <a
+            href={`tel:${CONTACT_PHONE.replace(/\s/g, '')}`}
+            className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-amber-400/60 text-white font-semibold hover:bg-amber-500/10 transition"
+          >
+            📞 Call
+          </a>
+        </div>
+        <button
+          onClick={resetForm}
+          className="mt-6 text-sm text-gray-400 hover:text-white underline underline-offset-4"
+        >
+          Send another message
+        </button>
+      </motion.div>
+    );
+  }
+
+  // ── FORM ───────────────────────────────────────────────────────────────────
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Error / delivery-fallback banner */}
+      {submitStatus === 'error' && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-red-500/40 bg-red-500/10 p-4"
+        >
+          <p className="text-sm text-red-200">{errorMsg}</p>
+          {whatsappLink && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a href={whatsappLink} target="_blank" rel="noopener noreferrer"
+                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25D366] text-black text-sm font-semibold hover:opacity-90 transition">
+                💬 WhatsApp us now
+              </a>
+              <a href={`tel:${CONTACT_PHONE.replace(/\s/g, '')}`}
+                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-white text-sm font-semibold hover:bg-white/10 transition">
+                📞 {CONTACT_PHONE}
+              </a>
+              <a href={`mailto:${CONTACT_EMAIL}`}
+                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-white text-sm font-semibold hover:bg-white/10 transition">
+                ✉️ Email
+              </a>
+            </div>
+          )}
+        </motion.div>
+      )}
+
       {/* Name & Email Row */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="relative">
-          <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-            {'// IDENTIFICATION'}
-          </label>
+          <label className={labelClasses}>Full name <span className="text-red-400">*</span></label>
           <input
             type="text"
-            placeholder="Your Name"
+            placeholder="Your name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             onFocus={() => setFocusedField('name')}
@@ -375,22 +477,13 @@ function SciFiContactForm() {
             className={inputClasses('name')}
             required
           />
-          {focusedField === 'name' && (
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: '100%' }}
-              className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-amber-500 to-orange-500"
-            />
-          )}
         </div>
-        
+
         <div className="relative">
-          <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-            {'// COMM_LINK'}
-          </label>
+          <label className={labelClasses}>Work email <span className="text-red-400">*</span></label>
           <input
             type="email"
-            placeholder="your@email.com"
+            placeholder="you@company.com"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             onFocus={() => setFocusedField('email')}
@@ -401,12 +494,22 @@ function SciFiContactForm() {
         </div>
       </div>
 
-      {/* Phone & Service Row */}
+      {/* Company & Phone Row (Company is key for B2B qualification) */}
       <div className="grid md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-            {'// DIRECT_LINE'}
-          </label>
+          <label className={labelClasses}>Company / organisation</label>
+          <input
+            type="text"
+            placeholder="e.g. Acme Manufacturing Ltd"
+            value={formData.company}
+            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+            onFocus={() => setFocusedField('company')}
+            onBlur={() => setFocusedField(null)}
+            className={inputClasses('company')}
+          />
+        </div>
+        <div>
+          <label className={labelClasses}>Phone / WhatsApp</label>
           <input
             type="tel"
             placeholder="+254 7XX XXX XXX"
@@ -417,41 +520,37 @@ function SciFiContactForm() {
             className={inputClasses('phone')}
           />
         </div>
-        
-        <div>
-          <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-            {'// SERVICE_TYPE'}
-          </label>
-          <select
-            value={formData.service}
-            onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-            onFocus={() => setFocusedField('service')}
-            onBlur={() => setFocusedField(null)}
-            className={`${inputClasses('service')} appearance-none cursor-pointer`}
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23fbbf24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 1rem center',
-              backgroundSize: '1.5rem',
-            }}
-            required
-          >
-            <option value="">Select Service...</option>
-            {services.map((service) => (
-              <option key={service} value={service} className="bg-black text-white">
-                {service}
-              </option>
-            ))}
-          </select>
-        </div>
+      </div>
+
+      {/* Service */}
+      <div>
+        <label className={labelClasses}>What do you need?</label>
+        <select
+          value={formData.service}
+          onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+          onFocus={() => setFocusedField('service')}
+          onBlur={() => setFocusedField(null)}
+          className={`${inputClasses('service')} appearance-none cursor-pointer`}
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23fbbf24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 1rem center',
+            backgroundSize: '1.5rem',
+          }}
+        >
+          <option value="">Select a service…</option>
+          {SERVICE_OPTIONS.map((s) => (
+            <option key={s.value} value={s.value} className="bg-black text-white">
+              {s.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Urgency Level */}
       <div>
-        <label className="block text-xs text-amber-400 uppercase tracking-wider mb-3 font-mono">
-          {'// PRIORITY_LEVEL'}
-        </label>
-        <div className="flex gap-4">
+        <label className={labelClasses}>Priority</label>
+        <div className="flex gap-3 sm:gap-4">
           {[
             { value: 'low', label: 'Standard', color: 'green' },
             { value: 'normal', label: 'Priority', color: 'amber' },
@@ -463,9 +562,9 @@ function SciFiContactForm() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setFormData({ ...formData, urgency: level.value })}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all duration-300 font-mono text-sm ${
+              className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all duration-300 text-sm font-semibold ${
                 formData.urgency === level.value
-                  ? level.color === 'green' 
+                  ? level.color === 'green'
                     ? 'border-green-500 bg-green-500/20 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.3)]'
                     : level.color === 'amber'
                     ? 'border-amber-500 bg-amber-500/20 text-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)]'
@@ -484,11 +583,9 @@ function SciFiContactForm() {
 
       {/* Message */}
       <div>
-        <label className="block text-xs text-amber-400 uppercase tracking-wider mb-2 font-mono">
-          {'// TRANSMISSION_DATA'}
-        </label>
+        <label className={labelClasses}>How can we help? <span className="text-red-400">*</span></label>
         <textarea
-          placeholder="Describe your power requirements..."
+          placeholder="Tell us about your site, load, timeline or the problem you're solving…"
           value={formData.message}
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           onFocus={() => setFocusedField('message')}
@@ -502,26 +599,18 @@ function SciFiContactForm() {
       {/* Submit Button */}
       <motion.button
         type="submit"
-        disabled={isSubmitting || submitStatus === 'success'}
+        disabled={isSubmitting}
         whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
         whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-        className={`
-          relative w-full py-5 rounded-xl font-bold text-lg overflow-hidden
-          transition-all duration-500 group
-          ${submitStatus === 'success' 
-            ? 'bg-green-500 text-white' 
-            : 'bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white'}
-        `}
+        className="relative w-full py-5 rounded-xl font-bold text-lg overflow-hidden transition-all duration-500 group bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white disabled:opacity-80"
       >
-        {/* Animated Background */}
-        {!isSubmitting && submitStatus !== 'success' && (
+        {!isSubmitting && (
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
             animate={{ x: ['-100%', '100%'] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
           />
         )}
-        
         <span className="relative z-10 flex items-center justify-center gap-3">
           {isSubmitting ? (
             <>
@@ -530,18 +619,11 @@ function SciFiContactForm() {
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
               />
-              TRANSMITTING...
-            </>
-          ) : submitStatus === 'success' ? (
-            <>
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              TRANSMISSION SUCCESSFUL
+              Sending…
             </>
           ) : (
             <>
-              INITIATE TRANSMISSION
+              Send message
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -549,6 +631,11 @@ function SciFiContactForm() {
           )}
         </span>
       </motion.button>
+
+      <p className="text-center text-xs text-gray-500">
+        Prefer to talk now? WhatsApp or call{' '}
+        <a href={`tel:${CONTACT_PHONE.replace(/\s/g, '')}`} className="text-amber-400 hover:underline">{CONTACT_PHONE}</a>
+      </p>
     </form>
   );
 }
