@@ -67,13 +67,13 @@ export function generateLocationServiceMetadata(
       type: 'website',
       locale: 'en_KE',
       url: canonicalUrl,
-      siteName: 'Emerson EiMS',
+      siteName: 'EmersonEIMS',
       images: [
         {
           url: 'https://www.emersoneims.com/og-service-location.jpg',
           width: 1200,
           height: 630,
-          alt: `${service.name} in ${locationName} - Emerson EiMS`
+          alt: `${service.name} in ${locationName} - EmersonEIMS`
         }
       ]
     },
@@ -115,7 +115,7 @@ export function generateCountyMetadata(
   countySlug: string,
   population?: number
 ): Metadata {
-  const title = `Generator & Power Solutions in ${countyName} County | Emerson EiMS`;
+  const title = `Generators, Solar & Power Services in ${countyName} County`;
   const description = `Professional generator installation, repair & maintenance in ${countyName} County, Kenya. Solar power, UPS systems, electrical services. Serving ${population ? population.toLocaleString() + '+ residents. ' : ''}24/7 emergency support. Call +254768860665`;
 
   return {
@@ -139,7 +139,7 @@ export function generateCountyMetadata(
       type: 'website',
       locale: 'en_KE',
       url: `https://www.emersoneims.com/kenya/${countySlug}`,
-      siteName: 'Emerson EiMS'
+      siteName: 'EmersonEIMS'
     },
     alternates: {
       canonical: `https://www.emersoneims.com/kenya/${countySlug}`
@@ -160,7 +160,7 @@ export function generateConstituencyMetadata(
   countyName: string,
   countySlug: string
 ): Metadata {
-  const title = `Generator Services in ${constituencyName}, ${countyName} | Emerson EiMS`;
+  const title = `Generators & Power Services in ${constituencyName}, ${countyName}`;
   const description = `Professional generator & power solutions in ${constituencyName}, ${countyName} County. Installation, repair, maintenance, rentals. 24/7 emergency service. Call +254768860665`;
 
   return {
@@ -180,7 +180,7 @@ export function generateConstituencyMetadata(
       type: 'website',
       locale: 'en_KE',
       url: `https://www.emersoneims.com/kenya/${countySlug}/${constituencySlug}`,
-      siteName: 'Emerson EiMS'
+      siteName: 'EmersonEIMS'
     },
     alternates: {
       canonical: `https://www.emersoneims.com/kenya/${countySlug}/${constituencySlug}`
@@ -203,7 +203,7 @@ export function generateVillageMetadata(
   countyName: string,
   countySlug: string
 ): Metadata {
-  const title = `Generator Services in ${villageName}, ${constituencyName} | Emerson EiMS`;
+  const title = `Generators & Power Services in ${villageName}, ${constituencyName}`;
   const description = `Professional generator & power solutions in ${villageName}, ${constituencyName}, ${countyName}. Installation, repair, maintenance. Fast response. Call +254768860665`;
 
   return {
@@ -222,7 +222,7 @@ export function generateVillageMetadata(
       type: 'website',
       locale: 'en_KE',
       url: `https://www.emersoneims.com/kenya/${countySlug}/${constituencySlug}/${villageSlug}`,
-      siteName: 'Emerson EiMS'
+      siteName: 'EmersonEIMS'
     },
     alternates: {
       canonical: `https://www.emersoneims.com/kenya/${countySlug}/${constituencySlug}/${villageSlug}`

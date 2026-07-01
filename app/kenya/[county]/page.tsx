@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'County Not Found' };
   }
 
-  const title = `Generator Services in ${county.name} County | All ${county.constituencies.length} Constituencies | Emerson EiMS`;
+  const title = `Generators, Solar & Power Services in ${county.name} County`;
   const description = `Professional generator installation, repair, maintenance & rental in ${county.name} County, Kenya. Serving ${county.constituencies.length} constituencies including ${county.constituencies.slice(0, 3).map(c => c.name).join(', ')}. Population: ${county.population.toLocaleString()}+. 24/7 emergency support. Call +254768860665`;
 
   return {
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       locale: 'en_KE',
       url: `https://www.emersoneims.com/kenya/${county.slug}`,
-      siteName: 'Emerson EiMS',
+      siteName: 'EmersonEIMS',
     },
     alternates: {
       canonical: `https://www.emersoneims.com/kenya/${county.slug}`,
@@ -90,7 +90,7 @@ export default async function CountyPage({ params }: Props) {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'LocalBusiness',
-            name: `Emerson EiMS - ${county.name} County`,
+            name: `EmersonEIMS - ${county.name} County`,
             description: `Generator services in ${county.name} County, Kenya`,
             url: `https://www.emersoneims.com/kenya/${county.slug}`,
             telephone: '+254768860665',
@@ -237,7 +237,7 @@ export default async function CountyPage({ params }: Props) {
         {/* Why Choose Us */}
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
-            Why Choose Emerson EiMS in {county.name}?
+            Why Choose EmersonEIMS in {county.name}?
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center p-6 rounded-xl bg-white/5 border border-white/10">

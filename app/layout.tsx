@@ -70,7 +70,7 @@ export async function generateMetadata(): Promise<Metadata> {
   metadataBase: new URL(siteUrl),
   title: {
     default: "EmersonEIMS | B2B Power & Engineering Partner for Industry, Healthcare & Telecom in Kenya",
-    template: "%s | EmersonEIMS — B2B Power & Engineering Solutions Kenya"
+    template: "%s | EmersonEIMS Kenya"
   },
   description: "EmersonEIMS is a B2B power-engineering partner for manufacturers, hospitals, telecom, commercial property and construction in Kenya \u2014 Cummins generators, generator repairs, ATS / changeover panels, distribution boards, solar PV, UPS systems, motor rewinding, air-conditioning, borehole pumps, hospital incinerators and steel fabrication \u2014 backed by a 3-year warranty, SLA maintenance and 24/7 emergency response across all 47 counties. Call +254768860665.",
   // NOTE: Keywords meta tag removed - Google has ignored this tag since 2009
