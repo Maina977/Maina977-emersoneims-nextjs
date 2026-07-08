@@ -80,10 +80,18 @@ export interface PathAction {
 
 export function computePathTo97(result: AnalysisResult): PathTo97Result {
   // ── Assess current data availability ──
-  const hasERT = !!(result.ertInterpretation || (result as any).ertIntelligence);
-  const hasPumpTest = !!(result.pumpTestAnalysis || result.fieldData?.pumpTest);
+  // FIELD data only. The pipeline ALWAYS attaches modelled/synthetic
+  // ertInterpretation, pumpTestAnalysis and lithologyAnalysis objects, so
+  // testing mere existence marked "ERT Survey: COMPLETED" / "Pump Test:
+  // COMPLETED" on reports whose own cover page says NO FIELD DATA COLLECTED —
+  // the single most misleading line a customer could read.
+  const hasERT =
+    !!(result.fieldData?.ertSurvey || (result.fieldData as any)?.ertDataFile) ||
+    (result.ertInterpretation as any)?.dataSource === 'field_ert' ||
+    (result as any).ertIntelligence?.dataSource === 'field_ert';
+  const hasPumpTest = !!(result.fieldData?.pumpTest || (result as any).fieldValidation?.pumpTest);
   const hasLabWater = !!(result.fieldData?.labWaterAnalysis);
-  const hasLithology = !!(result.lithologyAnalysis || (result.fieldData as any)?.lithologyLog);
+  const hasLithology = !!((result.fieldData as any)?.lithologyLog || (result as any).fieldValidation?.lithologyLog);
   const hasNearby = (result.nearbyWells?.sampleSize ?? 0) > 0;
   const hasSatellite = !!(result.remoteSensing || (result as any).satelliteWaterAnalysis);
   const hasGLDAS = !!(result.gldasGroundwater);

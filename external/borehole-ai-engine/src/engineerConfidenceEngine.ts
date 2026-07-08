@@ -102,6 +102,8 @@ export interface WellValidationPoint {
 
 export interface CrossValidationResult {
   wellCount: number;
+  /** Wells that are real field records (excludes model-generated SYN-* wells). */
+  fieldWellCount: number;
   depthRMSE_m: number;
   depthMAE_m: number;
   depthR2: number;
@@ -238,9 +240,15 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   const hasModelledERT = !!(r.ertInterpretation?.depthOptimization || r.ertInterpretation?.invertedLayers?.length || r.ertIntelligence?.depthOptimization) && !hasERT;
   const nearbyWellList = r.nearbyWells?.nearbyWells ?? r.nearbyWells?.wells ?? [];
   const hasNearby = nearbyWellList.length > 0;
-  const hasPumpTest = !!(r.fieldData?.pumpTest || r.fieldValidation?.pumpTest || r.pumpTestAnalysis);
+  // FIELD data only. r.pumpTestAnalysis / r.lithologyAnalysis exist even when
+  // derived purely from satellite-estimated T/S (the engine attaches modelled
+  // analyses to the same fields) — treating their mere existence as a field
+  // pump test made the Data Provenance Matrix claim "CALIBRATED — pump test /
+  // field measurement" on desktop-only reports. Only user-supplied field data
+  // (fieldData/fieldValidation) counts.
+  const hasPumpTest = !!(r.fieldData?.pumpTest || r.fieldValidation?.pumpTest);
   const hasLabWater = !!(r.fieldData?.labWaterAnalysis || r.fieldValidation?.waterSample);
-  const hasLithology = !!(r.lithologyAnalysis?.stratigraphicSummary || r.fieldValidation?.lithologyLog || r.fieldData?.lithologyLog);
+  const hasLithology = !!(r.fieldValidation?.lithologyLog || r.fieldData?.lithologyLog);
 
   // â”€â”€ Satellite / Remote Sensing sources â”€â”€
   const hasSoilGrids = !!(r.remoteSensing?.soilGrids?.available || r.soil?.dataSource?.includes?.('SoilGrids') || r.globalSoilAnalysis);
@@ -565,6 +573,7 @@ function performCrossValidation(r: any): CrossValidationResult {
   if (n === 0) {
     return {
       wellCount: 0,
+      fieldWellCount: 0,
       depthRMSE_m: 0, depthMAE_m: 0, depthR2: 0, depthMAPE_pct: 0,
       yieldRMSE_m3hr: 0, yieldMAE_m3hr: 0, yieldR2: 0, yieldMAPE_pct: 0,
       successRateActual_pct: 0, successRatePredicted_pct: Math.round((r.probability ?? 0) * 100),
@@ -621,6 +630,7 @@ function performCrossValidation(r: any): CrossValidationResult {
 
   return {
     wellCount: n,
+    fieldWellCount: realCount,
     depthRMSE_m: +depthRMSE.toFixed(2),
     depthMAE_m: +depthMAE.toFixed(2),
     depthR2: +depthR2.toFixed(2),
@@ -658,8 +668,14 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
   const seed = Math.round((r.recommendedDepth ?? 40) * 1000 + (r.estimatedYield ?? 1.5) * 10000 + (r.probability ?? 50) * 100);
   resetRNG(seed);
   const N = 5000;
-  const hasERT = !!(r.ertInterpretation?.depthOptimization || r.ertInterpretation?.invertedLayers?.length || r.ertIntelligence?.depthOptimization || r.fieldData?.ertSurvey);
-  const nearbyWellList = r.nearbyWells?.nearbyWells ?? r.nearbyWells?.wells ?? [];
+  // Only FIELD ERT and REAL wells may tighten the Monte Carlo spread — the
+  // engine always attaches a modelled ERT + synthetic wells, and letting those
+  // shrink the confidence intervals made desktop-only reports look far more
+  // certain than they are.
+  const hasERT = !!(r.fieldData?.ertSurvey || r.fieldData?.ertDataFile) ||
+    r.ertInterpretation?.dataSource === 'field_ert' || r.ertIntelligence?.dataSource === 'field_ert';
+  const allWells = r.nearbyWells?.nearbyWells ?? r.nearbyWells?.wells ?? [];
+  const nearbyWellList = allWells.filter((w: any) => !String(w?.source ?? '').toLowerCase().includes('synthetic'));
   const hasNearby = nearbyWellList.length > 0;
   const hasGeophysics = !!(r.advancedGeophysics || r.hybridGeophysics);
   const hasEnsemble = !!(r.ensembleResult);
@@ -824,10 +840,15 @@ function computeMonteCarloStats(parameter: string, unit: string, samples: number
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 function generateMethodologyReport(r: any): MethodologyReport {
-  const hasERT = !!(r.ertInterpretation?.depthOptimization || r.ertInterpretation?.invertedLayers?.length || r.ertIntelligence?.depthOptimization || r.fieldData?.ertSurvey);
-  const nearbyWellList = r.nearbyWells?.nearbyWells ?? r.nearbyWells?.wells ?? [];
+  // FIELD data only — a modelled ERT/pump-test object always exists on the
+  // result, and counting it here made the methodology table claim
+  // "Aquifer Simulation: MEASURED" / "ERT: CALIBRATED" on desktop-only reports.
+  const hasERT = !!(r.fieldData?.ertSurvey || r.fieldData?.ertDataFile) ||
+    r.ertInterpretation?.dataSource === 'field_ert' || r.ertIntelligence?.dataSource === 'field_ert';
+  const allMethodWells = r.nearbyWells?.nearbyWells ?? r.nearbyWells?.wells ?? [];
+  const nearbyWellList = allMethodWells.filter((w: any) => !String(w?.source ?? '').toLowerCase().includes('synthetic'));
   const hasNearby = nearbyWellList.length > 0;
-  const hasPumpTest = !!(r.fieldData?.pumpTest || r.fieldValidation?.pumpTest || r.pumpTestAnalysis);
+  const hasPumpTest = !!(r.fieldData?.pumpTest || r.fieldValidation?.pumpTest);
 
   const steps: MethodologyStep[] = [
     {
@@ -1060,10 +1081,15 @@ function computeTrustBreakdown(
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   let validation = 0;
 
-  // Cross-validation against nearby wells
-  if (cv.wellCount >= 5 && cv.depthMAPE_pct < 20) validation += 14;
-  else if (cv.wellCount >= 3 && cv.depthMAPE_pct < 35) validation += 10;
-  else if (cv.wellCount >= 1) validation += 6;
+  // Cross-validation against nearby wells. Only REAL field wells earn full
+  // validation credit — validating the model against its own synthetic wells
+  // is circular (the report even flags it) and was inflating Trust Score to
+  // Grade A on desktop-only runs.
+  const fieldWells = cv.fieldWellCount ?? cv.wellCount;
+  if (fieldWells >= 5 && cv.depthMAPE_pct < 20) validation += 14;
+  else if (fieldWells >= 3 && cv.depthMAPE_pct < 35) validation += 10;
+  else if (fieldWells >= 1) validation += 6;
+  else if (cv.wellCount >= 1) validation += 2; // synthetic-only: token credit
   else validation += 1;
 
   // Monte Carlo uncertainty quantified
@@ -1106,13 +1132,14 @@ function computeCertificationReadiness(
   const engMissing: string[] = [];
   if (!prov.ertPresent && modelCount < 5) engMissing.push('ERT geophysical survey (or 5+ analytical engines)');
   if (!prov.nearbyWellsUsed && satCount < 4) engMissing.push('Nearby borehole calibration (or 4+ satellite sources)');
-  if (cv.wellCount < 3 && modelCount < 6) engMissing.push('Minimum 3 validation wells (or 6+ cross-validating engines)');
+  const certFieldWells = cv.fieldWellCount ?? cv.wellCount;
+  if (certFieldWells < 3 && modelCount < 6) engMissing.push(`Minimum 3 FIELD validation wells (have ${certFieldWells}; model-generated wells don't count) or 6+ cross-validating engines`);
   const engReady = engMissing.length === 0 && trustScore >= 60;
 
   const bankMissing: string[] = [];
   if (!prov.ertPresent) bankMissing.push('ERT geophysical survey');
   if (!prov.pumpTestPresent) bankMissing.push('Pump test (step-drawdown + constant rate)');
-  if (cv.wellCount < 5) bankMissing.push(`Minimum 5 validation wells (have ${cv.wellCount})`);
+  if (certFieldWells < 5) bankMissing.push(`Minimum 5 FIELD validation wells (have ${certFieldWells}; model-generated wells don't count)`);
   if (prov.measuredCount < 3) bankMissing.push(`Minimum 3 measured parameters (have ${prov.measuredCount})`);
   const bankReady = bankMissing.length === 0 && trustScore >= 80;
 

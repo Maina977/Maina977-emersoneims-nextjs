@@ -3943,6 +3943,47 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(6, 182, 212);
     doc.text('32. Hydrochemistry Prediction', margin, y); y += 8;
 
+    // RECONCILIATION GUARD — this independent hydrochemical model can disagree
+    // with the regional-adjusted Section 3 values (e.g. Rift Valley fluoride).
+    // Printing both without comment misled readers into picking the favourable
+    // number. Section 3 (regional-adjusted) is authoritative; flag any
+    // health-critical divergence loudly.
+    {
+      const wq = result.waterQuality;
+      const hcVal = (name: RegExp) =>
+        (hc.predictions || []).find((p: any) => name.test(String(p.parameter)))?.predictedValue;
+      const conflicts: string[] = [];
+      const check = (label: string, s3: number | undefined, s32: any, whoLimit: number) => {
+        if (typeof s3 !== 'number' || typeof s32 !== 'number') return;
+        const s3Exceeds = s3 > whoLimit; const s32Exceeds = s32 > whoLimit;
+        if (s3Exceeds !== s32Exceeds) {
+          conflicts.push(
+            `${label}: Section 3 (regional-adjusted) = ${s3} mg/L (${s3Exceeds ? 'FAILS' : 'passes'} WHO ${whoLimit}) but this model = ${s32} mg/L (${s32Exceeds ? 'fails' : 'PASSES'}).`
+          );
+        }
+      };
+      check('Fluoride', wq?.fluoride, hcVal(/fluoride/i), 1.5);
+      check('Iron', wq?.iron, hcVal(/iron/i), 0.3);
+      check('Arsenic', wq?.arsenic, hcVal(/arsenic/i), 0.01);
+      check('Nitrate', wq?.nitrate, hcVal(/nitrate/i), 50);
+      if (conflicts.length) {
+        checkSpace(14 + conflicts.length * 8);
+        doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
+        doc.text('MODEL DISAGREEMENT — DEFER TO SECTION 3 (WORST CASE) UNTIL LAB TESTED:', margin, y); y += 5;
+        doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+        for (const c of conflicts) {
+          const lines = doc.splitTextToSize(c, pw);
+          doc.text(lines, margin, y); y += lines.length * 4 + 1;
+        }
+        doc.setFontSize(8); doc.setTextColor(120, 60, 0);
+        const note = doc.splitTextToSize(
+          'Where two models disagree on a health-critical parameter, design for the WORSE value (Section 3 regional adjustment) and confirm with an ISO 17025 laboratory analysis before commissioning. Do NOT use the more favourable number for treatment budgeting.',
+          pw
+        );
+        doc.text(note, margin, y); y += note.length * 4 + 4;
+      }
+    }
+
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
       head: [['Parameter', 'Value']],
@@ -5986,15 +6027,31 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   if (result.siteIdentity) {
     addPage();
     const si = result.siteIdentity;
-    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-    doc.text('VERIFIED SITE IDENTITY', margin, y); y += 10;
+    // Only call the site "VERIFIED" when the coordinates actually came from a
+    // measurement (EXIF/device GPS or manual entry, grade A-C). A visual
+    // terrain estimate is ±50 km — printing it under "VERIFIED SITE IDENTITY"
+    // at 6-decimal precision (~10 cm) is false precision that misleads clients.
+    const gpsIsReal = ['exif', 'manual', 'device'].includes(String(result.gpsSource)) ||
+      String(si.locationConfidenceGrade) <= 'C';
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(gpsIsReal ? 13 : 200, gpsIsReal ? 17 : 100, gpsIsReal ? 23 : 0);
+    doc.text(gpsIsReal ? 'VERIFIED SITE IDENTITY' : 'SITE IDENTITY — UNVERIFIED (AI-ESTIMATED LOCATION)', margin, y); y += 6;
+    if (!gpsIsReal) {
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(200, 100, 0);
+      const estNote = doc.splitTextToSize(
+        'Coordinates below are an AI visual-terrain ESTIMATE (uncertainty tens of kilometres). They are NOT a surveyed location. All maps, drill points and distances derived from them are placeholders until real GPS coordinates are provided.',
+        pw
+      );
+      doc.text(estNote, margin, y); y += estNote.length * 4 + 2;
+    }
+    y += 4;
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
       head: [['Parameter', 'Value', 'Verification']],
       body: [
         ['Site ID', si.siteId, 'Auto-generated (country + date + coords)'],
-        ['Latitude', si.coordinates.lat.toFixed(si.coordinates.decimals), `${si.coordinates.datum} (${si.coordinates.decimals} decimal places)`],
-        ['Longitude', si.coordinates.lon.toFixed(si.coordinates.decimals), `${si.coordinates.datum} (${si.coordinates.decimals} decimal places)`],
+        ['Latitude', si.coordinates.lat.toFixed(si.coordinates.decimals), gpsIsReal ? `${si.coordinates.datum} (${si.coordinates.decimals} decimal places)` : 'AI ESTIMATE — NOT measured'],
+        ['Longitude', si.coordinates.lon.toFixed(si.coordinates.decimals), gpsIsReal ? `${si.coordinates.datum} (${si.coordinates.decimals} decimal places)` : 'AI ESTIMATE — NOT measured'],
         ['Coordinate System', si.coordinateSystem, 'Standard geodetic datum'],
         ['Elevation', `${si.elevation_masl} m a.s.l.`, 'SRTM 30m DEM'],
         ['Location Confidence', `Grade ${si.locationConfidenceGrade}`, si.verificationMethod],
