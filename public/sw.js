@@ -8,7 +8,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const CACHE_VERSION = 'v10-20260618-offline-realfix';
+const CACHE_VERSION = 'v11-20260708-chunkguard';
 const OFFLINE_URL = '/offline.html';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const IMAGES_CACHE = `images-${CACHE_VERSION}`;
@@ -224,22 +224,50 @@ function isScriptOrStyle(request, url) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
+ * Detect a poisoned chunk response: an HTML (or otherwise wrong-typed) body
+ * stored under a .css/.js URL. This happens when an ISP proxy, captive portal
+ * or security appliance answers a chunk request with an HTTP-200 HTML page —
+ * `response.ok` is true, so a naive cache stores it FOREVER under an immutable
+ * strategy, and the page then throws ChunkLoadError on every visit (the
+ * recurring AquaScan "couldn't load" bug).
+ */
+function looksPoisoned(url, response) {
+  const type = (response.headers.get('content-type') || '').toLowerCase();
+  if (!type) return false; // opaque/headerless — can't judge, let it through
+  if (/\.css(\?|$)/.test(url)) return !type.includes('text/css');
+  if (/\.m?js(\?|$)/.test(url)) return !(type.includes('javascript') || type.includes('ecmascript'));
+  return false;
+}
+
+/**
  * Cache First (Immutable) - For static assets that never change
- * FASTEST strategy - always from cache
+ * FASTEST strategy - always from cache.
+ *
+ * Two safety rules learned from the poisoned-chunk incident:
+ * 1. NEVER serve or store a response whose content-type contradicts the URL
+ *    (see looksPoisoned) — purge such entries on sight.
+ * 2. Fill fetches use `cache: 'reload'`: bypass the browser HTTP cache on
+ *    read (a poisoned HTTP-cache entry must never be ingested into the SW
+ *    cache — that was the re-infection loop) and overwrite the HTTP cache
+ *    with the verified fresh copy on success.
  */
 async function cacheFirstImmutable(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cachedResponse = await cache.match(request);
 
-  if (cachedResponse) {
+  if (cachedResponse && !looksPoisoned(request.url, cachedResponse)) {
     perfMetrics.cacheHits++;
     return cachedResponse;
+  }
+  if (cachedResponse) {
+    // Poisoned entry (e.g. HTML error page under a chunk URL) — purge it.
+    await cache.delete(request);
   }
 
   perfMetrics.cacheMisses++;
   try {
-    const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
+    const networkResponse = await fetch(new Request(request, { cache: 'reload' }));
+    if (networkResponse.ok && !looksPoisoned(request.url, networkResponse)) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;

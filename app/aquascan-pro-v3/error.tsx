@@ -22,7 +22,9 @@ import Link from 'next/link';
 
 // Bump the suffix whenever the heal logic gets stronger, so devices that already
 // ran an older (weaker) heal get fresh automatic attempts with the new logic.
-const HEAL_COUNT = 'aquascan-self-heal-count-v3';
+// v4: purge the service worker BEFORE re-fetching chunks — v3 fetched first, so
+// the still-registered SW intercepted the repair and served the poisoned copy.
+const HEAL_COUNT = 'aquascan-self-heal-count-v4';
 const MAX_HEALS = 2;
 
 function getHealCount(): number {
@@ -128,16 +130,19 @@ export default function AquaScanError({
     let cancelled = false;
     const attempts = getHealCount();
 
-    // Auto-recover up to MAX_HEALS times: re-fetch the failed chunk with
-    // cache:'reload' to OVERWRITE the broken HTTP-cache copy, drop SW/Cache-API
-    // state, then hard-reload onto the repaired assets. Counter-guarded so it can
-    // never loop forever — after MAX_HEALS it falls through to the manual UI.
+    // Auto-recover up to MAX_HEALS times. ORDER MATTERS: unregister the service
+    // worker and drop its caches FIRST — while a SW is registered it intercepts
+    // fetch(), so a repair fetch would be answered from the poisoned SW cache and
+    // never reach the network. Only then re-fetch the failed chunk with
+    // cache:'reload' to overwrite the browser HTTP-cache copy, and hard-reload
+    // onto the repaired assets. Counter-guarded so it can never loop forever —
+    // after MAX_HEALS it falls through to the manual UI.
     if (attempts < MAX_HEALS) {
       setHealing(true);
       setHealCount(attempts + 1);
       (async () => {
-        await repairChunks(error);
         await purgeCachesAndSW();
+        await repairChunks(error);
       })().finally(() => {
         if (!cancelled) {
           const u = new URL(window.location.href);
@@ -196,8 +201,8 @@ export default function AquaScanError({
             onClick={async () => {
               setHealing(true);
               setHealCount(0);
-              await repairChunks(error);
               await purgeCachesAndSW();
+              await repairChunks(error);
               const u = new URL(window.location.href);
               u.searchParams.set('_fresh', String(Date.now()));
               window.location.replace(u.toString());
