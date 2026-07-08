@@ -25,6 +25,19 @@
 
 const TILE_SIZE = 256;
 
+/**
+ * Human-honest coordinate label. When no real coordinates exist the pipeline
+ * historically passed (0,0) and the maps printed "0.00000°, 0.00000°" (null
+ * island in the Gulf of Guinea) as if it were the site — false precision on a
+ * page a customer reads as a survey product. Print the truth instead.
+ */
+function coordLabel(lat: number, lon: number): string {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) {
+    return 'NO GPS — LOCATION NOT MEASURED';
+  }
+  return `${lat.toFixed(5)}°, ${lon.toFixed(5)}°`;
+}
+
 function latLonToTile(lat: number, lon: number, zoom: number): { x: number; y: number } {
   const n = Math.pow(2, zoom);
   const x = Math.floor(((lon + 180) / 360) * n);
@@ -166,7 +179,7 @@ function drawMapFrame(
   ctx.fillText(subtitle, 14, 40);
 
   // Coordinates badge (top right)
-  const coordStr = `${lat.toFixed(5)}°, ${lon.toFixed(5)}°`;
+  const coordStr = coordLabel(lat, lon);
   ctx.font = 'bold 11px monospace';
   const cw = ctx.measureText(coordStr).width + 16;
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -519,7 +532,7 @@ export function renderDrillHereMap(
   ctx.fillText('PROPOSED DRILL SITE', cx, cy - 52);
   ctx.font = 'bold 13px monospace';
   ctx.fillStyle = '#fbbf24';
-  ctx.fillText(`${lat.toFixed(5)}\u00b0 N,  ${lon.toFixed(5)}\u00b0 E`, cx, cy - 36);
+  ctx.fillText(coordLabel(lat, lon), cx, cy - 36);
   ctx.textAlign = 'left';
 
   // ── Callout boxes ────────────────────────────────────────────
@@ -821,7 +834,7 @@ export function renderWaterTableDepthMap(
   ctx.font = '9px monospace';
   ctx.fillStyle = 'rgba(255,255,255,0.6)';
   ctx.textAlign = 'center';
-  ctx.fillText(`${lat.toFixed(5)}\u00b0, ${lon.toFixed(5)}\u00b0`, cx, cy + 28);
+  ctx.fillText(coordLabel(lat, lon), cx, cy + 28);
   ctx.textAlign = 'left';
 
   // ── Legend ───────────────────────────────────────────────────

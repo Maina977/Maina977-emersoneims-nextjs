@@ -686,6 +686,128 @@ function renderPieChart(
   return canvas.toDataURL('image/png');
 }
 
+// ═══════════════════════════════════════════════════════════════
+// CANONICAL PROJECT ECONOMICS — SINGLE SOURCE OF TRUTH
+// The Investor Summary page and Section 5.1 previously computed economics
+// INDEPENDENTLY with different assumptions (24 h/day pumping at $75/m flat vs
+// 6 h/day solar at soil-based rates) and printed payback of 0.9 years and
+// 5.7 years in the SAME report. Every section that shows money must consume
+// this one model.
+// ═══════════════════════════════════════════════════════════════
+function computeCanonicalEconomics(result: AnalysisResult) {
+  const depthVal = result.recommendedDepth ?? 50;
+  const yieldVal = result.estimatedYield ?? 2;
+  const soilType = (result.soil?.type || 'loamy').toLowerCase();
+  const costPerMeter: Record<string, number> = { sandy: 45, clay: 65, loamy: 55, rocky: 95, laterite: 75, silty: 50, unknown: 60 };
+  const cpm = costPerMeter[soilType] || 60;
+  const drillingCost = Math.round(depthVal * cpm);
+
+  const wci = (result as any).waterDesign?.waterChemistryIndices;
+  const isCorrosive = wci && (wci.langelierSaturationIndex ?? 0) < -1.5;
+  const casingRatePerM = isCorrosive ? 32 : 18; // HDPE/SS316L vs standard steel
+  const casingCost = Math.round(depthVal * casingRatePerM);
+  const casingNote = isCorrosive
+    ? `${depthVal}m x $${casingRatePerM}/m -- HDPE/SS316L (corrosive water, LSI ${wci.langelierSaturationIndex?.toFixed(2)})`
+    : `${depthVal}m x $${casingRatePerM}/m`;
+
+  const aqZone = (result as any).subsurfaceModel?.aquiferZones?.[0] ?? (result as any).geophysicsFusion?.aquiferZones?.[0];
+  const aquiferThickness = aqZone ? Math.round(aqZone.bottomM - aqZone.topM) : 0;
+  const screenLength = aquiferThickness > 0 ? Math.min(aquiferThickness, 20) : Math.min(depthVal * 0.3, 20);
+  const screenCost = Math.round(screenLength * 35);
+  const screenNote = aquiferThickness > 0
+    ? `${Math.round(screenLength)}m screen across ${aquiferThickness}m aquifer zone (${Math.round(aqZone.topM)}-${Math.round(aqZone.bottomM)}m)`
+    : `${Math.round(screenLength)}m screen (30% of depth, aquifer zone unmodelled)`;
+
+  const pumpHead = Math.round(depthVal * 0.5 + 10);
+  const pumpKW = Math.max(0.37, Math.round((yieldVal * pumpHead * 9.81 / 3600 / 0.55) * 100) / 100);
+  const pumpCost = yieldVal > 5 ? 3500 : yieldVal > 2 ? 2200 : 1200;
+  const pumpNote = `${yieldVal > 5 ? 'Submersible (high capacity)' : 'Submersible (standard)'}, ~${pumpKW.toFixed(1)} kW, ${pumpHead}m head`;
+  const installCost = Math.round(pumpCost * 0.6);
+  const solarKW = Math.max(1, Math.round(pumpKW / 0.85 * 1.2 * 10) / 10);
+  const solarCost = Math.round(solarKW * 1500);
+  const wqTreatments = result.waterQuality?.treatmentRequired || [];
+  const wqTreatmentCost = !result.waterQuality?.isPotable
+    ? (wqTreatments.length > 2 ? 4000 : (result.waterQuality?.iron ?? 0) > 0.3 ? 1500 : 2500)
+    : 0;
+  const fluorideVal = result.waterQuality?.fluoride ?? 0;
+  const defluoridationCost = fluorideVal > 1.5 ? 2500 : 0;
+  const annualDefluoridation = fluorideVal > 1.5 ? 450 : 0;
+  const subtotalCost = drillingCost + casingCost + screenCost + pumpCost + installCost + solarCost + wqTreatmentCost + defluoridationCost;
+  const isHardRock = /gneiss|granite|basalt|quartzite|dolerite/i.test(soilType) || /rocky/i.test(soilType);
+  const contingencyRate = isHardRock ? 0.25 : 0.15;
+  const contingency = Math.round(subtotalCost * contingencyRate);
+  const totalCost = subtotalCost + contingency;
+  const annualMaintenance = Math.round(totalCost * 0.045);
+
+  // Realistic revenue model: solar pump ~6 h/day, ~300 operating days/yr,
+  // $0.80/m3 rural tariff, utilization ramp 60/75/85%.
+  const pumpHoursPerDay = 6;
+  const operatingDaysPerYear = 300;
+  const waterTariffPerM3 = 0.80;
+  const dailyWaterM3 = yieldVal * pumpHoursPerDay;
+  const maxAnnualRevenue = Math.round(dailyWaterM3 * operatingDaysPerYear * waterTariffPerM3);
+  const yr1Utilization = 0.60, yr2Utilization = 0.75, yr3PlusUtilization = 0.85;
+  const yr1Revenue = Math.round(maxAnnualRevenue * yr1Utilization);
+  const yr3Revenue = Math.round(maxAnnualRevenue * yr3PlusUtilization);
+  const baseAnnualRevenue = yr3Revenue;
+  const netAnnual = baseAnnualRevenue - annualMaintenance;
+
+  const projectYears = 20;
+  const cashFlows: number[] = [-totalCost];
+  for (let t = 1; t <= projectYears; t++) {
+    const util = t === 1 ? yr1Utilization : t === 2 ? yr2Utilization : yr3PlusUtilization;
+    cashFlows.push(Math.round(maxAnnualRevenue * util) - annualMaintenance);
+  }
+  const npvAt = (rate: number) => {
+    let npv = 0;
+    for (let t = 0; t < cashFlows.length; t++) npv += cashFlows[t] / Math.pow(1 + rate, t);
+    return npv;
+  };
+  const npvLowBound = npvAt(-0.5);
+  const npvHighBound = npvAt(3.0);
+  let irr: number;
+  if (npvLowBound <= 0 && npvHighBound <= 0) {
+    irr = -999;
+  } else if (npvLowBound > 0 && npvHighBound > 0) {
+    irr = 999;
+  } else {
+    let irrLow = -0.5, irrHigh = 3.0;
+    for (let iter = 0; iter < 100; iter++) {
+      const mid = (irrLow + irrHigh) / 2;
+      if (npvAt(mid) > 0) irrLow = mid; else irrHigh = mid;
+      if (Math.abs(irrHigh - irrLow) < 0.0001) break;
+    }
+    irr = Math.round(((irrLow + irrHigh) / 2) * 100);
+  }
+  let cumCF = -totalCost;
+  let paybackMonths = -1;
+  for (let t = 1; t <= projectYears; t++) {
+    cumCF += cashFlows[t];
+    if (cumCF >= 0) {
+      const prevCum = cumCF - cashFlows[t];
+      const monthsInYear = Math.round(((-prevCum) / cashFlows[t]) * 12);
+      paybackMonths = (t - 1) * 12 + monthsInYear;
+      break;
+    }
+  }
+  const discountRate = 0.10;
+  let npv10 = 0;
+  for (let t = 0; t < cashFlows.length; t++) npv10 += cashFlows[t] / Math.pow(1 + discountRate, t);
+  const npv10Rounded = Math.round(npv10);
+
+  return {
+    depthVal, yieldVal, soilType, cpm, drillingCost, casingCost, casingNote,
+    screenLength, screenCost, screenNote, pumpKW, pumpHead, pumpCost, pumpNote,
+    installCost, solarKW, solarCost, wqTreatmentCost, fluorideVal,
+    defluoridationCost, annualDefluoridation, subtotalCost, isHardRock,
+    contingencyRate, contingency, totalCost, annualMaintenance,
+    pumpHoursPerDay, operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
+    maxAnnualRevenue, yr1Utilization, yr2Utilization, yr3PlusUtilization,
+    yr1Revenue, yr3Revenue, baseAnnualRevenue, netAnnual, cashFlows,
+    irr, paybackMonths, npv10Rounded,
+  };
+}
+
 // --- PDF REPORT ---
 
 export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 'professional' | 'expert'): Promise<void> {
@@ -1020,16 +1142,19 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const _invYld   = result.estimatedYield ?? 1.5;
     const _invDep   = result.recommendedDepth ?? 80;
 
-    const _drilCost  = Math.round(_invDep * 75 + 3500);
-    const _pumpCost  = Math.round(_invYld * 800);
-    const _treatCost = 1200;
-    const _totalCap  = _drilCost + _pumpCost + _treatCost + 2000;
-    const _annualMaint = Math.round(_totalCap * 0.045);
+    // ONE economics model for the whole report (computeCanonicalEconomics):
+    // solar pumping 6 h/day × 300 days/yr, soil-based drilling rates. This page
+    // previously assumed 24 h/day pumping at a flat $75/m and printed a 0.9-year
+    // payback three pages away from Section 5.1's 5.7 years — same report.
+    const eco = computeCanonicalEconomics(result);
+    const _totalCap  = eco.totalCost;
+    const _annualMaint = eco.annualMaintenance;
 
-    const _yldPerDay  = _invYld * 24 * 0.7;
-    const _revLow  = Math.round(_yldPerDay * 365 * 0.48);
-    const _revBase = Math.round(_yldPerDay * 365 * 0.80);
-    const _revHigh = Math.round(_yldPerDay * 365 * 1.50);
+    // Steady-state annual water production (85% utilization, year 3+)
+    const _annualWaterM3 = eco.dailyWaterM3 * eco.operatingDaysPerYear * 0.85;
+    const _revLow  = Math.round(_annualWaterM3 * 0.48);
+    const _revBase = Math.round(_annualWaterM3 * 0.80);
+    const _revHigh = Math.round(_annualWaterM3 * 1.50);
     const _netLow  = _revLow  - _annualMaint;
     const _netBase = _revBase - _annualMaint;
     const _netHigh = _revHigh - _annualMaint;
@@ -1046,11 +1171,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       startY: y,
       head: [['Cost Component', 'Amount (USD)', 'Notes']],
       body: [
-        ['Drilling & casing',          `$${_drilCost.toLocaleString()}`,  `${_invDep}m at $75/m avg + mobilization`],
-        ['Pump & rising main',         `$${_pumpCost.toLocaleString()}`,  `${_invYld} m\u00b3/hr rated pump`],
-        ['Treatment unit',             `$${_treatCost.toLocaleString()}`, 'Basic chlorination + storage tank'],
-        ['Civil works & headworks',    '$2,000',                          'Apron, fence, drainage'],
-        ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  'Excl. land, permits, ERT survey ($3,000-5,000)'],
+        ['Drilling, casing & screen',  `$${(eco.drillingCost + eco.casingCost + eco.screenCost).toLocaleString()}`, `${eco.depthVal}m at $${eco.cpm}/m (${eco.soilType} soil) + casing + screen`],
+        ['Pump & installation',        `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
+        ['Solar power system',         `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW} kW array + controller`],
+        ...((eco.wqTreatmentCost + eco.defluoridationCost) > 0
+          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? 'Incl. defluoridation (fluoride > WHO 1.5 mg/L)' : 'Per water-quality model'] as [string, string, string]]
+          : []),
+        [`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, `$${eco.contingency.toLocaleString()}`, eco.isHardRock ? 'Hard-rock drilling risk premium' : 'Standard engineering contingency'],
+        ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  'Same model as Section 5.1. Excl. land, permits, ERT survey ($3,000-5,000)'],
         ['Annual O&M',                 `$${_annualMaint.toLocaleString()}/yr`, '4.5% of capital (World Bank WASH benchmark)'],
       ],
       headStyles: { fillColor: [15,23,42] as [number,number,number], textColor: [56,189,248] as [number,number,number], fontStyle: 'bold', fontSize: 9 },
@@ -1062,6 +1190,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
     doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(56,189,248);
     doc.text('Revenue Scenarios & Payback Period', margin, y); y += 5;
+    doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120,120,140);
+    doc.text(`Steady-state simple payback (solar ${eco.pumpHoursPerDay} h/day × ${eco.operatingDaysPerYear} d/yr, 85% utilization). Section 5.1 shows the ramped cash-flow payback for the base tariff — same underlying model.`, margin, y); y += 5;
     autoTable(doc, {
       startY: y,
       head: [['Scenario', 'Tariff', 'Annual Revenue', 'Net Annual Profit', 'Simple Payback']],
@@ -1825,118 +1955,18 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('Estimated costs based on regional drilling rates, soil type, and depth. Actual costs may vary ?15-25%.', margin, y); y += 7;
     doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
 
-    // Compute cost breakdown from available data
-    const depthVal = result.recommendedDepth ?? 50;
-    const yieldVal = result.estimatedYield ?? 2;
-    const soilType = (result.soil?.type || 'loamy').toLowerCase();
-    const costPerMeter: Record<string, number> = { sandy: 45, clay: 65, loamy: 55, rocky: 95, laterite: 75, silty: 50, unknown: 60 };
-    const cpm = costPerMeter[soilType] || 60;
-    const drillingCost = Math.round(depthVal * cpm);
-    // Corrosion-resistant casing when water is aggressive (LSI < -1.5)
-    const wci = (result as any).waterDesign?.waterChemistryIndices;
-    const isCorrosive = wci && (wci.langelierSaturationIndex ?? 0) < -1.5;
-    const casingRatePerM = isCorrosive ? 32 : 18; // HDPE/SS316L vs standard steel
-    const casingCost = Math.round(depthVal * casingRatePerM);
-    const casingNote = isCorrosive
-      ? `${depthVal}m x $${casingRatePerM}/m (HDPE/SS316L -- LSI ${wci.langelierSaturationIndex}, aggressive water)`
-      : `${depthVal}m x $18/m`;
-    // Screen cost: use aquifer thickness if known, else heuristic from depth
-    const aqZone = (result as any).subsurfaceModel?.aquiferZones?.[0] ?? (result as any).geophysicsFusion?.aquiferZones?.[0];
-    const aquiferThickness = aqZone ? Math.round(aqZone.bottomM - aqZone.topM) : 0;
-    const screenLength = aquiferThickness > 0 ? Math.min(aquiferThickness, 20) : Math.min(depthVal * 0.3, 20);
-    const screenCost = Math.round(screenLength * 35);
-    const screenNote = aquiferThickness > 0
-      ? `${screenLength}m screen across ${aquiferThickness}m aquifer zone (${Math.round(aqZone.topM)}-${Math.round(aqZone.bottomM)}m)`
-      : `${Math.round(screenLength)}m (estimated from depth -- confirm with lithology log)`;
-    // Pump cost with head/motor sizing
-    const pumpHead = Math.round(depthVal * 0.5 + 10); // static water level + friction losses
-    const pumpKW = Math.max(0.37, Math.round((yieldVal * pumpHead * 9.81 / 3600 / 0.55) * 100) / 100); // P = Q*H*g / (3600*eff)
-    const pumpCost = (result.estimatedYield ?? 2) > 5 ? 3500 : (result.estimatedYield ?? 2) > 2 ? 2200 : 1200;
-    const pumpNote = `${yieldVal > 5 ? 'Submersible (high capacity)' : 'Submersible (standard)'}, ~${pumpKW.toFixed(1)} kW, ${pumpHead}m head`;
-    const installCost = Math.round(pumpCost * 0.6);
-    // Solar sizing: kW = pump kW / 0.85 efficiency + 20% safety margin
-    const solarKW = Math.max(1, Math.round(pumpKW / 0.85 * 1.2 * 10) / 10);
-    const solarCost = Math.round(solarKW * 1500); // ~$1,500/kW installed (Sub-Saharan average, IRENA 2023)
-    const wqTreatments = result.waterQuality?.treatmentRequired || [];
-    const wqTreatmentCost = !result.waterQuality?.isPotable
-      ? (wqTreatments.length > 2 ? 4000 : (result.waterQuality?.iron ?? 0) > 0.3 ? 1500 : 2500)
-      : 0; // Conservative: upper bound of range for budgeting
-    const fluorideVal = result.waterQuality?.fluoride ?? 0;
-    const defluoridationCost = fluorideVal > 1.5 ? 2500 : 0; // Bone-char or activated alumina unit
-    // Audit fix #17: Add annual defluoridation media replacement cost
-    const annualDefluoridation = fluorideVal > 1.5 ? 450 : 0; // Annual media replacement
-    const subtotalCost = drillingCost + casingCost + screenCost + pumpCost + installCost + solarCost + wqTreatmentCost + defluoridationCost;
-    // Audit fix #20: Rock-type contingency -- gneiss/granite minimum 25%
-    const isHardRock = /gneiss|granite|basalt|quartzite|dolerite/i.test(soilType) || /rocky/i.test(soilType);
-    const contingencyRate = isHardRock ? 0.25 : 0.15;
-    const contingency = Math.round(subtotalCost * contingencyRate);
-    const totalCost = subtotalCost + contingency;
-    // Maintenance: 3% solar + 6% pump/mech -> blended ~4.5% (World Bank WASH O&M benchmark 2019)
-    const annualMaintenance = Math.round(totalCost * 0.045);
-
-    // Realistic revenue model:
-    // - Solar-powered pump: ~6 hrs/day effective (not 8)
-    // - Operating days: ~300/yr (maintenance, weather, dry season)
-    // - Rural water tariff: $0.80/m? (Africa avg; not $2.50 which is urban/industrial)
-    // - Utilization ramp: 60% year 1, 75% year 2, 85% year 3+
-    const pumpHoursPerDay = 6;
-    const operatingDaysPerYear = 300;
-    const waterTariffPerM3 = 0.80;
-    const dailyWaterM3 = yieldVal * pumpHoursPerDay;
-    const maxAnnualRevenue = Math.round(dailyWaterM3 * operatingDaysPerYear * waterTariffPerM3);
-    const yr1Utilization = 0.60, yr2Utilization = 0.75, yr3PlusUtilization = 0.85;
-    const yr1Revenue = Math.round(maxAnnualRevenue * yr1Utilization);
-    const yr3Revenue = Math.round(maxAnnualRevenue * yr3PlusUtilization);
-    const baseAnnualRevenue = yr3Revenue; // steady-state revenue for ROI calcs
-    const netAnnual = baseAnnualRevenue - annualMaintenance;
-
-    // NPV-based IRR calculation (Newton-Raphson, 20-year horizon)
-    const projectYears = 20;
-    const cashFlows: number[] = [-totalCost];
-    for (let t = 1; t <= projectYears; t++) {
-      const util = t === 1 ? yr1Utilization : t === 2 ? yr2Utilization : yr3PlusUtilization;
-      cashFlows.push(Math.round(maxAnnualRevenue * util) - annualMaintenance);
-    }
-    // Bisection method for IRR -- with convergence check
-    const npvAt = (rate: number) => {
-      let npv = 0;
-      for (let t = 0; t < cashFlows.length; t++) npv += cashFlows[t] / Math.pow(1 + rate, t);
-      return npv;
-    };
-    const npvLowBound = npvAt(-0.5);
-    const npvHighBound = npvAt(3.0);
-    let irr: number;
-    if (npvLowBound <= 0 && npvHighBound <= 0) {
-      irr = -999; // project never viable -- sentinel
-    } else if (npvLowBound > 0 && npvHighBound > 0) {
-      irr = 999; // IRR > 300% -- sentinel
-    } else {
-      let irrLow = -0.5, irrHigh = 3.0;
-      for (let iter = 0; iter < 100; iter++) {
-        const mid = (irrLow + irrHigh) / 2;
-        if (npvAt(mid) > 0) irrLow = mid; else irrHigh = mid;
-        if (Math.abs(irrHigh - irrLow) < 0.0001) break;
-      }
-      irr = Math.round(((irrLow + irrHigh) / 2) * 100);
-    }
-    // Realistic payback: accumulate discounted cash flows until break-even
-    let cumCF = -totalCost;
-    let paybackMonths = -1; // sentinel: -1 = never breaks even
-    for (let t = 1; t <= projectYears; t++) {
-      cumCF += cashFlows[t];
-      if (cumCF >= 0) {
-        // Interpolate within the year
-        const prevCum = cumCF - cashFlows[t];
-        const monthsInYear = Math.round(((-prevCum) / cashFlows[t]) * 12);
-        paybackMonths = (t - 1) * 12 + monthsInYear;
-        break;
-      }
-    }
-    // NPV at 10% discount rate
-    const discountRate = 0.10;
-    let npv10 = 0;
-    for (let t = 0; t < cashFlows.length; t++) npv10 += cashFlows[t] / Math.pow(1 + discountRate, t);
-    const npv10Rounded = Math.round(npv10);
+    // CANONICAL ECONOMICS — same single model as the Investor Summary page.
+    // Do NOT add per-section cost math here; extend computeCanonicalEconomics.
+    const {
+      depthVal, yieldVal, soilType, cpm, drillingCost, casingCost, casingNote,
+      screenCost, screenNote, pumpCost, pumpNote, installCost, solarKW,
+      solarCost, wqTreatmentCost, fluorideVal, defluoridationCost,
+      annualDefluoridation, subtotalCost, isHardRock, contingencyRate,
+      contingency, totalCost, annualMaintenance, pumpHoursPerDay,
+      operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
+      yr1Utilization, yr3PlusUtilization, yr1Revenue, yr3Revenue,
+      netAnnual, cashFlows, irr, paybackMonths, npv10Rounded,
+    } = computeCanonicalEconomics(result);
 
     autoTable(doc, {
       startY: y,
@@ -3200,7 +3230,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(11); doc.setFont('helvetica', 'bold');
       const recColor = rec.action === 'DRILL' ? [34, 197, 94] : rec.action === 'SURVEY_FIRST' ? [245, 158, 11] : [239, 68, 68];
       doc.setTextColor(recColor[0], recColor[1], recColor[2]);
-      doc.text(`Decision: ${rec.action} ? ${rec.headline}`, margin, y); y += 6;
+      // One report, one verdict: this engine's output is an INPUT to the
+      // reconciled Executive Summary decision, not a second verdict. Reports
+      // used to print "RELOCATE" here beside "INVESTIGATE FURTHER" up front
+      // and "DRILL WITH MONITORING" later — three verdicts, zero credibility.
+      doc.text(`Risk-engine sub-verdict: ${rec.action} ? ${rec.headline}`, margin, y); y += 5;
+      doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
+      doc.text('This is ONE model’s input to the reconciled decision. The FINAL verdict for this site is in the Executive Summary (page 2).', margin, y); y += 5;
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
       (rec.reasoning || []).forEach((r: string) => { doc.text(`? ${r}`, margin + 2, y, { maxWidth: 166 }); y += 4; });
       y += 4;
@@ -3570,17 +3606,33 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     // Yield estimation
     if (ei.yieldEstimation) {
       checkSpace(50);
+      // CONSISTENCY GUARD: the yield model reads thickness from the 1D layer
+      // curve while feature extraction measures it from anomalies. When feature
+      // extraction finds NO aquifer zone (<0.5m), printing "11.7 m3/hr
+      // EXCELLENT" three tables above a "PHYSICAL IMPOSSIBILITY: thickness=0"
+      // warning is a contradiction a customer cannot resolve. Mark the yield
+      // UNRELIABLE in that case instead of letting both claims stand.
+      const ertFeatThickness = ei.features?.targetThickness_m ?? null;
+      const ertYieldContradicted = ertFeatThickness != null && ertFeatThickness < 0.5;
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(22, 163, 74);
       doc.text('Yield Estimation Model (ERT-derived -- single-source estimate)', margin, y); y += 5;
       doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
       doc.text(`NOTE: This is the ERT geophysics estimate ONLY. The reconciled multi-source yield is ${fmt(result.estimatedYield, 1)} m\u00B3/hr (see Executive Summary).`, margin, y); y += 5;
+      if (ertYieldContradicted) {
+        doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
+        const contraNote = doc.splitTextToSize(
+          `\u26A0 UNRELIABLE: feature extraction found NO aquifer zone (thickness ${fmt(ertFeatThickness)}m). The yield below derives from the modelled layer curve and CONTRADICTS the measured features \u2014 treat it as unconfirmed until a field ERT resolves the conflict. Use the Executive Summary yield for decisions.`,
+          pw
+        );
+        doc.text(contraNote, margin, y); y += contraNote.length * 3.5 + 2;
+      }
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
         head: [['Parameter', 'Value']],
         body: [
-          ['Estimated Yield', `${fmt(ei.yieldEstimation.estimatedYield_m3hr)} m?/hr (${fmt(ei.yieldEstimation.estimatedYield_Lmin)} L/min)`],
-          ['Sustainable Yield', `${fmt(ei.yieldEstimation.sustainableYield_m3hr)} m?/hr`],
-          ['Yield Category', (ei.yieldEstimation.yieldCategory || '').toUpperCase()],
+          ['Estimated Yield', `${fmt(ei.yieldEstimation.estimatedYield_m3hr)} m?/hr (${fmt(ei.yieldEstimation.estimatedYield_Lmin)} L/min)${ertYieldContradicted ? ' \u2014 UNRELIABLE (see warning above)' : ''}`],
+          ['Sustainable Yield', `${fmt(ei.yieldEstimation.sustainableYield_m3hr)} m?/hr${ertYieldContradicted ? ' \u2014 UNRELIABLE' : ''}`],
+          ['Yield Category', ertYieldContradicted ? 'UNCONFIRMED (feature/model conflict)' : (ei.yieldEstimation.yieldCategory || '').toUpperCase()],
           ['Static Water Level', `${fmt(ei.yieldEstimation.staticWaterLevel_m)}m`],
           ['Expected Drawdown', `${fmt(ei.yieldEstimation.expectedDrawdown_m)}m`],
           ['Transmissivity', `${fmt(ei.yieldEstimation.transmissivity_m2day)} m?/day`],
@@ -6975,9 +7027,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       if (sa.sources.length > 0) {
         autoTable(doc, {
           startY: y, margin: { left: margin, right: margin },
-          head: [['Source', 'Min. Setback (m)', 'Actual (m)', 'Travel Time', 'Compliant?', 'Risk']],
+          head: [['Source', 'Min. Setback (m)', 'Assumed Dist. (m)', 'Travel Time', 'Compliant?', 'Risk']],
           body: sa.sources.map(s => [
-            s.type, String(s.baseSetback_m), String(s.adjustedSetback_m),
+            s.type, String(s.baseSetback_m),
+            (s as any).estimatedDistance_m != null ? String((s as any).estimatedDistance_m) : 'unknown',
             s.travelTime_days > 99999 ? 'N/A' : `${s.travelTime_days} days`,
             s.isCompliant ? 'YES' : 'NO', s.riskIfNonCompliant,
           ]),
@@ -7004,7 +7057,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
           doc.text(`WARNING: ${nonCompliant.length} SETBACK NON-COMPLIANCE(S) DETECTED`, margin + 4, y + 4);
           doc.setFontSize(7); doc.setFont('helvetica', 'normal');
-          doc.text(`Non-compliant: ${nonCompliant.map(s => `${s.type} (${s.adjustedSetback_m}m < ${s.baseSetback_m}m min)`).join('; ')}. Mitigation: relocate borehole or install sanitary seal + upstream barrier.`, margin + 4, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+          doc.text(`Non-compliant: ${nonCompliant.map(s => `${s.type} (${(s as any).estimatedDistance_m ?? '?'}m assumed < ${s.baseSetback_m}m min)`).join('; ')}. Distances are ASSUMED — verify on site. Mitigation: relocate borehole or install sanitary seal + upstream barrier.`, margin + 4, y + 9, { maxWidth: pageW - margin * 2 - 8 });
           y += 18;
 
           // Audit fix #7: Hard-stop -- drilling not permitted without mitigation

@@ -983,14 +983,18 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       costUSD: 0, timeHrs: 0,
     },
     {
-      step: 5, title: 'Final Drilling Decision', subtitle: postFusionDRI >= drillThreshold ? 'DRILL' : 'REVIEW',
+      // "Final Drilling Decision" here was a PROJECTION of what the decision
+      // would be AFTER the (not-yet-run) ERT — but customers read it as a
+      // third verdict contradicting the Executive Summary. Name it what it is.
+      step: 5, title: 'Projected Decision IF ERT Confirms (conditional — ERT not yet done)',
+      subtitle: postFusionDRI >= drillThreshold ? 'DRILL (projected)' : 'REVIEW (projected)',
       status: 'pending',
       icon: postFusionDRI >= drillThreshold ? '\u{2705}' : '\u{1F50D}',
-      description: finalDecision,
-      keyOutput: finalDecision,
+      description: `CONDITIONAL on ERT results: ${finalDecision}. Until the ERT is run, the governing verdict is the Executive Summary decision.`,
+      keyOutput: `Projected (post-ERT): ${finalDecision}`,
       details: [
-        `Post-fusion DRI: ${postFusionDRI}% (threshold: ${drillThreshold}%)`,
-        postFusionDRI >= drillThreshold ? 'PROCEED TO DRILL — no further surveys required' : `DRI ${postFusionDRI}% vs threshold ${drillThreshold}% — ${postFusionDRI >= targetedThreshold ? 'drill with monitoring' : 'additional survey recommended'}`,
+        `Post-fusion DRI: ${postFusionDRI}% (threshold: ${drillThreshold}%) — PROJECTED, not yet measured`,
+        postFusionDRI >= drillThreshold ? 'IF ERT confirms: proceed to drill — no further surveys required' : `DRI ${postFusionDRI}% vs threshold ${drillThreshold}% — ${postFusionDRI >= targetedThreshold ? 'if ERT confirms: drill with monitoring' : 'additional survey recommended'}`,
         `Total pipeline cost: $${ertCost} (ERT only) vs $${FULL_SURVEY_COST_USD.toLocaleString()} traditional`,
         `Time: ${ertTime} hours field work (vs 2-4 weeks traditional)`,
         `Savings: $${(FULL_SURVEY_COST_USD - ertCost).toLocaleString()} (${Math.round((1 - ertCost / FULL_SURVEY_COST_USD) * 100)}%)`,

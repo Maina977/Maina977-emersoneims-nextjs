@@ -430,6 +430,10 @@ export interface SetbackSource {
   type: string;
   baseSetback_m: number;
   adjustedSetback_m: number;
+  /** The (assumed or surveyed) distance from the borehole to this source.
+   *  Previously never stored, so the report's "Actual (m)" column echoed the
+   *  minimum setback and contradicted its own risk text. */
+  estimatedDistance_m: number;
   travelTime_days: number;
   isCompliant: boolean;
   regulation: string;
@@ -536,6 +540,7 @@ export function computeSetbackAnalysis(
       type: src.type,
       baseSetback_m: minSetback,
       adjustedSetback_m: minSetback,
+      estimatedDistance_m: src.estimatedDistance_m,
       travelTime_days: Math.round(travelDays),
       isCompliant,
       regulation: `WHO (2006) + GOD vulnerability class: ${vulnClass}`,
