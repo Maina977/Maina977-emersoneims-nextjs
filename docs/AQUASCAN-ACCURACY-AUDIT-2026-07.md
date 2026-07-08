@@ -47,7 +47,7 @@ The tool worked as designed; **the photo simply carries no location**. The pipel
 | 10 | MED | Water-table depth stated as 30 m, 13 m, 13.2 m, 15.4 m, 4.4 m and 44 m in different sections — each engine estimates its own. Needs a reconciled `result.waterTable_m` that every section cites. | multiple engines |
 | 12 | MED | Elevation/climate queried at fallback centroid coordinates then used for derating (450 m printed for a ~1,800 m highlands site). Should suppress or caveat elevation-dependent conclusions at location grade D/F. | pipeline gating |
 | 13 | MED | Rainfall printed as 700 / 800 / 1,400 mm/yr in one report — API fallback and live values mixed between modules. Needs one canonical precipitation value on the result. | water-budget vs recharge modules |
-| 16 | PRODUCT | Grade D/F location reports should auto-downgrade to a "REGIONAL PRE-SCREENING" template (suppress drill coordinates, micro-siting, per-site economics). | report pipeline |
+| ~~16~~ | ~~PRODUCT~~ | **FIXED 2026-07-09:** Grade D/F locations now auto-downgrade to **REGIONAL PRE-SCREENING**: cover banner ("THIS IS NOT A SITE REPORT" + how to unlock), title changes, drill-site map / fracture targets / top drilling points / micro-siting / alternative points replaced by locked notices, primary-recommendation coordinates WITHHELD. Gate: `gpsSource ∈ {exif,manual,device}` OR grade ≤ C ⇒ full report (logic unit-tested, 8/8 cases). | `reportGenerator.ts` `isRegionalPreScreening` + `drawLockedSection` |
 
 ### What the tool already does WELL (credit where due)
 - The cover page honestly declares "NO FIELD DATA COLLECTED — ALL PARAMETERS ARE MODELLED", lists the 4 missing critical items, and calls the report "a filter, not a final decision-maker".

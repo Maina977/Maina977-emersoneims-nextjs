@@ -151,8 +151,15 @@ Assumptions: soil-based drilling rates ($45–95/m, UNICEF/RWSN 2020), corrosion
 ## 5. Open items (next engineering pass)
 1. **Water-table reconciliation** — one `result.waterTable_m` consumed by all sections (engines currently print 4.4–44 m).
 2. **Canonical rainfall** — one precipitation value (fallback vs live currently mixes 700/800/1,400 mm).
-3. **Grade-D/F gating** — suppress elevation/climate-derived conclusions when location is a regional estimate.
-4. **Regional Pre-Screening template** — Grade D/F locations should get a short regional report, not a 104-page site report (biggest remaining credibility protection).
+3. **Grade-D/F gating of climate/elevation conclusions** — elevation-derived derating still computed at fallback centroid coordinates.
+
+### 5.1 ✅ Regional Pre-Screening mode (SHIPPED 2026-07-09, item #13 in fixes ledger)
+When location is Grade D/F (no GPS, no manual entry — coordinates from visual terrain estimation):
+- Cover carries a **"REGIONAL PRE-SCREENING — THIS IS NOT A SITE REPORT"** banner with the uncertainty (tens of km) and the three ways to unlock the full report (site GPS / manual location / original camera photo).
+- Report title becomes "REGIONAL PRE-SCREENING Report"; cover location line is tagged "(AI regional estimate — Grade D/F)".
+- **Withheld and replaced by locked notices:** drill-site location map (crosshair), fracture-intersection drilling targets, probabilistic top drilling points, micro-siting optimizer, smart-site-selection ranked points, alternative drilling points, and the primary-recommendation coordinates ("WITHHELD — provide GPS to obtain a drill point").
+- **Retained:** regional hydrogeology, water budget, soil/vegetation/rock analysis, water-quality modelling, risk, economics (labelled desktop), geophysics survey plan and the upgrade path — everything that is genuinely regional-scale.
+- **Verifiable gate:** `gpsSource ∈ {exif, manual, device}` OR grade ≤ C ⇒ full site report; unit-tested 8/8 cases.
 
 ## 6. Data source registry (all free, no-auth, real-time)
 ISRIC SoilGrids v2.0 · ERA5-Land/Open-Meteo (ECMWF) · NASA POWER (GLDAS/MERRA-2) · MODIS ORNL DAAC · GloFAS · JRC Global Surface Water · SRTM/Open-Elevation · COMET LiCSAR/ESA · ASF DAAC Sentinel-1 · Macrostrat · USGS NWIS/MRData/Spectral Library · OneGeology · WPDx/WPDx+ · BGS GeoIndex & Africa Atlas · OSM Overpass · IGRAC GGIS · DWS SA · GEMStat · mWater · WoSIS · Nominatim. Standards: WHO 2011, ISO 14688/14689/22475/5667/6709, BS 5930, ASTM D4043/4044/4050/4106/5922/6431/D5299, API RP 65, ANSI/HI 9.6.1.

@@ -834,6 +834,38 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   /** Safely run a PDF section -- if it crashes, skip it and continue */
   const safeSection = (name: string, fn: () => void) => { try { fn(); } catch (e) { console.warn(`[PDF] Section "${name}" skipped:`, e); } };
 
+  // ═══ REGIONAL PRE-SCREENING MODE (location Grade D/F) ═══
+  // When coordinates come from a visual terrain estimate (±tens of km) rather
+  // than GPS/manual entry, publishing drill-point coordinates, micro-siting
+  // grids and fracture targets at metre precision is false precision a customer
+  // could drill on. In this mode those sections are replaced by a locked notice
+  // and the cover carries a REGIONAL PRE-SCREENING banner. Verifiable rule:
+  // gpsSource exif/manual/device OR location grade A–C ⇒ full site report.
+  const _locGrade = String(
+    (result as any).siteIdentity?.locationConfidenceGrade ??
+    (result as any).locationVerification?.reliabilityGrade ?? 'F'
+  ).toUpperCase().charAt(0) || 'F';
+  const isRegionalPreScreening =
+    !['exif', 'manual', 'device'].includes(String(result.gpsSource)) && _locGrade > 'C';
+
+  /** Compact amber notice replacing a site-precision section in regional mode. */
+  const drawLockedSection = (title: string, whatItNeeds = 'GPS coordinates (±10 m) or a manually entered location') => {
+    checkSpace(30);
+    doc.setFillColor(255, 247, 230);
+    doc.roundedRect(margin, y, pw, 24, 2, 2, 'F');
+    doc.setDrawColor(217, 119, 6);
+    doc.roundedRect(margin, y, pw, 24, 2, 2, 'S');
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+    doc.text(`${title} — NOT INCLUDED (REGIONAL PRE-SCREENING)`, margin + 4, y + 7);
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 70, 10);
+    const lockMsg = doc.splitTextToSize(
+      `The location of this site is an AI regional estimate (Grade ${_locGrade}, uncertainty tens of km). Publishing this section would imply site-level precision that does not exist. Provide ${whatItNeeds} and re-run the analysis to unlock it.`,
+      pw - 8
+    );
+    doc.text(lockMsg, margin + 4, y + 12);
+    y += 30;
+  };
+
   try {
   // -- HEADER / COVER --
   doc.setFillColor(13, 17, 23);
@@ -860,11 +892,32 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (conf >= 70) return 'PRE-FEASIBILITY';
     return 'PRE-FEASIBILITY SCREENING';
   })();
-  doc.text(`${assessmentGrade} Report  ?  Generated: ${new Date().toLocaleDateString()}`, pageW / 2, 42, { align: 'center' });
-  doc.text(`Location: ${getLocationString(result)}`, pageW / 2, 50, { align: 'center' });
+  doc.text(`${isRegionalPreScreening ? 'REGIONAL PRE-SCREENING' : assessmentGrade} Report  ?  Generated: ${new Date().toLocaleDateString()}`, pageW / 2, 42, { align: 'center' });
+  doc.text(`Location: ${isRegionalPreScreening ? `${getLocationString(result)} (AI regional estimate — Grade ${_locGrade})` : getLocationString(result)}`, pageW / 2, 50, { align: 'center' });
 
   y = 70;
   doc.setTextColor(30, 30, 30);
+
+  // -- REGIONAL PRE-SCREENING BANNER (Grade D/F location) --
+  if (isRegionalPreScreening) {
+    doc.setFillColor(255, 237, 213);
+    doc.roundedRect(margin, y, pw, 30, 3, 3, 'F');
+    doc.setDrawColor(234, 88, 12);
+    doc.setLineWidth(0.8);
+    doc.roundedRect(margin, y, pw, 30, 3, 3, 'S');
+    doc.setLineWidth(0.2);
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(194, 65, 12);
+    doc.text('⚠ REGIONAL PRE-SCREENING — THIS IS NOT A SITE REPORT', pageW / 2, y + 8, { align: 'center' });
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(124, 45, 18);
+    const regionalMsg = doc.splitTextToSize(
+      `No GPS or manual location was provided; the position is an AI visual-terrain estimate with uncertainty of TENS OF KILOMETRES (Grade ${_locGrade}). ` +
+      'This report describes REGIONAL groundwater conditions only. Drill-point coordinates, micro-siting, fracture targets and site maps are withheld — drilling from this document is not possible and not advised. ' +
+      'TO UNLOCK THE FULL SITE REPORT: re-run with (a) GPS coordinates from the site, (b) a manually entered Country/County/Town/Village, or (c) an original camera photo with location enabled (WhatsApp forwards strip GPS).',
+      pw - 10
+    );
+    doc.text(regionalMsg, margin + 5, y + 14);
+    y += 36;
+  }
 
   // -- ASSESSMENT CLASSIFICATION BANNER --
   const isFieldValid = (result as any)._auditFlags?.isFieldValidated === true;
@@ -1328,6 +1381,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
   // -- MAP 1: DRILL HERE ANCHOR MAP (programmatic, always works) --
   const _r = result as any;
+  // Regional mode: a "PROPOSED DRILL SITE" crosshair on a ±50 km estimate is an
+  // invitation to drill in the wrong place. Replace with the locked notice.
+  if (isRegionalPreScreening) {
+    addPage(); y = 20;
+    drawLockedSection('DRILL SITE LOCATION MAP');
+  } else {
   try {
     const drillImg = renderDrillHereMap(
       siteLat, siteLon,
@@ -1349,6 +1408,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(`Lat: ${siteLat.toFixed(6)}  Lon: ${siteLon.toFixed(6)}  --  AI model estimate. ERT geophysical survey required before drilling.`, margin, y);
     y += 10;
   } catch (_me) { console.warn('[PDF] Drill here map failed', _me); }
+  } // end regional gate: drill-site map
 
   // -- MAP 2: WATER TABLE DEPTH CONTOUR MAP (programmatic, always works) --
   try {
@@ -2968,7 +3028,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       y = lastY(4);
     }
 
-    if (fa.topIntersections?.length) {
+    if (fa.topIntersections?.length && isRegionalPreScreening) {
+      drawLockedSection('Top Fracture Intersections (Priority Drilling Targets)');
+    } else if (fa.topIntersections?.length) {
       checkSpace(40);
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 30, 30);
       doc.text('Top Fracture Intersections (Priority Drilling Targets):', margin, y); y += 6;
@@ -3132,7 +3194,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     });
     y = lastY(4);
 
-    if (dm.topPoints?.length) {
+    if (dm.topPoints?.length && isRegionalPreScreening) {
+      drawLockedSection('Top Drilling Points (GPS-ranked)');
+    } else if (dm.topPoints?.length) {
       checkSpace(50);
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(200, 130, 10);
       doc.text('Top Drilling Points:', margin, y); y += 6;
@@ -3315,7 +3379,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
   // -- 26. MICRO-SITING OPTIMIZER --
   try {
-  if (result.microSiting) {
+  if (result.microSiting && isRegionalPreScreening) {
+    addPage();
+    drawLockedSection('26. Micro-Siting Optimizer — Precision Drilling Point', 'GPS coordinates — micro-siting resolves a ±10 m point, meaningless inside a ±50 km regional estimate');
+  } else if (result.microSiting) {
     addPage();
     const ms = result.microSiting;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
@@ -4506,7 +4573,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
   // -- SECTION: SMART SITE SELECTION (TOP 3 POINTS) --
   try {
-  if (result.siteSelection && result.siteSelection.topSites.length > 0) {
+  if (result.siteSelection && result.siteSelection.topSites.length > 0 && isRegionalPreScreening) {
+    drawLockedSection('Smart Drilling Site Selection — Alternative Ranked Points');
+  } else if (result.siteSelection && result.siteSelection.topSites.length > 0) {
     checkSpace(100);
     doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
     doc.text('Smart Drilling Site Selection ? Alternative Ranked Points', margin, y); y += 8;
@@ -6141,7 +6210,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.rect(margin, y - 4, pageW - margin * 2, 60, 'S');
 
     doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(22, 163, 74);
-    doc.text(`Coordinates: ${(dd.primaryPoint.lat ?? 0).toFixed(6)}, ${(dd.primaryPoint.lon ?? 0).toFixed(6)}`, margin + 6, y + 4);
+    doc.text(
+      isRegionalPreScreening
+        ? `Coordinates: WITHHELD — regional estimate only (Grade ${_locGrade}); provide GPS to obtain a drill point`
+        : `Coordinates: ${(dd.primaryPoint.lat ?? 0).toFixed(6)}, ${(dd.primaryPoint.lon ?? 0).toFixed(6)}`,
+      margin + 6, y + 4
+    );
     doc.text(`Target Depth: ${dd.targetDepth_m}m (range: ${dd.depthRange_m[0]}-${dd.depthRange_m[1]}m)`, margin + 6, y + 12);
     doc.text(`Expected Yield: ${dd.expectedYield_m3hr} m3/hr (range: ${dd.yieldRange_m3hr[0]}-${dd.yieldRange_m3hr[1]})`, margin + 6, y + 20);
     doc.text(`Success Probability: ${dd.successProbability}%`, margin + 6, y + 28);
@@ -6153,7 +6227,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y += 66;
 
     // Alternative points
-    if (dd.alternativePoints?.length) {
+    if (dd.alternativePoints?.length && isRegionalPreScreening) {
+      drawLockedSection('Alternative Drilling Points (ranked)');
+    } else if (dd.alternativePoints?.length) {
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(100, 100, 100);
       doc.text('Alternative Drilling Points (ranked):', margin, y); y += 5;
       autoTable(doc, {
