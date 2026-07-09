@@ -448,6 +448,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [manualLat, setManualLat] = useState('');
   const [manualLon, setManualLon] = useState('');
+  const [manualLocError, setManualLocError] = useState('');
+  const [placeQuery, setPlaceQuery] = useState('');
+  const [placeSearching, setPlaceSearching] = useState(false);
   const [locatingDevice, setLocatingDevice] = useState(false);
   const [clientLoc, setClientLoc] = useState<ClientLocation>({ country:'', region:'', city:'', county:'', province:'', district:'', location:'', sublocation:'', town:'', village:'', estate:'', farm:'' });
   const [compSites, setCompSites] = useState<ComparisonSite[]>([
@@ -657,12 +660,47 @@ const AIBoreholeAnalyzer: React.FC = () => {
     } catch { const updated = [...sites]; updated[idx] = { ...updated[idx], analyzing: false }; setCompSites(updated); }
   };
 
-  /** Apply manually entered coordinates — RE-RUNS FULL ANALYSIS with correct location */
-  const applyManualCoordinates = async () => {
+  /**
+   * Parse whatever the user actually pastes for coordinates. Real users paste
+   * "0.0266768, 34.6471737" into one field, values with degree symbols, or a
+   * Google Plus Code — the old parseFloat-or-silently-return threw ALL of that
+   * away without a word, so reports shipped with the stale estimated location
+   * while the user believed they had "updated the location" (Esikangu incident,
+   * 2026-07-09). NEVER fail silently here.
+   */
+  const parseManualCoordinates = (rawLat: string, rawLon: string): { lat: number; lon: number } | { error: string } => {
+    const clean = (s: string) => s.trim().replace(/[°º]/g, '');
+    let a = clean(rawLat);
+    let b = clean(rawLon);
+    // Plus Code pasted? (e.g. "2JGW+JWV") — explain how to get decimals instead.
+    const plusCode = /^[23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,3}$/i;
+    if (plusCode.test(a) || plusCode.test(b) || plusCode.test(a.split(/[\s,]+/)[0] ?? '')) {
+      return { error: 'That looks like a Plus Code (e.g. 2JGW+JWV) — it can’t be used directly. In Google Maps, PRESS AND HOLD on the exact spot until a pin drops, then copy the two decimal numbers that appear (e.g. 0.026677, 34.647174) and paste them here. Or use the place-name search above.' };
+    }
+    // "lat, lon" pasted into a single field
+    if (!b && /[,;\s]/.test(a)) {
+      const parts = a.split(/[,;\s]+/).filter(Boolean);
+      if (parts.length >= 2) { b = parts[1]; a = parts[0]; }
+    }
+    const lat = parseFloat(a);
+    const lon = parseFloat(b);
+    if (isNaN(lat) || isNaN(lon)) {
+      return { error: 'Coordinates must be two decimal numbers, e.g. latitude 0.026677 and longitude 34.647174. In Google Maps, press and hold on the site until a pin drops and copy the numbers shown. Or search the place by name above.' };
+    }
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      return { error: `Those numbers are out of range (latitude ${lat}, longitude ${lon}). Latitude must be -90..90 and longitude -180..180 — they may be swapped.` };
+    }
+    // Kenya sanity: catch obviously swapped lat/lon (lat 34.6, lon 0.02)
+    if (Math.abs(lat) > 5.5 && lon >= -5.5 && lon <= 5.5 && lat >= 33 && lat <= 42.5) {
+      return { error: `Latitude ${lat} with longitude ${lon} looks swapped for Kenya — try latitude ${lon}, longitude ${lat}.` };
+    }
+    return { lat, lon };
+  };
+
+  /** Core: re-run the FULL analysis at the given verified coordinates. */
+  const applyCoordinates = async (lat: number, lon: number) => {
     if (!analyzer) return;
-    const lat = parseFloat(manualLat);
-    const lon = parseFloat(manualLon);
-    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return;
+    setManualLocError('');
 
     // If we have an image file, re-run the FULL analysis with correct coordinates
     // This is critical: all satellite data, geology, depth, yield must use the right location
@@ -723,6 +761,52 @@ const AIBoreholeAnalyzer: React.FC = () => {
     }
     setManualLat('');
     setManualLon('');
+  };
+
+  /** Apply manually entered coordinates — validates loudly, then re-runs analysis. */
+  const applyManualCoordinates = async () => {
+    if (!analyzer) return;
+    const parsed = parseManualCoordinates(manualLat, manualLon);
+    if ('error' in parsed) { setManualLocError(parsed.error); return; }
+    await applyCoordinates(parsed.lat, parsed.lon);
+  };
+
+  /**
+   * Place-name search — the report cover promises "a manually entered
+   * Country/County/Town/Village" unlocks the full report, so the UI must
+   * actually accept a place name. Forward-geocodes via Nominatim and re-runs
+   * the analysis at the top match.
+   */
+  const searchPlaceAndApply = async () => {
+    const q = placeQuery.trim();
+    if (!q || placeSearching) return;
+    setManualLocError('');
+    setPlaceSearching(true);
+    try {
+      const now = Date.now();
+      const elapsed = now - lastNominatimCall.current;
+      if (elapsed < 1100) await new Promise(r => setTimeout(r, 1100 - elapsed));
+      lastNominatimCall.current = Date.now();
+      const resp = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&addressdetails=1&accept-language=en`,
+        { headers: { 'User-Agent': 'EmersonEIMS-BoreHoleAnalyzer/1.0' }, signal: AbortSignal.timeout(10000) },
+      );
+      const matches = await resp.json();
+      if (!Array.isArray(matches) || matches.length === 0) {
+        setManualLocError(`No place found for "${q}". Try adding the county (e.g. "Ebusembe Mukhungu, Vihiga") — or paste decimal coordinates below.`);
+        return;
+      }
+      const m = matches[0];
+      const lat = parseFloat(m.lat);
+      const lon = parseFloat(m.lon);
+      if (isNaN(lat) || isNaN(lon)) { setManualLocError('The map service returned an unusable result — paste decimal coordinates below instead.'); return; }
+      setPlaceQuery(`${m.display_name}`);
+      await applyCoordinates(lat, lon);
+    } catch {
+      setManualLocError('Place search failed (network). Paste decimal coordinates below instead.');
+    } finally {
+      setPlaceSearching(false);
+    }
   };
 
   /** Use device GPS — user explicitly confirms they are at the borehole site */
@@ -1864,12 +1948,22 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       {locatingDevice ? '\u23F3 Locating...' : '\u{1F4F1} I\u2019m at the site \u2014 Use My GPS'}
                     </button>
                   </div>
-                  <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:8}}>Or enter coordinates manually (from Google Maps, etc.):</div>
-                  <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
-                    <input type="text" placeholder="Latitude (e.g. -1.2864)" value={manualLat} onChange={e=>setManualLat(e.target.value)} style={{flex:1,minWidth:140,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
-                    <input type="text" placeholder="Longitude (e.g. 36.8172)" value={manualLon} onChange={e=>setManualLon(e.target.value)} style={{flex:1,minWidth:140,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
-                    <button onClick={applyManualCoordinates} style={{padding:'8px 20px',borderRadius:8,border:'none',background:'var(--accent)',color:'#000',fontWeight:600,fontSize:13,cursor:'pointer'}}>Apply</button>
+                  <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:8}}>Or search the place by name (village, church, school, town):</div>
+                  <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
+                    <input type="text" placeholder='e.g. "Esikangu Church of God, Vihiga"' value={placeQuery} onChange={e=>setPlaceQuery(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void searchPlaceAndApply();}} style={{flex:2,minWidth:220,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontSize:13}} />
+                    <button onClick={searchPlaceAndApply} disabled={placeSearching} style={{padding:'8px 20px',borderRadius:8,border:'none',background:placeSearching?'var(--bg-elevated)':'#22c55e',color:placeSearching?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:placeSearching?'wait':'pointer'}}>{placeSearching?'⏳ Searching…':'\u{1F50D} Find & Re-analyze'}</button>
                   </div>
+                  <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:8}}>Or paste decimal coordinates (in Google Maps: press &amp; hold the spot, copy the numbers — Plus Codes like 2JGW+JWV won&apos;t work):</div>
+                  <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+                    <input type="text" placeholder="Latitude (e.g. 0.026677)" value={manualLat} onChange={e=>setManualLat(e.target.value)} style={{flex:1,minWidth:140,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
+                    <input type="text" placeholder="Longitude (e.g. 34.647174)" value={manualLon} onChange={e=>setManualLon(e.target.value)} style={{flex:1,minWidth:140,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
+                    <button onClick={applyManualCoordinates} style={{padding:'8px 20px',borderRadius:8,border:'none',background:'var(--accent)',color:'#000',fontWeight:600,fontSize:13,cursor:'pointer'}}>Apply &amp; Re-analyze</button>
+                  </div>
+                  {manualLocError && (
+                    <div style={{marginTop:10,padding:'10px 14px',borderRadius:8,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',color:'#fca5a5',fontSize:12,lineHeight:1.5}}>
+                      {'⚠️'} {manualLocError}
+                    </div>
+                  )}
                 </div>
               )}
               {/* GEO-ESTIMATION FROM VISUAL TERRAIN ANALYSIS */}

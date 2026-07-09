@@ -205,11 +205,20 @@ const MALICIOUS_PATTERNS = [
 // Rate limiting store (in production, use Redis or similar)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 100; // Max requests per window
+// 600/min = 10 req/s sustained. No human browses faster; the bots this
+// exists for blow far past it. 100/min was tripping REAL customers: page
+// loads + Next.js link prefetches + SW precache + AquaScan /data fetches
+// easily exceed 100 in a minute of legitimate heavy use (owner hit 429
+// mid-analysis on 2026-07-09 — never again).
+const RATE_LIMIT_MAX_REQUESTS = 600; // Max requests per window
 
 // Anti-scraping: Track rapid page requests
 const pageAccessStore = new Map<string, { pages: Set<string>; timestamp: number }>();
-const SCRAPING_THRESHOLD = 50; // Max unique pages in 30 seconds
+// 120 unique pages/30s. A human on the mega-menu triggers dozens of Next.js
+// viewport prefetches (each a unique path through this middleware) — 50 was
+// low enough to 429 real users. Prefetch requests are also now excluded from
+// counting entirely (see isPrefetchOrInternal in middleware()).
+const SCRAPING_THRESHOLD = 120; // Max unique pages in 30 seconds
 const SCRAPING_WINDOW = 30000; // 30 seconds
 
 // Licensed domains - only these domains can run the application
@@ -550,29 +559,44 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 3. RATE LIMITING
+  // 3. RATE LIMITING + SCRAPING DETECTION
+  //    Speculative/internal requests are EXEMPT from counting: Next.js link
+  //    prefetches (fired automatically for every link in the viewport), RSC
+  //    payload fetches, the service worker script, its offline page and
+  //    precache warm-up, and AquaScan's bundled /data registries. These are
+  //    the browser working, not the user "requesting" — counting them is how
+  //    a real customer running an analysis got served 429 (2026-07-09).
   // ─────────────────────────────────────────────────────────────────────────────
-  if (isRateLimited(clientIP)) {
-    console.log(`🚫 RATE LIMITED: ${clientIP}`);
-    return new NextResponse('Too Many Requests', {
-      status: 429,
-      headers: {
-        'Retry-After': '60',
-        'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
-        'X-RateLimit-Remaining': '0',
-      }
-    });
-  }
+  const isPrefetchOrInternal =
+    request.headers.get('next-router-prefetch') === '1' ||
+    request.headers.get('purpose') === 'prefetch' ||
+    request.headers.get('x-purpose') === 'prefetch' ||
+    (request.headers.get('sec-purpose') || '').includes('prefetch') ||
+    request.nextUrl.searchParams.has('_rsc') ||
+    pathname === '/sw.js' ||
+    pathname === '/offline.html' ||
+    pathname.startsWith('/data/');
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 3.5. SCRAPING DETECTION
-  // ─────────────────────────────────────────────────────────────────────────────
-  if (detectScraping(clientIP, pathname)) {
-    console.log(`🚫 BLOCKED: Scraping behavior detected from ${clientIP}`);
-    return new NextResponse(
-      'Access temporarily restricted. This content is protected by copyright.',
-      { status: 429 }
-    );
+  if (!isPrefetchOrInternal) {
+    if (isRateLimited(clientIP)) {
+      console.log(`🚫 RATE LIMITED: ${clientIP}`);
+      return new NextResponse('Too Many Requests', {
+        status: 429,
+        headers: {
+          'Retry-After': '60',
+          'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
+          'X-RateLimit-Remaining': '0',
+        }
+      });
+    }
+
+    if (detectScraping(clientIP, pathname)) {
+      console.log(`🚫 BLOCKED: Scraping behavior detected from ${clientIP}`);
+      return new NextResponse(
+        'Access temporarily restricted. This content is protected by copyright.',
+        { status: 429 }
+      );
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
