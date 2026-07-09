@@ -373,6 +373,47 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
     }
   } catch { /* registry file not installed yet — expected until WRA data obtained */ }
 
+  // ────────────────────────────────────────────────────────
+  // 3b. UNESCO IHP-WINS KENYA REGISTRY (bundled, 22,820 named wells)
+  //     Built 2026-07-09 from ihp-wins.unesco.org open datasets
+  //     ("Kenya Groundwater Sources from mWater" + "Kenya Wells OSM"):
+  //     names, coordinates, county, status; 543 with plausible drilled
+  //     depths (sanity-bounded 1–400 m). Compact tuple format:
+  //     fields = [name, lat, lon, depth_m, yield_m3h, status, county, src]
+  // ────────────────────────────────────────────────────────
+  try {
+    const unResp = await fetch('/data/gov-wells-kenya.json', { signal: AbortSignal.timeout(10000) });
+    if (unResp.ok) {
+      const un = await unResp.json();
+      if (Array.isArray(un?.wells)) {
+        let unCount = 0;
+        for (const t of un.wells) {
+          const [wName, wLat, wLon, wDepth, wYield, wStatus, wCounty, wSrc] = t;
+          if (!isFinite(wLat) || !isFinite(wLon)) continue;
+          const dist = haversineDistance(lat, lon, wLat, wLon);
+          if (dist > searchRadius) continue;
+          const st = String(wStatus || '').toLowerCase();
+          let outcome: 'Success' | 'Moderate' | 'Fail' | 'Unknown' = 'Unknown';
+          if (st.includes('non') || st.includes('closed') || st.includes('abandon')) outcome = 'Fail';
+          else if (st.includes('open') || st.includes('functional') || st.includes('protected')) outcome = 'Success';
+          wells.push({
+            id: `${wName}${wCounty ? ` (${wCounty})` : ''}`,
+            distance_km: Math.round(dist * 10) / 10,
+            depth_m: Number(wDepth) || 0,
+            yield_m3h: Number(wYield) > 0 ? Number(wYield) : undefined,
+            waterLevel_m: undefined,
+            aquiferType: wStatus || undefined,
+            outcome,
+            source: `UNESCO IHP-WINS registry (${wSrc})`,
+          });
+          unCount++;
+          if (unCount >= 30) break; // cap per-report table size
+        }
+        if (unCount > 0) dataSources.push(`UNESCO IHP-WINS Kenya registry (${unCount} named wells within ${searchRadius} km)`);
+      }
+    }
+  } catch { /* registry unreachable — other sources still apply */ }
+
   // (retired duplicate WPDx query — dataset columns removed upstream)
   try {
     const wpdxPlusUrl = '';
