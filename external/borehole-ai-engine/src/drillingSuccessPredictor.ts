@@ -234,7 +234,10 @@ export function predictDrillingSuccess(features: PredictionFeatures): DrillPredi
   const excessDepthRisk = depthCI.high > 80 ? Math.min(60, (depthCI.high - 80) * 2) : 5;
 
   // ─── Financial analysis ───
-  const costPerMeter = rock === 'granite' || rock === 'quartzite' ? 45 : rock === 'alluvium' ? 25 : 35;
+  // Kenya market July 2026: air/DTH in consolidated rock ≈ KSh 6,500–9,500/m
+  // (~$50–74); MUD drilling in loose alluvium ≈ KSh 13,000/m (~$100) — loose
+  // ground costs MORE, not less. Rates aligned with computeCanonicalEconomics.
+  const costPerMeter = rock === 'granite' || rock === 'quartzite' ? 62 : rock === 'alluvium' ? 100 : 75;
   const mobilizationCost = 1500;
   const drillingCost = mobilizationCost + depthCI.mid * costPerMeter;
   const dailyYield_m3 = yield_m3h * 12; // 12 hours/day pumping

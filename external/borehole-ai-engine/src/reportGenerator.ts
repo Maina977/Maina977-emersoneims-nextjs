@@ -694,13 +694,32 @@ function renderPieChart(
 // 5.7 years in the SAME report. Every section that shows money must consume
 // this one model.
 // ═══════════════════════════════════════════════════════════════
+// ── KENYA MARKET CALIBRATION (July 2026) ─────────────────────────
+// Sources: Grekkon 2026 county rates (Nairobi/Kiambu/Kajiado ≈ KSh 6,500–9,500/m;
+// coastal & western from ≈ KSh 7,500–9,500/m); 2026 contractor breakdown: AIR
+// drilling ≈ KSh 6,700/m (consolidated/basement — DTH hammer), MUD drilling
+// ≈ KSh 13,050/m (loose/collapsing formations, incl. mobilisation, casing,
+// graveling, development, test pumping, water analysis).
+// KEY: loose ground costs MORE to drill than hard rock in Kenya (mud rotary
+// vs air), so sandy/alluvial carries the highest rate — not the lowest.
+const KES_PER_USD = 129; // July 2026 indicative rate — update annually
+const kesRound = (usd: number) => Math.round((usd * KES_PER_USD) / 1000) * 1000;
+const fmtKESm = (usd: number) => {
+  const kes = usd * KES_PER_USD;
+  return kes >= 1_000_000 ? `KSh ${(kes / 1_000_000).toFixed(2)}M` : `KSh ${kesRound(usd).toLocaleString()}`;
+};
+
 function computeCanonicalEconomics(result: AnalysisResult) {
   const depthVal = result.recommendedDepth ?? 50;
   const yieldVal = result.estimatedYield ?? 2;
   const soilType = (result.soil?.type || 'loamy').toLowerCase();
-  const costPerMeter: Record<string, number> = { sandy: 45, clay: 65, loamy: 55, rocky: 95, laterite: 75, silty: 50, unknown: 60 };
-  const cpm = costPerMeter[soilType] || 60;
+  // USD/m calibrated to July 2026 Kenya market (see block comment above):
+  // loose formations (mud rotary) top the range; basement (air/DTH) sits at
+  // the standard KSh 6,500–9,500 band.
+  const costPerMeter: Record<string, number> = { sandy: 100, silty: 88, clay: 82, loamy: 72, laterite: 66, rocky: 62, unknown: 75 };
+  const cpm = costPerMeter[soilType] || 75;
   const drillingCost = Math.round(depthVal * cpm);
+  const drillMethod = ['sandy', 'silty', 'clay'].includes(soilType) ? 'mud rotary (loose formation)' : 'air/DTH (consolidated)';
 
   const wci = (result as any).waterDesign?.waterChemistryIndices;
   const isCorrosive = wci && (wci.langelierSaturationIndex ?? 0) < -1.5;
@@ -732,7 +751,14 @@ function computeCanonicalEconomics(result: AnalysisResult) {
   const fluorideVal = result.waterQuality?.fluoride ?? 0;
   const defluoridationCost = fluorideVal > 1.5 ? 2500 : 0;
   const annualDefluoridation = fluorideVal > 1.5 ? 450 : 0;
-  const subtotalCost = drillingCost + casingCost + screenCost + pumpCost + installCost + solarCost + wqTreatmentCost + defluoridationCost;
+  // Statutory pre-drilling costs people forget (Kenya Water Resources
+  // Regulations): hydrogeological survey report — REQUIRED for motorised
+  // boreholes — runs ≈ KSh 40,000–110,000 (July 2026 market), plus WRA
+  // groundwater abstraction approval and post-completion water use permit.
+  // Budgeted at KSh 75,000 survey (midpoint) + KSh 25,000 approvals.
+  const surveyCost = Math.round(75000 / KES_PER_USD);
+  const permitCost = Math.round(25000 / KES_PER_USD);
+  const subtotalCost = surveyCost + permitCost + drillingCost + casingCost + screenCost + pumpCost + installCost + solarCost + wqTreatmentCost + defluoridationCost;
   const isHardRock = /gneiss|granite|basalt|quartzite|dolerite/i.test(soilType) || /rocky/i.test(soilType);
   const contingencyRate = isHardRock ? 0.25 : 0.15;
   const contingency = Math.round(subtotalCost * contingencyRate);
@@ -805,6 +831,11 @@ function computeCanonicalEconomics(result: AnalysisResult) {
     maxAnnualRevenue, yr1Utilization, yr2Utilization, yr3PlusUtilization,
     yr1Revenue, yr3Revenue, baseAnnualRevenue, netAnnual, cashFlows,
     irr, paybackMonths, npv10Rounded,
+    // Kenya market calibration (July 2026)
+    drillMethod, surveyCost, permitCost,
+    kesPerUsd: KES_PER_USD,
+    kes: fmtKESm,
+    cpmKES: kesRound(cpm),
   };
 }
 
@@ -1079,7 +1110,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       { lbl: 'RECOMMENDED DEPTH', val: `${fmt(result.recommendedDepth, 0)} m`, sub: u ? `range ${u.depthRange[0]}-${u.depthRange[1]} m` : 'satellite-only estimate', c: [56, 189, 248] as [number, number, number] },
       { lbl: 'EXPECTED YIELD', val: `${fmt(result.estimatedYield, 1)} m³/hr`, sub: u ? `range ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr` : 'satellite-only estimate', c: [34, 197, 94] as [number, number, number] },
       { lbl: 'WATER TABLE (MODELLED)', val: wtDepth != null ? `${fmt(wtDepth, 0)} m` : 'N/A', sub: 'confirm with ERT', c: [129, 140, 248] as [number, number, number] },
-      { lbl: 'TOTAL INVESTMENT', val: `$${eco.totalCost.toLocaleString()}`, sub: `incl. ${(eco.contingencyRate * 100).toFixed(0)}% contingency`, c: [251, 191, 36] as [number, number, number] },
+      { lbl: 'TOTAL INVESTMENT', val: `${eco.kes(eco.totalCost)}`, sub: `$${eco.totalCost.toLocaleString()} · incl. survey, permits, ${(eco.contingencyRate * 100).toFixed(0)}% contingency`, c: [251, 191, 36] as [number, number, number] },
       { lbl: 'PAYBACK (WATER SALES)', val: eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} yrs` : '>20 yrs', sub: `solar ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³`, c: [56, 189, 248] as [number, number, number] },
     ];
     const tW = (pw - 8) / 3, tH = 23;
@@ -1185,22 +1216,24 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('INVESTMENT AT A GLANCE', margin, y); y += 3;
     autoTable(doc, {
       startY: y,
-      head: [['Item', 'Cost (USD)', 'Basis']],
+      head: [['Item', 'USD', 'KSh (approx)', 'Basis']],
       body: [
-        ['Drilling', `$${eco.drillingCost.toLocaleString()}`, `${eco.depthVal} m × $${eco.cpm}/m (${eco.soilType} ground)`],
-        ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.casingNote],
-        ['Pump + installation', `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
-        ['Solar power system', `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW.toFixed(1)} kW array`],
+        ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, eco.kes(eco.surveyCost + eco.permitCost), 'Hydrogeological survey report (required for motorised boreholes, KSh 40k-110k market) + WRA abstraction approval'],
+        ['Drilling', `$${eco.drillingCost.toLocaleString()}`, eco.kes(eco.drillingCost), `${eco.depthVal} m × ~KSh ${eco.cpmKES.toLocaleString()}/m — ${eco.drillMethod}, ${eco.soilType} ground (Kenya 2026 market)`],
+        ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.kes(eco.casingCost + eco.screenCost), eco.casingNote],
+        ['Pump + installation', `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.kes(eco.pumpCost + eco.installCost), eco.pumpNote],
+        ['Solar power system', `$${eco.solarCost.toLocaleString()}`, eco.kes(eco.solarCost), `${eco.solarKW.toFixed(1)} kW array`],
         ...(eco.wqTreatmentCost + eco.defluoridationCost > 0
-          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? `incl. defluoridation (+$${eco.annualDefluoridation}/yr media)` : 'per modelled water quality'] as string[]]
+          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.kes(eco.wqTreatmentCost + eco.defluoridationCost), eco.defluoridationCost > 0 ? `incl. defluoridation (+$${eco.annualDefluoridation}/yr media)` : 'per modelled water quality'] as string[]]
           : []),
-        ['Contingency', `$${eco.contingency.toLocaleString()}`, `${(eco.contingencyRate * 100).toFixed(0)}%${eco.isHardRock ? ' (hard rock)' : ''}`],
-        ['TOTAL CAPITAL', `$${eco.totalCost.toLocaleString()}`, 'Excl. land, permits, ERT survey ($3,000-5,000)'],
-        ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, solar ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr`],
-        ['NPV @ 10% / 20 yrs', `$${eco.npv10Rounded.toLocaleString()}`, eco.irr === 999 ? 'IRR >100%' : eco.irr === -999 ? 'IRR negative' : `IRR ~${eco.irr}%`],
+        ['Contingency', `$${eco.contingency.toLocaleString()}`, eco.kes(eco.contingency), `${(eco.contingencyRate * 100).toFixed(0)}%${eco.isHardRock ? ' (hard rock)' : ''}`],
+        ['TOTAL CAPITAL', `$${eco.totalCost.toLocaleString()}`, eco.kes(eco.totalCost), 'Complete functional borehole. Excl. land, storage tank, distribution'],
+        ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, solar ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr`],
+        ['NPV @ 10% / 20 yrs', `$${eco.npv10Rounded.toLocaleString()}`, '', eco.irr === 999 ? 'IRR >100%' : eco.irr === -999 ? 'IRR negative' : `IRR ~${eco.irr}%`],
       ],
       headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-      bodyStyles: { fontSize: 7.5 },
+      bodyStyles: { fontSize: 7 },
+      columnStyles: { 3: { cellWidth: 70 } },
       didParseCell: (data: any) => {
         if (data.section === 'body' && data.row.index >= 0 && String(data.row.raw?.[0]).startsWith('TOTAL')) {
           data.cell.styles.fontStyle = 'bold';
@@ -1212,7 +1245,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     });
     y = lastY(4);
     doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 130);
-    doc.text('One economics model: these are the SAME figures as Section 5.1 and the Investor Summary -- nothing in this report recomputes money differently.', margin, y); y += 8;
+    doc.text(`One economics model: same figures as Section 5.1 and the Investor Summary. KSh at ~${eco.kesPerUsd}/USD (July 2026). Kenya benchmark: a properly completed borehole runs KSh 1.5M-3.5M.`, margin, y); y += 4;
+    doc.setFontSize(6.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 100, 0);
+    doc.text('CAUTION: quotes below ~KSh 5,000/m usually exclude casing, gravel pack, development, test pumping, water analysis or VAT — compare scope, not price.', margin, y); y += 8;
 
     // Field-validation plan
     doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
@@ -1221,7 +1256,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       startY: y,
       head: [['Step', 'Status', 'What it proves', 'Typical cost']],
       body: [
-        ['1. ERT geophysical survey', af.hasFieldERT ? 'DONE' : 'PLANNED', 'Confirms aquifer zones and drill depth before the rig mobilizes', '$3,000-5,000'],
+        ['1. Hydrogeological survey + ERT geophysics', af.hasFieldERT ? 'DONE' : 'PLANNED', 'Statutory survey report (required for WRA approval) + ERT confirms aquifer zones and drill depth before the rig mobilizes', 'KSh 40,000-110,000'],
         ['2. Drill + 24-hour pump test', af.hasFieldPumpTest ? 'DONE' : 'PLANNED', 'Proves the sustainable yield this report estimates', 'Included in drilling contract'],
         ['3. ISO 17025 lab water analysis', af.hasLabWaterAnalysis ? 'DONE' : 'PLANNED', 'Replaces modelled water quality with certified results', '$150-400'],
       ],
@@ -1523,14 +1558,15 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       startY: y,
       head: [['Cost Component', 'Amount (USD)', 'Notes']],
       body: [
-        ['Drilling, casing & screen',  `$${(eco.drillingCost + eco.casingCost + eco.screenCost).toLocaleString()}`, `${eco.depthVal}m at $${eco.cpm}/m (${eco.soilType} soil) + casing + screen`],
+        ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, 'Hydrogeological survey report + WRA abstraction approval (required)'],
+        ['Drilling, casing & screen',  `$${(eco.drillingCost + eco.casingCost + eco.screenCost).toLocaleString()}`, `${eco.depthVal}m at ~KSh ${eco.cpmKES.toLocaleString()}/m (${eco.drillMethod}, ${eco.soilType}) + casing + screen`],
         ['Pump & installation',        `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
         ['Solar power system',         `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW} kW array + controller`],
         ...((eco.wqTreatmentCost + eco.defluoridationCost) > 0
           ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? 'Incl. defluoridation (fluoride > WHO 1.5 mg/L)' : 'Per water-quality model'] as [string, string, string]]
           : []),
         [`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, `$${eco.contingency.toLocaleString()}`, eco.isHardRock ? 'Hard-rock drilling risk premium' : 'Standard engineering contingency'],
-        ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  'Same model as Section 5.1. Excl. land, permits, ERT survey ($3,000-5,000)'],
+        ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  'Same model as Section 5.1. Incl. survey + statutory approvals. Excl. land, storage tank'],
         ['Annual O&M',                 `$${_annualMaint.toLocaleString()}/yr`, '4.5% of capital (World Bank WASH benchmark)'],
       ],
       headStyles: { fillColor: [15,23,42] as [number,number,number], textColor: [56,189,248] as [number,number,number], fontStyle: 'bold', fontSize: 9 },
@@ -2327,13 +2363,16 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
       yr1Utilization, yr3PlusUtilization, yr1Revenue, yr3Revenue,
       netAnnual, cashFlows, irr, paybackMonths, npv10Rounded,
+      drillMethod, surveyCost, permitCost, kesPerUsd, kes, cpmKES,
     } = computeCanonicalEconomics(result);
 
     autoTable(doc, {
       startY: y,
       head: [['Cost Item', 'Amount (USD)', 'Notes']],
       body: [
-        ['Drilling', `$${drillingCost.toLocaleString()}`, `${depthVal}m x $${cpm}/m (${soilType} soil) -- rates per UNICEF/RWSN drilling cost study 2020`],
+        ['Hydrogeological Survey + ERT', `$${surveyCost.toLocaleString()}`, 'Statutory requirement for motorised boreholes (Kenya Water Resources Regulations) -- KSh 40,000-110,000 market range, July 2026'],
+        ['WRA Approvals & Permits', `$${permitCost.toLocaleString()}`, 'Groundwater abstraction approval before drilling + water use permit after completion'],
+        ['Drilling', `$${drillingCost.toLocaleString()}`, `${depthVal}m x $${cpm}/m (~KSh ${cpmKES.toLocaleString()}/m) -- ${drillMethod}, ${soilType} ground. Kenya market July 2026: KSh 6,500-9,500/m standard (air), up to ~KSh 13,000/m mud drilling in loose formations`],
         ['Casing & Grouting', `$${casingCost.toLocaleString()}`, casingNote],
         ['Well Screen', `$${screenCost.toLocaleString()}`, screenNote],
         ['Pump Unit', `$${pumpCost.toLocaleString()}`, pumpNote],
@@ -2343,7 +2382,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ...(defluoridationCost > 0 ? [['Defluoridation Unit', `$${defluoridationCost.toLocaleString()}`, `Fluoride ${fluorideVal.toFixed(1)} mg/L > 1.5 WHO limit -- bone-char/activated alumina (+$${annualDefluoridation}/yr media)`]] : []),
         [`Contingency (${Math.round(contingencyRate * 100)}%)`, `$${contingency.toLocaleString()}`, isHardRock ? 'Hard rock (gneiss/granite) -- DTH hammer, bit changes, foam drilling complications' : 'Standard engineering contingency for unforeseen conditions'],
         ['', '', ''],
-        ['TOTAL PROJECT COST', `$${totalCost.toLocaleString()}`, `Subtotal $${subtotalCost.toLocaleString()} + ${Math.round(contingencyRate * 100)}% contingency`],
+        ['TOTAL PROJECT COST', `$${totalCost.toLocaleString()} (~${kes(totalCost)})`, `Subtotal $${subtotalCost.toLocaleString()} + ${Math.round(contingencyRate * 100)}% contingency. KSh at ~${kesPerUsd}/USD. Kenya benchmark: complete functional borehole KSh 1.5M-3.5M`],
         ['Annual Maintenance', `$${annualMaintenance.toLocaleString()}/yr`, '~4.5% of capital (World Bank WASH O&M benchmark 2019: 3% solar + 6% mechanical)'],
       ],
       headStyles: { fillColor: [34, 197, 94], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
@@ -2352,7 +2391,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       margin: { left: margin, right: margin },
       theme: 'grid',
     });
-    y = lastY(10);
+    y = lastY(4);
+    // Kenya market caution (July 2026) — protects the customer from scope-stripped quotes
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 100, 0);
+    doc.text('MARKET CAUTION: do not accept drilling quotes below ~KSh 5,000/m without a written scope — cheap quotes typically exclude casing, gravel pack,', margin, y); y += 3.5;
+    doc.text('development, test pumping, water analysis, mobilisation or VAT. Compare scope line-by-line, not the headline price.', margin, y); y += 8;
 
     // ROI Table
     checkSpace(50);
@@ -4964,7 +5007,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y += 4;
 
     doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(200, 60, 60);
-    doc.text('[!] Run ERT survey on Site #1 before drilling to confirm aquifer geometry. Cost: $3,000-5,000.', margin, y);
+    doc.text('[!] Run hydrogeological survey + ERT on Site #1 before drilling to confirm aquifer geometry. Cost: ~KSh 40,000-110,000 (statutory requirement for motorised boreholes).', margin, y);
     y += 8;
   }
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }

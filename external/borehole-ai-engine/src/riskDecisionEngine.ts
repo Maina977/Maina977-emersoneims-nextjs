@@ -255,7 +255,8 @@ export function assessDrillingRisk(input: RiskDecisionInput): RiskDecisionResult
   const alternativeActions = makeAlternatives(recommendation.action, riskScore, input);
 
   // Financial analysis
-  const cost = input.estimatedCost_USD ?? input.predictedDepth_m * (input.costPerMeter_USD ?? 80);
+  // Default aligned with computeCanonicalEconomics 'unknown' rate (Kenya July 2026)
+  const cost = input.estimatedCost_USD ?? input.predictedDepth_m * (input.costPerMeter_USD ?? 75);
   const waterValue = input.predictedYield_m3hr * 24 * 365 * 0.5; // $0.50/m³ community water
   const expectedValue = successProb * waterValue - cost;
   const worstCase = -cost;
