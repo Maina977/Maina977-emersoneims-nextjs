@@ -642,6 +642,25 @@ export function renderDrillHereMap(
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
+  // ── Four converging arrows — the drill point must be unmissable ──
+  const drawArrowTo = (angleDeg: number) => {
+    const a = (angleDeg * Math.PI) / 180;
+    const x1 = cx + Math.cos(a) * 110, y1 = cy + Math.sin(a) * 110;
+    const x2 = cx + Math.cos(a) * 52, y2 = cy + Math.sin(a) * 52;
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    // Arrowhead pointing inward
+    const ha = a + Math.PI;
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - Math.cos(ha - 0.4) * 14, y2 - Math.sin(ha - 0.4) * 14);
+    ctx.lineTo(x2 - Math.cos(ha + 0.4) * 14, y2 - Math.sin(ha + 0.4) * 14);
+    ctx.closePath(); ctx.fill();
+  };
+  [45, 135, 225, 315].forEach(drawArrowTo);
+
   // ── "DRILL HERE" label ───────────────────────────────────────
   ctx.font = 'bold 22px Helvetica, Arial, sans-serif';
   ctx.fillStyle = '#ef4444';
@@ -650,6 +669,14 @@ export function renderDrillHereMap(
   ctx.font = 'bold 13px monospace';
   ctx.fillStyle = '#fbbf24';
   ctx.fillText(coordLabel(lat, lon), cx, cy - 36);
+  // Ribbon below the crosshair — the operative instruction, spelled out
+  const ribbonTxt = 'DRILL AT THE CROSSHAIR';
+  ctx.font = 'bold 16px Helvetica, Arial, sans-serif';
+  const rw = ctx.measureText(ribbonTxt).width + 24;
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.92)';
+  ctx.fillRect(cx - rw / 2, cy + 46, rw, 26);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(ribbonTxt, cx, cy + 64);
   ctx.textAlign = 'left';
 
   // ── Callout boxes ────────────────────────────────────────────

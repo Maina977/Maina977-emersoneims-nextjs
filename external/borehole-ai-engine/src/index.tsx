@@ -451,6 +451,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [manualLocError, setManualLocError] = useState('');
   const [placeQuery, setPlaceQuery] = useState('');
   const [placeSearching, setPlaceSearching] = useState(false);
+  const [extraImages, setExtraImages] = useState<string[]>([]);
+  const primaryFileRef = useRef<File | null>(null);
   const [locatingDevice, setLocatingDevice] = useState(false);
   const [clientLoc, setClientLoc] = useState<ClientLocation>({ country:'', region:'', city:'', county:'', province:'', district:'', location:'', sublocation:'', town:'', village:'', estate:'', farm:'' });
   const [compSites, setCompSites] = useState<ComparisonSite[]>([
@@ -600,31 +602,54 @@ const AIBoreholeAnalyzer: React.FC = () => {
   }, [compSites]);
 
   const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !analyzer) return;
-    setSelectedImage(URL.createObjectURL(file));
+    const files = Array.from(event.target.files ?? []);
+    if (files.length === 0 || !analyzer) return;
+
+    // Coordinates typed but invalid? STOP and say so — never run the analysis
+    // at the wrong place while the user believes their location was applied.
+    let manualCoords: { lat: number; lon: number } | null = null;
+    if (manualLat.trim() || manualLon.trim()) {
+      const parsed = parseManualCoordinates(manualLat, manualLon);
+      if ('error' in parsed) {
+        setManualLocError(parsed.error);
+        setAnalysisError(`Location problem: ${parsed.error}`);
+        return;
+      }
+      manualCoords = parsed;
+    }
+
+    // Multiple photos: analyze the one with EXIF GPS as primary (best
+    // location evidence); the rest are kept as visual context thumbnails.
+    let primary = files[0];
+    if (files.length > 1) {
+      try {
+        const exifr = (await import('exifr')).default;
+        for (const f of files) {
+          const g = await exifr.gps(f).catch(() => null);
+          if (g && Number.isFinite(g.latitude) && Number.isFinite(g.longitude)) { primary = f; break; }
+        }
+      } catch { /* keep first file as primary */ }
+    }
+    primaryFileRef.current = primary;
+    setSelectedImage(URL.createObjectURL(primary));
+    setExtraImages(files.filter(f => f !== primary).map(f => URL.createObjectURL(f)));
     setResult(null);
     setAnalysisError(null);
     setAnalyzing(true);
     setActiveView('analyze');
     setPipelineStep(0);
-    setPipelineLabel('Initializing data ingestion pipeline...');
+    setPipelineLabel(files.length > 1 ? `Analyzing primary photo (1 of ${files.length})...` : 'Initializing data ingestion pipeline...');
     try {
       // Pass client location if any fields are filled, AND inject manual coordinates if provided
       const hasClientLoc = Object.values(clientLoc).some(v => v && v.trim());
-      const hasManualCoords = manualLat.trim() !== '' && manualLon.trim() !== '';
-      const parsedLat = parseFloat(manualLat);
-      const parsedLon = parseFloat(manualLon);
-      const validManualCoords = hasManualCoords && !isNaN(parsedLat) && !isNaN(parsedLon)
-        && parsedLat >= -90 && parsedLat <= 90 && parsedLon >= -180 && parsedLon <= 180;
 
       // Build the location object: manual coords override everything
       let locationArg: ClientLocation | undefined;
-      if (validManualCoords) {
+      if (manualCoords) {
         locationArg = {
           ...clientLoc,
-          latitude: parsedLat,
-          longitude: parsedLon,
+          latitude: manualCoords.lat,
+          longitude: manualCoords.lon,
         };
       } else if (hasClientLoc) {
         locationArg = clientLoc;
@@ -633,7 +658,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
       // Build field data if any field forms were filled
       const hasFieldData = Object.keys(fieldDataInput).length > 0 && Object.values(fieldDataInput).some(v => v != null);
       const analysisResult = await analyzer.analyzeImage(
-        file,
+        primary,
         (step, label) => { setPipelineStep(step); setPipelineLabel(label); },
         locationArg,
         hasFieldData ? fieldDataInput as FieldValidationData : undefined,
@@ -705,7 +730,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
     // If we have an image file, re-run the FULL analysis with correct coordinates
     // This is critical: all satellite data, geology, depth, yield must use the right location
     const imageInput = document.querySelector<HTMLInputElement>('input[type="file"][accept*="image"]');
-    const file = imageInput?.files?.[0];
+    const file = primaryFileRef.current ?? imageInput?.files?.[0];
     if (file) {
       setResult(null);
       setAnalyzing(true);
@@ -801,6 +826,13 @@ const AIBoreholeAnalyzer: React.FC = () => {
       const lon = parseFloat(m.lon);
       if (isNaN(lat) || isNaN(lon)) { setManualLocError('The map service returned an unusable result — paste decimal coordinates below instead.'); return; }
       setPlaceQuery(`${m.display_name}`);
+      if (!result) {
+        // Pre-analysis (dashboard): pin the coordinates so the upcoming
+        // analysis runs there — the fields double as the visible confirmation.
+        setManualLat(lat.toFixed(6));
+        setManualLon(lon.toFixed(6));
+        return;
+      }
       await applyCoordinates(lat, lon);
     } catch {
       setManualLocError('Place search failed (network). Paste decimal coordinates below instead.');
@@ -1015,6 +1047,36 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 Provide the exact location where you want to drill. The more fields you fill, the more precise the GPS coordinates and analysis.
                 We fetch 20-year weather history, regional borehole records, groundwater data, and satellite imagery for these coordinates.
               </p>
+
+              {/* SET SITE LOCATION — exact GPS, visible BEFORE analysis (owner request 2026-07-09) */}
+              <div style={{background:'rgba(34,197,94,0.07)',border:'2px solid rgba(34,197,94,0.30)',borderRadius:12,padding:'14px 18px',marginBottom:14}}>
+                <div style={{fontWeight:800,fontSize:14,color:'var(--text-primary)',marginBottom:6}}>{'\u{1F3AF}'} Set Site Location — Exact GPS (best accuracy)</div>
+                <div style={{fontSize:11,color:'var(--text-secondary)',marginBottom:10,lineHeight:1.5}}>
+                  Pin the exact drilling spot and the analysis runs THERE (GPS source: MANUAL — unlocks the full site report).
+                  In Google Maps: <strong>press &amp; hold</strong> the spot until a pin drops, then copy the two decimal numbers. Plus Codes (e.g. 2JGW+JWV) won&apos;t work — use the numbers.
+                </div>
+                <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
+                  <input type="text" placeholder='Search place name — e.g. "Emabungo, Vihiga"' value={placeQuery} onChange={e=>setPlaceQuery(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void searchPlaceAndApply();}} style={{flex:2,minWidth:220,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontSize:13}} />
+                  <button onClick={searchPlaceAndApply} disabled={placeSearching} style={{padding:'8px 18px',borderRadius:8,border:'none',background:placeSearching?'var(--bg-elevated)':'#22c55e',color:placeSearching?'var(--text-secondary)':'#fff',fontWeight:700,fontSize:13,cursor:placeSearching?'wait':'pointer'}}>{placeSearching?'⏳ Searching…':'\u{1F50D} Find Place'}</button>
+                  <button onClick={()=>{ if(!navigator?.geolocation){setManualLocError('This device/browser has no GPS access.');return;} navigator.geolocation.getCurrentPosition(p=>{setManualLat(String(p.coords.latitude));setManualLon(String(p.coords.longitude));setManualLocError('');},()=>setManualLocError('Device GPS failed — allow location access, or paste coordinates.'),{enableHighAccuracy:true,timeout:15000}); }} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#0ea5e9',color:'#fff',fontWeight:700,fontSize:13,cursor:'pointer'}}>{'\u{1F4F1}'} I&apos;m at the site</button>
+                </div>
+                <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+                  <input type="text" placeholder="Latitude (e.g. 0.026677) — or paste both: 0.026677, 34.647174" value={manualLat} onChange={e=>{setManualLat(e.target.value);setManualLocError('');}} style={{flex:1.4,minWidth:210,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
+                  <input type="text" placeholder="Longitude (e.g. 34.647174)" value={manualLon} onChange={e=>{setManualLon(e.target.value);setManualLocError('');}} style={{flex:1,minWidth:150,padding:'8px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontFamily:'var(--font-mono)',fontSize:13}} />
+                </div>
+                {(() => {
+                  if (!manualLat.trim() && !manualLon.trim()) return null;
+                  const p = parseManualCoordinates(manualLat, manualLon);
+                  return 'error' in p
+                    ? <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',color:'#fca5a5',fontSize:12,lineHeight:1.5}}>{'⚠️'} {p.error}</div>
+                    : <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(34,197,94,0.10)',border:'1px solid rgba(34,197,94,0.30)',color:'#4ade80',fontSize:12,fontWeight:700}}>{'✅'} Drilling location PINNED: {p.lat.toFixed(6)}, {p.lon.toFixed(6)} — the analysis will run exactly here (full site report unlocked)</div>;
+                })()}
+                {manualLocError && (
+                  <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',color:'#fca5a5',fontSize:12,lineHeight:1.5}}>{'⚠️'} {manualLocError}</div>
+                )}
+              </div>
+
+              <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:8}}>Or describe the location by name (used to geocode if no GPS above):</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
                 {/* Row 1 — Country, Region/State, Province */}
                 <div>
@@ -1109,7 +1171,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
               <div className="cta-buttons">
                 <button className="btn btn-analyze" onClick={()=>fileInputRef.current?.click()}>
-                  {'\u{1F4F7}'} Upload Photo — Analyze Site
+                  {'\u{1F4F7}'} Upload Photos — Analyze Site (select multiple)
                 </button>
                 <button className="btn btn-video" onClick={()=>videoInputRef.current?.click()}>
                   {'\u{1F3AC}'} Upload Video — Terrain Analysis
@@ -1382,7 +1444,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             </div>
           </>
         )}
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} style={{display:'none'}} />
+        <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageSelect} style={{display:'none'}} />
         <input ref={videoInputRef} type="file" accept="video/*" onChange={(e) => { if(e.target.files?.[0]){ handleImageSelect(e as any); }}} style={{display:'none'}} />
       </div>
     </div>
@@ -1556,6 +1618,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const renderAnalyzing = () => (
     <div className="analyzing-view">
       {selectedImage && <img src={selectedImage} alt="Terrain" className="analyzing-image" />}
+      {extraImages.length > 0 && (
+        <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center',marginTop:8}}>
+          {extraImages.map((src, i) => <img key={i} src={src} alt={`Site photo ${i + 2}`} style={{width:72,height:72,objectFit:'cover',borderRadius:8,border:'1px solid var(--border)',opacity:0.8}} />)}
+          <div style={{fontSize:11,color:'var(--text-tertiary)',alignSelf:'center'}}>+{extraImages.length} more photo{extraImages.length > 1 ? 's' : ''} received — primary photo analyzed in full</div>
+        </div>
+      )}
       {analysisError ? (
         <div style={{background:'rgba(244,67,54,0.12)',border:'2px solid rgba(244,67,54,0.4)',borderRadius:12,padding:'20px 24px',margin:'20px auto',maxWidth:600}}>
           <h3 style={{color:'#F44336',margin:'0 0 8px'}}>Pipeline Error</h3>
@@ -1621,6 +1689,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
           <button className="btn btn-secondary" onClick={()=>{setActiveView('dashboard');setSelectedImage(null);setResult(null);}}>Dashboard</button>
         </div>
         {selectedImage && <img src={selectedImage} alt="Terrain" className="result-image" />}
+        {extraImages.length > 0 && (
+          <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:8}}>
+            {extraImages.map((src, i) => <img key={i} src={src} alt={`Site photo ${i + 2}`} style={{width:64,height:64,objectFit:'cover',borderRadius:8,border:'1px solid var(--border)',opacity:0.85}} />)}
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="results-summary-cards">
@@ -1966,6 +2039,33 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   )}
                 </div>
               )}
+              {/* PRIMARY DRILLING POINT — unmissable marker card (verified locations only;
+                  regional estimates keep coordinates withheld per pre-screening policy) */}
+              {(result.locationMethod==='exif-gps'||result.locationMethod==='filename-geocode'||result.locationMethod==='iptc-geocode'||result.gpsSource==='device'||result.gpsSource==='manual') && (() => {
+                const dp = (result as any).drillDecision?.primaryPoint;
+                const dLat = dp?.lat ?? result.site.latitude;
+                const dLon = dp?.lon ?? result.site.longitude;
+                const dDepth = (result as any).drillDecision?.targetDepth_m ?? result.recommendedDepth;
+                return (
+                  <div style={{background:'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(15,23,42,0.9))',border:'2px solid #ef4444',borderRadius:14,padding:'16px 20px',marginBottom:16}}>
+                    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
+                      <span style={{fontSize:26}}>{'\u{1F3AF}'}</span>
+                      <div style={{fontWeight:800,fontSize:16,color:'#fca5a5',letterSpacing:0.5}}>PRIMARY DRILLING POINT</div>
+                    </div>
+                    <div style={{fontFamily:'var(--font-mono)',fontSize:22,fontWeight:800,color:'#fff',marginBottom:6}}>
+                      {dLat.toFixed(6)}, {dLon.toFixed(6)}
+                    </div>
+                    <div style={{fontSize:13,color:'var(--text-secondary)',marginBottom:12}}>
+                      Drill to <strong style={{color:'#fbbf24'}}>{Math.round(dDepth)} m</strong> at this point{result.gpsSource==='manual' ? ' (location you provided)' : result.gpsSource==='device' ? ' (your device GPS)' : ' (photo GPS)'} — confirm the final rig position with the ERT survey.
+                    </div>
+                    <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                      <a href={`https://www.google.com/maps?q=${dLat.toFixed(6)},${dLon.toFixed(6)}`} target="_blank" rel="noopener noreferrer" style={{padding:'8px 16px',borderRadius:8,background:'#22c55e',color:'#fff',fontWeight:700,fontSize:13,textDecoration:'none'}}>{'\u{1F5FA}️'} Open in Google Maps</a>
+                      <button onClick={()=>{try{navigator.clipboard.writeText(`${dLat.toFixed(6)}, ${dLon.toFixed(6)}`);}catch{/* clipboard blocked */}}} style={{padding:'8px 16px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-elevated)',color:'var(--text-primary)',fontWeight:600,fontSize:13,cursor:'pointer'}}>{'\u{1F4CB}'} Copy coordinates</button>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* GEO-ESTIMATION FROM VISUAL TERRAIN ANALYSIS */}
               {result.geoEstimate && result.geoEstimate.estimates.length > 0 && (
                 <div style={{background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',padding:'14px 18px',borderRadius:12,marginBottom:16}}>
