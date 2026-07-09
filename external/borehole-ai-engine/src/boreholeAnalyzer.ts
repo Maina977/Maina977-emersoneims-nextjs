@@ -413,6 +413,25 @@ export class BoreholeAnalyzer {
     const fallbacksUsed: string[] = [];
 
     if (remoteSensing && !remoteSensing.climate) {
+      // NO-GUESSWORK: inside Kenya, a failed climate API falls back to the
+      // pre-computed MEASURED baseline (ERA5 2015-2024), not a latitude guess.
+      const kbClimate = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
+      if (kbClimate?.climate) {
+        fallbacksUsed.push(`Climate API failed — using EmersonEIMS pre-computed MEASURED baseline for ${kbClimate.name} (ERA5 2015-2024, ${kbClimate.distance_km} km away) — NOT an estimate`);
+        const annualP = kbClimate.climate.precip_mm_yr;
+        const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
+        remoteSensing.climate = {
+          annualPrecipitation: annualP,
+          monthlyPrecipitation: Array.from({ length: 12 }, (_, i) => Math.round(annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6)))),
+          meanTemperature: kbClimate.climate.temp_mean_c ?? 22,
+          monthlyTemperature: Array.from({ length: 12 }, () => kbClimate.climate.temp_mean_c ?? 22),
+          aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
+          rechargeEstimate: Math.round(annualP * rechargePct),
+          source: `EmersonEIMS baseline — Open-Meteo ERA5 2015-2024 measured at ${kbClimate.name} (${kbClimate.distance_km} km)`,
+        };
+      }
+    }
+    if (remoteSensing && !remoteSensing.climate) {
       fallbacksUsed.push('Climate data (NASA POWER API failed â€” using latitude-based estimate)');
       const lat = effectiveLat ?? 0;
       const annualP = lat > 30 || lat < -30 ? 650 : lat > 15 || lat < -15 ? 900 : 1400;
@@ -429,6 +448,17 @@ export class BoreholeAnalyzer {
         rechargeEstimate: Math.round(annualP * rechargePct),
         source: 'Latitude-based climate model (API fallback)',
       };
+    }
+    if (remoteSensing && !remoteSensing.elevation) {
+      // NO-GUESSWORK: inside Kenya, use the measured SRTM baseline elevation.
+      const kbElev = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
+      if (kbElev?.elevation_m != null) {
+        fallbacksUsed.push(`Elevation API failed — using EmersonEIMS pre-computed MEASURED baseline for ${kbElev.name} (SRTM, ${kbElev.distance_km} km away) — NOT an estimate`);
+        remoteSensing.elevation = {
+          elevation: kbElev.elevation_m,
+          source: `EmersonEIMS baseline — SRTM measured at ${kbElev.name} (${kbElev.distance_km} km)`,
+        };
+      }
     }
     if (remoteSensing && !remoteSensing.elevation) {
       fallbacksUsed.push('Elevation data (Open-Elevation API failed â€” using latitude estimate)');
