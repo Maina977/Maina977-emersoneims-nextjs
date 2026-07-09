@@ -2,6 +2,10 @@
 
 /* ═══════════════════════════════════════════════════════════════
    EMERSON EIMS — AquaScan Pro  |  Futuristic Professional UI
+   v2 2026-07-09: served as INITIAL page CSS (imported by
+   app/aquascan-pro-v3/page.tsx, never by the dynamic engine) — this
+   comment also rotates the content hash so the previously-blocked
+   chunk URL (5962c3274b2602e3.css) ceases to exist entirely.
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── DESIGN TOKENS ── */
