@@ -912,7 +912,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const regionalMsg = doc.splitTextToSize(
       `No GPS or manual location was provided; the position is an AI visual-terrain estimate with uncertainty of TENS OF KILOMETRES (Grade ${_locGrade}). ` +
       'This report describes REGIONAL groundwater conditions only. Drill-point coordinates, micro-siting, fracture targets and site maps are withheld — drilling from this document is not possible and not advised. ' +
-      'TO UNLOCK THE FULL SITE REPORT: re-run with (a) GPS coordinates from the site, (b) a manually entered Country/County/Town/Village, or (c) an original camera photo with location enabled (WhatsApp forwards strip GPS).',
+      'TO UNLOCK THE FULL SITE REPORT: re-run with (a) GPS coordinates from the site, (b) a manually entered Country/County/Town/Village, or (c) the ORIGINAL camera photo with location enabled. ' +
+      'IMPORTANT: sending a photo normally on WhatsApp/Facebook PERMANENTLY deletes its GPS data — no software can recover it. To keep GPS, send the photo as a FILE/DOCUMENT (WhatsApp: attach → Document), or email the original file.',
       pw - 10
     );
     doc.text(regionalMsg, margin + 5, y + 14);
@@ -6174,7 +6175,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Latitude', si.coordinates.lat.toFixed(si.coordinates.decimals), gpsIsReal ? `${si.coordinates.datum} (${si.coordinates.decimals} decimal places)` : 'AI ESTIMATE — NOT measured'],
         ['Longitude', si.coordinates.lon.toFixed(si.coordinates.decimals), gpsIsReal ? `${si.coordinates.datum} (${si.coordinates.decimals} decimal places)` : 'AI ESTIMATE — NOT measured'],
         ['Coordinate System', si.coordinateSystem, 'Standard geodetic datum'],
-        ['Elevation', `${si.elevation_masl} m a.s.l.`, 'SRTM 30m DEM'],
+        ['Elevation', `${si.elevation_masl} m a.s.l.`, gpsIsReal ? 'SRTM 30m DEM' : 'SRTM at ESTIMATED coordinates — indicative only'],
         ['Location Confidence', `Grade ${si.locationConfidenceGrade}`, si.verificationMethod],
         ...(si.boundaryArea_ha ? [['Site Boundary', `${si.boundaryArea_ha} ha`, 'User-defined polygon']] : []),
       ],
@@ -6183,6 +6184,47 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       alternateRowStyles: { fillColor: [245, 247, 250] },
       theme: 'grid',
     });
+    y = lastY(6);
+
+    // ── ADMINISTRATIVE LOCATION HIERARCHY (reverse-geocoded) ──
+    // Village → Ward → Constituency/Sub-County → County → Country, resolved
+    // from coordinates via Nominatim + BigDataCloud OSM admin levels. Only as
+    // accurate as the coordinates themselves — labelled with the grade.
+    {
+      const rl: any = (result as any).resolvedLocation || (result as any).clientLocation;
+      if (rl && (rl.country || rl.county)) {
+        checkSpace(50);
+        doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
+        doc.text('Administrative Location (reverse-geocoded from coordinates)', margin, y); y += 5;
+        autoTable(doc, {
+          startY: y, margin: { left: margin, right: margin },
+          head: [['Level', 'Name']],
+          body: [
+            ['Village / Locality', rl.village || rl.suburb || rl.neighbourhood || '—'],
+            ['Ward', rl.ward || '—'],
+            ['Town / City', rl.city || rl.town || '—'],
+            ['Constituency / Sub-County', rl.constituency || '—'],
+            ['County / District', rl.county || rl.state || '—'],
+            ['Country', `${rl.country || '—'}${rl.countryCode ? ` (${rl.countryCode})` : ''}`],
+            ['Source', `${rl.source || 'geocoder'} (OSM/BigDataCloud admin levels)`],
+          ],
+          headStyles: { fillColor: [13, 17, 23], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+          bodyStyles: { fontSize: 8 },
+          alternateRowStyles: { fillColor: [245, 247, 250] },
+          theme: 'grid',
+        });
+        y = lastY(4);
+        doc.setFontSize(7); doc.setFont('helvetica', 'italic');
+        doc.setTextColor(gpsIsReal ? 100 : 200, gpsIsReal ? 100 : 100, gpsIsReal ? 100 : 0);
+        doc.text(
+          gpsIsReal
+            ? 'Derived from measured coordinates — names reflect the OSM/BigDataCloud administrative boundaries at this point.'
+            : `⚠ Derived from ESTIMATED coordinates (Grade ${si.locationConfidenceGrade}, ±tens of km) — these names indicate the REGION of the estimate, not the photo's true origin.`,
+          margin, y, { maxWidth: pw }
+        );
+        y += 8;
+      }
+    }
     y = lastY(6);
 
     // Gate rule

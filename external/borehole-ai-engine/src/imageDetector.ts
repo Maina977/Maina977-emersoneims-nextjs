@@ -474,6 +474,8 @@ export class ImageDetector {
     countryCode?: string;
     state?: string;
     county?: string;
+    constituency?: string;
+    ward?: string;
     city?: string;
     suburb?: string;
     village?: string;
@@ -484,7 +486,10 @@ export class ImageDetector {
     placeType?: string;
     source: 'nominatim' | 'bigdatacloud' | 'none';
   }> {
-    // Strategy 1: OpenStreetMap Nominatim (most detailed, free, global coverage)
+    type RGResult = Awaited<ReturnType<ImageDetector['reverseGeocode']>>;
+    let base: RGResult = { source: 'none' };
+
+    // Strategy 1: OpenStreetMap Nominatim (most detailed street/village names)
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
@@ -498,11 +503,15 @@ export class ImageDetector {
         const data = await res.json();
         if (data && data.address) {
           const addr = data.address;
-          return {
+          base = {
             country: addr.country,
             countryCode: addr.country_code?.toUpperCase(),
             state: addr.state || addr.province || addr.region,
             county: addr.county || addr.state_district || addr.district,
+            // Kenya OSM: constituencies/sub-counties are usually tagged as
+            // subcounty / municipality / city_district at admin level 6
+            constituency: addr.subcounty || addr.municipality || addr.city_district,
+            ward: addr.ward || addr.quarter,
             city: addr.city || addr.town || addr.municipality,
             suburb: addr.suburb || addr.city_district || addr.borough,
             village: addr.village || addr.hamlet || addr.locality || addr.croft,
@@ -515,9 +524,14 @@ export class ImageDetector {
           };
         }
       }
-    } catch { /* silent — try fallback */ }
+    } catch { /* silent — enrich/fallback below */ }
 
-    // Strategy 2: BigDataCloud (free, no key needed for basic reverse geocoding)
+    // Strategy 2: BigDataCloud — ALWAYS queried (not just as fallback) because
+    // its localityInfo.administrative array carries explicit OSM admin levels,
+    // which is the reliable way to name the full hierarchy the business needs:
+    // level 2 = country, 4 = county (Kenya), 6 = constituency/sub-county,
+    // 8–10 = ward/location/village. Nominatim's flat address object often
+    // omits the constituency level entirely.
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
@@ -527,26 +541,54 @@ export class ImageDetector {
       if (res.ok) {
         const data = await res.json();
         if (data) {
-          return {
-            country: data.countryName,
-            countryCode: data.countryCode,
-            state: data.principalSubdivision || data.localityInfo?.administrative?.[1]?.name,
-            county: data.localityInfo?.administrative?.[2]?.name,
-            city: data.city || data.locality,
-            suburb: data.localityInfo?.administrative?.[3]?.name,
-            village: data.village || data.localityInfo?.administrative?.[4]?.name,
-            road: undefined,
-            neighbourhood: data.neighbourhood,
-            postcode: data.postcode,
-            displayName: [data.locality, data.principalSubdivision, data.countryName].filter(Boolean).join(', '),
-            placeType: data.localityInfo?.administrative?.[0]?.description,
-            source: 'bigdatacloud',
+          const admin: any[] = data.localityInfo?.administrative ?? [];
+          const byLevel = (...levels: number[]): string | undefined => {
+            for (const lvl of levels) {
+              const hit = admin.find((a: any) => a.adminLevel === lvl && a.name);
+              if (hit) return hit.name;
+            }
+            return undefined;
           };
+          const bdcCounty = byLevel(4, 3);
+          const bdcConstituency = byLevel(6, 5);
+          const bdcWard = byLevel(8, 9, 10);
+          if (base.source === 'none') {
+            base = {
+              country: data.countryName,
+              countryCode: data.countryCode,
+              state: data.principalSubdivision,
+              county: bdcCounty ?? data.principalSubdivision,
+              constituency: bdcConstituency,
+              ward: bdcWard,
+              city: data.city || data.locality,
+              suburb: undefined,
+              village: bdcWard ?? data.locality,
+              road: undefined,
+              neighbourhood: data.neighbourhood,
+              postcode: data.postcode,
+              displayName: [bdcWard, bdcConstituency, bdcCounty, data.countryName].filter(Boolean).join(', '),
+              placeType: admin[0]?.description,
+              source: 'bigdatacloud',
+            };
+          } else {
+            // Enrich the Nominatim result with the explicit admin ladder.
+            // Nominatim's flat `county` field in Kenya frequently holds the
+            // SUB-county (verified live: returns "Murang`a South" where the
+            // county is Murang'a) — so the level-4 name wins for `county`,
+            // and Nominatim's value slides down to the constituency slot.
+            base.constituency = base.constituency
+              ?? bdcConstituency
+              ?? (base.county && bdcCounty && base.county !== bdcCounty ? base.county : undefined);
+            base.county = bdcCounty ?? base.county;
+            base.ward = base.ward ?? bdcWard;
+            base.country = base.country ?? data.countryName;
+            base.countryCode = base.countryCode ?? data.countryCode;
+          }
         }
       }
     } catch { /* silent */ }
 
-    return { source: 'none' };
+    return base;
   }
 
   /**
@@ -1023,7 +1065,8 @@ export class ImageDetector {
           // Pre-declare resolvedLocation
           let resolvedLocation: {
             country?: string; countryCode?: string; state?: string;
-            county?: string; city?: string; suburb?: string;
+            county?: string; constituency?: string; ward?: string;
+            city?: string; suburb?: string;
             village?: string; road?: string; neighbourhood?: string;
             postcode?: string; displayName?: string; placeType?: string;
             source: 'nominatim' | 'bigdatacloud' | 'none';

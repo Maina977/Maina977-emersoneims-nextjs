@@ -153,6 +153,10 @@ export interface AnalysisResult {
     countryCode?: string;
     state?: string;
     county?: string;
+    /** Constituency / sub-county (OSM admin level 6 — Kenya constituencies) */
+    constituency?: string;
+    /** Ward / location (OSM admin level 8–10) */
+    ward?: string;
     city?: string;
     suburb?: string;
     village?: string;
