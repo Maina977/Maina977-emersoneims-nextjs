@@ -63,6 +63,7 @@ import { computePathTo97 } from './pathTo97Engine';
 import { runSatelliteRemoteSensing } from './satelliteRemoteSensingEngine';
 import { evaluateSurfaceGeophysics } from './surfaceGeophysicsEngine';
 import { sanitizeAnalysisResult } from './sanitizeOutputs';
+import { getKenyaHydroPrior } from './kenyaHydroPriors';
 
 export type PipelineStep = 0|1|2|3|4|5|6|7|8|9|10|11;
 export type ProgressCallback = (step: PipelineStep, label: string) => void;
@@ -1897,6 +1898,26 @@ export class BoreholeAnalyzer {
         if (boreholeRecords?.averageDepth) sources.push({ sourceName: 'regional_statistics', sourceType: 'database', depthEstimate_m: boreholeRecords.averageDepth, reliability: 0.40, isFieldMeasured: false });
         if (fieldData?.pumpTest) sources.push({ sourceName: 'pump_test', sourceType: 'field_measurement', yieldEstimate_m3hr: fieldData.pumpTest.sustainableYieldM3Hr, reliability: 0.95, isFieldMeasured: true });
         if (calibratedYield) sources.push({ sourceName: 'ensemble_model_yield', sourceType: 'model', yieldEstimate_m3hr: calibratedYield, reliability: 0.70, isFieldMeasured: false });
+        // KENYA HYDROGEOLOGICAL PROVINCE PRIOR — published county-level ground
+        // truth (BGS Africa Atlas / MacDonald 2012 / WRA completion stats).
+        // The strongest desktop evidence short of field geophysics: anchors
+        // depth/yield to the actual aquifer province instead of global models.
+        {
+          const countyName = clientGeo?.county || features.resolvedLocation?.county || (clientLocation as any)?.county;
+          const cc = clientGeo?.countryCode || features.resolvedLocation?.countryCode || '';
+          const prior = getKenyaHydroPrior(countyName, cc || 'KE');
+          if (prior) {
+            sources.push({
+              sourceName: `kenya_province_prior (${prior.province}, ${prior.county})`,
+              sourceType: 'database',
+              depthEstimate_m: (prior.typicalDepthM[0] + prior.typicalDepthM[1]) / 2,
+              yieldEstimate_m3hr: (prior.typicalYieldM3h[0] + prior.typicalYieldM3h[1]) / 2,
+              reliability: 0.65,
+              isFieldMeasured: false,
+            });
+            (this as any)._kenyaPrior = prior; // exposed on result below
+          }
+        }
         if (sources.length >= 2) {
           multiSourceAgreement = evaluateMultiSourceAgreement(sources);
         }
@@ -2303,6 +2324,7 @@ export class BoreholeAnalyzer {
       lithologyAnalysis: lithologyAnalysis ?? undefined,
       ertInterpretation: ertInterpretation ?? undefined,
       multiSourceAgreement: multiSourceAgreement ?? undefined,
+      kenyaHydroPrior: (this as any)._kenyaPrior ?? undefined,
       temporalDrought: temporalDrought ?? undefined,
       hydrochemPrediction: hydrochemPrediction ?? undefined,
       // â•â•â• PHASE 8 ACCURACY ENGINE RESULTS â•â•â•

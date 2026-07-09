@@ -3951,6 +3951,36 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
+  // -- KENYA HYDROGEOLOGICAL PROVINCE PRIOR --
+  try {
+  if (result.kenyaHydroPrior) {
+    const kp = result.kenyaHydroPrior;
+    checkSpace(60);
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(5, 122, 85);
+    doc.text('Kenya Aquifer Province Prior (published ground truth)', margin, y); y += 5;
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
+    doc.text('County-level hydrogeology from BGS Africa Groundwater Atlas / MacDonald et al. (2012) / WRA completion statistics — enters the Bayesian ensemble as an independent evidence source (reliability 0.65).', margin, y, { maxWidth: pw }); y += 8;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Parameter', 'Provincial Value']],
+      body: [
+        ['County / Province', `${kp.county} — ${kp.province}`],
+        ['Typical completed depth', `${kp.typicalDepthM[0]}–${kp.typicalDepthM[1]} m`],
+        ['Typical tested yield', `${kp.typicalYieldM3h[0]}–${kp.typicalYieldM3h[1]} m³/hr`],
+        ['Historical success rate', `${Math.round(kp.successRate * 100)}%`],
+        ['Geogenic fluoride risk', kp.fluorideRisk],
+        ['Salinity risk', kp.salinityRisk],
+        ['Province note', kp.note],
+      ],
+      headStyles: { fillColor: [5, 122, 85], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      alternateRowStyles: { fillColor: [240, 253, 244] },
+      theme: 'grid',
+    });
+    y = lastY(8);
+  }
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- 30. MULTI-SOURCE AGREEMENT --
   try {
   if (result.multiSourceAgreement) {

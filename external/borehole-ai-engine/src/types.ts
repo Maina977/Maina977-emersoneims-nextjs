@@ -653,6 +653,8 @@ export interface AnalysisResult {
   ertInterpretation?: any;  // ERTIntelligenceResult from ertIntelligenceEngine.ts
   /** Multi-Source Agreement — cross-validation of all data sources */
   multiSourceAgreement?: any;
+  /** Kenya county-level hydrogeological province prior (BGS/MacDonald ground truth) */
+  kenyaHydroPrior?: { county: string; province: string; typicalDepthM: [number, number]; typicalYieldM3h: [number, number]; successRate: number; fluorideRisk: string; salinityRisk: string; note: string };
   /** Temporal Drought Analysis — SPI, drought cycles, sustainable yield under climate variability */
   temporalDrought?: any;
   /** Hydrochemical Predictor — water quality prediction from geology + lab validation */
