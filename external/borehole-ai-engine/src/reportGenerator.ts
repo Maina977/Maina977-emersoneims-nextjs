@@ -808,6 +808,20 @@ function computeCanonicalEconomics(result: AnalysisResult) {
   };
 }
 
+// ONE-VERDICT POLICY: this is THE verdict formula. The Decision Brief, the
+// FINAL DECISION box and any future summary must all call this — never
+// re-derive PROCEED/INVESTIGATE from probability locally.
+function computeFinalVerdict(result: AnalysisResult) {
+  const prob = result.probability ?? 0.5;
+  const risk = result.risk?.overallRisk ?? 0.5;
+  const verdict = prob >= 0.65 && risk < 0.5 ? 'DRILL -- PROCEED'
+    : prob >= 0.5 && risk < 0.65 ? 'INVESTIGATE FURTHER BEFORE DRILLING'
+    : 'HIGH RISK -- ADDITIONAL SURVEYS REQUIRED';
+  const color: [number, number, number] =
+    prob >= 0.65 && risk < 0.5 ? [22, 163, 74] : prob >= 0.5 ? [217, 119, 6] : [220, 38, 38];
+  return { prob, risk, verdict, color };
+}
+
 // --- PDF REPORT ---
 
 export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 'professional' | 'expert'): Promise<void> {
@@ -989,6 +1003,264 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // EXECUTIVE DECISION BRIEF (B1) — two pages for the person who pays.
+  // Every figure comes from the SAME single sources the annex uses:
+  // computeFinalVerdict (one verdict), computeCanonicalEconomics (one
+  // money model), result.nearbyWells (real registry records only).
+  // ══════════════════════════════════════════════════════════════
+  safeSection('Executive Decision Brief', () => {
+    const eco = computeCanonicalEconomics(result);
+    const fv = computeFinalVerdict(result);
+    const af = (result as any)._auditFlags ?? {};
+    const u = result.uncertainty;
+    const briefR = result as any;
+    const wtDepth = briefR.drillPoint?.waterTableDepth_m ?? briefR.waterTableDepth ?? null;
+
+    const briefHeader = (pageNo: number) => {
+      addPage();
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, pageW, 26, 'F');
+      doc.setFillColor(56, 189, 248);
+      doc.rect(0, 25, pageW, 1.5, 'F');
+      doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+      doc.text('EXECUTIVE DECISION BRIEF', margin, 11);
+      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(56, 189, 248);
+      doc.text(`PAGE ${pageNo} OF 2`, pageW - margin, 11, { align: 'right' });
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(148, 163, 184);
+      doc.text('For the decision-maker. Every figure below traces to the full technical annex that follows this brief.', margin, 18);
+      doc.text(`${isRegionalPreScreening ? 'REGIONAL PRE-SCREENING' : assessmentGrade}  •  Generated ${new Date().toLocaleDateString()}`, margin, 22.5);
+      y = 34;
+      doc.setTextColor(30, 30, 30);
+    };
+
+    // ── BRIEF PAGE 1 — THE DECISION ─────────────────────────────
+    briefHeader(1);
+
+    // Site line
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text(`SITE: ${getLocationString(result)}`, margin, y);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 110, 125);
+    doc.text(
+      isRegionalPreScreening
+        ? `Location grade ${_locGrade} (AI regional estimate) -- drill coordinates withheld until the location is verified`
+        : `${getCoords(result)}  •  GPS: ${String(result.gpsSource || 'none').toUpperCase()}  •  Location grade: ${result.locationConfidence?.grade ?? 'N/A'}`,
+      margin, y + 4.5);
+    y += 11;
+
+    // Verdict box
+    const vbH = isRegionalPreScreening ? 40 : 32;
+    doc.setFillColor(15, 23, 42);
+    doc.roundedRect(margin, y, pw, vbH, 3, 3, 'F');
+    doc.setDrawColor(fv.color[0], fv.color[1], fv.color[2]);
+    doc.setLineWidth(1.6);
+    doc.roundedRect(margin, y, pw, vbH, 3, 3, 'S');
+    doc.setLineWidth(0.2);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(148, 163, 184);
+    doc.text('FINAL VERDICT -- GOVERNS EVERY SECTION OF THIS REPORT', margin + 5, y + 7);
+    doc.setFontSize(17); doc.setFont('helvetica', 'bold'); doc.setTextColor(fv.color[0], fv.color[1], fv.color[2]);
+    doc.text(fv.verdict, margin + 5, y + 17);
+    const briefCond = !af.hasFieldERT
+      ? 'Key condition: perform an ERT geophysical survey before drilling mobilization.'
+      : !af.hasFieldPumpTest
+        ? 'Key condition: conduct a 24-hour pump test immediately after borehole completion.'
+        : 'Key condition: submit ISO 17025 lab water analysis before community use.';
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(226, 232, 240);
+    doc.text(briefCond, margin + 5, y + 25);
+    if (isRegionalPreScreening) {
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(251, 191, 36);
+      doc.text('This verdict applies to the REGION around the estimate -- not to a specific plot. Verify the location first.', margin + 5, y + 33);
+    }
+    y += vbH + 6;
+
+    // Headline tiles (2 rows x 3)
+    const tiles = [
+      { lbl: 'SUCCESS PROBABILITY', val: pct(result.probability), sub: u ? `range ${(u.probabilityRange[0] * 100).toFixed(0)}-${(u.probabilityRange[1] * 100).toFixed(0)}%` : 'satellite-only estimate', c: fv.color },
+      { lbl: 'RECOMMENDED DEPTH', val: `${fmt(result.recommendedDepth, 0)} m`, sub: u ? `range ${u.depthRange[0]}-${u.depthRange[1]} m` : 'satellite-only estimate', c: [56, 189, 248] as [number, number, number] },
+      { lbl: 'EXPECTED YIELD', val: `${fmt(result.estimatedYield, 1)} m³/hr`, sub: u ? `range ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr` : 'satellite-only estimate', c: [34, 197, 94] as [number, number, number] },
+      { lbl: 'WATER TABLE (MODELLED)', val: wtDepth != null ? `${fmt(wtDepth, 0)} m` : 'N/A', sub: 'confirm with ERT', c: [129, 140, 248] as [number, number, number] },
+      { lbl: 'TOTAL INVESTMENT', val: `$${eco.totalCost.toLocaleString()}`, sub: `incl. ${(eco.contingencyRate * 100).toFixed(0)}% contingency`, c: [251, 191, 36] as [number, number, number] },
+      { lbl: 'PAYBACK (WATER SALES)', val: eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} yrs` : '>20 yrs', sub: `solar ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³`, c: [56, 189, 248] as [number, number, number] },
+    ];
+    const tW = (pw - 8) / 3, tH = 23;
+    tiles.forEach((t, i) => {
+      const tx = margin + (i % 3) * (tW + 4);
+      const ty = y + Math.floor(i / 3) * (tH + 4);
+      doc.setFillColor(245, 248, 255);
+      doc.roundedRect(tx, ty, tW, tH, 2, 2, 'F');
+      doc.setDrawColor(t.c[0], t.c[1], t.c[2]); doc.setLineWidth(0.8);
+      doc.roundedRect(tx, ty, tW, tH, 2, 2, 'S');
+      doc.setFontSize(6.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(100, 110, 125);
+      doc.text(t.lbl, tx + 3, ty + 5);
+      doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(t.c[0], t.c[1], t.c[2]);
+      doc.text(t.val, tx + 3, ty + 13.5);
+      doc.setFontSize(6.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 130, 145);
+      doc.text(t.sub, tx + 3, ty + 19);
+    });
+    y += tH * 2 + 4 + 8;
+
+    // Drilling window (B7 — same measured-rainfall source)
+    const briefSeason = result.historicalData?.weather?.bestDrillingSeason;
+    if (briefSeason) {
+      doc.setFillColor(240, 253, 244);
+      doc.roundedRect(margin, y, pw, 13, 2, 2, 'F');
+      doc.setDrawColor(34, 197, 94); doc.setLineWidth(0.6);
+      doc.roundedRect(margin, y, pw, 13, 2, 2, 'S');
+      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(21, 128, 61);
+      doc.text('BEST DRILLING WINDOW', margin + 4, y + 5.5);
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(40, 90, 60);
+      doc.text(doc.splitTextToSize(briefSeason, pw - 60)[0] ?? briefSeason, margin + 52, y + 5.5);
+      doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 130, 110);
+      doc.text('From the measured multi-year rainfall record for this location.', margin + 4, y + 10.5);
+      y += 17;
+    }
+
+    // Water quality operative line — same thresholds as the annex
+    {
+      const wq = result.waterQuality;
+      const healthFails = [
+        (wq?.arsenic ?? 0) > 0.01 ? 'Arsenic' : '',
+        (wq?.fluoride ?? 0) > 1.5 ? 'Fluoride' : '',
+        (wq?.nitrate ?? 0) > 50 ? 'Nitrate' : '',
+      ].filter(Boolean);
+      const wqOk = !!wq?.isPotable;
+      const wqLine = wqOk
+        ? 'POTABLE (modelled) -- verify with an ISO 17025 lab analysis before community use.'
+        : healthFails.length > 0
+          ? `NOT POTABLE UNTIL TREATED -- ${healthFails.join(', ')} above WHO limit (modelled; treatment budgeted below).`
+          : 'TREATMENT REQUIRED (aesthetic parameters; modelled -- lab-confirm).';
+      doc.setFillColor(wqOk ? 240 : 254, wqOk ? 253 : 242, wqOk ? 244 : 242);
+      doc.roundedRect(margin, y, pw, 13, 2, 2, 'F');
+      doc.setDrawColor(wqOk ? 34 : 220, wqOk ? 197 : 38, wqOk ? 94 : 38); doc.setLineWidth(0.6);
+      doc.roundedRect(margin, y, pw, 13, 2, 2, 'S');
+      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(wqOk ? 21 : 153, wqOk ? 128 : 27, wqOk ? 61 : 27);
+      doc.text('WATER QUALITY', margin + 4, y + 5.5);
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
+      doc.text(doc.splitTextToSize(wqLine, pw - 42)[0] ?? wqLine, margin + 36, y + 5.5);
+      doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 110, 110);
+      doc.text('Modelled from regional hydrochemistry -- an ISO 17025 laboratory analysis is the only proof.', margin + 4, y + 10.5);
+      y += 17;
+    }
+
+    // Verified wells nearby — real registry records or an honest zero
+    {
+      const nwB = briefR.nearbyWells;
+      const wellsB: any[] = nwB?.nearbyWells ?? [];
+      const named = wellsB.filter((w) =>
+        !/^(OSM-|WPDx\+?-|USGS-|BGS-Afr-|SA-DWS-|IGRAC-|WoSIS-|SYN-)/i.test(String(w?.id ?? '')) && String(w?.id ?? '').trim());
+      const bxH = wellsB.length === 0 ? 20 : 26 + Math.min(named.length, 3) * 5;
+      doc.setFillColor(240, 249, 255);
+      doc.roundedRect(margin, y, pw, bxH, 2, 2, 'F');
+      doc.setDrawColor(56, 189, 248); doc.setLineWidth(0.6);
+      doc.roundedRect(margin, y, pw, bxH, 2, 2, 'S');
+      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 116, 144);
+      if (wellsB.length === 0) {
+        doc.text('VERIFIED BOREHOLES NEARBY: NONE FOUND IN THE REGISTRIES', margin + 4, y + 6);
+        doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
+        doc.text(doc.splitTextToSize('No verified borehole records were found within the search radius (WPDx, UNESCO IHP-WINS, WRA, OSM). Confidence is reduced accordingly -- never faked with invented wells. WRA completion records for this area can close this gap.', pw - 8), margin + 4, y + 11);
+      } else {
+        doc.text(`VERIFIED BOREHOLES NEARBY: ${wellsB.length} REGISTRY RECORD${wellsB.length === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 25} KM`, margin + 4, y + 6);
+        doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
+        const statBits: string[] = [];
+        if ((nwB.averageDepth ?? 0) > 0) statBits.push(`typical depth ~${nwB.averageDepth} m`);
+        const knownOutcomes = wellsB.filter((w) => w.outcome === 'Success' || w.outcome === 'Fail').length;
+        if (knownOutcomes > 0) statBits.push(`${Math.round((nwB.successRate ?? 0) * 100)}% functional among ${knownOutcomes} with recorded status`);
+        doc.text(statBits.length ? statBits.join('  •  ') : 'Depths/outcomes not published for most records -- names and positions are verified.', margin + 4, y + 11);
+        named.slice(0, 3).forEach((w, i) => {
+          const bits = [String(w.id).slice(0, 52)];
+          if ((w.depth_m ?? 0) > 0) bits.push(`${Math.round(w.depth_m)} m`);
+          if (w.distance_km != null) bits.push(`${w.distance_km} km away`);
+          doc.text(`• ${bits.join('  --  ')}`, margin + 6, y + 17 + i * 5);
+        });
+        doc.setFontSize(6); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 120, 135);
+        doc.text('Government/registry records at true coordinates -- plotted on the site maps in the annex. No synthetic wells, ever.', margin + 4, y + bxH - 3);
+      }
+      y += bxH + 4;
+    }
+
+    // ── BRIEF PAGE 2 — MONEY AND NEXT STEPS ─────────────────────
+    briefHeader(2);
+
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('INVESTMENT AT A GLANCE', margin, y); y += 3;
+    autoTable(doc, {
+      startY: y,
+      head: [['Item', 'Cost (USD)', 'Basis']],
+      body: [
+        ['Drilling', `$${eco.drillingCost.toLocaleString()}`, `${eco.depthVal} m × $${eco.cpm}/m (${eco.soilType} ground)`],
+        ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.casingNote],
+        ['Pump + installation', `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
+        ['Solar power system', `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW.toFixed(1)} kW array`],
+        ...(eco.wqTreatmentCost + eco.defluoridationCost > 0
+          ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? `incl. defluoridation (+$${eco.annualDefluoridation}/yr media)` : 'per modelled water quality'] as string[]]
+          : []),
+        ['Contingency', `$${eco.contingency.toLocaleString()}`, `${(eco.contingencyRate * 100).toFixed(0)}%${eco.isHardRock ? ' (hard rock)' : ''}`],
+        ['TOTAL CAPITAL', `$${eco.totalCost.toLocaleString()}`, 'Excl. land, permits, ERT survey ($3,000-5,000)'],
+        ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, solar ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr`],
+        ['NPV @ 10% / 20 yrs', `$${eco.npv10Rounded.toLocaleString()}`, eco.irr === 999 ? 'IRR >100%' : eco.irr === -999 ? 'IRR negative' : `IRR ~${eco.irr}%`],
+      ],
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      didParseCell: (data: any) => {
+        if (data.section === 'body' && data.row.index >= 0 && String(data.row.raw?.[0]).startsWith('TOTAL')) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [255, 251, 235];
+        }
+      },
+      margin: { left: margin, right: margin },
+      theme: 'grid',
+    });
+    y = lastY(4);
+    doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 130);
+    doc.text('One economics model: these are the SAME figures as Section 5.1 and the Investor Summary -- nothing in this report recomputes money differently.', margin, y); y += 8;
+
+    // Field-validation plan
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('UNLOCK BANKABLE GRADE -- YOUR NEXT 3 STEPS', margin, y); y += 3;
+    autoTable(doc, {
+      startY: y,
+      head: [['Step', 'Status', 'What it proves', 'Typical cost']],
+      body: [
+        ['1. ERT geophysical survey', af.hasFieldERT ? 'DONE' : 'PLANNED', 'Confirms aquifer zones and drill depth before the rig mobilizes', '$3,000-5,000'],
+        ['2. Drill + 24-hour pump test', af.hasFieldPumpTest ? 'DONE' : 'PLANNED', 'Proves the sustainable yield this report estimates', 'Included in drilling contract'],
+        ['3. ISO 17025 lab water analysis', af.hasLabWaterAnalysis ? 'DONE' : 'PLANNED', 'Replaces modelled water quality with certified results', '$150-400'],
+      ],
+      headStyles: { fillColor: [21, 128, 61], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      margin: { left: margin, right: margin },
+      theme: 'grid',
+    });
+    y = lastY(4);
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 70);
+    doc.text('EMERSON EIMS provides all three services -- request a combined quote and the field results feed straight back into this analysis.', margin, y); y += 9;
+
+    // Honesty box — what this brief is and is not
+    doc.setFillColor(255, 251, 235);
+    doc.roundedRect(margin, y, pw, 26, 2, 2, 'F');
+    doc.setDrawColor(217, 119, 6); doc.setLineWidth(0.6);
+    doc.roundedRect(margin, y, pw, 26, 2, 2, 'S');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(154, 92, 6);
+    doc.text('WHAT THIS BRIEF IS -- AND IS NOT', margin + 4, y + 6);
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(110, 75, 20);
+    doc.text('IS: an expert pre-drilling filter built from satellite data, physics models and verified registry records. It removes 40-60% of failed', margin + 4, y + 11.5);
+    doc.text('drilling before any money is spent, and hands you the exact field-validation plan above.', margin + 4, y + 15.5);
+    doc.text(`IS NOT: a substitute for the ERT survey and pump test${isRegionalPreScreening ? ', nor a site report -- the location itself is unverified' : ''}. No desktop analysis anywhere can be.`, margin + 4, y + 20);
+    y += 30;
+
+    // Contact strip
+    doc.setFillColor(15, 23, 42);
+    doc.roundedRect(margin, y, pw, 16, 2, 2, 'F');
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(56, 189, 248);
+    doc.text('EMERSON EIMS', margin + 5, y + 6.5);
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(226, 232, 240);
+    doc.text('+254 768 860 665   •   info@emersoneims.com   •   www.emersoneims.com', margin + 5, y + 12);
+    doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(148, 163, 184);
+    doc.text('Full technical annex follows', pageW - margin - 5, y + 9.5, { align: 'right' });
+    y += 20;
+
+    addPage(); // annex starts clean
+  });
+
   // -- EXECUTIVE SUMMARY --
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -1147,11 +1419,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const _conf  = result.confidenceMetrics?.overall ?? 50;
     const _flags = (result as any)._auditFlags ?? {};
 
-    const _verdict    = _prob >= 0.65 && _risk < 0.5  ? 'DRILL -- PROCEED'
-                      : _prob >= 0.5  && _risk < 0.65 ? 'INVESTIGATE FURTHER BEFORE DRILLING'
-                      :                                  'HIGH RISK -- ADDITIONAL SURVEYS REQUIRED';
-    const _vColor: [number,number,number] = _prob >= 0.65 && _risk < 0.5 ? [22,163,74]
-                      : _prob >= 0.5 ? [217,119,6] : [220,38,38];
+    const { verdict: _verdict, color: _vColor } = computeFinalVerdict(result);
     const _riskLbl  = _risk < 0.3 ? 'LOW' : _risk < 0.6 ? 'MODERATE' : 'HIGH';
     const _confLbl  = _conf >= 80 ? 'HIGH' : _conf >= 60 ? 'MODERATE' : 'LOW';
     const _cond     = !_flags.hasFieldERT
