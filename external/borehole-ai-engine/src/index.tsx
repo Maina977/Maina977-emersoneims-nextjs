@@ -1,7 +1,7 @@
 ﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { BoreholeAnalyzer } from './boreholeAnalyzer';
 import type { ClientLocation } from './boreholeAnalyzer';
-import { AnalysisResult, FieldValidationData } from './types';
+import { AnalysisResult, FieldValidationData, SitePhoto } from './types';
 import * as SCI from './scienceData';
 import { generateVerificationResult, getOSINTChecklist } from './locationVerifier';
 import type { RemoteSensingResult } from './remoteSensing';
@@ -35,6 +35,81 @@ interface SubsystemDef {
   models?: string[]; maps?: string[]; classifies?: string[]; predicts?: string[];
   evaluates?: string[]; detects?: string[]; creates?: string[]; includes?: string[];
   projects?: string[]; fetches?: string[];
+}
+
+/**
+ * Format the resolved administrative ladder for display:
+ * Village → Ward → Sub-County/Constituency → Town → County → Province → Country.
+ * Deduped — Kenya geocoders often repeat the county name at several levels.
+ */
+function formatAdminHierarchy(rg: {
+  village?: string; suburb?: string; ward?: string; constituency?: string;
+  city?: string; county?: string; state?: string; country?: string;
+}): string {
+  const rows: Array<[string, string | undefined]> = [
+    ['Village', rg.village], ['Sub-Location', rg.suburb], ['Ward', rg.ward],
+    ['Sub-County', rg.constituency], ['Town', rg.city], ['County', rg.county],
+    ['Province/Region', rg.state], ['Country', rg.country],
+  ];
+  const seen = new Set<string>();
+  const parts: string[] = [];
+  for (const [label, value] of rows) {
+    const v = value?.trim();
+    if (!v) continue;
+    const k = v.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    parts.push(`${label}: ${v}`);
+  }
+  return parts.join('  •  ');
+}
+
+/**
+ * Downscale the customer's photos to compact JPEG data URLs and read each
+ * photo's own EXIF GPS. These ship inside the PDF report with the drill point
+ * marked on the primary photo — so never skip a file silently.
+ */
+async function buildSitePhotos(files: File[], primary: File): Promise<SitePhoto[]> {
+  const MAX_PHOTOS = 6;
+  const MAX_DIM = 1280;
+  let gpsReader: ((f: File) => Promise<{ latitude?: number; longitude?: number } | null>) | null = null;
+  try {
+    const exifr = (await import('exifr')).default;
+    gpsReader = (f: File) => exifr.gps(f).catch(() => null);
+  } catch { /* exif optional */ }
+
+  const ordered = [primary, ...files.filter(f => f !== primary)].slice(0, MAX_PHOTOS);
+  const photos: SitePhoto[] = [];
+  for (const file of ordered) {
+    try {
+      const url = URL.createObjectURL(file);
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = new Image();
+        el.onload = () => resolve(el);
+        el.onerror = reject;
+        el.src = url;
+      });
+      const scale = Math.min(1, MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * scale));
+      const h = Math.max(1, Math.round(img.naturalHeight * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { URL.revokeObjectURL(url); continue; }
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      URL.revokeObjectURL(url);
+      let exifGps: SitePhoto['exifGps'];
+      if (gpsReader) {
+        const g = await gpsReader(file);
+        if (g && Number.isFinite(g.latitude) && Number.isFinite(g.longitude)) {
+          exifGps = { latitude: g.latitude as number, longitude: g.longitude as number };
+        }
+      }
+      photos.push({ dataUrl, width: w, height: h, isPrimary: file === primary, fileName: file.name, exifGps });
+    } catch (e) { console.warn('[SitePhotos] skipped a photo:', e); }
+  }
+  return photos;
 }
 
 interface ComparisonSite {
@@ -462,6 +537,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [placeSearching, setPlaceSearching] = useState(false);
   const [extraImages, setExtraImages] = useState<string[]>([]);
   const primaryFileRef = useRef<File | null>(null);
+  const sitePhotosRef = useRef<SitePhoto[]>([]);
+  const [pinnedPlace, setPinnedPlace] = useState('');
+  const [pinnedPlaceLoading, setPinnedPlaceLoading] = useState(false);
   const [locatingDevice, setLocatingDevice] = useState(false);
   const [clientLoc, setClientLoc] = useState<ClientLocation>({ country:'', region:'', city:'', county:'', province:'', district:'', location:'', sublocation:'', town:'', village:'', estate:'', farm:'' });
   const [compSites, setCompSites] = useState<ComparisonSite[]>([
@@ -648,6 +726,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
     setActiveView('analyze');
     setPipelineStep(0);
     setPipelineLabel(files.length > 1 ? `Analyzing primary photo (1 of ${files.length})...` : 'Initializing data ingestion pipeline...');
+    // Compress every uploaded photo for the PDF report (runs alongside the
+    // analysis) — the report embeds them with the drill point marked.
+    const sitePhotosPromise = buildSitePhotos(files, primary)
+      .then(p => { sitePhotosRef.current = p; return p; })
+      .catch(() => [] as SitePhoto[]);
     try {
       // Pass client location if any fields are filled, AND inject manual coordinates if provided
       const hasClientLoc = Object.values(clientLoc).some(v => v && v.trim());
@@ -672,6 +755,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
         locationArg,
         hasFieldData ? fieldDataInput as FieldValidationData : undefined,
       );
+      try { analysisResult.sitePhotos = await sitePhotosPromise; } catch { /* photos optional */ }
       setResult(analysisResult);
       setActiveView('results');
       setActiveResultTab('overview');
@@ -731,6 +815,29 @@ const AIBoreholeAnalyzer: React.FC = () => {
     return { lat, lon };
   };
 
+  // Live place-name confirmation: the moment valid coordinates are pinned,
+  // resolve the full administrative ladder (County / Sub-County / Ward /
+  // Village) and show it under the PINNED banner — the user must SEE that the
+  // tool understood exactly where the site is before running the analysis.
+  useEffect(() => {
+    if (!analyzer) return;
+    if (!manualLat.trim() && !manualLon.trim()) { setPinnedPlace(''); setPinnedPlaceLoading(false); return; }
+    const parsed = parseManualCoordinates(manualLat, manualLon);
+    if ('error' in parsed) { setPinnedPlace(''); setPinnedPlaceLoading(false); return; }
+    let cancelled = false;
+    setPinnedPlaceLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const rg = await analyzer.reverseGeocode(parsed.lat, parsed.lon);
+        if (cancelled) return;
+        setPinnedPlace(rg && rg.source !== 'none' ? formatAdminHierarchy(rg) : '');
+      } catch { if (!cancelled) setPinnedPlace(''); }
+      finally { if (!cancelled) setPinnedPlaceLoading(false); }
+    }, 900);
+    return () => { cancelled = true; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [manualLat, manualLon, analyzer]);
+
   /** Core: re-run the FULL analysis at the given verified coordinates. */
   const applyCoordinates = async (lat: number, lon: number) => {
     if (!analyzer) return;
@@ -754,6 +861,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
           { ...clientLoc, latitude: lat, longitude: lon },
           hasFieldData ? fieldDataInput as FieldValidationData : undefined,
         );
+        // Re-attach the photos from the original upload (or build them now)
+        if (sitePhotosRef.current.length === 0) {
+          try { sitePhotosRef.current = await buildSitePhotos([file], file); } catch { /* optional */ }
+        }
+        analysisResult.sitePhotos = sitePhotosRef.current;
         setResult(analysisResult);
         setActiveView('results');
         setActiveResultTab('overview');
@@ -767,21 +879,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
       lastNominatimCall.current = Date.now();
       let resolvedLocation = result.resolvedLocation;
       try {
-        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=en`, {
-          headers: { 'User-Agent': 'EmersonEIMS-BoreHoleAnalyzer/1.0' },
-          signal: AbortSignal.timeout(8000)
-        });
-        const data = await resp.json();
-        if (data && data.address) {
-          const a = data.address;
-          resolvedLocation = {
-            country: a.country, countryCode: a.country_code?.toUpperCase(),
-            state: a.state, county: a.county, city: a.city || a.town,
-            suburb: a.suburb, village: a.village || a.hamlet,
-            road: a.road, neighbourhood: a.neighbourhood,
-            postcode: a.postcode, displayName: data.display_name,
-            placeType: data.type, source: 'nominatim' as const, isFromImage: false,
-          };
+        const rg = await analyzer.reverseGeocode(lat, lon);
+        if (rg && rg.source !== 'none') {
+          resolvedLocation = { ...rg, isFromImage: false };
         }
       } catch { /* reverse geocode failed, continue without */ }
       setResult({
@@ -873,23 +973,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
       lastNominatimCall.current = Date.now();
       let resolvedLocation = result.resolvedLocation;
       try {
-        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=en`, {
-          headers: { 'User-Agent': 'EIMS-AquaScanPro/3.0' },
-          signal: AbortSignal.timeout(8000),
-        });
-        const data = await resp.json();
-        if (data?.address) {
-          const a = data.address;
-          resolvedLocation = {
-            country: a.country, countryCode: a.country_code?.toUpperCase(),
-            state: a.state || a.province, county: a.county || a.state_district,
-            city: a.city || a.town || a.municipality,
-            suburb: a.suburb || a.city_district,
-            village: a.village || a.hamlet || a.locality,
-            road: a.road || a.street, neighbourhood: a.neighbourhood,
-            postcode: a.postcode, displayName: data.display_name,
-            placeType: data.type, source: 'nominatim' as const, isFromImage: false,
-          };
+        const rg = await analyzer?.reverseGeocode(lat, lon);
+        if (rg && rg.source !== 'none') {
+          resolvedLocation = { ...rg, isFromImage: false };
         }
       } catch { /* reverse geocode failed, still use coordinates */ }
       setResult({
@@ -1078,7 +1164,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   const p = parseManualCoordinates(manualLat, manualLon);
                   return 'error' in p
                     ? <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',color:'#fca5a5',fontSize:12,lineHeight:1.5}}>{'⚠️'} {p.error}</div>
-                    : <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(34,197,94,0.10)',border:'1px solid rgba(34,197,94,0.30)',color:'#4ade80',fontSize:12,fontWeight:700}}>{'✅'} Drilling location PINNED: {p.lat.toFixed(6)}, {p.lon.toFixed(6)} — the analysis will run exactly here (full site report unlocked)</div>;
+                    : <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(34,197,94,0.10)',border:'1px solid rgba(34,197,94,0.30)',fontSize:12}}>
+                        <div style={{color:'#4ade80',fontWeight:700}}>{'✅'} Drilling location PINNED: {p.lat.toFixed(6)}, {p.lon.toFixed(6)} — the analysis will run exactly here (full site report unlocked)</div>
+                        {pinnedPlaceLoading && <div style={{marginTop:6,color:'var(--text-secondary)',fontSize:11}}>{'\u{1F30D}'} Resolving County / Sub-County / Ward / Village names…</div>}
+                        {!pinnedPlaceLoading && pinnedPlace && <div style={{marginTop:6,color:'#86efac',fontSize:11.5,lineHeight:1.6}}>{'\u{1F4CD}'} <strong>Site identified:</strong> {pinnedPlace}</div>}
+                        {!pinnedPlaceLoading && !pinnedPlace && <div style={{marginTop:6,color:'var(--text-tertiary)',fontSize:11}}>Place names will be resolved during analysis and printed in the report.</div>}
+                      </div>;
                 })()}
                 {manualLocError && (
                   <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',color:'#fca5a5',fontSize:12,lineHeight:1.5}}>{'⚠️'} {manualLocError}</div>
@@ -2046,6 +2137,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       {'⚠️'} {manualLocError}
                     </div>
                   )}
+                  {(pinnedPlaceLoading || pinnedPlace) && (manualLat.trim() || manualLon.trim()) && (
+                    <div style={{marginTop:10,padding:'8px 12px',borderRadius:8,background:'rgba(34,197,94,0.08)',border:'1px solid rgba(34,197,94,0.25)',fontSize:11.5,color:'#86efac',lineHeight:1.6}}>
+                      {pinnedPlaceLoading ? <>{'\u{1F30D}'} Resolving County / Sub-County / Ward / Village names…</> : <>{'\u{1F4CD}'} <strong>Site identified:</strong> {pinnedPlace}</>}
+                    </div>
+                  )}
                 </div>
               )}
               {/* PRIMARY DRILLING POINT — unmissable marker card (verified locations only;
@@ -2064,6 +2160,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{fontFamily:'var(--font-mono)',fontSize:22,fontWeight:800,color:'#fff',marginBottom:6}}>
                       {dLat.toFixed(6)}, {dLon.toFixed(6)}
                     </div>
+                    {result.resolvedLocation && formatAdminHierarchy(result.resolvedLocation) && (
+                      <div style={{fontSize:12,color:'#86efac',marginBottom:6,lineHeight:1.6}}>
+                        {'\u{1F4CD}'} {formatAdminHierarchy(result.resolvedLocation)}
+                      </div>
+                    )}
                     <div style={{fontSize:13,color:'var(--text-secondary)',marginBottom:12}}>
                       Drill to <strong style={{color:'#fbbf24'}}>{Math.round(dDepth)} m</strong> at this point{result.gpsSource==='manual' ? ' (location you provided)' : result.gpsSource==='device' ? ' (your device GPS)' : ' (photo GPS)'} — confirm the final rig position with the ERT survey.
                     </div>

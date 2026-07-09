@@ -68,11 +68,29 @@ export interface RiskAnalysis {
   accuracy?: string;
 }
 
+/**
+ * A customer-uploaded site photograph carried into the PDF report.
+ * The primary photo gets the drill-point marker (crosshair + coordinates)
+ * drawn over it so the customer can SEE where the drilling spot is.
+ */
+export interface SitePhoto {
+  /** Downscaled JPEG data URL (max ~1280px, ~0.8 quality) */
+  dataUrl: string;
+  width: number;
+  height: number;
+  isPrimary: boolean;
+  fileName?: string;
+  /** EXIF GPS of the photo itself, when the camera recorded it */
+  exifGps?: { latitude: number; longitude: number };
+}
+
 export interface AnalysisResult {
   site: BoreholeSite;
   soil: SoilAnalysis;
   waterQuality: WaterQuality;
   risk: RiskAnalysis;
+  /** Customer site photographs — embedded in the PDF with the drill point marked */
+  sitePhotos?: SitePhoto[];
   probability: number;
   recommendedDepth: number;
   estimatedYield: number;

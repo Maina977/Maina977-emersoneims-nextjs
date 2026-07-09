@@ -102,10 +102,22 @@ function pct(v: number | undefined | null): string {
 function getLocationString(r: AnalysisResult): string {
   const loc = r.resolvedLocation || r.clientLocation;
   if (!loc) return 'Unknown Location';
-  const parts = [
-    (loc as any).village, (loc as any).city, (loc as any).county || (loc as any).region,
-    (loc as any).state, (loc as any).country
-  ].filter(Boolean);
+  // Full administrative ladder: Village -> Ward -> Constituency/Sub-County ->
+  // Town -> County -> State/Province -> Country (deduped — Kenya providers
+  // often repeat the county name at several levels).
+  const raw = [
+    (loc as any).village, (loc as any).suburb, (loc as any).ward,
+    (loc as any).constituency, (loc as any).city,
+    (loc as any).county || (loc as any).region,
+    (loc as any).state, (loc as any).country,
+  ].filter(Boolean).map((s: string) => String(s).trim());
+  const seen = new Set<string>();
+  const parts = raw.filter(p => {
+    const k = p.toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
   return parts.join(', ') || (loc as any).geocodedDisplayName || (loc as any).displayName || 'Unknown Location';
 }
 
@@ -938,7 +950,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     return 'PRE-FEASIBILITY SCREENING';
   })();
   doc.text(`${isRegionalPreScreening ? 'REGIONAL PRE-SCREENING' : assessmentGrade} Report  ?  Generated: ${new Date().toLocaleDateString()}`, pageW / 2, 42, { align: 'center' });
-  doc.text(`Location: ${isRegionalPreScreening ? `${getLocationString(result)} (AI regional estimate — Grade ${_locGrade})` : getLocationString(result)}`, pageW / 2, 50, { align: 'center' });
+  // Place names (village -> ward -> county -> country) with the GPS numbers on
+  // a second line — never one without the other.
+  const _coverLoc = isRegionalPreScreening ? `${getLocationString(result)} (AI regional estimate — Grade ${_locGrade})` : getLocationString(result);
+  doc.text(`Location: ${_coverLoc}`, pageW / 2, 49, { align: 'center' });
+  doc.setFontSize(8.5);
+  doc.text(`GPS: ${getCoords(result)}  (WGS84)`, pageW / 2, 55, { align: 'center' });
 
   y = 70;
   doc.setTextColor(30, 30, 30);
@@ -1746,6 +1763,121 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y += 10;
   } catch (_me) { console.warn('[PDF] Drill here map failed', _me); }
   } // end regional gate: drill-site map
+
+  // -- SITE PHOTOGRAPHS: the customer's own photos, drill point marked --
+  // Owner requirement (2026-07-09): every uploaded photo must appear in the
+  // report, and the customer must SEE the drilling spot marked on the chosen
+  // (primary) photo together with the exact latitude/longitude.
+  try {
+    const _photos = (result.sitePhotos ?? []).filter(p => p && p.dataUrl && p.width > 0 && p.height > 0);
+    if (_photos.length > 0) {
+      const _primary = _photos.find(p => p.isPrimary) ?? _photos[0];
+      const _others = _photos.filter(p => p !== _primary);
+      const _dp = (result as any).drillDecision?.primaryPoint;
+      const _dLat: number = _dp?.lat ?? siteLat;
+      const _dLon: number = _dp?.lon ?? siteLon;
+      const _coordTxt = `${_dLat.toFixed(6)}, ${_dLon.toFixed(6)}`;
+
+      addPage(); y = 20;
+      doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.setTextColor(239, 68, 68);
+      doc.text('SITE PHOTOGRAPHS -- Drill Point Marked', margin, y); y += 5;
+      doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 140);
+      doc.text(
+        isRegionalPreScreening
+          ? 'Customer site photographs. Location is a REGIONAL ESTIMATE -- no drill point is marked. Provide exact GPS coordinates to unlock the marked drill point.'
+          : 'Photographs supplied by the customer. The red marker shows the proposed drilling point at the printed coordinates -- set out on site with a handheld GPS.',
+        margin, y, { maxWidth: pageW - margin * 2 },
+      ); y += 8;
+
+      // PRIMARY photo -- large, with the drill-point marker overlay
+      const _maxW = pageW - margin * 2;
+      const _maxH = 128;
+      let _iw = _maxW, _ih = _maxW * (_primary.height / _primary.width);
+      if (_ih > _maxH) { _ih = _maxH; _iw = _maxH * (_primary.width / _primary.height); }
+      const _ix = margin + (_maxW - _iw) / 2;
+      try {
+        doc.addImage(_primary.dataUrl, 'JPEG', _ix, y, _iw, _ih);
+        doc.setDrawColor(30, 41, 59); doc.setLineWidth(0.6); doc.rect(_ix, y, _iw, _ih, 'S');
+
+        if (!isRegionalPreScreening) {
+          const _cx = _ix + _iw / 2, _cy = y + _ih / 2;
+          // Full-span crosshair through the marked point
+          doc.setDrawColor(239, 68, 68); doc.setLineWidth(0.7);
+          doc.line(_ix, _cy, _ix + _iw, _cy);
+          doc.line(_cx, y, _cx, y + _ih);
+          // Target rings + centre dot
+          doc.setLineWidth(1.1); doc.circle(_cx, _cy, 7, 'S');
+          doc.setLineWidth(0.7); doc.circle(_cx, _cy, 3.2, 'S');
+          doc.setFillColor(239, 68, 68); doc.circle(_cx, _cy, 1.2, 'F');
+          // "DRILL AT THIS POINT" ribbon above the marker
+          const _ribbonW = 58, _ribbonH = 7.5;
+          doc.setFillColor(220, 38, 38);
+          doc.roundedRect(_cx - _ribbonW / 2, _cy - 7 - _ribbonH - 3, _ribbonW, _ribbonH, 1.5, 1.5, 'F');
+          doc.setTextColor(255, 255, 255); doc.setFontSize(9.5); doc.setFont('helvetica', 'bold');
+          doc.text('DRILL AT THIS POINT', _cx, _cy - 7 - _ribbonH + 2.2, { align: 'center' });
+          // Coordinates plate below the marker
+          const _plateW = 64, _plateH = 7;
+          doc.setFillColor(15, 23, 42);
+          doc.roundedRect(_cx - _plateW / 2, _cy + 10, _plateW, _plateH, 1.5, 1.5, 'F');
+          doc.setTextColor(74, 222, 128); doc.setFontSize(9); doc.setFont('courier', 'bold');
+          doc.text(_coordTxt, _cx, _cy + 14.9, { align: 'center' });
+          // Corner banner with the full coordinate statement
+          doc.setFillColor(15, 23, 42);
+          doc.rect(_ix, y, Math.min(_iw, 92), 6.5, 'F');
+          doc.setTextColor(226, 232, 240); doc.setFontSize(7); doc.setFont('helvetica', 'bold');
+          doc.text(`PROPOSED DRILL POINT (WGS84): ${_coordTxt}`, _ix + 2, y + 4.4);
+        }
+      } catch (_ie) { console.warn('[PDF] Primary site photo embed failed', _ie); }
+      y += _ih + 5;
+
+      // Caption -- honest about what the marker means
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 120);
+      let _cap = `Primary site photo${_primary.fileName ? ` (${_primary.fileName})` : ''}. `;
+      if (!isRegionalPreScreening) {
+        if (_primary.exifGps) {
+          const _toRad = (d: number) => d * Math.PI / 180;
+          const _dKm = 6371 * Math.acos(Math.min(1,
+            Math.sin(_toRad(_primary.exifGps.latitude)) * Math.sin(_toRad(_dLat)) +
+            Math.cos(_toRad(_primary.exifGps.latitude)) * Math.cos(_toRad(_dLat)) *
+            Math.cos(_toRad(_dLon - _primary.exifGps.longitude)),
+          ));
+          _cap += _dKm <= 0.25
+            ? `Photo carries its own GPS (${_primary.exifGps.latitude.toFixed(5)}, ${_primary.exifGps.longitude.toFixed(5)}) taken ~${Math.round(_dKm * 1000)} m from the drill point -- location corroborated. `
+            : `NOTE: the photo's own GPS (${_primary.exifGps.latitude.toFixed(5)}, ${_primary.exifGps.longitude.toFixed(5)}) is ${_dKm.toFixed(1)} km from the drill point -- confirm the correct site photo. `;
+        } else {
+          _cap += 'The photo file carries no GPS metadata -- the marker shows the analyzed drilling coordinates placed on the photographed site. ';
+        }
+        _cap += `Set out the drilling point with a handheld GPS at ${_coordTxt}; the marker's position within the photo frame is indicative, the coordinates are authoritative.`;
+      }
+      doc.text(doc.splitTextToSize(_cap, pageW - margin * 2), margin, y); y += 12;
+
+      // Additional photos -- 2-up grid, every uploaded photo appears
+      if (_others.length > 0) {
+        if (y > 245) { addPage(); y = 20; }
+        doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(51, 65, 85);
+        doc.text(`Additional site photos (${_others.length})`, margin, y); y += 5;
+        const _cellW = (pageW - margin * 2 - 6) / 2;
+        let _col = 0, _rowH = 0;
+        for (const _ph of _others) {
+          let _w2 = _cellW, _h2 = _cellW * (_ph.height / _ph.width);
+          if (_h2 > 55) { _h2 = 55; _w2 = 55 * (_ph.width / _ph.height); }
+          if (_col === 0 && y + _h2 > 272) { addPage(); y = 20; }
+          const _x2 = margin + _col * (_cellW + 6) + (_cellW - _w2) / 2;
+          try {
+            doc.addImage(_ph.dataUrl, 'JPEG', _x2, y, _w2, _h2);
+            doc.setDrawColor(148, 163, 184); doc.setLineWidth(0.3); doc.rect(_x2, y, _w2, _h2, 'S');
+          } catch { /* skip broken photo */ }
+          _rowH = Math.max(_rowH, _h2);
+          _col++;
+          if (_col === 2) { y += _rowH + 6; _col = 0; _rowH = 0; }
+        }
+        if (_col !== 0) y += _rowH + 6;
+        doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
+        doc.text('All photos supplied by the customer at analysis time. Additional photos are visual context; the drill point is marked on the primary photo above.', margin, y);
+        y += 8;
+      }
+    }
+  } catch (_spe) { console.warn('[PDF] Site photographs section failed', _spe); }
 
   // -- MAP 2: WATER TABLE DEPTH CONTOUR MAP (programmatic, always works) --
   try {
@@ -6589,11 +6721,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           startY: y, margin: { left: margin, right: margin },
           head: [['Level', 'Name']],
           body: [
-            ['Village / Locality', rl.village || rl.suburb || rl.neighbourhood || '—'],
-            ['Ward', rl.ward || '—'],
+            ['Village', rl.village || '—'],
+            ['Sub-Location / Estate', rl.suburb || rl.neighbourhood || '—'],
+            ['Ward / Location', rl.ward || '—'],
             ['Town / City', rl.city || rl.town || '—'],
-            ['Constituency / Sub-County', rl.constituency || '—'],
-            ['County / District', rl.county || rl.state || '—'],
+            ['Constituency / Sub-County / District', rl.constituency || rl.district || '—'],
+            ['County', rl.county || '—'],
+            ['Province / Region', rl.state || rl.region || '—'],
             ['Country', `${rl.country || '—'}${rl.countryCode ? ` (${rl.countryCode})` : ''}`],
             ['Source', `${rl.source || 'geocoder'} (OSM/BigDataCloud admin levels)`],
           ],

@@ -105,6 +105,15 @@ export class BoreholeAnalyzer {
     this.riskAnalyzer = new RiskAnalyzer();
   }
 
+  /**
+   * Public reverse-geocode delegate (Nominatim + BigDataCloud admin levels).
+   * The UI uses this to confirm pinned coordinates with real place names
+   * (county / sub-county / ward / village) before and after analysis.
+   */
+  reverseGeocode(latitude: number, longitude: number) {
+    return this.imageDetector.reverseGeocode(latitude, longitude);
+  }
+
   async initialize() {
     try {
       await Promise.race([
@@ -129,40 +138,38 @@ export class BoreholeAnalyzer {
     // â•â•â• SUBSYSTEM 1: LOCATION RESOLUTION â•â•â•
     // Direct coordinates (manual entry) take ABSOLUTE priority
     // Then client location text is geocoded
-    let clientGeo: Awaited<ReturnType<typeof geocodeLocationForm>> = null;
+    let clientGeo: (NonNullable<Awaited<ReturnType<typeof geocodeLocationForm>>> & {
+      constituency?: string; ward?: string; suburb?: string; placeType?: string;
+    }) | null = null;
     if (clientLocation?.latitude != null && clientLocation?.longitude != null) {
       // Direct coordinates â€” highest priority, skip geocoding entirely
       const lat = clientLocation.latitude;
       const lon = clientLocation.longitude;
       report(0, `Using direct coordinates: [${lat.toFixed(5)}, ${lon.toFixed(5)}] â€” reverse geocoding for place name...`);
       console.log(`[Pipeline] Direct coordinates provided: [${lat}, ${lon}]`);
-      // Reverse geocode to get place name for the exact coordinates
-      try {
-        const resp = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&addressdetails=1&accept-language=en`,
-          { headers: { 'User-Agent': 'EmersonEIMS-BoreHoleAnalyzer/1.0' }, signal: AbortSignal.timeout(8000) }
-        );
-        const data = await resp.json();
-        if (data?.address) {
-          const a = data.address;
-          clientGeo = {
-            latitude: lat, longitude: lon,
-            displayName: data.display_name ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
-            country: a.country, countryCode: a.country_code?.toUpperCase(),
-            state: a.state, county: a.county,
-            city: a.city || a.town, village: a.village || a.hamlet,
-          };
-          console.log(`[Pipeline] Reverse geocoded: ${clientGeo.displayName}`);
-        } else {
-          clientGeo = {
-            latitude: lat, longitude: lon,
-            displayName: `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
-            country: clientLocation.country, countryCode: '',
-            state: clientLocation.region, county: clientLocation.county,
-            city: clientLocation.city, village: clientLocation.village,
-          };
-        }
-      } catch {
+      // Reverse geocode via the robust dual-provider helper (Nominatim +
+      // BigDataCloud OSM admin levels: county / sub-county / ward / village).
+      // The old bare single-shot Nominatim fetch here failed silently and
+      // shipped reports with raw coordinates instead of place names
+      // (Esikangu report, 2026-07-09). Retry once before giving up.
+      let rg: Awaited<ReturnType<ImageDetector['reverseGeocode']>> | null = null;
+      for (let attempt = 0; attempt < 2 && (!rg || rg.source === 'none'); attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 1200));
+        try { rg = await this.imageDetector.reverseGeocode(lat, lon); } catch { rg = null; }
+      }
+      if (rg && rg.source !== 'none') {
+        clientGeo = {
+          latitude: lat, longitude: lon,
+          displayName: rg.displayName ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+          country: rg.country ?? clientLocation.country, countryCode: rg.countryCode ?? '',
+          state: rg.state ?? clientLocation.region, county: rg.county ?? clientLocation.county,
+          city: rg.city ?? clientLocation.city,
+          village: rg.village ?? clientLocation.village,
+          constituency: rg.constituency, ward: rg.ward, suburb: rg.suburb,
+          placeType: rg.placeType,
+        };
+        console.log(`[Pipeline] Reverse geocoded (${rg.source}): ${clientGeo.displayName}`);
+      } else {
         clientGeo = {
           latitude: lat, longitude: lon,
           displayName: `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
@@ -170,6 +177,7 @@ export class BoreholeAnalyzer {
           state: clientLocation.region, county: clientLocation.county,
           city: clientLocation.city, village: clientLocation.village,
         };
+        console.warn('[Pipeline] Reverse geocoding unavailable - report will show coordinates only');
       }
     } else if (clientLocation && Object.values(clientLocation).some(v => typeof v === 'string' && v.trim())) {
       report(0, 'Geocoding client location â€” resolving coordinates from address...');
@@ -274,9 +282,13 @@ export class BoreholeAnalyzer {
         countryCode: clientGeo.countryCode,
         state: clientGeo.state,
         county: clientGeo.county,
+        constituency: clientGeo.constituency,
+        ward: clientGeo.ward,
         city: clientGeo.city,
+        suburb: clientGeo.suburb,
         village: clientGeo.village,
         displayName: clientGeo.displayName,
+        placeType: clientGeo.placeType,
         source: 'nominatim',
         isFromImage: false,
       };
