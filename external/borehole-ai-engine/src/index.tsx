@@ -11,7 +11,16 @@ import { parseERTFile } from './ertFileParser';
 import { recordDrillingOutcome, getLearningStats, exportOutcomes, importOutcomes } from './feedbackLearningLoop';
 import { runAIScanner, type AIScanResult } from './aiScanner';
 import { render2DAnnotatedMap, render2DCrossSection, render3DTerrain, render3DSubsurface } from './terrainMapper';
-import './styles.css';
+// NOTE: styles.css is deliberately NOT imported here. This module is loaded
+// via next/dynamic, so a CSS import here becomes a SEPARATE runtime CSS chunk
+// that must fetch successfully or the whole tool dies with ChunkLoadError —
+// the exact recurring crash of 2026-07-09 (chunk 5962c327…css failed
+// deterministically on a customer device across deployments and cache purges;
+// stylesheet-type requests can be blocked by extensions/proxies even when
+// fetches succeed, so no amount of cache repair fixes it). The stylesheet is
+// imported statically by app/aquascan-pro-v3/page.tsx instead, shipping in the
+// initial page <head> where a failure degrades to unstyled content but can
+// NEVER throw. Do not re-add the import here.
 
 /* ═══════════════════════════════════════════════════════════════
    TYPES

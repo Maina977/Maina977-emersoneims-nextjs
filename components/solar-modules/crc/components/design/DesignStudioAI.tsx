@@ -6,10 +6,14 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Polygon, Popup, useMapEvents, Circle } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { calculateShadingHeatmap, Obstacle } from '../../core/simulation/shadingEngine';
 import { RoofAnalyzer } from './RoofAnalyzer';
-import './DesignStudioAI.css';
+// NOTE: leaflet.css and DesignStudioAI.css are imported by
+// app/solar-genius-pro/design-studio/page.tsx, NOT here. This component is
+// reached through next/dynamic, so CSS imported here becomes a lazy CSS chunk
+// whose fetch failure crashes the tool with ChunkLoadError (same defect class
+// as the AquaScan 2026-07-09 incident). Page-level CSS ships in the initial
+// <head> and cannot throw. Do not re-add CSS imports here.
 
 // Fix Leaflet default marker icon paths in Vite bundles
 // @ts-ignore

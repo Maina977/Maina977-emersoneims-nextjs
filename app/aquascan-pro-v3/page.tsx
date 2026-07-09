@@ -6,6 +6,12 @@ import dynamic from 'next/dynamic';
 import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+// Engine stylesheet imported HERE (statically) instead of inside the
+// dynamically-imported engine: this ships it in the initial page <head>,
+// eliminating the lazy CSS chunk whose fetch failure crashed the tool with
+// ChunkLoadError on 2026-07-09 (twice, same chunk, across deployments).
+// An initial-page stylesheet cannot throw — worst case is unstyled content.
+import '@/external/borehole-ai-engine/src/styles.css';
 
 /**
  * Retry a dynamic import with backoff. THIS import is where every user-facing
