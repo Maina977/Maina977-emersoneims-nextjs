@@ -286,7 +286,12 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
   //    https://data.waterpointdata.org/
   // ────────────────────────────────────────────────────────
   try {
-    const wpdxUrl = `https://data.waterpointdata.org/resource/gihr-buz6.json?$where=within_circle(location,${lat},${lon},${searchRadius * 1000})&$limit=50&$select=wpdx_id,lat_deg,lon_deg,water_source,water_tech,facility_type,status_id,distance_from_primary_road,water_source_clean,install_year,report_date,water_source_category`;
+    // Dataset FIX (2026-07-09, live-verified): the old `gihr-buz6` resource is
+    // now auth-walled, which silently killed this query and dropped reports to
+    // synthetic wells. Current public WPDx resource is `jfkt-jmqa` (39,959
+    // Kenya records incl. government/ministry submissions); geo column is
+    // `geocoded_column`; place names live in clean_adm2/clean_adm3.
+    const wpdxUrl = `https://data.waterpointdata.org/resource/jfkt-jmqa.json?$where=within_circle(geocoded_column,${lat},${lon},${searchRadius * 1000})&$limit=50&$select=row_id,lat_deg,lon_deg,water_source,water_tech,status_id,status_clean,water_source_clean,water_source_category,install_year,report_date,clean_adm2,clean_adm3,source`;
     const resp = await fetch(wpdxUrl, { signal: AbortSignal.timeout(12000) });
     if (resp.ok) {
       const data = await resp.json();
@@ -303,18 +308,21 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
               (wp.water_source_category ?? '').toLowerCase().includes('groundwater');
             // Include boreholes and other groundwater points
             if (isBoreholeType || (wp.water_source_category ?? '').toLowerCase().includes('groundwater') || !wp.water_source_category) {
-              const statusId = (wp.status_id ?? '').toLowerCase();
+              const statusId = (wp.status_clean ?? wp.status_id ?? '').toLowerCase();
               let outcome: 'Success' | 'Moderate' | 'Fail' | 'Unknown' = 'Unknown';
-              if (statusId.includes('yes') || statusId.includes('functional')) outcome = 'Success';
-              else if (statusId.includes('no') || statusId.includes('non')) outcome = 'Fail';
+              if (statusId.includes('non')) outcome = 'Fail';
+              else if (statusId.includes('yes') || statusId.includes('functional')) outcome = 'Success';
               else if (statusId.includes('partial')) outcome = 'Moderate';
+              // Human-readable name from the registry's admin hierarchy —
+              // e.g. "Kiuu, Ruiru — Borehole/Tubewell (Water Mission, 2011)"
+              const wpName = [wp.clean_adm3, wp.clean_adm2].filter(Boolean).join(', ');
               wells.push({
-                id: wp.wpdx_id ?? `WPDx-${wells.length + 1}`,
+                id: `${wpName || 'Water point'} — ${wp.water_source_clean ?? wp.water_source ?? 'Borehole'}`,
                 distance_km: Math.round(dist * 10) / 10,
-                depth_m: 0, // WPDx basic doesn't include depth — enhanced below
+                depth_m: 0, // WPDx registry does not publish depths — WRA records do (import channel)
                 aquiferType: wp.water_source_clean ?? wp.water_source ?? undefined,
                 outcome,
-                source: `WPDx${wp.install_year ? ` (${wp.install_year})` : ''}${wp.report_date ? ` reported ${wp.report_date.slice(0, 4)}` : ''}`,
+                source: `WPDx registry — ${wp.source ?? 'submitted record'}${wp.install_year ? ` (${wp.install_year})` : ''}`,
               });
             }
           }
@@ -325,11 +333,50 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
   } catch { /* OK — WPDx may be unreachable */ }
 
   // ────────────────────────────────────────────────────────
-  // 3. WPDx+ Enhanced (depth, yield, water quality data)
+  // 3. WRA / GOVERNMENT BOREHOLE RECORDS (local registry)
+  //    The complete records — borehole NAME, drilled DEPTH, tested yield,
+  //    static water level — live in WRA completion records, which are NOT on
+  //    any public API (verified 2026-07-09: opendata.go.ke Socrata is dead,
+  //    WPDx dropped its depth attributes). This channel loads them from
+  //    /data/wra-boreholes.json — drop in the file obtained from a WRA/county
+  //    data request and every analysis gains named, depth-complete wells:
+  //    [{ "name": "...", "lat": -0.9, "lon": 37.19, "depth_m": 87,
+  //       "yield_m3h": 3.2, "swl_m": 21, "outcome": "Success",
+  //       "permit": "WRA/..." }]
   // ────────────────────────────────────────────────────────
   try {
-    const wpdxPlusUrl = `https://data.waterpointdata.org/resource/jfkt-jmqa.json?$where=within_circle(location,${lat},${lon},${searchRadius * 1000})&$limit=50&$select=row_id,lat_deg,lon_deg,water_source,status_id,depth,static_water_level,yield_value,water_quality_description,install_year`;
-    const resp = await fetch(wpdxPlusUrl, { signal: AbortSignal.timeout(12000) });
+    const wraResp = await fetch('/data/wra-boreholes.json', { signal: AbortSignal.timeout(6000) });
+    if (wraResp.ok && (wraResp.headers.get('content-type') || '').includes('json')) {
+      const wraData = await wraResp.json();
+      if (Array.isArray(wraData)) {
+        let wraCount = 0;
+        for (const b of wraData) {
+          const bLat = Number(b.lat), bLon = Number(b.lon);
+          if (!isFinite(bLat) || !isFinite(bLon)) continue;
+          const dist = haversineDistance(lat, lon, bLat, bLon);
+          if (dist > searchRadius) continue;
+          wells.push({
+            id: `${b.name ?? 'Unnamed borehole'}${b.permit ? ` (${b.permit})` : ''}`,
+            distance_km: Math.round(dist * 10) / 10,
+            depth_m: Number(b.depth_m) || 0,
+            yield_m3h: b.yield_m3h != null ? Number(b.yield_m3h) : undefined,
+            waterLevel_m: b.swl_m != null ? Number(b.swl_m) : undefined,
+            aquiferType: b.aquiferType ?? undefined,
+            lithology: b.lithology ?? undefined,
+            outcome: (['Success', 'Moderate', 'Fail'].includes(b.outcome) ? b.outcome : 'Unknown') as any,
+            source: 'WRA record (government completion data — FIELD)',
+          });
+          wraCount++;
+        }
+        if (wraCount > 0) dataSources.push(`WRA government borehole records (${wraCount} within ${searchRadius} km)`);
+      }
+    }
+  } catch { /* registry file not installed yet — expected until WRA data obtained */ }
+
+  // (retired duplicate WPDx query — dataset columns removed upstream)
+  try {
+    const wpdxPlusUrl = '';
+    const resp = wpdxPlusUrl ? await fetch(wpdxPlusUrl, { signal: AbortSignal.timeout(12000) }) : ({ ok: false } as Response);
     if (resp.ok) {
       const data = await resp.json();
       if (Array.isArray(data) && data.length > 0) {
@@ -420,7 +467,9 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
           const osmWL = waterLevelTag ? parseFloat(waterLevelTag) : undefined;
           const featureType = el.tags?.man_made ?? el.tags?.natural ?? 'well';
           wells.push({
-            id: `OSM-${el.id}`,
+            // Use the mapped NAME when present ("Ngurweini Primary Borehole")
+            // instead of an opaque OSM node number.
+            id: el.tags?.name || el.tags?.['name:en'] || el.tags?.operator || `OSM-${el.id}`,
             distance_km: Math.round(dist * 10) / 10,
             depth_m: osmDepth,
             yield_m3h: yieldVal,
