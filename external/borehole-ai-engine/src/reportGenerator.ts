@@ -30,7 +30,7 @@ import { generateReportMaps, renderDrillHereMap, renderWaterTableDepthMap, type 
 import type { VerificationReport } from './preReportVerification';
 
 // --- AUDIT GATE ? EVERY EXPORT MUST PASS ---
-// This function runs the 10-step audit and returns the result.
+// This function runs the 17-step audit and returns the result.
 // If the audit fails, the caller must show the audit report and BLOCK the download.
 export { auditReport, type AuditReport };
 
@@ -1007,6 +1007,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       ['Recommended Depth', `${fmt(result.recommendedDepth, 0)}m${result.uncertainty ? ` (range: ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]}m)` : ` (\u00B1${Math.round((result.recommendedDepth ?? 40) * 0.35)}m, satellite-only est.)`}`, result.recommendedDepth < 50 ? 'Shallow' : result.recommendedDepth < 100 ? 'Medium' : 'Deep'],
       ['Estimated Yield', `${fmt(result.estimatedYield, 1)} m³/hr${result.uncertainty ? ` (range: ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ` (\u00B1${fmt((result.estimatedYield ?? 1.5) * 0.45, 1)} m\u00B3/hr, satellite-only est.)`}`, result.estimatedYield > 2 ? 'Good' : result.estimatedYield > 1 ? 'Moderate' : 'Low'],
       ['Overall Risk', pct(result.risk?.overallRisk), result.risk?.viability?.toUpperCase() || 'N/A'],
+      // B7 — the drilling window was computed from measured rainfall history
+      // all along but buried in Section 30; the payer needs it on page 1.
+      ...(result.historicalData?.weather?.bestDrillingSeason
+        ? [['Best Drilling Window', result.historicalData.weather.bestDrillingSeason, 'Schedule rig mobilization in this window'] as string[]]
+        : []),
       ['Soil Type', result.soil?.type?.toUpperCase() || 'N/A', `Porosity: ${fmt(result.soil?.porosity)}`],
       ['Water Quality Score', `${fmt((result.waterQuality?.score ?? 0) * 100, 0)}/100 (modelled)`, (() => {
         if (result.waterQuality?.isPotable) return 'POTABLE (modelled) -- Verify with ISO 17025 lab analysis';
@@ -1109,6 +1114,25 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(m.label, x + stripW / 2, y + 22, { align: 'center' });
   });
   y += 32;
+
+  // -- Seasonal drilling-window callout (B7) --
+  // Derived from the measured multi-year rainfall record (historicalData),
+  // not a generic calendar guess.
+  {
+    const seasonTxt = result.historicalData?.weather?.bestDrillingSeason;
+    if (seasonTxt) {
+      checkSpace(20);
+      doc.setFillColor(240, 253, 244);
+      doc.roundedRect(margin, y, pageW - margin * 2, 16, 2, 2, 'F');
+      doc.setDrawColor(34, 197, 94); doc.setLineWidth(0.7);
+      doc.roundedRect(margin, y, pageW - margin * 2, 16, 2, 2, 'S');
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(21, 128, 61);
+      doc.text('BEST DRILLING WINDOW', margin + 4, y + 6.5);
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(40, 90, 60);
+      doc.text(`${seasonTxt} — based on the measured multi-year rainfall record for this location.`, margin + 4, y + 12.5, { maxWidth: pageW - margin * 2 - 8 });
+      y += 20;
+    }
+  }
 
   // ------------------------------------------------------------------
   // ------------------------------------------------------------------

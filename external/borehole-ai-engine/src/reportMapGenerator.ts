@@ -414,6 +414,120 @@ async function fetchSoilGridsWMS(lat: number, lon: number, width = 512, height =
  * with pin, callout boxes (depth, yield, probability), north arrow, scale bar.
  * Always succeeds — no network calls.
  */
+// ── Registry wells overlay (B3) ────────────────────────────────
+// Real government/registry borehole records (WPDx, UNESCO IHP-WINS, WRA,
+// OSM…) drawn at their TRUE coordinates. Never synthetic — wells without
+// verified lat/lon are simply not drawn.
+interface RegistryWell {
+  id?: string; lat?: number; lon?: number; depth_m?: number;
+  waterLevel_m?: number; outcome?: string; source?: string; distance_km?: number;
+}
+
+function extractRegistryWells(analysisData: any): RegistryWell[] {
+  const raw = analysisData?.nearbyWells?.nearbyWells;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((w: any) => Number.isFinite(w?.lat) && Number.isFinite(w?.lon));
+}
+
+function wellColor(outcome?: string): string {
+  if (outcome === 'Success') return '#22c55e';
+  if (outcome === 'Fail') return '#ef4444';
+  if (outcome === 'Moderate') return '#fbbf24';
+  return '#94a3b8';
+}
+
+/** True/opaque-ID test — opaque registry IDs are plotted but never labelled. */
+function isHumanWellName(id?: string): boolean {
+  const s = String(id ?? '').trim();
+  if (!s) return false;
+  return !/^(OSM-|WPDx\+?-|USGS-|BGS-Afr-|SA-DWS-|IGRAC-|WoSIS-)/i.test(s);
+}
+
+/**
+ * Draws registry wells on a geographically-projected map (linear lat/lon
+ * grid). Returns how many wells were actually drawn inside the extent.
+ */
+function drawRegistryWells(
+  ctx: CanvasRenderingContext2D,
+  wells: RegistryWell[],
+  lat: number, lon: number,
+  latSpan: number, lonSpan: number,
+  W: number, mapTop: number, mapBot: number,
+): number {
+  const mapH = mapBot - mapTop;
+  const inExtent = wells
+    .map((w) => ({
+      ...w,
+      px: ((w.lon! - (lon - lonSpan)) / (2 * lonSpan)) * W,
+      py: mapTop + (((lat + latSpan) - w.lat!) / (2 * latSpan)) * mapH,
+    }))
+    .filter((w) => w.px >= 10 && w.px <= W - 10 && w.py >= mapTop + 10 && w.py <= mapBot - 10)
+    .sort((a, b) => (a.distance_km ?? 999) - (b.distance_km ?? 999))
+    .slice(0, 60); // readability cap — nearest wells win
+
+  if (inExtent.length === 0) return 0;
+
+  // Dots at true coordinates
+  for (const w of inExtent) {
+    ctx.beginPath();
+    ctx.arc(w.px, w.py, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = wellColor(w.outcome);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+  }
+
+  // Name labels for the nearest few HUMAN-NAMED wells only
+  let labelled = 0;
+  ctx.font = '9px Helvetica, Arial, sans-serif';
+  for (const w of inExtent) {
+    if (labelled >= 6) break;
+    if (!isHumanWellName(w.id)) continue;
+    let name = String(w.id).trim();
+    if (name.length > 26) name = name.slice(0, 25) + '…';
+    const depthTxt = w.depth_m && w.depth_m > 0 ? ` · ${Math.round(w.depth_m)}m` : '';
+    const text = name + depthTxt;
+    const tw = ctx.measureText(text).width;
+    const tx = Math.min(Math.max(w.px + 7, 4), W - tw - 6);
+    const ty = Math.min(Math.max(w.py - 7, mapTop + 12), mapBot - 6);
+    ctx.fillStyle = 'rgba(13, 17, 23, 0.75)';
+    ctx.fillRect(tx - 2, ty - 9, tw + 4, 12);
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText(text, tx, ty);
+    labelled++;
+  }
+
+  // Count + mini-legend box (bottom-left)
+  const bx = 30, bw = 262, bh = 74;
+  const by = mapBot - bh - 20;
+  ctx.fillStyle = 'rgba(13, 17, 23, 0.88)';
+  ctx.fillRect(bx, by, bw, bh);
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(bx, by, bw, bh);
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 11px Helvetica, Arial, sans-serif';
+  ctx.fillText(`${inExtent.length} VERIFIED WELL${inExtent.length === 1 ? '' : 'S'} ON THIS MAP`, bx + 10, by + 17);
+  const legendRows: Array<[string, string]> = [
+    ['#22c55e', 'Functional / successful'],
+    ['#ef4444', 'Failed / non-functional'],
+    ['#94a3b8', 'Status not recorded'],
+  ];
+  ctx.font = '9px Helvetica, Arial, sans-serif';
+  legendRows.forEach(([c, label], i) => {
+    const ly = by + 31 + i * 12;
+    ctx.beginPath(); ctx.arc(bx + 15, ly - 3, 4, 0, Math.PI * 2);
+    ctx.fillStyle = c; ctx.fill();
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText(label, bx + 25, ly);
+  });
+  ctx.fillStyle = 'rgba(148, 163, 184, 0.75)';
+  ctx.font = 'italic 8px Helvetica, Arial, sans-serif';
+  ctx.fillText('Government/registry records at true coordinates — never synthetic', bx + 10, by + bh - 6);
+  return inExtent.length;
+}
+
 export function renderDrillHereMap(
   lat: number, lon: number,
   successProbability: number,  // 0-1
@@ -494,6 +608,9 @@ export function renderDrillHereMap(
     ctx.font = '10px Helvetica, Arial, sans-serif';
     ctx.fillText(zoneLabels[i], cx - zoneRadii[i] * 1.3 + 6, cy - zoneRadii[i] + 12);
   }
+
+  // ── Registry wells at their true coordinates (B3) ───────────
+  drawRegistryWells(ctx, extractRegistryWells(analysisData), lat, lon, latSpan, lonSpan, W, mapTop, mapBot);
 
   // ── Large crosshair + pin ────────────────────────────────────
   // Outer pulsing ring
@@ -826,6 +943,47 @@ export function renderWaterTableDepthMap(
   ctx.fillStyle = 'rgba(251, 191, 36, 0.8)';
   ctx.font = '9px Helvetica, Arial, sans-serif';
   ctx.fillText('(regional est.) -- verify with ERT geophysical survey', infoX + 10, infoY + 80);
+
+  // ── Nearby verified wells panel (B3) ─────────────────────────
+  // The contour rings above are a CONCEPTUAL depth model (radius = depth),
+  // not a geographic projection — so wells are listed as data, not plotted
+  // as dots, to avoid implying they sit on specific contours.
+  {
+    const regWells = extractRegistryWells(analysisData)
+      .sort((a, b) => (a.distance_km ?? 999) - (b.distance_km ?? 999))
+      .filter((w) => isHumanWellName(w.id))
+      .slice(0, 4);
+    if (regWells.length > 0) {
+      const pX = 20, pY = mapTop + 15, pW = 330;
+      const pH = 34 + regWells.length * 14 + 14;
+      ctx.fillStyle = 'rgba(13, 17, 23, 0.88)';
+      roundRect(ctx, pX, pY, pW, pH, 6);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(34, 197, 94, 0.6)';
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, pX, pY, pW, pH, 6);
+      ctx.stroke();
+      ctx.fillStyle = '#22c55e';
+      ctx.font = 'bold 11px Helvetica, Arial, sans-serif';
+      ctx.fillText('NEARBY VERIFIED WELLS (REGISTRY RECORDS)', pX + 10, pY + 17);
+      ctx.font = '9px Helvetica, Arial, sans-serif';
+      regWells.forEach((w, i) => {
+        let name = String(w.id).trim();
+        if (name.length > 34) name = name.slice(0, 33) + '…';
+        const parts: string[] = [];
+        if (w.depth_m && w.depth_m > 0) parts.push(`${Math.round(w.depth_m)} m deep`);
+        if (w.waterLevel_m && w.waterLevel_m > 0) parts.push(`WL ${Math.round(w.waterLevel_m)} m`);
+        if (w.distance_km != null) parts.push(`${w.distance_km} km away`);
+        ctx.fillStyle = wellColor(w.outcome);
+        ctx.beginPath(); ctx.arc(pX + 14, pY + 30 + i * 14, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(`${name}${parts.length ? ' — ' + parts.join(' · ') : ''}`, pX + 23, pY + 33 + i * 14);
+      });
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.75)';
+      ctx.font = 'italic 8px Helvetica, Arial, sans-serif';
+      ctx.fillText('Real registry records — anchors this depth model to measured wells', pX + 10, pY + pH - 6);
+    }
+  }
 
   // ── Site marker ──────────────────────────────────────────────
   drawSiteMarker(ctx, cx, cy);

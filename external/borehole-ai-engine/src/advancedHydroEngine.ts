@@ -187,6 +187,9 @@ export interface NearbyBoreholeData {
   nearbyWells: {
     id: string;
     distance_km: number;
+    /** True registry coordinates (WGS84) — lets report maps plot the well. */
+    lat?: number;
+    lon?: number;
     depth_m: number;
     yield_m3h?: number;
     waterLevel_m?: number;
@@ -266,6 +269,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
               const depthVal = wellDepth ? parseFloat(wellDepth) * 0.3048 : 0;
               wells.push({
                 id: info.siteCode?.[0]?.value ?? `USGS-${wells.length + 1}`,
+                lat: latVal, lon: lonVal,
                 distance_km: Math.round(dist * 10) / 10,
                 depth_m: depthVal,
                 waterLevel_m: lastWL ? parseFloat(lastWL) * 0.3048 : undefined,
@@ -318,6 +322,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
               const wpName = [wp.clean_adm3, wp.clean_adm2].filter(Boolean).join(', ');
               wells.push({
                 id: `${wpName || 'Water point'} — ${wp.water_source_clean ?? wp.water_source ?? 'Borehole'}`,
+                lat: wLat, lon: wLon,
                 distance_km: Math.round(dist * 10) / 10,
                 depth_m: 0, // WPDx registry does not publish depths — WRA records do (import channel)
                 aquiferType: wp.water_source_clean ?? wp.water_source ?? undefined,
@@ -357,6 +362,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
           if (dist > searchRadius) continue;
           wells.push({
             id: `${b.name ?? 'Unnamed borehole'}${b.permit ? ` (${b.permit})` : ''}`,
+            lat: bLat, lon: bLon,
             distance_km: Math.round(dist * 10) / 10,
             depth_m: Number(b.depth_m) || 0,
             yield_m3h: b.yield_m3h != null ? Number(b.yield_m3h) : undefined,
@@ -398,6 +404,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
           else if (st.includes('open') || st.includes('functional') || st.includes('protected')) outcome = 'Success';
           wells.push({
             id: `${wName}${wCounty ? ` (${wCounty})` : ''}`,
+            lat: Number(wLat), lon: Number(wLon),
             distance_km: Math.round(dist * 10) / 10,
             depth_m: Number(wDepth) || 0,
             yield_m3h: Number(wYield) > 0 ? Number(wYield) : undefined,
@@ -450,6 +457,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
             } else {
               wells.push({
                 id: wp.row_id ?? `WPDx+-${wells.length + 1}`,
+                lat: wLat, lon: wLon,
                 distance_km: Math.round(dist * 10) / 10,
                 depth_m: depth,
                 yield_m3h: yieldVal,
@@ -511,6 +519,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
             // Use the mapped NAME when present ("Ngurweini Primary Borehole")
             // instead of an opaque OSM node number.
             id: el.tags?.name || el.tags?.['name:en'] || el.tags?.operator || `OSM-${el.id}`,
+            lat: el.lat, lon: el.lon,
             distance_km: Math.round(dist * 10) / 10,
             depth_m: osmDepth,
             yield_m3h: yieldVal,
@@ -553,6 +562,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
             const wl = parseFloat(p.water_level ?? p.gwl ?? p.static_water_level ?? '0') || 0;
             wells.push({
               id: p.station_id ?? p.monitoring_id ?? `IGRAC-${wells.length + 1}`,
+              lat: wLat, lon: wLon,
               distance_km: Math.round(dist * 10) / 10,
               depth_m: depth,
               yield_m3h: yv > 0 ? yv : undefined,
@@ -595,6 +605,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
             const maxDepthCm = parseFloat(p.max_depth ?? p.profile_depth ?? p.depth_max ?? '0') || 0;
             wells.push({
               id: p.profile_id ?? p.dataset_id ?? `WoSIS-${wells.length + 1}`,
+              lat: parseFloat(pLat), lon: parseFloat(pLon),
               distance_km: Math.round(dist * 10) / 10,
               depth_m: maxDepthCm > 0 ? maxDepthCm / 100 : 0,
               lithology: p.wrb_class ?? p.soil_class ?? p.classification ?? undefined,
@@ -636,6 +647,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
             if (dist <= searchRadius) {
               wells.push({
                 id: p.OBJECTID ? `BGS-Afr-${p.OBJECTID}` : `BGS-Afr-${wells.length + 1}`,
+                lat: wLat, lon: wLon,
                 distance_km: Math.round(dist * 10) / 10,
                 depth_m: parseFloat(p.DEPTH ?? p.Well_Depth ?? p.Borehole_Depth ?? '0') || 0,
                 yield_m3h: (parseFloat(p.YIELD ?? p.Discharge ?? p.Borehole_Yield ?? '0') || undefined),
@@ -680,6 +692,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
             if (dist <= searchRadius) {
               wells.push({
                 id: b.BoreholeID ?? b.BH_NO ?? `SA-DWS-${wells.length + 1}`,
+                lat: bLat, lon: bLon,
                 distance_km: Math.round(dist * 10) / 10,
                 depth_m: parseFloat(b.Depth ?? b.BH_Depth ?? b.FinalDepth ?? '0') || 0,
                 yield_m3h: (parseFloat(b.Yield ?? b.Recommended_Yield ?? b.BlowYield ?? '0') || undefined),
@@ -869,6 +882,16 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
 
   // Sort by distance
   dedupWells.sort((a, b) => a.distance_km - b.distance_km);
+
+  // Physical sanity bounds — registry noise (3,000 m "hand dams", bogus
+  // yields) is scrubbed, never printed, plotted, or averaged. The name is
+  // kept but the impossible value is dropped as unpublished. Auditor
+  // check 17 blocks any report where these bounds regress.
+  for (const w of dedupWells) {
+    if (w.depth_m < 0 || w.depth_m > 500) w.depth_m = 0;
+    if (w.yield_m3h != null && (w.yield_m3h <= 0 || w.yield_m3h > 100)) w.yield_m3h = undefined;
+    if (w.waterLevel_m != null && (w.waterLevel_m <= 0 || w.waterLevel_m > 500)) w.waterLevel_m = undefined;
+  }
 
   const validDepths = dedupWells.filter(w => w.depth_m > 0).map(w => w.depth_m);
   const validYields = dedupWells.filter(w => w.yield_m3h && w.yield_m3h > 0).map(w => w.yield_m3h!);

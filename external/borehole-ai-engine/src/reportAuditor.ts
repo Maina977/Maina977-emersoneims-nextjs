@@ -1,9 +1,9 @@
 /**
  * ══════════════════════════════════════════════════════════════════════════════
- *  REPORT AUDITOR — 16-STEP AUTHENTICATION GATE
+ *  REPORT AUDITOR — 17-STEP AUTHENTICATION GATE
  * ══════════════════════════════════════════════════════════════════════════════
  *
- *  EVERY report must pass ALL 10 checks before it can be downloaded or shared.
+ *  EVERY report must pass ALL 17 checks before it can be downloaded or shared.
  *  If ANY check fails → report is BLOCKED with a clear explanation of what's wrong.
  *
  *  This exists because: misleading reports destroy client trust and can cause
@@ -50,7 +50,7 @@ export interface AuditReport {
 }
 
 /**
- * Run the full 10-step audit on an AnalysisResult BEFORE any report is generated.
+ * Run the full 17-step audit on an AnalysisResult BEFORE any report is generated.
  * Returns an AuditReport. If .passed === false, the report MUST NOT be published.
  */
 export function auditReport(result: AnalysisResult): AuditReport {
@@ -135,6 +135,13 @@ export function auditReport(result: AnalysisResult): AuditReport {
   // CHECK 16: ENGINEER TRUST — Trust score and validation status
   // ═══════════════════════════════════════════════════════════════
   checks.push(auditEngineerTrust(result));
+
+  // ═══════════════════════════════════════════════════════════════
+  // CHECK 17: INTEGRITY REGRESSION GUARD — the 2026-07 audit rules,
+  // enforced forever (no synthetic wells, no fake field claims,
+  // no verified-looking estimated locations)
+  // ═══════════════════════════════════════════════════════════════
+  checks.push(auditIntegrityRegressions(result));
 
   // ── SCORING ──
   const failedChecks = checks.filter(c => c.severity === 'FAIL').length;
@@ -807,4 +814,94 @@ function auditEngineerTrust(result: AnalysisResult): AuditCheck {
   }
 
   return { ...base, severity: 'PASS', details: `Trust score ${ec.engineerTrustScore}/100 (Grade ${ec.trustGrade}). Data: ${ec.trustBreakdown.dataQuality}/25, Physics: ${ec.trustBreakdown.physicsRigor}/25, Validation: ${ec.trustBreakdown.validation}/25, Transparency: ${ec.trustBreakdown.transparency}/25. Verdict: ${ec.crossValidation.engineerVerdict}.` };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHECK 17 — INTEGRITY REGRESSION GUARD (B8)
+// ═══════════════════════════════════════════════════════════════
+// The 2026-07 accuracy audits fixed a family of "confidence theatre"
+// defects. Report-layer rules (one economics model, one verdict,
+// regional pre-screening locks) live in reportGenerator; every rule
+// that is testable on the DATA is asserted here so it can never
+// silently regress. Any hit is a FAIL — the report is blocked.
+function auditIntegrityRegressions(result: AnalysisResult): AuditCheck {
+  const base = {
+    id: 17,
+    name: 'Integrity Regression Guard',
+    category: 'INTEGRITY',
+    description: 'Enforces the 2026-07 audit rules: no synthetic wells, no fabricated well statistics, no field-validation claims without field data, no verified-grade location on an estimated GPS.',
+  };
+
+  const r = result as any;
+  const violations: string[] = [];
+
+  // RULE 1 — NO SYNTHETIC WELLS (commit 29657fd). Fabricated SYN-* records
+  // or any well whose source admits being synthetic/estimated must never
+  // reach a customer again.
+  const wells: any[] = r.nearbyWells?.nearbyWells ?? [];
+  const synthetic = wells.filter((w) =>
+    /^SYN-/i.test(String(w?.id ?? '')) ||
+    /synthetic|fabricated|simulated well/i.test(String(w?.source ?? '')));
+  if (synthetic.length > 0) {
+    violations.push(`${synthetic.length} synthetic well record(s) present (e.g. "${synthetic[0].id}") — the no-synthetic-wells policy forbids fabricated evidence`);
+  }
+
+  // RULE 2 — NO FABRICATED WELL STATISTICS. An empty registry result must
+  // stay empty: sampleSize 0 with a non-zero average depth (or vice versa)
+  // means someone reintroduced invented statistics.
+  const nw = r.nearbyWells;
+  if (nw) {
+    if ((nw.sampleSize ?? 0) === 0 && ((nw.averageDepth ?? 0) > 0 || (nw.averageYield ?? 0) > 0)) {
+      violations.push(`nearbyWells reports sampleSize 0 but averageDepth=${nw.averageDepth}/averageYield=${nw.averageYield} — statistics without records are fabricated`);
+    }
+    if ((nw.sampleSize ?? 0) > 0 && wells.length === 0) {
+      violations.push(`nearbyWells claims sampleSize=${nw.sampleSize} but carries zero well records`);
+    }
+  }
+
+  // RULE 3 — REGISTRY WELL SANITY BOUNDS (Kenya boreholes 1–400 m; guard at
+  // 0–500 m / 100 m³/h). Junk registry rows (3,000 m "hand dams") must be
+  // filtered at import, never printed or plotted.
+  const junk = wells.filter((w) =>
+    (w?.depth_m ?? 0) < 0 || (w?.depth_m ?? 0) > 500 || (w?.yield_m3h ?? 0) > 100);
+  if (junk.length > 0) {
+    violations.push(`${junk.length} well record(s) outside physical bounds (depth 0–500 m, yield ≤100 m³/h) — import sanity filter regressed`);
+  }
+
+  // RULE 4 — NO FIELD-VALIDATION CLAIM WITHOUT FIELD DATA (commit f35cdad).
+  // "COMPLETED ERT / calibrated from pump test" on desktop-only runs was the
+  // core defect of the July audit.
+  if (result.assessmentType === 'FIELD_VALIDATED' && !r.fieldData && !r.fieldValidation) {
+    violations.push('assessmentType is FIELD_VALIDATED but no fieldData/fieldValidation object exists — field work is being claimed without field measurements');
+  }
+
+  // RULE 5 — ESTIMATED GPS CANNOT WEAR A VERIFIED GRADE. A visual/none GPS
+  // source is a ±50 km regional estimate; grading it A/B re-creates the
+  // "VERIFIED SITE IDENTITY at 6 decimals" defect.
+  const gpsSource = String(r.gpsSource ?? 'none');
+  const grade = String(r.locationConfidence?.grade ?? r.siteIdentity?.locationConfidenceGrade ?? '');
+  if (!['exif', 'manual', 'device'].includes(gpsSource) && ['A', 'B'].includes(grade)) {
+    violations.push(`gpsSource "${gpsSource}" (estimated location) carries location grade ${grade} — estimated positions must grade C or below`);
+  }
+
+  // RULE 6 — KENYA PRIOR MUST STAY LABELLED AS A MODEL. The county prior is
+  // published literature (reliability 0.65), never field evidence.
+  if (r.kenyaHydroPrior && /field|measured/i.test(String(r.kenyaHydroPrior.dataSource ?? r.kenyaHydroPrior.source ?? ''))) {
+    violations.push('kenyaHydroPrior presents itself as field/measured data — it is a literature-based county prior and must say so');
+  }
+
+  if (violations.length > 0) {
+    return {
+      ...base,
+      severity: 'FAIL',
+      details: `${violations.length} integrity regression${violations.length > 1 ? 's' : ''} detected: ${violations.join(' | ')}`,
+      fix: 'These rules were established by the 2026-07 accuracy audits (docs/AQUASCAN-ACCURACY-AUDIT-2026-07.md). Fix the offending engine module — do not weaken this check.',
+    };
+  }
+
+  return {
+    ...base,
+    severity: 'PASS',
+    details: `All integrity rules hold: ${wells.length} well record(s) all verified-source and within physical bounds; field-validation claims ${r.fieldData || r.fieldValidation ? 'backed by field data' : 'absent (desktop run, honestly labelled)'}; location grade consistent with GPS source (${gpsSource}${grade ? ` → grade ${grade}` : ''}).`,
+  };
 }
