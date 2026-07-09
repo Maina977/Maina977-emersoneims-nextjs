@@ -488,21 +488,23 @@ export class BoreholeAnalyzer {
     }
 
     if (!nearbyWells) {
-      fallbacksUsed.push('Nearby wells (WPDx/USGS/BGS/OSM APIs all failed â€” using SYNTHETIC wells, NOT real boreholes)');
-      const synthDepth = 45 + Math.round(Math.abs(effectiveLat ?? 20) * 0.8);
+      // NO SYNTHETIC WELLS — EVER (policy 2026-07-09). Fabricated SYN-* wells
+      // used to be injected here so reports always had a wells table; they
+      // then leaked into the ensemble, cross-validation and Trust Score as if
+      // they were evidence. When every registry (WRA local file, WPDx, USGS,
+      // BGS, OSM) returns nothing, the verifiable truth is "no verified
+      // boreholes on record within the search radius" — and the uncertainty
+      // machinery correctly widens without a wells anchor.
+      fallbacksUsed.push('Nearby wells: no verified borehole records found within 25 km (WRA/WPDx/USGS/BGS/OSM all empty or unreachable) — analysis proceeds WITHOUT a wells anchor; confidence reduced accordingly');
       nearbyWells = {
-        nearbyWells: [
-          { id: 'SYN-001', distance_km: 3.2, depth_m: synthDepth, yield_m3h: 1.8, waterLevel_m: synthDepth * 0.35, aquiferType: 'weathered basement', lithology: 'Weathered gneiss', outcome: 'Success', source: 'Synthetic (regional model â€” NOT a real borehole)' },
-          { id: 'SYN-002', distance_km: 5.7, depth_m: synthDepth + 12, yield_m3h: 2.4, waterLevel_m: synthDepth * 0.30, aquiferType: 'fractured rock', lithology: 'Fractured granite', outcome: 'Moderate', source: 'Synthetic (regional model â€” NOT a real borehole)' },
-          { id: 'SYN-003', distance_km: 8.1, depth_m: synthDepth - 8, yield_m3h: 0, waterLevel_m: undefined, aquiferType: 'massive rock', lithology: 'Massive granite', outcome: 'Fail', source: 'Synthetic (regional model â€” NOT a real borehole)' },
-        ],
-        averageDepth: synthDepth + 1,
-        averageYield: 1.8,
-        averageWaterLevel: synthDepth * 0.35,
-        successRate: 0.72,
-        sampleSize: 3,
+        nearbyWells: [],
+        averageDepth: undefined,
+        averageYield: undefined,
+        averageWaterLevel: undefined,
+        successRate: undefined,
+        sampleSize: 0,
         searchRadius_km: 25,
-        dataSources: ['Regional statistics (API fallback)'],
+        dataSources: ['No verified records found — import WRA completion records (/data/wra-boreholes.json) to close this gap'],
       };
     }
 

@@ -2498,7 +2498,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         head: [['Well ID', 'Distance (km)', 'Depth (m)', 'Yield (m3/h)', 'Lithology', 'Outcome', 'Source']],
         body: nw.nearbyWells.slice(0, 15).map((w: any) => [
           w.id, sf(w.distance_km, 1),
-          w.depth_m ? Math.round(w.depth_m).toString() : 'N/A',
+          w.depth_m ? Math.round(w.depth_m).toString() : 'not published',
           w.yield_m3h ? (w.yield_m3h ?? 0).toFixed(1) : w.outcome === 'Fail' ? '0' : 'N/A',
           w.lithology || w.aquiferType || 'N/A',
           w.outcome === 'Fail' ? 'Dry' : (w.outcome || 'Unknown'),
@@ -2529,20 +2529,31 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(25, 118, 210);
       doc.text('How Nearby Wells Calibrate This Prediction:', margin, y); y += 5;
       doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
-      doc.text(`- Depth calibration: Average nearby depth (${Math.round(nw.averageDepth)}m) anchors the recommended drilling depth.`, margin + 2, y); y += 3.5;
-      doc.text(`- Yield validation: Nearby yields (${sf(nw.averageYield, 1)} m³/h avg) provide ground-truth bounds for expected productivity.`, margin + 2, y); y += 3.5;
+      if (nw.averageDepth != null) { doc.text(`- Depth calibration: Average nearby depth (${Math.round(nw.averageDepth)}m) anchors the recommended drilling depth.`, margin + 2, y); y += 3.5; }
+      else { doc.text('- Depth calibration: registry wells carry no published depths — import WRA completion records to anchor depth.', margin + 2, y); y += 3.5; }
+      if (nw.averageYield != null) { doc.text(`- Yield validation: Nearby yields (${sf(nw.averageYield, 1)} m³/h avg) provide ground-truth bounds for expected productivity.`, margin + 2, y); y += 3.5; }
       if (lithologies.length > 0) { doc.text(`- Lithology confirmation: Observed lithologies (${lithologies.join(', ')}) validate geological model assumptions.`, margin + 2, y); y += 3.5; }
       const productiveCount = successCount + moderateCount;
-      const totalOutcomed = productiveCount + failCount;
-      doc.text(`- Success rate: ${Math.round(nw.successRate * 100)}% of nearby wells productive (${productiveCount} productive, ${failCount} dry) ? directly informs probability estimate.`, margin + 2, y); y += 3.5;
+      if (nw.successRate != null) { doc.text(`- Success rate: ${Math.round(nw.successRate * 100)}% of nearby wells productive (${productiveCount} productive, ${failCount} dry) — directly informs probability estimate.`, margin + 2, y); y += 3.5; }
       if (failCount > 0) { doc.text(`- Failed wells: ${failCount} failed well(s) inform risk register and siting avoidance zones.`, margin + 2, y); y += 3.5; }
-      if (hasRegionalEst) { doc.text('- Note: Where field-measured data was unavailable, depth/yield were estimated from regional geological analysis.', margin + 2, y); y += 3.5; }
       y += 4;
+    } else {
+      // NO SYNTHETIC WELLS policy: when nothing verifiable exists, say so.
+      checkSpace(24);
+      doc.setFillColor(255, 247, 230);
+      doc.roundedRect(margin, y, pw, 18, 2, 2, 'F');
+      doc.setDrawColor(217, 119, 6);
+      doc.roundedRect(margin, y, pw, 18, 2, 2, 'S');
+      doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+      doc.text('NO VERIFIED BOREHOLE RECORDS FOUND within the search radius.', margin + 4, y + 6);
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 70, 10);
+      doc.text('This analysis proceeds WITHOUT a nearby-wells anchor (confidence is reduced accordingly, never faked). To close this gap: import WRA/county completion records or supply known local boreholes.', margin + 4, y + 11, { maxWidth: pw - 8 });
+      y += 24;
     }
     doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(120, 120, 120);
-    doc.text('Well data from public APIs (USGS NWIS, OpenStreetMap Overpass) enriched with regional geological estimates where field data unavailable.', margin, y); y += 10;
+    doc.text('Only verified records are shown (WRA government records, WPDx registry, USGS NWIS, OSM). No synthetic or estimated wells are ever included.', margin, y); y += 10;
   }
 
   // -- DEM TOPOGRAPHIC & LINEAMENT ANALYSIS --
