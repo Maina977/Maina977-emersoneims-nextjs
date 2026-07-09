@@ -1196,7 +1196,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const wellsB: any[] = nwB?.nearbyWells ?? [];
       const named = wellsB.filter((w) =>
         !/^(OSM-|WPDx\+?-|USGS-|BGS-Afr-|SA-DWS-|IGRAC-|WoSIS-|SYN-)/i.test(String(w?.id ?? '')) && String(w?.id ?? '').trim());
-      const bxH = wellsB.length === 0 ? 20 : 26 + Math.min(named.length, 3) * 5;
+      const bxH = wellsB.length === 0 ? 20 : 26 + Math.min(named.length, 5) * 5;
       doc.setFillColor(240, 249, 255);
       doc.roundedRect(margin, y, pw, bxH, 2, 2, 'F');
       doc.setDrawColor(56, 189, 248); doc.setLineWidth(0.6);
@@ -1207,14 +1207,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
         doc.text(doc.splitTextToSize('No verified borehole records were found within the search radius (WPDx, UNESCO IHP-WINS, WRA, OSM). Confidence is reduced accordingly -- never faked with invented wells. WRA completion records for this area can close this gap.', pw - 8), margin + 4, y + 11);
       } else {
-        doc.text(`VERIFIED BOREHOLES NEARBY: ${wellsB.length} REGISTRY RECORD${wellsB.length === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 25} KM`, margin + 4, y + 6);
+        doc.text(`VERIFIED BOREHOLES NEARBY: ${nwB.sampleSize ?? wellsB.length} REGISTRY RECORD${(nwB.sampleSize ?? wellsB.length) === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 25} KM (${Math.min(wellsB.length, 100)} NEAREST LISTED)`, margin + 4, y + 6);
         doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
         const statBits: string[] = [];
         if ((nwB.averageDepth ?? 0) > 0) statBits.push(`typical depth ~${nwB.averageDepth} m`);
         const knownOutcomes = wellsB.filter((w) => w.outcome === 'Success' || w.outcome === 'Fail').length;
         if (knownOutcomes > 0) statBits.push(`${Math.round((nwB.successRate ?? 0) * 100)}% functional among ${knownOutcomes} with recorded status`);
         doc.text(statBits.length ? statBits.join('  •  ') : 'Depths/outcomes not published for most records -- names and positions are verified.', margin + 4, y + 11);
-        named.slice(0, 3).forEach((w, i) => {
+        named.slice(0, 5).forEach((w, i) => {
           const bits = [String(w.id).slice(0, 52)];
           if ((w.depth_m ?? 0) > 0) bits.push(`${Math.round(w.depth_m)} m`);
           if (w.distance_km != null) bits.push(`${w.distance_km} km away`);
@@ -2957,13 +2957,15 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
-    doc.text(`Average depth: ${nw.averageDepth != null ? Math.round(nw.averageDepth) + 'm' : 'N/A'} | Average yield: ${nw.averageYield != null ? (nw.averageYield ?? 0).toFixed(1) + ' m³/h' : 'N/A'} | Sources: ${nw.dataSources.join(', ')}`, margin, y); y += 8;
+    doc.text(`Average depth: ${nw.averageDepth != null ? Math.round(nw.averageDepth) + 'm' : 'N/A'} | Average yield: ${nw.averageYield != null ? (nw.averageYield ?? 0).toFixed(1) + ' m³/h' : 'N/A'} | Sources: ${nw.dataSources.join(', ')}`, margin, y); y += 5;
+    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 120);
+    doc.text(`Listing the ${Math.min(nw.nearbyWells.length, 100)} nearest verified water points (of ${nw.sampleSize} found) — sorted by distance from the site.`, margin, y); y += 6;
 
     if (nw.nearbyWells.length > 0) {
       autoTable(doc, {
         startY: y,
         head: [['Well ID', 'Distance (km)', 'Depth (m)', 'Yield (m3/h)', 'Lithology', 'Outcome', 'Source']],
-        body: nw.nearbyWells.slice(0, 15).map((w: any) => [
+        body: nw.nearbyWells.slice(0, 100).map((w: any) => [
           w.id, sf(w.distance_km, 1),
           w.depth_m ? Math.round(w.depth_m).toString() : 'not published',
           w.yield_m3h ? (w.yield_m3h ?? 0).toFixed(1) : w.outcome === 'Fail' ? '0' : 'N/A',

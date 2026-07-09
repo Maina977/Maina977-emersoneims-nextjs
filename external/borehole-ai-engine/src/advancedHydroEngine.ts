@@ -392,12 +392,23 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
     if (unResp.ok) {
       const un = await unResp.json();
       if (Array.isArray(un?.wells)) {
-        let unCount = 0;
+        // Collect EVERY in-radius record first, then keep the NEAREST ones.
+        // The old loop took the first 30 in file order — it could list a well
+        // 19 km away while skipping ones in the same village. Owner requires
+        // 50+ boreholes around the site; the registry has thousands nearby.
+        const unMatches: Array<{ t: any[]; dist: number }> = [];
         for (const t of un.wells) {
-          const [wName, wLat, wLon, wDepth, wYield, wStatus, wCounty, wSrc] = t;
+          const wLat = t[1], wLon = t[2];
           if (!isFinite(wLat) || !isFinite(wLon)) continue;
           const dist = haversineDistance(lat, lon, wLat, wLon);
           if (dist > searchRadius) continue;
+          unMatches.push({ t, dist });
+        }
+        unMatches.sort((a, b) => a.dist - b.dist);
+        const UN_CAP = 150; // nearest wells; final output caps again after dedup
+        let unCount = 0;
+        for (const { t, dist } of unMatches.slice(0, UN_CAP)) {
+          const [wName, wLat, wLon, wDepth, wYield, wStatus, wCounty, wSrc] = t;
           const st = String(wStatus || '').toLowerCase();
           let outcome: 'Success' | 'Moderate' | 'Fail' | 'Unknown' = 'Unknown';
           if (st.includes('non') || st.includes('closed') || st.includes('abandon')) outcome = 'Fail';
@@ -414,9 +425,8 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
             source: `UNESCO IHP-WINS registry (${wSrc})`,
           });
           unCount++;
-          if (unCount >= 30) break; // cap per-report table size
         }
-        if (unCount > 0) dataSources.push(`UNESCO IHP-WINS Kenya registry (${unCount} named wells within ${searchRadius} km)`);
+        if (unCount > 0) dataSources.push(`UNESCO IHP-WINS Kenya registry (${unCount} of ${unMatches.length} named wells within ${searchRadius} km — nearest listed)`);
       }
     }
   } catch { /* registry unreachable — other sources still apply */ }
@@ -974,7 +984,10 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
     : (dedupWells.length > 0 ? Math.min(0.95, dedupWells.filter(w => w.depth_m > 0).length / dedupWells.length) : 0);
 
   return {
-    nearbyWells: dedupWells.slice(0, 50),
+    // Nearest 150 ride into the report (sorted by distance above); statistics
+    // are computed over the full deduped set. Owner requirement: the report
+    // must show 50+ boreholes around the site wherever the registries have them.
+    nearbyWells: dedupWells.slice(0, 150),
     averageDepth: validDepths.length > 0 ? Math.round(validDepths.reduce((a, b) => a + b, 0) / validDepths.length) : 0,
     averageYield: validYields.length > 0 ? Math.round(validYields.reduce((a, b) => a + b, 0) / validYields.length * 10) / 10 : 0,
     averageWaterLevel: validWL.length > 0 ? Math.round(validWL.reduce((a, b) => a + b, 0) / validWL.length * 10) / 10 : 0,
