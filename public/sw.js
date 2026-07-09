@@ -8,7 +8,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const CACHE_VERSION = 'v11-20260708-chunkguard';
+const CACHE_VERSION = 'v12-20260709-chunkretry';
 const OFFLINE_URL = '/offline.html';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const IMAGES_CACHE = `images-${CACHE_VERSION}`;
@@ -265,15 +265,35 @@ async function cacheFirstImmutable(request, cacheName) {
   }
 
   perfMetrics.cacheMisses++;
-  try {
-    const networkResponse = await fetch(new Request(request, { cache: 'reload' }));
-    if (networkResponse.ok && !looksPoisoned(request.url, networkResponse)) {
-      cache.put(request, networkResponse.clone());
+  // A single failed fetch here becomes a ChunkLoadError that crashes the whole
+  // page — for a chunk that exists on the server and would load fine 700 ms
+  // later. Retry with backoff before surrendering: attempt 1 bypasses the HTTP
+  // cache (poison safety), retries use plain fetch (lighter on a flaky link).
+  const attempts = [
+    () => fetch(new Request(request, { cache: 'reload' })),
+    () => fetch(request),
+    () => fetch(request),
+  ];
+  const delays = [0, 700, 2000];
+  let lastError = null;
+  for (let i = 0; i < attempts.length; i++) {
+    if (delays[i]) await new Promise((r) => setTimeout(r, delays[i]));
+    try {
+      const networkResponse = await attempts[i]();
+      if (networkResponse.ok && !looksPoisoned(request.url, networkResponse)) {
+        cache.put(request, networkResponse.clone());
+        return networkResponse;
+      }
+      // Poisoned or non-OK: keep the response only as a last resort answer.
+      if (i === attempts.length - 1) return networkResponse;
+    } catch (error) {
+      lastError = error;
     }
-    return networkResponse;
-  } catch (error) {
-    return new Response('Offline', { status: 503 });
   }
+  // Every attempt threw (device genuinely offline right now). Return a real
+  // network error instead of a fabricated 503 so the page's error handling
+  // sees an honest connectivity failure.
+  return Response.error();
 }
 
 /**

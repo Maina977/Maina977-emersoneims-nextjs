@@ -24,7 +24,10 @@ import Link from 'next/link';
 // ran an older (weaker) heal get fresh automatic attempts with the new logic.
 // v4: purge the service worker BEFORE re-fetching chunks — v3 fetched first, so
 // the still-registered SW intercepted the repair and served the poisoned copy.
-const HEAL_COUNT = 'aquascan-self-heal-count-v4';
+// v5: probe the network BEFORE healing/reloading — v4 burned both heals in
+// two instant reloads while the connection was momentarily down, then dumped
+// the user on the technical screen for what was just a network blip.
+const HEAL_COUNT = 'aquascan-self-heal-count-v5';
 const MAX_HEALS = 2;
 
 function getHealCount(): number {
@@ -60,6 +63,33 @@ async function repairChunks(err: Error & { digest?: string }): Promise<void> {
   await Promise.all(
     urls.map((u) => fetch(u, { cache: 'reload', credentials: 'same-origin' }).catch(() => {})),
   );
+}
+
+/**
+ * Is the failed asset actually fetchable from this device RIGHT NOW?
+ * Probes the failed chunk itself (server-verified assets fail here only when
+ * the device's network path is down). Waits for the browser's `online` event
+ * when offline, and retries with backoff — a 3-second Wi-Fi blip should cost
+ * the user 3 seconds, not a crash screen.
+ */
+async function chunkReachable(err: Error & { digest?: string }): Promise<boolean> {
+  const probe = extractChunkUrls(err)[0] ?? '/manifest.webmanifest';
+  for (let i = 0; i < 4; i++) {
+    if (i) await new Promise((r) => setTimeout(r, 1200 * i));
+    if (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine) {
+      // Browser says offline — wait up to 8s for connectivity to return.
+      const cameBack = await new Promise<boolean>((resolve) => {
+        const t = setTimeout(() => resolve(navigator.onLine), 8000);
+        window.addEventListener('online', () => { clearTimeout(t); resolve(true); }, { once: true });
+      });
+      if (!cameBack) continue;
+    }
+    try {
+      const res = await fetch(probe, { cache: 'reload', credentials: 'same-origin' });
+      if (res.ok) return true;
+    } catch { /* still unreachable — retry */ }
+  }
+  return false;
 }
 
 function isChunkLoadError(err: Error): boolean {
@@ -120,6 +150,7 @@ export default function AquaScanError({
   reset: () => void;
 }) {
   const [healing, setHealing] = useState(false);
+  const [offline, setOffline] = useState(false);
 
   useEffect(() => {
     Sentry.captureException(error, {
@@ -128,28 +159,44 @@ export default function AquaScanError({
     console.error('AquaScan Pro error:', error);
 
     let cancelled = false;
-    const attempts = getHealCount();
 
-    // Auto-recover up to MAX_HEALS times. ORDER MATTERS: unregister the service
-    // worker and drop its caches FIRST — while a SW is registered it intercepts
-    // fetch(), so a repair fetch would be answered from the poisoned SW cache and
-    // never reach the network. Only then re-fetch the failed chunk with
-    // cache:'reload' to overwrite the browser HTTP-cache copy, and hard-reload
-    // onto the repaired assets. Counter-guarded so it can never loop forever —
-    // after MAX_HEALS it falls through to the manual UI.
+    const healAndReload = async () => {
+      await purgeCachesAndSW();
+      await repairChunks(error);
+      if (cancelled) return;
+      const u = new URL(window.location.href);
+      u.searchParams.set('_fresh', String(Date.now()));
+      window.location.replace(u.toString());
+    };
+
+    // Auto-recover up to MAX_HEALS times. ORDER MATTERS: (1) verify the network
+    // path actually works — if the asset is unreachable this is a connectivity
+    // blip, not a bad cache, so we show the offline screen and resume when the
+    // connection returns WITHOUT spending a heal attempt (v4 burned both heals
+    // reloading into a dead network). (2) Unregister the service worker and drop
+    // its caches BEFORE re-fetching — a registered SW intercepts fetch() and
+    // would answer the repair from the poisoned cache. (3) Re-fetch the failed
+    // chunk with cache:'reload' to overwrite the HTTP-cache copy, then reload.
+    // Counter-guarded so it can never loop — after MAX_HEALS, manual UI.
+    const attempts = getHealCount();
     if (attempts < MAX_HEALS) {
       setHealing(true);
-      setHealCount(attempts + 1);
       (async () => {
-        await purgeCachesAndSW();
-        await repairChunks(error);
-      })().finally(() => {
-        if (!cancelled) {
-          const u = new URL(window.location.href);
-          u.searchParams.set('_fresh', String(Date.now()));
-          window.location.replace(u.toString());
+        const reachable = await chunkReachable(error);
+        if (cancelled) return;
+        if (!reachable) {
+          // Network is down. Don't reload into failure — wait for it to return,
+          // then run the full heal automatically.
+          setHealing(false);
+          setOffline(true);
+          window.addEventListener('online', () => {
+            if (!cancelled) { setOffline(false); setHealing(true); void healAndReload(); }
+          }, { once: true });
+          return;
         }
-      });
+        setHealCount(attempts + 1);
+        await healAndReload();
+      })();
     }
 
     return () => { cancelled = true; };
@@ -161,6 +208,36 @@ export default function AquaScanError({
         <div className="text-center">
           <div className="w-14 h-14 border-2 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-5" />
           <p className="text-slate-300 text-sm">Refreshing AquaScan Pro to the latest version…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (offline) {
+    // The asset exists on the server but this device can't reach it — a
+    // connection problem, not an AquaScan fault. Resumes automatically.
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+        <div className="max-w-md text-center">
+          <div className="text-5xl mb-6">📡</div>
+          <h2 className="text-2xl font-bold mb-3">
+            Connection <span className="text-amber-400">dropped</span>
+          </h2>
+          <p className="text-gray-400 mb-6">
+            Your internet connection interrupted while AquaScan Pro was loading.
+            The moment it comes back, this page will reload itself — nothing to fix on our side.
+          </p>
+          <div className="w-10 h-10 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin mx-auto mb-6" />
+          <button
+            onClick={() => {
+              const u = new URL(window.location.href);
+              u.searchParams.set('_fresh', String(Date.now()));
+              window.location.replace(u.toString());
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg font-semibold hover:opacity-90 transition"
+          >
+            Retry now
+          </button>
         </div>
       </div>
     );
