@@ -7,8 +7,26 @@ import { ToolAppShell, ToolLoadingState } from '@/components/tools/ToolAppShell'
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 
+/**
+ * Retry a dynamic import with backoff. THIS import is where every user-facing
+ * ChunkLoadError on this page has originated: it pulls the tool's JS + CSS
+ * chunks, and a single failed fetch (network blip) used to crash straight to
+ * the error boundary. Re-invoking the factory makes the bundler re-attempt
+ * the failed chunks, so a 2-second blip costs 2 seconds — not a crash.
+ */
+function importWithRetry<T>(factory: () => Promise<T>, retries = 3, delayMs = 700): Promise<T> {
+  return factory().catch((err) => {
+    if (retries <= 0) throw err;
+    return new Promise<T>((resolve, reject) => {
+      setTimeout(() => {
+        importWithRetry(factory, retries - 1, delayMs * 2).then(resolve, reject);
+      }, delayMs);
+    });
+  });
+}
+
 const AquaScanProV2 = dynamic(
-  () => import('@/components/aquascan-modules/AquaScanProV2'),
+  () => importWithRetry(() => import('@/components/aquascan-modules/AquaScanProV2')),
   {
     ssr: false,
     loading: () => <ToolLoadingState name="AquaScan Pro" />,

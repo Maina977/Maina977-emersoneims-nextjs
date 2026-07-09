@@ -144,6 +144,20 @@ self.addEventListener('fetch', (event) => {
     return; // let the browser hit the network directly
   }
 
+  // BYPASS: AquaScan Pro. Every historical ChunkLoadError on this page had the
+  // SW in the loop as the amplifier — poisoned Cache-API entries, fabricated
+  // 503s, repair fetches intercepted. The tool needs the network for its
+  // analysis APIs anyway, so SW-offline support buys it nothing. The SW
+  // therefore never touches the page NOR any request originating from it
+  // (chunks, CSS, API calls carry the page as referrer) — its assets load
+  // through the browser's native fetch + HTTP cache only.
+  if (
+    url.pathname.startsWith('/aquascan-pro') ||
+    (request.referrer && request.referrer.includes('/aquascan-pro'))
+  ) {
+    return;
+  }
+
   // Route to appropriate caching strategy
   if (url.pathname.startsWith('/_next/static/')) {
     // Static assets - CACHE FIRST (immutable)
