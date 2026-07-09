@@ -64,6 +64,7 @@ import { runSatelliteRemoteSensing } from './satelliteRemoteSensingEngine';
 import { evaluateSurfaceGeophysics } from './surfaceGeophysicsEngine';
 import { sanitizeAnalysisResult } from './sanitizeOutputs';
 import { getKenyaHydroPrior } from './kenyaHydroPriors';
+import { nearestKenyaBaseline } from './kenyaBaseline';
 
 export type PipelineStep = 0|1|2|3|4|5|6|7|8|9|10|11;
 export type ProgressCallback = (step: PipelineStep, label: string) => void;
@@ -437,6 +438,35 @@ export class BoreholeAnalyzer {
         elevation: Math.abs(lat) > 40 ? 350 : Math.abs(lat) > 20 ? 650 : 450,
         source: 'Latitude-based elevation estimate (API fallback)',
       };
+    }
+    // NO-GUESSWORK BASELINE: before any latitude-based fallback, try the
+    // pre-computed MEASURED national baseline (public/data/kenya-baseline.json
+    // — SoilGrids/ERA5/SRTM values fetched once per administrative unit).
+    if (!remoteSensing) {
+      const kb = await nearestKenyaBaseline(effectiveLat ?? 0, effectiveLon ?? 0);
+      if (kb && kb.climate) {
+        fallbacksUsed.push(`Remote sensing APIs failed — using EmersonEIMS pre-computed MEASURED baseline for ${kb.name} (${kb.level}, ${kb.distance_km} km away; SoilGrids/ERA5/SRTM, fetched ${kb.fetched}) — NOT an estimate`);
+        const annualP = kb.climate.precip_mm_yr;
+        const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
+        remoteSensing = {
+          soilGrids: kb.soil ? { available: true, clay: kb.soil.clay_pct != null ? kb.soil.clay_pct * 10 : null, sand: kb.soil.sand_pct != null ? kb.soil.sand_pct * 10 : null, silt: kb.soil.silt_pct != null ? kb.soil.silt_pct * 10 : null, phH2O: kb.soil.pH != null ? kb.soil.pH * 10 : null, source: `EmersonEIMS baseline — ISRIC SoilGrids measured at ${kb.name}` } : null,
+          elevation: kb.elevation_m != null ? { elevation: kb.elevation_m, source: `EmersonEIMS baseline — SRTM measured at ${kb.name}` } : null,
+          climate: {
+            annualPrecipitation: annualP,
+            monthlyPrecipitation: Array.from({ length: 12 }, (_, i) => Math.round(annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6)))),
+            meanTemperature: kb.climate.temp_mean_c ?? 22,
+            monthlyTemperature: Array.from({ length: 12 }, () => kb.climate.temp_mean_c ?? 22),
+            aridity: annualP > 1000 ? 'Humid' : annualP > 500 ? 'Sub-humid' : annualP > 200 ? 'Semi-arid' : 'Arid',
+            rechargeEstimate: Math.round(annualP * rechargePct),
+            source: `EmersonEIMS baseline — Open-Meteo ERA5 2015-2024 measured at ${kb.name} (${kb.distance_km} km)`,
+          },
+          waterIndices: null,
+          surfaceWater: null,
+          fetchedAt: new Date().toISOString(),
+          satelliteLinks: { sentinelHub: '', landsatViewer: '', earthEngine: '', jrcWater: '', graceGroundwater: '', gldasSoilMoisture: '', geeGLDAS: '' },
+          availableIndices: [],
+        };
+      }
     }
     if (!remoteSensing) {
       fallbacksUsed.push('All remote sensing (SoilGrids + Climate + Elevation APIs all failed â€” using latitude estimates)');

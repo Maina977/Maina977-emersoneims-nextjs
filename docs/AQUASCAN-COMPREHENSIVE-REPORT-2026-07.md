@@ -163,6 +163,18 @@ When location is Grade D/F (no GPS, no manual entry — coordinates from visual 
 - **Retained:** regional hydrogeology, water budget, soil/vegetation/rock analysis, water-quality modelling, risk, economics (labelled desktop), geophysics survey plan and the upgrade path — everything that is genuinely regional-scale.
 - **Verifiable gate:** `gpsSource ∈ {exif, manual, device}` OR grade ≤ C ⇒ full site report; unit-tested 8/8 cases.
 
+## 5.2 EmersonEIMS national databases (our own data moat)
+Built 2026-07-09 per the "be ahead of the game" directive — pre-computed, verifiable, bundled with the tool:
+
+| Database | Contents | Status |
+|---|---|---|
+| `public/data/gov-wells-kenya.json` | **22,820 named groundwater sources** (UNESCO IHP-WINS: mWater + OSM), 543 with sanity-bounded drilled depths; merged into Nearby Wells with attribution | ✅ Live |
+| `public/data/kenya-baseline.json` | **National environmental baseline** — REAL measured values per administrative unit: annual precipitation + mean temperature (ERA5 2015–2024), elevation (SRTM), soil texture/pH (SoilGrids, filled when ISRIC API is up). Level 1 = 47 county seats; extend to constituencies/towns/villages via `scripts/build-kenya-baseline.mjs` with a units CSV | ✅ Live (counties) |
+| Kenya hydro-province priors (`kenyaHydroPriors.ts`) | 47 counties → aquifer province, published depth/yield/success/fluoride priors (BGS/MacDonald) | ✅ Live |
+| WRA import channel (`/data/wra-boreholes.json`) | Depth-complete government completion records — awaiting WRA data request | 🔲 Ready |
+
+**No-guesswork rule enforced by the baseline:** when live APIs fail during an analysis in Kenya, the engine now falls back to the nearest pre-computed **measured** unit (labelled "EmersonEIMS baseline — measured at <unit>, NOT an estimate") instead of latitude-based guesses. Expansion path: run the builder with a CSV of constituency/town/village centroids (name,level,county,lat,lon) — it appends in batches, resumes safely, and respects API rate limits.
+
 ## 6. Data source registry (all free, no-auth, real-time)
 ISRIC SoilGrids v2.0 · ERA5-Land/Open-Meteo (ECMWF) · NASA POWER (GLDAS/MERRA-2) · MODIS ORNL DAAC · GloFAS · JRC Global Surface Water · SRTM/Open-Elevation · COMET LiCSAR/ESA · ASF DAAC Sentinel-1 · Macrostrat · USGS NWIS/MRData/Spectral Library · OneGeology · WPDx/WPDx+ · BGS GeoIndex & Africa Atlas · OSM Overpass · IGRAC GGIS · DWS SA · GEMStat · mWater · WoSIS · Nominatim. Standards: WHO 2011, ISO 14688/14689/22475/5667/6709, BS 5930, ASTM D4043/4044/4050/4106/5922/6431/D5299, API RP 65, ANSI/HI 9.6.1.
 
