@@ -2352,7 +2352,7 @@ export class BoreholeAnalyzer {
           category: 'environmental',
           likelihood: (waterQuality?.iron ?? 0) > 0.2 ? 'High' : (waterQuality?.iron ?? 0) > 0.1 ? 'Medium' : 'Low',
           impact: 'Medium',
-          mitigation: 'Aeration + filtration system ($1,200-1,500)',
+          mitigation: 'Aeration + filtration system (budgeted in the report cost tables — single economics model)',
           residualRisk: 'Low',
         },
         {
