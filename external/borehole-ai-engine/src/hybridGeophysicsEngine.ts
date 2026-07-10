@@ -888,7 +888,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     driBoostPercent: postFusionDRI - finalDRI,
     fusionVerdict: postFusionDRI >= drillThreshold ? 'CONFIRMED' : postFusionDRI >= targetedThreshold ? 'REFINED' : 'CONTRADICTED',
     fusionNarrative: postFusionDRI >= drillThreshold
-      ? `After ERT confirms AI predictions, DRI rises from ${finalDRI}% to ${postFusionDRI}% — exceeding the ${drillThreshold}% drill threshold. AI + ERT fusion provides bankable confidence for drilling.`
+      ? `IF the ERT survey confirms the AI predictions, DRI is projected to rise from ${finalDRI}% to ${postFusionDRI}% — exceeding the ${drillThreshold}% drill threshold. This remains a projection until the ERT is run; bankable grade additionally requires a pump test and lab water analysis.`
       : `ERT is projected to boost DRI from ${finalDRI}% to ${postFusionDRI}%. ${postFusionDRI >= targetedThreshold ? 'This brings the site close to drill-ready — minor additional verification may suffice.' : 'Additional surveys may be needed, but ERT significantly narrows the uncertainty.'}`,
     aiPredictions: [
       `Aquifer type: ${input.aquiferType}`,
@@ -971,14 +971,14 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       status: 'pending',
       icon: '\u{1F52C}',
       description: `Feed ERT resistivity profile back into AI engine. The AI recalculates depth, geology, fracture targets, and yield estimate using combined satellite + field data. DRI projected to rise from ${finalDRI}% to ${postFusionDRI}% (+${postFusionDRI - finalDRI}%).`,
-      keyOutput: `Projected DRI: ${postFusionDRI}% | Confidence: ${fusionResult.combinedConfidence}% | Verdict: ${fusionResult.fusionVerdict}`,
+      keyOutput: `Projected DRI: ${postFusionDRI}% | Confidence: ${fusionResult.combinedConfidence}% | Projected verdict if ERT confirms: ${fusionResult.fusionVerdict}`,
       details: [
         `Pre-ERT DRI: ${finalDRI}% → Post-ERT projected DRI: ${postFusionDRI}%`,
         `Aquifer presence: ${aquiferScore}% → ${postERTAquifer}%`,
         `Depth accuracy: ${depthScore}% → ${postERTDepth}%`,
         isCrystalline ? `Fracture mapping: ${fractureScore}% → ${postERTFracture}%` : `Geology certainty: ${geoScore}% → ${postERTGeo}%`,
         `Drill site precision: ${siteScore}% → ${postERTSite}%`,
-        `Fusion verdict: ${fusionResult.fusionVerdict} — ${fusionResult.fusionNarrative}`,
+        `Projected fusion verdict (conditional on the ERT actually confirming): ${fusionResult.fusionVerdict} — ${fusionResult.fusionNarrative}`,
       ],
       costUSD: 0, timeHrs: 0,
     },

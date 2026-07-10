@@ -292,6 +292,15 @@ export class BoreholeAnalyzer {
         source: 'nominatim',
         isFromImage: false,
       };
+      // The visual estimate may have stamped a wrong-country locationContext
+      // (e.g. Kampala from a terrain lookalike) before the user's coordinates
+      // arrived -- the authoritative reverse geocode must replace it.
+      features.locationContext = {
+        ...(features.locationContext || {}),
+        city: clientGeo.city || clientGeo.village || clientGeo.county || '',
+        country: clientGeo.country || '',
+        region: clientGeo.state || clientGeo.county || '',
+      };
       console.log(`[LOCATION OVERRIDE] Using ${hasDirectGPS ? 'exact user GPS' : 'geocoded town'}: ${clientGeo.latitude.toFixed(5)}, ${clientGeo.longitude.toFixed(5)} â€” visual geo weight: ${visualGeoWeight}`);
 
       // Override visual geo-estimate so it doesn't contaminate report display
@@ -2614,6 +2623,12 @@ export class BoreholeAnalyzer {
       }
       if (result.risk.overallRisk < 0.2 && (result.risk.viability === 'not_recommended' || result.risk.viability === 'low')) {
         result.risk.viability = 'high';
+      }
+      // Viability must not contradict the reconciled ensemble verdict:
+      // moderate probability + low risk can never read "Viability: LOW".
+      if (result.probability >= 0.5 && result.risk.overallRisk < 0.5 &&
+          (result.risk.viability === 'low' || result.risk.viability === 'not_recommended')) {
+        result.risk.viability = 'medium';
       }
 
       // 2. Probability â†” risk coherence (prevents prob>85% + risk>65%)

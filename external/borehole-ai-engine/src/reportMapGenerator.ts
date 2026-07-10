@@ -299,11 +299,20 @@ function drawFallbackMap(
       ctx.strokeStyle = colors[i].replace(/[\d.]+\)$/, '0.5)');
       ctx.lineWidth = 1.5; ctx.stroke();
     }
-    // Water table depth label
-    const wtDepth = analysisData?.waterTableDepth || analysisData?.recommendedDepth || '?';
+    // Water table depth label -- must agree with the Executive Brief and the
+    // other maps: never substitute the drilling depth for the water table.
+    const wtDepth = analysisData?.waterTableDepth
+      ?? analysisData?.drillPoint?.waterTableDepth_m
+      ?? analysisData?.geophysicsFusion?.waterTableDepth_m
+      ?? null;
     ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 14px Helvetica, Arial, sans-serif';
-    ctx.fillText(`Estimated Water Table: ${typeof wtDepth === 'number' ? wtDepth.toFixed(0) + 'm' : wtDepth + 'm'}`, cx - 120, cy + 220);
+    ctx.fillText(
+      typeof wtDepth === 'number'
+        ? `Estimated Water Table: ${wtDepth.toFixed(0)}m (modelled -- confirm with ERT)`
+        : 'Water table: not determined -- confirm with ERT',
+      cx - 160, cy + 220,
+    );
   } else if (mapType === 'soil') {
     // Draw soil type zones
     const soilType = analysisData?.soil?.type || 'Unknown';
@@ -508,7 +517,7 @@ function drawRegistryWells(
   ctx.strokeRect(bx, by, bw, bh);
   ctx.fillStyle = '#38bdf8';
   ctx.font = 'bold 11px Helvetica, Arial, sans-serif';
-  ctx.fillText(`${inExtent.length} VERIFIED WELL${inExtent.length === 1 ? '' : 'S'} ON THIS MAP`, bx + 10, by + 17);
+  ctx.fillText(`${inExtent.length} REGISTRY WATER POINT${inExtent.length === 1 ? '' : 'S'} ON THIS MAP`, bx + 10, by + 17);
   const legendRows: Array<[string, string]> = [
     ['#22c55e', 'Functional / successful'],
     ['#ef4444', 'Failed / non-functional'],
@@ -533,7 +542,7 @@ export function renderDrillHereMap(
   successProbability: number,  // 0-1
   recommendedDepth: number,    // metres
   estimatedYield: number,      // m3/hr
-  waterTableDepth: number,     // metres
+  waterTableDepth: number | null,  // metres -- null = not determined (no invented default)
   analysisData?: any,
 ): string {
   const W = 1024, H = 700;
@@ -683,7 +692,7 @@ export function renderDrillHereMap(
   const boxData = [
     { label: 'DEPTH TARGET', value: `${recommendedDepth.toFixed(0)} m`, sub: 'Recommended drill depth', color: '#38bdf8' },
     { label: 'EST. YIELD',   value: `${estimatedYield.toFixed(1)} m\u00b3/hr`, sub: 'At target aquifer', color: '#22c55e' },
-    { label: 'WATER TABLE',  value: `${waterTableDepth.toFixed(0)} m`, sub: 'Estimated depth to water', color: '#818cf8' },
+    { label: 'WATER TABLE',  value: waterTableDepth != null ? `${waterTableDepth.toFixed(0)} m` : 'N/A', sub: waterTableDepth != null ? 'Modelled -- confirm with ERT' : 'Confirm with ERT', color: '#818cf8' },
     { label: 'SUCCESS PROB', value: `${(pct * 100).toFixed(0)}%`, sub: 'AI model estimate', color: pct >= 0.6 ? '#22c55e' : pct >= 0.4 ? '#fbbf24' : '#ef4444' },
   ];
   const boxW = 170, boxH = 70;
@@ -809,11 +818,12 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
  */
 export function renderWaterTableDepthMap(
   lat: number, lon: number,
-  waterTableDepth: number,   // metres (primary estimate)
+  waterTableDepth: number | null,  // metres -- null = not determined (never invent one)
   seasonalVariation: number, // metres (wet/dry swing; 0 if unknown)
   maxExpectedDepth: number,  // metres (deepest extent)
   analysisData?: any,
 ): string {
+  const wtKnown = typeof waterTableDepth === 'number' && isFinite(waterTableDepth);
   const W = 1024, H = 700;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -876,22 +886,28 @@ export function renderWaterTableDepthMap(
   }
 
   // ── Water table contour highlight ────────────────────────────
-  const wtR = depthToRadius(waterTableDepth);
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 3;
-  ctx.setLineDash([8, 4]);
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, wtR * 1.4, wtR, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  // Label
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 12px Helvetica, Arial, sans-serif';
-  ctx.fillText(`Water table: ~${waterTableDepth.toFixed(0)}m`, cx - wtR * 1.4 - 130, cy + 16);
-  ctx.font = '10px Helvetica, Arial, sans-serif';
-  ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
-  if (seasonalVariation > 0) {
-    ctx.fillText(`Seasonal swing: +/-${(seasonalVariation / 2).toFixed(1)}m`, cx - wtR * 1.4 - 130, cy + 30);
+  if (wtKnown) {
+    const wtR = depthToRadius(waterTableDepth as number);
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, wtR * 1.4, wtR, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Label
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 12px Helvetica, Arial, sans-serif';
+    ctx.fillText(`Water table: ~${(waterTableDepth as number).toFixed(0)}m (modelled)`, cx - wtR * 1.4 - 130, cy + 16);
+    ctx.font = '10px Helvetica, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
+    if (seasonalVariation > 0) {
+      ctx.fillText(`Seasonal swing: +/-${(seasonalVariation / 2).toFixed(1)}m`, cx - wtR * 1.4 - 130, cy + 30);
+    }
+  } else {
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 12px Helvetica, Arial, sans-serif';
+    ctx.fillText('Water table: not determined -- confirm with ERT', cx - 150, cy + 16);
   }
 
   // ── Depth profile bar (right side) ───────────────────────────
@@ -935,14 +951,16 @@ export function renderWaterTableDepthMap(
   ctx.textAlign = 'left';
 
   // Marker on bar at water table depth
-  const markerY = barTop2 + (waterTableDepth / maxD) * barH;
-  ctx.fillStyle = '#38bdf8';
-  ctx.beginPath();
-  ctx.moveTo(barX - 8, markerY);
-  ctx.lineTo(barX - 2, markerY - 5);
-  ctx.lineTo(barX - 2, markerY + 5);
-  ctx.closePath();
-  ctx.fill();
+  if (wtKnown) {
+    const markerY = barTop2 + ((waterTableDepth as number) / maxD) * barH;
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.moveTo(barX - 8, markerY);
+    ctx.lineTo(barX - 2, markerY - 5);
+    ctx.lineTo(barX - 2, markerY + 5);
+    ctx.closePath();
+    ctx.fill();
+  }
 
   // ── Information box ──────────────────────────────────────────
   const infoX = 20, infoY = mapBot - 105;
@@ -959,11 +977,14 @@ export function renderWaterTableDepthMap(
   ctx.fillText('GROUNDWATER DEPTH SUMMARY', infoX + 10, infoY + 18);
   ctx.fillStyle = '#e2e8f0';
   ctx.font = '10px Helvetica, Arial, sans-serif';
-  ctx.fillText(`Estimated water table depth:  ${waterTableDepth.toFixed(0)} m`, infoX + 10, infoY + 36);
-  if (seasonalVariation > 0) {
+  ctx.fillText(
+    wtKnown ? `Estimated water table depth:  ${(waterTableDepth as number).toFixed(0)} m (modelled)` : 'Water table depth:  not determined',
+    infoX + 10, infoY + 36,
+  );
+  if (wtKnown && seasonalVariation > 0) {
     ctx.fillText(`Seasonal variation (wet/dry):  +/-${(seasonalVariation / 2).toFixed(1)} m`, infoX + 10, infoY + 50);
-    ctx.fillText(`Wet season depth:  ~${Math.max(0, waterTableDepth - seasonalVariation / 2).toFixed(0)} m`, infoX + 10, infoY + 64);
-    ctx.fillText(`Dry season depth:  ~${(waterTableDepth + seasonalVariation / 2).toFixed(0)} m`, infoX + 160, infoY + 64);
+    ctx.fillText(`Wet season depth:  ~${Math.max(0, (waterTableDepth as number) - seasonalVariation / 2).toFixed(0)} m`, infoX + 10, infoY + 64);
+    ctx.fillText(`Dry season depth:  ~${((waterTableDepth as number) + seasonalVariation / 2).toFixed(0)} m`, infoX + 160, infoY + 64);
   } else {
     ctx.fillText('Seasonal variation: not available', infoX + 10, infoY + 50);
   }
@@ -992,7 +1013,7 @@ export function renderWaterTableDepthMap(
       ctx.stroke();
       ctx.fillStyle = '#22c55e';
       ctx.font = 'bold 11px Helvetica, Arial, sans-serif';
-      ctx.fillText('NEARBY VERIFIED WELLS (REGISTRY RECORDS)', pX + 10, pY + 17);
+      ctx.fillText('NEARBY WATER POINTS (REGISTRY RECORDS)', pX + 10, pY + 17);
       ctx.font = '9px Helvetica, Arial, sans-serif';
       regWells.forEach((w, i) => {
         let name = String(w.id).trim();
@@ -1293,14 +1314,19 @@ export async function generateReportMaps(
   const successProb = analysisData?.successProbability ?? analysisData?.drillPoint?.successProbability ?? 0.5;
   const recDepth    = analysisData?.recommendedDepth   ?? analysisData?.drillPoint?.targetDepth_m     ?? 60;
   const estYield    = analysisData?.estimatedYield     ?? analysisData?.drillPoint?.estimatedYield_m3hr ?? 2;
-  const wtDepth     = analysisData?.waterTableDepth    ?? analysisData?.drillPoint?.waterTableDepth_m  ?? 30;
+  // ONE canonical modelled water-table chain -- identical to the Executive
+  // Brief. Never fall back to an invented constant or the drilling depth.
+  const wtDepth: number | null = analysisData?.drillPoint?.waterTableDepth_m
+    ?? analysisData?.waterTableDepth
+    ?? analysisData?.geophysicsFusion?.waterTableDepth_m
+    ?? null;
 
   const drillHereMap = renderDrillHereMap(
     lat, lon,
     typeof successProb === 'number' ? successProb : 0.5,
     typeof recDepth    === 'number' ? recDepth    : 60,
     typeof estYield    === 'number' ? estYield    : 2,
-    typeof wtDepth     === 'number' ? wtDepth     : 30,
+    typeof wtDepth     === 'number' ? wtDepth     : null,
     analysisData,
   );
 
@@ -1310,7 +1336,7 @@ export async function generateReportMaps(
 
   const waterTableMap = renderWaterTableDepthMap(
     lat, lon,
-    typeof wtDepth     === 'number' ? wtDepth     : 30,
+    typeof wtDepth     === 'number' ? wtDepth     : null,
     typeof seasonalVar === 'number' ? seasonalVar : 0,
     typeof maxDepth    === 'number' ? maxDepth    : 120,
     analysisData,

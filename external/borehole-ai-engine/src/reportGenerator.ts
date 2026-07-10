@@ -80,6 +80,81 @@ function trackExport(result: AnalysisResult, format: ReportFormat, tier: 'basic'
   recordReport(result, format, tier, audit.score, audit.passed, _customerName, _customerEmail, _customerOrg);
 }
 
+// --- PDF TEXT SANITIZER ---
+// jsPDF's built-in Helvetica speaks WinAnsi only. Any character above that
+// range is split into two garbage bytes on the page (U+2192 "->" arrow prints
+// as "!'", U+26D4 prints as "&O", U+2265 ">=" prints as '"e'), and a past
+// encoding accident left literal "?" where en-dashes//+- once were in some
+// source strings. Every string drawn into the PDF passes through here so the
+// client never sees broken glyphs.
+const PDF_UNICODE_MAP: Record<string, string> = {
+  '→': '->', '←': '<-', '↑': '^', '↓': 'v',
+  '⇒': '=>', '⇐': '<=', '↔': '<->',
+  '≥': '>=', '≤': '<=', '≈': '~', '≠': '!=', '≡': '=',
+  '−': '-', '′': "'", '″': '"', '√': 'sqrt ', '∆': 'delta ',
+  '✓': '[OK]', '✔': '[OK]', '✗': '[X]', '✘': '[X]',
+  '⚠': '[!]', '⛔': '[!]', '❗': '[!]', 'ℹ': '[i]',
+  'Ω': 'Ohm', 'Ω': 'Ohm', 'Δ': 'delta', 'σ': 'sigma',
+  'μ': 'u', 'ρ': 'rho', 'π': 'pi',
+  '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
+  '₅': '5', '₆': '6', '⁰': '0', ' ': ' ',
+};
+// Characters ABOVE 0xFF that jsPDF's WinAnsi encoder renders correctly.
+const PDF_WINANSI_SAFE = /[€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/;
+
+export function sanitizePdfText(s: string): string {
+  if (!s) return s;
+  let t = String(s)
+    // CP1252 mojibake literally present in a few source strings
+    .replace(/â€”/g, '--').replace(/â€“/g, '-').replace(/â€™/g, "'")
+    .replace(/â€˜/g, "'").replace(/â€œ/g, '"').replace(/â€/g, '"')
+    .replace(/â€¦/g, '...').replace(/â€/g, '').replace(/Ã—/g, 'x').replace(/Â/g, '')
+    // literal "?" left behind by a past encoding accident:
+    // digit?digit was an en-dash range; " ?digit" was a plus-minus;
+    // " ? " was a decorative separator; leading/trailing " ?" was a symbol
+    .replace(/(\d)\?(\d)/g, '$1-$2')
+    .replace(/ \?(\d)/g, ' +/-$1')
+    .replace(/ \? /g, ' -- ')
+    .replace(/^\? /, '')
+    .replace(/ \?$/, '')
+    .replace(/\? (PASS|FAIL|DRILL|CURRENT)/g, '$1');
+  // map/strip everything the built-in fonts cannot draw
+  let out = '';
+  for (const ch of t) {
+    const code = ch.codePointAt(0)!;
+    if (code <= 0xFF) { out += ch; continue; }
+    if (PDF_UNICODE_MAP[ch] !== undefined) { out += PDF_UNICODE_MAP[ch]; continue; }
+    if (PDF_WINANSI_SAFE.test(ch)) { out += ch; continue; }
+    // anything else (emoji, box drawing, rare symbols) is dropped silently
+  }
+  return out.replace(/ {3,}/g, '  ');
+}
+
+const sanitizeDeep = (v: any): any => {
+  if (typeof v === 'string') return sanitizePdfText(v);
+  if (Array.isArray(v)) return v.map(sanitizeDeep);
+  return v;
+};
+
+/** Canvas can draw full Unicode, so chart text only needs the literal-"?" repair. */
+function sanitizeChartText(s: string): string {
+  if (!s) return s;
+  return String(s)
+    .replace(/(\d)\?(\d)/g, '$1-$2')
+    .replace(/ \?(\d)/g, ' +/-$1')
+    .replace(/ \? /g, ' -- ')
+    .replace(/^\? /, '')
+    .replace(/ \?$/, '');
+}
+
+/** Wrap doc.text / doc.splitTextToSize so every drawn string is WinAnsi-clean. */
+function applyPdfTextSanitizer(doc: jsPDF): void {
+  const rawText = (doc as any).text.bind(doc);
+  (doc as any).text = (txt: any, ...rest: any[]) => rawText(sanitizeDeep(txt), ...rest);
+  const rawSplit = (doc as any).splitTextToSize.bind(doc);
+  (doc as any).splitTextToSize = (txt: any, ...rest: any[]) => rawSplit(sanitizeDeep(txt), ...rest);
+}
+
 // --- HELPERS ---
 
 function fmt(v: any, decimals = 2): string {
@@ -149,6 +224,7 @@ function renderRadarChart(
   maxVal = 100,
   size = 320,
 ): string {
+  title = sanitizeChartText(title);
   const canvas = document.createElement('canvas');
   canvas.width = size + 160;
   canvas.height = size + 60;
@@ -356,7 +432,7 @@ function renderBoreholeColumn(
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '9px sans-serif';
     ctx.textAlign = 'left';
-    const labelText = `${layer.lithology}${layer.isAquifer ? ' ? AQUIFER' : ''}`;
+    const labelText = `${layer.lithology}${layer.isAquifer ? ' -- AQUIFER' : ''}`;
     ctx.fillText(labelText, colX + colW + 8, labelY + 3);
     ctx.fillStyle = '#94a3b8';
     ctx.font = '8px sans-serif';
@@ -377,7 +453,7 @@ function renderBoreholeColumn(
     ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText(`? Water Table ${waterTableDepth.toFixed(0)}m`, colX - 5, wtY - 5);
+    ctx.fillText(`Water Table ${waterTableDepth.toFixed(0)}m (modelled)`, colX - 5, wtY - 5);
   }
 
   // Recommended depth marker (red arrow)
@@ -496,6 +572,8 @@ function renderBarChart(
   height = 250,
   colors?: string[],
 ): string {
+  title = sanitizeChartText(title);
+  labels = labels.map(sanitizeChartText);
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -574,6 +652,8 @@ function renderLineChart(
   width = 500,
   height = 250,
 ): string {
+  title = sanitizeChartText(title);
+  labels = labels.map(sanitizeChartText);
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -651,6 +731,8 @@ function renderPieChart(
   title: string,
   size = 260,
 ): string {
+  title = sanitizeChartText(title);
+  labels = labels.map(sanitizeChartText);
   const canvas = document.createElement('canvas');
   canvas.width = size + 140;
   canvas.height = size + 40;
@@ -877,6 +959,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   enforceVerificationGate(result);
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  applyPdfTextSanitizer(doc);
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 14;
   const pw = pageW - margin * 2;
@@ -1030,7 +1113,17 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   {
     const af = (result as any)._auditFlags;
     const fieldGaps: string[] = [];
-    if (!af?.hasFieldGPS) fieldGaps.push('GPS: No field receiver (coordinates from reverse-geocoding -- Grade D)');
+    if (!af?.hasFieldGPS) {
+      // Wording must match the Executive Brief (gpsSource + location grade) --
+      // never invent a different grade here.
+      const src = String(result.gpsSource || 'none').toLowerCase();
+      const grade = result.locationConfidence?.grade || 'N/A';
+      const how = src === 'manual' ? 'coordinates entered manually'
+        : src === 'exif' ? 'coordinates from photo EXIF'
+        : src === 'device' ? 'coordinates from device geolocation'
+        : 'coordinates estimated from analysis';
+      fieldGaps.push(`GPS: Not verified with a survey-grade field receiver (${how} -- location grade ${grade})`);
+    }
     if (!af?.hasFieldERT) fieldGaps.push('ERT: No field survey (all geophysics are SYNTHETIC)');
     if (!af?.hasFieldPumpTest) fieldGaps.push('Pump Test: Not conducted (T, S, yield are ESTIMATES)');
     if (!af?.hasLabWaterAnalysis) fieldGaps.push('Lab Analysis: Not available (water quality is MODELLED)');
@@ -1063,7 +1156,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const af = (result as any)._auditFlags ?? {};
     const u = result.uncertainty;
     const briefR = result as any;
-    const wtDepth = briefR.drillPoint?.waterTableDepth_m ?? briefR.waterTableDepth ?? null;
+    // Same canonical chain as every map in this report (reportMapGenerator).
+    const wtDepth = briefR.drillPoint?.waterTableDepth_m ?? briefR.waterTableDepth
+      ?? result.geophysicsFusion?.waterTableDepth_m ?? null;
 
     const briefHeader = (pageNo: number) => {
       addPage();
@@ -1202,15 +1297,21 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setDrawColor(56, 189, 248); doc.setLineWidth(0.6);
       doc.roundedRect(margin, y, pw, bxH, 2, 2, 'S');
       doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 116, 144);
+      // Springs are real registry water points, but they are NOT drilled
+      // boreholes -- say so, or the whole report loses credibility.
+      const springCount = wellsB.filter((w) => /spring/i.test(String(w?.id ?? ''))).length;
+      const boreholeCount = wellsB.length - springCount;
+      const kindLabel = springCount > boreholeCount ? 'WATER POINTS' : 'BOREHOLES / WATER POINTS';
       if (wellsB.length === 0) {
-        doc.text('VERIFIED BOREHOLES NEARBY: NONE FOUND IN THE REGISTRIES', margin + 4, y + 6);
+        doc.text('VERIFIED WATER POINTS NEARBY: NONE FOUND IN THE REGISTRIES', margin + 4, y + 6);
         doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
-        doc.text(doc.splitTextToSize('No verified borehole records were found within the search radius (WPDx, UNESCO IHP-WINS, WRA, OSM). Confidence is reduced accordingly -- never faked with invented wells. WRA completion records for this area can close this gap.', pw - 8), margin + 4, y + 11);
+        doc.text(doc.splitTextToSize('No verified water-point records were found within the search radius (WPDx, UNESCO IHP-WINS, WRA, OSM). Confidence is reduced accordingly -- never faked with invented wells. WRA completion records for this area can close this gap.', pw - 8), margin + 4, y + 11);
       } else {
-        doc.text(`VERIFIED BOREHOLES NEARBY: ${nwB.sampleSize ?? wellsB.length} REGISTRY RECORD${(nwB.sampleSize ?? wellsB.length) === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 25} KM (${Math.min(wellsB.length, 100)} NEAREST LISTED)`, margin + 4, y + 6);
+        doc.text(`VERIFIED ${kindLabel} NEARBY: ${nwB.sampleSize ?? wellsB.length} REGISTRY RECORD${(nwB.sampleSize ?? wellsB.length) === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 25} KM (${Math.min(wellsB.length, 100)} NEAREST LISTED)`, margin + 4, y + 6);
         doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
         const statBits: string[] = [];
-        if ((nwB.averageDepth ?? 0) > 0) statBits.push(`typical depth ~${nwB.averageDepth} m`);
+        if (springCount > 0) statBits.push(`${springCount} springs + ${boreholeCount} wells/boreholes`);
+        if ((nwB.averageDepth ?? 0) > 0) statBits.push(`typical depth ~${nwB.averageDepth} m (regional est. where unmeasured)`);
         const knownOutcomes = wellsB.filter((w) => w.outcome === 'Success' || w.outcome === 'Fail').length;
         if (knownOutcomes > 0) statBits.push(`${Math.round((nwB.successRate ?? 0) * 100)}% functional among ${knownOutcomes} with recorded status`);
         doc.text(statBits.length ? statBits.join('  •  ') : 'Depths/outcomes not published for most records -- names and positions are verified.', margin + 4, y + 11);
@@ -1221,7 +1322,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           doc.text(`• ${bits.join('  --  ')}`, margin + 6, y + 17 + i * 5);
         });
         doc.setFontSize(6); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 120, 135);
-        doc.text('Government/registry records at true coordinates -- plotted on the site maps in the annex. No synthetic wells, ever.', margin + 4, y + bxH - 3);
+        doc.text('Registry records (springs, wells, boreholes) at true positions -- names verified; depths/yields marked "regional est." are estimates, not measurements.', margin + 4, y + bxH - 3);
       }
       y += bxH + 4;
     }
@@ -1337,7 +1438,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ? [['Best Drilling Window', result.historicalData.weather.bestDrillingSeason, 'Schedule rig mobilization in this window'] as string[]]
         : []),
       ['Soil Type', result.soil?.type?.toUpperCase() || 'N/A', `Porosity: ${fmt(result.soil?.porosity)}`],
-      ['Water Quality Score', `${fmt((result.waterQuality?.score ?? 0) * 100, 0)}/100 (modelled)`, (() => {
+      ['Water Quality (modelled)', (() => {
+        // Potability verdict FIRST -- a high index number beside a WHO
+        // failure reads as good news (review finding).
+        const wqv = result.waterQuality;
+        const fails = (wqv?.fluoride ?? 0) > 1.5 || (wqv?.arsenic ?? 0) > 0.01 || (wqv?.nitrate ?? 0) > 50 || (wqv?.iron ?? 0) > 0.3;
+        return `${wqv?.isPotable && !fails ? 'PASSES WHO (modelled)' : 'FAILS WHO until treated'} -- index ${fmt((wqv?.score ?? 0) * 100, 0)}/100`;
+      })(), (() => {
         if (result.waterQuality?.isPotable) return 'POTABLE (modelled) -- Verify with ISO 17025 lab analysis';
         const wq = result.waterQuality;
         const healthFails = [
@@ -1682,10 +1789,17 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.text('Overall Risk', margin + 120, y + 28);
   doc.setFontSize(14);
   doc.setTextColor(80, 80, 80);
-  doc.text(`Viability: ${(result.risk?.viability || 'N/A').toUpperCase()}`, margin + 120, y + 40);
+  {
+    // Plain-English viability wording, always conditional on the field work.
+    const viaMap: Record<string, string> = {
+      high: 'FAVOURABLE (pending ERT)', medium: 'CONDITIONAL -- pending ERT',
+      low: 'MARGINAL -- survey first', not_recommended: 'NOT RECOMMENDED',
+    };
+    doc.text(`Viability: ${viaMap[String(result.risk?.viability)] ?? 'N/A'}`, margin + 120, y + 40);
+  }
   y += 58;
 
-  // Water quality chart ? actual values, NOT normalized (to avoid misrepresentation)
+  // Water quality chart -- modelled values, NOT normalized (to avoid misrepresentation)
   checkSpace(70);
   const wqLabels = ['pH', 'TDS (mg/L)', 'Hardness (mg/L CaCO3)', 'Fluoride (mg/L)', 'Iron (mg/L)', 'Nitrate (mg/L)'];
   const wqValues = [
@@ -1696,7 +1810,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     result.waterQuality?.iron || 0,
     result.waterQuality?.nitrate || 0,
   ];
-  const wqChart = renderBarChart(wqLabels, wqValues, 'Water Quality ? Measured Values (actual units)', 500, 230,
+  const wqChart = renderBarChart(wqLabels, wqValues, 'Water Quality -- Modelled Values (lab confirmation required)', 500, 230,
     ['#38bdf8', '#22c55e', '#fbbf24', '#ef4444', '#f97316', '#06b6d4']);
   doc.addImage(wqChart, 'PNG', margin, y, pageW - margin * 2, 60);
   y += 65;
@@ -1717,13 +1831,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
-  // Risk pie chart
-  if (tier !== 'basic') {
-    checkSpace(70);
-    const pieChart = renderPieChart(riskLabels, riskValues, 'Risk Distribution', 220);
-    doc.addImage(pieChart, 'PNG', margin + 30, y, 120, 70);
-    y += 75;
-  }
+  // (duplicate "Risk Distribution" pie removed -- it already appears beside
+  //  the overall-risk gauge above; review finding: page 8 was a lone repeat)
 
   // ---------------------------------------------------------------
   // MAPS -- always render (programmatic maps need no network/coordinates)
@@ -1747,7 +1856,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       _r.drillPoint?.successProbability ?? _r.successProbability ?? 0.5,
       _r.drillPoint?.targetDepth_m ?? _r.recommendedDepth ?? 60,
       _r.drillPoint?.estimatedYield_m3hr ?? _r.estimatedYield ?? 2,
-      _r.drillPoint?.waterTableDepth_m ?? _r.waterTableDepth ?? 30,
+      _r.drillPoint?.waterTableDepth_m ?? _r.waterTableDepth ?? result.geophysicsFusion?.waterTableDepth_m ?? null,
       result,
     );
     addPage();
@@ -1883,7 +1992,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   try {
     const wtImg = renderWaterTableDepthMap(
       siteLat, siteLon,
-      _r.drillPoint?.waterTableDepth_m ?? _r.waterTableDepth ?? 30,
+      _r.drillPoint?.waterTableDepth_m ?? _r.waterTableDepth ?? result.geophysicsFusion?.waterTableDepth_m ?? null,
       _r.dynamicRecharge?.seasonalVariation_m ?? 0,
       Math.max((_r.drillPoint?.targetDepth_m ?? _r.recommendedDepth ?? 60) * 1.5, 100),
       result,
@@ -2784,7 +2893,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
       doc.text('Visual representation of estimated subsurface layers. Aquifer zones marked with blue hatching.', margin, y); y += 6;
 
-      const wtDepth = result.realTimeWaterData?.usgsGroundwater?.averageDepthToWaterM ?? (result.recommendedDepth * 0.3);
+      // Canonical chain first (same as Executive Brief + maps); the USGS
+      // measured level and the 30%-of-depth heuristic only as last resorts.
+      const wtDepth = (result as any).drillPoint?.waterTableDepth_m
+        ?? (result as any).waterTableDepth
+        ?? result.geophysicsFusion?.waterTableDepth_m
+        ?? result.realTimeWaterData?.usgsGroundwater?.averageDepthToWaterM
+        ?? (result.recommendedDepth * 0.3);
       const bhDiagram = renderBoreholeColumn(
         lc.layers,
         result.recommendedDepth,
@@ -2953,7 +3068,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(33, 150, 243);
-    doc.text(`11. Nearby Wells (${nw.sampleSize} found within ${nw.searchRadius_km}km)`, margin, y); y += 10;
+    doc.text(`11. Nearby Water Points (${nw.sampleSize} registry records within ${nw.searchRadius_km}km)`, margin, y); y += 10;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
@@ -2996,14 +3111,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const hasRegionalEst = nw.dataSources?.some((s: string) => s.includes('regional') || s.includes('Regional'));
       checkSpace(40);
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(25, 118, 210);
-      doc.text('How Nearby Wells Calibrate This Prediction:', margin, y); y += 5;
+      doc.text('How Nearby Water Points Calibrate This Prediction:', margin, y); y += 5;
       doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
       if (nw.averageDepth != null) { doc.text(`- Depth calibration: Average nearby depth (${Math.round(nw.averageDepth)}m) anchors the recommended drilling depth.`, margin + 2, y); y += 3.5; }
       else { doc.text('- Depth calibration: registry wells carry no published depths — import WRA completion records to anchor depth.', margin + 2, y); y += 3.5; }
       if (nw.averageYield != null) { doc.text(`- Yield validation: Nearby yields (${sf(nw.averageYield, 1)} m³/h avg) provide ground-truth bounds for expected productivity.`, margin + 2, y); y += 3.5; }
       if (lithologies.length > 0) { doc.text(`- Lithology confirmation: Observed lithologies (${lithologies.join(', ')}) validate geological model assumptions.`, margin + 2, y); y += 3.5; }
       const productiveCount = successCount + moderateCount;
-      if (nw.successRate != null) { doc.text(`- Success rate: ${Math.round(nw.successRate * 100)}% of nearby wells productive (${productiveCount} productive, ${failCount} dry) — directly informs probability estimate.`, margin + 2, y); y += 3.5; }
+      if (nw.successRate != null) { doc.text(`- Success rate: ${Math.round(nw.successRate * 100)}% of nearby water points productive (${productiveCount} productive, ${failCount} dry) — directly informs probability estimate.`, margin + 2, y); y += 3.5; }
       if (failCount > 0) { doc.text(`- Failed wells: ${failCount} failed well(s) inform risk register and siting avoidance zones.`, margin + 2, y); y += 3.5; }
       y += 4;
     } else {
@@ -3022,7 +3137,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(120, 120, 120);
-    doc.text('Only verified records are shown (WRA government records, WPDx registry, USGS NWIS, OSM). No synthetic or estimated wells are ever included.', margin, y); y += 10;
+    doc.text('Positions and names come from official registries (WRA, WPDx, UNESCO IHP-WINS, USGS NWIS, OSM); no water points are ever invented. Records include springs as well as drilled boreholes -- rows marked "(regional est.)" carry estimated depths/yields, not field measurements.', margin, y, { maxWidth: pageW - margin * 2 }); y += 13;
   }
 
   // -- DEM TOPOGRAPHIC & LINEAMENT ANALYSIS --
@@ -5590,13 +5705,21 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       y = lastY(6);
     }
 
-    // AI + ERT Fusion
+    // AI + ERT Fusion -- projections only until a field ERT actually exists.
+    // Never print "CONFIRMED" for a survey that has not been carried out.
     if (hg.fusionResult) {
       checkSpace(40);
+      const _hasRealErt = (result as any)._auditFlags?.hasFieldERT === true;
+      const fusionLabel = _hasRealErt
+        ? hg.fusionResult.fusionVerdict
+        : `PROJECTED IF ERT ${hg.fusionResult.fusionVerdict === 'CONFIRMED' ? 'CONFIRMS' : 'REFINES'} (survey not yet done)`;
       doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(59, 130, 246);
-      doc.text(`AI + ERT Fusion: DRI ${hg.fusionResult.preFusionDRI}% \u2192 ${hg.fusionResult.postFusionDRI}% (+${hg.fusionResult.driBoostPercent}%) ? ${hg.fusionResult.fusionVerdict}`, margin, y); y += 6;
+      doc.text(`AI + ERT Fusion: DRI ${hg.fusionResult.preFusionDRI}% \u2192 ${hg.fusionResult.postFusionDRI}% (+${hg.fusionResult.driBoostPercent}%) -- ${fusionLabel}`, margin, y); y += 6;
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
-      const fusionLines = doc.splitTextToSize(hg.fusionResult.fusionNarrative ?? '', 170);
+      const fusionNarr = _hasRealErt
+        ? (hg.fusionResult.fusionNarrative ?? '')
+        : `PROJECTION: if the recommended ERT survey confirms the AI model, the Drill Readiness Index is expected to rise as shown. ${hg.fusionResult.fusionNarrative ?? ''}`;
+      const fusionLines = doc.splitTextToSize(fusionNarr, 170);
       doc.text(fusionLines, margin, y); y += fusionLines.length * 3.5 + 4;
     }
 
@@ -6549,7 +6672,15 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   try {
   if (result.locationContext) {
     checkSpace(30);
-    const lc = result.locationContext;
+    // The reverse-geocoded location from the ACTUAL coordinates is
+    // authoritative. If the image-derived context disagrees on country
+    // (e.g. a terrain-lookalike visual estimate said Uganda), print the
+    // resolved location instead of the stale guess.
+    const rl = result.resolvedLocation;
+    let lc = result.locationContext;
+    if (rl?.country && lc.country && lc.country !== rl.country) {
+      lc = { ...lc, city: rl.city || rl.village || rl.county || '', country: rl.country, region: rl.state || rl.county || '' };
+    }
     doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
     doc.text('Location Context & Metadata', margin, y); y += 6;
     const lcRows: string[][] = [];
@@ -6610,7 +6741,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     ['28', 'Lineament Analysis', result.lineamentAnalysis ? 'COMPLETED' : 'SKIPPED', 'DEM gradient fracture detection, intersection mapping'],
     ['29', 'Bayesian Ensemble', result.ensembleResult ? 'COMPLETED' : 'SKIPPED', 'Multi-source fusion: fused probability, depth, yield'],
     ['30', 'Subsurface Model', result.subsurfaceModel ? 'COMPLETED' : 'SKIPPED', 'Lithological column, aquifer units, cross-sections'],
-    ['31', 'Aquifer Simulation', result.aquiferSimulation ? 'COMPLETED' : 'SKIPPED', 'Theis, Cooper-Jacob, cone of depression, GW budget'],
+    ['31', 'Aquifer Simulation', !result.aquiferSimulation ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldPumpTest ? 'COMPLETED' : 'MODELLED'), 'Theis, Cooper-Jacob, cone of depression, GW budget'],
     ['32', 'InSAR Deformation', result.insarDeformation ? 'COMPLETED' : 'SKIPPED', 'Sentinel-1 subsidence velocity, compaction risk'],
     ['33', 'Digital Subsurface Twin', result.subsurfaceTwin ? 'COMPLETED' : 'SKIPPED', 'Physics-informed layered earth model'],
     ['34', 'Smart Site Selection', result.siteSelection ? 'COMPLETED' : 'SKIPPED', 'Top 3 GPS drilling points with scoring'],
@@ -6621,7 +6752,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     ['39', 'Confidence Metrics', result.confidenceMetrics ? 'COMPLETED' : 'SKIPPED', 'Per-category credibility scoring'],
     ['40', 'Uncertainty Ranges', result.uncertainty ? 'COMPLETED' : 'SKIPPED', '? bounds for depth, yield, probability'],
     ['41', 'Advanced Rock Mapping', result.advancedRockMapping ? 'COMPLETED' : 'SKIPPED', '8-classifier ensemble: Macrostrat, texture, DEM, climate, spectral, lineament, vegetation, regional'],
-    ['42', 'Multi-Geophysics Fusion', result.geophysicsFusion ? 'COMPLETED' : 'SKIPPED', 'ERT + TDEM + Seismic + GPR + NMR data fusion with aquifer zone identification'],
+    ['42', 'Multi-Geophysics Fusion', !result.geophysicsFusion ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'ERT + TDEM + Seismic + GPR + NMR data fusion with aquifer zone identification'],
     ['43', 'Borehole Intelligence DB', result.boreholeIntelligence ? 'COMPLETED' : 'SKIPPED', 'Regional drilling outcome statistics, predictive factors, rock-yield correlation'],
     ['44', 'Fracture & Lineament AI', result.fractureAI ? 'COMPLETED' : 'SKIPPED', 'DEM fracture mapping, connectivity analysis, stress field, depth-aperture profiling'],
     ['45', 'Aquifer Classification', result.aquiferClassification ? 'COMPLETED' : 'SKIPPED', 'Bayesian aquifer type probability (unconfined/confined/fractured/karst)'],
@@ -6631,9 +6762,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     ['49', 'Risk Decision Engine', result.riskDecision ? 'COMPLETED' : 'SKIPPED', 'Probabilistic risk breakdown, financial scenarios, decision recommendation'],
     ['50', 'Confidence Weighting', result.confidenceWeighted ? 'COMPLETED' : 'SKIPPED', 'Data quality?weighted predictions with uncertainty bounds'],
     ['51', 'Micro-Siting Optimizer', result.microSiting ? 'COMPLETED' : 'SKIPPED', 'GPS-precise drilling point, confidence radius, terrain/fracture scoring'],
-    ['52', 'Pump Test Analysis', result.pumpTestAnalysis ? 'COMPLETED' : 'SKIPPED', 'Theis/Cooper-Jacob analytical pump test interpretation'],
-    ['53', 'Lithology Analysis', result.lithologyAnalysis ? 'COMPLETED' : 'SKIPPED', 'Stratigraphic logging, water strikes, casing design, fracture density'],
-    ['54', 'ERT Interpretation', result.ertInterpretation ? 'COMPLETED' : 'SKIPPED', 'Resistivity inversion, aquifer target extraction, saline intrusion check'],
+    ['52', 'Pump Test Analysis', !result.pumpTestAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldPumpTest ? 'COMPLETED' : 'MODELLED'), 'Theis/Cooper-Jacob analytical pump test interpretation'],
+    ['53', 'Lithology Analysis', !result.lithologyAnalysis ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'Stratigraphic logging, water strikes, casing design, fracture density'],
+    ['54', 'ERT Interpretation', !result.ertInterpretation ? 'SKIPPED' : ((result as any)._auditFlags?.hasFieldERT ? 'COMPLETED' : 'MODELLED'), 'Resistivity inversion, aquifer target extraction, saline intrusion check'],
     ['55', 'Multi-Source Agreement', result.multiSourceAgreement ? 'COMPLETED' : 'SKIPPED', 'Cross-validation of all data sources, conflict resolution, consensus'],
     ['56', 'Temporal Drought/SPI', result.temporalDrought ? 'COMPLETED' : 'SKIPPED', 'Standardized Precipitation Index, drought cycles, yield reliability'],
     ['57', 'Hydrochemistry Prediction', result.hydrochemPrediction ? 'COMPLETED' : 'SKIPPED', 'Water chemistry prediction from geology, WHO compliance check'],
@@ -6642,6 +6773,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     ['60', 'Regional Learning Model', result.regionalModel ? 'COMPLETED' : 'SKIPPED', '5 built-in regions, seasonal corrections, rock-specific factors'],
   ];
   const completedCount = testSummary.filter(r => r[2] === 'COMPLETED').length;
+  const modelledCount = testSummary.filter(r => r[2] === 'MODELLED').length;
 
   autoTable(doc, {
     startY: y, margin: { left: margin, right: margin },
@@ -6654,14 +6786,17 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     theme: 'grid',
     didParseCell: (data: any) => {
       if (data.column.index === 2 && data.section === 'body') {
-        data.cell.styles.textColor = data.cell.raw === 'COMPLETED' ? [22, 163, 74] : [200, 100, 0];
+        data.cell.styles.textColor = data.cell.raw === 'COMPLETED' ? [22, 163, 74]
+          : data.cell.raw === 'MODELLED' ? [14, 116, 200] : [200, 100, 0];
         data.cell.styles.fontStyle = 'bold';
       }
     },
   });
   y = lastY(6);
   doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-  doc.text(`Total Tests Executed: ${completedCount} / ${testSummary.length}`, margin, y); y += 8;
+  doc.text(`Tests executed: ${completedCount} completed + ${modelledCount} modelled (no field data) of ${testSummary.length}`, margin, y); y += 5;
+  doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 90, 100);
+  doc.text('MODELLED = the computation ran on satellite/registry-derived model inputs only. It becomes COMPLETED when the corresponding field data (ERT, pump test) is supplied.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
 
   // ---------------------------------------------------------------
   // BANKABLE REPORT PACKAGE SECTIONS
@@ -8480,7 +8615,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (ec.crossValidation.wellCount > 0) {
       addPage();
       const xvWells = ec.crossValidation.wells ?? [];
-      const xvSyntheticN = xvWells.filter((w: any) => /synth|model|estimat|fallback|generated/i.test(w.source ?? '')).length;
+      // Count every record whose depth/yield is NOT a field measurement:
+      // model-generated values AND registry records carrying regional
+      // estimates (incl. springs, which have no drilled depth at all).
+      const xvSyntheticN = xvWells.filter((w: any) =>
+        /synth|model|estimat|fallback|generated|regional/i.test(w.source ?? '') ||
+        /spring/i.test(String((w as any).wellId ?? ''))).length;
       const xvRealN = ec.crossValidation.wellCount - xvSyntheticN;
       const xvIsSyntheticHeavy = xvSyntheticN > 0 && xvSyntheticN >= xvRealN;
       const xvSuspectOverfit = ec.crossValidation.wellCount < 10 && (ec.crossValidation.depthMAPE_pct < 5 || ec.crossValidation.yieldMAPE_pct < 5 || ec.crossValidation.depthR2 > 0.95);
@@ -8488,7 +8628,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(245, 158, 11);
       doc.text('CROSS-VALIDATION STATISTICS', margin, y); y += 5;
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
-      doc.text(`Prediction accuracy validated against ${ec.crossValidation.wellCount} nearby boreholes (${xvRealN} field-verified, ${xvSyntheticN} model-generated).`, margin, y); y += 7;
+      doc.text(`Prediction consistency checked against ${ec.crossValidation.wellCount} nearby registry water points (${xvRealN} with field-measured values, ${xvSyntheticN} with estimated/registry-modelled values).`, margin, y); y += 7;
 
       // Synthetic data circular-validation warning
       if (xvIsSyntheticHeavy) {
@@ -8498,9 +8638,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.setDrawColor(220, 38, 38);
         doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'S');
         doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
-        doc.text(`\u26A0 CIRCULAR VALIDATION: ${xvSyntheticN} of ${ec.crossValidation.wellCount} wells are model-generated, not field-measured boreholes.`, margin + 3, y + 3);
+        doc.text(`\u26A0 CONSISTENCY CHECK ONLY: ${xvSyntheticN} of ${ec.crossValidation.wellCount} records carry estimated (not field-measured) depths/yields.`, margin + 3, y + 3);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(120, 30, 30);
-        doc.text('Error metrics below may be artificially low because the model is being validated against its own estimates. Treat all metrics as indicative only.', margin + 3, y + 9);
+        doc.text('Error metrics below measure agreement with registry estimates, not field-verified accuracy. Treat all metrics as indicative only.', margin + 3, y + 9);
         y += 18;
       }
 
@@ -8535,16 +8675,22 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       });
       y = lastY(4);
 
-      // Verdict
+      // Verdict -- never let "RELIABLE" stand on estimate-heavy validation
       checkSpace(15);
-      const vColor = ec.crossValidation.engineerVerdict === 'RELIABLE' ? [22, 163, 74] : ec.crossValidation.engineerVerdict === 'INDICATIVE' ? [14, 165, 233] : [245, 158, 11];
+      const xvVerdict = xvIsSyntheticHeavy && ec.crossValidation.engineerVerdict === 'RELIABLE'
+        ? 'INDICATIVE (registry estimates)'
+        : ec.crossValidation.engineerVerdict.replace(/_/g, ' ');
+      const vColor = xvVerdict.startsWith('RELIABLE') ? [22, 163, 74] : xvVerdict.startsWith('INDICATIVE') ? [14, 165, 233] : [245, 158, 11];
       doc.setFillColor(vColor[0], vColor[1], vColor[2]);
       doc.roundedRect(margin, y, pw, 10, 2, 2, 'F');
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-      doc.text(`VERDICT: ${ec.crossValidation.engineerVerdict.replace(/_/g, ' ')}`, margin + 4, y + 7);
+      doc.text(`VERDICT: ${xvVerdict}`, margin + 4, y + 7);
       y += 14;
       doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
-      doc.text(ec.crossValidation.verdictJustification, margin, y, { maxWidth: pw }); y += 10;
+      const xvJust = xvIsSyntheticHeavy
+        ? `${ec.crossValidation.verdictJustification} NOTE: most records carry registry-estimated depths/yields, so these metrics demonstrate model consistency with the registry, not field-verified accuracy.`
+        : ec.crossValidation.verdictJustification;
+      doc.text(doc.splitTextToSize(xvJust, pw), margin, y); y += 13;
 
       // Per-well table
       checkSpace(30);
@@ -8592,7 +8738,17 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       bodyStyles: { fontSize: 7 },
       theme: 'grid',
     });
-    y = lastY(8);
+    y = lastY(4);
+
+    // Reconciliation with the Executive Summary probability -- the two
+    // numbers answer different questions and MUST NOT read as a contradiction.
+    checkSpace(16);
+    doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 90, 130);
+    doc.text(doc.splitTextToSize(
+      `HOW TO READ THIS vs THE EXECUTIVE SUMMARY: the Executive Summary success probability (${result.probability != null ? Math.round(result.probability * 100) + '%' : 'see page 2'}) is the reconciled Bayesian multi-source ensemble value -- the figure to use for decisions. `
+      + 'The Monte Carlo rows above resample the UNCALIBRATED input parameters to show how wide the underlying uncertainty is before ensemble fusion; their mean is expected to differ from the reconciled value and their spread is expected to be wide. '
+      + 'A wide Monte Carlo interval is precisely why the ERT survey is required before drilling.',
+      pw), margin, y); y += 18;
 
     // -- METHODOLOGY & STANDARDS --
     addPage();
@@ -8907,21 +9063,21 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   y = lastY(8);
 
   // Data integrity statement
-  checkSpace(30);
+  checkSpace(36);
   doc.setFillColor(240, 248, 255);
-  doc.roundedRect(margin, y, pw, 24, 2, 2, 'F');
+  doc.roundedRect(margin, y, pw, 30, 2, 2, 'F');
   doc.setDrawColor(14, 50, 100);
-  doc.roundedRect(margin, y, pw, 24, 2, 2, 'S');
+  doc.roundedRect(margin, y, pw, 30, 2, 2, 'S');
   doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 50, 100);
   doc.text('DATA INTEGRITY STATEMENT', margin + 4, y + 5);
   doc.setFontSize(6); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 70, 90);
-  const integrityText = 'All numerical data in this report is fetched in real-time from authoritative government, UN, NGO, research institute, and university databases. '
-    + 'No synthetic or fabricated data is used. Where regional estimates supplement sparse field records, this is explicitly labelled with "(regional est.)" markers. '
-    + 'Cross-validation between independent sources (ERA5-Land vs NASA POWER, WPDx vs OSM) is performed to ensure consistency. '
-    + 'All API endpoints are free, require no authentication, and are globally accessible.';
+  const integrityText = 'Input data is fetched in real-time from authoritative government, UN, NGO, research institute, and university databases; water points are never invented. '
+    + 'HOWEVER: no field data was collected for this assessment. Geophysics, water quality, yield and depth values are MODELLED or use documented regional estimates and API fallbacks -- these are labelled "(regional est.)", "MODELLED", "SYNTHETIC" or "API fallback" where they appear. '
+    + 'Cross-checks between independent sources (ERA5-Land vs NASA POWER, WPDx vs OSM) test consistency, not field truth. '
+    + 'Field verification (ERT, pump test, ISO 17025 lab analysis) is required before any figure in this report is treated as measured.';
   const intLines = doc.splitTextToSize(integrityText, pw - 8);
   doc.text(intLines, margin + 4, y + 10);
-  y += 30;
+  y += 36;
 
   // -- ASSESSMENT DISCLAIMER (dynamic based on field data) --
   checkSpace(60);
@@ -10316,6 +10472,7 @@ export async function generateComparisonReport(sites: Array<{ name: string; resu
   if (sites.length < 2) throw new Error('Need at least 2 analyzed sites to compare');
   const jsPDF = (await import('jspdf')).default;
   const doc = new jsPDF('p', 'mm', 'a4');
+  applyPdfTextSanitizer(doc);
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 15;
   let y = 20;
