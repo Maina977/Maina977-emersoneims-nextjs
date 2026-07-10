@@ -13,6 +13,7 @@
  */
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   ALL_SERVICES,
   SERVICE_CATEGORIES,
@@ -20,7 +21,10 @@ import {
   BUSINESS_CONTACT,
   type Service,
 } from '@/lib/services/allServices';
-import OrbitalGallery from '@/components/galleries/OrbitalGallery';
+// Below-the-fold WebGL galaxy gallery. Code-split out of the page entry bundle.
+// Server component, so ssr stays on (default) — its grid fallback renders for
+// crawlers/no-WebGL; only the client chunk is deferred.
+const OrbitalGallery = dynamic(() => import('@/components/galleries/OrbitalGallery'));
 
 // Distinct image per service discipline (no recycling across pages) — drawn
 // from the freshly curated Desktop field photography + graded marketing set.

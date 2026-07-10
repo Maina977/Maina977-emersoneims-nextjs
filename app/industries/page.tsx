@@ -8,10 +8,17 @@
  */
 
 import { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { getAllIndustries, INDUSTRY_STATS } from '@/lib/seo/industryData';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
-import IndustriesExperience from '@/components/industries/IndustriesExperience';
 import IndustriesEngineeringDeepDive from '@/components/industries/IndustriesEngineeringDeepDive';
+
+// Code-split the heavy WebGL/GSAP experience into its own chunk so three.js
+// no longer rides in the page's entry bundle. ssr:true is kept so the
+// server-rendered industry content (cards/copy) and LCP are preserved.
+const IndustriesExperience = dynamic(
+  () => import('@/components/industries/IndustriesExperience'),
+);
 
 export const metadata: Metadata = {
   title: 'Industries We Serve | Generator & Power Solutions for Every Sector | EmersonEIMS',

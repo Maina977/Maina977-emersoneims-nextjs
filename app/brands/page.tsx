@@ -20,11 +20,17 @@ import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
-import RingGallery from '@/components/home/RingGallery';
+// Below-the-fold rotating WebGL ring. Code-split; ssr:false (textures aren't
+// crawlable markup) with a height-matched placeholder so there's no CLS.
+const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
+  ssr: false,
+  loading: () => <div className="bg-black h-[100svh] min-h-[620px]" />,
+});
 
 // Rotating cylindrical showcase of the brands/models we sell (distinct set)
 const BRANDS_RING = [

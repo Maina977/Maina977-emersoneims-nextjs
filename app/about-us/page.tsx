@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useRef, useState, Suspense, lazy, ReactNode } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import OptimizedImage from "@/components/media/OptimizedImage";
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -20,7 +21,14 @@ import { usePerformanceTier } from '@/components/performance/usePerformanceTier'
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import AboutCapabilityDeepDive from '@/components/about/AboutCapabilityDeepDive';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
-import SpiralGallery, { SpiralGalleryItem } from '@/components/about/SpiralGallery';
+import type { SpiralGalleryItem } from '@/components/about/SpiralGallery';
+// Heavy Three.js + GSAP helix gallery — below the fold. Code-split so three.js
+// stays out of the page entry bundle; ssr:false because the imagery is WebGL
+// textures (not crawlable markup) and the placeholder reserves height (no CLS).
+const SpiralGallery = dynamic(() => import('@/components/about/SpiralGallery'), {
+  ssr: false,
+  loading: () => <div className="bg-black" style={{ minHeight: '220vh' }} />,
+});
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 

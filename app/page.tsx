@@ -5,6 +5,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { Metadata } from 'next';
 
 // Client wrapper for interactive sections
@@ -14,8 +15,14 @@ import SolutionsBySector from '@/components/home/SolutionsBySector';
 import VoltkaCinematicShowcase from '@/components/home/VoltkaCinematicShowcase';
 import { VoltkaBillboard, VoltkaDuoGrid } from '@/components/home/VoltkaShowroomGrid';
 import CinematicVideoSection from '@/components/home/CinematicVideoSection';
-import HeroCinematicFX from '@/components/home/HeroCinematicFX';
-import RingGallery from '@/components/home/RingGallery';
+// Ambient hero FX layer (Three.js particles, post-mount) and the below-the-fold
+// rotating WebGL ring are code-split so their JS stays out of the homepage entry
+// bundle — protecting LCP/FCP. ssr stays on (default), so server markup is
+// unchanged; this only defers the client chunk. Homepage layout untouched.
+const HeroCinematicFX = dynamic(() => import('@/components/home/HeroCinematicFX'));
+const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
+  loading: () => <div className="bg-black h-[100svh] min-h-[620px]" />,
+});
 import HomeEngineeringAuthority from '@/components/home/HomeEngineeringAuthority';
 import AIToolsPromo from '@/components/ai/AIToolsPromo';
 

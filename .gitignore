@@ -63,3 +63,4 @@ external/**/.pytest_cache/
 
 .vercel
 .env*.local
+.env*

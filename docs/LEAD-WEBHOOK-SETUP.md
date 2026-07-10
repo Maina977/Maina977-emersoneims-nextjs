@@ -17,6 +17,8 @@ zero-cost option is a **Google Apps Script** that emails each lead to
 1. Go to <https://script.google.com> → **New project**.
 2. Delete the sample code and paste this:
 
+
+
 ```javascript
 function doPost(e) {
   try {

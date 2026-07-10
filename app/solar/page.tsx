@@ -17,7 +17,6 @@ import { AnalogClock, AnalogCalendar, WeatherWidget } from '@/components/ui/Anal
 import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
-import RingGallery from '@/components/home/RingGallery';
 import SolarEngineeringDeepDive from '@/components/solar/SolarEngineeringDeepDive';
 
 // Strictly-solar rotating gallery (like the landing page ring)
@@ -110,6 +109,13 @@ const SolarProjectWorkflow = dynamic(() => import('@/components/solar/SolarProje
 
 const AIControlCenter = dynamic(() => import('@/components/solar/AIControlCenter'), {
   loading: () => <div className="animate-pulse bg-slate-800 rounded-xl h-96" />,
+  ssr: false
+});
+
+// Below-the-fold rotating WebGL ring gallery — code-split to keep it out of the
+// page entry bundle (matches the dynamic pattern used for every section above).
+const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
+  loading: () => <div className="bg-black h-[100svh] min-h-[620px]" />,
   ssr: false
 });
 
