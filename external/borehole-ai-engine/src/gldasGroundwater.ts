@@ -30,6 +30,8 @@
 
 /* ═══ INTERFACES ═══ */
 
+import { budykoWaterBalance } from './hydroPhysics';
+
 export interface GLDASSoilMoisture {
   /** ERA5-Land Layer 1: 0–7 cm soil moisture (kg/m²) */
   layer_0_7cm: number;
@@ -584,43 +586,26 @@ export async function fetchGLDASGroundwaterData(
     budgetSource = '⚠️ Estimated (both APIs unavailable)';
   }
 
-  // Budyko (1974) framework: Actual ET from aridity index (PET/P)
-  // AET/P = 1 + PET/P − [1 + (PET/P)^ω]^(1/ω), ω≈2.6 (Zhang et al. 2004)
-  // Simplified approach: Actual ET is ALWAYS < Precipitation
-  const aridityIndex = referenceETMm / Math.max(annualPrecipMm, 1);
-  let budykoRatio: number;
-  if (aridityIndex <= 0.3) {
-    budykoRatio = 0.60; // Very humid: 60% P becomes ET
-  } else if (aridityIndex <= 0.7) {
-    budykoRatio = 0.70; // Humid
-  } else if (aridityIndex <= 1.2) {
-    budykoRatio = 0.80; // Sub-humid
-  } else if (aridityIndex <= 2.0) {
-    budykoRatio = 0.88; // Semi-arid
-  } else {
-    budykoRatio = 0.93; // Arid — almost all P consumed
-  }
-  // HARD CONSTRAINT: Actual ET < Precipitation (conservation of mass)
-  annualETMm = Math.min(
-    Math.round(annualPrecipMm * budykoRatio),
-    Math.max(0, annualPrecipMm - 10), // Always leave ≥10mm for runoff+recharge
-  );
-  console.log(`[GLDAS] Water budget: P=${annualPrecipMm}, RefET=${referenceETMm}, ActualET=${annualETMm} (Budyko ω=2.6, aridity=${aridityIndex.toFixed(2)})`);
+  // ONE physics implementation for the whole engine — see hydroPhysics.ts.
+  // (Was a hand-copy that drifted from the other modules; audit 2026-07-10.)
+  const wbCalc = budykoWaterBalance(annualPrecipMm, referenceETMm);
+  const aridityIndex = wbCalc.aridityIndex;
+  annualETMm = wbCalc.actualET_mm;
+  console.log(`[GLDAS] Water budget: P=${annualPrecipMm}, RefET=${referenceETMm}, ActualET=${annualETMm} (Budyko, aridity=${aridityIndex.toFixed(2)})`);
 
-  const totalRunoff = Math.max(10, annualPrecipMm - annualETMm);
-  const surfaceRunoff = Math.round(totalRunoff * 0.70);
-  const baseflow = Math.round(totalRunoff * 0.30);
+  const surfaceRunoff = wbCalc.surfaceRunoff_mm;
+  const baseflow = wbCalc.recharge_mm;
   const estimatedRecharge = baseflow;
-  const rechargeFraction = annualPrecipMm > 0 ? Math.round((baseflow / annualPrecipMm) * 100) / 100 : 0;
+  const rechargeFraction = wbCalc.rechargeFraction;
 
   const waterBudget: GLDASWaterBudget = {
-    precipitation: annualPrecipMm,
+    precipitation: wbCalc.precipitation_mm,
     evapotranspiration: annualETMm,
     surfaceRunoff,
     baseflow,
     estimatedRecharge,
     rechargeFraction,
-    equation: `Recharge ≈ Baseflow = P(${annualPrecipMm}) − ET(${annualETMm}) − Qs(${surfaceRunoff}) = ${baseflow} mm/yr`,
+    equation: wbCalc.equation,
     dataSource: budgetSource,
   };
 

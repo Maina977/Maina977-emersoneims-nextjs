@@ -39,7 +39,7 @@ function mulberry32(seed: number): () => number {
 
 let _rng: () => number = mulberry32(42);
 
-function resetRNG(seed: number) {
+export function resetRNG(seed: number) {
   _rng = mulberry32(seed);
 }
 
@@ -745,7 +745,7 @@ function generateNormalSamples(mean: number, stdDev: number, n: number): number[
   return samples;
 }
 
-function generateLognormalSamples(mean: number, stdDev: number, n: number): number[] {
+export function generateLognormalSamples(mean: number, stdDev: number, n: number): number[] {
   if (mean <= 0) mean = 0.1;
   if (stdDev <= 0) stdDev = mean * 0.2;
   const variance = stdDev * stdDev;
@@ -755,7 +755,7 @@ function generateLognormalSamples(mean: number, stdDev: number, n: number): numb
   return normal.map(v => Math.exp(v));
 }
 
-function generateBetaSamples(mean: number, spread: number, n: number): number[] {
+export function generateBetaSamples(mean: number, spread: number, n: number): number[] {
   const m = Math.max(0.01, Math.min(0.99, mean));
   const s = Math.max(0.01, spread);
   const alpha = m * ((m * (1 - m)) / (s * s) - 1);

@@ -10,6 +10,7 @@ import { fetchRemoteSensingData } from './remoteSensing';
 import { fetchHistoricalData, estimateGroundwaterTrend } from './historicalData';
 import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, getKenyaCountyBoreholeStats } from './boreholeDatabase';
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
+import { budykoWaterBalance } from './hydroPhysics';
 import { fetchRealTimeWaterData } from './realTimeWaterData';
 import { generateSubsurfaceModel } from './subsurfaceModeler';
 import { runAquiferSimulation } from './aquiferSimulator';
@@ -2702,21 +2703,16 @@ export class BoreholeAnalyzer {
           // Reference ET from the best measured source, else scale from old ratio
           const refET = (result.satelliteWaterAnalysis as any)?.evapotranspiration?.et0_annual_mm
             ?? (wb.evapotranspiration ? Math.round(wb.evapotranspiration / 0.8) : Math.round(canonP * 0.9));
-          // Same Budyko bands + 70/30 surplus split as gldasGroundwater.ts --
-          // identical formulas so the sections agree by construction.
-          const aridity = refET / Math.max(canonP, 1);
-          const band = aridity <= 0.3 ? 0.60 : aridity <= 0.7 ? 0.70 : aridity <= 1.2 ? 0.80 : aridity <= 2.0 ? 0.88 : 0.93;
-          const aet = Math.min(Math.round(canonP * band), Math.max(0, canonP - 10));
-          const surplus = Math.max(10, canonP - aet);
-          const qs = Math.round(surplus * 0.70);
-          const bf = Math.round(surplus * 0.30);
-          wb.precipitation = canonP;
-          wb.evapotranspiration = aet;
-          wb.surfaceRunoff = qs;
-          wb.baseflow = bf;
-          wb.estimatedRecharge = bf;
-          wb.rechargeFraction = Math.round((bf / canonP) * 100) / 100;
-          wb.equation = `Recharge ≈ Baseflow = P(${canonP}) − ET(${aet}) − Qs(${qs}) = ${bf} mm/yr`;
+          // ONE physics implementation (hydroPhysics.ts) -- the sections
+          // agree by construction because they share the same function.
+          const wbCanon = budykoWaterBalance(canonP, refET);
+          wb.precipitation = wbCanon.precipitation_mm;
+          wb.evapotranspiration = wbCanon.actualET_mm;
+          wb.surfaceRunoff = wbCanon.surfaceRunoff_mm;
+          wb.baseflow = wbCanon.recharge_mm;
+          wb.estimatedRecharge = wbCanon.recharge_mm;
+          wb.rechargeFraction = wbCanon.rechargeFraction;
+          wb.equation = wbCanon.equation;
           wb.dataSource = `Reconciled to ${measuredP ? 'measured multi-year station mean' : 'model-archive'} precipitation (${canonP} mm/yr; budget previously used ${oldP} mm fallback)`;
           console.log(`[CROSS-CAL] Hydro-climate reconciled: P ${oldP}→${canonP} mm, recharge fraction ${oldFrac}→${wb.rechargeFraction}`);
           // Undo the wrongful probability penalty applied earlier from the

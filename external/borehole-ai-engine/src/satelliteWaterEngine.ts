@@ -39,6 +39,8 @@
  * Reference: Pekel et al. (2016) Nature 540, 418–422. doi:10.1038/nature20584
  */
 
+import { budykoWaterBalance } from './hydroPhysics';
+
 // ─── Interfaces ────────────────────────────────────────────────
 
 export interface MODISVegetationData {
@@ -741,21 +743,16 @@ export async function fetchSatelliteWaterAnalysis(lat: number, lon: number, prec
   let waterBalance: SatelliteWaterAnalysis['waterBalance'] = null;
   if (etData) {
     const precip = precipAnnual_mm ?? (etData.et0_annual_mm * etData.aridity_index);
-    // HYDROLOGY FIX (audit 2026-07-10): the old formula took actual ET as a
-    // flat 75% of REFERENCE ET and then subtracted an INDEPENDENT 25%-of-P
-    // runoff -- together allocating >100% of rainfall in sub-humid climates,
-    // which forced recharge to 0 and printed "arid / fossil groundwater" for
-    // a 1,476 mm/yr humid site. Correct physics: actual ET is Budyko-limited
-    // by supply (AET < P always), and runoff + recharge PARTITION the surplus
-    // (P - AET) -- the same 70/30 split used by the GLDAS water budget so the
-    // two sections can never disagree by construction.
-    const aridity = etData.et0_annual_mm / Math.max(precip, 1); // PET/P
-    const budykoBand = aridity <= 0.3 ? 0.60 : aridity <= 0.7 ? 0.70 : aridity <= 1.2 ? 0.80 : aridity <= 2.0 ? 0.88 : 0.93;
-    const et = Math.min(precip * budykoBand, Math.max(0, precip - 10));
-    const surplus = Math.max(0, precip - et);
-    const runoff = surplus * 0.70;
-    const recharge = surplus * 0.30;
-    const rechargePct = precip > 0 ? (recharge / precip) * 100 : 0;
+    // ONE physics implementation for the whole engine (hydroPhysics.ts).
+    // History: this module once took AET as a flat 75% of REFERENCE ET plus
+    // an INDEPENDENT 25%-of-P runoff -- allocating >100% of rainfall and
+    // printing "arid / fossil groundwater" for a 1,476 mm/yr humid site.
+    const wb = budykoWaterBalance(precip, etData.et0_annual_mm);
+    const aridity = wb.aridityIndex;
+    const et = wb.actualET_mm;
+    const runoff = wb.surfaceRunoff_mm;
+    const recharge = wb.recharge_mm;
+    const rechargePct = wb.rechargeFraction * 100;
 
     let verdict = '';
     if (rechargePct > 20) verdict = 'EXCELLENT recharge potential. Surplus water available for groundwater replenishment.';

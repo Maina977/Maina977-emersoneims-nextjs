@@ -143,6 +143,24 @@ function scsRunoff(precipitation_mm: number, curveNumber: number, slopePct: numb
   return Math.max(0, Q);
 }
 
+/**
+ * SCS-CN applied to a MONTHLY total. The Curve Number equation is a
+ * single-STORM model; feeding a whole month's rainfall into it as one event
+ * grossly over-predicts runoff (a 220 mm month spread over ~20 rain days
+ * produced "55% runoff" and starved the soil store to zero recharge in a
+ * humid climate -- V&V suite catch, 2026-07-10). Standard practice is to
+ * disaggregate the month into typical rain events, run the event equation
+ * per event, and sum (Hawkins et al. 2009, USDA NEH-630 ch.10).
+ */
+function scsMonthlyRunoff(monthP_mm: number, curveNumber: number, slopePct: number, imperviousFrac: number): number {
+  if (monthP_mm <= 0) return 0;
+  // Typical tropical/subtropical event size ~20-30 mm; between 2 and 12
+  // events per month depending on how wet the month is.
+  const events = Math.max(2, Math.min(12, Math.round(monthP_mm / 25)));
+  const perEvent = monthP_mm / events;
+  return Math.min(monthP_mm * 0.9, events * scsRunoff(perEvent, curveNumber, slopePct, imperviousFrac));
+}
+
 /* ── Thornthwaite Soil Water Balance ──────────────────────── */
 
 function computeMonthlyRecharge(
@@ -163,8 +181,8 @@ function computeMonthlyRecharge(
     const P = monthlyP[m] || 0;
     const ET = monthlyET[m] || 0;
 
-    // Step 1: Runoff (SCS-CN)
-    const runoff = scsRunoff(P, soilParams.runoffCurveNumber, slopePct, imperviousFrac);
+    // Step 1: Runoff (SCS-CN, event-disaggregated for monthly totals)
+    const runoff = scsMonthlyRunoff(P, soilParams.runoffCurveNumber, slopePct, imperviousFrac);
 
     // Step 2: Effective precipitation (after runoff)
     const Peff = Math.max(0, P - runoff);
@@ -223,7 +241,12 @@ function computeAnnualRecharge(
   imperviousFrac: number,
 ): { year: number; recharge_mm: number; precipitation_mm: number }[] {
   return annualP.map(({ year, total }) => {
-    const runoff = scsRunoff(total, soilParams.runoffCurveNumber, slopePct, imperviousFrac);
+    // Event-disaggregated CN runoff on 12 pseudo-monthly slices -- feeding a
+    // whole YEAR into the single-storm CN equation over-predicted runoff even
+    // more severely than the monthly case (V&V suite catch, 2026-07-10).
+    const runoff = Array.from({ length: 12 }, () =>
+      scsMonthlyRunoff(total / 12, soilParams.runoffCurveNumber, slopePct, imperviousFrac),
+    ).reduce((a, b) => a + b, 0);
     const effectiveP = Math.max(0, total - runoff);
     const actualET = Math.min(annualET, effectiveP * 0.8);
     const surplus = effectiveP - actualET;
