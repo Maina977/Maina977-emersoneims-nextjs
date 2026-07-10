@@ -203,6 +203,12 @@ export interface NearbyBoreholeData {
   averageWaterLevel: number;
   successRate: number;
   sampleSize: number;
+  /** Records whose depth/yield are field/registry MEASUREMENTS (not regional
+   *  estimates, not springs). Governs how much evidential weight the ensemble
+   *  may put on averageDepth/averageYield -- estimated spring depths must
+   *  never masquerade as drilled-borehole ground truth. */
+  fieldMeasuredCount: number;
+  fieldMeasuredShare: number; // 0..1 of sampleSize
   searchRadius_km: number;
   dataSources: string[];
   // Borehole density analysis
@@ -983,6 +989,15 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
     ? successfulWells / (successfulWells + failedWells)
     : (dedupWells.length > 0 ? Math.min(0.95, dedupWells.filter(w => w.depth_m > 0).length / dedupWells.length) : 0);
 
+  // How many records carry MEASURED depth/yield vs regional estimates?
+  // Springs and "(regional est.)" rows prove groundwater OCCURRENCE (real
+  // evidence) but their depth numbers are estimates -- the ensemble must
+  // know the difference or it validates the model against itself.
+  const fieldMeasuredCount = dedupWells.filter(w =>
+    !/regional est|estimat|synth|model|fallback/i.test(String(w.source ?? '')) &&
+    !/spring/i.test(String(w.id ?? ''))).length;
+  const fieldMeasuredShare = dedupWells.length > 0 ? fieldMeasuredCount / dedupWells.length : 0;
+
   return {
     // Nearest 150 ride into the report (sorted by distance above); statistics
     // are computed over the full deduped set. Owner requirement: the report
@@ -993,6 +1008,8 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
     averageWaterLevel: validWL.length > 0 ? Math.round(validWL.reduce((a, b) => a + b, 0) / validWL.length * 10) / 10 : 0,
     successRate,
     sampleSize: dedupWells.length,
+    fieldMeasuredCount,
+    fieldMeasuredShare: Math.round(fieldMeasuredShare * 100) / 100,
     searchRadius_km: searchRadius,
     dataSources,
     densityAnalysis: {
@@ -1519,6 +1536,9 @@ export interface EnsembleInput {
   nearbyWellAvgDepth?: number;
   nearbyWellAvgYield?: number;
   nearbyWellCount?: number;
+  /** 0..1 -- share of nearby records whose depth/yield are field/registry
+   *  measurements rather than regional estimates (springs etc.). */
+  nearbyWellFieldShare?: number;
   // From vegetation proxy
   vegGWDependence?: VegetationGroundwaterProxy['groundwaterDependence'];
   shallowWTLikelihood?: number;
@@ -1582,16 +1602,27 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
     });
   }
 
-  // Source 4: Nearby wells (highest reliability — actual field data nearby)
+  // Source 4: Nearby wells. Their EXISTENCE (groundwater occurrence) is
+  // strong evidence regardless of record quality -- but their depth/yield
+  // AVERAGES are only as reliable as the share of field-measured records.
+  // A cluster of springs with regional-estimate "depths" must not enter the
+  // fusion at 0.95 reliability, or the ensemble validates the regional
+  // model against itself (hydrogeologist audit 2026-07-10).
   if (input.nearbyWellCount && input.nearbyWellCount > 0) {
+    const fieldShare = Math.max(0, Math.min(1, input.nearbyWellFieldShare ?? 1));
     const reliabilityByCount = Math.min(0.95, 0.70 + (input.nearbyWellCount / 50));
+    // Occurrence-driven probability keeps most of its strength (springs are
+    // real water); depth/yield reliability scales hard with measured share.
+    const valueReliability = Math.min(reliabilityByCount, 0.55 + 0.40 * fieldShare);
     estimates.push({
-      source: 'Nearby Wells (USGS/OSM)',
+      source: fieldShare >= 0.5
+        ? 'Nearby Wells (USGS/OSM)'
+        : `Nearby Water Points (${Math.round(fieldShare * 100)}% field-measured)`,
       depth_m: input.nearbyWellAvgDepth,
       yield_m3h: input.nearbyWellAvgYield,
-      probability: input.nearbyWellCount >= 3 ? 0.85 : 0.70, // presence of nearby wells is strong indicator
+      probability: input.nearbyWellCount >= 3 ? 0.85 : 0.70, // presence of nearby water points is strong occurrence evidence
       weight: 0.20,
-      reliability: reliabilityByCount,
+      reliability: valueReliability,
     });
   }
 

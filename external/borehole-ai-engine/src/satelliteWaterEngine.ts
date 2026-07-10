@@ -741,9 +741,20 @@ export async function fetchSatelliteWaterAnalysis(lat: number, lon: number, prec
   let waterBalance: SatelliteWaterAnalysis['waterBalance'] = null;
   if (etData) {
     const precip = precipAnnual_mm ?? (etData.et0_annual_mm * etData.aridity_index);
-    const et = etData.et0_annual_mm * 0.75; // Actual ET ≈ 75% of reference ET (Allen et al. 1998)
-    const runoff = precip * (precip > 800 ? 0.25 : precip > 400 ? 0.15 : 0.08); // Simplified
-    const recharge = Math.max(0, precip - et - runoff);
+    // HYDROLOGY FIX (audit 2026-07-10): the old formula took actual ET as a
+    // flat 75% of REFERENCE ET and then subtracted an INDEPENDENT 25%-of-P
+    // runoff -- together allocating >100% of rainfall in sub-humid climates,
+    // which forced recharge to 0 and printed "arid / fossil groundwater" for
+    // a 1,476 mm/yr humid site. Correct physics: actual ET is Budyko-limited
+    // by supply (AET < P always), and runoff + recharge PARTITION the surplus
+    // (P - AET) -- the same 70/30 split used by the GLDAS water budget so the
+    // two sections can never disagree by construction.
+    const aridity = etData.et0_annual_mm / Math.max(precip, 1); // PET/P
+    const budykoBand = aridity <= 0.3 ? 0.60 : aridity <= 0.7 ? 0.70 : aridity <= 1.2 ? 0.80 : aridity <= 2.0 ? 0.88 : 0.93;
+    const et = Math.min(precip * budykoBand, Math.max(0, precip - 10));
+    const surplus = Math.max(0, precip - et);
+    const runoff = surplus * 0.70;
+    const recharge = surplus * 0.30;
     const rechargePct = precip > 0 ? (recharge / precip) * 100 : 0;
 
     let verdict = '';
@@ -751,7 +762,9 @@ export async function fetchSatelliteWaterAnalysis(lat: number, lon: number, prec
     else if (rechargePct > 10) verdict = 'GOOD recharge potential. Moderate groundwater replenishment expected.';
     else if (rechargePct > 5) verdict = 'MODERATE recharge potential. Limited but viable groundwater recharge.';
     else if (rechargePct > 1) verdict = 'LOW recharge potential. Most precipitation lost to ET and runoff. Deep boreholes may be needed.';
-    else verdict = 'VERY LOW recharge potential. Arid conditions — groundwater likely fossil or from distant recharge zones.';
+    else verdict = aridity > 1.5
+      ? 'VERY LOW recharge potential. Arid conditions — groundwater likely fossil or from distant recharge zones.'
+      : 'VERY LOW computed recharge — atypical for this climate class; verify precipitation/ET inputs and confirm recharge with field data before relying on this figure.';
 
     waterBalance = {
       precipitation_mm: parseFloat(precip.toFixed(0)),

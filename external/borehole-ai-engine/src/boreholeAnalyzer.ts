@@ -584,6 +584,8 @@ export class BoreholeAnalyzer {
         averageWaterLevel: undefined,
         successRate: undefined,
         sampleSize: 0,
+        fieldMeasuredCount: 0,
+        fieldMeasuredShare: 0,
         searchRadius_km: 25,
         dataSources: ['No verified records found — import WRA completion records (/data/wra-boreholes.json) to close this gap'],
       };
@@ -955,6 +957,7 @@ export class BoreholeAnalyzer {
       nearbyWellAvgDepth: nearbyWells?.averageDepth,
       nearbyWellAvgYield: nearbyWells?.averageYield,
       nearbyWellCount: nearbyWells?.sampleSize,
+      nearbyWellFieldShare: (nearbyWells as any)?.fieldMeasuredShare,
       vegGWDependence: vegetationGWProxy?.groundwaterDependence,
       shallowWTLikelihood: vegetationGWProxy?.shallowWaterTableLikelihood,
       weightedProbability: weightedProb.success_probability,
@@ -1840,14 +1843,24 @@ export class BoreholeAnalyzer {
           const precip = annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6));
           const et = precip * etFactor;
           const runoff = precip * 0.15;
+          const net = Math.max(0, precip - et - runoff);
           return {
             monthName: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
             precipitation_mm: precip,
             et_mm: et,
             runoff_mm: runoff,
-            netRecharge_mm: Math.max(0, precip - et - runoff),
+            grossRecharge_mm: net,
+            netRecharge_mm: net,
+            // BUG FIX (audit 2026-07-10): this flag was missing from the
+            // fallback rows, so the report printed "Recharge? No" beside
+            // 20-62 mm of monthly recharge -- a self-contradiction.
+            isRechargeMonth: net > 0,
           };
         }),
+        // Fields the report prints that the fallback used to omit (showed N/A
+        // beside populated monthly rows): annual runoff + peak recharge month.
+        avgAnnualRunoff_mm: Math.round(annualP * 0.15),
+        peakRechargeMonth: 7, // sinusoid above peaks at i=6 (July, 1-based 7)
         dataSource: 'Climate-based recharge model (computed fallback)',
       };
     }
@@ -1977,7 +1990,13 @@ export class BoreholeAnalyzer {
         const sources: any[] = [];
         // Depth estimates from various sources
         if (calibratedDepth) sources.push({ sourceName: 'ensemble_model', sourceType: 'model', depthEstimate_m: calibratedDepth, reliability: 0.70, isFieldMeasured: false });
-        if (nearbyWells?.averageDepth) sources.push({ sourceName: 'nearby_wells', sourceType: 'database', depthEstimate_m: nearbyWells.averageDepth, yieldEstimate_m3hr: nearbyWells.averageYield, reliability: 0.75, isFieldMeasured: true });
+        if (nearbyWells?.averageDepth) {
+          // Registry water points only count as field measurements to the
+          // extent their depths/yields ARE measurements (springs and
+          // regional-estimate rows are occurrence evidence, not depth truth).
+          const _fs = (nearbyWells as any)?.fieldMeasuredShare ?? 0;
+          sources.push({ sourceName: _fs >= 0.5 ? 'nearby_wells' : 'nearby_water_points (regional est.)', sourceType: 'database', depthEstimate_m: nearbyWells.averageDepth, yieldEstimate_m3hr: nearbyWells.averageYield, reliability: 0.45 + 0.30 * _fs, isFieldMeasured: _fs >= 0.5 });
+        }
         if (boreholeRecords?.averageDepth) sources.push({ sourceName: 'regional_statistics', sourceType: 'database', depthEstimate_m: boreholeRecords.averageDepth, reliability: 0.40, isFieldMeasured: false });
         if (fieldData?.pumpTest) sources.push({ sourceName: 'pump_test', sourceType: 'field_measurement', yieldEstimate_m3hr: fieldData.pumpTest.sustainableYieldM3Hr, reliability: 0.95, isFieldMeasured: true });
         if (calibratedYield) sources.push({ sourceName: 'ensemble_model_yield', sourceType: 'model', yieldEstimate_m3hr: calibratedYield, reliability: 0.70, isFieldMeasured: false });
@@ -2659,6 +2678,93 @@ export class BoreholeAnalyzer {
       if (result.historicalData?.groundwater?.depletionRisk === 'critical' && result.probability > 0.70) {
         result.probability = 0.68;
         probChanged = true;
+      }
+
+      // 5b. HYDRO-CLIMATE RECONCILIATION -- one measured precipitation governs
+      // every water budget (hydrogeologist audit 2026-07-10). The GLDAS budget
+      // falls back to a 700 mm latitude default when both of its APIs fail,
+      // which used to print P=700 in Section 6 beside a measured 20-year mean
+      // of ~1,656 mm in Section 21, and wrongly penalised probability through
+      // an artificially low recharge fraction computed from the wrong rainfall.
+      {
+        const histArr = (result.historicalData as any)?.weather?.annualPrecipitation as Array<{ total: number }> | undefined;
+        const histVals = (histArr ?? []).map(p => p?.total).filter((v): v is number => typeof v === 'number' && v > 50 && v < 6000);
+        const measuredP = histVals.length >= 3 ? Math.round(histVals.reduce((a, b) => a + b, 0) / histVals.length) : undefined;
+        const canonP = measuredP
+          ?? (result.rechargeModel as any)?.avgAnnualPrecipitation_mm
+          ?? (result.satelliteWaterAnalysis as any)?.waterBalance?.precipitation_mm
+          ?? null;
+        const wb = result.gldasGroundwater?.waterBudget as any;
+        const wbIsFallback = wb && /Estimated \(both APIs unavailable\)/.test(String(wb.dataSource ?? ''));
+        if (wb && canonP && (wbIsFallback || Math.abs(wb.precipitation - canonP) / canonP > 0.3)) {
+          const oldP = wb.precipitation;
+          const oldFrac = wb.rechargeFraction ?? 0;
+          // Reference ET from the best measured source, else scale from old ratio
+          const refET = (result.satelliteWaterAnalysis as any)?.evapotranspiration?.et0_annual_mm
+            ?? (wb.evapotranspiration ? Math.round(wb.evapotranspiration / 0.8) : Math.round(canonP * 0.9));
+          // Same Budyko bands + 70/30 surplus split as gldasGroundwater.ts --
+          // identical formulas so the sections agree by construction.
+          const aridity = refET / Math.max(canonP, 1);
+          const band = aridity <= 0.3 ? 0.60 : aridity <= 0.7 ? 0.70 : aridity <= 1.2 ? 0.80 : aridity <= 2.0 ? 0.88 : 0.93;
+          const aet = Math.min(Math.round(canonP * band), Math.max(0, canonP - 10));
+          const surplus = Math.max(10, canonP - aet);
+          const qs = Math.round(surplus * 0.70);
+          const bf = Math.round(surplus * 0.30);
+          wb.precipitation = canonP;
+          wb.evapotranspiration = aet;
+          wb.surfaceRunoff = qs;
+          wb.baseflow = bf;
+          wb.estimatedRecharge = bf;
+          wb.rechargeFraction = Math.round((bf / canonP) * 100) / 100;
+          wb.equation = `Recharge ≈ Baseflow = P(${canonP}) − ET(${aet}) − Qs(${qs}) = ${bf} mm/yr`;
+          wb.dataSource = `Reconciled to ${measuredP ? 'measured multi-year station mean' : 'model-archive'} precipitation (${canonP} mm/yr; budget previously used ${oldP} mm fallback)`;
+          console.log(`[CROSS-CAL] Hydro-climate reconciled: P ${oldP}→${canonP} mm, recharge fraction ${oldFrac}→${wb.rechargeFraction}`);
+          // Undo the wrongful probability penalty applied earlier from the
+          // fallback-rainfall recharge fraction (mirror of the adjustment at
+          // recalibration time: <3% cost -0.20, 3-8% cost -0.10).
+          const newFrac = wb.rechargeFraction;
+          const oldPenalty = oldFrac >= 0.08 ? 0 : oldFrac >= 0.03 ? 0.10 : oldFrac > 0 ? 0.20 : 0.30;
+          const newPenalty = newFrac >= 0.08 ? 0 : newFrac >= 0.03 ? 0.10 : newFrac > 0 ? 0.20 : 0.30;
+          if (oldPenalty > newPenalty) {
+            result.probability = Math.min(0.95, result.probability + (oldPenalty - newPenalty));
+            probChanged = true;
+          }
+        }
+        // Align the aquifer-simulation groundwater budget to the same figures
+        const gb = (result.aquiferSimulation as any)?.groundwaterBudget;
+        if (gb && wb?.precipitation) {
+          gb.precipitation = wb.precipitation;
+          gb.evapotranspiration = wb.evapotranspiration;
+          gb.surfaceRunoff = wb.surfaceRunoff;
+          gb.recharge = wb.estimatedRecharge;
+        }
+        // Publish ONE canonical climate object for the report to cite
+        (result as any).canonicalHydroClimate = wb ? {
+          precipitation_mm: wb.precipitation,
+          actualET_mm: wb.evapotranspiration,
+          recharge_mm: wb.estimatedRecharge,
+          rechargeFraction: wb.rechargeFraction,
+          rechargeRange_mm: [
+            Math.min(wb.estimatedRecharge, (result.rechargeModel as any)?.avgAnnualRecharge_mm ?? wb.estimatedRecharge),
+            Math.max(wb.estimatedRecharge, (result.rechargeModel as any)?.avgAnnualRecharge_mm ?? wb.estimatedRecharge),
+          ],
+          source: measuredP ? `Multi-year measured precipitation mean (${histVals.length} yrs)` : 'Best available model archive',
+        } : undefined;
+      }
+
+      // 5c. ONE site elevation. The DEM module reports its 5x5-grid centre
+      // sample while Site Identity reports the exact-point fetch -- the same
+      // SRTM data sampled twice printed 1576 m and 1602 m in one report.
+      // The exact-point value is the site datum; grid-derived slope/TWI keep
+      // their grid statistics.
+      {
+        const ptElev = (result.remoteSensing as any)?.elevation?.elevation;
+        const dem = result.demHydrology as any;
+        if (typeof ptElev === 'number' && ptElev !== 0 && dem && typeof dem.elevation_m === 'number'
+            && Math.abs(dem.elevation_m - ptElev) > 10) {
+          console.log(`[CROSS-CAL] Elevation unified: DEM grid ${dem.elevation_m}m -> point ${ptElev}m`);
+          dem.elevation_m = Math.round(ptElev);
+        }
       }
 
       // 6. Recharge â†” yield coherence (prevents contradictory low-recharge + high-yield)

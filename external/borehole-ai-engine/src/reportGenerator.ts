@@ -3195,13 +3195,27 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       ['GW Favorability', `${dem.groundwaterFavorability}/100`, 'Composite of TWI + slope + position + drainage'],
     ];
     if (lin) {
+      // Scale reconciliation with Section 19 (Fracture & Lineament AI): this
+      // DEM analysis works a ~1 km local grid; the regional lineament model
+      // maps intersections out to several km. "0 intersections" here beside
+      // five HIGH targets there read as a contradiction (client review #12/13
+      // of 2026-07-10) -- cross-reference instead of contradicting.
+      const _regTargets: any[] = (result as any).fractureAI?.topIntersections ?? [];
+      const _nearestReg = _regTargets.length
+        ? Math.min(..._regTargets.map((t: any) => (t.distance_km ?? t.distanceKm ?? 99) * 1000))
+        : null;
+      const _proximityTxt = (lin.fractureZoneProximity_m ?? 9999) >= 9000
+        ? (_nearestReg != null && isFinite(_nearestReg)
+          ? `None within local grid; nearest regional lineament intersection ~${Math.round(_nearestReg)}m (Section 19)`
+          : 'None detected within local grid')
+        : `${lin.fractureZoneProximity_m}m`;
       demRows.push(
         ['Lineament Density', `${sf(lin.lineamentDensity, 2)} /km²`, 'DEM gradient-based fracture detection'],
         ['Dominant Fracture Direction', `${lin.dominantDirection_deg}° azimuth`, 'Primary fracture set orientation'],
-        ['Fracture Intersections', `${lin.intersectionCount}`, 'Zones of enhanced permeability'],
-        ['Fracture Zone Proximity', `${lin.fractureZoneProximity_m}m`, 'Distance to nearest intersection'],
+        ['Fracture Intersections (local ~1 km grid)', `${lin.intersectionCount}${lin.intersectionCount === 0 && _regTargets.length ? ` (regional model maps ${Math.min(_regTargets.length, 5)} at 1-2 km -- Section 19)` : ''}`, 'Zones of enhanced permeability'],
+        ['Fracture Zone Proximity', _proximityTxt, 'Distance to nearest intersection'],
         ['Aquifer Enhancement', (lin.aquiferEnhancement ?? '').toUpperCase(), 'Fracture contribution to aquifer yield'],
-        ['Yield Multiplier', `${sf(lin.yieldMultiplier, 2)}?`, 'Applied to base yield estimate'],
+        ['Yield Multiplier', `${sf(lin.yieldMultiplier, 2)}x`, 'Applied to base yield estimate'],
       );
     }
     autoTable(doc, {
@@ -6618,16 +6632,27 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
     doc.text('Darcy/Theis/mass-balance with Dempster-Shafer belief fusion, OAT sensitivity, Monte Carlo ensemble', margin, y); y += 6;
 
+    // A 99% Dempster-Shafer belief beside 0% method agreement is a
+    // statistical impossibility to a reviewer: DS fusion counts source
+    // CONVERGENCE, but when the three physics methods themselves disagree
+    // the belief is an upper bound, not a confidence. Cap the display.
+    const _physCons = pinn.physicsModel.physicsConsistency ?? 0;
+    const _dsBeliefRaw = pinn.dempsterShafer.belief ?? 0;
+    const _dsBeliefShown = _physCons < 0.3
+      ? Math.min(_dsBeliefRaw, 0.60 + 0.35 * _physCons)
+      : _dsBeliefRaw;
     const pinnRows: string[][] = [
       ['Predicted Depth', `${(pinn.physicsModel.predictedDepth_m ?? 0).toFixed(1)} m`, 'Nearby wells / physics estimation'],
       ['Sustainable Yield', `${(pinn.physicsModel.predictedYield_m3h ?? 0).toFixed(2)} m\u00B3/h`, 'min(Darcy, Theis, Mass Balance)'],
-      ['Success Probability', `${(pinn.physicsModel.predictedProbability * 100).toFixed(1)}%`, '7-factor physics model'],
+      ['Success Probability', `${(pinn.physicsModel.predictedProbability * 100).toFixed(1)}% (sub-model; governing: ${pct(result.probability)})`, '7-factor physics model'],
       ['Darcy Yield', `${pinn.physicsModel.darcyYield_m3h} m\u00B3/h`, 'Q = 2\u03C0rTi'],
       ['Theis Drawdown', `${pinn.physicsModel.theisDrawdown_m} m`, 'Cooper-Jacob steady-state'],
       ['Mass Balance Yield', `${pinn.physicsModel.massBalanceYield_m3h} m\u00B3/h`, 'Recharge over 1 km\u00B2'],
-      ['Physics Consistency', `${(pinn.physicsModel.physicsConsistency * 100).toFixed(0)}%`, 'Agreement between 3 methods'],
+      ['Physics Consistency', `${(_physCons * 100).toFixed(0)}%`, 'Agreement between 3 methods'],
       ['Limiting Factor', pinn.physicsModel.limitingFactor.split('--')[0].trim(), 'Most restrictive constraint'],
-      ['Dempster-Shafer Belief', `${(pinn.dempsterShafer.belief * 100).toFixed(1)}%`, `${pinn.dempsterShafer.sourceBeliefs.length} independent sources`],
+      ['Dempster-Shafer Belief', _physCons < 0.3
+        ? `${(_dsBeliefShown * 100).toFixed(1)}% (capped -- raw ${(_dsBeliefRaw * 100).toFixed(1)}% overstated certainty while the 3 physics methods agreed only ${(_physCons * 100).toFixed(0)}%)`
+        : `${(_dsBeliefShown * 100).toFixed(1)}%`, `${pinn.dempsterShafer.sourceBeliefs.length} independent sources`],
       ['Plausibility', `${(pinn.dempsterShafer.plausibility * 100).toFixed(1)}%`, 'Upper bound on success'],
       ['Uncertainty (Pl - Bel)', `${(pinn.dempsterShafer.uncertainty * 100).toFixed(1)}%`, 'Epistemic gap'],
       ['Conflict Factor', `${(pinn.dempsterShafer.conflictFactor * 100).toFixed(1)}%`, 'Source disagreement'],

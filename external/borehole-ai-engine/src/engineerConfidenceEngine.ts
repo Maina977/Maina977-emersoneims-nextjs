@@ -700,10 +700,17 @@ function runMonteCarloAnalysis(r: any): UncertaintyAnalysis {
   ]);
 
   // â”€â”€ Success Probability Monte Carlo â”€â”€
-  const baseProb = (r.probability ?? 50) / 100;
-  const probSamples = generateBetaSamples(baseProb, 0.08, N);
+  // UNITS BUG FIX (audit 2026-07-10): r.probability is a 0-1 FRACTION.
+  // Dividing it by 100 fed 0.006 into the Beta sampler, whose parameters
+  // collapsed to the 0.5 floor -- an arcsine distribution centred at 50%
+  // with a meaningless 0.5-99% confidence interval printed in the report.
+  const baseProb = r.probability != null
+    ? (r.probability > 1 ? r.probability / 100 : r.probability)
+    : 0.5;
+  const probSpread = hasERT ? 0.06 : (hasGeophysics && hasNearby) ? 0.08 : 0.10;
+  const probSamples = generateBetaSamples(baseProb, probSpread, N);
   const successMC = computeMonteCarloStats('Success Probability', '%', probSamples.map(v => v * 100), [
-    { name: 'Base probability', distribution: 'Beta', params: `mean=${(baseProb * 100).toFixed(0)}%, spread=8%` },
+    { name: 'Base probability', distribution: 'Beta', params: `mean=${(baseProb * 100).toFixed(0)}%, spread=${(probSpread * 100).toFixed(0)}%` },
   ]);
 
   // â”€â”€ Water Quality Monte Carlo â”€â”€
