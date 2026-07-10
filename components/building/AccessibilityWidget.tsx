@@ -214,7 +214,7 @@ export default function AccessibilityWidget() {
       {/* Floating Accessibility Button - ALWAYS VISIBLE - Positioned ABOVE stats counter */}
       <motion.button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 left-4 z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-3 px-5 py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"
+        className="fixed bottom-24 left-4 z-[9999] bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-2xl shadow-blue-600/50 flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-4 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 group border-2 border-white/20"
         aria-label="Open Accessibility Options - We fully support visually impaired users with screen readers, high contrast, large text and more"
         title="♿ Accessibility Options - Click here for visually impaired support. WCAG 2.1 AAA Compliant"
         whileHover={{ scale: 1.08, boxShadow: '0 25px 50px rgba(37, 99, 235, 0.5)' }}
@@ -240,8 +240,9 @@ export default function AccessibilityWidget() {
           <span className="absolute inset-0 rounded-full bg-white/30 animate-ping" />
         </span>
 
-        {/* Label - Always visible with clear text */}
-        <div className="flex flex-col items-start">
+        {/* Label - full text from tablet up; icon-only on phones (mobile UX
+            audit 2026-07-10). aria-label keeps it screen-reader complete. */}
+        <div className="hidden sm:flex flex-col items-start">
           <span className="font-bold text-base whitespace-nowrap">
             Accessibility
           </span>
@@ -251,7 +252,7 @@ export default function AccessibilityWidget() {
         </div>
 
         {/* WCAG Badge - Larger and more prominent */}
-        <span className="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full border-2 border-white shadow-lg">
+        <span className="hidden sm:inline-block bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full border-2 border-white shadow-lg">
           ♿ AAA
         </span>
         

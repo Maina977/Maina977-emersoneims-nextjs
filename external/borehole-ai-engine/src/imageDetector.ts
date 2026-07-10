@@ -31,7 +31,23 @@ export class ImageDetector {
         await Promise.race([
           (async () => {
             await tf.ready();
-            this.model = await mobilenet.load();
+            // mobilenet.load() defaults to tfhub.dev, whose Kaggle redirect
+            // chain drops CORS headers for browser requests from our origin --
+            // the classifier silently failed on live and photo scene analysis
+            // degraded (console audit 2026-07-10). The model is now SELF-HOSTED
+            // (public/models/mobilenet, byte-verified against the manifest):
+            // same-origin, so immune to Google's redirects, CORS and CSP
+            // forever. Package default kept as a fallback.
+            try {
+              this.model = await mobilenet.load({
+                version: 1,
+                alpha: 1.0,
+                modelUrl: '/models/mobilenet/model.json',
+              } as any);
+            } catch (selfHostErr) {
+              console.warn('[ImageDetector] Self-hosted model load failed, trying tfhub default:', (selfHostErr as any)?.message ?? selfHostErr);
+              this.model = await mobilenet.load();
+            }
             this.isInitialized = true;
           })(),
           new Promise((_, reject) => setTimeout(() => reject(new Error('TF.js model load timeout (20s)')), 20000))

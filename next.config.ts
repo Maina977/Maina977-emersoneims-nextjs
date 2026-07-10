@@ -260,7 +260,11 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()'
+            // geolocation=(self): AquaScan Pro's "Use my location" button
+            // needs the Geolocation API on our own origin -- geolocation=()
+            // silently denied it for every real user (audit 2026-07-10).
+            // Third-party iframes remain blocked (self only).
+            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=(), browsing-topics=()'
           },
           // FIX (audit 2026-05-09): X-XSS-Protection is deprecated and was
           // removed from modern browsers; OWASP recommends sending `0` or

@@ -158,7 +158,7 @@ function StatCounter({ value, label }: { value: string | number; label: string }
       <span ref={numRef} className="block text-4xl md:text-5xl font-bold text-cyan-300 tabular-nums">
         {animatable ? `0${suffix}` : display}
       </span>
-      <span className="mt-2 block text-[11px] md:text-xs tracking-[0.25em] uppercase text-slate-400">{label}</span>
+      <span className="mt-2 block text-xs tracking-[0.25em] uppercase text-slate-400">{label}</span>
     </div>
   );
 }
@@ -299,7 +299,7 @@ function IndustriesHero({ stats }: { stats: IndustriesExperienceProps['stats'] }
       <ParticleField />
 
       <div className="relative z-10 max-w-7xl mx-auto w-full px-4 md:px-8 pb-16 md:pb-24 pt-36">
-        <p className="ind-hero-fade text-[11px] md:text-xs tracking-[0.45em] uppercase text-cyan-300 mb-5">
+        <p className="ind-hero-fade text-xs tracking-[0.45em] uppercase text-cyan-300 mb-5">
           Industry Solutions — B2B Power
         </p>
         <h1 className="text-[12vw] md:text-[6.5vw] font-bold leading-[0.95] text-white">
@@ -392,7 +392,7 @@ function IndustryCard({ industry, featured }: { industry: IndustryCardData; feat
       <div className="absolute inset-x-0 bottom-0 p-6 md:p-8">
         <div className="flex items-center gap-3 mb-3">
           <span className="text-3xl md:text-4xl drop-shadow">{industry.icon}</span>
-          <span className="text-[10px] md:text-xs text-cyan-300 bg-cyan-400/10 border border-cyan-400/25 px-3 py-1 rounded-full tracking-wide">
+          <span className="text-xs text-cyan-300 bg-cyan-400/10 border border-cyan-400/25 px-3 py-1 rounded-full tracking-wide">
             {industry.marketSize}
           </span>
         </div>
@@ -443,7 +443,7 @@ function ServicesRail() {
     <section ref={sectionRef} className="relative overflow-hidden bg-slate-950 py-16 md:py-0 md:min-h-screen md:flex md:flex-col md:justify-center">
       <div className="max-w-7xl mx-auto w-full px-4 md:px-8 mb-10 md:mb-14">
         <Reveal>
-          <p className="text-[11px] tracking-[0.4em] uppercase text-cyan-300 mb-3">All Services — In Pictures</p>
+          <p className="text-xs tracking-[0.4em] uppercase text-cyan-300 mb-3">All Services — In Pictures</p>
           <h2 className="text-4xl md:text-6xl font-bold text-white">
             Every service. <span className="text-slate-500">One partner.</span>
           </h2>
@@ -513,7 +513,7 @@ export default function IndustriesExperience({ industries, stats }: IndustriesEx
       <section className="py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <Reveal className="mb-14 md:mb-20">
-            <p className="text-[11px] tracking-[0.4em] uppercase text-cyan-300 mb-3">Nine Sectors. One Standard.</p>
+            <p className="text-xs tracking-[0.4em] uppercase text-cyan-300 mb-3">Nine Sectors. One Standard.</p>
             <h2 className="text-4xl md:text-6xl font-bold text-white max-w-3xl leading-tight">
               Choose your industry.
             </h2>

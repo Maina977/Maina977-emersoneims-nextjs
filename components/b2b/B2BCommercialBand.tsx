@@ -110,11 +110,11 @@ export default function B2BCommercialBand({ profile, className = '' }: Props) {
               key={i}
               className={`rounded-xl border border-white/10 bg-white/[0.02] p-5 ring-1 ${a.ring}`}
             >
-              <div className="text-[10px] uppercase tracking-wider text-slate-400">Problem</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">Problem</div>
               <p className="mt-1 text-sm text-slate-200">{row.problem}</p>
-              <div className={`mt-4 text-[10px] uppercase tracking-wider ${a.text}`}>EmersonEIMS solution</div>
+              <div className={`mt-4 text-xs uppercase tracking-wider ${a.text}`}>EmersonEIMS solution</div>
               <p className="mt-1 text-sm text-white">{row.solution}</p>
-              <div className="mt-4 text-[10px] uppercase tracking-wider text-emerald-300">Business outcome</div>
+              <div className="mt-4 text-xs uppercase tracking-wider text-emerald-300">Business outcome</div>
               <p className="mt-1 text-sm text-emerald-100/90">{row.outcome}</p>
             </article>
           ))}
