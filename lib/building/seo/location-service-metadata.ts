@@ -30,18 +30,18 @@ export function generateLocationServiceMetadata(
   const description = service.metaTemplate.description.replace(/{location}/g, locationName);
   const keywords = generateServiceKeywords(service, locationName);
 
-  // Build canonical URL
-  let canonicalPath = '/kenya';
-  if (parent?.county) {
-    canonicalPath += `/${parent.county.slug}`;
+  // Build canonical URL.
+  // BUG FIX (Search Console audit 2026-07-10): mirror of lib/seo copy --
+  // the constituency slug was appended twice for constituency-service
+  // pages, canonicalizing the whole tier to 404 URLs. See lib/seo/
+  // location-service-metadata.ts for details.
+  const segs: string[] = [];
+  if (parent?.county) segs.push(parent.county.slug);
+  if (parent?.constituency) segs.push(parent.constituency.slug);
+  if (segs.length === 0 || segs[segs.length - 1] !== location.slug) {
+    segs.push(location.slug);
   }
-  if (parent?.constituency) {
-    canonicalPath += `/${parent.constituency.slug}`;
-  }
-  if (location.type !== 'county' || !parent?.county) {
-    canonicalPath += `/${location.slug}`;
-  }
-  canonicalPath += `/${service.slug}`;
+  const canonicalPath = `/kenya/${segs.join('/')}/${service.slug}`;
 
   const canonicalUrl = `https://www.emersoneims.com${canonicalPath}`;
 

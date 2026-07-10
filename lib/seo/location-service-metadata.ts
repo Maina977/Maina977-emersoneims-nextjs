@@ -30,18 +30,21 @@ export function generateLocationServiceMetadata(
   const description = service.metaTemplate.description.replace(/{location}/g, locationName);
   const keywords = generateServiceKeywords(service, locationName);
 
-  // Build canonical URL
-  let canonicalPath = '/kenya';
-  if (parent?.county) {
-    canonicalPath += `/${parent.county.slug}`;
+  // Build canonical URL.
+  // BUG FIX (Search Console audit 2026-07-10): when the location IS the
+  // constituency (constituency-service pages), the old logic appended the
+  // constituency slug twice -- the canonical pointed to
+  // /kenya/kiambu/kiambaa/kiambaa/generators, which 404s. Google therefore
+  // treated every constituency+service page as a non-canonical duplicate
+  // and dropped the tier from the index. The location slug is now appended
+  // only when it isn't already the last parent segment.
+  const segs: string[] = [];
+  if (parent?.county) segs.push(parent.county.slug);
+  if (parent?.constituency) segs.push(parent.constituency.slug);
+  if (segs.length === 0 || segs[segs.length - 1] !== location.slug) {
+    segs.push(location.slug);
   }
-  if (parent?.constituency) {
-    canonicalPath += `/${parent.constituency.slug}`;
-  }
-  if (location.type !== 'county' || !parent?.county) {
-    canonicalPath += `/${location.slug}`;
-  }
-  canonicalPath += `/${service.slug}`;
+  const canonicalPath = `/kenya/${segs.join('/')}/${service.slug}`;
 
   const canonicalUrl = `https://www.emersoneims.com${canonicalPath}`;
 
