@@ -16,6 +16,9 @@ export interface RechargeModelInput {
   // Evapotranspiration
   annualET_mm?: number;                 // from GLDAS/NASA POWER
   monthlyET?: number[];                 // 12 values
+  /** Measured mean annual temperature (°C) for the Turc ET fallback --
+   *  without it a latitude-only guess assigns 30°C to equatorial highlands. */
+  avgAnnualTemp_c?: number;
 
   // Soil and geology
   soilType?: string;
@@ -293,8 +296,9 @@ export function modelDynamicRecharge(input: RechargeModelInput): RechargeModelRe
   // Average precipitation
   const avgP = input.annualPrecipitation.reduce((s, y) => s + y.total, 0) / Math.max(1, input.annualPrecipitation.length);
 
-  // ET: use provided or estimate from precipitation ratio
-  const annualET = input.annualET_mm ?? estimateET(avgP, input.latitude);
+  // ET: use provided or estimate from precipitation ratio (measured mean
+  // temperature preferred over the latitude guess -- audit 2026-07-10)
+  const annualET = input.annualET_mm ?? estimateET(avgP, input.latitude, input.avgAnnualTemp_c);
   diagnostics.push(`Annual P=${Math.round(avgP)} mm, ET=${Math.round(annualET)} mm`);
 
   // Monthly breakdown
@@ -308,8 +312,24 @@ export function modelDynamicRecharge(input: RechargeModelInput): RechargeModelRe
 
   diagnostics.push(`Recharge: ${Math.round(avgAnnualRecharge)} mm/yr (${avgP > 0 ? (avgAnnualRecharge / avgP * 100).toFixed(1) : '0.0'}% of P)${avgAnnualRecharge < 20 && avgP > 200 ? ' — Note: Despite low local recharge, sustained yield may be supported by regional groundwater flow through fractured bedrock or lateral aquifer inflow.' : ''}`);
 
-  // Annual time series
-  const annualSeries = computeAnnualRecharge(input.annualPrecipitation, annualET, soilParams, slopePct, imperviousFrac);
+  // Annual time series.
+  // AUDIT FIX (2026-07-10): the trend/drought/CV series used to come from a
+  // DIFFERENT crude annual model that disagreed ~2x with the monthly
+  // Thornthwaite headline recharge in the same result object. The series is
+  // now derived from the SAME monthly balance, scaling each year's monthly
+  // rainfall by that year's total, so headline, trend and projections all
+  // describe one water body.
+  const annualSeries = input.annualPrecipitation.map(({ year, total }) => {
+    const scale = avgP > 0 ? total / avgP : 1;
+    const yearMonthly = computeMonthlyRecharge(
+      monthlyP.map(p => p * scale), monthlyET, soilParams, slopePct, imperviousFrac, vegCover,
+    );
+    return {
+      year,
+      recharge_mm: Math.round(yearMonthly.reduce((s, m) => s + m.netRecharge_mm, 0)),
+      precipitation_mm: total,
+    };
+  });
   const rechargeValues = annualSeries.map(s => s.recharge_mm);
   const trend = linearTrend(rechargeValues);
   const cv = coefficientOfVariation(rechargeValues);
@@ -361,19 +381,33 @@ export function modelDynamicRecharge(input: RechargeModelInput): RechargeModelRe
     yearsToDepletion = Math.round(totalStorage_m3 / (netDeficit_m3day * 365));
   }
 
-  // Water balance
+  // Water balance.
+  // AUDIT FIX (2026-07-10): the old budget compared recharge against
+  // (pumping + 20% of recharge) -- it could never close and manufactured a
+  // phantom "surplus" of 0.8x recharge at every unpumped site. At natural
+  // steady state, discharge (baseflow/springs/ET from the water table)
+  // balances recharge, so the storage change is driven by the PUMPING
+  // stress; "surplus" means pumping stays within the allocatable fraction.
+  const naturalDischarge_m3yr = totalRecharge_m3yr; // steady-state balance
   const totalInput = totalRecharge_m3yr;
-  const totalOutput = pumping * 365 + totalRecharge_m3yr * 0.2; // pumping + baseflow
+  const totalOutput = pumping * 365 + naturalDischarge_m3yr;
   const waterBalance = {
     totalInput_m3yr: Math.round(totalInput),
     totalOutput_m3yr: Math.round(totalOutput),
-    netChange_m3yr: Math.round(totalInput - totalOutput),
-    surplus: totalInput > totalOutput,
+    // net storage change ≈ -pumping until capture develops
+    netChange_m3yr: Math.round(-pumping * 365),
+    surplus: pumping * 365 < totalRecharge_m3yr * safeYieldFraction,
   };
 
-  // Climate projections (simple scaling)
-  const projectedRecharge2030 = avgAnnualRecharge * (1 + trend / avgAnnualRecharge * 0.5);
-  const projectedRecharge2050 = avgAnnualRecharge * (1 + trend / avgAnnualRecharge * 2);
+  // Climate projections (simple scaling).
+  // AUDIT FIX (2026-07-10): `trend` is per-DECADE; multiplier must be the
+  // actual number of decades to the horizon, not hard-coded 0.5/2.
+  const lastDataYear = input.annualPrecipitation.length > 0
+    ? Math.max(...input.annualPrecipitation.map(y => y.year))
+    : new Date().getFullYear();
+  const safeTrendRatio = avgAnnualRecharge > 0 ? trend / avgAnnualRecharge : 0;
+  const projectedRecharge2030 = avgAnnualRecharge * (1 + safeTrendRatio * Math.max(0, (2030 - lastDataYear) / 10));
+  const projectedRecharge2050 = avgAnnualRecharge * (1 + safeTrendRatio * Math.max(0, (2050 - lastDataYear) / 10));
   const climateRiskLevel: RechargeModelResult['climateRiskLevel'] =
     trendDirection === 'decreasing' && cv > 0.4 ? 'high'
     : trendDirection === 'decreasing' || cv > 0.3 ? 'moderate'
@@ -420,10 +454,15 @@ export function modelDynamicRecharge(input: RechargeModelInput): RechargeModelRe
 
 /* ── Helper Functions ─────────────────────────────────────── */
 
-function estimateET(precipitation_mm: number, latitude: number): number {
+function estimateET(precipitation_mm: number, latitude: number, meanAnnualTemp_c?: number): number {
   // Turc (1961) formula approximation: ET = P / sqrt(0.9 + P²/L²)
   // L = 300 + 25T + 0.05T³ (T = mean annual temperature)
-  const T = Math.max(5, 30 - Math.abs(latitude) * 0.5); // rough temp estimate
+  // AUDIT FIX (2026-07-10): use the MEASURED mean temperature when supplied.
+  // The latitude-only guess gave 30°C to equatorial HIGHLANDS (real ~18°C),
+  // overstating ET by ~500 mm/yr and nearly halving computed recharge.
+  const T = meanAnnualTemp_c != null && isFinite(meanAnnualTemp_c)
+    ? Math.max(0, Math.min(35, meanAnnualTemp_c))
+    : Math.max(5, 30 - Math.abs(latitude) * 0.5); // latitude fallback only
   const L = 300 + 25 * T + 0.05 * T * T * T;
   return precipitation_mm / Math.sqrt(0.9 + (precipitation_mm * precipitation_mm) / (L * L));
 }

@@ -585,26 +585,43 @@ function performCrossValidation(r: any): CrossValidationResult {
     };
   }
 
-  const depthErrors = wells.map(w => w.depthError_m);
-  const yieldErrors = wells.map(w => w.yieldError_m3hr);
+  // AUDIT FIX (2026-07-10): MAPE was diluted by wells lacking a value for
+  // that parameter (they contributed 0% error but were counted in the
+  // denominator -- half the wells missing depth halved the reported MAPE
+  // and could flip the verdict gate). Each metric now averages ONLY over
+  // wells with a valid actual for that parameter.
+  const depthWells = wells.filter(w => w.actualDepth_m > 0);
+  const yieldWells = wells.filter(w => w.actualYield_m3hr > 0);
+  const nD = Math.max(1, depthWells.length);
+  const nY = Math.max(1, yieldWells.length);
 
-  const depthRMSE = Math.sqrt(depthErrors.reduce((s, e) => s + e * e, 0) / n);
-  const depthMAE = depthErrors.reduce((s, e) => s + e, 0) / n;
-  const depthMAPE = wells.reduce((s, w) => s + w.depthErrorPct, 0) / n;
+  const depthRMSE = Math.sqrt(depthWells.reduce((s, w) => s + w.depthError_m ** 2, 0) / nD);
+  const depthMAE = depthWells.reduce((s, w) => s + w.depthError_m, 0) / nD;
+  const depthMAPE = depthWells.reduce((s, w) => s + w.depthErrorPct, 0) / nD;
 
-  const yieldRMSE = Math.sqrt(yieldErrors.reduce((s, e) => s + e * e, 0) / n);
-  const yieldMAE = yieldErrors.reduce((s, e) => s + e, 0) / n;
-  const yieldMAPE = wells.reduce((s, w) => s + w.yieldErrorPct, 0) / n;
+  const yieldRMSE = Math.sqrt(yieldWells.reduce((s, w) => s + w.yieldError_m3hr ** 2, 0) / nY);
+  const yieldMAE = yieldWells.reduce((s, w) => s + w.yieldError_m3hr, 0) / nY;
+  const yieldMAPE = yieldWells.reduce((s, w) => s + w.yieldErrorPct, 0) / nY;
 
   // RÂ² calculation (coefficient of determination)
-  const actualDepths = wells.map(w => w.actualDepth_m);
-  const actualYields = wells.map(w => w.actualYield_m3hr);
-  const depthR2 = computeR2(wells.map(w => w.predictedDepth_m), actualDepths);
-  const yieldR2 = computeR2(wells.map(w => w.predictedYield_m3hr), actualYields);
+  // AUDIT FIX (2026-07-10): R² is undefined for a single-point predictor --
+  // every well gets the SAME predicted value, so 1 - SSres/SStot <= 0 by
+  // construction and the max(0,..) clamp printed a misleading 0.00 in 100%
+  // of runs. Report -1 as an explicit "not applicable" sentinel.
+  const depthR2 = -1;
+  const yieldR2 = -1;
 
   const successCount = wells.filter(w => w.outcome === 'Success' || w.outcome === 'Moderate').length;
   const successRateActual = (successCount / n) * 100;
-  const predictionAccuracy = 100 - Math.min(depthMAPE, yieldMAPE, 100);
+  // AUDIT FIX (2026-07-10): was 100 - min(depthMAPE, yieldMAPE) -- i.e. the
+  // BETTER-looking metric. Use the mean of the metrics that actually exist.
+  const availMapes = [
+    ...(depthWells.length > 0 ? [depthMAPE] : []),
+    ...(yieldWells.length > 0 ? [yieldMAPE] : []),
+  ];
+  const predictionAccuracy = availMapes.length > 0
+    ? 100 - Math.min(100, availMapes.reduce((a, b) => a + b, 0) / availMapes.length)
+    : 0;
 
   let engineerVerdict: CrossValidationResult['engineerVerdict'];
   let verdictJustification: string;

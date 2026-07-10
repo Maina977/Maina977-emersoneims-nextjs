@@ -506,9 +506,14 @@ export async function fetchGLDASGroundwaterData(
   else if (totalColumn > 80) classification = 'dry';
   else classification = 'very-dry';
   // Upgrade classification if deep layer shows significant moisture
-  // (deep moisture is more relevant for borehole drilling than surface dryness)
-  if (deepLayerMoisture > 25 && classification === 'very-dry') classification = 'dry';
-  if (deepLayerMoisture > 40 && classification === 'dry') classification = 'moist';
+  // (deep moisture is more relevant for borehole drilling than surface dryness).
+  // AUDIT FIX (2026-07-10): sm[3] is kg/m² over a 1.55m layer (= vol x 1550),
+  // so even semi-arid soil reads ~155 -- the old gates of 25/40 fired almost
+  // unconditionally and silently erased the dry/very-dry classes. Gates are
+  // now VOLUMETRIC: 0.16 (clearly damp) and 0.25 (approaching field capacity).
+  const deepVolumetric = deepLayerMoisture / 1550;
+  if (deepVolumetric > 0.16 && classification === 'very-dry') classification = 'dry';
+  if (deepVolumetric > 0.25 && classification === 'dry') classification = 'moist';
 
   let drillingImplication: string;
   switch (classification) {

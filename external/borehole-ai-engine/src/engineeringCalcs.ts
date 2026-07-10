@@ -72,10 +72,16 @@ export function computeWaterChemistry(input: WaterChemistryInput): WaterChemistr
   const warnings: string[] = [];
   const treatmentRequired: string[] = [];
 
-  // Estimate Ca and alkalinity from TDS if not provided (Hem, 1985 correlations)
-  const Ca = input.calcium_mgL ?? input.tds_mgL * 0.08; // ~8% of TDS typical
+  // Estimate Ca and alkalinity from TDS if not provided (Hem, 1985 correlations).
+  // AUDIT FIX (2026-07-10): unit consistency -- the Langelier C-term below
+  // requires calcium AS CaCO3. Hem's ~8%-of-TDS is ELEMENTAL Ca, so the
+  // fallback converts (x2.5); supplied calcium_mgL is treated as CaCO3
+  // (matching the LSI numeric convention verified against textbook values).
+  // Total hardness ≈ calcium hardness x1.2 (Mg allowance) -- the old x2.5
+  // double-applied the element→CaCO3 factor and biased AI by ~+0.4.
+  const Ca = input.calcium_mgL ?? input.tds_mgL * 0.08 * 2.5; // as CaCO3
   const Alk = input.alkalinity_mgL_CaCO3 ?? input.tds_mgL * 0.35; // ~35% as CaCO3
-  const Hard = input.hardness_mgL_CaCO3 ?? Ca * 2.5; // CaCO3 equivalent
+  const Hard = input.hardness_mgL_CaCO3 ?? Ca * 1.2; // total hardness as CaCO3
   const T = input.temperature_C;
   const TDS = input.tds_mgL;
 
@@ -108,8 +114,9 @@ export function computeWaterChemistry(input: WaterChemistryInput): WaterChemistr
   else if (RSI < 8.5) rsiInterp = 'Corrosive. Pipe corrosion expected.';
   else rsiInterp = 'Very aggressive. Rapid metal dissolution. Use HDPE or stainless only.';
 
-  // Aggressive Index (AI)
-  const AI = Math.round((input.pH + Math.log10(Math.max(0.1, Alk) * Math.max(0.1, Hard))) * 100) / 100;
+  // Aggressive Index (AI) -- uses CALCIUM hardness (as CaCO3), not total
+  // hardness (AWWA C400 definition; audit fix 2026-07-10)
+  const AI = Math.round((input.pH + Math.log10(Math.max(0.1, Alk) * Math.max(0.1, Ca))) * 100) / 100;
   let aiInterp: string;
   if (AI >= 12) aiInterp = 'Non-aggressive. Cement mortar linings stable.';
   else if (AI >= 10) aiInterp = 'Moderately aggressive. Cement mortar will slowly deteriorate.';
@@ -462,16 +469,22 @@ function classifyVulnerability(
   vadoseLithology: string,
   depthToWater_m: number
 ): SetbackAnalysis['vulnerabilityClass'] {
-  const G = aquiferType.toLowerCase().includes('confined') ? 1 :
-    aquiferType.toLowerCase().includes('semi') ? 2 : 3;
+  // AUDIT FIX (2026-07-10): Foster's GOD method rates each factor on a 0-1
+  // scale (product also 0-1) -- the old ordinal 1-3/1-5/1-4 product with a
+  // homemade >=36/>=18/>=6 ladder was not Foster and over-classified (e.g.
+  // unconfined+sand+15m: Foster ~0.29 moderate, old code "high").
+  const G = aquiferType.toLowerCase().includes('confined') ? 0.2 :
+    aquiferType.toLowerCase().includes('semi') ? 0.4 : 0.9; // unconfined
   const litho = vadoseLithology.toLowerCase();
-  const O = litho.includes('clay') ? 1 : litho.includes('silt') ? 2 :
-    litho.includes('sand') ? 3 : litho.includes('gravel') || litho.includes('karst') || litho.includes('limestone') ? 4 : 2;
-  const D = depthToWater_m > 50 ? 1 : depthToWater_m > 20 ? 2 : depthToWater_m > 5 ? 3 : 4;
-  const GOD = G * O * D;
-  if (GOD >= 36) return 'very_high';
-  if (GOD >= 18) return 'high';
-  if (GOD >= 6) return 'moderate';
+  const O = litho.includes('clay') ? 0.4 : litho.includes('silt') ? 0.5 :
+    litho.includes('sand') ? 0.7 :
+    litho.includes('gravel') ? 0.8 :
+    litho.includes('karst') || litho.includes('limestone') ? 0.9 : 0.6;
+  const D = depthToWater_m > 50 ? 0.6 : depthToWater_m > 20 ? 0.7 : depthToWater_m > 5 ? 0.8 : 0.9;
+  const GOD = G * O * D; // 0-1 per Foster et al. (2002)
+  if (GOD >= 0.7) return 'very_high';
+  if (GOD >= 0.5) return 'high';
+  if (GOD >= 0.3) return 'moderate';
   return 'low';
 }
 

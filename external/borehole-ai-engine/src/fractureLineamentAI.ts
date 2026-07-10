@@ -414,18 +414,23 @@ function analyzeFractureConnectivity(
   const maxConnections = n > 1 ? n * (n - 1) / 2 : 1;
   const networkDensity = Math.min(1, intersections.length / maxConnections);
 
-  // Longest path estimate (from largest cluster total lineament length)
-  const largestClusterLength = lineaments
-    .filter(l => visited.has(l.id))
-    .reduce((sum, l) => sum + l.length_km, 0);
-  const longestPath = largestClusterLength * 0.6; // ~60% of total = connected path
+  // Longest path estimate. AUDIT FIX (2026-07-10): after the BFS, `visited`
+  // contains EVERY lineament, so filtering on it summed the whole network and
+  // inflated the "longest connected path" for fragmented networks. Scale the
+  // total length by the largest component's share instead.
+  const totalLineamentLength = lineaments.reduce((sum, l) => sum + l.length_km, 0);
+  const largestClusterLength = n > 0 ? totalLineamentLength * (largestCluster / n) : 0;
+  const longestPath = largestClusterLength * 0.6; // ~60% of cluster = connected path
 
   // Percolation threshold: connected network exists if largest cluster > 50% of total
   const percolation = largestCluster > n * 0.5 && intersections.length > n * 0.8;
 
-  // Effective transmissivity (m²/day) from connected fracture network
+  // Effective transmissivity from the connected fracture network.
+  // Cubic law T = ρg·b³/(12μ) gives m²/SECOND with SI inputs -- the old code
+  // reported that number as m²/day, understating T by 86,400x (audit fix
+  // 2026-07-10: b=0.5mm → ~1e-4 m²/s ≈ 9 m²/day per fracture).
   const avgAperture_m = rockProps.baseFractureAperture_mm / 1000;
-  const T = (avgAperture_m ** 3 * 9810) / (12 * 0.001) * rockProps.fractureFrequency * (percolation ? 1.5 : 0.3);
+  const T = (avgAperture_m ** 3 * 9810) / (12 * 0.001) * 86400 * rockProps.fractureFrequency * (percolation ? 1.5 : 0.3);
 
   return {
     networkDensity: Math.round(networkDensity * 1000) / 1000,
@@ -441,17 +446,23 @@ function analyzeFractureConnectivity(
 function estimateStressField(lat: number, lon: number, lineaments: Lineament[]): FractureAnalysisResult['stressField'] {
   // Estimate SHmax from World Stress Map regional patterns
   let shmax = 0;
-  if (lat >= -15 && lat <= 15 && lon >= 25 && lon <= 45) shmax = 100;  // E Africa: ~E-W extension → N-S SHmax
+  // AUDIT FIX (2026-07-10): East African Rift has ~E-W extension, so SHmax
+  // is N-S (azimuth ~0°) -- the old value 100° contradicted its own comment.
+  if (lat >= -15 && lat <= 15 && lon >= 25 && lon <= 45) shmax = 0;    // E Africa: ~E-W extension → N-S SHmax
   else if (lat >= 0 && lat <= 20 && lon >= -20 && lon <= 5) shmax = 30; // W Africa: NE-SW
   else if (lat >= -35 && lat <= -20 && lon >= 15 && lon <= 35) shmax = 60; // S Africa: ENE-WSW
   else if (lat >= 5 && lat <= 35 && lon >= 65 && lon <= 95) shmax = 10; // India: N-S (collision)
   else if (lat >= 30 && lat <= 45 && lon >= -10 && lon <= 50) shmax = 150; // Mediterranean: NNW-SSE
   else shmax = 45; // default NE-SW
 
-  // Open fractures are perpendicular (±30°) to SHmax
+  // GEOMECHANICS FIX (audit 2026-07-10): a vertical fracture striking
+  // PARALLEL to SHmax carries only the minimum horizontal stress across its
+  // face and stays OPEN/permeable; fractures perpendicular to SHmax are
+  // clamped shut. The old "+90" selected exactly the wrong (closed) set --
+  // it pointed drillers at the least permeable fracture orientation.
   const openAzimuths = lineaments
     .filter(l => {
-      let diff = Math.abs(l.azimuth_deg - (shmax + 90) % 180);
+      let diff = Math.abs(l.azimuth_deg - (shmax % 180));
       if (diff > 90) diff = 180 - diff;
       return diff < 30;
     })
@@ -525,8 +536,12 @@ export function analyzeFracturesAndLineaments(input: FractureAnalysisInput): Fra
   const domOrientation = dominantOrientation(lineaments);
 
   // 7. Scores
-  const lineamentDensity = lineaments.length / 25; // per 5×5 km area
-  const fractureDensityScore = Math.min(100, lineamentDensity * 15);
+  // AUDIT FIX (2026-07-10): lineament density is total LENGTH per area
+  // (km/km²), not a count / 25. The old value ignored lineament lengths and
+  // used a 25 km² divisor inconsistent with the ~5 km generation radius.
+  const analysisAreaKm2 = Math.PI * 5 * 5; // ~78.5 km² (5 km radius window)
+  const lineamentDensity = lineaments.reduce((s, l) => s + l.length_km, 0) / analysisAreaKm2;
+  const fractureDensityScore = Math.min(100, lineamentDensity * 60);
 
   const highPriorityCount = allIntersections.filter(i => i.priority === 'high').length;
   const intersectionPriorityScore = Math.min(100, highPriorityCount * 20 + allIntersections.length * 3);

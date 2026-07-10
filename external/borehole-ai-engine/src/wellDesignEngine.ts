@@ -1013,7 +1013,18 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   // ─── DRAWDOWN ───
   const tSec = 24 * 3600;
   const u = (S_eff * rw * rw) / (4 * T_eff * (tSec / 86400));
-  const Wu = u < 0.01 ? -0.5772 - Math.log(u) : Math.exp(-u) * (0.99999193 - 0.24991055 * u + 0.05519968 * u ** 2 - 0.00976004 * u ** 3 + 0.00107857 * u ** 4) / u;
+  // AUDIT FIX (2026-07-10): the u>=0.01 branch previously used the
+  // Abramowitz & Stegun 5.1.53 SMALL-x polynomial coefficients inside the
+  // LARGE-x rational form e^-u(...)/u -- a ~24x discontinuity at the branch
+  // boundary. 5.1.53 is now applied in its correct form (E1 = -g - ln u +
+  // sum a_n u^n, valid u<=1) and 5.1.56 for u>1.
+  const Wu = u < 0.01
+    ? -0.5772 - Math.log(u)
+    : u <= 1
+      ? -0.5772 - Math.log(u) + 0.99999193 * u - 0.24991055 * u ** 2 + 0.05519968 * u ** 3 - 0.00976004 * u ** 4 + 0.00107857 * u ** 5
+      : (Math.exp(-u) / u) *
+        ((u ** 4 + 8.5733287401 * u ** 3 + 18.059016973 * u ** 2 + 8.6347608925 * u + 0.2677737343) /
+         (u ** 4 + 9.5733223454 * u ** 3 + 25.6329561486 * u ** 2 + 21.0996530827 * u + 3.9584969228));
   const theisDD = (yield_m3day / (4 * Math.PI * T_eff)) * Math.max(0, Wu);
   const cjDD = (2.3 * yield_m3day) / (4 * Math.PI * T_eff) * Math.log10(2.25 * T_eff * (tSec / 86400) / (S_eff * rw * rw));
   const aqDD = Math.max(theisDD, cjDD);

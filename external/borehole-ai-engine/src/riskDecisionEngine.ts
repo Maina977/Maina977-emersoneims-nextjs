@@ -170,9 +170,13 @@ export function assessDrillingRisk(input: RiskDecisionInput): RiskDecisionResult
   const poorQualityProb = calcPoorQualityProbability(input);
   const collapseProb = calcCollapseRisk(input);
 
-  // Success = not dry, not low yield, acceptable quality
-  const successProb = Math.max(0.05, Math.min(0.98,
-    (1 - dryProb) * (1 - lowYieldProb * 0.5) * (1 - poorQualityProb * 0.3) * (1 - collapseProb)));
+  // AUDIT FIX (2026-07-10): this engine used to RE-DERIVE a second success
+  // probability (multiplying non-exclusive risk factors) that contradicted
+  // the pipeline's fused probability in the same report (e.g. 55% here vs
+  // 70% in the Executive Summary). The governing probability is the fused
+  // input; the dry/low-yield/quality/collapse figures below are
+  // NON-EXCLUSIVE conditional risk flags, not a probability partition.
+  const successProb = Math.max(0.05, Math.min(0.98, input.probability));
 
   // Risk categories
   const risks: RiskCategory[] = [

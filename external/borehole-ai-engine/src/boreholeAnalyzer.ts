@@ -657,6 +657,15 @@ export class BoreholeAnalyzer {
     );
     let probability = this.siteLocator.calculateProbability(site);
 
+    // DOUBLE-COUNTING FIX (statistics audit 2026-07-10): the Bayesian
+    // ensemble re-injects recharge (Source 2), GRACE (Source 5) and DEM
+    // (Source 6) as independent evidence -- so the ensemble's base
+    // probability must be the RAW site estimate, BEFORE the water-budget
+    // adjustments below, or the same physical signal is counted 2-3 times.
+    // The adjusted `probability` remains the coherent fallback when the
+    // ensemble does not run.
+    const probabilityBeforeWaterBudget = probability;
+
     // Recalibrate probability with REAL satellite water budget data
     // Probability MUST be consistent with recharge and water budget
     if (gldasGroundwater) {
@@ -941,7 +950,10 @@ export class BoreholeAnalyzer {
     });
 
     const ensembleInput: EnsembleInput = {
-      baseProbability: probability,
+      // Raw pre-water-budget estimate: recharge/GRACE/DEM act on the fused
+      // probability ONLY through their own ensemble sources (see the
+      // double-counting fix note above).
+      baseProbability: probabilityBeforeWaterBudget,
       baseDepth: calibratedDepth,
       baseYield: calibratedYield,
       gldasRecharge: gldasGroundwater?.waterBudget?.estimatedRecharge,
@@ -1663,6 +1675,7 @@ export class BoreholeAnalyzer {
             latitude: effectiveLat!,
             longitude: effectiveLon!,
             annualPrecipitation: [{ year: new Date().getFullYear(), total: historicalData.weather.averageAnnualPrecipitation ?? 600 }],
+            avgAnnualTemp_c: historicalData.weather.averageTemperature,
             monthlyPrecipitation: monthlyPrecip.slice(0, 12),
             soilType: soil.type === 'sandy' ? 'sand' : soil.type === 'clay' ? 'clay' : soil.type === 'loamy' ? 'loam' : 'laterite',
             slopePercent: demHydrology?.slope_degrees ?? 5,
@@ -2391,7 +2404,16 @@ export class BoreholeAnalyzer {
         aquiferImplications: {
           aquiferType: advancedRockResult.aquiferType,
           productivity: advancedRockResult.aquiferProductivity,
-          typicalYield_m3h: [advancedRockResult.typicalKsat_m_day[0] * 2, advancedRockResult.typicalKsat_m_day[1] * 2],
+          // AUDIT FIX (2026-07-10): yield [m³/h] cannot be 2 x K [m/day] --
+          // dimensionally invalid and blew up for fractured rock (K=50 ->
+          // "100 m³/h"). Thiem: Q = 2*pi*T*s / ln(R/rw) with conservative
+          // screening geometry b=10m, s=5m, ln(R/rw)=7 -> Q[m³/day] ~= 44.9*K
+          // -> /24 for m³/h, capped at 40 m³/h (upper bound of realistic
+          // single-borehole yields in these settings).
+          typicalYield_m3h: [
+            Math.round(Math.min(40, (2 * Math.PI * (advancedRockResult.typicalKsat_m_day[0] * 10) * 5 / 7) / 24) * 100) / 100,
+            Math.round(Math.min(40, (2 * Math.PI * (advancedRockResult.typicalKsat_m_day[1] * 10) * 5 / 7) / 24) * 100) / 100,
+          ],
           typicalKsat_m_day: advancedRockResult.typicalKsat_m_day,
         },
       } : undefined,

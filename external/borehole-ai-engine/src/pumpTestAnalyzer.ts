@@ -92,21 +92,27 @@ export interface PumpTestResult {
 }
 
 // Well function W(u) — Theis well function using series approximation
-function wellFunction(u: number): number {
+export function wellFunction(u: number): number {
   if (u <= 0) return 20; // cap
   if (u > 5) return 0;   // negligible
   
   // For small u, use Cooper-Jacob approximation
   if (u < 0.01) return -0.5772 - Math.log(u);
   
-  // Series expansion: W(u) = -Ei(-u) = -γ - ln(u) - Σ((-u)^n / (n·n!))
+  // Series expansion: W(u) = -γ - ln(u) + u - u²/(2·2!) + u³/(3·3!) - ...
+  // AUDIT FIX (2026-07-10): the first term is +u (was -u) and the recurrence
+  // is term *= -u (an extra /(n+1) had crept in). The old version returned
+  // ZERO drawdown for u > ~0.4 (physically impossible) and biased every
+  // Theis-fitted T/S from real pump tests. Verified: W(0.05)=2.468,
+  // W(0.5)=0.560, W(1)=0.219 (Abramowitz & Stegun table values).
   const euler = 0.5772156649;
   let sum = -euler - Math.log(u);
-  let term = -u;
+  let term = u;
   for (let n = 1; n <= 50; n++) {
-    sum += term / (n * factorial(n));
-    term *= -u / (n + 1);
-    if (Math.abs(term / (n * factorial(n))) < 1e-12) break;
+    const contrib = term / (n * factorial(n));
+    sum += contrib;
+    if (Math.abs(contrib) < 1e-12) break;
+    term *= -u;
   }
   return Math.max(0, sum);
 }

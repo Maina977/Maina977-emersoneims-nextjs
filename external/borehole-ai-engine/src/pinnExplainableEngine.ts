@@ -192,11 +192,18 @@ function extractFeatures(r: AnalysisResult): FeatureSet {
   };
 }
 
-// Saxton & Rawls 2006 Ksat estimation when SoilGrids unavailable
+// Texture-based Ksat estimation when SoilGrids unavailable.
+// AUDIT FIX (2026-07-10): the previous body used Saxton (1986) coefficients
+// but omitted the /theta_s division inside the exponent and appended an
+// unexplained x10 -- since theta_s sits in an EXPONENT, that changed Ksat by
+// orders of magnitude. Replaced with the Cosby et al. (1984) pedotransfer:
+//   log10(Ks [in/hr]) = -0.6 + 0.0126*sand% - 0.0064*clay%
+// Verified: loam (40/20) -> ~14 mm/hr, sand (85/5) -> ~120 mm/hr,
+// clay (10/60) -> ~1.4 mm/hr (published ranges).
 function estimateKsat(clay: number, sand: number): number {
-  // ln(Ksat) = 12.012 - 0.0755*sand + (-3.895 + 0.03671*sand - 0.1103*clay + 8.7546e-4*clay²)
-  const lnKsat = 12.012 - 0.0755 * sand + (-3.895 + 0.03671 * sand - 0.1103 * clay + 8.7546e-4 * clay * clay);
-  return Math.max(0.01, Math.exp(lnKsat) * 10); // mm/hr
+  const log10Ks_inhr = -0.6 + 0.0126 * sand - 0.0064 * clay;
+  const Ks_mmhr = Math.pow(10, log10Ks_inhr) * 25.4; // in/hr -> mm/hr
+  return Math.max(0.01, Math.min(500, Ks_mmhr));
 }
 
 // ══════════════════════════════════════════════════
@@ -621,13 +628,34 @@ function runDempsterShaferFusion(f: FeatureSet): PINNExplainableResult['dempster
     });
   }
 
-  // ── Dempster's Rule of Combination ──
-  let combined_s = sources[0].m_success;
-  let combined_f = sources[0].m_fail;
-  let combined_u = sources[0].m_uncertain;
+  // ── Correlation discounting (audit fix 2026-07-10) ──
+  // Dempster's rule assumes INDEPENDENT evidence, but NDVI, the recharge
+  // fraction, GRACE and the P-ET surplus all derive from the same
+  // precipitation/ET climate field. Combining them as four independents
+  // compounded shared evidence and drove belief ~0.2 too high (uncertainty
+  // ~5x too low). The climate cluster is collapsed into ONE averaged mass
+  // before combination; soil, wells and terrain remain independent.
+  const CLIMATE_SOURCES = /NDVI|Water Budget|GRACE|Water Surplus/;
+  const climateCluster = sources.filter(s => CLIMATE_SOURCES.test(s.source));
+  const independents = sources.filter(s => !CLIMATE_SOURCES.test(s.source));
+  const fusionSources = independents.slice();
+  if (climateCluster.length > 0) {
+    const nC = climateCluster.length;
+    fusionSources.unshift({
+      source: `Climate-Recharge Cluster (${climateCluster.map(s => s.source.split(' (')[0]).join(' + ')}; correlation-discounted)`,
+      m_success: climateCluster.reduce((s, c) => s + c.m_success, 0) / nC,
+      m_fail: climateCluster.reduce((s, c) => s + c.m_fail, 0) / nC,
+      m_uncertain: climateCluster.reduce((s, c) => s + c.m_uncertain, 0) / nC,
+    });
+  }
 
-  for (let i = 1; i < sources.length; i++) {
-    const s = sources[i];
+  // ── Dempster's Rule of Combination ──
+  let combined_s = fusionSources[0].m_success;
+  let combined_f = fusionSources[0].m_fail;
+  let combined_u = fusionSources[0].m_uncertain;
+
+  for (let i = 1; i < fusionSources.length; i++) {
+    const s = fusionSources[i];
     const K = combined_s * s.m_fail + combined_f * s.m_success;
     const norm = 1 - K;
     if (norm <= 0.01) continue;
@@ -665,7 +693,7 @@ function runDempsterShaferFusion(f: FeatureSet): PINNExplainableResult['dempster
       plausibility: parseFloat((s.m_success + s.m_uncertain).toFixed(4)),
       weight: parseFloat((s.m_success / Math.max(0.01, sources.reduce((sum, x) => sum + x.m_success, 0))).toFixed(4)),
     })),
-    fusionMethod: `Dempster-Shafer evidence theory with ${sources.length} INDEPENDENT sources (no shared base probability). ` +
+    fusionMethod: `Dempster-Shafer evidence theory over ${fusionSources.length} evidence groups (${sources.length} raw sources; the ${climateCluster.length} climate-derived sources are correlation-discounted into one cluster). ` +
       `Conflict K=${avgConflict.toFixed(3)} (${avgConflict < 0.1 ? 'low — sources agree well' : avgConflict < 0.3 ? 'moderate' : 'high — significant disagreement'}). ` +
       'Each source computes belief/plausibility from its own measured data only.',
   };

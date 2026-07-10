@@ -8744,7 +8744,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['RMSE', `${ec.crossValidation.depthRMSE_m}m`, `${ec.crossValidation.yieldRMSE_m3hr} m3/hr`],
           ['MAE', `${ec.crossValidation.depthMAE_m}m`, `${ec.crossValidation.yieldMAE_m3hr} m3/hr`],
           ['MAPE', `${ec.crossValidation.depthMAPE_pct}%${xvIsSyntheticHeavy ? ' *' : ''}`, `${ec.crossValidation.yieldMAPE_pct}%${xvIsSyntheticHeavy ? ' *' : ''}`],
-          ['R-squared', `${ec.crossValidation.depthR2}${xvSuspectOverfit ? ' \u2020' : ''}`, `${ec.crossValidation.yieldR2}${xvSuspectOverfit ? ' \u2020' : ''}`],
+          ['R-squared', ec.crossValidation.depthR2 < 0 ? 'N/A (single-point predictor)' : `${ec.crossValidation.depthR2}${xvSuspectOverfit ? ' \u2020' : ''}`, ec.crossValidation.yieldR2 < 0 ? 'N/A' : `${ec.crossValidation.yieldR2}${xvSuspectOverfit ? ' \u2020' : ''}`],
           ['Actual Success Rate', `${ec.crossValidation.successRateActual_pct}%`, ''],
           ['Predicted Success Rate', `${ec.crossValidation.successRatePredicted_pct}%`, ''],
           ...(xvIsSyntheticHeavy ? [['', { content: '* Validated against model-generated wells -- metrics are indicative, not confirmatory', colSpan: 2, styles: { fontSize: 6, fontStyle: 'italic' as const, textColor: [150, 50, 50] as [number, number, number] } }]] : []),

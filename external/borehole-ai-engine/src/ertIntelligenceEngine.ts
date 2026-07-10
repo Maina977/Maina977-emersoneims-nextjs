@@ -1133,8 +1133,17 @@ function estimateYield(
   // Transmissivity: T = K × b
   const T = K * thickness;
 
-  // Storativity estimate
-  const S = porosity * thickness * 0.001; // for confined; unconfined ≈ porosity
+  // Storativity estimate.
+  // AUDIT FIX (2026-07-10): the confined proxy (porosity*b*1e-3 ~ 0.0025)
+  // was applied unconditionally, understating unconfined storativity ~100x.
+  // Shallow weathered/fractured targets here are typically UNCONFINED, where
+  // S ~ specific yield (a fraction of porosity). Use Sy for shallow targets,
+  // the confined elastic proxy only for deep (>60m) targets.
+  const targetTop = bestTarget?.depthTop_m ?? features.depthToTarget_m ?? 20;
+  const isLikelyConfined = targetTop > 60;
+  const S = isLikelyConfined
+    ? porosity * thickness * 0.001                                   // elastic storage proxy
+    : Math.max(0.02, Math.min(0.25, porosity * 0.5));                // Sy ≈ 50% of porosity
 
   // Yield via Cooper-Jacob: Q = 2.3 T × s / (4π × ln(2.25 T t / r²S))
   // Simplified Thiem: Q = 2π T s / ln(R/rw)

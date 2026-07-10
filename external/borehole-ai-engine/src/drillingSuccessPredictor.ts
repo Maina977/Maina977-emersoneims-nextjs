@@ -177,10 +177,13 @@ export function predictDrillingSuccess(features: PredictionFeatures): DrillPredi
   const totalImportance = featureScores.reduce((s, f) => s + f.importance, 0);
   const rawProbability = featureScores.reduce((s, f) => s + f.score * f.importance, 0) / totalImportance;
 
-  // Logistic transform to keep in (0, 1) range
-  const logit = Math.log(rawProbability / (1 - Math.max(0.01, Math.min(0.99, rawProbability))));
-  const adjustedLogit = logit + learningCorrection;
-  const successProbability = 1 / (1 + Math.exp(-adjustedLogit));
+  // AUDIT FIX (2026-07-10): the learning correction was applied TWICE --
+  // once as feature #10 inside rawProbability and again as a logit shift --
+  // and the logit's numerator used the unclamped value against a clamped
+  // denominator (breaking the sigmoid round-trip above p~0.9). The
+  // correction now acts only through feature #10; the weighted sum is
+  // simply clamped to (0,1).
+  const successProbability = Math.max(0.01, Math.min(0.99, rawProbability));
 
   // ─── Depth prediction ───
   const baseDepth = prior.typicalDepth[0] + (prior.typicalDepth[1] - prior.typicalDepth[0]) * 0.5;

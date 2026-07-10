@@ -370,8 +370,13 @@ export function analyzeTemporalDrought(input: TemporalAnalysisInput): TemporalAn
   
   // ═══ CLIMATE PROJECTIONS ═══
   // IPCC AR6 simplified: African rainfall ±10% by 2050
-  const projected2030 = meanAnnual * (1 + rainfallTrend / meanAnnual * 0.5);
-  const projected2050 = meanAnnual * (1 + rainfallTrend / meanAnnual * 1.5);
+  // AUDIT FIX (2026-07-10): rainfallTrend is per-DECADE; use the true number
+  // of decades to each horizon (was hard-coded 0.5/1.5, understating 2050 by
+  // ~40% and disagreeing with the recharge model's projection horizon).
+  const _nowYear = new Date().getFullYear();
+  const _trendRatio = meanAnnual > 0 ? rainfallTrend / meanAnnual : 0;
+  const projected2030 = meanAnnual * (1 + _trendRatio * Math.max(0, (2030 - _nowYear) / 10));
+  const projected2050 = meanAnnual * (1 + _trendRatio * Math.max(0, (2050 - _nowYear) / 10));
   
   const projectedDroughtFreq = droughtFreq > 0 
     ? `${(droughtFreq * 1.3).toFixed(1)} events/decade (${((droughtFreq * 1.3 / droughtFreq - 1) * 100).toFixed(0)}% increase)`

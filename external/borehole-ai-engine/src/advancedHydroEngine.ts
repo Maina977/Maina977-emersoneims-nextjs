@@ -1093,12 +1093,15 @@ export async function computeDEMHydrology(lat: number, lon: number): Promise<DEM
     let aspectDeg = Math.atan2(-dzdy, dzdx) * 180 / Math.PI;
     if (aspectDeg < 0) aspectDeg += 360;
 
-    // TWI = ln(a / tan(β)) where a = upslope contributing area, β = slope
-    // Approximate 'a' from how many cells in the grid are higher than center
+    // TWI = ln(a / tan(β)) where a = SPECIFIC catchment area (upslope area
+    // PER UNIT CONTOUR WIDTH, m²/m = m), β = slope.
+    // AUDIT FIX (2026-07-10): the old code used raw upslope AREA (m²), which
+    // inflates TWI by ln(cellSize) ≈ +6.3 at ~550m cells -- every site read
+    // 18+ ("very_high") on gentle 2° slopes and gained spurious favorability.
     const higherCells = elevations.filter(e => e > centerElev).length;
-    const upslopeArea = Math.max(1, higherCells) * cellSize * cellSize;
+    const specificCatchmentArea = Math.max(1, higherCells) * cellSize; // m²/m
     const tanSlope = Math.max(0.001, Math.tan(slopeRad));
-    const twi = Math.log(upslopeArea / tanSlope);
+    const twi = Math.log(specificCatchmentArea / tanSlope);
 
     // TWI classification (typical range 4-16 for natural terrain)
     let twiClass: DEMHydrology['twiClass'];
@@ -1117,7 +1120,13 @@ export async function computeDEMHydrology(lat: number, lon: number): Promise<DEM
         if (isLowerThanMost) channelCells++;
       }
     }
-    const drainageDensity = Math.round((channelCells / 9) * 5 * 100) / 100; // km/km²
+    // AUDIT FIX (2026-07-10): drainage density = channel LENGTH / area.
+    // Approximate each flagged channel cell as one cell-length of channel;
+    // grid covers (4*cellSize)² -- the old "(count/9)*5" magic number had no
+    // length/area basis yet was compared against physical km/km² thresholds.
+    const cellKm = cellSize / 1000;
+    const gridAreaKm2 = Math.max(0.01, (4 * cellKm) * (4 * cellKm));
+    const drainageDensity = Math.round(((channelCells * cellKm) / gridAreaKm2) * 100) / 100; // km/km²
 
     // Relative topographic position
     const allElevs = elevations.filter(e => e > 0);
@@ -1667,15 +1676,12 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
     });
   }
 
-  // Source 8: Weighted success probability (6-factor model)
-  if (input.weightedProbability != null) {
-    estimates.push({
-      source: '6-Factor Weighted Model',
-      probability: input.weightedProbability,
-      weight: 0.12,
-      reliability: 0.70,
-    });
-  }
+  // Source 8 REMOVED (statistics audit 2026-07-10): the 6-factor weighted
+  // model was a composite of signals ALREADY present as individual sources
+  // (remote sensing = Source 2 GLDAS, structure = Source 6 DEM, vegetation =
+  // Source 7, historical boreholes = Sources 3/4, terrain/soil = Source 1).
+  // Feeding the composite back in double-counted every one of them. The
+  // weighted model remains the non-ensemble fallback in boreholeAnalyzer.
 
   // ═══ Sources 9-13: FIELD GEOPHYSICS (high reliability — actual measurements) ═══
 
@@ -1784,11 +1790,19 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
     fusedYield *= input.lineamentYieldMultiplier;
   }
 
-  // Confidence = f(source count, agreement)
-  const probs = estimates.filter(e => e.probability != null).map(e => e.probability!);
-  const probStdDev = probs.length > 1
-    ? Math.sqrt(probs.reduce((s, p) => s + (p - fusedProb) ** 2, 0) / probs.length)
-    : 0.15;
+  // Confidence = f(source count, agreement).
+  // AUDIT FIX (2026-07-10): the agreement sigma is now RELIABILITY-WEIGHTED
+  // around the weighted mean -- previously a capped low-reliability desktop
+  // source counted as much toward "conflict" as a 0.95-reliability field
+  // measurement, letting one weak source swing the agreement bonus ~20 pts.
+  const probSources = estimates.filter(e => e.probability != null);
+  let probStdDev = 0.15;
+  if (probSources.length > 1) {
+    const wSum = probSources.reduce((s, e) => s + e.weight * e.reliability, 0);
+    probStdDev = Math.sqrt(
+      probSources.reduce((s, e) => s + (e.weight * e.reliability / wSum) * (e.probability! - fusedProb) ** 2, 0),
+    );
+  }
 
   let agreement: EnsembleResult['sourceAgreement'];
   if (probStdDev < 0.08) agreement = 'strong';
@@ -1802,7 +1816,9 @@ export function runBayesianEnsemble(input: EnsembleInput): EnsembleResult {
   const agreementBonus = agreement === 'strong' ? 12 : agreement === 'moderate' ? 5 : agreement === 'weak' ? -8 : -20;
   const hasFieldGeophysics = estimates.some(e => e.source.includes('(field)'));
   const fieldCap = hasFieldGeophysics ? 95 : 85;
-  const baseConfFromSources = Math.min(fieldCap, 45 + sourceCountBonus + agreementBonus + (estimates.length > 5 ? 5 : 0));
+  // (audit 2026-07-10: removed the redundant "+5 when >5 sources" -- source
+  //  count was already rewarded by sourceCountBonus)
+  const baseConfFromSources = Math.min(fieldCap, 45 + sourceCountBonus + agreementBonus);
   // Desktop analysis hard cap: 85% without field data, 95% with field geophysics
 
   // Constrain ensemble depth: cannot diverge more than 2× from geological base depth

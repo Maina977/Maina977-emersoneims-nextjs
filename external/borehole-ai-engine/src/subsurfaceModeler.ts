@@ -156,22 +156,44 @@ function kozenyCarmanK(porosity: number, d10mm: number): number {
   return K_ms * 86400; // convert m/s to m/day
 }
 
-/** Saxton-Rawls pedotransfer: Ksat from texture */
-function saxtonRawlsKsat(sand: number, clay: number, om: number): number {
-  // Saxton & Rawls (2006) — Ksat in mm/hr, convert to m/day
-  const S = sand / 100;
-  const C = clay / 100;
-  const OM = om / 100;
+/** Saxton-Rawls (2006) pedotransfer: Ksat from texture.
+ *
+ * AUDIT FIX (2026-07-10): the old body computed a lambda it never used and
+ * cubed a fabricated linear sand/clay expression -- heavy clay came out at
+ * ~0.12 m/day (~500x too permeable), so clay AQUITARDS were misclassified
+ * as aquifers by the layer builder. This is now the actual published model:
+ *   Ks = 1930 * (thetaS - theta33)^(3 - lambda),  lambda = 1/B,
+ *   B = [ln(1500) - ln(33)] / [ln(theta33) - ln(theta1500)]
+ * with theta33 / theta1500 / thetaS from S&R 2006 Eqs 1-5.
+ * Verified: loam (40/20/2.5) -> 15.5 mm/hr, sand (85/5/1) -> 98 mm/hr,
+ * clay (10/60/2) -> 1.6 mm/hr (published loam ~13, sand ~100, clay <2).
+ */
+export function saxtonRawlsKsat(sand: number, clay: number, om: number): number {
+  const S = Math.max(0.01, Math.min(0.95, sand / 100));
+  const C = Math.max(0.01, Math.min(0.90, clay / 100));
+  const OM = Math.max(0, Math.min(8, om)); // mass %
 
-  const lambda = Math.exp(-0.7842831 + 0.0177544 * sand - 1.062498 * (OM * 100) / 1.724
-    - 0.00005304 * sand * sand - 0.00273493 * clay * clay
-    + 1.11134946 * (OM * 100) / 1.724 * (OM * 100) / 1.724
-    - 0.03088295 * sand * (OM * 100) / 1.724);
+  // theta33 (field capacity, 33 kPa)
+  const t33t = -0.251 * S + 0.195 * C + 0.011 * OM
+    + 0.006 * S * OM - 0.027 * C * OM + 0.452 * S * C + 0.299;
+  const t33 = Math.max(0.03, t33t + (1.283 * t33t * t33t - 0.374 * t33t - 0.015));
 
-  // Simplified regression for Ksat
-  let Ksat_mmhr = 1930 * Math.pow(0.7012 * S - 0.279 * C + 0.233, 3);
-  if (Ksat_mmhr < 0.1) Ksat_mmhr = 0.1;
-  if (Ksat_mmhr > 2000) Ksat_mmhr = 2000;
+  // theta1500 (wilting point, 1500 kPa)
+  const t1500t = -0.024 * S + 0.487 * C + 0.006 * OM
+    + 0.005 * S * OM - 0.013 * C * OM + 0.068 * S * C + 0.031;
+  const t1500 = Math.max(0.01, t1500t + (0.14 * t1500t - 0.02));
+
+  // thetaS (saturation)
+  const ts33t = 0.278 * S + 0.034 * C + 0.022 * OM
+    - 0.018 * S * OM - 0.027 * C * OM - 0.584 * S * C + 0.078;
+  const ts33 = ts33t + (0.636 * ts33t - 0.107);
+  const thetaS = Math.min(0.60, Math.max(t33 + 0.02, t33 + ts33 - 0.097 * S + 0.043));
+
+  // Pore-size distribution lambda and Ksat
+  const B = (Math.log(1500) - Math.log(33)) / (Math.log(t33) - Math.log(t1500));
+  const lambda = 1 / Math.max(1e-3, B);
+  let Ksat_mmhr = 1930 * Math.pow(Math.max(0.005, thetaS - t33), 3 - lambda);
+  Ksat_mmhr = Math.max(0.01, Math.min(500, Ksat_mmhr));
 
   return Ksat_mmhr * 24 / 1000; // mm/hr → m/day
 }

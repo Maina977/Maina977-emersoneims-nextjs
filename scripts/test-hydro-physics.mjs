@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts'];
 execSync(
   `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
   files.map(f => `"${join(SRC, f)}"`).join(' ') +
@@ -135,6 +135,34 @@ console.log('\nD. Bayesian ensemble (advancedHydroEngine)');
     measured.probability >= 0 && measured.probability <= 1, `got ${measured.probability}`);
   check('ensemble probability bounded [0,1] (spring case)',
     springs.probability >= 0 && springs.probability <= 1, `got ${springs.probability}`);
+}
+
+// ── E. THEIS WELL FUNCTION (agent-audit regression, 2026-07-10) ──
+console.log('\nE. Theis well function W(u) (pumpTestAnalyzer)');
+{
+  const pta = req(join(OUT, 'pumpTestAnalyzer.js'));
+  // Abramowitz & Stegun table values
+  const cases = [[0.01, 4.038], [0.05, 2.468], [0.1, 1.823], [0.5, 0.560], [1.0, 0.219], [2.0, 0.0489]];
+  let ok = true, detail = '';
+  for (const [u, expected] of cases) {
+    const got = pta.wellFunction(u);
+    if (Math.abs(got - expected) > Math.max(0.01, expected * 0.02)) { ok = false; detail += ` W(${u})=${got.toFixed(4)} exp ${expected};`; }
+  }
+  check('W(u) matches A&S table values (old bug returned 0 for u>0.4)', ok, detail);
+  check('W(u) strictly decreasing in u', pta.wellFunction(0.05) > pta.wellFunction(0.5) && pta.wellFunction(0.5) > pta.wellFunction(1));
+}
+
+// ── F. SAXTON-RAWLS KSAT (agent-audit regression, 2026-07-10) ──
+console.log('\nF. Saxton-Rawls Ksat (subsurfaceModeler)');
+{
+  const ssm = req(join(OUT, 'subsurfaceModeler.js'));
+  const clayK = ssm.saxtonRawlsKsat(10, 60, 2);   // m/day
+  const loamK = ssm.saxtonRawlsKsat(40, 20, 2.5);
+  const sandK = ssm.saxtonRawlsKsat(85, 5, 1);
+  check('clay Ksat < 0.1 m/day (old bug: ~0.12 -> aquitards read as aquifers)', clayK < 0.1, `got ${clayK.toFixed(4)}`);
+  check('loam Ksat in 0.1-1.5 m/day (published ~13 mm/hr)', loamK > 0.1 && loamK < 1.5, `got ${loamK.toFixed(3)}`);
+  check('sand Ksat > 1 m/day (published ~100 mm/hr)', sandK > 1, `got ${sandK.toFixed(2)}`);
+  check('texture ordering: sand > loam > clay', sandK > loamK && loamK > clayK, `${sandK.toFixed(2)} / ${loamK.toFixed(3)} / ${clayK.toFixed(4)}`);
 }
 
 rmSync(OUT, { recursive: true, force: true });

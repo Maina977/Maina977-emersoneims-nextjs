@@ -511,7 +511,9 @@ async function fetchEvapotranspiration(lat: number, lon: number): Promise<Evapot
     // Recharge fraction estimate (Simmers 1988, Scanlon et al. 2006)
     // Recharge = f(P, ET, soil, slope) — simplified
     let rechargeFraction = 0;
-    if (aridityIndex >= 0.65) rechargeFraction = 0.15 + (aridityIndex - 0.65) * 0.3; // humid: 15-30%
+    // AUDIT FIX (2026-07-10): the humid branch grew unbounded with P/PET
+    // (P/PET=1.5 gave 40%+) -- capped at 0.30 per the 15-30% literature range.
+    if (aridityIndex >= 0.65) rechargeFraction = Math.min(0.30, 0.15 + (aridityIndex - 0.65) * 0.3); // humid: 15-30%
     else if (aridityIndex >= 0.5) rechargeFraction = 0.08; // dry subhumid: ~8%
     else if (aridityIndex >= 0.2) rechargeFraction = 0.03; // semi-arid: ~3%
     else rechargeFraction = 0.01; // arid: ~1%
