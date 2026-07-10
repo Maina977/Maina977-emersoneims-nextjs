@@ -314,12 +314,15 @@ function drawFallbackMap(
       cx - 160, cy + 220,
     );
   } else if (mapType === 'soil') {
-    // Draw soil type zones
-    const soilType = analysisData?.soil?.type || 'Unknown';
+    // Draw soil type zones -- real soil terminology only ("Adjacent" is not
+    // a soil class; client review finding #14)
+    const soilType = analysisData?.soil?.type
+      ? `${analysisData.soil.type} (inferred)`
+      : 'Soil texture classification unavailable';
     const zones = [
       { x: cx - 200, y: cy - 120, w: 180, h: 140, color: 'rgba(139, 92, 46, 0.3)', label: soilType },
-      { x: cx + 20, y: cy - 100, w: 200, h: 120, color: 'rgba(101, 67, 33, 0.3)', label: 'Adjacent' },
-      { x: cx - 100, y: cy + 40, w: 240, h: 100, color: 'rgba(160, 120, 60, 0.25)', label: 'Transitional' },
+      { x: cx + 20, y: cy - 100, w: 200, h: 120, color: 'rgba(101, 67, 33, 0.3)', label: 'Weathered residual soil (inferred)' },
+      { x: cx - 100, y: cy + 40, w: 240, h: 100, color: 'rgba(160, 120, 60, 0.25)', label: 'Transition zone (inferred)' },
     ];
     for (const z of zones) {
       ctx.fillStyle = z.color;
@@ -354,10 +357,11 @@ function drawFallbackMap(
   // Site marker
   drawSiteMarker(ctx, cx, cy);
 
-  // API source note
-  ctx.fillStyle = 'rgba(251, 191, 36, 0.8)';
+  // Honest but professional: this is a processed-layer schematic, not a
+  // failed download notice (client review finding #15)
+  ctx.fillStyle = 'rgba(148, 163, 184, 0.9)';
   ctx.font = 'bold 11px Helvetica, Arial, sans-serif';
-  ctx.fillText('⚠ Satellite tile service unavailable — showing schematic from analysis data', 14, H - 55);
+  ctx.fillText('Schematic visualization from processed remote-sensing layers — not a survey map. Confirm coordinates during ERT set-out.', 14, H - 55);
 
   // Frame and labels
   drawMapFrame(ctx, W, H, title, subtitle, lat, lon);
@@ -674,12 +678,14 @@ export function renderDrillHereMap(
   ctx.font = 'bold 22px Helvetica, Arial, sans-serif';
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'center';
-  ctx.fillText('PROPOSED DRILL SITE', cx, cy - 52);
+  ctx.fillText('PROPOSED BOREHOLE POSITION', cx, cy - 52);
   ctx.font = 'bold 13px monospace';
   ctx.fillStyle = '#fbbf24';
   ctx.fillText(coordLabel(lat, lon), cx, cy - 36);
   // Ribbon below the crosshair — the operative instruction, spelled out
-  const ribbonTxt = 'DRILL AT THE CROSSHAIR';
+  // Client review: "DRILL AT THE CROSSHAIR" was too directive for a report
+  // that requires ERT first -- wording must match the decision sequence.
+  const ribbonTxt = 'PROPOSED POSITION -- CONFIRM BY ERT';
   ctx.font = 'bold 16px Helvetica, Arial, sans-serif';
   const rw = ctx.measureText(ribbonTxt).width + 24;
   ctx.fillStyle = 'rgba(239, 68, 68, 0.92)';
@@ -1150,7 +1156,7 @@ export async function generateReportMaps(
     console.log('[ReportMaps] Water map tile fetch failed, using fallback:', err);
     waterMap = drawFallbackMap(lat, lon,
       'WATER & SURFACE HYDROLOGY MAP',
-      'Schematic — satellite tiles unavailable  •  Based on analysis data',
+      'Schematic from processed remote-sensing layers  •  Not a survey map',
       'water', analysisData);
   }
 
@@ -1215,7 +1221,7 @@ export async function generateReportMaps(
     console.log('[ReportMaps] Soil map fetch failed, using fallback:', err);
     soilMap = drawFallbackMap(lat, lon,
       'SOIL CLASSIFICATION MAP',
-      'Schematic — ISRIC SoilGrids unavailable  •  Based on analysis data',
+      'Schematic from processed soil-grid layers  •  Not a survey map',
       'soil', analysisData);
   }
 
@@ -1304,14 +1310,17 @@ export async function generateReportMaps(
     console.log('[ReportMaps] Vegetation map fetch failed, using fallback:', err);
     vegetationMap = drawFallbackMap(lat, lon,
       'VEGETATION INDEX (NDVI) MAP',
-      'Schematic — NASA GIBS unavailable  •  Based on analysis data',
+      'Schematic from processed vegetation layers  •  Not a survey map',
       'vegetation', analysisData);
   }
 
   console.log('[ReportMaps] All 3 satellite maps generated successfully');
 
   // ── 4. DRILL HERE ANCHOR MAP (programmatic — no network) ──
-  const successProb = analysisData?.successProbability ?? analysisData?.drillPoint?.successProbability ?? 0.5;
+  // `probability` is the reconciled ensemble value on AnalysisResult --
+  // `successProbability` never existed there, so this used to fall to 0.5
+  // and the map printed "50%" against the brief's 63.8% (client review bug).
+  const successProb = analysisData?.drillPoint?.successProbability ?? analysisData?.probability ?? analysisData?.successProbability ?? 0.5;
   const recDepth    = analysisData?.recommendedDepth   ?? analysisData?.drillPoint?.targetDepth_m     ?? 60;
   const estYield    = analysisData?.estimatedYield     ?? analysisData?.drillPoint?.estimatedYield_m3hr ?? 2;
   // ONE canonical modelled water-table chain -- identical to the Executive

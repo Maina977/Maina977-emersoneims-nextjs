@@ -748,14 +748,19 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     : `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). Insufficient data confidence for this location. A comprehensive geophysical survey is recommended before drilling. However, the AI analysis has identified optimal survey lines and priority areas, which still reduces survey scope and cost.`;
 
   // ═══ DRILLER BRIEF ═══
+  // Never instructs mobilization before the statutory survey: in Kenya a
+  // hydrogeological survey report is REQUIRED for motorised boreholes, and
+  // the final drilling method is the contractor's call after ERT.
   const drillerBrief = drillReadinessLabel === 'DRILL NOW'
-    ? `Mobilize drill rig to ${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}° (elevation ${input.elevationM.toFixed(0)}m). Expected geology: ${input.rockType}. Target depth: ${input.predictedDepth_m}m. Expected aquifer: ${input.aquiferType} at ${input.waterTableDepthM.toFixed(0)}m. ${isCrystalline ? 'Target fracture zones — watch for water strikes at 50-150m and increased penetration rate.' : 'Drill through overburden to aquifer horizon.'} Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr. Conduct step drawdown test at first significant water strike.`
-    : `After completing ${adaptiveSurveySequence[0]?.method ?? 'targeted survey'}, mobilize to confirmed drill point. ${isCrystalline ? 'Orient drill rig to intercept fracture zone identified by ERT.' : 'Standard rotary drilling.'} Target depth: ${input.predictedDepth_m}m (confirm with survey results). Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr.`;
+    ? `Desktop model supports drilling at ${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}° (elevation ${input.elevationM.toFixed(0)}m) SUBJECT to the statutory hydrogeological survey/ERT confirming the target. Expected geology: ${input.rockType}. Target depth: ${input.predictedDepth_m}m. Expected aquifer: ${input.aquiferType} at ${input.waterTableDepthM.toFixed(0)}m. ${isCrystalline ? 'Target fracture zones — watch for water strikes and increased penetration rate.' : 'Drill through overburden to the aquifer horizon.'} Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr. Final drilling method to be selected by the contractor after ERT interpretation and access review. Conduct step-drawdown test at first significant water strike.`
+    : `After the ${adaptiveSurveySequence[0]?.method ?? 'targeted survey'} confirms the target, mobilize to the confirmed drill point. ${isCrystalline ? 'Orient the rig to intercept the fracture zone identified by ERT.' : 'Drilling method to be selected by the contractor after ERT interpretation and formation review.'} Target depth: ${input.predictedDepth_m}m (confirm with survey results). Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr.`;
 
   // ═══ CLIENT BRIEF ═══
-  const clientBrief = drillReadinessLabel === 'DRILL NOW'
-    ? `Our AI analysis of ${sourceConvergence} satellite and geological data sources shows a ${(input.probability * 100).toFixed(0)}% probability of finding water at this site. The analysis is comprehensive enough to proceed directly to drilling WITHOUT a traditional site survey, saving you approximately $${FULL_SURVEY_COST_USD.toLocaleString()} and ${Math.round(FULL_SURVEY_COST_USD / 500)} weeks. Expected borehole depth: ${input.predictedDepth_m}m, expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr.`
-    : `Our AI analysis identified this as a promising site with ${(input.probability * 100).toFixed(0)}% success probability. We recommend ${adaptiveSurveySequence.length} targeted survey step(s) costing ~$${recommendedSurveyCostUSD.toLocaleString()} (instead of $${FULL_SURVEY_COST_USD.toLocaleString()} for a full survey — ${costSavingsPercent}% savings). This targeted approach confirms the AI findings before drilling.`;
+  // Kenya market truth (owner-supplied 2026-07): the statutory hydrogeological
+  // survey incl. targeted ERT runs KSh 40,000-110,000. Never quote "$200" or
+  // promise skipping the survey -- it is a legal requirement for motorised
+  // boreholes, not an optional extra.
+  const clientBrief = `Our desktop analysis of ${sourceConvergence} satellite and geological data sources identified this as a promising site with ${(input.probability * 100).toFixed(0)}% modelled success probability. Before drilling, Kenyan regulations require a hydrogeological survey report; we recommend combining it with a targeted ERT profile at the proposed position (typical Kenya market cost KSh 40,000-110,000 depending on site access, line length and reporting scope). This confirms the aquifer target before rig mobilization -- far cheaper than a failed borehole.`;
 
   // ═══ 5-STEP PIPELINE: AI Screen → Top 3 → ERT #1 → Fusion → Decision ═══
 
@@ -911,11 +916,13 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
     combinedConfidence: Math.min(98, Math.round(input.probability * 100 * 0.6 + postFusionDRI * 0.4)),
   };
 
-  // STEP 5: Final decision
+  // STEP 5: Final decision -- never says "no further surveys needed": the
+  // pump test and lab water analysis remain mandatory AFTER drilling even
+  // when the ERT confirms the target (client review finding #13).
   const finalDecision = postFusionDRI >= drillThreshold
-    ? `DRILL AT POINT #1 (${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}°) — AI + ERT fusion DRI: ${postFusionDRI}%. No further surveys needed.`
+    ? `DRILL AT POINT #1 (${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}°) — AI + ERT fusion DRI: ${postFusionDRI}%, subject to hydrogeologist review and statutory approvals. Pump testing and laboratory water analysis remain mandatory after drilling.`
     : postFusionDRI >= targetedThreshold
-    ? `DRILL WITH MONITORING — AI + ERT DRI: ${postFusionDRI}%. Proceed to drill with enhanced monitoring during drilling.`
+    ? `DRILL WITH MONITORING — AI + ERT DRI: ${postFusionDRI}%. Proceed to drill with enhanced monitoring during drilling. Pump testing and laboratory water analysis remain mandatory after drilling.`
     : `ADDITIONAL SURVEY RECOMMENDED — Post-fusion DRI ${postFusionDRI}% still below threshold. Consider ${isCrystalline ? 'cross-line ERT or magnetic survey' : 'TDEM sounding'} at Point #1 before drilling.`;
 
   // Build the 5-step pipeline

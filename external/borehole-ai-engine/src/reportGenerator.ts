@@ -136,6 +136,18 @@ const sanitizeDeep = (v: any): any => {
   return v;
 };
 
+// --- ONE RISK CLASSIFICATION (client review: 27.9% printed as both LOW and
+// Medium in the same report). Every section that names a risk level MUST call
+// this; never re-derive thresholds locally.
+export function riskLabel(overallRisk: number | undefined | null): string {
+  const r = overallRisk ?? 0.5;
+  return r < 0.2 ? 'LOW' : r < 0.45 ? 'MEDIUM' : r < 0.7 ? 'HIGH' : 'VERY HIGH';
+}
+function riskColor(overallRisk: number | undefined | null): [number, number, number] {
+  const r = overallRisk ?? 0.5;
+  return r < 0.2 ? [34, 197, 94] : r < 0.45 ? [251, 191, 36] : [239, 68, 68];
+}
+
 /** Canvas can draw full Unicode, so chart text only needs the literal-"?" repair. */
 function sanitizeChartText(s: string): string {
   if (!s) return s;
@@ -1091,15 +1103,18 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // -- NO FIELD DATA WARNING BANNER --
   const _noAnyField = !((result as any)._auditFlags?.hasFieldERT) || !((result as any)._auditFlags?.hasFieldPumpTest) || !((result as any)._auditFlags?.hasLabWaterAnalysis);
   if (!isFieldValid || !hasPumpTest || _noAnyField) {
-    doc.setFillColor(127, 29, 29);
+    // Client review: the blood-red "NO FIELD DATA COLLECTED" banner was
+    // technically honest but alarming on page 1. Same disclosure, engineering
+    // register: a desktop assessment awaiting its field programme.
+    doc.setFillColor(69, 45, 6);
     doc.roundedRect(margin, y, pageW - margin * 2, 20, 3, 3, 'F');
-    doc.setDrawColor(239, 68, 68); doc.setLineWidth(1.5);
+    doc.setDrawColor(245, 158, 11); doc.setLineWidth(1.2);
     doc.roundedRect(margin, y, pageW - margin * 2, 20, 3, 3, 'S');
-    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-    doc.text('\u26d4  NO FIELD DATA COLLECTED -- ALL PARAMETERS ARE MODELLED', pageW / 2, y + 8, { align: 'center' });
-    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(254, 202, 202);
-    doc.text('ERT survey: PLANNED  \u2022  Pump test: PLANNED  \u2022  Lab water analysis: PLANNED', pageW / 2, y + 14, { align: 'center' });
-    doc.text('Field validation required before financial commitment, bankable certification, or regulatory submission.', pageW / 2, y + 18.5, { align: 'center' });
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(253, 230, 138);
+    doc.text('DESKTOP PRE-FEASIBILITY ASSESSMENT -- FIELD VALIDATION PENDING', pageW / 2, y + 8, { align: 'center' });
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(254, 243, 199);
+    doc.text('No intrusive field survey has been conducted yet. All parameters are modelled estimates.', pageW / 2, y + 13, { align: 'center' });
+    doc.text('ERT geophysics, pump testing and laboratory water analysis are required before final drilling commitment.', pageW / 2, y + 17.5, { align: 'center' });
     y += 24;
   }
 
@@ -1270,7 +1285,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const wqLine = wqOk
         ? 'POTABLE (modelled) -- verify with an ISO 17025 lab analysis before community use.'
         : healthFails.length > 0
-          ? `NOT POTABLE UNTIL TREATED -- ${healthFails.join(', ')} above WHO limit (modelled; treatment budgeted below).`
+          ? `MODELLED EXCEEDANCE RISK -- ${healthFails.join(', ')} may exceed WHO guideline values. Do not use for drinking until an accredited lab confirms; treatment budgeted below.`
           : 'TREATMENT REQUIRED (aesthetic parameters; modelled -- lab-confirm).';
       doc.setFillColor(wqOk ? 240 : 254, wqOk ? 253 : 242, wqOk ? 244 : 242);
       doc.roundedRect(margin, y, pw, 13, 2, 2, 'F');
@@ -1431,7 +1446,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       ['Success Probability', `${pct(result.probability)}${result.uncertainty ? ` (±${((result.uncertainty.probabilityRange[1] - result.uncertainty.probabilityRange[0]) * 50).toFixed(0)}%)` : ''}`, result.probability > 0.7 ? 'FAVORABLE' : result.probability > 0.5 ? 'MODERATE' : 'LOW'],
       ['Recommended Depth', `${fmt(result.recommendedDepth, 0)}m${result.uncertainty ? ` (range: ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]}m)` : ` (\u00B1${Math.round((result.recommendedDepth ?? 40) * 0.35)}m, satellite-only est.)`}`, result.recommendedDepth < 50 ? 'Shallow' : result.recommendedDepth < 100 ? 'Medium' : 'Deep'],
       ['Estimated Yield', `${fmt(result.estimatedYield, 1)} m³/hr${result.uncertainty ? ` (range: ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ` (\u00B1${fmt((result.estimatedYield ?? 1.5) * 0.45, 1)} m\u00B3/hr, satellite-only est.)`}`, result.estimatedYield > 2 ? 'Good' : result.estimatedYield > 1 ? 'Moderate' : 'Low'],
-      ['Overall Risk', pct(result.risk?.overallRisk), result.risk?.viability?.toUpperCase() || 'N/A'],
+      ['Overall Risk', `${pct(result.risk?.overallRisk)} -- ${riskLabel(result.risk?.overallRisk)}`, 'Drivers: depth, financial & technical uncertainty (desktop-only)'],
       // B7 — the drilling window was computed from measured rainfall history
       // all along but buried in Section 30; the payer needs it on page 1.
       ...(result.historicalData?.weather?.bestDrillingSeason
@@ -1443,7 +1458,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         // failure reads as good news (review finding).
         const wqv = result.waterQuality;
         const fails = (wqv?.fluoride ?? 0) > 1.5 || (wqv?.arsenic ?? 0) > 0.01 || (wqv?.nitrate ?? 0) > 50 || (wqv?.iron ?? 0) > 0.3;
-        return `${wqv?.isPotable && !fails ? 'PASSES WHO (modelled)' : 'FAILS WHO until treated'} -- index ${fmt((wqv?.score ?? 0) * 100, 0)}/100`;
+        // No proprietary index number in the executive summary -- "index
+        // 94/100" beside a guideline exceedance confused every reviewer.
+        return wqv?.isPotable && !fails
+          ? 'Meets WHO guidelines (modelled) -- lab confirmation required'
+          : 'LIKELY GUIDELINE EXCEEDANCE (modelled) -- lab test and treatment budget required';
       })(), (() => {
         if (result.waterQuality?.isPotable) return 'POTABLE (modelled) -- Verify with ISO 17025 lab analysis';
         const wq = result.waterQuality;
@@ -1461,7 +1480,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         // A numeric "score" beside a health failure reads as good news — say
         // the operative fact first (review finding: "94/100 looks too
         // optimistic unless it clearly means treatable after defluoridation").
-        if (healthFails.length > 0) return `NOT POTABLE UNTIL TREATED — ${healthFails.join(', ')} above WHO limit (modelled; lab-confirm)`;
+        if (healthFails.length > 0) return `Modelled ${healthFails.join(', ')} above WHO guideline -- treatment likely required; lab-confirm before drinking`;
         if (aestheticFails.length > 0) return `AESTHETIC TREATMENT: ${aestheticFails.join(', ')} (minor)`;
         return 'TREATMENT NEEDED';
       })()],
@@ -1520,7 +1539,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   const dashMetrics = [
     { label: 'Success', value: pct(result.probability), color: result.probability > 0.7 ? [34,197,94] : result.probability > 0.5 ? [251,191,36] : [239,68,68] },
     { label: 'Yield', value: `${fmt(result.estimatedYield, 1)} m³/h`, color: result.estimatedYield > 2 ? [34,197,94] : result.estimatedYield > 1 ? [251,191,36] : [239,68,68] },
-    { label: 'Risk', value: pct(result.risk?.overallRisk), color: (result.risk?.overallRisk ?? 1) < 0.3 ? [34,197,94] : (result.risk?.overallRisk ?? 1) < 0.6 ? [251,191,36] : [239,68,68] },
+    { label: `Risk (${riskLabel(result.risk?.overallRisk).toLowerCase()})`, value: pct(result.risk?.overallRisk), color: riskColor(result.risk?.overallRisk) },
     { label: 'Depth', value: `${fmt(result.recommendedDepth, 0)}m`, color: result.recommendedDepth < 50 ? [34,197,94] : result.recommendedDepth < 100 ? [251,191,36] : [239,68,68] },
     { label: 'Confidence', value: result.confidenceMetrics ? `${result.confidenceMetrics.overall}%` : 'N/A', color: (result.confidenceMetrics?.overall ?? 0) > 60 ? [34,197,94] : (result.confidenceMetrics?.overall ?? 0) > 40 ? [251,191,36] : [239,68,68] },
   ];
@@ -1579,7 +1598,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const _flags = (result as any)._auditFlags ?? {};
 
     const { verdict: _verdict, color: _vColor } = computeFinalVerdict(result);
-    const _riskLbl  = _risk < 0.3 ? 'LOW' : _risk < 0.6 ? 'MODERATE' : 'HIGH';
+    const _riskLbl  = riskLabel(_risk);
     const _confLbl  = _conf >= 80 ? 'HIGH' : _conf >= 60 ? 'MODERATE' : 'LOW';
     const _cond     = !_flags.hasFieldERT
                     ? 'Perform ERT geophysical survey before drilling mobilization'
@@ -1604,7 +1623,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     ([
       { lbl: 'SUCCESS PROBABILITY', val: `${Math.round(_prob * 100)}%`,   c: (_prob >= 0.65 ? [74,222,128] : _prob >= 0.5 ? [251,191,36] : [252,165,165]) as [number,number,number] },
       { lbl: 'EXPECTED YIELD',      val: `${_yld.toFixed(1)} m\u00b3/hr`, c: [56,189,248] as [number,number,number] },
-      { lbl: 'RISK LEVEL',          val: _riskLbl,                         c: (_risk < 0.3 ? [74,222,128] : _risk < 0.6 ? [251,191,36] : [252,165,165]) as [number,number,number] },
+      { lbl: 'RISK LEVEL',          val: _riskLbl,                         c: riskColor(_risk) },
       { lbl: 'CONFIDENCE',          val: `${_confLbl} (${_conf}%)`,        c: (_conf >= 70 ? [74,222,128] : _conf >= 50 ? [251,191,36] : [252,165,165]) as [number,number,number] },
     ]).forEach((m, i) => {
       const _cx2 = margin + 6 + i * _cw2;
@@ -1783,10 +1802,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
   const overallRiskPct = Math.round((result.risk?.overallRisk || 0) * 100);
-  doc.setTextColor(overallRiskPct > 60 ? 239 : overallRiskPct > 30 ? 251 : 34, overallRiskPct > 60 ? 68 : overallRiskPct > 30 ? 191 : 197, overallRiskPct > 60 ? 68 : overallRiskPct > 30 ? 36 : 94);
+  {
+    const rc = riskColor(result.risk?.overallRisk);
+    doc.setTextColor(rc[0], rc[1], rc[2]);
+  }
   doc.text(`${overallRiskPct}%`, margin + 120, y + 20);
   doc.setFontSize(10);
-  doc.text('Overall Risk', margin + 120, y + 28);
+  doc.text(`Overall Risk -- ${riskLabel(result.risk?.overallRisk)}`, margin + 120, y + 28);
   doc.setFontSize(14);
   doc.setTextColor(80, 80, 80);
   {
@@ -1853,7 +1875,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   try {
     const drillImg = renderDrillHereMap(
       siteLat, siteLon,
-      _r.drillPoint?.successProbability ?? _r.successProbability ?? 0.5,
+      _r.drillPoint?.successProbability ?? result.probability ?? 0.5,
       _r.drillPoint?.targetDepth_m ?? _r.recommendedDepth ?? 60,
       _r.drillPoint?.estimatedYield_m3hr ?? _r.estimatedYield ?? 2,
       _r.drillPoint?.waterTableDepth_m ?? _r.waterTableDepth ?? result.geophysicsFusion?.waterTableDepth_m ?? null,
@@ -1889,12 +1911,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
 
       addPage(); y = 20;
       doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.setTextColor(239, 68, 68);
-      doc.text('SITE PHOTOGRAPHS -- Drill Point Marked', margin, y); y += 5;
+      doc.text('SITE PHOTOGRAPHS -- Proposed Position Marked', margin, y); y += 5;
       doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 140);
       doc.text(
         isRegionalPreScreening
-          ? 'Customer site photographs. Location is a REGIONAL ESTIMATE -- no drill point is marked. Provide exact GPS coordinates to unlock the marked drill point.'
-          : 'Photographs supplied by the customer. The red marker shows the proposed drilling point at the printed coordinates -- set out on site with a handheld GPS.',
+          ? 'Customer site photographs. Location is a REGIONAL ESTIMATE -- no position is marked. Provide exact GPS coordinates to unlock the marked position.'
+          : 'Photographs supplied by the customer. The red marker shows the proposed borehole position at the printed coordinates, subject to ERT verification -- set out on site with a handheld GPS.',
         margin, y, { maxWidth: pageW - margin * 2 },
       ); y += 8;
 
@@ -1918,12 +1940,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           doc.setLineWidth(1.1); doc.circle(_cx, _cy, 7, 'S');
           doc.setLineWidth(0.7); doc.circle(_cx, _cy, 3.2, 'S');
           doc.setFillColor(239, 68, 68); doc.circle(_cx, _cy, 1.2, 'F');
-          // "DRILL AT THIS POINT" ribbon above the marker
-          const _ribbonW = 58, _ribbonH = 7.5;
+          // Ribbon above the marker -- "PROPOSED POSITION", never a drilling
+          // instruction: ERT must confirm the point first (client review).
+          const _ribbonW = 76, _ribbonH = 7.5;
           doc.setFillColor(220, 38, 38);
           doc.roundedRect(_cx - _ribbonW / 2, _cy - 7 - _ribbonH - 3, _ribbonW, _ribbonH, 1.5, 1.5, 'F');
-          doc.setTextColor(255, 255, 255); doc.setFontSize(9.5); doc.setFont('helvetica', 'bold');
-          doc.text('DRILL AT THIS POINT', _cx, _cy - 7 - _ribbonH + 2.2, { align: 'center' });
+          doc.setTextColor(255, 255, 255); doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
+          doc.text('PROPOSED POSITION -- CONFIRM BY ERT', _cx, _cy - 7 - _ribbonH + 2.2, { align: 'center' });
           // Coordinates plate below the marker
           const _plateW = 64, _plateH = 7;
           doc.setFillColor(15, 23, 42);
@@ -1934,7 +1957,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           doc.setFillColor(15, 23, 42);
           doc.rect(_ix, y, Math.min(_iw, 92), 6.5, 'F');
           doc.setTextColor(226, 232, 240); doc.setFontSize(7); doc.setFont('helvetica', 'bold');
-          doc.text(`PROPOSED DRILL POINT (WGS84): ${_coordTxt}`, _ix + 2, y + 4.4);
+          doc.text(`PROPOSED BOREHOLE POSITION (WGS84): ${_coordTxt} -- SUBJECT TO ERT`, _ix + 2, y + 4.4);
         }
       } catch (_ie) { console.warn('[PDF] Primary site photo embed failed', _ie); }
       y += _ih + 5;
@@ -1956,7 +1979,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         } else {
           _cap += 'The photo file carries no GPS metadata -- the marker shows the analyzed drilling coordinates placed on the photographed site. ';
         }
-        _cap += `Set out the drilling point with a handheld GPS at ${_coordTxt}; the marker's position within the photo frame is indicative, the coordinates are authoritative.`;
+        _cap += `Set out the proposed position with a handheld GPS at ${_coordTxt}; the marker's position within the photo frame is indicative, the coordinates are authoritative. The final drilling point is selected after ERT interpretation.`;
       }
       doc.text(doc.splitTextToSize(_cap, pageW - margin * 2), margin, y); y += 12;
 
@@ -2424,9 +2447,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setDrawColor(220, 38, 38);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'S');
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
-      doc.text('WHO POTABILITY: FAILS', margin + 3, y + 4);
+      doc.text('MODELLED WHO SCREENING: LIKELY EXCEEDANCE', margin + 3, y + 4);
       doc.setFontSize(7); doc.setFont('helvetica', 'normal');
-      doc.text(`Exceedances: ${whoFails.join('; ')}. Treatment required before human consumption.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+      doc.text(`Modelled exceedances: ${whoFails.join('; ')}. Do not use for drinking until an accredited laboratory confirms actual chemistry; budget treatment accordingly.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
       y += 18;
     } else {
       doc.setFillColor(240, 253, 244);
@@ -2500,7 +2523,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       startY: y,
       head: [['Risk Category', 'Score', 'Level']],
       body: [
-        ['Overall Risk', pct(result.risk?.overallRisk), result.risk?.viability?.toUpperCase() || ''],
+        ['Overall Risk', pct(result.risk?.overallRisk), riskLabel(result.risk?.overallRisk)],
         ['Geological', pct(result.risk?.categories?.geological), ''],
         ['Contamination', pct(result.risk?.categories?.contamination), ''],
         ['Depth Risk', pct(result.risk?.categories?.depth), ''],
@@ -2838,7 +2861,20 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(56, 189, 248);
-    doc.text('7. Subsurface Geological Model', margin, y); y += 10;
+    doc.text('7. Subsurface Geological Model', margin, y); y += 8;
+  // ONE clear interpreted-geology statement -- the report used to scatter
+  // "sedimentary/alluvial", "fractured basement" and "consolidated
+  // sedimentary" without a governing interpretation (client review #16).
+  {
+    const kp = (result as any).kenyaHydroPrior;
+    const aqType = String(result.aquiferClassification?.primaryType ?? '').replace(/_/g, ' ');
+    const geoLine = kp?.province
+      ? `Interpreted local geology: ${String(kp.province).toLowerCase()}-province terrain -- weathered/fractured ${String(kp.province) === 'BASEMENT' ? 'crystalline basement' : 'rock'} under residual soil cover, with groundwater expected in the weathered zone and fracture-controlled pathways${aqType ? ` (classified aquifer type: ${aqType})` : ''}. This interpretation is desktop-based and must be confirmed by ERT and the drilling lithology log; any differing lithology names in sub-model tables are alternative hypotheses, not the governing interpretation.`
+      : `Interpreted local geology: ${aqType || 'weathered/fractured terrain'} interpretation from the multi-source ensemble. Desktop-based -- confirm by ERT and the drilling lithology log; differing lithology names in sub-model tables are alternative hypotheses, not the governing interpretation.`;
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 64, 120);
+    const geoLines = doc.splitTextToSize(geoLine, pageW - margin * 2);
+    doc.text(geoLines, margin, y); y += geoLines.length * 3.6 + 3;
+  }
   doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 30);
   doc.text('Note: SoilGrids data covers 0-200cm. Deeper layers modelled from regional geology and Macrostrat stratigraphy. ERT survey available for field validation.', margin, y); y += 6;
   doc.setTextColor(50, 50, 50); doc.setFont('helvetica', 'normal');
@@ -3782,15 +3818,19 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage();
     const dm = result.drillMap;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(245, 158, 11);
-    doc.text('22. Probabilistic Drilling Success Map', margin, y); y += 8;
+    doc.text('22. Probabilistic Drilling Success Map', margin, y); y += 6;
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
+    doc.text(doc.splitTextToSize(
+      `RELATIVE SPATIAL SCREENING. Grid percentages compare candidate locations WITHIN the search area to each other -- they are not the site success probability. The governing probability for this site is ${pct(result.probability)} (Executive Summary).`,
+      pageW - margin * 2), margin, y); y += 8;
 
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
-      head: [['Parameter', 'Value']],
+      head: [['Parameter (relative screening)', 'Value']],
       body: [
-        ['Max Success Probability', `${((dm.maxProbability ?? 0) * 100).toFixed(0)}%`],
-        ['Average Probability', `${((dm.avgProbability ?? 0) * 100).toFixed(0)}%`],
-        ['Min Probability', `${((dm.minProbability ?? 0) * 100).toFixed(0)}%`],
+        ['Max Relative Score', `${((dm.maxProbability ?? 0) * 100).toFixed(0)}%`],
+        ['Average Relative Score', `${((dm.avgProbability ?? 0) * 100).toFixed(0)}%`],
+        ['Min Relative Score', `${((dm.minProbability ?? 0) * 100).toFixed(0)}%`],
         ['High-Probability Area', `${fmt(dm.highProbabilityArea_km2)} km²`],
         ['Coverage Radius', `${fmt(dm.coverageRadius_km)} km`],
         ['Grid Size', `${dm.gridRows ?? 0}?${dm.gridCols ?? 0} cells (${dm.cellSizeM ?? 0}m)`],
@@ -3811,7 +3851,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.text('Top Drilling Points:', margin, y); y += 6;
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
-        head: [['Rank', 'Location', 'Probability', 'Depth', 'Yield', 'Risk']],
+        head: [['Rank', 'Location', 'Relative Score', 'Depth', 'Yield', 'Risk']],
         body: dm.topPoints.slice(0, 5).map((p: any) => [
           `#${p.rank}`, `${sf(p.latitude, 5)}, ${sf(p.longitude, 5)}`,
           `${((p.probability ?? 0) * 100).toFixed(0)}%`, `${p.expectedDepth_m}m`,
@@ -3875,20 +3915,26 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage();
     const rd = result.riskDecision;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(239, 68, 68);
-    doc.text('24. Probabilistic Risk Decision Engine', margin, y); y += 8;
+    doc.text('24. Probabilistic Risk Decision Engine', margin, y); y += 6;
+    // Sub-model banner FIRST -- readers quoted this section's LOW / Grade A /
+    // 59% against the Executive Summary (client review finding #1/#2/#3).
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
+    doc.text(doc.splitTextToSize(
+      `INTERNAL SUB-MODEL DIAGNOSTIC. The values below are ONE model's inputs to the reconciled decision. Governing values for this site: success probability ${pct(result.probability)}, overall risk ${pct(result.risk?.overallRisk)} (${riskLabel(result.risk?.overallRisk)}), confidence ${result.confidenceMetrics?.overall ?? '--'}% -- see the Executive Summary.`,
+      pageW - margin * 2), margin, y); y += 9;
 
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
-      head: [['Risk Metric', 'Probability']],
+      head: [['Risk Metric (sub-model)', 'Probability']],
       body: [
-        ['Success (productive borehole)', `${(rd.successProbability ?? 0).toFixed(1)}%`],
+        ['Success (productive borehole)', `${(rd.successProbability ?? 0).toFixed(1)}% (sub-model; governing: ${pct(result.probability)})`],
         ['Low Yield Risk', `${(rd.lowYieldProbability ?? 0).toFixed(1)}%`],
         ['Dry Borehole Risk', `${(rd.dryBoreholeProbability ?? 0).toFixed(1)}%`],
         ['Poor Water Quality', `${(rd.poorQualityProbability ?? 0).toFixed(1)}%`],
         ['Collapse Risk', `${(rd.collapseRiskProbability ?? 0).toFixed(1)}%`],
-        ['Overall Risk Level', (rd.overallRiskLevel || '').replace(/_/g, ' ').toUpperCase()],
-        ['Risk Score', `${rd.riskScore ?? 0}/100`],
-        ['Confidence Grade', rd.confidenceGrade || 'N/A'],
+        ['Overall Risk Level', `${(rd.overallRiskLevel || '').replace(/_/g, ' ').toUpperCase()} (sub-model; governing: ${riskLabel(result.risk?.overallRisk)})`],
+        ['Risk Score', `${rd.riskScore ?? 0}/100 (sub-model scale)`],
+        ['Confidence Grade', `${rd.confidenceGrade || 'N/A'} (sub-model scale; governing confidence: ${result.confidenceMetrics?.overall ?? '--'}%)`],
       ],
       headStyles: { fillColor: [239, 68, 68], textColor: 255, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 8 },
@@ -3916,15 +3962,18 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
 
     checkSpace(30);
+    // Client review: this table printed "ROI 165% / Payback 3 months" beside
+    // the canonical "4.2 years" -- a report-killing contradiction. Decision
+    // scenarios stay; ROI/payback now come ONLY from the single economics
+    // model in Section 5.1.
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
-      head: [['Financial Metric', 'Value']],
+      head: [['Financial Metric (decision-tree scenario values)', 'Value']],
       body: [
         ['Expected Value', `$${(rd.expectedValue_USD ?? 0).toLocaleString()}`],
         ['Best Case', `$${(rd.bestCase_USD ?? 0).toLocaleString()}`],
         ['Worst Case', `$${(rd.worstCase_USD ?? 0).toLocaleString()}`],
-        ['ROI', `${((rd.roi ?? 0) * 100).toFixed(0)}%`],
-        ['Payback', `${rd.paybackMonths ?? 0} months`],
+        ['ROI / Payback', 'See Section 5.1 -- one economics model governs the whole report'],
       ],
       headStyles: { fillColor: [180, 50, 50], textColor: 255, fontStyle: 'bold', fontSize: 8 },
       bodyStyles: { fontSize: 8 },
@@ -3940,13 +3989,19 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     checkSpace(90);
     const cw = result.confidenceWeighted;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 165, 233);
-    doc.text('25. Confidence-Weighted Predictions', margin, y); y += 8;
+    doc.text('25. Confidence-Weighted Predictions', margin, y); y += 6;
+    // Same disease as Section 24: this sub-model's 46% / Grade D was read as
+    // contradicting the governing 74% pre-feasibility confidence.
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
+    doc.text(doc.splitTextToSize(
+      `INTERNAL SUB-MODEL DIAGNOSTIC on a stricter scale (penalises missing field data twice). The governing report confidence is ${result.confidenceMetrics?.overall ?? '--'}% (pre-feasibility) -- see the Executive Summary and Confidence Metrics.`,
+      pageW - margin * 2), margin, y); y += 8;
 
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
-      head: [['Parameter', 'Value']],
+      head: [['Parameter (sub-model scale)', 'Value']],
       body: [
-        ['Overall Confidence', `${((cw.overallConfidence ?? 0) * 100).toFixed(0)}%`],
+        ['Overall Confidence', `${((cw.overallConfidence ?? 0) * 100).toFixed(0)}% (sub-model; governing: ${result.confidenceMetrics?.overall ?? '--'}%)`],
         ['Confidence Grade', `${cw.confidenceGrade || 'N/A'} ? ${cw.gradeDescription || ''}`],
         ['Data Quality Score', `${((cw.dataQualityScore ?? 0) * 100).toFixed(0)}%`],
         ['Data Completeness', `${((cw.dataCompletenessScore ?? 0) * 100).toFixed(0)}%`],
@@ -4894,23 +4949,24 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage();
     const dp = result.drillingPrediction;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(34, 197, 94);
-    doc.text('34. Drilling Success Prediction AI', margin, y); y += 8;
+    doc.text('34. Drilling Success Prediction AI', margin, y); y += 6;
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
+    doc.text(doc.splitTextToSize(
+      `INTERNAL SUB-MODEL DIAGNOSTIC. Governing values: success probability ${pct(result.probability)}, economics per Section 5.1. This model's own cost/ROI figures are excluded -- one economics model governs the whole report.`,
+      pageW - margin * 2), margin, y); y += 8;
 
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
-      head: [['Parameter', 'Value']],
+      head: [['Parameter (sub-model)', 'Value']],
       body: [
-        ['Success Probability', `${fmt(dp.successProbability, 0)}% (AI model estimate -- reconciled in Executive Summary)`],
-        ['Predicted Depth', `${fmt(dp.predictedDepth_m)}m (${dp.depthConfidence ? `90% CI: ${dp.depthConfidence.low}?${dp.depthConfidence.high}m` : 'N/A'})`],
-        ['Predicted Yield', `${fmt(dp.predictedYield_m3h, 1)} m³/hr (${dp.yieldConfidence ? `90% CI: ${dp.yieldConfidence.low}?${dp.yieldConfidence.high}` : 'N/A'})`],
+        ['Success Probability', `${fmt(dp.successProbability, 0)}% (sub-model; governing: ${pct(result.probability)})`],
+        ['Predicted Depth', `${fmt(dp.predictedDepth_m)}m (${dp.depthConfidence ? `90% CI: ${dp.depthConfidence.low}-${dp.depthConfidence.high}m` : 'N/A'})`],
+        ['Predicted Yield', `${fmt(dp.predictedYield_m3h, 1)} m³/hr (${dp.yieldConfidence ? `90% CI: ${dp.yieldConfidence.low}-${dp.yieldConfidence.high}` : 'N/A'})`],
         ['Dry Hole Risk', `${fmt(dp.dryHoleRisk_pct, 0)}% (yield below minimum threshold -- separate from overall success probability)`],
         ['Low Yield Risk', `${fmt(dp.lowYieldRisk_pct, 0)}%`],
         ['Water Quality Risk', `${fmt(dp.waterQualityRisk_pct, 0)}%`],
         ['Excessive Depth Risk', `${fmt(dp.excessiveDepthRisk_pct, 0)}%`],
-        ['Expected Drilling Cost', `$${(dp.expectedDrillingCost_usd ?? 0).toLocaleString()}`],
-        ['Cost Per m³/day', `$${fmt(dp.costPerM3PerDay_usd, 0)}`],
-        ['Payback Period', `${fmt(dp.paybackPeriod_years, 1)} years`],
-        ['ROI', `${fmt(dp.roi_pct, 0)}%`],
+        ['Drilling Cost / ROI / Payback', 'See Section 5.1 -- one economics model governs the whole report'],
         ['Model Confidence', `${(dp.modelConfidence ?? 0).toFixed(0)}%`],
         ['Training Outcomes', `${dp.trainingOutcomes ?? 0}${(dp.trainingOutcomes ?? 0) === 0 ? ' (no real-world outcomes -- accuracy unconfirmed)' : ''}`],
         ['Dominant Factor', dp.dominantFactor || 'N/A'],
@@ -5794,14 +5850,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const opt = ag.optimalPackage;
 
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 163, 74);
-    doc.text('Advanced Geophysics -- Multi-Method 3D Survey Design', margin, y); y += 8;
-    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-    doc.text('PROJECTED -- Subsurface model below is a forward projection from geology and literature values. No real geophysical survey was conducted. Values show what a field survey is expected to reveal. Actual results will differ.', margin, y, { maxWidth: pw }); y += 12;
+    doc.text('Advanced Geophysics -- Survey Design (Hypothetical Sensitivity Model)', margin, y); y += 8;
+    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
+    doc.text(`HYPOTHETICAL SENSITIVITY MODEL -- NOT A SITE RESULT. The percentages below answer one planning question only: "how much would each survey package reduce siting uncertainty IF it were carried out and confirmed the model?" No survey has been conducted. The governing site success probability remains ${pct(result.probability)} (Executive Summary).`, margin, y, { maxWidth: pw }); y += 14;
 
-    // Recommendation banner
+    // Recommendation banner -- never print an unconditional "99% success"
     doc.setFontSize(12); doc.setFont('helvetica', 'bold');
     doc.setTextColor(sra.meetsTarget ? 34 : 217, sra.meetsTarget ? 197 : 119, sra.meetsTarget ? 94 : 6);
-    doc.text(`${sra.meetsTarget ? '\u2705 TARGET MET' : '\u26A0 BELOW TARGET'}: ${sra.withFullIntegrated_pct}% Success Rate (Target: ${sra.target_pct}%)`, margin, y); y += 7;
+    doc.text(`PROJECTED SITING CONFIDENCE IF FULL SURVEY CONFIRMS: ${sra.withFullIntegrated_pct}% (planning target: ${sra.target_pct}%)`, margin, y); y += 7;
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
     const recLines = doc.splitTextToSize(ag.recommendation ?? '', 170);
     doc.text(recLines, margin, y); y += recLines.length * 3.5 + 6;
@@ -5809,10 +5865,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     // Success Rate Analysis Table
     checkSpace(40);
     doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(59, 130, 246);
-    doc.text('Success Rate Analysis: AI \u2192 Full Integrated Geophysics', margin, y); y += 6;
+    doc.text('Projected Siting Confidence by Survey Package (hypothetical)', margin, y); y += 6;
     autoTable(doc, {
       startY: y,
-      head: [['Configuration', 'Success Rate', 'Boost vs AI-Only']],
+      head: [['Configuration', 'Projected Siting Confidence (if survey confirms)', 'Boost vs AI-Only']],
       body: [
         ['AI-Only (Desktop Study)', `${sra.aiOnly_pct}%`, 'Baseline'],
         ['+ 2D ERT', `${sra.withERT2D_pct}%`, `+${sra.withERT2D_pct - sra.aiOnly_pct}%`],
@@ -5955,18 +6011,18 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (integrated?.drillSpec) {
       checkSpace(50);
       doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 163, 74);
-      doc.text('Integrated Survey -- Drill Specification', margin, y); y += 6;
+      doc.text('Integrated Survey -- Projected Drill Specification (hypothetical)', margin, y); y += 6;
       autoTable(doc, {
         startY: y,
-        head: [['Parameter', 'Value']],
+        head: [['Parameter (projected, if survey confirms)', 'Value']],
         body: [
           ['Optimal Drill Depth', `${integrated.drillSpec.optimalDepth_m}m`],
           ['Casing Depth', `${integrated.drillSpec.casingDepth_m}m`],
           ['Screen Interval', `${integrated.drillSpec.screenInterval_m[0]}-${integrated.drillSpec.screenInterval_m[1]}m`],
           ['Expected Yield', `${integrated.drillSpec.expectedYield_m3hr} m\u00B3/hr`],
-          ['Success Probability', `${integrated.drillSpec.successProbability_pct}%`],
-          ['Drilling Method', integrated.drillSpec.drillingMethod],
-          ['Estimated Drilling Cost', `$${(integrated.drillSpec.estimatedCost_usd ?? 0).toLocaleString()}`],
+          ['Projected Siting Confidence', `${integrated.drillSpec.successProbability_pct}% (hypothetical, post-survey; governing site probability: ${pct(result.probability)})`],
+          ['Drilling Method', `${integrated.drillSpec.drillingMethod} (final method selected by contractor after ERT)`],
+          ['Estimated Drilling Cost', `$${(integrated.drillSpec.estimatedCost_usd ?? 0).toLocaleString()} (indicative; Section 5.1 governs)`],
           ['Survey Cost', `$${(integrated.totalCost_usd ?? 0).toLocaleString()}`],
           ['Savings vs Traditional', `$${(integrated.savingsVsTraditional_usd ?? 0).toLocaleString()} (${integrated.savingsPercent}%)`],
           ['Cross-Method Agreement', `${integrated.crossMethodAgreement}%`],
