@@ -10,6 +10,7 @@ import { getTrackerStats, getLifetimeCount, searchHistory, getSuccessStories, ty
 import { parseERTFile } from './ertFileParser';
 import { recordDrillingOutcome, getLearningStats, exportOutcomes, importOutcomes, loadOutcomes } from './feedbackLearningLoop';
 import { computeBacktest, parseBacktestCSV, type BacktestRecord } from './backtestEngine';
+import { parseWRARecords, wraRecordsToJSON, WRA_LOCALSTORAGE_KEY, type WRAIngestResult } from './wraIngestEngine';
 import { runAIScanner, type AIScanResult } from './aiScanner';
 import { render2DAnnotatedMap, render2DCrossSection, render3DTerrain, render3DSubsurface } from './terrainMapper';
 import { computeDrillReadiness } from './drillReadiness';
@@ -557,6 +558,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [vesResult, setVesResult] = useState<VESInversionResult | null>(null);
   const [vesError, setVesError] = useState('');
   const [backtestCSV, setBacktestCSV] = useState('');
+  const [wraRaw, setWraRaw] = useState('');
+  const [wraResult, setWraResult] = useState<WRAIngestResult | null>(null);
+  const [wraStoredCount, setWraStoredCount] = useState<number>(() => { try { const v = typeof localStorage !== 'undefined' ? localStorage.getItem(WRA_LOCALSTORAGE_KEY) : null; return v ? (JSON.parse(v)?.length ?? 0) : 0; } catch { return 0; } });
   const [learningStats, setLearningStats] = useState<ReturnType<typeof getLearningStats> | null>(null);
   const ertFileRef = useRef<HTMLInputElement>(null);
   const [activeSciPart, setActiveSciPart] = useState<string>('remote-sensing');
@@ -8935,6 +8939,41 @@ const AIBoreholeAnalyzer: React.FC = () => {
           </div>
         );
       })()}
+
+      {/* ═══ WRA / COUNTY BOREHOLE INGESTION ═══ */}
+      <div style={{marginBottom:20,padding:16,borderRadius:12,border:'2px solid #0284c7',background:'rgba(2,132,199,0.05)'}}>
+        <h4 style={{margin:'0 0 4px',fontSize:15,color:'#0284c7'}}>{'\u{1F5C3}'} WRA / County Borehole Records — Import</h4>
+        <p style={{fontSize:11,color:'var(--text-secondary)',margin:'0 0 8px',lineHeight:1.5}}>
+          Nearby real boreholes are the single strongest predictor of success. WRA/county completion records aren&rsquo;t on any public API — paste or upload your spreadsheet (CSV) or JSON here.
+          It validates every row, then you can <strong>use it immediately</strong> (stored on this device) or <strong>download <code>wra-boreholes.json</code></strong> to bundle site-wide. {wraStoredCount > 0 && <span style={{color:'#10b981',fontWeight:700}}> {wraStoredCount} record(s) currently active on this device.</span>}
+        </p>
+        <p style={{fontSize:10,color:'var(--text-tertiary)',margin:'0 0 6px'}}>Columns (any order, header row required): <code>name, lat, lon, depth_m, yield_m3h, swl_m, outcome, permit, county</code>. Outcome accepts functional/dry/low etc.</p>
+        <textarea value={wraRaw} onChange={e=>setWraRaw(e.target.value)} rows={5}
+          placeholder={'name,lat,lon,depth_m,yield_m3h,swl_m,outcome,permit\nMakuyu PS,-0.90,37.19,87,3.2,21,Functional,WRA/123\nThika Farm,-1.03,37.07,120,1.5,45,Dry,WRA/124'}
+          style={{width:'100%',fontSize:11,fontFamily:'monospace',padding:6,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}}/>
+        <div style={{display:'flex',gap:8,marginTop:6,flexWrap:'wrap',alignItems:'center'}}>
+          <input type="file" accept=".csv,.json,.txt,.tsv" style={{fontSize:10}} onChange={e=>{const f=e.target.files?.[0]; if(f){const rd=new FileReader(); rd.onload=()=>{const t=rd.result as string; setWraRaw(t); setWraResult(parseWRARecords(t));}; rd.readAsText(f);}}}/>
+          <button className="btn btn-secondary" style={{fontSize:11,padding:'5px 14px'}} onClick={()=>setWraResult(parseWRARecords(wraRaw))}>Validate &amp; Preview</button>
+          <button className="btn btn-primary" style={{fontSize:11,padding:'5px 14px'}} disabled={!wraResult || wraResult.accepted===0} onClick={()=>{ if(wraResult){ try { localStorage.setItem(WRA_LOCALSTORAGE_KEY, JSON.stringify(wraResult.records.map(r=>({name:r.name,lat:r.lat,lon:r.lon,depth_m:r.depth_m,yield_m3h:r.yield_m3h,swl_m:r.swl_m,outcome:r.outcome,permit:r.permit,aquiferType:r.aquiferType,lithology:r.lithology,county:r.county})))); setWraStoredCount(wraResult.accepted); } catch(err){} } }}>Use Now ({wraResult?.accepted ?? 0})</button>
+          <button className="btn btn-secondary" style={{fontSize:11,padding:'5px 14px'}} disabled={!wraResult || wraResult.accepted===0} onClick={()=>{ if(wraResult){ const blob=new Blob([wraRecordsToJSON(wraResult.records)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='wra-boreholes.json'; a.click(); URL.revokeObjectURL(url);} }}>Download JSON</button>
+          {wraStoredCount > 0 && <button className="btn btn-secondary" style={{fontSize:11,padding:'5px 14px'}} onClick={()=>{ try{ localStorage.removeItem(WRA_LOCALSTORAGE_KEY); setWraStoredCount(0);}catch(e){} }}>Clear Active</button>}
+        </div>
+        {wraResult && (
+          <div style={{marginTop:10,padding:10,borderRadius:8,background:'var(--bg-secondary)',fontSize:11}}>
+            <span style={{color:'#10b981',fontWeight:700}}>{wraResult.accepted} accepted</span>
+            {wraResult.rejected > 0 && <span style={{color:'#ef4444',fontWeight:700,marginLeft:10}}>{wraResult.rejected} rejected</span>}
+            {wraResult.warnings.map((w,i)=><div key={'w'+i} style={{color:'#f59e0b',fontSize:10,marginTop:4}}>{'⚠'} {w}</div>)}
+            {wraResult.errors.slice(0,6).map((er,i)=><div key={'e'+i} style={{color:'#ef4444',fontSize:10,marginTop:2}}>{er}</div>)}
+            {wraResult.accepted > 0 && (
+              <table style={{width:'100%',fontSize:10,borderCollapse:'collapse',marginTop:6}}>
+                <thead><tr style={{textAlign:'left',color:'var(--text-secondary)'}}><th>Name</th><th>Lat</th><th>Lon</th><th>Depth</th><th>Yield</th><th>Outcome</th></tr></thead>
+                <tbody>{wraResult.records.slice(0,6).map((r,i)=>(<tr key={i} style={{borderTop:'1px solid var(--border)'}}><td>{r.name}</td><td>{r.lat}</td><td>{r.lon}</td><td>{r.depth_m||'—'}</td><td>{r.yield_m3h??'—'}</td><td>{r.outcome}</td></tr>))}</tbody>
+              </table>
+            )}
+            {wraResult.accepted > 6 && <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>+{wraResult.accepted-6} more…</div>}
+          </div>
+        )}
+      </div>
 
       {/* Accuracy Statistics */}
       {feedbackHistory.length > 0 && (

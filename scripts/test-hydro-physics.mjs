@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -478,6 +478,49 @@ console.log('\nN. Köppen-Geiger climate classification (climateClassifier)');
     ct ? `${ct.koppen.code}, wind ${ct.meanWind_ms}` : 'null');
   check('missing temp/precip payload → null (never invents a climate)',
     cc.buildClimateType({ properties: { parameter: {} } }, false) === null);
+}
+
+// ── O. WRA / COUNTY BOREHOLE INGESTION (wraIngestEngine) ──
+console.log('\nO. WRA/county borehole ingestion (wraIngestEngine)');
+{
+  const wra = req(join(OUT, 'wraIngestEngine.js'));
+
+  // 1. CSV with varied headers → normalized records
+  const csv = [
+    'Borehole Name,Latitude,Longitude,Drilled Depth,Yield,SWL,Status,Permit',
+    'Makuyu PS,-0.90,37.19,87,3.2,21,Functional,WRA/123',
+    'Thika Farm BH,-1.03,37.07,120,1.5,45,Dry,WRA/124',
+    'Ruiru Mkt,-1.15,36.96,64,,18,low,',
+  ].join('\n');
+  const r = wra.parseWRARecords(csv);
+  check('CSV with varied headers → 3 accepted records', r.accepted === 3 && r.rejected === 0, `acc ${r.accepted} rej ${r.rejected} err ${r.errors.join('|')}`);
+  check('outcome normalized (Functional→Success, Dry→Fail, low→Moderate)',
+    r.records[0].outcome === 'Success' && r.records[1].outcome === 'Fail' && r.records[2].outcome === 'Moderate',
+    r.records.map(x => x.outcome).join(','));
+  check('coordinates + depth parsed correctly', r.records[0].depth_m === 87 && Math.abs(r.records[0].lat + 0.90) < 1e-9);
+
+  // 2. Bad rows rejected with a reason, good rows kept
+  const bad = [
+    'name,lat,lon,depth',
+    'Good BH,-1.2,36.8,50',
+    'No coords,,,,',
+    'Impossible,-1.2,36.8,5000',
+  ].join('\n');
+  const rb = wra.parseWRARecords(bad);
+  check('invalid coords + absurd depth rejected, valid kept (never silently coerced)',
+    rb.accepted === 1 && rb.rejected === 2 && rb.errors.length >= 2, `acc ${rb.accepted} rej ${rb.rejected}`);
+
+  // 3. JSON array input also accepted
+  const rj = wra.parseWRARecords(JSON.stringify([{ name: 'JSON BH', lat: -0.5, lon: 37.0, depth_m: 70, outcome: 'Success' }]));
+  check('JSON array input parses to records', rj.accepted === 1 && rj.records[0].name === 'JSON BH');
+
+  // 4. Round-trips to the exact wra-boreholes.json shape the engine consumes
+  const json = wra.wraRecordsToJSON(r.records);
+  const back = JSON.parse(json);
+  check('serializes to wra-boreholes.json shape (name/lat/lon/depth_m/outcome)',
+    Array.isArray(back) && back[0].name && typeof back[0].lat === 'number' && back[0].depth_m === 87 && back[0].outcome === 'Success');
+  check('empty input → honest error, no fabricated records',
+    wra.parseWRARecords('').accepted === 0 && wra.parseWRARecords('').errors.length > 0);
 }
 
 rmSync(OUT, { recursive: true, force: true });

@@ -386,6 +386,41 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
   } catch { /* registry file not installed yet — expected until WRA data obtained */ }
 
   // ────────────────────────────────────────────────────────
+  // 3a-ii. OWNER-PROVIDED WRA RECORDS (localStorage, from the ingestion panel)
+  //     Lets a WRA/county CSV take effect immediately without redeploying the
+  //     public JSON file. Same FIELD-grade treatment as the file channel.
+  // ────────────────────────────────────────────────────────
+  try {
+    const lsRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('aquascan_wra_records') : null;
+    if (lsRaw) {
+      const lsData = JSON.parse(lsRaw);
+      if (Array.isArray(lsData)) {
+        let lsCount = 0;
+        for (const b of lsData) {
+          const bLat = Number(b.lat), bLon = Number(b.lon);
+          if (!isFinite(bLat) || !isFinite(bLon)) continue;
+          const dist = haversineDistance(lat, lon, bLat, bLon);
+          if (dist > searchRadius) continue;
+          wells.push({
+            id: `${b.name ?? 'Unnamed borehole'}${b.permit ? ` (${b.permit})` : ''}`,
+            lat: bLat, lon: bLon,
+            distance_km: Math.round(dist * 10) / 10,
+            depth_m: Number(b.depth_m) || 0,
+            yield_m3h: b.yield_m3h != null ? Number(b.yield_m3h) : undefined,
+            waterLevel_m: b.swl_m != null ? Number(b.swl_m) : undefined,
+            aquiferType: b.aquiferType ?? undefined,
+            lithology: b.lithology ?? undefined,
+            outcome: (['Success', 'Moderate', 'Fail'].includes(b.outcome) ? b.outcome : 'Unknown') as any,
+            source: 'WRA record (owner-provided — FIELD)',
+          });
+          lsCount++;
+        }
+        if (lsCount > 0) dataSources.push(`Owner-provided WRA/county records (${lsCount} within ${searchRadius} km)`);
+      }
+    }
+  } catch { /* no local WRA records — fine */ }
+
+  // ────────────────────────────────────────────────────────
   // 3b. UNESCO IHP-WINS KENYA REGISTRY (bundled, 22,820 named wells)
   //     Built 2026-07-09 from ihp-wins.unesco.org open datasets
   //     ("Kenya Groundwater Sources from mWater" + "Kenya Wells OSM"):
