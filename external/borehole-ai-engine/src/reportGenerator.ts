@@ -1462,8 +1462,26 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(`Drilling-Readiness Score: ${dr.score}/100   —   ${dr.stage}`, margin + 5, y + 16);
     y += 27;
 
+    // ── GROUNDWATER PROSPECT (chance of water) — data-backed, SEPARATE axis ──
+    if (dr.groundwaterProspect) {
+      const strong = dr.groundwaterProspect === 'STRONG' || dr.groundwaterProspect === 'VERY STRONG';
+      const pColor: [number, number, number] = strong ? [22, 163, 74] : dr.groundwaterProspect === 'MODERATE' ? [180, 83, 9] : [100, 116, 139];
+      checkSpace(22);
+      doc.setFillColor(pColor[0], pColor[1], pColor[2]);
+      doc.roundedRect(margin, y, pw, 16, 3, 3, 'F');
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+      doc.text(`GROUNDWATER PROSPECT: ${dr.groundwaterProspect}  (~${dr.prospectIndex}%)`, margin + 5, y + 7);
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(245, 245, 245);
+      doc.text('Chance of striking water — backed by nearby boreholes + convergent desktop evidence. This axis is NOT gated by field validation.', margin + 5, y + 13);
+      y += 20;
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(70, 70, 70);
+      doc.text(doc.splitTextToSize(dr.prospectStatement, pw), margin, y);
+      y += doc.splitTextToSize(dr.prospectStatement, pw).length * 3.6 + 3;
+    }
+
     doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 90, 90);
-    doc.text(doc.splitTextToSize('This score is SEPARATE from the AI confidence %. AI confidence measures how much the desktop models agree; drilling readiness measures how much real field evidence and professional sign-off exist. Adding more AI cannot raise this score past 79 — only field data can.', pw), margin, y); y += 12;
+    doc.text(doc.splitTextToSize('The two axes above answer different questions. GROUNDWATER PROSPECT = how likely water is here (raised legitimately by proven nearby boreholes and convergent vegetation/drainage/recharge evidence). DRILLING READINESS = whether this is authority to mobilise a rig on the exact spot. Adding more AI cannot raise the readiness score past 79 — only field data can — but a strong data-backed prospect stands on its own.', pw), margin, y);
+    y += doc.splitTextToSize('The two axes above answer different questions. GROUNDWATER PROSPECT = how likely water is here (raised legitimately by proven nearby boreholes and convergent vegetation/drainage/recharge evidence). DRILLING READINESS = whether this is authority to mobilise a rig on the exact spot. Adding more AI cannot raise the readiness score past 79 — only field data can — but a strong data-backed prospect stands on its own.', pw).length * 3.4 + 4;
 
     // Mandatory gate checklist
     doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);

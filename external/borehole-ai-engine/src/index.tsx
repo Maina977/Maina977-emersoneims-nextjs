@@ -1592,7 +1592,13 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       hasDrillLog: !!fd.drillLog,
                       hasCompletionRecord: !!fd.completionRecord,
                       reportConsistent: true,
+                      // Regional analog evidence — proven neighbours raise the
+                      // DATA-BACKED groundwater prospect (chance of water).
+                      analogBoreholeCount: fd.localBoreholes?.count,
+                      analogSuccessRate: fd.localBoreholes?.successRate,
                     });
+                    const prospectColor = dr.groundwaterProspect === 'VERY STRONG' || dr.groundwaterProspect === 'STRONG'
+                      ? '#10b981' : dr.groundwaterProspect === 'MODERATE' ? '#f59e0b' : '#94a3b8';
                     const statusColor = dr.status === 'ISSUED FOR DRILLING' || dr.status === 'COMPLETED / BANKABLE RECORD'
                       ? '#10b981' : dr.status === 'FIELD VALIDATION IN PROGRESS' ? '#f59e0b' : '#ef4444';
                     const gateItems = [
@@ -1604,6 +1610,24 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     ];
                     return (
                       <div style={{padding:14,borderRadius:10,border:`2px solid ${statusColor}`,background:`${statusColor}12`}}>
+                        {/* Two axes side by side: PROSPECT (chance of water) vs READINESS (authority to drill) */}
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}}>
+                          <div style={{padding:10,borderRadius:8,border:`1px solid ${prospectColor}`,background:`${prospectColor}10`}}>
+                            <div style={{fontSize:10,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Groundwater Prospect</div>
+                            <div style={{fontSize:16,fontWeight:800,color:prospectColor}}>{dr.groundwaterProspect} <span style={{fontSize:12,opacity:0.7}}>~{dr.prospectIndex}%</span></div>
+                            <div style={{fontSize:9,color:'var(--text-secondary)'}}>Chance of water &mdash; data-backed, not gated</div>
+                          </div>
+                          <div style={{padding:10,borderRadius:8,border:`1px solid ${statusColor}`,background:`${statusColor}10`}}>
+                            <div style={{fontSize:10,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Drilling Readiness</div>
+                            <div style={{fontSize:16,fontWeight:800,color:statusColor}}>{dr.score}/100</div>
+                            <div style={{fontSize:9,color:'var(--text-secondary)'}}>Authority to mobilise &mdash; needs field steps</div>
+                          </div>
+                        </div>
+                        {dr.prospectIndex >= 60 && (
+                          <div style={{fontSize:10,color:'#10b981',lineHeight:1.5,marginBottom:10,padding:'6px 8px',background:'rgba(16,185,129,0.08)',borderRadius:6}}>
+                            {dr.prospectStatement}
+                          </div>
+                        )}
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8,marginBottom:10}}>
                           <div>
                             <div style={{fontSize:11,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Live Drilling-Readiness</div>

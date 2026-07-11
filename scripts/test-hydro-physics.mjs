@@ -184,6 +184,21 @@ console.log('\nG. Drilling-readiness score gates (drillReadiness)');
     dr.computeDrillReadiness({ gpsSource: 'manual', locationGrade: 'B', reportConsistent: true }).score <= 79);
   check('inconsistent report (software errors) blocks the consistency gate',
     dr.computeDrillReadiness({ hasFieldERT: true, hasFieldPeg: true, hasHydrogeologistSignoff: true, hasWRAAuthorisation: true, reportConsistent: false }).score <= 79);
+
+  // Groundwater prospect (chance of water) — data-backed, SEPARATE from gates
+  const noAnalog = dr.computeDrillReadiness({ reportConsistent: true, convergentEvidenceScore: 0.5 });
+  const strongAnalog = dr.computeDrillReadiness({
+    reportConsistent: true, convergentEvidenceScore: 0.7,
+    analogBoreholeCount: 12, analogSuccessRate: 0.8, desktopConcordance: 0.85,
+  });
+  check('proven nearby boreholes raise the groundwater prospect',
+    strongAnalog.prospectIndex > noAnalog.prospectIndex && (strongAnalog.groundwaterProspect === 'STRONG' || strongAnalog.groundwaterProspect === 'VERY STRONG'),
+    `no-analog ${noAnalog.prospectIndex}% vs analog ${strongAnalog.prospectIndex}% (${strongAnalog.groundwaterProspect})`);
+  check('strong prospect does NOT unlock drilling readiness (still gated)',
+    strongAnalog.score <= 79 && strongAnalog.status !== 'ISSUED FOR DRILLING',
+    `score ${strongAnalog.score}, ${strongAnalog.status}`);
+  check('analog offset wells earn partial depth-justification readiness credit',
+    strongAnalog.score > noAnalog.score, `no-analog ${noAnalog.score} vs analog ${strongAnalog.score}`);
 }
 
 rmSync(OUT, { recursive: true, force: true });

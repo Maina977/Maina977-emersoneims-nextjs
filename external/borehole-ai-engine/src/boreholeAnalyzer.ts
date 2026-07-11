@@ -2659,6 +2659,13 @@ export class BoreholeAnalyzer {
         hasDrillLog: !!(fieldData as any)?.drillLog,
         hasCompletionRecord: !!(fieldData as any)?.completionRecord,
         reportConsistent: true, // known contradictions (pump/labels) fixed 2026-07-11
+        // Regional analog evidence — proven neighbours + convergent desktop
+        // signals raise the DATA-BACKED groundwater prospect (chance of water),
+        // separate from the field-gated drilling readiness.
+        analogBoreholeCount: fieldData?.localBoreholes?.count ?? nearbyWells?.sampleSize ?? boreholeRecords?.sampleSize ?? 0,
+        analogSuccessRate: fieldData?.localBoreholes?.successRate ?? nearbyWells?.successRate ?? boreholeRecords?.successRate,
+        desktopConcordance: ensembleResult?.sourceAgreement === 'strong' ? 0.85 : ensembleResult?.sourceAgreement === 'weak' ? 0.45 : 0.65,
+        convergentEvidenceScore: typeof probability === 'number' ? probability : undefined,
       }),
 
       timestamp: new Date().toISOString()

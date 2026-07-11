@@ -32,6 +32,21 @@ export interface DrillReadinessInput {
   /** internal consistency: true if the report has NO contradictory
    *  depth/screen/yield/pump values or software errors */
   reportConsistent?: boolean;
+
+  // ── REGIONAL / ANALOG EVIDENCE (desktop, but real facts) ──
+  // Nearby proven boreholes are the most predictive desktop evidence in
+  // hydrogeology. They raise the GROUNDWATER PROSPECT (chance of water) and
+  // earn partial readiness credit for depth justification — but they do NOT
+  // satisfy the site-specific field gates (peg, ERT, sign-off, authorisation).
+  /** number of known producing boreholes within ~2 km */
+  analogBoreholeCount?: number;
+  /** regional success rate of those boreholes, 0-1 */
+  analogSuccessRate?: number;
+  /** how well the analog wells match the desktop model (depth/yield), 0-1 */
+  desktopConcordance?: number;
+  /** agreement of convergent desktop evidence (vegetation, drainage, recharge,
+   *  water body, climate) with a water-bearing interpretation, 0-1 */
+  convergentEvidenceScore?: number;
 }
 
 export interface DrillReadinessResult {
@@ -44,6 +59,12 @@ export interface DrillReadinessResult {
   breakdown: { category: string; earned: number; max: number; note: string }[];
   cappedByGates: boolean;
   handoverStatement: string;
+  /** chance of striking water — DATA-BACKED, separate from readiness/gates */
+  groundwaterProspect: 'LOW' | 'MODERATE' | 'STRONG' | 'VERY STRONG';
+  /** 0-100 index behind the prospect band, for display */
+  prospectIndex: number;
+  /** plain-language explanation of the prospect (analog wells + convergence) */
+  prospectStatement: string;
 }
 
 /**
@@ -54,6 +75,17 @@ export interface DrillReadinessResult {
 export function computeDrillReadiness(input: DrillReadinessInput): DrillReadinessResult {
   const gpsFieldVerified = input.hasFieldPeg === true ||
     (['manual'].includes(String(input.gpsSource)) && ['A', 'B'].includes(String(input.locationGrade)));
+
+  // ── REGIONAL / ANALOG EVIDENCE (real facts, desktop-tier) ──
+  const analogN = Math.max(0, input.analogBoreholeCount ?? 0);
+  const analogSR = Math.min(1, Math.max(0, input.analogSuccessRate ?? 0));
+  const concord = Math.min(1, Math.max(0, input.desktopConcordance ?? 0.6));
+  const convergent = Math.min(1, Math.max(0, input.convergentEvidenceScore ?? 0.5));
+  // analog reliability grows with the number of proven neighbours (cap ~8 wells)
+  const analogWeight = Math.min(1, analogN / 8);
+  const analogSignal = analogSR * analogWeight * concord;                 // 0-1
+  // proven offset wells legitimately justify a target-depth range even before ERT
+  const analogDepthCredit = analogN >= 3 ? Math.round(3 * (analogSignal || 0.5)) : 0; // 0-3
 
   const cats = [
     {
@@ -77,8 +109,10 @@ export function computeDrillReadiness(input: DrillReadinessInput): DrillReadines
     {
       category: 'Final drilling target & depth justification',
       max: 10,
-      earned: (input.hasFieldERT ? 6 : 0) + (input.hasHydrogeologistSignoff ? 4 : 0),
-      note: 'Final peg, depth range and stopping criteria set from interpreted ERT.',
+      earned: Math.min(10, (input.hasFieldERT ? 6 : 0) + (input.hasHydrogeologistSignoff ? 4 : 0) + analogDepthCredit),
+      note: analogDepthCredit > 0
+        ? `Depth range partly justified by ${analogN} proven offset boreholes; final peg/stopping criteria still from interpreted ERT.`
+        : 'Final peg, depth range and stopping criteria set from interpreted ERT.',
     },
     {
       category: 'Borehole construction specification',
@@ -150,5 +184,30 @@ export function computeDrillReadiness(input: DrillReadinessInput): DrillReadines
     ? 'Drilling, testing and completion documentation are on file. This is a completed borehole record.'
     : 'DRAFT DESKTOP PRE-FEASIBILITY REPORT — FOR HYDROGEOLOGIST REVIEW AND FIELD VALIDATION — NOT FOR DRILLING MOBILISATION. Do not use the modelled depth, yield, water table or coordinates as guaranteed field values, select the final drill point, or procure a pump/casing/screen from this document.';
 
-  return { score, status, stage, openGates, breakdown: cats, cappedByGates, handoverStatement };
+  // ── GROUNDWATER PROSPECT (chance of water) — DATA-BACKED, NOT gated ──
+  // This answers "how likely is water here?", which proven neighbours and
+  // convergent desktop evidence legitimately raise. It is deliberately SEPARATE
+  // from readiness (authority to mobilise), so strong regional data is never
+  // buried under an ungated "not drill-ready" label.
+  const prospectRaw = analogN >= 3
+    ? 0.45 * convergent + 0.55 * analogSignal      // real offset wells dominate when present
+    : 0.70 * convergent + 0.30 * analogSignal;     // fall back to convergent desktop evidence
+  const prospectIndex = Math.round(Math.min(0.98, Math.max(0.02, prospectRaw)) * 100);
+  let groundwaterProspect: DrillReadinessResult['groundwaterProspect'];
+  if (prospectIndex >= 75 && analogN >= 5) groundwaterProspect = 'VERY STRONG';
+  else if (prospectIndex >= 60) groundwaterProspect = 'STRONG';
+  else if (prospectIndex >= 40) groundwaterProspect = 'MODERATE';
+  else groundwaterProspect = 'LOW';
+
+  const analogPhrase = analogN >= 3
+    ? `${analogN} known producing borehole(s) within ~2 km${analogSR > 0 ? ` (~${Math.round(analogSR * 100)}% regional success)` : ''}, concordant with the desktop model, `
+    : analogN > 0
+    ? `${analogN} nearby borehole record(s) and `
+    : '';
+  const prospectStatement = `${analogPhrase}together with convergent vegetation, drainage, water-body and recharge signals, indicate a ${groundwaterProspect} groundwater prospect (~${prospectIndex}%). This is the DATA-BACKED chance of striking water and does not require field validation. Drilling READINESS — pegging the exact point and depth and holding regulatory authority — is scored separately and still requires the field steps below.`;
+
+  return {
+    score, status, stage, openGates, breakdown: cats, cappedByGates, handoverStatement,
+    groundwaterProspect, prospectIndex, prospectStatement,
+  };
 }
