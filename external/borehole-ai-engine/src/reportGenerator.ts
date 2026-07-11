@@ -190,6 +190,25 @@ function pct(v: number | undefined | null): string {
   return `${(v * 100).toFixed(1)}%`;
 }
 
+/** True only when a REAL field ERT/resistivity survey was uploaded. */
+function ertIsFieldData(result: AnalysisResult): boolean {
+  return (result as any)._auditFlags?.hasFieldERT === true;
+}
+/** Honest ERT section title: real interpretation vs modelled survey design. */
+function ertSectionTitle(result: AnalysisResult, prefix: string): string {
+  return ertIsFieldData(result)
+    ? `${prefix}ERT Interpretation (Field Survey Data)`
+    : `${prefix}ERT Survey - PROPOSED DESIGN (modelled projection, NOT field data)`;
+}
+/** Honest drill-decision label — a MODELLED ERT must never say "Proceed to Drill". */
+function ertDecisionLabel(result: AnalysisResult, ei: any): string {
+  const base = ei?.drillOrNoDrill === 'DRILL' ? 'Proceed to Drill'
+    : ei?.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 'Further Assessment Needed'
+    : ei?.drillOrNoDrill === 'INVESTIGATE_FURTHER' ? 'Investigate Further'
+    : (ei?.drillOrNoDrill || '?');
+  return ertIsFieldData(result) ? base : 'PROJECTED (modelled) - confirm by field ERT before drilling';
+}
+
 function getLocationString(r: AnalysisResult): string {
   const loc = r.resolvedLocation || r.clientLocation;
   if (!loc) return 'Unknown Location';
@@ -4413,7 +4432,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage();
     const ei = result.ertInterpretation;
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(100, 116, 139);
-    doc.text('29. ERT Intelligence Pipeline', margin, y); y += 5;
+    doc.text(ertSectionTitle(result, '29. '), margin, y); y += 5;
 
     // Audit fix #14: Persistent SYNTHETIC banner if no field ERT data
     const hasFieldERT = (result as any)._auditFlags?.hasFieldERT === true;
@@ -4430,12 +4449,16 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(150, 120, 50);
     doc.text(`ERT-derived estimates shown below. Reconciled values in Executive Summary: Depth ${fmt(result.recommendedDepth)}m, Yield ${fmt(result.estimatedYield, 1)} m\u00B3/hr.`, margin, y); y += 5;
 
-    // Decision banner
+    // Decision banner — a MODELLED ERT must never render a bare "Proceed to Drill".
     if (ei.drillOrNoDrill) {
+      const ertField = ertIsFieldData(result);
       doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-      doc.setTextColor(ei.drillOrNoDrill === 'DRILL' ? 22 : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 180 : 56, ei.drillOrNoDrill === 'DRILL' ? 163 : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 120 : 130, ei.drillOrNoDrill === 'DRILL' ? 74 : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 30 : 246);
-      const decisionLabel = ei.drillOrNoDrill === 'DRILL' ? 'Proceed to Drill' : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 'Further Assessment Needed' : 'Investigate Further';
-      doc.text(`Decision: ${decisionLabel}`, margin, y); y += 5;
+      if (ertField) {
+        doc.setTextColor(ei.drillOrNoDrill === 'DRILL' ? 22 : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 180 : 56, ei.drillOrNoDrill === 'DRILL' ? 163 : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 120 : 130, ei.drillOrNoDrill === 'DRILL' ? 74 : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 30 : 246);
+      } else {
+        doc.setTextColor(180, 120, 30); // amber for a modelled projection
+      }
+      doc.text(`Decision: ${ertDecisionLabel(result, ei)}`, margin, y); y += 5;
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
       const decLines = doc.splitTextToSize(ei.drillDecisionReasoning || '', pageW - 2 * margin);
       doc.text(decLines, margin, y); y += decLines.length * 3.5 + 4;
@@ -4449,7 +4472,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Pipeline Version', `v${ei.pipelineVersion || '2.0'}`],
         ['Data Source', (ei.dataSource || 'modelled').toUpperCase()],
         ['Steps Executed', `${ei.executedSteps?.length || 0}/10`],
-        ['Drill Decision', ei.drillOrNoDrill === 'DRILL' ? 'Proceed to Drill' : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 'Further Assessment Needed' : ei.drillOrNoDrill === 'INVESTIGATE_FURTHER' ? 'Investigate Further' : (ei.drillOrNoDrill || '?')],
+        ['Drill Decision', ertDecisionLabel(result, ei)],
       ],
       headStyles: { fillColor: [100, 116, 139], textColor: 255, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 8 },
@@ -9887,12 +9910,12 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
   if (result.ertInterpretation) {
     const ei = result.ertInterpretation;
     const rows: any[][] = [
-      ['ERT INTELLIGENCE PIPELINE'],
+      [ertIsFieldData(result) ? 'ERT INTERPRETATION (FIELD DATA)' : 'ERT SURVEY - PROPOSED DESIGN (MODELLED, NOT FIELD DATA)'],
       ['Parameter', 'Value'],
       ['Pipeline Version', `v${ei.pipelineVersion || '2.0'}`],
       ['Data Source', (ei.dataSource || 'modelled').toUpperCase()],
       ['Steps Executed', `${ei.executedSteps?.length || 0}/10`],
-      ['Drill Decision', ei.drillOrNoDrill === 'DRILL' ? 'Proceed to Drill' : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 'Further Assessment Needed' : ei.drillOrNoDrill === 'INVESTIGATE_FURTHER' ? 'Investigate Further' : (ei.drillOrNoDrill || '?')],
+      ['Drill Decision', ertDecisionLabel(result, ei)],
       ['Decision Reasoning', ei.drillDecisionReasoning || '?'],
     ];
     if (ei.confidence) {
@@ -10255,8 +10278,8 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
   // ERT Intelligence Pipeline
   if (result.ertInterpretation) {
     const ei = result.ertInterpretation as any;
-    sections.push(heading(`${sectionNum}. ERT Intelligence Pipeline`)); sectionNum++;
-    sections.push(para(`Decision: ${ei.drillOrNoDrill === 'DRILL' ? 'Proceed to Drill' : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 'Further Assessment Needed' : ei.drillOrNoDrill === 'INVESTIGATE_FURTHER' ? 'Investigate Further' : (ei.drillOrNoDrill || '?')} | Pipeline v${ei.pipelineVersion || '2.0'} | Steps: ${ei.executedSteps?.length || 0}/10`, true));
+    sections.push(heading(ertSectionTitle(result, `${sectionNum}. `))); sectionNum++;
+    sections.push(para(`Decision: ${ertDecisionLabel(result, ei)} | Pipeline v${ei.pipelineVersion || '2.0'} | Steps: ${ei.executedSteps?.length || 0}/10`, true));
     if (ei.drillDecisionReasoning) sections.push(para(ei.drillDecisionReasoning));
     if (ei.confidence) {
       sections.push(para(`Confidence: Before ${((ei.confidence.beforeERT ?? 0) * 100).toFixed(0)}% ? After ${((ei.confidence.afterERT ?? 0) * 100).toFixed(0)}% (+${fmt(ei.confidence.improvementPercent)}%)`, true));
@@ -10597,8 +10620,8 @@ export function generateCSVReport(result: AnalysisResult): void {
 
   if (result.ertInterpretation) {
     const ei = result.ertInterpretation as any;
-    rows.push([''], ['ERT INTELLIGENCE PIPELINE']);
-    rows.push(['Decision', ei.drillOrNoDrill === 'DRILL' ? 'Proceed to Drill' : ei.drillOrNoDrill === 'NEEDS_FURTHER_ASSESSMENT' ? 'Further Assessment Needed' : ei.drillOrNoDrill === 'INVESTIGATE_FURTHER' ? 'Investigate Further' : (ei.drillOrNoDrill || '?'), '', ei.drillDecisionReasoning || '']);
+    rows.push([''], [ertIsFieldData(result) ? 'ERT INTERPRETATION (FIELD DATA)' : 'ERT SURVEY - PROPOSED DESIGN (MODELLED, NOT FIELD DATA)']);
+    rows.push(['Decision', ertDecisionLabel(result, ei), '', ei.drillDecisionReasoning || '']);
     rows.push(['Pipeline Version', `v${ei.pipelineVersion || '2.0'}`, '', '']);
     rows.push(['Steps Executed', `${ei.executedSteps?.length || 0}`, '/10', '']);
     if (ei.confidence) {
