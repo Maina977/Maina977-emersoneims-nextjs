@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -439,6 +439,45 @@ console.log('\nM. National data coverage + field-only honesty (dataCoverageEngin
   const many = dc.assessDataCoverage({ nearbyBoreholeCount: 15, nearbyFieldMeasuredCount: 8 });
   const bconf = (r) => r.items.find(i => /Nearby drilled/i.test(i.domain)).confidencePct;
   check('proven nearby boreholes raise the borehole-domain confidence', bconf(many) > bconf(few), `${bconf(few)} vs ${bconf(many)}`);
+}
+
+// ── N. CLIMATE CLASSIFIER (climateClassifier — Köppen-Geiger) ──
+console.log('\nN. Köppen-Geiger climate classification (climateClassifier)');
+{
+  const cc = req(join(OUT, 'climateClassifier.js'));
+  const rep = (v) => Array(12).fill(v);
+
+  const af = cc.classifyKoppen(rep(26), rep(200));
+  check('all-warm, all-wet → tropical rainforest Af', af.code === 'Af' && af.group === 'Tropical', af.code);
+
+  const bwh = cc.classifyKoppen(rep(30), rep(5));
+  check('hot + almost no rain → hot desert BWh (Arid)', bwh.code === 'BWh' && bwh.group === 'Arid', bwh.code);
+
+  // Tropical savanna: warm all year, wet summer / dry winter (N hemisphere)
+  const awT = rep(25);
+  const awP = [10, 10, 10, 150, 150, 150, 150, 150, 150, 10, 10, 10];
+  const aw = cc.classifyKoppen(awT, awP, false);
+  check('warm year-round with a dry season → tropical savanna Aw', aw.code === 'Aw', aw.code);
+
+  const cfbT = [4, 5, 8, 12, 16, 19, 21, 20, 17, 12, 7, 4];
+  const cfb = cc.classifyKoppen(cfbT, rep(70), false);
+  check('temperate seasonal temps, even rain → Temperate C-group', cfb.group === 'Temperate' && cfb.code[0] === 'C', cfb.code);
+
+  const et = cc.classifyKoppen(rep(3), rep(30));
+  check('warmest month < 10°C → Polar (tundra ET)', et.group === 'Polar', et.code);
+
+  // buildClimateType parses a real NASA POWER-shaped payload (Nairobi-like)
+  const payload = { properties: { parameter: {
+    T2M: { JAN:19.5,FEB:20.4,MAR:20.6,APR:20.1,MAY:19,JUN:17.6,JUL:16.8,AUG:17.4,SEP:19,OCT:20,NOV:19.2,DEC:19.2,ANN:19.1 },
+    PRECTOTCORR: { JAN:1.6,FEB:1.9,MAR:3.2,APR:5.6,MAY:3.1,JUN:1.1,JUL:0.6,AUG:0.7,SEP:0.7,OCT:1.6,NOV:3.8,DEC:2.6,ANN:2.2 },
+    WS2M: { JAN:3.1,FEB:3.2,MAR:3.0,APR:2.7,MAY:2.9,JUN:3.3,JUL:3.4,AUG:3.4,SEP:3.3,OCT:2.9,NOV:2.7,DEC:2.9,ANN:3.06 },
+  } } };
+  const ct = cc.buildClimateType(payload, true);
+  check('buildClimateType parses payload → non-null with a Köppen code + wind',
+    ct && typeof ct.koppen.code === 'string' && ct.meanWind_ms > 0 && ct.provenance === 'measured_reanalysis',
+    ct ? `${ct.koppen.code}, wind ${ct.meanWind_ms}` : 'null');
+  check('missing temp/precip payload → null (never invents a climate)',
+    cc.buildClimateType({ properties: { parameter: {} } }, false) === null);
 }
 
 rmSync(OUT, { recursive: true, force: true });

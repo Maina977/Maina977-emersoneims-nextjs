@@ -4532,6 +4532,34 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
   } catch (_secErr) { console.warn('[PDF] satellite-ET section skipped', _secErr); }
 
+  // -- 28c-bis. CLIMATE TYPE (Köppen-Geiger) + WIND --
+  try {
+  const ct = (result as any).climateType;
+  if (ct && ct.koppen) {
+    checkSpace(30);
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(2, 132, 199);
+    doc.text('Climate Type (Köppen-Geiger) & Wind', margin, y); y += 6;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Attribute', 'Value']],
+      body: [
+        ['Köppen class', `${ct.koppen.code} — ${ct.koppen.group} (${ct.koppen.name})`],
+        ['Mean annual temperature', `${ct.annualTemp_c} °C`],
+        ['Mean annual rainfall', `${ct.annualPrecip_mm} mm`],
+        ['Mean wind speed (2 m)', ct.meanWind_ms == null ? 'N/A' : `${ct.meanWind_ms} m/s — ${ct.windDescription}`],
+        ['Source', `${ct.source} (${String(ct.provenance).replace(/_/g, ' ')})`],
+      ],
+      headStyles: { fillColor: [2, 132, 199], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      theme: 'grid',
+    });
+    y = lastY(3);
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(90, 90, 90);
+    doc.text(doc.splitTextToSize(ct.koppen.description, pw), margin, y);
+    y += doc.splitTextToSize(ct.koppen.description, pw).length * 3.4 + 6;
+  }
+  } catch (_secErr) { console.warn('[PDF] climate-type section skipped', _secErr); }
+
   // -- 28d. NATIONAL DATA COVERAGE (what we know here, and how well) --
   try {
   const dcov = (result as any).dataCoverage;

@@ -13,6 +13,7 @@ import { fetchGLDASGroundwaterData } from './gldasGroundwater';
 import { budykoWaterBalance } from './hydroPhysics';
 import { fetchSatelliteActualET, reconcileRechargeWithMeasuredET } from './satelliteETEngine';
 import { assessDataCoverage } from './dataCoverageEngine';
+import { fetchClimateType } from './climateClassifier';
 import { fetchRealTimeWaterData } from './realTimeWaterData';
 import { generateSubsurfaceModel } from './subsurfaceModeler';
 import { runAquiferSimulation } from './aquiferSimulator';
@@ -346,6 +347,7 @@ export class BoreholeAnalyzer {
     let remoteSensing: any = undefined;
     let historicalData: any = undefined;
     let satETPromise: Promise<Awaited<ReturnType<typeof fetchSatelliteActualET>>> = Promise.resolve(null);
+    let climateTypePromise: Promise<Awaited<ReturnType<typeof fetchClimateType>>> = Promise.resolve(null);
     let boreholeRecords: any = undefined;
     let gldasGroundwater: any = undefined;
     let realTimeWaterData: any = undefined;
@@ -376,6 +378,9 @@ export class BoreholeAnalyzer {
       // parallel; used later to reconcile the water balance with measured ET.
       satETPromise = hasCoords
         ? fetchSatelliteActualET(effectiveLat!, effectiveLon!).catch(() => null)
+        : Promise.resolve(null);
+      climateTypePromise = hasCoords
+        ? fetchClimateType(effectiveLat!, effectiveLon!).catch(() => null)
         : Promise.resolve(null);
 
       const allSettledPromise = Promise.allSettled([
@@ -2853,6 +2858,12 @@ export class BoreholeAnalyzer {
             canon.rechargeFromMeasuredET_mm = measuredBalance.recharge_mm;
           }
         } catch { /* satellite ET is best-effort — never blocks the pipeline */ }
+
+        // ── KÖPPEN CLIMATE TYPE + WIND (measured normals) ──
+        try {
+          const ct = await climateTypePromise;
+          if (ct) (result as any).climateType = ct;
+        } catch { /* climate type is best-effort */ }
 
         // ── NATIONAL DATA COVERAGE — honest per-site "what do we know?" ──
         try {
