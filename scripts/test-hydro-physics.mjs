@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -527,6 +527,30 @@ console.log('\nO. WRA/county borehole ingestion (wraIngestEngine)');
     Array.isArray(back) && back[0].name && typeof back[0].lat === 'number' && back[0].depth_m === 87 && back[0].outcome === 'Success');
   check('empty input → honest error, no fabricated records',
     wra.parseWRARecords('').accepted === 0 && wra.parseWRARecords('').errors.length > 0);
+}
+
+// ── P. VALIDATION BENCHMARK (validationBenchmark) ──
+console.log('\nP. Measured validation benchmark (validationBenchmark)');
+{
+  const vb = req(join(OUT, 'validationBenchmark.js'));
+
+  // Scoping: applies in a validated county, null elsewhere (never nationwide)
+  check('benchmark applies in a validated county (Turkana)',
+    vb.getValidationBenchmark({ county: 'Turkana County' }) !== null);
+  check('benchmark applies when nearby wells come from the real datasets',
+    vb.getValidationBenchmark({ nearbySources: ['Acacia Water / KenyaRapid+ (UNESCO IHP-WINS) — FIELD'] }) !== null);
+  check('benchmark is NULL outside validated regions (no over-claiming)',
+    vb.getValidationBenchmark({ county: 'Nairobi' }) === null &&
+    vb.getValidationBenchmark({}) === null);
+
+  // Statement honesty: names the real error, flags yield as unpredictable + pump test
+  const stmt = vb.validationStatement(vb.KENYA_NORTH_BENCHMARK);
+  check('statement cites real drilled boreholes + the measured depth hit-rate',
+    /real drilled boreholes/i.test(stmt) && /40% of the time/i.test(stmt));
+  check('statement is honest that YIELD cannot be predicted → pump test',
+    /yield could not be reliably predicted/i.test(stmt) && /pump test/i.test(stmt));
+  check('benchmark carries the survivorship-bias caveat',
+    vb.KENYA_NORTH_BENCHMARK.caveats.some(c => /survivorship|under-record/i.test(c)));
 }
 
 rmSync(OUT, { recursive: true, force: true });

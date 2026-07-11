@@ -29,6 +29,7 @@ import { recordReport, type ReportFormat } from './reportTracker';
 import { generateReportMaps, renderDrillHereMap, renderWaterTableDepthMap, type ReportMapImages } from './reportMapGenerator';
 import type { VerificationReport } from './preReportVerification';
 import { computeDrillReadiness } from './drillReadiness';
+import { validationStatement } from './validationBenchmark';
 
 // --- AUDIT GATE ? EVERY EXPORT MUST PASS ---
 // This function runs the 17-step audit and returns the result.
@@ -4605,6 +4606,37 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y += doc.splitTextToSize('x', pw).length * 3.4 + 8;
   }
   } catch (_secErr) { console.warn('[PDF] data-coverage section skipped', _secErr); }
+
+  // -- 28e. MEASURED VALIDATION (backtest vs real drilled boreholes) --
+  try {
+  const vben = (result as any).validationBenchmark;
+  if (vben && Array.isArray(vben.counties)) {
+    checkSpace(46);
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(22, 101, 52);
+    doc.text('Prediction Validation — Measured Against Real Drilled Boreholes', margin, y); y += 6;
+    // Headline metric box
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(margin, y, pw, 16, 2, 2, 'F');
+    doc.setDrawColor(22, 163, 74); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, y, pw, 16, 2, 2, 'S');
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(21, 128, 61);
+    doc.text(`Backtested on ${Number(vben.nBoreholes).toLocaleString()} real boreholes (${vben.counties.join(', ')})`, margin + 4, y + 6);
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(40, 70, 50);
+    doc.text(`Analog depth prediction within +-20%: ${Math.round(vben.analogDepthWithin20pct * 100)}% of holes   |   Yield: not reliably predictable from the desk (pump test required)`, margin + 4, y + 12);
+    y += 20;
+    // Honest statement + caveats
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+    const st = validationStatement(vben);
+    doc.text(doc.splitTextToSize(st, pw), margin, y);
+    y += doc.splitTextToSize(st, pw).length * 3.5 + 3;
+    doc.setFontSize(6.8); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
+    (vben.caveats || []).forEach((cav: string) => {
+      const cl = doc.splitTextToSize('• ' + cav, pw);
+      doc.text(cl, margin, y); y += cl.length * 3.1;
+    });
+    y += 4;
+  }
+  } catch (_secErr) { console.warn('[PDF] validation section skipped', _secErr); }
 
   // -- 29. ERT INTELLIGENCE PIPELINE --
   try {

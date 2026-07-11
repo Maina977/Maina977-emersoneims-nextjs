@@ -14,6 +14,7 @@ import { budykoWaterBalance } from './hydroPhysics';
 import { fetchSatelliteActualET, reconcileRechargeWithMeasuredET } from './satelliteETEngine';
 import { assessDataCoverage } from './dataCoverageEngine';
 import { fetchClimateType } from './climateClassifier';
+import { getValidationBenchmark } from './validationBenchmark';
 import { fetchRealTimeWaterData } from './realTimeWaterData';
 import { generateSubsurfaceModel } from './subsurfaceModeler';
 import { runAquiferSimulation } from './aquiferSimulator';
@@ -2888,6 +2889,16 @@ export class BoreholeAnalyzer {
             hasLabChem: !!r._auditFlags?.hasLabWaterAnalysis,
           });
         } catch { /* coverage is best-effort */ }
+
+        // ── MEASURED VALIDATION BENCHMARK (real drilled-outcome backtest) ──
+        try {
+          const r: any = result;
+          const nw: any = r.nearbyWells;
+          const nearbySources: string[] = (nw?.nearbyWells ?? []).map((w: any) => String(w?.source ?? ''));
+          const siteCounty = clientGeo?.county ?? (r.resolvedLocation?.county) ?? (r.clientLocation?.county) ?? undefined;
+          const vb = getValidationBenchmark({ county: siteCounty, nearbySources });
+          if (vb) r.validationBenchmark = vb;
+        } catch { /* benchmark is best-effort */ }
       }
 
       // 5c. ONE site elevation. The DEM module reports its 5x5-grid centre
