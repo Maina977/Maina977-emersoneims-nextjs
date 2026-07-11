@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts'];
 execSync(
   `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
   files.map(f => `"${join(SRC, f)}"`).join(' ') +
@@ -163,6 +163,27 @@ console.log('\nF. Saxton-Rawls Ksat (subsurfaceModeler)');
   check('loam Ksat in 0.1-1.5 m/day (published ~13 mm/hr)', loamK > 0.1 && loamK < 1.5, `got ${loamK.toFixed(3)}`);
   check('sand Ksat > 1 m/day (published ~100 mm/hr)', sandK > 1, `got ${sandK.toFixed(2)}`);
   check('texture ordering: sand > loam > clay', sandK > loamK && loamK > clayK, `${sandK.toFixed(2)} / ${loamK.toFixed(3)} / ${clayK.toFixed(4)}`);
+}
+
+// ── G. DRILLING-READINESS GATES (reviewer 2026-07-11) ──
+console.log('\nG. Drilling-readiness score gates (drillReadiness)');
+{
+  const dr = req(join(OUT, 'drillReadiness.js'));
+  const desktop = dr.computeDrillReadiness({ gpsSource: 'manual', locationGrade: 'B', reportConsistent: true });
+  check('desktop-only (no field data) is capped <= 79 and NOT drill-ready',
+    desktop.score <= 79 && desktop.status !== 'ISSUED FOR DRILLING', `score ${desktop.score}, ${desktop.status}`);
+  check('desktop-only lists open mandatory gates', desktop.openGates.length >= 3, `${desktop.openGates.length} gates`);
+
+  const validated = dr.computeDrillReadiness({
+    gpsSource: 'manual', locationGrade: 'A', hasFieldPeg: true, hasFieldERT: true,
+    hasHydrogeologistSignoff: true, hasWRAAuthorisation: true, reportConsistent: true,
+  });
+  check('all field gates satisfied -> can exceed 79 and be ISSUED FOR DRILLING',
+    validated.score >= 80 && validated.status === 'ISSUED FOR DRILLING', `score ${validated.score}, ${validated.status}`);
+  check('adding no field data cannot lift score past the 79 cap (AI cannot buy readiness)',
+    dr.computeDrillReadiness({ gpsSource: 'manual', locationGrade: 'B', reportConsistent: true }).score <= 79);
+  check('inconsistent report (software errors) blocks the consistency gate',
+    dr.computeDrillReadiness({ hasFieldERT: true, hasFieldPeg: true, hasHydrogeologistSignoff: true, hasWRAAuthorisation: true, reportConsistent: false }).score <= 79);
 }
 
 rmSync(OUT, { recursive: true, force: true });

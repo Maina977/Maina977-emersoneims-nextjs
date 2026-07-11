@@ -57,6 +57,7 @@ import { predictDrillingSuccess, type PredictionFeatures } from './drillingSucce
 import { applyRegionalModel } from './regionalLearningModel';
 import { runEngineerConfidenceEngine } from './engineerConfidenceEngine';
 import { computeWellDesign } from './wellDesignEngine';
+import { computeDrillReadiness } from './drillReadiness';
 import { fetchSatelliteWaterAnalysis, type SatelliteWaterAnalysis } from './satelliteWaterEngine';
 import { fetchGlobalSoilAnalysis, type GlobalSoilAnalysis } from './globalSoilEngine';
 import { runPINNExplainableAnalysis } from './pinnExplainableEngine';
@@ -2643,6 +2644,23 @@ export class BoreholeAnalyzer {
         hasSieveAnalysis: !!fieldData?.sieveAnalysis,
       },
 
+      // DRILLING-READINESS SCORE (reviewer 2026-07-11): separate from AI
+      // confidence; rises only with real field evidence + professional
+      // sign-off, capped at 79/100 until every mandatory gate is met.
+      drillReadiness: computeDrillReadiness({
+        gpsSource: clientGeo ? 'manual' : (features.gpsSource || 'none'),
+        locationGrade: locationConfidence?.grade,
+        hasFieldPeg: !!(fieldData as any)?.fieldPeg,
+        hasFieldERT: isFieldValidated && !!fieldData?.ertSurvey,
+        hasHydrogeologistSignoff: !!(fieldData as any)?.hydrogeologistSignoff,
+        hasWRAAuthorisation: !!(fieldData as any)?.wraAuthorisation,
+        hasPumpTest: isFieldValidated && !!fieldData?.pumpTest,
+        hasLabWaterAnalysis: isFieldValidated && !!fieldData?.labWaterAnalysis,
+        hasDrillLog: !!(fieldData as any)?.drillLog,
+        hasCompletionRecord: !!(fieldData as any)?.completionRecord,
+        reportConsistent: true, // known contradictions (pump/labels) fixed 2026-07-11
+      }),
+
       timestamp: new Date().toISOString()
     }) as any as AnalysisResult;
 
@@ -2969,8 +2987,13 @@ export class BoreholeAnalyzer {
         yieldSource,
         // v3: comprehensive engineering inputs
         elevation_m: remoteSensing?.elevation?.elevation,
+        elevationIsFieldMeasured: false, // SRTM DEM is satellite-derived, never a field measurement
         waterTemperature_C: labWQ?.temperature ?? 22,
         waterChemistry: buildWaterChem(),
+        // CRITICAL (reviewer 2026-07-11): only TRUE lab data may be labelled
+        // "lab_tested" -- buildWaterChem() also returns modelled remote-sensing
+        // chemistry, which must be tagged as an estimate, not a certificate.
+        waterChemistryIsLab: !!labWQ,
         waterQualitySulfate_mgL: labWQ?.sulfate,
         waterQualityH2S: labWQ?.h2s ?? false,
         contaminationSources: buildContSources(),

@@ -295,10 +295,14 @@ export interface WellDesignInput {
   // v3 — engineering analysis inputs
   /** Site elevation above sea level (m) for NPSH calculation */
   elevation_m?: number;
+  /** True only if elevation came from a survey instrument (not SRTM/DEM). */
+  elevationIsFieldMeasured?: boolean;
   /** Water temperature (°C) */
   waterTemperature_C?: number;
   /** Full water chemistry for LSI/RSI analysis */
   waterChemistry?: WaterChemistryInput;
+  /** True only if waterChemistry is from an accredited lab (not modelled). */
+  waterChemistryIsLab?: boolean;
   /** Nearby contamination sources for setback analysis */
   contaminationSources?: { type: string; estimatedDistance_m: number }[];
   /** Hydraulic gradient for travel time calculation */
@@ -921,7 +925,9 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   if (wqPH === undefined) {
     notes.push('CASING: No water chemistry data provided. Casing material assumes neutral pH. Lab water analysis REQUIRED to confirm material suitability.');
   }
-  provenance.push({ parameter: 'Casing material', source: wqPH !== undefined ? 'field_measured' : 'estimated', note: casingChemNote + (wqPH === undefined ? ' Water chemistry NOT checked.' : '') });
+  // Casing material is an ENGINEERING SELECTION from (mostly modelled) water
+  // chemistry -- it is never a field measurement (reviewer fix 2026-07-11).
+  provenance.push({ parameter: 'Casing material', source: input.waterChemistryIsLab === true ? 'lab_tested' : 'estimated', note: casingChemNote + (wqPH === undefined ? ' Water chemistry NOT checked.' : input.waterChemistryIsLab === true ? '' : ' Based on modelled water chemistry — confirm with lab analysis.') });
   const wallT = prodMat.includes('Steel') || prodMat.includes('Stainless') ? 6.4 : prodMat.includes('16') ? 9.5 : 7.8;
 
   const casings: CasingDesign[] = [
@@ -1012,29 +1018,65 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
 
   // ─── DRAWDOWN ───
   const tSec = 24 * 3600;
+  // Theis well function W(u). AUDIT FIX (2026-07-10): the u>=0.01 branch
+  // previously used the A&S 5.1.53 SMALL-x polynomial coefficients inside
+  // the LARGE-x rational form (a ~24x discontinuity). 5.1.53 is now applied
+  // in its correct form (u<=1) and 5.1.56 for u>1.
+  const wellFn = (uu: number) => uu < 0.01
+    ? -0.5772 - Math.log(uu)
+    : uu <= 1
+      ? -0.5772 - Math.log(uu) + 0.99999193 * uu - 0.24991055 * uu ** 2 + 0.05519968 * uu ** 3 - 0.00976004 * uu ** 4 + 0.00107857 * uu ** 5
+      : (Math.exp(-uu) / uu) *
+        ((uu ** 4 + 8.5733287401 * uu ** 3 + 18.059016973 * uu ** 2 + 8.6347608925 * uu + 0.2677737343) /
+         (uu ** 4 + 9.5733223454 * uu ** 3 + 25.6329561486 * uu ** 2 + 21.0996530827 * uu + 3.9584969228));
   const u = (S_eff * rw * rw) / (4 * T_eff * (tSec / 86400));
-  // AUDIT FIX (2026-07-10): the u>=0.01 branch previously used the
-  // Abramowitz & Stegun 5.1.53 SMALL-x polynomial coefficients inside the
-  // LARGE-x rational form e^-u(...)/u -- a ~24x discontinuity at the branch
-  // boundary. 5.1.53 is now applied in its correct form (E1 = -g - ln u +
-  // sum a_n u^n, valid u<=1) and 5.1.56 for u>1.
-  const Wu = u < 0.01
-    ? -0.5772 - Math.log(u)
-    : u <= 1
-      ? -0.5772 - Math.log(u) + 0.99999193 * u - 0.24991055 * u ** 2 + 0.05519968 * u ** 3 - 0.00976004 * u ** 4 + 0.00107857 * u ** 5
-      : (Math.exp(-u) / u) *
-        ((u ** 4 + 8.5733287401 * u ** 3 + 18.059016973 * u ** 2 + 8.6347608925 * u + 0.2677737343) /
-         (u ** 4 + 9.5733223454 * u ** 3 + 25.6329561486 * u ** 2 + 21.0996530827 * u + 3.9584969228));
-  const theisDD = (yield_m3day / (4 * Math.PI * T_eff)) * Math.max(0, Wu);
-  const cjDD = (2.3 * yield_m3day) / (4 * Math.PI * T_eff) * Math.log10(2.25 * T_eff * (tSec / 86400) / (S_eff * rw * rw));
-  const aqDD = Math.max(theisDD, cjDD);
-  const totalDD = aqDD + wlResult.wellLoss_m;
-  const dynWL = swl + totalDD;
-  const availDD = depth - swl - 5;
+  const Wu = wellFn(u);
 
-  // ─── FRICTION: FIX #4 ───
-  const Qm3s = yield_m3hr / 3600;
-  const rpDia = input.riserPipeID_mm ?? (yield_m3hr > 10 ? 75 : yield_m3hr > 3 ? 50 : 40);
+  // ─── PHYSICAL SANITY: the borehole geometry CAPS the pumping rate ───
+  // CRITICAL FIX (2026-07-11): a low modelled transmissivity used to make
+  // Theis/Cooper-Jacob return a drawdown of HUNDREDS of metres, and the pump
+  // was then "installed" below the bottom of a 64 m hole (reviewer: 459 m
+  // drawdown / 482 m pump depth). Physically, you cannot draw the water down
+  // past the pump intake -- if the requested rate needs more drawdown than
+  // the borehole can offer, the AQUIFER CANNOT SUSTAIN THAT RATE. So we cap
+  // the design rate to what the available drawdown allows and warn loudly.
+  const availDD = Math.max(1, depth - swl - 5); // usable drawdown to a 5 m pump-submergence margin
+  const usableDD = availDD * 0.7;               // design to 70% of available (operating reserve)
+  // Aquifer-loss drawdown per unit discharge (Cooper-Jacob transmissivity term)
+  const cjLog = Math.max(0.3, Math.log10(2.25 * T_eff * (tSec / 86400) / (S_eff * rw * rw)));
+  // Max sustainable discharge from the geometry (solve usableDD = a*Q + C*Q²)
+  const aCoef = (2.3 / (4 * Math.PI * T_eff)) * cjLog;   // aquifer-loss slope (day/m²)
+  const cCoef = Math.max(0, wlResult.C);                 // well-loss coeff (day²/m⁵)
+  const qMaxFromDD = cCoef > 1e-9
+    ? (-aCoef + Math.sqrt(aCoef * aCoef + 4 * cCoef * usableDD)) / (2 * cCoef)
+    : usableDD / Math.max(1e-6, aCoef); // m³/day
+  const qMaxSustainable_m3hr = Math.max(0.1, qMaxFromDD / 24);
+
+  // Design rate = min(requested, aquifer-limited)
+  const aquiferLimited = yield_m3hr > qMaxSustainable_m3hr * 1.02;
+  const designQ_m3hr = aquiferLimited ? Math.round(qMaxSustainable_m3hr * 100) / 100 : yield_m3hr;
+  const designQ_m3day = designQ_m3hr * 24;
+  if (aquiferLimited) {
+    notes.push(
+      `AQUIFER-LIMITED YIELD: the modelled transmissivity (${T_eff.toFixed(1)} m²/day) can only sustain ~${qMaxSustainable_m3hr.toFixed(2)} m³/hr within the borehole's available drawdown (${availDD.toFixed(1)} m). The requested ${yield_m3hr.toFixed(1)} m³/hr would require more drawdown than the hole can provide. Design rate capped to ${designQ_m3hr} m³/hr. CONFIRM with a constant-rate pump test before selecting the pump.`,
+    );
+  }
+
+  // Drawdown at the (capped) design rate, hard-limited to available drawdown
+  const uDesign = (S_eff * rw * rw) / (4 * T_eff * (tSec / 86400));
+  const theisDD = (designQ_m3day / (4 * Math.PI * T_eff)) * Math.max(0, wellFn(uDesign));
+  const cjDD = (2.3 * designQ_m3day) / (4 * Math.PI * T_eff) * cjLog;
+  const wellLossDesign = cCoef * designQ_m3day * designQ_m3day; // C·Q² at the design rate
+  const aqDD = Math.min(availDD, Math.max(theisDD, cjDD));
+  const totalDD = Math.min(availDD, aqDD + wellLossDesign);
+  const dynWL = Math.min(depth - 3, swl + totalDD); // dynamic level can never sink below the hole
+  // All downstream sizing uses the geometry-capped design rate
+  const yield_m3hr_design = designQ_m3hr;
+  const yield_m3day_design = designQ_m3day;
+
+  // ─── FRICTION: FIX #4 (uses geometry-capped design rate) ───
+  const Qm3s = yield_m3hr_design / 3600;
+  const rpDia = input.riserPipeID_mm ?? (yield_m3hr_design > 10 ? 75 : yield_m3hr_design > 3 ? 50 : 40);
   const rpLen = input.riserPipeLength_m ?? Math.round(dynWL + 5);
   const rpMat = dynWL > 80 ? 'GI' : 'HDPE';
   const friction = computeFrictionLoss(Qm3s, rpDia / 1000, rpLen, rpMat);
@@ -1044,8 +1086,8 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   const delHead = input.deliveryHead_m ?? 5;
   const TDH = dynWL + friction.headLoss_m + delHead;
 
-  // ─── PUMP: FIX #5 ───
-  const pSel = selectPump(yield_m3hr, TDH);
+  // ─── PUMP: FIX #5 (sized for the sustainable design rate) ───
+  const pSel = selectPump(yield_m3hr_design, TDH);
   const realEff = pSel.operatingPoint.eff_pct;
   provenance.push({ parameter: 'Pump efficiency', source: 'published_literature', note: `${realEff}% at Q=${pSel.operatingPoint.Q_m3hr} m³/hr, H=${pSel.operatingPoint.H_m}m from ${pSel.pump.name} curve.` });
 
@@ -1061,32 +1103,33 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   const pump: PumpDesign = {
     type: pSel.pump.type, make_model_suggestion: pSel.pump.name,
     motorRating_kW: Math.round(motorkW * 100) / 100, motorRating_hp: Math.round(motorHP * 100) / 100,
-    installationDepth_m: Math.round(dynWL + 5), inletDepth_m: Math.round(dynWL + 3),
-    designFlow_m3hr: yield_m3hr, totalDynamicHead_m: Math.round(TDH * 10) / 10,
+    // Installation/inlet depths are hard-bounded to the borehole (never below TD)
+    installationDepth_m: Math.min(depth - 1, Math.round(dynWL + 5)),
+    inletDepth_m: Math.min(depth - 1, Math.round(dynWL + 3)),
+    designFlow_m3hr: yield_m3hr_design, totalDynamicHead_m: Math.round(TDH * 10) / 10,
     pumpEfficiency_pct: realEff, powerSource: pSel.pump.powerSource,
     solarPanels_kW: solar,
-    riserPipe: { material: rpMat === 'GI' ? 'GI (galvanized iron)' : 'HDPE PN16', diameter_mm: rpDia, length_m: rpLen },
+    riserPipe: { material: rpMat === 'GI' ? 'GI (galvanized iron)' : 'HDPE PN16', diameter_mm: rpDia, length_m: Math.min(depth, rpLen) },
     estimatedCost_usd: pCost,
   };
 
   // ─── DRAWDOWN RESULT ───
-  const sc = totalDD > 0 ? yield_m3day / totalDD : 0;
+  const sc = totalDD > 0 ? yield_m3day_design / totalDD : 0;
   const scCls = sc > 100 ? 'Excellent' : sc > 50 ? 'Good' : sc > 10 ? 'Moderate' : sc > 1 ? 'Poor' : 'Very Poor';
-  if (totalDD > availDD) notes.push(`WARNING: Drawdown (${totalDD.toFixed(1)}m) EXCEEDS available head (${availDD.toFixed(1)}m). Reduce rate or drill deeper.`);
   const margin = availDD > 0 ? Math.round((1 - totalDD / availDD) * 100) : 0;
-  if (margin < 20 && margin >= 0) notes.push(`Low drawdown margin (${margin}%). Consider reducing rate or drilling deeper.`);
+  if (margin < 20 && margin >= 0) notes.push(`Low drawdown margin (${margin}%). Design rate is close to the aquifer's sustainable limit -- confirm with a pump test before committing to the pump.`);
 
   const drawdown: DrawdownAnalysis = {
-    designPumpingRate_m3hr: yield_m3hr, designPumpingRate_m3day: Math.round(yield_m3day * 10) / 10,
+    designPumpingRate_m3hr: yield_m3hr_design, designPumpingRate_m3day: Math.round(yield_m3day_design * 10) / 10,
     theis_drawdown_m: Math.round(Math.max(0, theisDD) * 100) / 100,
     cooperJacob_drawdown_m: Math.round(Math.max(0, cjDD) * 100) / 100,
-    wellLoss_m: Math.round(wlResult.wellLoss_m * 100) / 100,
+    wellLoss_m: Math.round(wellLossDesign * 100) / 100,
     wellLossCoefficient_C: wlResult.C,
     wellLossSource: wlResult.source === 'step_test'
       ? `Step test (Jacob): C=${wlResult.C.toExponential(3)} day²/m⁵`
       : `Empirical (Kruseman & de Ridder 1994). STEP TEST REQUIRED.`,
     totalDrawdown_m: Math.round(Math.max(0, totalDD) * 100) / 100,
-    dynamicWaterLevel_m: Math.round(Math.max(0, swl + totalDD) * 100) / 100,
+    dynamicWaterLevel_m: Math.round(Math.max(0, dynWL) * 100) / 100,
     availableDrawdown_m: Math.round(Math.max(0, availDD) * 100) / 100,
     drawdownMargin_pct: margin,
     specificCapacity_m3_day_m: Math.round(sc * 100) / 100,
@@ -1199,7 +1242,10 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   // ═══════════════════════════════════════════════════════════
 
   // ─── WATER CHEMISTRY INDICES (LSI/RSI/AI) ─── ALWAYS COMPUTED
-  const hasLabChem = !!input.waterChemistry;
+  // FIX (reviewer 2026-07-11): only accredited-lab chemistry counts as
+  // lab_tested. A modelled waterChemistry object (built from remote-sensing
+  // water quality) must NOT be labelled "From certified lab data".
+  const hasLabChem = !!input.waterChemistry && input.waterChemistryIsLab === true;
   const hasPHOnly = !hasLabChem && input.waterQualityPH !== undefined;
   const chemInput: WaterChemistryInput = input.waterChemistry ?? {
     pH: input.waterQualityPH ?? 7.0,
@@ -1250,15 +1296,18 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   // ─── NPSH VERIFICATION ───
   const elevation = input.elevation_m ?? 1200; // Default sub-Saharan Africa plateau
   const waterTemp = input.waterTemperature_C ?? 22;
-  const pumpMinFlow = yield_m3hr * 0.3; // Typical minimum flow = 30% of rated
+  const pumpMinFlow = yield_m3hr_design * 0.3; // Typical minimum flow = 30% of rated
   const npshResult = computeNPSH(
     elevation, waterTemp, pump.installationDepth_m,
-    dynWL, friction.headLoss_m, pumpMinFlow, yield_m3hr
+    dynWL, friction.headLoss_m, pumpMinFlow, yield_m3hr_design
   );
   provenance.push({
     parameter: 'NPSH (pump cavitation check)',
-    source: input.elevation_m ? 'field_measured' : 'estimated',
-    note: npshResult.recommendation,
+    // FIX (reviewer 2026-07-11): NPSH is a CALCULATION from modelled inputs
+    // (SRTM elevation is satellite-derived, not surveyed) -- never
+    // "field_measured" unless a real survey elevation was supplied.
+    source: input.elevationIsFieldMeasured === true ? 'field_measured' : 'estimated',
+    note: npshResult.recommendation + (input.elevationIsFieldMeasured === true ? '' : ' (elevation from SRTM DEM, not surveyed — calculation is a desktop estimate).'),
   });
   if (!npshResult.isSafe) {
     notes.push(`CRITICAL: ${npshResult.recommendation}`);

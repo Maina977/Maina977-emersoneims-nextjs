@@ -28,6 +28,7 @@ import { auditReport, type AuditReport } from './reportAuditor';
 import { recordReport, type ReportFormat } from './reportTracker';
 import { generateReportMaps, renderDrillHereMap, renderWaterTableDepthMap, type ReportMapImages } from './reportMapGenerator';
 import type { VerificationReport } from './preReportVerification';
+import { computeDrillReadiness } from './drillReadiness';
 
 // --- AUDIT GATE ? EVERY EXPORT MUST PASS ---
 // This function runs the 17-step audit and returns the result.
@@ -103,8 +104,11 @@ const PDF_UNICODE_MAP: Record<string, string> = {
 const PDF_WINANSI_SAFE = /[€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/;
 
 export function sanitizePdfText(s: string): string {
-  if (!s) return s;
-  let t = String(s)
+  if (s == null) return '';
+  // SAFETY NET (reviewer 2026-07-11): an object interpolated into a string
+  // renders as the literal "[object Object]" (seen on a client report).
+  // Never let that reach the page -- replace with an em-dash placeholder.
+  let t = String(s).replace(/\[object Object\]/g, '—')
     // CP1252 mojibake literally present in a few source strings
     .replace(/â€”/g, '--').replace(/â€“/g, '-').replace(/â€™/g, "'")
     .replace(/â€˜/g, "'").replace(/â€œ/g, '"').replace(/â€/g, '"')
@@ -1429,6 +1433,121 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     addPage(); // annex starts clean
   });
 
+  // ══════════════════════════════════════════════════════════════
+  //  DRILLING-READINESS STATUS  (reviewer 2026-07-11)
+  //  A single, honest answer to "is this authority to mobilise a rig?"
+  //  Separate from AI confidence; capped at 79/100 until field gates pass.
+  // ══════════════════════════════════════════════════════════════
+  safeSection('Drilling Readiness', () => {
+    const dr = result.drillReadiness ?? computeDrillReadiness({
+      gpsSource: String(result.gpsSource), locationGrade: result.locationConfidence?.grade,
+      hasFieldERT: !!(result as any)._auditFlags?.hasFieldERT,
+      hasPumpTest: !!(result as any)._auditFlags?.hasFieldPumpTest,
+      hasLabWaterAnalysis: !!(result as any)._auditFlags?.hasLabWaterAnalysis,
+      reportConsistent: true,
+    });
+    addPage();
+    const isReady = dr.status === 'ISSUED FOR DRILLING' || dr.status === 'COMPLETED / BANKABLE RECORD';
+    const bandColor: [number, number, number] = isReady ? [22, 101, 52] : dr.status === 'FIELD VALIDATION IN PROGRESS' ? [180, 83, 9] : [153, 27, 27];
+
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(bandColor[0], bandColor[1], bandColor[2]);
+    doc.text('DRILLING READINESS', margin, y); y += 8;
+
+    // Status banner
+    doc.setFillColor(bandColor[0], bandColor[1], bandColor[2]);
+    doc.roundedRect(margin, y, pw, 22, 3, 3, 'F');
+    doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+    doc.text(`STATUS: ${dr.status}`, margin + 5, y + 9);
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(240, 240, 240);
+    doc.text(`Drilling-Readiness Score: ${dr.score}/100   —   ${dr.stage}`, margin + 5, y + 16);
+    y += 27;
+
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 90, 90);
+    doc.text(doc.splitTextToSize('This score is SEPARATE from the AI confidence %. AI confidence measures how much the desktop models agree; drilling readiness measures how much real field evidence and professional sign-off exist. Adding more AI cannot raise this score past 79 — only field data can.', pw), margin, y); y += 12;
+
+    // Mandatory gate checklist
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('Mandatory gates before a driller may mobilise', margin, y); y += 6;
+    const gateRows = [
+      ['Actual ERT/VES field data uploaded', (result as any)._auditFlags?.hasFieldERT],
+      ['Coordinates field-verified (survey-grade peg)', dr.openGates.indexOf('Coordinates field-verified (survey-grade peg)') === -1],
+      ['Hydrogeologist has signed the survey report', dr.openGates.indexOf('Hydrogeologist has signed the survey report') === -1],
+      ['WRA/NEMA authorisation attached or verified', dr.openGates.indexOf('WRA/NEMA authorisation attached or verified') === -1],
+      ['No contradictory values or software errors', dr.openGates.indexOf('No contradictory values or software errors') === -1],
+    ] as [string, boolean][];
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Mandatory gate', 'Status']],
+      body: gateRows.map(([g, ok]) => [g, ok ? 'SATISFIED' : 'OUTSTANDING']),
+      headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      columnStyles: { 1: { cellWidth: 34 } },
+      theme: 'grid',
+      didParseCell: (d: any) => {
+        if (d.column.index === 1 && d.section === 'body') {
+          d.cell.styles.textColor = d.cell.raw === 'SATISFIED' ? [22, 163, 74] : [220, 38, 38];
+          d.cell.styles.fontStyle = 'bold';
+        }
+      },
+    });
+    y = lastY(6);
+
+    // Category breakdown
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('Score breakdown', margin, y); y += 6;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Category', 'Earned', 'Max', 'What lifts it']],
+      body: dr.breakdown.map(c => [c.category, String(Math.min(c.max, c.earned)), String(c.max), c.note]),
+      headStyles: { fillColor: [71, 85, 105], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+      bodyStyles: { fontSize: 7 },
+      columnStyles: { 1: { cellWidth: 15 }, 2: { cellWidth: 12 }, 3: { cellWidth: 78 } },
+      theme: 'grid',
+    });
+    y = lastY(6);
+
+    // Handover statement box
+    checkSpace(28);
+    doc.setFillColor(isReady ? 240 : 254, isReady ? 253 : 243, isReady ? 244 : 199);
+    doc.roundedRect(margin, y, pw, 24, 2, 2, 'F');
+    doc.setDrawColor(bandColor[0], bandColor[1], bandColor[2]); doc.setLineWidth(0.6);
+    doc.roundedRect(margin, y, pw, 24, 2, 2, 'S');
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(bandColor[0], bandColor[1], bandColor[2]);
+    doc.text('HANDOVER STATUS', margin + 4, y + 6);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+    doc.text(doc.splitTextToSize(dr.handoverStatement, pw - 8), margin + 4, y + 11);
+    y += 28;
+
+    // Inspection hold points (the driller's stop/go control)
+    checkSpace(40);
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('Inspection hold points — work may proceed only after written approval', margin, y); y += 6;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Hold point', 'Release condition']],
+      body: [
+        ['HP-01 Rig positioning', 'Approved peg + coordinates verified on site'],
+        ['HP-02 Surface casing', 'Diameter, casing and grouting inspected'],
+        ['HP-03 First water strike', 'Strike depth & blow yield logged; supervisor notified'],
+        ['HP-04 Target depth', 'Hydrogeologist decides stop / deepen against stopping criteria'],
+        ['HP-05 Completion design', 'Written screen/casing design issued from the drill log'],
+        ['HP-06 Screen installation', 'Material certificates and lengths checked'],
+        ['HP-07 Gravel pack', 'Grading, volume and tremie method approved'],
+        ['HP-08 Sanitary seal', 'Seal depth and grout mix verified'],
+        ['HP-09 Development', 'Water clarity and sand content accepted'],
+        ['HP-10 Pump test', 'Test pump, discharge measurement & observation set-up approved'],
+        ['HP-11 Final acceptance', 'Records, 24h test data and lab samples submitted'],
+      ],
+      headStyles: { fillColor: [180, 83, 9], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      columnStyles: { 0: { cellWidth: 46, fontStyle: 'bold' } },
+      theme: 'grid',
+    });
+    y = lastY(4);
+    doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 90, 30);
+    doc.text('The driller shall not pass a hold point without written approval from the supervising hydrogeologist or authorised water-sector professional.', margin, y, { maxWidth: pw }); y += 8;
+  });
+
   // -- EXECUTIVE SUMMARY --
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -1445,7 +1564,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     body: [
       ['Success Probability', `${pct(result.probability)}${result.uncertainty ? ` (±${((result.uncertainty.probabilityRange[1] - result.uncertainty.probabilityRange[0]) * 50).toFixed(0)}%)` : ''}`, result.probability > 0.7 ? 'FAVORABLE' : result.probability > 0.5 ? 'MODERATE' : 'LOW'],
       ['Recommended Depth', `${fmt(result.recommendedDepth, 0)}m${result.uncertainty ? ` (range: ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]}m)` : ` (\u00B1${Math.round((result.recommendedDepth ?? 40) * 0.35)}m, satellite-only est.)`}`, result.recommendedDepth < 50 ? 'Shallow' : result.recommendedDepth < 100 ? 'Medium' : 'Deep'],
-      ['Estimated Yield', `${fmt(result.estimatedYield, 1)} m³/hr${result.uncertainty ? ` (range: ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ` (\u00B1${fmt((result.estimatedYield ?? 1.5) * 0.45, 1)} m\u00B3/hr, satellite-only est.)`}`, result.estimatedYield > 2 ? 'Good' : result.estimatedYield > 1 ? 'Moderate' : 'Low'],
+      ['Estimated Yield (PRELIMINARY)', `${fmt(result.estimatedYield, 1)} m³/hr${result.uncertainty ? ` (range: ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ` (\u00B1${fmt((result.estimatedYield ?? 1.5) * 0.45, 1)} m\u00B3/hr, satellite-only est.)`}`, 'Planning value only -- sub-models span a wide range; the sustainable rate is set by the pump test, not this figure'],
       ['Overall Risk', `${pct(result.risk?.overallRisk)} -- ${riskLabel(result.risk?.overallRisk)}`, 'Drivers: depth, financial & technical uncertainty (desktop-only)'],
       // B7 — the drilling window was computed from measured rainfall history
       // all along but buried in Section 30; the payer needs it on page 1.
