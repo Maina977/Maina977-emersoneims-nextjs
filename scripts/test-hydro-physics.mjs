@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -346,6 +346,53 @@ console.log('\nK. Satellite actual-ET + measured water balance (satelliteETEngin
   const wet = sat.reconcileRechargeWithMeasuredET(1400, 500, 60);
   check('wetter climate (same ET) → more recharge', wet.recharge_mm > dry.recharge_mm,
     `dry ${dry.recharge_mm} vs wet ${wet.recharge_mm}`);
+}
+
+// ── L. BACKTEST & CALIBRATION (backtestEngine) ──
+console.log('\nL. Backtest & calibration (backtestEngine)');
+{
+  const bt = req(join(OUT, 'backtestEngine.js'));
+
+  // 1. HONESTY: no data → UNVALIDATED, no fabricated accuracy
+  const empty = bt.computeBacktest([]);
+  check('no outcomes → status UNVALIDATED (never a fabricated accuracy %)',
+    empty.status === 'UNVALIDATED' && empty.hitRate === null && empty.depthMAPE_pct === null && empty.grade === 'N/A');
+  check('UNVALIDATED message states honesty, not a hit-rate', /unvalidated|honesty/i.test(empty.message));
+
+  // 2. Perfect predictions → zero error, hit-rate 1, Brier ~0
+  const perfect = Array.from({ length: 16 }, (_, i) => ({
+    predictedDepth_m: 50, actualDepth_m: 50, predictedYield_m3h: 3, actualYield_m3h: 3,
+    predictedProbability: 0.9, success: true,
+  }));
+  const rp = bt.computeBacktest(perfect);
+  check('perfect predictions → depth MAPE 0% and 100% within 20%',
+    rp.depthMAPE_pct === 0 && rp.depthWithin20pct === 1, `MAPE ${rp.depthMAPE_pct}, within20 ${rp.depthWithin20pct}`);
+  check('all-success recommended holes → hit-rate 1.0', rp.hitRate === 1, `${rp.hitRate}`);
+  check('confident-correct → low Brier score', rp.brierScore !== null && rp.brierScore < 0.02, `${rp.brierScore}`);
+  check('>=15 outcomes → status VALIDATED with a letter grade',
+    rp.status === 'VALIDATED' && /[A-F]/.test(rp.grade), `${rp.status} ${rp.grade}`);
+
+  // 3. Known depth error is computed correctly (predicted 60 vs actual 50 = 20%)
+  const errs = [
+    { predictedDepth_m: 60, actualDepth_m: 50, success: true, predictedProbability: 0.8 },
+    { predictedDepth_m: 40, actualDepth_m: 50, success: true, predictedProbability: 0.8 },
+  ];
+  const re = bt.computeBacktest(errs);
+  check('depth MAPE computed correctly (|60-50|/50 and |40-50|/50 = 20%)', re.depthMAPE_pct === 20, `${re.depthMAPE_pct}`);
+  check('depth bias averages signed error to ~0 (+10, -10)', re.depthBias_m === 0, `${re.depthBias_m}`);
+
+  // 4. Calibration + Brier detects overconfidence (confident but wrong)
+  const wrong = Array.from({ length: 10 }, () => ({ predictedProbability: 0.9, success: false, predictedDepth_m: 50, actualDepth_m: 50 }));
+  const rw = bt.computeBacktest(wrong);
+  check('confident-but-wrong → high Brier + low hit-rate (calibration works)',
+    rw.brierScore !== null && rw.brierScore > 0.7 && rw.hitRate === 0, `Brier ${rw.brierScore}, hit ${rw.hitRate}`);
+
+  // 5. CSV parsing
+  const csv = 'name,predD,actD,predY,actY,prob,success\nBH-1,55,60,3,2.5,80,yes\nBH-2,40,38,2,1.8,0.6,no';
+  const parsed = bt.parseBacktestCSV(csv);
+  check('CSV parses rows + accepts % or 0-1 probability + yes/no success',
+    parsed.length === 2 && parsed[0].success === true && Math.abs(parsed[0].predictedProbability - 0.8) < 1e-9 && parsed[1].success === false,
+    JSON.stringify(parsed[0]));
 }
 
 rmSync(OUT, { recursive: true, force: true });

@@ -8,7 +8,8 @@ import type { RemoteSensingResult } from './remoteSensing';
 import { generatePDFReport, generateExcelReport, generateWordReport, generateCSVReport, generateJSONReport, generateComparisonReport, runPrePublishAudit, AuditBlockError, VerificationBlockError, setCustomerDetails, type AuditReport } from './reportGenerator';
 import { getTrackerStats, getLifetimeCount, searchHistory, getSuccessStories, type ReportRecord, type TrackerStats } from './reportTracker';
 import { parseERTFile } from './ertFileParser';
-import { recordDrillingOutcome, getLearningStats, exportOutcomes, importOutcomes } from './feedbackLearningLoop';
+import { recordDrillingOutcome, getLearningStats, exportOutcomes, importOutcomes, loadOutcomes } from './feedbackLearningLoop';
+import { computeBacktest, parseBacktestCSV, type BacktestRecord } from './backtestEngine';
 import { runAIScanner, type AIScanResult } from './aiScanner';
 import { render2DAnnotatedMap, render2DCrossSection, render3DTerrain, render3DSubsurface } from './terrainMapper';
 import { computeDrillReadiness } from './drillReadiness';
@@ -555,6 +556,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [vesRaw, setVesRaw] = useState('');
   const [vesResult, setVesResult] = useState<VESInversionResult | null>(null);
   const [vesError, setVesError] = useState('');
+  const [backtestCSV, setBacktestCSV] = useState('');
   const [learningStats, setLearningStats] = useState<ReturnType<typeof getLearningStats> | null>(null);
   const ertFileRef = useRef<HTMLInputElement>(null);
   const [activeSciPart, setActiveSciPart] = useState<string>('remote-sensing');
@@ -8879,6 +8881,60 @@ const AIBoreholeAnalyzer: React.FC = () => {
         <button className="btn btn-secondary" onClick={()=>setActiveView('dashboard')}>Dashboard</button>
       </div>
       <p className="tab-desc">Submit actual drilling results to track prediction accuracy. Data is stored locally and used to calculate model deviation over time. <strong>{feedbackHistory.length} submissions recorded.</strong></p>
+
+      {/* ═══ BACKTEST & VALIDATION CONSOLE ═══ */}
+      {(() => {
+        const stored: BacktestRecord[] = (() => { try {
+          return loadOutcomes().map((o: any) => ({
+            name: o.boreholeId, predictedDepth_m: o.predictedDepth_m, actualDepth_m: o.actualDepth_m,
+            predictedYield_m3h: o.predictedYield_m3h, actualYield_m3h: o.actualYield_m3h,
+            predictedProbability: o.predictedProbability, success: o.success,
+          }));
+        } catch { return []; } })();
+        const pasted = backtestCSV.trim() ? parseBacktestCSV(backtestCSV) : [];
+        const bt = computeBacktest([...stored, ...pasted]);
+        const statusColor = bt.status === 'VALIDATED' ? '#10b981' : bt.status === 'PRELIMINARY' ? '#f59e0b' : '#94a3b8';
+        const pctOrNA = (v: number | null) => v == null ? 'N/A' : `${Math.round(v * 100)}%`;
+        return (
+          <div style={{marginBottom:20,padding:16,borderRadius:12,border:`2px solid ${statusColor}`,background:`${statusColor}0f`}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+              <h4 style={{margin:0,fontSize:15,color:statusColor}}>{'\u{1F52C}'} Backtest &amp; Validation Console</h4>
+              <span style={{fontSize:12,fontWeight:800,color:statusColor}}>{bt.status}{bt.grade !== 'N/A' ? ` · Grade ${bt.grade}` : ''} · n={bt.n}</span>
+            </div>
+            <p style={{fontSize:11,color:'var(--text-secondary)',margin:'6px 0 10px',lineHeight:1.5}}>{bt.message}</p>
+            {bt.n > 0 && (
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:10,marginBottom:10}}>
+                {[
+                  { l:'Hit rate (recommended holes)', v: bt.hitRate==null?'N/A':`${pctOrNA(bt.hitRate)} of ${bt.recommendedN}` },
+                  { l:'Observed success rate', v: pctOrNA(bt.observedSuccessRate) },
+                  { l:'Depth error (MAPE)', v: bt.depthMAPE_pct==null?'N/A':`${bt.depthMAPE_pct}% (n=${bt.depthN})` },
+                  { l:'Depth within ±20%', v: pctOrNA(bt.depthWithin20pct) },
+                  { l:'Yield error (MAPE)', v: bt.yieldMAPE_pct==null?'N/A':`${bt.yieldMAPE_pct}% (n=${bt.yieldN})` },
+                  { l:'Brier score (calibration)', v: bt.brierScore==null?'N/A':`${bt.brierScore}` },
+                ].map(m=>(
+                  <div key={m.l} style={{textAlign:'center',padding:10,borderRadius:8,background:'var(--bg-secondary)'}}>
+                    <div style={{fontSize:10,color:'var(--text-tertiary)'}}>{m.l}</div>
+                    <div style={{fontSize:16,fontWeight:700,color:statusColor}}>{m.v}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {bt.calibration.length > 0 && (
+              <div style={{fontSize:10,color:'var(--text-secondary)',marginBottom:10}}>
+                Calibration (predicted → observed): {bt.calibration.map(c=>`${c.binLabel}: ${Math.round(c.predictedMean*100)}%→${Math.round(c.observedFreq*100)}% (n=${c.count})`).join('  ·  ')}
+              </div>
+            )}
+            <details>
+              <summary style={{fontSize:11,cursor:'pointer',color:'var(--accent-green)'}}>Load drilled-borehole outcomes (CSV)</summary>
+              <p style={{fontSize:10,color:'var(--text-secondary)',margin:'6px 0'}}>One borehole per line: <code>name, predictedDepth_m, actualDepth_m, predictedYield_m3h, actualYield_m3h, predictedProbability, success</code> (probability as 0-1 or %; success as yes/no). Header row optional.</p>
+              <textarea value={backtestCSV} onChange={e=>setBacktestCSV(e.target.value)} rows={4}
+                placeholder={'BH-1, 55, 60, 3, 2.5, 80, yes\nBH-2, 40, 38, 2, 1.8, 60, no'}
+                style={{width:'100%',fontSize:11,fontFamily:'monospace',padding:6,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}}/>
+              <p style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>{pasted.length} pasted + {stored.length} stored = {bt.n} outcomes scored.</p>
+            </details>
+          </div>
+        );
+      })()}
 
       {/* Accuracy Statistics */}
       {feedbackHistory.length > 0 && (
