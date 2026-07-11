@@ -4426,6 +4426,68 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
+  // -- 28b. VES SOUNDING INVERSION (real field resistivity interpretation) --
+  try {
+  if (result.vesInversion) {
+    const v = result.vesInversion;
+    addPage();
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 116, 144);
+    doc.text('VES Sounding Inversion (Field Resistivity Interpretation)', margin, y); y += 6;
+
+    // Provenance banner
+    const isField = v.dataSource === 'field_ves';
+    doc.setFillColor(isField ? 236 : 254, isField ? 253 : 243, isField ? 245 : 199);
+    doc.roundedRect(margin, y, pw, 12, 2, 2, 'F');
+    doc.setDrawColor(isField ? 14 : 180, isField ? 116 : 120, isField ? 144 : 30); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, y, pw, 12, 2, 2, 'S');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(isField ? 14 : 150, isField ? 116 : 90, isField ? 144 : 30);
+    doc.text(isField ? 'FIELD DATA - inverted from a real Schlumberger VES sounding.' : 'DEMO - not field data.', margin + 4, y + 5);
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(90, 90, 90);
+    doc.text(`Curve type ${v.curveType}  -  RMS misfit ${v.rmsErrorPct}%  -  quality ${v.quality.toUpperCase()}  -  ${v.iterations} iterations`, margin + 4, y + 9.5);
+    y += 16;
+
+    // Layered model table
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Layer', 'Resistivity (ohm-m)', 'Depth top (m)', 'Thickness (m)', 'Interpretation', 'Water']],
+      body: v.layers.map(l => [
+        String(l.layer), String(l.resistivity_ohmm), String(l.depthTop_m),
+        l.thickness_m == null ? 'infinite' : String(l.thickness_m),
+        l.lithologyGuess, l.waterBearing.toUpperCase(),
+      ]),
+      headStyles: { fillColor: [14, 116, 144], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      columnStyles: { 4: { cellWidth: 60 } },
+      theme: 'grid',
+      didParseCell: (d: any) => {
+        if (d.column.index === 5 && d.section === 'body') {
+          d.cell.styles.fontStyle = 'bold';
+          d.cell.styles.textColor = d.cell.raw === 'LIKELY' ? [22, 163, 74] : d.cell.raw === 'POSSIBLE' ? [180, 120, 30] : [120, 120, 120];
+        }
+      },
+    });
+    y = lastY(5);
+
+    // Aquifer interpretation box
+    checkSpace(26);
+    const it = v.interpretation;
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(margin, y, pw, 22, 2, 2, 'F');
+    doc.setDrawColor(22, 163, 74); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, y, pw, 22, 2, 2, 'S');
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(21, 128, 61);
+    doc.text(`AQUIFER TARGET (confidence: ${it.confidence})`, margin + 4, y + 6);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(40, 70, 50);
+    doc.text(doc.splitTextToSize(it.recommendation, pw - 8), margin + 4, y + 11);
+    y += 26;
+
+    // Equivalence caveat + method (honesty)
+    doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 90, 60);
+    doc.text(doc.splitTextToSize(v.equivalenceNote + ' Method: ' + v.method, pw), margin, y);
+    y += doc.splitTextToSize(v.equivalenceNote + ' Method: ' + v.method, pw).length * 3.4 + 4;
+  }
+  } catch (_secErr) { console.warn('[PDF] VES section skipped', _secErr); }
+
   // -- 29. ERT INTELLIGENCE PIPELINE --
   try {
   if (result.ertInterpretation) {

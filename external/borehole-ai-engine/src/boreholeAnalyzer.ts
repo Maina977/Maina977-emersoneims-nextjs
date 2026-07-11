@@ -1296,6 +1296,19 @@ export class BoreholeAnalyzer {
       fieldConfidenceBoost += 18;
       isFieldValidated = true;
     }
+    // Real inverted VES sounding is genuine field resistivity data — it
+    // calibrates depth (when no ERT summary) and counts as field validation.
+    if (fieldData?.vesInversion && fieldData.vesInversion.dataSource === 'field_ves') {
+      const ves = fieldData.vesInversion;
+      const aqTop = ves.interpretation?.aquiferDepthTop_m;
+      if (typeof aqTop === 'number' && aqTop > 0 && !fieldData?.ertSurvey) {
+        const th = ves.interpretation?.aquiferThickness_m ?? 0;
+        calibratedDepth = Math.round(aqTop + Math.max(6, th)); // drill through the aquifer
+        if (ensembleResult) ensembleResult.depth_m = calibratedDepth;
+      }
+      fieldConfidenceBoost += (ves.quality === 'excellent' || ves.quality === 'good') ? 15 : 8;
+      isFieldValidated = true;
+    }
     if (fieldData?.pumpTest) {
       // Pump test overrides yield and transmissivity
       calibratedYield = fieldData.pumpTest.sustainableYieldM3Hr;
@@ -2642,12 +2655,16 @@ export class BoreholeAnalyzer {
         { item: 'Report integrity audit (10-step)', category: 'integrity', status: 'PARTIAL', detail: 'Automated pre-export validation (desktop data only â€” no field QA/QC)', requiredForBankable: true },
       ],
 
+      // Inverted field VES sounding (rendered as its own report section)
+      vesInversion: fieldData?.vesInversion,
+
       // Audit flags for report rendering
       _auditFlags: {
         weatheringAquiferMismatch: weatheringAquiferMismatch ?? false,
         weatheringDepthM: wDepthM,
         ertThicknessM: ertThickness,
-        hasFieldERT: isFieldValidated && !!fieldData?.ertSurvey,
+        // A real inverted field VES satisfies the "Actual ERT/VES field data" gate.
+        hasFieldERT: (isFieldValidated && !!fieldData?.ertSurvey) || (fieldData?.vesInversion?.dataSource === 'field_ves'),
         hasFieldPumpTest: isFieldValidated && !!fieldData?.pumpTest,
         hasFieldGPS: false,
         isFieldValidated,
@@ -2662,7 +2679,7 @@ export class BoreholeAnalyzer {
         gpsSource: clientGeo ? 'manual' : (features.gpsSource || 'none'),
         locationGrade: locationConfidence?.grade,
         hasFieldPeg: !!(fieldData as any)?.fieldPeg,
-        hasFieldERT: isFieldValidated && !!fieldData?.ertSurvey,
+        hasFieldERT: (isFieldValidated && !!fieldData?.ertSurvey) || (fieldData?.vesInversion?.dataSource === 'field_ves'),
         hasHydrogeologistSignoff: !!(fieldData as any)?.hydrogeologistSignoff,
         hasWRAAuthorisation: !!(fieldData as any)?.wraAuthorisation,
         hasPumpTest: isFieldValidated && !!fieldData?.pumpTest,

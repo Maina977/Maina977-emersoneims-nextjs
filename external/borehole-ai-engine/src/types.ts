@@ -706,6 +706,7 @@ export interface AnalysisResult {
   /** Well Design — casing, screen, gravel pack, pump, drawdown, core sampling, borehole log template */
   wellDesign?: import('./wellDesignEngine').WellDesignResult;
   drillReadiness?: import('./drillReadiness').DrillReadinessResult;
+  vesInversion?: import('./vesInversionEngine').VESInversionResult;
   /** Satellite Water Analysis — MODIS NDVI/EVI, ERA5 LAI/LST/ET, JRC water, Aqua satellite capabilities */
   satelliteWaterAnalysis?: import('./satelliteWaterEngine').SatelliteWaterAnalysis;
   /** Global Soil Analysis — WRB classification, hydraulic properties, soil recognition */
