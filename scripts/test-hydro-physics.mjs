@@ -21,13 +21,19 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts'];
-execSync(
-  `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
-  files.map(f => `"${join(SRC, f)}"`).join(' ') +
-  ` --outDir "${OUT}" --module commonjs --target es2020 --lib es2020,dom --skipLibCheck --esModuleInterop --noResolve`,
-  { stdio: 'pipe' },
-);
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts'];
+try {
+  execSync(
+    `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
+    files.map(f => `"${join(SRC, f)}"`).join(' ') +
+    ` --outDir "${OUT}" --module commonjs --target es2020 --lib es2020,dom --skipLibCheck --esModuleInterop --noResolve`,
+    { stdio: 'pipe' },
+  );
+} catch {
+  // tsc emits JS even when a type-only import (e.g. `import type … from './types'`)
+  // can't be resolved under --noResolve — the type is erased at emit, so the
+  // emitted .js is correct. We only need the emitted JS, so tolerate the exit code.
+}
 
 const { createRequire } = await import('node:module');
 const req = createRequire(pathToFileURL(join(OUT, 'x.js')));
@@ -199,6 +205,60 @@ console.log('\nG. Drilling-readiness score gates (drillReadiness)');
     `score ${strongAnalog.score}, ${strongAnalog.status}`);
   check('analog offset wells earn partial depth-justification readiness credit',
     strongAnalog.score > noAnalog.score, `no-analog ${noAnalog.score} vs analog ${strongAnalog.score}`);
+}
+
+// ── H. AQUIFER SIMULATOR (aquiferSimulator.runAquiferSimulation) ──
+console.log('\nH. Aquifer simulation physics (aquiferSimulator)');
+{
+  const asim = req(join(OUT, 'aquiferSimulator.js'));
+  // (T, S, K, b, n, wt, P, ET, Q, gldasRecharge?)
+  const run = (Q, T = 100) => asim.runAquiferSimulation(T, 0.05, 5, 20, 0.25, 15, 1000, 600, Q);
+  const lowQ = run(100), highQ = run(500);
+  check('higher pumping rate → larger well drawdown (Theis)',
+    highQ.pumpTest.theis.drawdownAtWell > lowQ.pumpTest.theis.drawdownAtWell,
+    `Q100 ${lowQ.pumpTest.theis.drawdownAtWell} vs Q500 ${highQ.pumpTest.theis.drawdownAtWell}`);
+  check('drawdown decreases with distance from well (100m < at well)',
+    lowQ.pumpTest.theis.drawdownAt100m < lowQ.pumpTest.theis.drawdownAtWell,
+    `100m ${lowQ.pumpTest.theis.drawdownAt100m} vs well ${lowQ.pumpTest.theis.drawdownAtWell}`);
+  const loT = run(300, 20), hiT = run(300, 400);
+  check('higher transmissivity → smaller drawdown for same Q',
+    hiT.pumpTest.theis.drawdownAtWell < loT.pumpTest.theis.drawdownAtWell,
+    `T20 ${loT.pumpTest.theis.drawdownAtWell} vs T400 ${hiT.pumpTest.theis.drawdownAtWell}`);
+  check('cone of influence radius is positive and finite',
+    lowQ.coneOfDepression.radiusOfInfluenceM > 0 && Number.isFinite(lowQ.coneOfDepression.radiusOfInfluenceM),
+    `${lowQ.coneOfDepression.radiusOfInfluenceM}`);
+  check('mass conservation: recharge from precip <= precipitation',
+    lowQ.groundwaterBudget.inflows.rechargeFromPrecipitation <= lowQ.groundwaterBudget.inflows.precipitation + 1e-6,
+    `recharge ${lowQ.groundwaterBudget.inflows.rechargeFromPrecipitation} vs P ${lowQ.groundwaterBudget.inflows.precipitation}`);
+  const dry = asim.runAquiferSimulation(100, 0.05, 5, 20, 0.25, 15, 200, 900, 100);
+  const wet = asim.runAquiferSimulation(100, 0.05, 5, 20, 0.25, 15, 1600, 900, 100);
+  check('wetter climate yields >= recharge than arid climate',
+    wet.groundwaterBudget.inflows.rechargeFromPrecipitation >= dry.groundwaterBudget.inflows.rechargeFromPrecipitation,
+    `dry ${dry.groundwaterBudget.inflows.rechargeFromPrecipitation} vs wet ${wet.groundwaterBudget.inflows.rechargeFromPrecipitation}`);
+  check('sustainable pumping is non-negative',
+    lowQ.groundwaterBudget.balance.maxSustainablePumping >= 0, `${lowQ.groundwaterBudget.balance.maxSustainablePumping}`);
+}
+
+// ── I. MULTI-GEOPHYSICS FUSION (multiGeophysicsFusion) ──
+console.log('\nI. Multi-geophysics fusion (multiGeophysicsFusion)');
+{
+  const mgf = req(join(OUT, 'multiGeophysicsFusion.js'));
+  const ert = { aquiferDepthM: 35, aquiferThicknessM: 15, resistivityOhmM: 45, surveyDate: '2026-01-01', contractor: 'X' };
+  const seismic = { method: 'refraction', bedrockDepthM: 45, weatheredZoneThicknessM: 18, vpTopLayer_ms: 800, vpBedrock_ms: 3500, layerCount: 3, profileLengthM: 115, geophoneSpacingM: 5, surveyDate: '2026-01-01', contractor: 'X' };
+  check('no field data → returns null (never fabricates a fused section)',
+    mgf.runMultiGeophysicsFusion({}) === null);
+  const single = mgf.runMultiGeophysicsFusion({ ertSurvey: ert });
+  check('single ERT survey → non-null result naming ERT',
+    !!single && single.methodsUsed.includes('ERT'), single ? single.methodsUsed.join(',') : 'null');
+  check('overall confidence bounded (0,1]',
+    !!single && single.overallConfidence > 0 && single.overallConfidence <= 1, `${single?.overallConfidence}`);
+  check('method agreement bounded [0,1]',
+    !!single && single.methodAgreement >= 0 && single.methodAgreement <= 1, `${single?.methodAgreement}`);
+  const dual = mgf.runMultiGeophysicsFusion({ ertSurvey: ert, seismicSurvey: seismic });
+  check('two independent methods → confidence >= single method (more evidence)',
+    !!dual && dual.overallConfidence >= single.overallConfidence, `single ${single?.overallConfidence} vs dual ${dual?.overallConfidence}`);
+  check('two methods → both listed and a non-negative confidence boost',
+    !!dual && dual.methodsUsed.length >= 2 && dual.confidenceBoost >= 0, `${dual?.methodsUsed?.length} methods, boost ${dual?.confidenceBoost}`);
 }
 
 rmSync(OUT, { recursive: true, force: true });
