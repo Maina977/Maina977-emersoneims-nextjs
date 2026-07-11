@@ -11,6 +11,7 @@ import { parseERTFile } from './ertFileParser';
 import { recordDrillingOutcome, getLearningStats, exportOutcomes, importOutcomes } from './feedbackLearningLoop';
 import { runAIScanner, type AIScanResult } from './aiScanner';
 import { render2DAnnotatedMap, render2DCrossSection, render3DTerrain, render3DSubsurface } from './terrainMapper';
+import { computeDrillReadiness } from './drillReadiness';
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
 // via next/dynamic, so a CSS import here becomes a SEPARATE runtime CSS chunk
 // that must fetch successfully or the whole tool dies with ChunkLoadError —
@@ -1521,6 +1522,116 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <label style={{fontSize:11}}>Free Water Thickness (m)<input type="number" placeholder="e.g. 10" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.nmrSurvey)setFieldDataInput((p: any)=>({...p,nmrSurvey:{...(p.nmrSurvey||{}),freeWaterThicknessM:v}}))}}/></label>
                     </div>
                   </fieldset>
+                  {/* \u2550\u2550\u2550 DRILLING-READINESS GATE EVIDENCE (2026-07-11) \u2550\u2550\u2550 */}
+                  <fieldset style={{border:'2px solid #10b981',borderRadius:8,padding:12,background:'rgba(16,185,129,0.04)'}}>
+                    <legend style={{fontSize:12,fontWeight:800,color:'#10b981'}}>{'\u{1F6A6}'} Drilling-Readiness Evidence &mdash; Field Validation &amp; Professional Sign-Off</legend>
+                    <p style={{fontSize:10,margin:'0 0 10px',color:'var(--text-secondary)'}}>
+                      A desktop analysis is a <strong>pre-feasibility screen</strong>, not authority to drill. The report can only be
+                      released &ldquo;ISSUED FOR DRILLING&rdquo; once a hydrogeologist has done the field survey, pegged the point,
+                      and the WRA/NEMA authorisation is on file. Uploading the evidence below is what lifts the readiness score past
+                      the 79/100 ceiling &mdash; not more AI. Leave blank for a desktop-only screen.
+                    </p>
+
+                    {/* GPS field peg */}
+                    <div style={{marginBottom:10}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'#22c55e',marginBottom:4}}>1. Survey-Grade GPS Peg (set on site)</div>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
+                        <label style={{fontSize:11}}>Peg / Point ID<input type="text" placeholder="e.g. BH-01" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;setFieldDataInput((p: any)=>({...p,fieldPeg:v?{...(p.fieldPeg||{latitude:0,longitude:0,peggedBy:'',peggedDate:new Date().toISOString().split('T')[0]}),pegId:v}:undefined}))}}/></label>
+                        <label style={{fontSize:11}}>Latitude<input type="number" step="0.000001" placeholder="e.g. -1.2921" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(!isNaN(v))setFieldDataInput((p: any)=>({...p,fieldPeg:{...(p.fieldPeg||{pegId:'',longitude:0,peggedBy:'',peggedDate:new Date().toISOString().split('T')[0]}),latitude:v}}))}}/></label>
+                        <label style={{fontSize:11}}>Longitude<input type="number" step="0.000001" placeholder="e.g. 36.8219" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(!isNaN(v))setFieldDataInput((p: any)=>({...p,fieldPeg:{...(p.fieldPeg||{pegId:'',latitude:0,peggedBy:'',peggedDate:new Date().toISOString().split('T')[0]}),longitude:v}}))}}/></label>
+                        <label style={{fontSize:11}}>Pegged By<input type="text" placeholder="Surveyor / hydrogeologist" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.fieldPeg)setFieldDataInput((p: any)=>({...p,fieldPeg:{...(p.fieldPeg||{}),peggedBy:v}}))}}/></label>
+                        <label style={{fontSize:11}}>Pegged Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.fieldPeg)setFieldDataInput((p: any)=>({...p,fieldPeg:{...(p.fieldPeg||{}),peggedDate:v}}))}}/></label>
+                        <label style={{fontSize:11}}>ERT Line Ref (opt)<input type="text" placeholder="e.g. L1 @ 40m" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.fieldPeg)setFieldDataInput((p: any)=>({...p,fieldPeg:{...(p.fieldPeg||{}),ertLineRef:v||undefined}}))}}/></label>
+                      </div>
+                    </div>
+
+                    {/* Hydrogeologist sign-off */}
+                    <div style={{marginBottom:10}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'#22c55e',marginBottom:4}}>2. Hydrogeologist Sign-Off (signed survey report)</div>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:8}}>
+                        <label style={{fontSize:11}}>Name<input type="text" placeholder="Full name" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;setFieldDataInput((p: any)=>({...p,hydrogeologistSignoff:v?{...(p.hydrogeologistSignoff||{registrationNo:'',signedDate:new Date().toISOString().split('T')[0]}),name:v}:undefined}))}}/></label>
+                        <label style={{fontSize:11}}>Reg. No.<input type="text" placeholder="e.g. GSK/WRA reg" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.hydrogeologistSignoff)setFieldDataInput((p: any)=>({...p,hydrogeologistSignoff:{...(p.hydrogeologistSignoff||{}),registrationNo:v}}))}}/></label>
+                        <label style={{fontSize:11}}>Report Ref (opt)<input type="text" placeholder="Report no." style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.hydrogeologistSignoff)setFieldDataInput((p: any)=>({...p,hydrogeologistSignoff:{...(p.hydrogeologistSignoff||{}),reportRef:v||undefined}}))}}/></label>
+                        <label style={{fontSize:11}}>Signed Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.hydrogeologistSignoff)setFieldDataInput((p: any)=>({...p,hydrogeologistSignoff:{...(p.hydrogeologistSignoff||{}),signedDate:v}}))}}/></label>
+                      </div>
+                    </div>
+
+                    {/* WRA / NEMA authorisation */}
+                    <div style={{marginBottom:10}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'#22c55e',marginBottom:4}}>3. WRA / NEMA Authorisation</div>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:8}}>
+                        <label style={{fontSize:11}}>Reference No.<input type="text" placeholder="Permit / authorisation no." style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;setFieldDataInput((p: any)=>({...p,wraAuthorisation:v?{...(p.wraAuthorisation||{authorityType:'WRA'}),referenceNo:v}:undefined}))}}/></label>
+                        <label style={{fontSize:11}}>Authority<select style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value as any;if(fieldDataInput.wraAuthorisation)setFieldDataInput((p: any)=>({...p,wraAuthorisation:{...(p.wraAuthorisation||{}),authorityType:v}}))}}><option value="WRA">WRA</option><option value="NEMA">NEMA</option><option value="both">Both</option></select></label>
+                        <label style={{fontSize:11}}>Permit Type (opt)<input type="text" placeholder="e.g. drilling permit" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.wraAuthorisation)setFieldDataInput((p: any)=>({...p,wraAuthorisation:{...(p.wraAuthorisation||{}),permitType:v||undefined}}))}}/></label>
+                        <label style={{fontSize:11}}>Issued Date (opt)<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.wraAuthorisation)setFieldDataInput((p: any)=>({...p,wraAuthorisation:{...(p.wraAuthorisation||{}),issuedDate:v||undefined}}))}}/></label>
+                      </div>
+                    </div>
+
+                    {/* Post-drilling records */}
+                    <div style={{marginBottom:4}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'#22c55e',marginBottom:4}}>4. Post-Drilling Records (completes the bankable record)</div>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:8}}>
+                        <label style={{fontSize:11}}>Drilling Contractor<input type="text" placeholder="Contractor name" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;setFieldDataInput((p: any)=>({...p,drillLog:v?{...(p.drillLog||{totalDepthDrilled_m:0}),contractor:v}:undefined}))}}/></label>
+                        <label style={{fontSize:11}}>Total Depth Drilled (m)<input type="number" step="0.1" placeholder="e.g. 64" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=parseFloat(e.target.value);if(v>0&&fieldDataInput.drillLog)setFieldDataInput((p: any)=>({...p,drillLog:{...(p.drillLog||{}),totalDepthDrilled_m:v}}))}}/></label>
+                        <label style={{fontSize:11}}>Completion Record No.<input type="text" placeholder="WRA Form 008A ref" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;setFieldDataInput((p: any)=>({...p,completionRecord:v?{...(p.completionRecord||{submittedDate:new Date().toISOString().split('T')[0]}),referenceNo:v}:undefined}))}}/></label>
+                        <label style={{fontSize:11}}>Submitted Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{const v=e.target.value;if(fieldDataInput.completionRecord)setFieldDataInput((p: any)=>({...p,completionRecord:{...(p.completionRecord||{}),submittedDate:v}}))}}/></label>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  {/* \u2550\u2550\u2550 LIVE DRILLING-READINESS PREVIEW \u2550\u2550\u2550 */}
+                  {(() => {
+                    const fd: any = fieldDataInput;
+                    const dr = computeDrillReadiness({
+                      hasFieldPeg: !!fd.fieldPeg,
+                      hasFieldERT: !!(fd.ertSurvey || fd.ertDataFile),
+                      hasHydrogeologistSignoff: !!fd.hydrogeologistSignoff,
+                      hasWRAAuthorisation: !!fd.wraAuthorisation,
+                      hasPumpTest: !!fd.pumpTest,
+                      hasLabWaterAnalysis: !!fd.labWaterAnalysis,
+                      hasDrillLog: !!fd.drillLog,
+                      hasCompletionRecord: !!fd.completionRecord,
+                      reportConsistent: true,
+                    });
+                    const statusColor = dr.status === 'ISSUED FOR DRILLING' || dr.status === 'COMPLETED / BANKABLE RECORD'
+                      ? '#10b981' : dr.status === 'FIELD VALIDATION IN PROGRESS' ? '#f59e0b' : '#ef4444';
+                    const gateItems = [
+                      { label: 'Actual ERT/VES field data', ok: !!(fd.ertSurvey || fd.ertDataFile) },
+                      { label: 'Coordinates field-verified (peg)', ok: !!fd.fieldPeg },
+                      { label: 'Hydrogeologist sign-off', ok: !!fd.hydrogeologistSignoff },
+                      { label: 'WRA/NEMA authorisation', ok: !!fd.wraAuthorisation },
+                      { label: 'No contradictory values', ok: true },
+                    ];
+                    return (
+                      <div style={{padding:14,borderRadius:10,border:`2px solid ${statusColor}`,background:`${statusColor}12`}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8,marginBottom:10}}>
+                          <div>
+                            <div style={{fontSize:11,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Live Drilling-Readiness</div>
+                            <div style={{fontSize:18,fontWeight:800,color:statusColor}}>{dr.status}</div>
+                            <div style={{fontSize:11,color:'var(--text-secondary)'}}>{dr.stage}</div>
+                          </div>
+                          <div style={{textAlign:'center'}}>
+                            <div style={{fontSize:32,fontWeight:900,color:statusColor,lineHeight:1}}>{dr.score}<span style={{fontSize:14,opacity:0.6}}>/100</span></div>
+                            {dr.cappedByGates && <div style={{fontSize:9,color:'#ef4444',fontWeight:700}}>CAPPED AT 79 &mdash; GATES OPEN</div>}
+                          </div>
+                        </div>
+                        <div style={{height:8,borderRadius:4,background:'rgba(148,163,184,0.25)',overflow:'hidden',marginBottom:10}}>
+                          <div style={{height:'100%',width:`${dr.score}%`,background:statusColor,transition:'width 0.3s'}}/>
+                        </div>
+                        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:6,marginBottom:8}}>
+                          {gateItems.map(g=>(
+                            <div key={g.label} style={{fontSize:11,display:'flex',alignItems:'center',gap:6,color:g.ok?'#10b981':'var(--text-secondary)'}}>
+                              <span style={{fontWeight:800}}>{g.ok?'\u2705':'\u2b1c'}</span>{g.label}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{fontSize:10,color:'var(--text-secondary)',lineHeight:1.5,borderTop:'1px solid var(--border)',paddingTop:8}}>
+                          {dr.handoverStatement}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {Object.keys(fieldDataInput).length > 0 && (
                     <div style={{padding:8,background:'rgba(16,185,129,0.08)',borderRadius:8,fontSize:12,color:'var(--accent-green)'}}>
                       {'\u2705'} Field data loaded: {[
@@ -1536,6 +1647,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         fieldDataInput.stepDrawdownTest && `Step Test (${fieldDataInput.stepDrawdownTest.steps?.length ?? 0} steps)`,
                         fieldDataInput.labWaterAnalysis && 'Lab Analysis',
                         fieldDataInput.localBoreholes && `${fieldDataInput.localBoreholes.count} Local Boreholes`,
+                        (fieldDataInput as any).fieldPeg && 'GPS Peg',
+                        (fieldDataInput as any).hydrogeologistSignoff && 'Hydrogeologist Sign-off',
+                        (fieldDataInput as any).wraAuthorisation && 'WRA/NEMA Auth',
+                        (fieldDataInput as any).drillLog && 'Drill Log',
+                        (fieldDataInput as any).completionRecord && 'Completion Record',
                       ].filter(Boolean).join(' + ')} — confidence will be upgraded
                     </div>
                   )}

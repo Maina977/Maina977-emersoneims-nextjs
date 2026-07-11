@@ -1142,6 +1142,47 @@ export interface FieldValidationData {
     contractor: string;
     notes?: string;
   };
+
+  // ── DRILLING-READINESS GATE EVIDENCE (2026-07-11) ──
+  // These flip the mandatory gates in drillReadiness.ts from OUTSTANDING to
+  // SATISFIED. They represent real field/professional evidence, so a report
+  // can legitimately move toward "ISSUED FOR DRILLING" only when they exist.
+  /** Survey-grade GPS peg physically set on site (not a photo crosshair). */
+  fieldPeg?: {
+    pegId: string;            // e.g. "BH-01"
+    latitude: number;
+    longitude: number;
+    utmZone?: string;
+    peggedBy: string;
+    peggedDate: string;
+    ertLineRef?: string;      // chainage/line the peg sits on
+  };
+  /** Signed hydrogeological survey report (Water Resources Regs 2025). */
+  hydrogeologistSignoff?: {
+    name: string;
+    registrationNo: string;   // WRA/EBK registration
+    reportRef?: string;
+    signedDate: string;
+  };
+  /** WRA / NEMA authorisation reference on file. */
+  wraAuthorisation?: {
+    referenceNo: string;
+    authorityType: 'WRA' | 'NEMA' | 'both';
+    permitType?: string;
+    issuedDate?: string;
+  };
+  /** Post-drilling lithological / water-strike log. */
+  drillLog?: {
+    contractor: string;
+    totalDepthDrilled_m: number;
+    waterStrikes_m?: number[];
+    date?: string;
+  };
+  /** WRA Borehole Completion Record submitted (Form 008A). */
+  completionRecord?: {
+    submittedDate: string;
+    referenceNo?: string;
+  };
 }
 
 export interface ConfidenceLevel {
