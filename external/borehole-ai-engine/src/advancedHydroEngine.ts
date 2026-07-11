@@ -354,11 +354,12 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
   // ────────────────────────────────────────────────────────
   // 3. WRA / GOVERNMENT BOREHOLE RECORDS (local registry)
   //    The complete records — borehole NAME, drilled DEPTH, tested yield,
-  //    static water level — live in WRA completion records, which are NOT on
-  //    any public API (verified 2026-07-09: opendata.go.ke Socrata is dead,
-  //    WPDx dropped its depth attributes). This channel loads them from
-  //    /data/wra-boreholes.json — drop in the file obtained from a WRA/county
-  //    data request and every analysis gains named, depth-complete wells:
+  //    static water level, outcome — live in field completion records.
+  //    SHIPPED 2026-07-11: 3,122 REAL northern-Kenya boreholes (Turkana,
+  //    Wajir, Garissa, Isiolo, Marsabit) from Acacia Water / KenyaRapid+ via
+  //    UNESCO IHP-WINS — 1,140 with drilled depth, 1,698 with yield, 843 with
+  //    a known outcome (incl. real dry holes). Owners can extend this file
+  //    with their own WRA/county records via the ingestion panel. Format:
   //    [{ "name": "...", "lat": -0.9, "lon": 37.19, "depth_m": 87,
   //       "yield_m3h": 3.2, "swl_m": 21, "outcome": "Success",
   //       "permit": "WRA/..." }]
@@ -384,11 +385,11 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
             aquiferType: b.aquiferType ?? undefined,
             lithology: b.lithology ?? undefined,
             outcome: (['Success', 'Moderate', 'Fail'].includes(b.outcome) ? b.outcome : 'Unknown') as any,
-            source: 'WRA record (government completion data — FIELD)',
+            source: b.source ?? 'WRA/county completion record (FIELD)',
           });
           wraCount++;
         }
-        if (wraCount > 0) dataSources.push(`WRA government borehole records (${wraCount} within ${searchRadius} km)`);
+        if (wraCount > 0) dataSources.push(`Field completion records (${wraCount} within ${searchRadius} km — depth/yield/outcome)`);
       }
     }
   } catch { /* registry file not installed yet — expected until WRA data obtained */ }
