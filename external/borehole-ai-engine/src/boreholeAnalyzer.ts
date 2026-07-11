@@ -1705,9 +1705,16 @@ export class BoreholeAnalyzer {
           fractureIntersections: fractureAI?.lineaments?.map((l: any) => ({
             latitude: l.centerLat ?? effectiveLat!, longitude: l.centerLon ?? effectiveLon!, permeabilityScore: l.confidence ?? 0.5,
           })),
-          nearbyBoreholes: nearbyWells?.nearbyWells?.map((w: any) => ({
-            latitude: w.latitude ?? effectiveLat!, longitude: w.longitude ?? effectiveLon!, success: true, depth_m: w.depth_m ?? 50, yield_m3hr: w.yield_m3h ?? 1,
-          })),
+          // HONESTY FIX (2026-07-11): only wells with a KNOWN outcome may move the
+          // drill-map probability — a recorded failure must penalise, an unknown
+          // must stay neutral. Previously every well was hardcoded success:true,
+          // so failed/unknown wells wrongly BOOSTED the map (+15%).
+          nearbyBoreholes: nearbyWells?.nearbyWells
+            ?.filter((w: any) => w.outcome === 'Success' || w.outcome === 'Fail')
+            .map((w: any) => ({
+              latitude: w.latitude ?? effectiveLat!, longitude: w.longitude ?? effectiveLon!,
+              success: w.outcome === 'Success', depth_m: w.depth_m ?? 50, yield_m3hr: w.yield_m3h ?? 1,
+            })),
           vegetationIndex: vegetationGWProxy?.ndviMean,
           drainageDensity: demHydrology?.drainageDensity,
         });
@@ -2387,6 +2394,10 @@ export class BoreholeAnalyzer {
       advancedRockMapping: advancedRockResult ? {
         primaryRockType: advancedRockResult.primaryRockType,
         confidence: advancedRockResult.confidence,
+        // Desktop SOURCE-AGREEMENT (concordance), stored as a 0-1 fraction so
+        // report renderers (`*100` / pct()) show it correctly. This is NOT a
+        // validated field hit-rate — labelled as "model agreement" in the report.
+        estimatedAccuracy: advancedRockResult.estimatedAccuracy / 100,
         secondaryRockType: advancedRockResult.secondaryRockType,
         secondaryConfidence: advancedRockResult.rockProbabilities?.find(
           (p: any) => p.rockType === advancedRockResult!.secondaryRockType)?.probability,

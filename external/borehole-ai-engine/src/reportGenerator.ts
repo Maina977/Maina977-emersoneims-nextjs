@@ -3556,7 +3556,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Secondary Rock Type', arm.secondaryRockType || 'N/A'],
         ['Tertiary Rock Type', arm.tertiaryRockType || 'N/A'],
         ['Confidence', `${((arm.confidence ?? 0) * 100).toFixed(0)}%`],
-        ['Estimated Accuracy', `${((arm.estimatedAccuracy ?? 0) * 100).toFixed(0)}%`],
+        ['Model Agreement (desktop concordance)', `${((arm.estimatedAccuracy ?? 0) * 100).toFixed(0)}%`],
         ['Source Agreement', `${((arm.sourceAgreement ?? 0) * 100).toFixed(0)}%`],
         ['Sources Used', `${arm.sourcesUsed ?? 0} classifiers`],
         ['Geological Province', arm.geologicalProvince || 'N/A'],
@@ -9560,7 +9560,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
       ['Primary Rock Type', arm.primaryRockType],
       ['Secondary Rock Type', arm.secondaryRockType || 'N/A'],
       ['Confidence', `${((arm.confidence ?? 0) * 100).toFixed(0)}%`],
-      ['Estimated Accuracy', `${((arm.estimatedAccuracy ?? 0) * 100).toFixed(0)}%`],
+      ['Model Agreement (desktop concordance)', `${((arm.estimatedAccuracy ?? 0) * 100).toFixed(0)}%`],
       ['Source Agreement', `${((arm.sourceAgreement ?? 0) * 100).toFixed(0)}%`],
       ['Geological Province', arm.geologicalProvince],
       ['Tectonic Setting', arm.tectonicSetting],
@@ -10133,7 +10133,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
     sections.push(para(`Primary: ${arm.primaryRockType} | Secondary: ${arm.secondaryRockType || 'N/A'} | Confidence: ${((arm.confidence ?? 0) * 100).toFixed(0)}%`, true));
     sections.push(para(`Geological Province: ${arm.geologicalProvince} | Tectonic: ${arm.tectonicSetting} | Age: ${arm.geologicalAge}`));
     sections.push(para(`Aquifer Type: ${arm.aquiferType} | Productivity: ${arm.aquiferProductivity} | Formation: ${arm.formationName}`));
-    sections.push(para(`Source Agreement: ${((arm.sourceAgreement ?? 0) * 100).toFixed(0)}% | Accuracy: ${((arm.estimatedAccuracy ?? 0) * 100).toFixed(0)}%`));
+    sections.push(para(`Source Agreement: ${((arm.sourceAgreement ?? 0) * 100).toFixed(0)}% | Model agreement (desktop concordance, not a validated hit-rate): ${((arm.estimatedAccuracy ?? 0) * 100).toFixed(0)}%`));
     for (const c of (arm.classifiers || [])) {
       sections.push(para(`  ? ${c.name}: ${c.available ? c.topPredictions?.[0]?.rockType : 'N/A'} (${((c.confidence ?? 0) * 100).toFixed(0)}%)`));
     }
@@ -10433,7 +10433,7 @@ export function generateCSVReport(result: AnalysisResult): void {
     rows.push(['Primary Rock', arm.primaryRockType, '', '']);
     rows.push(['Secondary Rock', arm.secondaryRockType || 'N/A', '', '']);
     rows.push(['Confidence', pct(arm.confidence), '', '']);
-    rows.push(['Accuracy', pct(arm.estimatedAccuracy), '', '']);
+    rows.push(['Model Agreement (desktop)', pct(arm.estimatedAccuracy), '', '']);
     rows.push(['Province', arm.geologicalProvince, '', '']);
     rows.push(['Tectonic Setting', arm.tectonicSetting, '', '']);
     rows.push(['Aquifer Type', arm.aquiferType, '', '']);

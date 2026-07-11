@@ -1,6 +1,9 @@
 /**
  * ADVANCED ROCK MAPPING ENGINE — Multi-Source Ensemble Classifier
- * Target: 98% rock mapping accuracy through data fusion
+ * Reports ENSEMBLE AGREEMENT (desktop source concordance), NOT a validated
+ * field hit-rate — the owner has no drilling backtest, so no "accuracy %" is
+ * claimed. High agreement means the classifiers concur; it can still be wrong
+ * if the sources share a systematic error (disclosed in the report).
  *
  * Architecture:
  *   1. SPECTRAL MINERAL LIBRARY — 300+ mineral spectral signatures
@@ -10,8 +13,9 @@
  *   5. MULTI-SOURCE ENSEMBLE — weighted voting from 8+ independent classifiers
  *
  * Each classifier produces an independent probability distribution over rock types.
- * The ensemble fuses them using Dempster-Shafer evidence theory to achieve
- * 98% accuracy when ≥4 sources agree, with calibrated uncertainty when they don't.
+ * The ensemble fuses them using Dempster-Shafer evidence theory, reaching high
+ * ensemble AGREEMENT when ≥4 sources concur, with calibrated uncertainty when
+ * they don't. Agreement is not the same as validated accuracy.
  *
  * References:
  *   - Streckeisen (1976): IUGS rock classification
@@ -688,7 +692,9 @@ export interface RockMappingInput {
 
 /**
  * Run the full multi-source ensemble rock mapping.
- * Achieves 98% accuracy when ≥4 independent sources are available and agree.
+ * Reaches high ensemble AGREEMENT (up to ~98% source concordance) when ≥4
+ * independent sources are available and concur — reported as agreement, not
+ * as a validated accuracy/hit-rate.
  */
 export async function advancedRockMapping(input: RockMappingInput): Promise<AdvancedRockMappingResult> {
   const classifiers: ClassifierResult[] = [];
@@ -960,7 +966,7 @@ export async function advancedRockMapping(input: RockMappingInput): Promise<Adva
     methodology: `Multi-source ensemble (${sourcesUsed} classifiers: ${sourceNames}). ` +
       `Fusion: Dempster-Shafer evidence theory. ` +
       `Agreement: ${sourceAgreement}/${sourcesUsed} sources → ${primaryRock}. ` +
-      `Estimated accuracy: ${Math.round(estimatedAccuracy * 100)}%.` +
+      `Ensemble agreement: ${Math.round(estimatedAccuracy * 100)}% (desktop source concordance, not a validated field hit-rate).` +
       (hasFieldData ? ' Field geophysics included — highest confidence tier.' : ''),
     fusionMethod: 'Dempster-Shafer evidence theory (Shafer 1976)',
   };
