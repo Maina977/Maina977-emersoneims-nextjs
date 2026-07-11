@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -259,6 +259,54 @@ console.log('\nI. Multi-geophysics fusion (multiGeophysicsFusion)');
     !!dual && dual.overallConfidence >= single.overallConfidence, `single ${single?.overallConfidence} vs dual ${dual?.overallConfidence}`);
   check('two methods → both listed and a non-negative confidence boost',
     !!dual && dual.methodsUsed.length >= 2 && dual.confidenceBoost >= 0, `${dual?.methodsUsed?.length} methods, boost ${dual?.confidenceBoost}`);
+}
+
+// ── J. VES INVERSION ENGINE (vesInversionEngine) ──
+console.log('\nJ. VES resistivity inversion (vesInversionEngine)');
+{
+  const ves = req(join(OUT, 'vesInversionEngine.js'));
+  const AB2 = [1, 1.5, 2, 3, 4.6, 6.8, 10, 15, 22, 32, 46, 68, 100, 150, 220, 320];
+
+  // 1. Homogeneous earth → apparent resistivity == true resistivity (tests Σfilter=1)
+  const homo = ves.forwardVES([120], [], AB2);
+  check('homogeneous earth: apparent resistivity == true resistivity at all spacings',
+    homo.every(v => Math.abs(v - 120) / 120 < 0.01), `range ${Math.min(...homo).toFixed(1)}..${Math.max(...homo).toFixed(1)}`);
+
+  // 2. Two-layer asymptotes: short AB/2 → ρ1, long AB/2 → ρ2 (H/descending, ρ1>ρ2)
+  const desc = ves.forwardVES([200, 20], [40], AB2);
+  check('2-layer: shortest AB/2 apparent res near top-layer ρ1 (within 15%)',
+    Math.abs(desc[0] - 200) / 200 < 0.15, `ρa(AB/2=1)=${desc[0].toFixed(1)} vs ρ1=200`);
+  check('2-layer: longest AB/2 apparent res approaches bottom ρ2 (< ρ1, toward 20)',
+    desc[desc.length - 1] < 60 && desc[desc.length - 1] < desc[0], `ρa(max)=${desc[desc.length-1].toFixed(1)}`);
+
+  // 3. Ascending 2-layer (ρ1<ρ2): curve rises with spacing
+  const asc = ves.forwardVES([20, 200], [40], AB2);
+  check('2-layer ascending: apparent res increases from short to long spacing',
+    asc[asc.length - 1] > asc[0] * 1.5, `short ${asc[0].toFixed(1)} -> long ${asc[asc.length-1].toFixed(1)}`);
+
+  // 4. Round-trip recovery: classic borehole-siting H-type — dry overburden,
+  //    a moderate-resistivity sand/gravel AQUIFER, then resistive basement.
+  const trueRes = [300, 80, 800], trueThick = [6, 20];
+  const synthRhoA = ves.forwardVES(trueRes, trueThick, AB2);
+  const data = AB2.map((s, i) => ({ ab2_m: s, rhoA_ohmm: synthRhoA[i] }));
+  const inv = ves.invertVES(data, { nLayers: 3, dataSource: 'demo' });
+  check('inversion fits the sounding curve (RMS < 5%)', inv.rmsErrorPct < 5, `RMS ${inv.rmsErrorPct}%`);
+  const rr = inv.layers.map(l => l.resistivity_ohmm);
+  const near = (a, b, tol) => Math.abs(a - b) / b < tol;
+  check('inversion recovers the 3 layer resistivities (within 30%)',
+    near(rr[0], 300, 0.30) && near(rr[1], 80, 0.30) && near(rr[2], 800, 0.35),
+    `recovered ρ = ${rr.join(', ')} vs true 300,80,800`);
+  check('inversion recovers the moderate-resistivity aquifer (middle ρ lowest)',
+    rr[1] < rr[0] && rr[1] < rr[2], `ρ = ${rr.join(', ')}`);
+  check('interpretation flags the sand/gravel aquifer layer (moderate ρ, not the clay/basement)',
+    inv.interpretation.bestAquiferLayer === 2 && inv.interpretation.aquiferResistivity_ohmm > 40 && inv.interpretation.aquiferResistivity_ohmm < 250,
+    `best layer ${inv.interpretation.bestAquiferLayer}, ρ ${inv.interpretation.aquiferResistivity_ohmm}`);
+
+  // 5. Provenance honesty
+  check('dataSource is field_ves only when real data supplied',
+    ves.invertVES(data, { nLayers: 3 }).dataSource === 'field_ves' && inv.dataSource === 'demo');
+  check('reports the equivalence / non-uniqueness caveat',
+    /non-unique|equivalen/i.test(inv.equivalenceNote));
 }
 
 rmSync(OUT, { recursive: true, force: true });

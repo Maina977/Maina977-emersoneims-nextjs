@@ -1183,6 +1183,8 @@ export interface FieldValidationData {
     submittedDate: string;
     referenceNo?: string;
   };
+  /** Inverted VES sounding (from vesInversionEngine) when field resistivity data is supplied. */
+  vesInversion?: import('./vesInversionEngine').VESInversionResult;
 }
 
 export interface ConfidenceLevel {

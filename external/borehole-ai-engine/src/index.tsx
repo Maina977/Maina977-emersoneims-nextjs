@@ -12,6 +12,7 @@ import { recordDrillingOutcome, getLearningStats, exportOutcomes, importOutcomes
 import { runAIScanner, type AIScanResult } from './aiScanner';
 import { render2DAnnotatedMap, render2DCrossSection, render3DTerrain, render3DSubsurface } from './terrainMapper';
 import { computeDrillReadiness } from './drillReadiness';
+import { invertVES, type VESInversionResult, type VESDataPoint } from './vesInversionEngine';
 // NOTE: styles.css is deliberately NOT imported here. This module is loaded
 // via next/dynamic, so a CSS import here becomes a SEPARATE runtime CSS chunk
 // that must fetch successfully or the whole tool dies with ChunkLoadError —
@@ -551,6 +552,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [feedback, setFeedback] = useState<FeedbackEntry>({ siteId:'', actualDepth:'', actualYield:'', success:'yes', notes:'', submitted:false });
   const [fieldDataInput, setFieldDataInput] = useState<Partial<FieldValidationData>>({});
   const [showFieldForms, setShowFieldForms] = useState(false);
+  const [vesRaw, setVesRaw] = useState('');
+  const [vesResult, setVesResult] = useState<VESInversionResult | null>(null);
+  const [vesError, setVesError] = useState('');
   const [learningStats, setLearningStats] = useState<ReturnType<typeof getLearningStats> | null>(null);
   const ertFileRef = useRef<HTMLInputElement>(null);
   const [activeSciPart, setActiveSciPart] = useState<string>('remote-sensing');
@@ -1312,6 +1316,57 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <label style={{fontSize:11}}>Survey Date<input type="date" style={{width:'100%',padding:4,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}} onChange={e=>{if(fieldDataInput.ertSurvey)setFieldDataInput((p: any)=>({...p,ertSurvey:{...(p.ertSurvey || {}),surveyDate:e.target.value}}))}}/></label>
                       <label style={{fontSize:11}}>Upload .dat/.res file<input ref={ertFileRef} type="file" accept=".dat,.res,.stg,.csv,.txt" style={{width:'100%',fontSize:10}} onChange={e=>{const f=e.target.files?.[0];if(f){const reader=new FileReader();reader.onload=()=>{try{const parsed=parseERTFile(f.name,reader.result as string);setFieldDataInput((p: any)=>({...p,ertDataFile:parsed}))}catch(err){console.warn('ERT parse error:',err)}};reader.readAsText(f)}}}/></label>
                     </div>
+                  </fieldset>
+                  {/* ═══ VES SOUNDING INVERSION (flagship: interprets real field data) ═══ */}
+                  <fieldset style={{border:'2px solid #0ea5e9',borderRadius:8,padding:12,background:'rgba(14,165,233,0.04)'}}>
+                    <legend style={{fontSize:12,fontWeight:800,color:'#0ea5e9'}}>{'\u{1F4C8}'} VES Sounding Inversion &mdash; interpret your field resistivity curve</legend>
+                    <p style={{fontSize:10,margin:'0 0 6px',color:'var(--text-secondary)'}}>
+                      Paste your Schlumberger VES field data (one point per line: <strong>AB/2 &nbsp; apparent-resistivity</strong>, space/comma/tab separated).
+                      This runs a real 1-D inversion (Pekeris kernel + Ghosh 1971 filter, Levenberg&ndash;Marquardt) and returns the layered earth model &mdash;
+                      the same job as IPI2Win/RES1D. Results are an INTERPRETATION (non-unique) &mdash; confirm by drilling.
+                    </p>
+                    <textarea value={vesRaw} onChange={e=>setVesRaw(e.target.value)} rows={5}
+                      placeholder={'1\t320\n2\t305\n4.6\t210\n10\t95\n22\t70\n46\t120\n100\t260\n220\t520'}
+                      style={{width:'100%',fontSize:11,fontFamily:'monospace',padding:6,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg-secondary)',color:'var(--text-primary)'}}/>
+                    <div style={{display:'flex',gap:8,marginTop:6,flexWrap:'wrap'}}>
+                      <button className="btn btn-primary" style={{fontSize:11,padding:'5px 14px'}} onClick={()=>{
+                        try {
+                          const pts: VESDataPoint[] = vesRaw.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
+                            const parts = l.split(/[\s,;]+/).map(Number).filter(n=>!isNaN(n));
+                            return parts.length>=2 ? { ab2_m: parts[0], rhoA_ohmm: parts[1] } : null;
+                          }).filter((x): x is VESDataPoint => x !== null);
+                          if (pts.length < 4) { setVesError('Need at least 4 valid AB/2 + resistivity points.'); setVesResult(null); return; }
+                          const r = invertVES(pts, { dataSource: 'field_ves' });
+                          setVesResult(r); setVesError('');
+                          setFieldDataInput((p: any)=>({...p, vesInversion: r }));
+                        } catch (err) { setVesError('Could not parse/invert — check the format.'); setVesResult(null); }
+                      }}>Invert Sounding</button>
+                      <button className="btn btn-secondary" style={{fontSize:11,padding:'5px 14px'}} onClick={()=>{ setVesRaw('1\t320\n1.5\t312\n2\t300\n3\t265\n4.6\t205\n6.8\t150\n10\t98\n15\t74\n22\t68\n32\t80\n46\t120\n68\t190\n100\t280\n150\t400\n220\t540\n320\t690'); }}>Load Example</button>
+                    </div>
+                    {vesError && <p style={{fontSize:11,color:'#ef4444',marginTop:6}}>{vesError}</p>}
+                    {vesResult && (
+                      <div style={{marginTop:10,padding:10,borderRadius:8,border:`1px solid ${vesResult.quality==='excellent'||vesResult.quality==='good'?'#10b981':'#f59e0b'}`,background:'var(--bg-secondary)'}}>
+                        <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:6}}>
+                          <span style={{fontSize:12,fontWeight:800,color:'#0ea5e9'}}>Inverted Model &mdash; curve type {vesResult.curveType}</span>
+                          <span style={{fontSize:11,color:'var(--text-secondary)'}}>RMS misfit {vesResult.rmsErrorPct}% &middot; {vesResult.quality.toUpperCase()} &middot; {vesResult.iterations} iters</span>
+                        </div>
+                        <table style={{width:'100%',fontSize:11,borderCollapse:'collapse'}}>
+                          <thead><tr style={{textAlign:'left',color:'var(--text-secondary)'}}><th>Layer</th><th>&rho; (&Omega;&middot;m)</th><th>Depth top (m)</th><th>Thickness (m)</th><th>Interpretation</th></tr></thead>
+                          <tbody>
+                            {vesResult.layers.map(l=>(
+                              <tr key={l.layer} style={{borderTop:'1px solid var(--border)',background: l.waterBearing==='likely'?'rgba(16,185,129,0.08)':'transparent'}}>
+                                <td>{l.layer}</td><td>{l.resistivity_ohmm}</td><td>{l.depthTop_m}</td><td>{l.thickness_m ?? '∞'}</td>
+                                <td>{l.lithologyGuess} {l.waterBearing==='likely'?'✅':l.waterBearing==='possible'?'❓':''}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div style={{marginTop:8,padding:8,borderRadius:6,background:'rgba(16,185,129,0.08)',fontSize:11,color:'var(--text-primary)'}}>
+                          <strong style={{color:'#10b981'}}>Aquifer target:</strong> {vesResult.interpretation.recommendation} <span style={{color:'var(--text-secondary)'}}>(confidence: {vesResult.interpretation.confidence})</span>
+                        </div>
+                        <p style={{fontSize:9,color:'var(--text-secondary)',marginTop:6,lineHeight:1.4}}>{vesResult.equivalenceNote} <br/>Method: {vesResult.method}</p>
+                      </div>
+                    )}
                   </fieldset>
                   {/* EM/TDEM Survey */}
                   <fieldset style={{border:'1px solid var(--border)',borderRadius:8,padding:12}}>
