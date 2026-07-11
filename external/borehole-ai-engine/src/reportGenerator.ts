@@ -1235,6 +1235,23 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
     y += vbH + 6;
 
+    // ── GROUNDWATER PROSPECT strip — the DATA-BACKED chance of water ──
+    // Owner's directive: proven nearby boreholes + convergent desktop evidence
+    // are real facts that raise the chance of water and must lead the brief,
+    // not be buried under the field-validation caveat.
+    const drB = result.drillReadiness;
+    if (drB?.groundwaterProspect) {
+      const pStrong = drB.groundwaterProspect === 'STRONG' || drB.groundwaterProspect === 'VERY STRONG';
+      const pc: [number, number, number] = pStrong ? [22, 163, 74] : drB.groundwaterProspect === 'MODERATE' ? [180, 83, 9] : [100, 116, 139];
+      doc.setFillColor(pc[0], pc[1], pc[2]);
+      doc.roundedRect(margin, y, pw, 15, 2.5, 2.5, 'F');
+      doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+      doc.text(`GROUNDWATER PROSPECT: ${drB.groundwaterProspect}  (~${drB.prospectIndex}%)`, margin + 5, y + 6.2);
+      doc.setFontSize(6.8); doc.setFont('helvetica', 'normal'); doc.setTextColor(238, 246, 240);
+      doc.text('Data-backed chance of water -- from nearby boreholes + convergent vegetation, drainage & recharge evidence. This is separate from, and not capped by, field-validation readiness.', margin + 5, y + 11.5);
+      y += 19;
+    }
+
     // Headline tiles (2 rows x 3)
     const tiles = [
       { lbl: 'SUCCESS PROBABILITY', val: pct(result.probability), sub: u ? `range ${(u.probabilityRange[0] * 100).toFixed(0)}-${(u.probabilityRange[1] * 100).toFixed(0)}%` : 'satellite-only estimate', c: fv.color },
