@@ -1037,8 +1037,14 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
   // Springs and "(regional est.)" rows prove groundwater OCCURRENCE (real
   // evidence) but their depth numbers are estimates -- the ensemble must
   // know the difference or it validates the model against itself.
+  // AUDIT FIX (2026-07-12): a record is FIELD-MEASURED only if it actually
+  // carries a positive drilled depth OR tested yield. A registry point with
+  // depth 0 (e.g. WPDx/OSM functionality-only, or a spring) is NOT a
+  // measurement — counting it inflated "% field-measured" (the 18%-vs-0
+  // contradiction). Springs and estimate/registry sources are excluded outright.
   const fieldMeasuredCount = dedupWells.filter(w =>
-    !/regional est|estimat|synth|model|fallback/i.test(String(w.source ?? '')) &&
+    ((w.depth_m ?? 0) > 0 || ((w as any).yield_m3h ?? 0) > 0) &&
+    !/regional est|estimat|synth|model|fallback|wpdx|osm|registry/i.test(String(w.source ?? '')) &&
     !/spring/i.test(String(w.id ?? ''))).length;
   const fieldMeasuredShare = dedupWells.length > 0 ? fieldMeasuredCount / dedupWells.length : 0;
 

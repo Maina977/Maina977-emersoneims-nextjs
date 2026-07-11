@@ -123,6 +123,13 @@ export function sanitizePdfText(s: string): string {
     .replace(/^\? /, '')
     .replace(/ \?$/, '')
     .replace(/\? (PASS|FAIL|DRILL|CURRENT)/g, '$1');
+  // AUDIT FIX (2026-07-12): collapse floating-point noise like "6.1000000000000005"
+  // or "48.20000000000001". Only numbers with 8+ fractional digits are touched
+  // (real GPS coordinates use <=7), so they round to 4 dp and drop the tail.
+  t = t.replace(/(\d+)\.(\d{8,})/g, (_m, intPart, frac) => {
+    const v = Number(`${intPart}.${frac}`);
+    return Number.isFinite(v) ? String(Math.round(v * 1e4) / 1e4) : `${intPart}.${frac}`;
+  });
   // map/strip everything the built-in fonts cannot draw
   let out = '';
   for (const ch of t) {
@@ -9150,13 +9157,20 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (ec.crossValidation.wellCount > 0) {
       addPage();
       const xvWells = ec.crossValidation.wells ?? [];
-      // Count every record whose depth/yield is NOT a field measurement:
-      // model-generated values AND registry records carrying regional
-      // estimates (incl. springs, which have no drilled depth at all).
-      const xvSyntheticN = xvWells.filter((w: any) =>
-        /synth|model|estimat|fallback|generated|regional/i.test(w.source ?? '') ||
-        /spring/i.test(String((w as any).wellId ?? ''))).length;
-      const xvRealN = ec.crossValidation.wellCount - xvSyntheticN;
+      // AUDIT FIX (2026-07-12): a record counts as FIELD-MEASURED only if it
+      // actually carries a positive drilled depth/yield AND is not a spring and
+      // not a regional/imputed estimate. Springs have NO drilled depth and must
+      // never inflate the field-measured share or earn validation credit.
+      const xvIsMeasured = (w: any) => {
+        const src = String(w.source ?? '').toLowerCase();
+        const id = String(w.wellId ?? '').toLowerCase();
+        const isSpring = /spring/.test(id) || /spring/.test(src);
+        const isEst = /synth|model|estimat|fallback|generated|regional|imputed|wpdx|osm/.test(src);
+        const hasVal = Number(w.actualDepth_m ?? 0) > 0 || Number(w.actualYield_m3hr ?? 0) > 0;
+        return hasVal && !isSpring && !isEst;
+      };
+      const xvRealN = xvWells.filter(xvIsMeasured).length;
+      const xvSyntheticN = ec.crossValidation.wellCount - xvRealN;
       const xvIsSyntheticHeavy = xvSyntheticN > 0 && xvSyntheticN >= xvRealN;
       const xvSuspectOverfit = ec.crossValidation.wellCount < 10 && (ec.crossValidation.depthMAPE_pct < 5 || ec.crossValidation.yieldMAPE_pct < 5 || ec.crossValidation.depthR2 > 0.95);
 
@@ -9233,17 +9247,26 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.text('Per-Well Validation Detail', margin, y); y += 5;
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
-        head: [['Well ID', 'Dist (km)', 'Actual Depth', 'Pred Depth', 'Err %', 'Actual Yield', 'Pred Yield', 'Err %', 'Outcome']],
-        body: ec.crossValidation.wells.map(w => [
-          w.wellId, (w.distance_km ?? 0).toFixed(1), `${w.actualDepth_m}m`, `${w.predictedDepth_m}m`, `${(w.depthErrorPct ?? 0).toFixed(0)}%`,
-          `${(w.actualYield_m3hr ?? 0).toFixed(2)}`, `${(w.predictedYield_m3hr ?? 0).toFixed(2)}`, `${(w.yieldErrorPct ?? 0).toFixed(0)}%`, w.outcome,
-        ]),
+        head: [['Well ID', 'Dist (km)', 'Recorded Depth', 'Pred Depth', 'Err %', 'Recorded Yield', 'Pred Yield', 'Err %', 'Evidence']],
+        // AUDIT FIX (2026-07-12): a spring/estimate record shows NO fabricated
+        // "Actual" depth/yield and no error % — it is occurrence evidence only,
+        // never quantitative calibration.
+        body: ec.crossValidation.wells.map(w => {
+          const measured = xvIsMeasured(w);
+          const isSpring = /spring/i.test(String(w.wellId ?? ''));
+          const dCell = measured ? `${w.actualDepth_m}m` : isSpring ? 'spring (no drill)' : 'est. only';
+          const yCell = measured ? `${(w.actualYield_m3hr ?? 0).toFixed(2)}` : '—';
+          const dErr = measured ? `${(w.depthErrorPct ?? 0).toFixed(0)}%` : 'n/a';
+          const yErr = measured ? `${(w.yieldErrorPct ?? 0).toFixed(0)}%` : 'n/a';
+          const evid = measured ? 'MEASURED' : isSpring ? 'SPRING (occurrence)' : 'REGISTRY/EST.';
+          return [w.wellId, (w.distance_km ?? 0).toFixed(1), dCell, `${w.predictedDepth_m}m`, dErr, yCell, `${(w.predictedYield_m3hr ?? 0).toFixed(2)}`, yErr, evid];
+        }),
         headStyles: { fillColor: [245, 158, 11], textColor: 255, fontStyle: 'bold', fontSize: 7 },
         bodyStyles: { fontSize: 7 },
         theme: 'grid',
         didParseCell: (data: any) => {
           if (data.column.index === 8 && data.section === 'body') {
-            data.cell.styles.textColor = data.cell.raw === 'Success' ? [22, 163, 74] : data.cell.raw === 'Moderate' ? [217, 119, 6] : [220, 38, 38];
+            data.cell.styles.textColor = data.cell.raw === 'MEASURED' ? [22, 163, 74] : data.cell.raw === 'SPRING (occurrence)' ? [217, 119, 6] : [120, 120, 120];
             data.cell.styles.fontStyle = 'bold';
           }
         },
