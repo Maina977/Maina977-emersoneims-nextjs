@@ -190,6 +190,13 @@ console.log('\nG. Drilling-readiness score gates (drillReadiness)');
     dr.computeDrillReadiness({ gpsSource: 'manual', locationGrade: 'B', reportConsistent: true }).score <= 79);
   check('inconsistent report (software errors) blocks the consistency gate',
     dr.computeDrillReadiness({ hasFieldERT: true, hasFieldPeg: true, hasHydrogeologistSignoff: true, hasWRAAuthorisation: true, reportConsistent: false }).score <= 79);
+  // AUDIT 2026-07-12: a manually-typed coordinate must NEVER satisfy the peg gate
+  const manualB = dr.computeDrillReadiness({ gpsSource: 'manual', locationGrade: 'B', reportConsistent: true });
+  check('manual coordinate (grade B) does NOT satisfy the survey-grade peg gate',
+    manualB.openGates.indexOf('Coordinates field-verified (survey-grade peg)') !== -1,
+    manualB.openGates.join(' | '));
+  check('only an actual field peg satisfies coordinate verification',
+    dr.computeDrillReadiness({ hasFieldPeg: true, reportConsistent: true }).openGates.indexOf('Coordinates field-verified (survey-grade peg)') === -1);
 
   // Groundwater prospect (chance of water) — data-backed, SEPARATE from gates
   const noAnalog = dr.computeDrillReadiness({ reportConsistent: true, convergentEvidenceScore: 0.5 });

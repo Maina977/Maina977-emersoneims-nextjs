@@ -4676,6 +4676,34 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.text(decLines, margin, y); y += decLines.length * 3.5 + 4;
     }
 
+    // AUDIT FIX (2026-07-12): with NO field ERT, suppress ALL synthetic numeric
+    // outputs below (pipeline "10/10", RMS, resolved layers, T/K, ERT-derived
+    // yield & water level, after-ERT confidence). Show ONLY the proposed survey
+    // design. The impossible "zero-thickness layers -> 16 m3/hr" cannot appear.
+    if (!hasFieldERT) {
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 64, 120);
+      doc.text('Proposed ERT/VES Survey Design (to be carried out on site)', margin, y); y += 6;
+      autoTable(doc, {
+        startY: y, margin: { left: margin, right: margin },
+        head: [['Survey parameter', 'Recommended value']],
+        body: [
+          ['Method', 'Schlumberger VES + 2-D ERT profile (Wenner / Dipole-Dipole)'],
+          ['Number of soundings', 'Minimum 3 (crosshair + 2 offsets), spaced 30-50 m'],
+          ['ERT line length', 'Approx. 200-400 m per line'],
+          ['Electrode spacing (a)', '5-10 m, to resolve the 0-80 m interval'],
+          ['Target investigation depth', `At least ${Math.max(80, Math.round(((result as any).recommendedDepth ?? 60) * 1.5))} m`],
+          ['Deliverables', 'Raw apparent-resistivity data, inverted layer model + RMS, interpreted aquifer target, survey-grade drilling peg'],
+        ],
+        headStyles: { fillColor: [30, 64, 120], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+        bodyStyles: { fontSize: 8 }, theme: 'grid',
+      });
+      y = lastY(4);
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 90, 60);
+      doc.text(doc.splitTextToSize('No field resistivity data has been uploaded, so NO inversion grid, RMS error, resolved layers, transmissivity, hydraulic conductivity, ERT-derived yield/water level or "after-ERT" confidence are computed or shown. Those appear only once a real survey is carried out and its raw data uploaded.', pw), margin, y);
+      y += doc.splitTextToSize('placeholder', pw).length * 3.4 + 6;
+    }
+
+    if (hasFieldERT) {
     // Pipeline summary
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
@@ -5001,6 +5029,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const sumLines = doc.splitTextToSize(ei.executiveSummary, pageW - 2 * margin);
       doc.text(sumLines, margin, y); y += sumLines.length * 3 + 4;
     }
+    } // end if (hasFieldERT) — all synthetic ERT numeric outputs suppressed when no field data
   }
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
@@ -5505,7 +5534,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // Overall credibility = SAME as confidence from analyzer (not recomputed)
   const credOverall = confPct / 20;  // Convert % to /5 scale
   const credPct = confPct;  // USE the analyzer's confidence directly ? no inflation
-  const credGrade = (credPct >= 90 && isFieldValid && hasPumpTest) ? 'BANKABLE' : credPct >= 80 ? 'ENGINEERING GRADE' : credPct >= 70 ? 'PRE-FEASIBILITY' : credPct >= 50 ? 'STANDARD ASSESSMENT' : 'PRELIMINARY';
+  // AUDIT FIX (2026-07-12): BANKABLE and ENGINEERING GRADE require FIELD data —
+  // a desktop model output, however high its %, is only a desktop pre-feasibility
+  // grade. Never stamp "Engineering Grade" without field validation.
+  const credGrade = (credPct >= 90 && isFieldValid && hasPumpTest) ? 'BANKABLE'
+    : (credPct >= 80 && isFieldValid) ? 'ENGINEERING GRADE'
+    : credPct >= 70 ? 'DESKTOP PRE-FEASIBILITY'
+    : credPct >= 50 ? 'DESKTOP SCREENING' : 'PRELIMINARY';
 
   // Define credDims with safe defaults
   const credDims = [
@@ -5686,7 +5721,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(`${result.siteSelection.candidatesEvaluated} candidate points evaluated within ${result.siteSelection.searchRadius_m}m radius using 8-layer feature fusion`, margin, y);
     y += 6;
 
-    const siteRows = result.siteSelection.topSites.map(s => [
+    // AUDIT FIX (2026-07-12): candidates BEYOND the search radius must not be
+    // shown (a "2,828 m" point inside a "2,000 m radius" is a distance-filter
+    // bug). Only in-radius points are listed.
+    const _selRadius = result.siteSelection.searchRadius_m ?? 500;
+    const _inRadius = result.siteSelection.topSites.filter(s => (s.distanceFromTarget_m ?? 0) <= _selRadius + 1);
+    const siteRows = _inRadius.map(s => [
       `#${s.rank}`,
       `${sf(s.latitude, 5)}, ${sf(s.longitude, 5)}`,
       `${Math.min(100, Math.round(s.score ?? 0))}/100`,
@@ -5706,12 +5746,21 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     });
     y = lastY(4);
 
-    // Reasoning for top site
-    const top = result.siteSelection.topSites[0];
-    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 150, 100);
-    doc.text(`Recommendation: Drill at Site #1 (${sf(top.latitude, 5)}, ${sf(top.longitude, 5)})`, margin, y); y += 4;
-    doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
-    top.reasoning.forEach(r => { doc.text(`• ${r}`, margin + 2, y); y += 3.5; });
+    // AUDIT FIX (2026-07-12): NEVER recommend drilling at an alternative/off-plot
+    // point. These are relative spatial-screening candidates only. Any point
+    // beyond the client's plot needs confirmed ownership/access/authority first.
+    const top = _inRadius[0] ?? result.siteSelection.topSites[0];
+    doc.setFillColor(254, 243, 199); doc.roundedRect(margin, y, pw, 16, 2, 2, 'F');
+    doc.setDrawColor(217, 119, 6); doc.setLineWidth(0.5); doc.roundedRect(margin, y, pw, 16, 2, 2, 'S');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+    doc.text('SPATIAL SCREENING ONLY - NOT A DRILLING RECOMMENDATION', margin + 4, y + 5);
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(90, 70, 40);
+    doc.text(doc.splitTextToSize('The governing drill target is the PRIMARY point above. These ranked candidates compare relative favourability within the search area only. Any point beyond your plot boundary must NOT be drilled without confirmed land ownership, access, boundaries and authority — and must still be validated by a field ERT/VES survey.', pw - 8), margin + 4, y + 9);
+    y += 20;
+    if (top) {
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+      (top.reasoning || []).forEach((r: string) => { doc.text(`• ${r}`, margin + 2, y); y += 3.5; });
+    }
     y += 4;
 
     doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(200, 60, 60);
@@ -7277,16 +7326,30 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   if (result.siteIdentity) {
     addPage();
     const si = result.siteIdentity;
-    // Only call the site "VERIFIED" when the coordinates actually came from a
-    // measurement (EXIF/device GPS or manual entry, grade A-C). A visual
-    // terrain estimate is ±50 km — printing it under "VERIFIED SITE IDENTITY"
-    // at 6-decimal precision (~10 cm) is false precision that misleads clients.
-    const gpsIsReal = ['exif', 'manual', 'device'].includes(String(result.gpsSource)) ||
+    // AUDIT FIX (2026-07-12): THREE honest states. A manually-typed or EXIF
+    // coordinate LOCATES the plot but is NOT a survey-grade peg — it must never
+    // be called "VERIFIED". Only an on-site field peg is field-verified.
+    const pegVerified = !!result.drillReadiness &&
+      result.drillReadiness.openGates.indexOf('Coordinates field-verified (survey-grade peg)') === -1;
+    const gpsSupplied = ['exif', 'manual', 'device'].includes(String(result.gpsSource)) ||
       String(si.locationConfidenceGrade) <= 'C';
+    const gpsState: 'field' | 'supplied' | 'estimate' = pegVerified ? 'field' : gpsSupplied ? 'supplied' : 'estimate';
+    const gpsIsReal = gpsState !== 'estimate'; // kept for downstream conditionals
     doc.setFontSize(16); doc.setFont('helvetica', 'bold');
-    doc.setTextColor(gpsIsReal ? 13 : 200, gpsIsReal ? 17 : 100, gpsIsReal ? 23 : 0);
-    doc.text(gpsIsReal ? 'VERIFIED SITE IDENTITY' : 'SITE IDENTITY — UNVERIFIED (AI-ESTIMATED LOCATION)', margin, y); y += 6;
-    if (!gpsIsReal) {
+    const idTitle = gpsState === 'field' ? 'VERIFIED SITE IDENTITY (FIELD-PEGGED)'
+      : gpsState === 'supplied' ? 'SITE IDENTITY — COORDINATE SUPPLIED (NOT FIELD-VERIFIED)'
+      : 'SITE IDENTITY — UNVERIFIED (AI-ESTIMATED LOCATION)';
+    doc.setTextColor(gpsState === 'field' ? 13 : gpsState === 'supplied' ? 180 : 200, gpsState === 'field' ? 17 : gpsState === 'supplied' ? 120 : 100, gpsState === 'field' ? 23 : gpsState === 'supplied' ? 30 : 0);
+    doc.text(idTitle, margin, y); y += 6;
+    if (gpsState === 'supplied') {
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(180, 120, 30);
+      const supNote = doc.splitTextToSize(
+        'Coordinate supplied manually or from photo metadata. It locates the plot but is NOT a survey-grade peg and NOT field-verified. The drilling point must be set out on site (GPS receiver, accuracy, date, operator, photo) before mobilisation — no GPS drilling-readiness credit is given until then.',
+        pw
+      );
+      doc.text(supNote, margin, y); y += supNote.length * 4 + 2;
+    }
+    if (gpsState === 'estimate') {
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(200, 100, 0);
       const estNote = doc.splitTextToSize(
         'Coordinates below are an AI visual-terrain ESTIMATE (uncertainty tens of kilometres). They are NOT a surveyed location. All maps, drill points and distances derived from them are placeholders until real GPS coordinates are provided.',
@@ -7358,9 +7421,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y = lastY(6);
 
     // Gate rule
+    // AUDIT FIX (2026-07-12): the gate reflects the SUPPLY STATE, not the
+    // geocode grade. A supplied coordinate always still requires a field peg.
     doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-    doc.setTextColor(si.locationConfidenceGrade <= 'B' ? 22 : 200, si.locationConfidenceGrade <= 'B' ? 163 : 100, si.locationConfidenceGrade <= 'B' ? 74 : 0);
-    doc.text(`GATE: GPS ${si.locationConfidenceGrade <= 'B' ? 'VERIFIED' : si.locationConfidenceGrade === 'C' ? 'ACCEPTABLE (geocoded)' : 'REQUIRES FIELD VERIFICATION'}`, margin, y);
+    doc.setTextColor(gpsState === 'field' ? 22 : 180, gpsState === 'field' ? 163 : 120, gpsState === 'field' ? 74 : 30);
+    doc.text(`GATE: GPS ${gpsState === 'field' ? 'FIELD-PEGGED' : gpsState === 'supplied' ? 'COORDINATE SUPPLIED — FIELD PEG REQUIRED BEFORE DRILLING' : 'REQUIRES FIELD VERIFICATION'}`, margin, y);
     y += 10;
   }
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }

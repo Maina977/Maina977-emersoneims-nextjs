@@ -73,8 +73,11 @@ export interface DrillReadinessResult {
  * until each is satisfied.
  */
 export function computeDrillReadiness(input: DrillReadinessInput): DrillReadinessResult {
-  const gpsFieldVerified = input.hasFieldPeg === true ||
-    (['manual'].includes(String(input.gpsSource)) && ['A', 'B'].includes(String(input.locationGrade)));
+  // AUDIT FIX (2026-07-12): a MANUALLY-typed coordinate is NOT a survey-grade
+  // peg. Only an actual field peg (recorded on site with receiver/accuracy/date)
+  // satisfies coordinate verification. Manual/EXIF/device entry earns ZERO GPS
+  // readiness points — the peg must be set out on the ground first.
+  const gpsFieldVerified = input.hasFieldPeg === true;
 
   // ── REGIONAL / ANALOG EVIDENCE (real facts, desktop-tier) ──
   const analogN = Math.max(0, input.analogBoreholeCount ?? 0);
@@ -199,10 +202,14 @@ export function computeDrillReadiness(input: DrillReadinessInput): DrillReadines
   else if (prospectIndex >= 40) groundwaterProspect = 'MODERATE';
   else groundwaterProspect = 'LOW';
 
+  // AUDIT FIX (2026-07-12): do NOT call registry water points "producing
+  // boreholes within 2 km" — the set is mostly springs/registry points across
+  // the whole search radius. State it honestly as water-point occurrence
+  // evidence, not drilled-borehole calibration.
   const analogPhrase = analogN >= 3
-    ? `${analogN} known producing borehole(s) within ~2 km${analogSR > 0 ? ` (~${Math.round(analogSR * 100)}% regional success)` : ''}, concordant with the desktop model, `
+    ? `${analogN} nearby water-point record(s) in the search area (springs, wells and boreholes)${analogSR > 0 ? ` — ~${Math.round(analogSR * 100)}% of surveyed points functional` : ''}, `
     : analogN > 0
-    ? `${analogN} nearby borehole record(s) and `
+    ? `${analogN} nearby water-point record(s) and `
     : '';
   const prospectStatement = `${analogPhrase}together with convergent vegetation, drainage, water-body and recharge signals, indicate a ${groundwaterProspect} groundwater prospect (~${prospectIndex}%). This is the DATA-BACKED chance of striking water and does not require field validation. Drilling READINESS — pegging the exact point and depth and holding regulatory authority — is scored separately and still requires the field steps below.`;
 
