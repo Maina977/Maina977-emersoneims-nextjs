@@ -439,6 +439,12 @@ console.log('\nM. National data coverage + field-only honesty (dataCoverageEngin
   const many = dc.assessDataCoverage({ nearbyBoreholeCount: 15, nearbyFieldMeasuredCount: 8 });
   const bconf = (r) => r.items.find(i => /Nearby drilled/i.test(i.domain)).confidencePct;
   check('proven nearby boreholes raise the borehole-domain confidence', bconf(many) > bconf(few), `${bconf(few)} vs ${bconf(many)}`);
+
+  // Real WPDx field-surveyed functionality surfaces in the borehole item note
+  const withFunc = dc.assessDataCoverage({ nearbyBoreholeCount: 20, surveyedBoreholeCount: 14, functionalRatePct: 71 });
+  const bItem = withFunc.items.find(i => /Nearby drilled/i.test(i.domain));
+  check('WPDx functional rate surfaces as a data-backed base rate in coverage',
+    /field-surveyed functionality/i.test(bItem.tells) && /71%/.test(bItem.tells), bItem.tells);
 }
 
 // ── N. CLIMATE CLASSIFIER (climateClassifier — Köppen-Geiger) ──

@@ -41,6 +41,9 @@ export interface DataCoverageInput {
   hasSatelliteET?: boolean;
   nearbyBoreholeCount?: number;
   nearbyFieldMeasuredCount?: number;
+  /** Real field-surveyed functionality (WPDx/registry) — data-backed base rate. */
+  functionalRatePct?: number | null;
+  surveyedBoreholeCount?: number;
   hasFieldERT?: boolean;     // real ERT/VES inversion present
   hasPumpTest?: boolean;
   hasLabChem?: boolean;
@@ -115,11 +118,16 @@ export function assessDataCoverage(input: DataCoverageInput): DataCoverageResult
 
   // Nearby real boreholes — the strongest desktop evidence
   const boreholeConf = nB === 0 ? 0 : clampPct(35 + Math.min(45, nB * 4) + Math.min(20, nFM * 6));
+  const surveyed = input.surveyedBoreholeCount ?? 0;
+  const funcRate = input.functionalRatePct;
+  const funcNote = surveyed > 0 && funcRate != null
+    ? ` Field-surveyed functionality: ${funcRate}% of ${surveyed} nearby boreholes with a known status are working (real WPDx/registry outcomes).`
+    : '';
   items.push({
     domain: 'Nearby drilled boreholes', dataset: 'WPDx / UNESCO / WRA / OSM registries',
     nativeResolution: 'point records', status: nB === 0 ? 'not_available' : nFM > 0 ? 'measured' : 'regional_estimate',
     confidencePct: boreholeConf,
-    tells: nB === 0 ? 'No proven neighbours found.' : `${nB} nearby borehole record(s), ${nFM} with measured depth/yield — the strongest desktop predictor of success.`,
+    tells: nB === 0 ? 'No proven neighbours found.' : `${nB} nearby borehole record(s), ${nFM} with measured depth/yield — the strongest desktop predictor of success.${funcNote}`,
     limit: 'Analog wells prove the aquifer regionally, not the fracture under THIS pad.', fieldOnly: false,
   });
 

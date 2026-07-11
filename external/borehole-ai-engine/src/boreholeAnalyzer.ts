@@ -2881,6 +2881,8 @@ export class BoreholeAnalyzer {
             hasSatelliteET: !!r.satelliteET,
             nearbyBoreholeCount: nBcount,
             nearbyFieldMeasuredCount: Math.round((nw?.fieldMeasuredShare ?? 0) * nBcount),
+            functionalRatePct: nw?.regionalFunctionality?.functionalRatePct ?? null,
+            surveyedBoreholeCount: nw?.regionalFunctionality?.surveyedCount ?? 0,
             hasFieldERT: !!r._auditFlags?.hasFieldERT,
             hasPumpTest: !!r._auditFlags?.hasFieldPumpTest,
             hasLabChem: !!r._auditFlags?.hasLabWaterAnalysis,

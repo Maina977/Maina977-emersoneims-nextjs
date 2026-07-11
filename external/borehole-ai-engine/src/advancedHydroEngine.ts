@@ -209,6 +209,14 @@ export interface NearbyBoreholeData {
    *  never masquerade as drilled-borehole ground truth. */
   fieldMeasuredCount: number;
   fieldMeasuredShare: number; // 0..1 of sampleSize
+  /** Real field-surveyed functionality (WPDx & registry outcomes) — a
+   *  data-backed regional success base-rate, not a model assumption. */
+  regionalFunctionality?: {
+    functional: number;
+    nonFunctional: number;
+    surveyedCount: number;   // functional + nonFunctional (points with a known status)
+    functionalRatePct: number | null;
+  };
   searchRadius_km: number;
   dataSources: string[];
   // Borehole density analysis
@@ -1045,6 +1053,13 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
     sampleSize: dedupWells.length,
     fieldMeasuredCount,
     fieldMeasuredShare: Math.round(fieldMeasuredShare * 100) / 100,
+    regionalFunctionality: {
+      functional: successfulWells,
+      nonFunctional: failedWells,
+      surveyedCount: successfulWells + failedWells,
+      functionalRatePct: (successfulWells + failedWells) > 0
+        ? Math.round((successfulWells / (successfulWells + failedWells)) * 100) : null,
+    },
     searchRadius_km: searchRadius,
     dataSources,
     densityAnalysis: {
