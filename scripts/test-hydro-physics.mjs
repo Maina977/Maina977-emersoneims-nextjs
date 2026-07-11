@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -393,6 +393,52 @@ console.log('\nL. Backtest & calibration (backtestEngine)');
   check('CSV parses rows + accepts % or 0-1 probability + yes/no success',
     parsed.length === 2 && parsed[0].success === true && Math.abs(parsed[0].predictedProbability - 0.8) < 1e-9 && parsed[1].success === false,
     JSON.stringify(parsed[0]));
+}
+
+// ── M. DATA COVERAGE ENGINE (dataCoverageEngine) ──
+console.log('\nM. National data coverage + field-only honesty (dataCoverageEngine)');
+{
+  const dc = req(join(OUT, 'dataCoverageEngine.js'));
+
+  // 1. No data → low coverage, pre-feasibility, all three field items outstanding
+  const none = dc.assessDataCoverage({});
+  check('no data → PRE-FEASIBILITY tier with low desktop coverage',
+    none.confidenceTier === 'PRE-FEASIBILITY' && none.desktopCoveragePct < 30, `${none.confidenceTier} ${none.desktopCoveragePct}%`);
+  check('always lists the 3 inherently field-only items as outstanding',
+    none.fieldItemsOutstanding.length === 3, none.fieldItemsOutstanding.join(', '));
+
+  // 2. HONESTY INVARIANT: full REMOTE data still leaves field-only items outstanding
+  const fullRemote = dc.assessDataCoverage({
+    hasClimate: true, hasSoil: true, hasGeology: true, hasVegetation: true, hasDEM: true,
+    hasGraceStorage: true, hasSatelliteET: true, nearbyBoreholeCount: 12, nearbyFieldMeasuredCount: 6,
+  });
+  check('rich remote data → high desktop coverage', fullRemote.desktopCoveragePct >= 60, `${fullRemote.desktopCoveragePct}%`);
+  check('rich remote data is TARGETED-SURVEY-READY, NOT field-validated',
+    fullRemote.confidenceTier === 'TARGETED-SURVEY-READY');
+  check('CRITICAL: remote data NEVER resolves the 3 field-only items (site visit not optional)',
+    fullRemote.fieldItemsOutstanding.length === 3, fullRemote.fieldItemsOutstanding.join(', '));
+  check('water table / chemistry / fracture stay field_required from remote data alone',
+    fullRemote.items.filter(i => i.fieldOnly).every(i => i.status === 'field_required'));
+
+  // 3. With field data, the field-only items resolve → FIELD-VALIDATED
+  const validated = dc.assessDataCoverage({
+    hasClimate: true, hasSoil: true, hasGeology: true, hasVegetation: true, hasDEM: true,
+    hasFieldERT: true, hasPumpTest: true, hasLabChem: true,
+  });
+  check('field ERT + pump test + lab → FIELD-VALIDATED, no field items outstanding',
+    validated.confidenceTier === 'FIELD-VALIDATED' && validated.fieldItemsOutstanding.length === 0);
+
+  // 4. Remote confidence for a field-only property is always low; field is high
+  const wtRemote = none.items.find(i => /water-table/i.test(i.domain));
+  const wtField = validated.items.find(i => /water-table/i.test(i.domain));
+  check('exact water-table confidence: low from remote, high with field data',
+    wtRemote.confidencePct <= 40 && wtField.confidencePct >= 80, `remote ${wtRemote.confidencePct}, field ${wtField.confidencePct}`);
+
+  // 5. more/measured nearby boreholes → higher borehole-domain confidence
+  const few = dc.assessDataCoverage({ nearbyBoreholeCount: 2, nearbyFieldMeasuredCount: 0 });
+  const many = dc.assessDataCoverage({ nearbyBoreholeCount: 15, nearbyFieldMeasuredCount: 8 });
+  const bconf = (r) => r.items.find(i => /Nearby drilled/i.test(i.domain)).confidencePct;
+  check('proven nearby boreholes raise the borehole-domain confidence', bconf(many) > bconf(few), `${bconf(few)} vs ${bconf(many)}`);
 }
 
 rmSync(OUT, { recursive: true, force: true });

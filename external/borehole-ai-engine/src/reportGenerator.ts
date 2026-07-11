@@ -4532,6 +4532,52 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
   } catch (_secErr) { console.warn('[PDF] satellite-ET section skipped', _secErr); }
 
+  // -- 28d. NATIONAL DATA COVERAGE (what we know here, and how well) --
+  try {
+  const dcov = (result as any).dataCoverage;
+  if (dcov && Array.isArray(dcov.items)) {
+    addPage();
+    const tierColor: [number, number, number] = dcov.confidenceTier === 'FIELD-VALIDATED' ? [22, 101, 52]
+      : dcov.confidenceTier === 'TARGETED-SURVEY-READY' ? [2, 132, 199] : [180, 83, 9];
+    doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(tierColor[0], tierColor[1], tierColor[2]);
+    doc.text('Data Coverage — What We Know at This Site, and How Well', margin, y); y += 6;
+
+    // Tier banner
+    doc.setFillColor(tierColor[0], tierColor[1], tierColor[2]);
+    doc.roundedRect(margin, y, pw, 18, 2, 2, 'F');
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+    doc.text(`${dcov.confidenceTier}  —  desktop coverage ${dcov.desktopCoveragePct}%`, margin + 4, y + 7);
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(240, 240, 240);
+    doc.text(doc.splitTextToSize(dcov.overallStatement, pw - 8), margin + 4, y + 13);
+    y += 22;
+
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Data domain', 'Source', 'Resolution', 'Status', 'Conf.', 'What it does / does not tell you']],
+      body: dcov.items.map((it: any) => [
+        it.domain + (it.fieldOnly ? ' *' : ''), it.dataset, it.nativeResolution,
+        String(it.status).replace(/_/g, ' ').toUpperCase(), `${it.confidencePct}%`,
+        `${it.tells}  —  ${it.limit}`,
+      ]),
+      headStyles: { fillColor: [51, 65, 85], textColor: 255, fontStyle: 'bold', fontSize: 7 },
+      bodyStyles: { fontSize: 6.5 },
+      columnStyles: { 3: { cellWidth: 22 }, 4: { cellWidth: 12 }, 5: { cellWidth: 62 } },
+      theme: 'grid',
+      didParseCell: (d: any) => {
+        if (d.column.index === 3 && d.section === 'body') {
+          const raw = String(d.cell.raw);
+          d.cell.styles.textColor = /FIELD REQUIRED/.test(raw) ? [220, 38, 38] : /^MEASURED/.test(raw) ? [22, 163, 74] : [100, 116, 139];
+          d.cell.styles.fontStyle = 'bold';
+        }
+      },
+    });
+    y = lastY(4);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 30, 30);
+    doc.text(doc.splitTextToSize('* Field-only: the exact water table, point water chemistry, and aquifer/fracture geometry are LOCAL and below the resolution of any national or satellite dataset. No amount of remote data replaces one on-site measurement of these — this is physics, not a software limit.', pw), margin, y);
+    y += doc.splitTextToSize('x', pw).length * 3.4 + 8;
+  }
+  } catch (_secErr) { console.warn('[PDF] data-coverage section skipped', _secErr); }
+
   // -- 29. ERT INTELLIGENCE PIPELINE --
   try {
   if (result.ertInterpretation) {

@@ -707,6 +707,7 @@ export interface AnalysisResult {
   wellDesign?: import('./wellDesignEngine').WellDesignResult;
   drillReadiness?: import('./drillReadiness').DrillReadinessResult;
   vesInversion?: import('./vesInversionEngine').VESInversionResult;
+  dataCoverage?: import('./dataCoverageEngine').DataCoverageResult;
   satelliteET?: import('./satelliteETEngine').SatelliteETResult & {
     modelledActualET_mm?: number;
     modelledRecharge_mm?: number;

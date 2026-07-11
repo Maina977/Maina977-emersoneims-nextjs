@@ -12,6 +12,7 @@ import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, g
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
 import { budykoWaterBalance } from './hydroPhysics';
 import { fetchSatelliteActualET, reconcileRechargeWithMeasuredET } from './satelliteETEngine';
+import { assessDataCoverage } from './dataCoverageEngine';
 import { fetchRealTimeWaterData } from './realTimeWaterData';
 import { generateSubsurfaceModel } from './subsurfaceModeler';
 import { runAquiferSimulation } from './aquiferSimulator';
@@ -2852,6 +2853,28 @@ export class BoreholeAnalyzer {
             canon.rechargeFromMeasuredET_mm = measuredBalance.recharge_mm;
           }
         } catch { /* satellite ET is best-effort — never blocks the pipeline */ }
+
+        // ── NATIONAL DATA COVERAGE — honest per-site "what do we know?" ──
+        try {
+          const r: any = result;
+          const nw: any = r.nearbyWells;
+          const nBcount = nw?.sampleSize ?? nw?.nearbyWells?.length ?? 0;
+          r.dataCoverage = assessDataCoverage({
+            lat: effectiveLat ?? undefined, lon: effectiveLon ?? undefined,
+            hasClimate: !!r.historicalData,
+            hasSoil: !!(r.globalSoilAnalysis || r.soil),
+            hasGeology: !!r.advancedRockMapping,
+            hasVegetation: !!(r.satelliteVegetation || r.vegetationGWProxy),
+            hasDEM: !!r.demHydrology,
+            hasGraceStorage: !!r.graceData,
+            hasSatelliteET: !!r.satelliteET,
+            nearbyBoreholeCount: nBcount,
+            nearbyFieldMeasuredCount: Math.round((nw?.fieldMeasuredShare ?? 0) * nBcount),
+            hasFieldERT: !!r._auditFlags?.hasFieldERT,
+            hasPumpTest: !!r._auditFlags?.hasFieldPumpTest,
+            hasLabChem: !!r._auditFlags?.hasLabWaterAnalysis,
+          });
+        } catch { /* coverage is best-effort */ }
       }
 
       // 5c. ONE site elevation. The DEM module reports its 5x5-grid centre
