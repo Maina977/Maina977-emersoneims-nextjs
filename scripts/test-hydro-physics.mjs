@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -307,6 +307,45 @@ console.log('\nJ. VES resistivity inversion (vesInversionEngine)');
     ves.invertVES(data, { nLayers: 3 }).dataSource === 'field_ves' && inv.dataSource === 'demo');
   check('reports the equivalence / non-uniqueness caveat',
     /non-unique|equivalen/i.test(inv.equivalenceNote));
+}
+
+// ── K. SATELLITE ACTUAL-ET (satelliteETEngine) ──
+console.log('\nK. Satellite actual-ET + measured water balance (satelliteETEngine)');
+{
+  const sat = req(join(OUT, 'satelliteETEngine.js'));
+
+  // Real NASA POWER EVLAND climatology payload for Nairobi (captured live, mm/day)
+  const nairobiPayload = { properties: { parameter: { EVLAND: {
+    JAN: 1.63, FEB: 1.28, MAR: 1.5, APR: 2.41, MAY: 2.76, JUN: 1.61,
+    JUL: 0.79, AUG: 0.75, SEP: 0.72, OCT: 1.2, NOV: 2.16, DEC: 2.03, ANN: 1.57,
+  } } }, header: { range: '2001-2020' } };
+  const parsed = sat.parseSatelliteET(nairobiPayload);
+  check('parses NASA POWER EVLAND into a plausible annual actual ET (400-800 mm/yr)',
+    parsed && parsed.actualET_mm_yr > 400 && parsed.actualET_mm_yr < 800, `${parsed && parsed.actualET_mm_yr} mm/yr`);
+  check('actual-ET provenance is measured_reanalysis (never faked as field data)',
+    parsed && parsed.provenance === 'measured_reanalysis');
+  check('missing/fill EVLAND data → null (never fabricates ET)',
+    sat.parseSatelliteET({ properties: { parameter: { EVLAND: { JAN: -999, FEB: -999 } } } }) === null &&
+    sat.parseSatelliteET({}) === null);
+
+  // Measured-ET water balance: mass conservation + physical bounds
+  const climates = [[1200, 573, 200], [300, 290, 20], [2400, 900, 500], [80, 200, 10]];
+  let conserved = true, capped = true, nonneg = true, off = '';
+  for (const [P, AET, RO] of climates) {
+    const b = sat.reconcileRechargeWithMeasuredET(P, AET, RO);
+    if (!b.massConserved || Math.abs(b.precipitation_mm - (b.actualET_mm + b.runoff_mm + b.recharge_mm)) > 1) { conserved = false; off = `P=${P}`; }
+    if (b.actualET_mm > b.precipitation_mm) { capped = false; off = `P=${P}`; }
+    if (b.recharge_mm < 0) { nonneg = false; off = `P=${P}`; }
+  }
+  check('measured-ET balance conserves mass P = AET + runoff + recharge', conserved, off);
+  check('actual ET is capped at precipitation (supply limit)', capped, off);
+  check('recharge is never negative', nonneg, off);
+  check('arid case (measured ET ≥ rainfall) → zero recharge',
+    sat.reconcileRechargeWithMeasuredET(80, 200, 10).recharge_mm === 0);
+  const dry = sat.reconcileRechargeWithMeasuredET(600, 500, 60);
+  const wet = sat.reconcileRechargeWithMeasuredET(1400, 500, 60);
+  check('wetter climate (same ET) → more recharge', wet.recharge_mm > dry.recharge_mm,
+    `dry ${dry.recharge_mm} vs wet ${wet.recharge_mm}`);
 }
 
 rmSync(OUT, { recursive: true, force: true });

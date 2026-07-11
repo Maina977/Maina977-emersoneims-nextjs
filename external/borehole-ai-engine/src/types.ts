@@ -707,6 +707,12 @@ export interface AnalysisResult {
   wellDesign?: import('./wellDesignEngine').WellDesignResult;
   drillReadiness?: import('./drillReadiness').DrillReadinessResult;
   vesInversion?: import('./vesInversionEngine').VESInversionResult;
+  satelliteET?: import('./satelliteETEngine').SatelliteETResult & {
+    modelledActualET_mm?: number;
+    modelledRecharge_mm?: number;
+    measuredBalance?: import('./satelliteETEngine').ReconciledBalance;
+    divergesFromModel?: boolean;
+  };
   /** Satellite Water Analysis — MODIS NDVI/EVI, ERA5 LAI/LST/ET, JRC water, Aqua satellite capabilities */
   satelliteWaterAnalysis?: import('./satelliteWaterEngine').SatelliteWaterAnalysis;
   /** Global Soil Analysis — WRB classification, hydraulic properties, soil recognition */

@@ -11,6 +11,7 @@ import { fetchHistoricalData, estimateGroundwaterTrend } from './historicalData'
 import { getRegionalBoreholeStats, geocodeLocationForm, GEOLOGICAL_FORMATIONS, getKenyaCountyBoreholeStats } from './boreholeDatabase';
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
 import { budykoWaterBalance } from './hydroPhysics';
+import { fetchSatelliteActualET, reconcileRechargeWithMeasuredET } from './satelliteETEngine';
 import { fetchRealTimeWaterData } from './realTimeWaterData';
 import { generateSubsurfaceModel } from './subsurfaceModeler';
 import { runAquiferSimulation } from './aquiferSimulator';
@@ -343,6 +344,7 @@ export class BoreholeAnalyzer {
 
     let remoteSensing: any = undefined;
     let historicalData: any = undefined;
+    let satETPromise: Promise<Awaited<ReturnType<typeof fetchSatelliteActualET>>> = Promise.resolve(null);
     let boreholeRecords: any = undefined;
     let gldasGroundwater: any = undefined;
     let realTimeWaterData: any = undefined;
@@ -368,6 +370,12 @@ export class BoreholeAnalyzer {
           }, 60000)),
         ]);
       };
+
+      // Satellite MEASURED actual ET (NASA POWER / MERRA-2 EVLAND) — fired in
+      // parallel; used later to reconcile the water balance with measured ET.
+      satETPromise = hasCoords
+        ? fetchSatelliteActualET(effectiveLat!, effectiveLon!).catch(() => null)
+        : Promise.resolve(null);
 
       const allSettledPromise = Promise.allSettled([
         timed('remoteSensing', fetchRemoteSensingData(effectiveLat!, effectiveLon!, features.pixelAnalysis)),
@@ -2821,6 +2829,29 @@ export class BoreholeAnalyzer {
           ],
           source: measuredP ? `Multi-year measured precipitation mean (${histVals.length} yrs)` : 'Best available model archive',
         } : undefined;
+
+        // ── SATELLITE MEASURED ACTUAL ET → measured-ET water balance ──
+        // Replace the modelled (Budyko) ET with satellite-assimilated MERRA-2
+        // actual ET where available, and publish the recharge it implies.
+        try {
+          const satET = await satETPromise;
+          const canon = (result as any).canonicalHydroClimate;
+          if (satET && canon && canon.precipitation_mm > 0) {
+            const runoff = (wb?.surfaceRunoff ?? Math.round(canon.precipitation_mm * 0.15));
+            const measuredBalance = reconcileRechargeWithMeasuredET(canon.precipitation_mm, satET.actualET_mm_yr, runoff);
+            (result as any).satelliteET = {
+              ...satET,
+              modelledActualET_mm: canon.actualET_mm,
+              modelledRecharge_mm: canon.recharge_mm,
+              measuredBalance,
+              divergesFromModel: canon.actualET_mm > 0 && Math.abs(satET.actualET_mm_yr - canon.actualET_mm) / canon.actualET_mm > 0.2,
+            };
+            // Prefer the measured-ET recharge as the canonical value (still shown
+            // beside the modelled one for transparency in the report).
+            canon.measuredActualET_mm = satET.actualET_mm_yr;
+            canon.rechargeFromMeasuredET_mm = measuredBalance.recharge_mm;
+          }
+        } catch { /* satellite ET is best-effort — never blocks the pipeline */ }
       }
 
       // 5c. ONE site elevation. The DEM module reports its 5x5-grid centre

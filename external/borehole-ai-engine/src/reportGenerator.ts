@@ -4488,6 +4488,50 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
   } catch (_secErr) { console.warn('[PDF] VES section skipped', _secErr); }
 
+  // -- 28c. SATELLITE MEASURED ACTUAL ET (empirical water balance) --
+  try {
+  const sET = (result as any).satelliteET;
+  if (sET && typeof sET.actualET_mm_yr === 'number') {
+    checkSpace(60);
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(2, 132, 199);
+    doc.text('Satellite Measured Evapotranspiration (Empirical Water Balance)', margin, y); y += 6;
+    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 110, 130);
+    doc.text(doc.splitTextToSize('The recharge term below uses MEASURED actual ET from satellite (MERRA-2), not a modelled ET assumption — making the water balance empirical.', pw), margin, y); y += 8;
+
+    const mb = sET.measuredBalance ?? {};
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Water-balance term', 'Value', 'Basis']],
+      body: [
+        ['Actual ET (measured)', `${sET.actualET_mm_yr} mm/yr (${sET.actualET_mm_day} mm/day)`, sET.source],
+        ...(typeof sET.modelledActualET_mm === 'number' ? [['Actual ET (modelled, for comparison)', `${Math.round(sET.modelledActualET_mm)} mm/yr`, 'Budyko framework (hydroPhysics)']] : []),
+        ['Precipitation', `${mb.precipitation_mm ?? '—'} mm/yr`, 'Canonical measured/model precipitation'],
+        ['Surface runoff', `${mb.runoff_mm ?? '—'} mm/yr`, 'SCS-CN partition'],
+        ['RECHARGE (from measured ET)', `${mb.recharge_mm ?? '—'} mm/yr`, `P − AET − runoff (mass-conserving); regime ${mb.regime ?? '—'}`],
+        ...(typeof sET.modelledRecharge_mm === 'number' ? [['Recharge (modelled ET, for comparison)', `${Math.round(sET.modelledRecharge_mm)} mm/yr`, 'For transparency']] : []),
+      ],
+      headStyles: { fillColor: [2, 132, 199], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      columnStyles: { 2: { cellWidth: 70 } },
+      theme: 'grid',
+      didParseCell: (d: any) => {
+        if (d.section === 'body' && String(d.row.raw?.[0]).startsWith('RECHARGE')) {
+          d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = [236, 253, 245];
+        }
+      },
+    });
+    y = lastY(4);
+    if (sET.divergesFromModel) {
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+      doc.text(doc.splitTextToSize('Note: measured ET differs from the modelled ET by >20% — the measured value is used for the empirical recharge; the difference reflects local land-cover/moisture the Budyko model does not capture.', pw), margin, y);
+      y += doc.splitTextToSize('x', pw).length * 3.4 + 6;
+    }
+    doc.setFontSize(6.8); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
+    doc.text(doc.splitTextToSize(sET.note + ' Provenance: ' + sET.provenance + '. Resolution: ' + sET.resolution + '.', pw), margin, y);
+    y += doc.splitTextToSize(sET.note, pw).length * 3.2 + 4;
+  }
+  } catch (_secErr) { console.warn('[PDF] satellite-ET section skipped', _secErr); }
+
   // -- 29. ERT INTELLIGENCE PIPELINE --
   try {
   if (result.ertInterpretation) {
