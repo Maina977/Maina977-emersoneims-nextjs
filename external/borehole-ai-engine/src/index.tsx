@@ -267,17 +267,38 @@ function computeCredibility(r: AnalysisResult) {
   const overall = (sciScore + dataScore + econScore + confScore) / 4;
   const overallPct = Math.round(overall / 5 * 100);
 
+  // AUDIT FIX (2026-07-12): the credibility % measures how well the AI/satellite
+  // models AGREE — it is NOT field validation. A desktop-only run can NEVER be
+  // graded BANKABLE or called "suitable for drilling decisions", no matter how
+  // high the model agreement, because no field ERT / pump test / lab exists.
+  // Grade is gated by real field evidence, mirroring drillReadiness + the PDF.
+  const rr = r as any;
+  const fieldValidated =
+    rr.assessmentType === 'FIELD_VALIDATED' ||
+    !!rr.fieldData || !!rr.fieldValidation ||
+    rr.drillReadiness?.status === 'ISSUED FOR DRILLING' ||
+    rr.drillReadiness?.status === 'COMPLETED / BANKABLE RECORD';
+
+  const grade = fieldValidated
+    ? (overallPct >= 85 ? 'BANKABLE' : overallPct >= 70 ? 'ENGINEERING GRADE' : overallPct >= 50 ? 'STANDARD' : 'PRELIMINARY')
+    : (overallPct >= 50 ? 'PRE-FEASIBILITY (DESKTOP)' : 'PRELIMINARY');
+  // Desktop grades never render green/"bankable" — amber at best until field data.
+  const gradeColor = fieldValidated
+    ? (overallPct >= 85 ? '#16a34a' : overallPct >= 70 ? '#38bdf8' : overallPct >= 50 ? '#d97706' : '#dc2626')
+    : (overallPct >= 50 ? '#d97706' : '#dc2626');
+
   return {
     dimensions: [
       { key: 'science', label: 'Scientific Methodology', score: sciScore, target: 5.0, comment: sciScore >= 4.5 ? 'Transparent, well-documented equations' : sciScore >= 3.5 ? 'Good methodology; ERT integration available for 5★' : 'Building data source coverage' },
       { key: 'data', label: 'Data Integrity', score: dataScore, target: 5.0, comment: dataScore >= 4.0 ? 'Multiple satellite + API sources confirmed' : dataScore >= 3.0 ? 'Satellite data present; ERT integration available for 5★' : 'Limited data sources — additional sources recommended' },
       { key: 'economics', label: 'Economic Analysis', score: econScore, target: 4.5, comment: econScore >= 4.0 ? 'Realistic ROI with sensitivity analysis' : 'Good base; validate tariff and utilization locally' },
-      { key: 'confidence', label: 'Confidence Metrics', score: confScore, target: 4.5, comment: confPct >= 85 ? 'Bankable-grade confidence' : confPct >= 65 ? `Moderate (${confPct}%); ERT integration → 90%+` : `Building (${confPct}%); ERT + pump test → 90%+` },
+      { key: 'confidence', label: 'Confidence Metrics', score: confScore, target: 4.5, comment: confPct >= 85 ? 'High model agreement (desktop)' : confPct >= 65 ? `Moderate (${confPct}%); ERT integration → 90%+` : `Building (${confPct}%); ERT + pump test → 90%+` },
     ],
     overall,
     overallPct,
-    grade: overallPct >= 85 ? 'BANKABLE' : overallPct >= 70 ? 'PRE-FEASIBILITY' : overallPct >= 50 ? 'STANDARD' : 'PRELIMINARY',
-    gradeColor: overallPct >= 85 ? '#16a34a' : overallPct >= 70 ? '#38bdf8' : overallPct >= 50 ? '#d97706' : '#dc2626',
+    fieldValidated,
+    grade,
+    gradeColor,
   };
 }
 
@@ -2077,10 +2098,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
         {(() => {
           const confOv = result.confidenceMetrics?.overall ?? 0;
           const isField = result.assessmentType === 'FIELD_VALIDATED';
-          const tierLabel = isField ? 'FIELD VALIDATED' : confOv >= 90 ? 'BANKABLE' : confOv >= 80 ? 'ENGINEERING GRADE' : confOv >= 70 ? 'PRE-FEASIBILITY' : 'STANDARD ASSESSMENT';
-          const tierColor = isField || confOv >= 80 ? '#16a34a' : confOv >= 70 ? '#3b82f6' : '#d97706';
-          const tierBg = isField || confOv >= 80 ? 'rgba(34,197,94,0.06)' : confOv >= 70 ? 'rgba(59,130,246,0.06)' : 'rgba(245,158,11,0.06)';
-          const tierBorder = isField || confOv >= 80 ? 'rgba(34,197,94,0.25)' : confOv >= 70 ? 'rgba(59,130,246,0.25)' : 'rgba(245,158,11,0.25)';
+          // AUDIT FIX (2026-07-12): desktop model-agreement can never be graded
+          // BANKABLE/ENGINEERING GRADE — those require field data. Cap at
+          // PRE-FEASIBILITY and never render the green "bankable" styling until
+          // the run is field-validated.
+          const tierLabel = isField ? 'FIELD VALIDATED' : confOv >= 70 ? 'PRE-FEASIBILITY (DESKTOP)' : confOv >= 50 ? 'STANDARD ASSESSMENT' : 'PRELIMINARY';
+          const tierColor = isField ? '#16a34a' : '#d97706';
+          const tierBg = isField ? 'rgba(34,197,94,0.06)' : 'rgba(245,158,11,0.06)';
+          const tierBorder = isField ? 'rgba(34,197,94,0.25)' : 'rgba(245,158,11,0.25)';
           return (
         <div style={{background:tierBg,border:`2px solid ${tierBorder}`,padding:'14px 18px',borderRadius:12,marginBottom:16}}>
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
@@ -2167,10 +2192,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div className="cred-verdict-text">
                   <strong>Status: {cred.grade}</strong>
                   <p style={{margin:'4px 0 0',fontSize:12,color:'var(--text-muted)'}}>
-                    {cred.overallPct >= 85 ? 'This assessment meets bankable-grade standards. Suitable for investor proposals, government submissions, and drilling decisions.'
-                     : cred.overallPct >= 70 ? 'Strong multi-source assessment with high data agreement. ERT integration available to elevate to bankable grade (≥85%).'
-                     : cred.overallPct >= 50 ? 'Multi-source AI ensemble assessment. ERT survey and pump test integration recommended for engineering-grade confidence.'
-                     : 'Preliminary assessment based on limited data coverage. Additional data sources recommended.'}
+                    {!cred.fieldValidated
+                      ? `Desktop pre-feasibility screen (${cred.overallPct}% model agreement). This measures how well the AI + satellite models agree — it is NOT field validation. This assessment is NOT a bankable submission and is NOT authority for drilling, or for procuring a pump, casing or screen. A field ERT/VES survey, 24-hour pump test and accredited lab water analysis are required before any drilling decision.`
+                     : cred.overallPct >= 85 ? 'This assessment is field-validated and meets bankable-grade standards. Suitable for investor proposals, government submissions, and drilling decisions.'
+                     : cred.overallPct >= 70 ? 'Field-validated engineering-grade assessment. Complete remaining field steps to elevate to bankable grade (≥85%).'
+                     : 'Field data present but coverage is limited. Additional field validation recommended.'}
                   </p>
                   {cred.overallPct < 85 && (
                     <div className="cred-improve">
