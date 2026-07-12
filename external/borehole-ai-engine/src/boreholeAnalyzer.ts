@@ -810,7 +810,11 @@ export class BoreholeAnalyzer {
       // County intelligence is much more precise â€” weight it higher
       calibratedDepth = Math.round(recommendedDepth * 0.3 + countyData.avgDepth_m * 0.7);
       calibratedYield = parseFloat((estimatedYield * 0.3 + countyData.avgYield_m3h * 0.7).toFixed(1));
-      yieldSource = `30% image analysis + 70% county borehole intelligence (${countyData.county} County, ~${countyData.estimatedBoreholes} boreholes). NOT field-measured.`;
+      // ACCURACY FIX (2026-07-12): the county DB may only carry a representative
+      // county for a province (e.g. Kakamega for western-Kenya BASEMENT), so a
+      // Vihiga site borrowed "Kakamega County" and implied the site sat there.
+      // State it honestly as a same-province analog, not the site's county.
+      yieldSource = `30% image analysis + 70% regional borehole intelligence (nearest represented county: ${countyData.county}, ~${countyData.estimatedBoreholes} boreholes — used as a same-province analog, not the site's own county). NOT field-measured.`;
     } else if (boreholeRecords) {
       // National-level calibration
       calibratedDepth = Math.round(recommendedDepth * 0.4 + boreholeRecords.averageDepth * 0.6);
