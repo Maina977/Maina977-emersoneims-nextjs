@@ -2654,7 +2654,26 @@ export class BoreholeAnalyzer {
           ];
         })(),
         pumpType: calibratedYield > 5 ? 'Submersible (3-phase)' : calibratedYield > 1 ? 'Submersible (single-phase)' : 'Hand pump (Afridev/India MkII)',
-        estimatedCost_usd: Math.round(calibratedDepth * (soil?.type === 'rocky' ? 115 : 65) + 3500 + calibratedYield * 800),
+        // COST RECONCILIATION (2026-07-12): the old bare formula
+        // (depth*rate + 3500 + yield*800) produced a "Preliminary Cost Estimate"
+        // ($11,385) that contradicted the itemized breakdown ($19,073) and
+        // swung with the yield. Use the SAME components as the detailed model
+        // (drilling + casing + screen + pump/install + solar + survey/permits +
+        // treatment + 15% contingency) so the headline preliminary total agrees
+        // with the itemized budget and is stable across the yield reconciliation.
+        estimatedCost_usd: (() => {
+          const drillRate = soil?.type === 'rocky' ? 115 : 65;   // $/m by geology
+          const cDrill = calibratedDepth * drillRate;
+          const cCasing = calibratedDepth * 18;                  // casing + grouting
+          const cScreen = Math.round(calibratedDepth * 0.15 * 55); // slotted screen
+          const cPumpInstall = 3520;                             // pump + installation (detailed model)
+          const cSolar = 2100;                                   // solar array + controller
+          const cSurveyPermits = 775;                            // hydro survey + WRA approval
+          const needsTreat = ((waterQuality?.fluoride ?? 0) > 1.5) || ((waterQuality?.iron ?? 0) > 0.3);
+          const cTreatment = needsTreat ? 4000 : 1000;           // defluoridation/iron removal if modelled exceedance
+          const subtotal = cDrill + cCasing + cScreen + cPumpInstall + cSolar + cSurveyPermits + cTreatment;
+          return Math.round(subtotal * 1.15);                    // 15% engineering contingency
+        })(),
         alternativePoints: siteSelectionResult?.topSites?.slice(1, 3).map((s: any, i: number) => ({
           lat: s.latitude, lon: s.longitude, rank: i + 2, score: Math.min(100, Math.round(s.score ?? 0)),
         })),
