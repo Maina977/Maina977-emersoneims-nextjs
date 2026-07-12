@@ -2854,7 +2854,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       head: [['Metric', 'Value', 'Assessment']],
       body: [
         ['Total Investment', `$${totalCost.toLocaleString()}`, ''],
-        ['Daily Water Production', `${sf(dailyWaterM3, 1)} m³/day`, `${yieldVal} m³/hr ? ${pumpHoursPerDay} hrs (solar)`],
+        ['Daily Water Production', `${sf(dailyWaterM3, 1)} m³/day`, `${yieldVal} m³/hr × ${pumpHoursPerDay} hrs (solar)`],
         ['Annual Revenue (Year 1)', `$${yr1Revenue.toLocaleString()}/yr`, `@ $${waterTariffPerM3}/m³ × ${Math.round(yr1Utilization * 100)}% utilization`],
         ['Annual Revenue (Steady-state)', `$${yr3Revenue.toLocaleString()}/yr`, `@ $${waterTariffPerM3}/m³ × ${Math.round(yr3PlusUtilization * 100)}% utilization`],
         ['Annual Maintenance', `$${annualMaintenance.toLocaleString()}/yr`, '4.5% of capital (World Bank WASH O&M benchmark)'],
@@ -8653,9 +8653,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const lc = wd.lifecycleCost;
       addPage();
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
-      doc.text('LIFECYCLE COST ANALYSIS ? 20-YEAR NET PRESENT VALUE', margin, y); y += 4;
+      doc.text('LIFECYCLE COST ANALYSIS — 20-YEAR NET PRESENT VALUE', margin, y); y += 4;
       doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-      doc.text(`Discount rate: 8%. Inflation: ${lc.inflationRate_pct}%. Contingency: ${lc.contingency_pct}%.`, margin, y); y += 7;
+      doc.text(`Discount rate: 8%. Inflation: ${lc.inflationRate_pct}%. Contingency: ${lc.contingency_pct}%.`, margin, y); y += 3.5;
+      // CLARITY FIX (2026-07-12): this is an INDEPENDENT low-high sensitivity band
+      // for whole-of-life planning, NOT a second capital total. The governing
+      // capital figure is the itemized budget in Section 5.1 (Cost Breakdown).
+      doc.text('Independent low-high planning band (wider contingency + full pump range). The governing capital estimate is the itemized Section 5.1 budget; use this band for procurement risk, not as a competing total.', margin, y, { maxWidth: pageW - margin * 2 } as any); y += 7;
 
       // Capital costs
       autoTable(doc, {
