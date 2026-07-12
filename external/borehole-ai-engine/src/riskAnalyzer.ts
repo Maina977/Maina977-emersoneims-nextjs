@@ -303,7 +303,10 @@ export class RiskAnalyzer {
     }
 
     if (recommendations.length === 0) {
-      recommendations.push('Standard borehole construction procedures sufficient');
+      // Desktop pre-feasibility is never authority to build to a "standard" spec:
+      // field geophysics, hydrogeologist sign-off, regulatory approval and the
+      // final completion design must precede any construction (re-audit #9).
+      recommendations.push('Standard borehole construction practices may be applied ONLY after field geophysics (ERT/VES), hydrogeologist approval, regulatory authorisation and issuance of the final completion design');
       recommendations.push('Annual water quality testing recommended');
     }
 

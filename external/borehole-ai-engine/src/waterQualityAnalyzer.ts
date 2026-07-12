@@ -302,9 +302,13 @@ export class WaterQualityAnalyzer {
     let province = 'Global default';
     let fluorideMult = 1.0, ironMult = 1.0, arsenicMult = 1.0, tdsMult = 1.0;
 
-    // East African Rift Valley (Ethiopia, Kenya, Tanzania Rift)
-    // Lat: -10 to 12, Lon: 29 to 42 — volcanic alkaline aquifers, extreme fluoride
-    if (lat >= -10 && lat <= 12 && lon >= 29 && lon <= 42) {
+    // East African Rift Valley AXIS (Ethiopia + Kenya Gregory Rift + N Tanzania).
+    // The rift is a NARROW graben, not the whole of East Africa. The old box
+    // (lon 29-42) wrongly swept in western-Kenya BASEMENT provinces (e.g. Vihiga,
+    // lon 34.65, in the Lake Victoria basin) and stamped a 3.5x fluoride
+    // multiplier on them (re-audit #6). Restrict to the volcanic rift axis
+    // (roughly lon >= 35.5) where the extreme-fluoride literature actually applies.
+    if (lat >= -6 && lat <= 12 && lon >= 35.5 && lon <= 42) {
       province = 'East African Rift Valley';
       fluorideMult = 3.5;  // Typical 1.5-15 mg/L (Rango et al. 2012)
       tdsMult = 1.8;       // Alkaline volcanic: TDS 200-1500 mg/L
@@ -312,6 +316,16 @@ export class WaterQualityAnalyzer {
       warnings.push('RIFT VALLEY: Elevated sodium and bicarbonate expected. Test for salinity.');
       citations.push('Edmunds & Smedley (2013) Fluoride in Natural Waters');
       citations.push('Rango et al. (2012) Hydrogeochemistry of Ethiopian Rift');
+    }
+    // Western Kenya / Lake Victoria basin + Uganda — weathered/fractured BASEMENT,
+    // NOT rift volcanics. Fluoride here is variable and NOT reliably elevated, so
+    // apply no regional inflation and state the risk honestly as uncertain: only a
+    // lab test establishes the actual concentration (re-audit #6).
+    else if (lat >= -3 && lat <= 4.5 && lon >= 29 && lon < 35.5) {
+      province = 'East African Basement (western Kenya / Lake Victoria / Uganda)';
+      fluorideMult = 1.0;  // no defensible regional multiplier for basement
+      warnings.push('BASEMENT PROVINCE: Regional fluoride risk is UNCERTAIN/MODERATE — weathered/fractured basement fluoride is variable and not reliably elevated here. No site-specific concentration is established; ISO 17025 laboratory confirmation is mandatory before any treatment decision.');
+      citations.push('MacDonald et al. (2012) Quantitative maps of groundwater resources in Africa');
     }
     // West African laterite/basement belt (Ghana, Burkina Faso, Mali, Niger, Nigeria north)
     // Lat: 5 to 16, Lon: -15 to 15

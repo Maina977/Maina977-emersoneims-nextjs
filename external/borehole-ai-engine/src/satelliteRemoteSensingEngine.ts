@@ -326,11 +326,19 @@ function analyzeSAR(
   else score = 60;
 
   const findings: string[] = [];
-  if (hasInsar) {
+  // A subsidence/stability conclusion requires REAL processed InSAR scenes. When
+  // the value is a proxy or scene coverage is effectively zero, do not assert
+  // "ground stable / no aquifer compaction" — say no conclusion is available
+  // (re-audit #5). isRealInsar is proxy-aware.
+  const isRealInsar = hasInsar && sceneCount > 0 && !/proxy|fallback/i.test(String(insarData?.dataSource ?? ''));
+  if (isRealInsar) {
     findings.push(`LOS velocity: ${velocity.toFixed(1)} mm/yr — ${defClass}`);
     findings.push(`Subsidence risk: ${subsRisk}`);
     findings.push(`Sentinel-1 scene count: ${sceneCount}`);
     findings.push(insarData.groundwaterImplication || 'InSAR deformation measured');
+  } else if (hasInsar) {
+    findings.push('No site-specific InSAR conclusion available — value is a proxy / Sentinel-1 scene coverage is insufficient for a measured deformation result.');
+    findings.push('Aquifer-compaction / stability CANNOT be inferred from this desktop proxy; a processed Sentinel-1 stack is required.');
   } else {
     findings.push('InSAR data not available for this location — Sentinel-1 coverage may be limited');
   }
@@ -443,7 +451,7 @@ function analyzeThermalIR(
     // Use GLDAS ET as thermal proxy
     const et = gldasData?.waterBudget?.evapotranspiration;
     if (et) {
-      findings.push(`ET-based thermal proxy: ${et.toFixed(1)} mm/month evapotranspiration`);
+      findings.push(`ET-based thermal proxy: ${et.toFixed(0)} mm/yr evapotranspiration (annual)`);
       findings.push(et > 60 ? 'High ET suggests moisture availability (possible shallow GW)' : 'Low ET — limited surface moisture');
       score = et > 80 ? 65 : et > 40 ? 50 : 35;
     } else {
@@ -700,11 +708,16 @@ function analyzeSMAP(
       classification,
       seasonalRangeMm: seasonalRange,
     },
-    implication: score > 65
-      ? 'High soil moisture content — active infiltration and recharge are occurring, favorable for shallow/intermediate aquifer drilling'
-      : score > 45
-        ? 'Moderate soil moisture — seasonal recharge occurs but may not sustain high-yield wells year-round'
-        : 'Low soil moisture — limited natural recharge, deep confined aquifer targeting recommended',
+    // The implication MUST agree with the moisture classification — the old text
+    // could print "High soil moisture content" beside a "very-dry" classification
+    // when the score was lifted by root-zone/seasonal terms (re-audit #5).
+    implication: (classification === 'very-dry' || classification === 'dry')
+      ? `Surface profile is ${classification.replace('-', ' ')}; root-zone/seasonal signals carry the score. Net: limited near-surface recharge — target the weathered/fractured zone and confirm with field data.`
+      : score > 65
+        ? 'Moist profile — active infiltration and recharge indicated, favorable for shallow/intermediate aquifer drilling'
+        : score > 45
+          ? 'Moderate soil moisture — seasonal recharge occurs but may not sustain high-yield wells year-round'
+          : 'Low soil moisture — limited natural recharge, deep confined aquifer targeting recommended',
   };
 }
 
@@ -736,9 +749,11 @@ function analyzeLiDAR(
   findings.push('Note: True satellite LiDAR (ICESat-2) provides limited ground coverage; SRTM/ASTER GDEM used as proxy for high-resolution topographic analysis');
 
   return {
-    method: '10. LiDAR-Derived Products',
-    platform: 'SRTM 30m, ASTER GDEM v3 (ICESat-2 supplementary)',
-    resolution: '30m (LiDAR proxy)',
+    // Not LiDAR — SRTM/ASTER DEM. Renamed so the report stops presenting a DEM
+    // terrain analysis as a LiDAR product (re-audit #5).
+    method: '10. DEM-Derived Terrain Analysis (SRTM/ASTER)',
+    platform: 'SRTM 30m, ASTER GDEM v3',
+    resolution: '30m DEM',
     status: hasDEM && hasFracture ? 'partial' : hasDEM ? 'partial' : 'modeled',
     confidence: hasDEM && hasFracture ? 0.6 : hasDEM ? 0.45 : 0.3,
     groundwaterScore: Math.min(100, Math.max(0, score)),

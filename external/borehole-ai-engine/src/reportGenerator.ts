@@ -887,7 +887,7 @@ function computeCanonicalEconomics(result: AnalysisResult) {
     : Math.max(0.37, Math.round((yieldVal * pumpHead * 9.81 / 3600 / 0.55) * 100) / 100);
   const pumpCost = yieldVal > 5 ? 3500 : yieldVal > 2 ? 2200 : 1200;
   const pumpNote = _wdPump?.make_model_suggestion
-    ? `${_wdPump.make_model_suggestion} — ~${pumpKW.toFixed(2)} kW, ${pumpHead}m TDH (provisional; confirm after pump test) — same pump as the Pump Selection page`
+    ? `${_wdPump.make_model_suggestion} — ~${pumpKW.toFixed(2)} kW, ${pumpHead}m TDH. Budgetary placeholder only; final pump model, duty point and motor rating are selected after the constant-rate pump test confirms sustainable yield, dynamic water level and TDH.`
     : `${yieldVal > 5 ? 'Submersible (high capacity)' : 'Submersible (standard)'}, ~${pumpKW.toFixed(2)} kW, ${pumpHead}m head`;
   const installCost = Math.round(pumpCost * 0.6);
   const solarKW = _wdPump?.solarPanels_kW != null
@@ -1353,17 +1353,23 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         : healthFails.length > 0
           ? `MODELLED EXCEEDANCE RISK -- ${healthFails.join(', ')} may exceed WHO guideline values. Do not use for drinking until an accredited lab confirms; treatment budgeted below.`
           : 'TREATMENT REQUIRED (aesthetic parameters; modelled -- lab-confirm).';
+      // Render the FULL message wrapped over as many lines as needed — the old
+      // code printed only splitTextToSize(...)[0], truncating the sentence to
+      // "...until an" on p2 (re-audit #7). Box height follows the wrapped text.
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
+      const _wqLines = doc.splitTextToSize(wqLine, pw - 42);
+      const _wqBoxH = Math.max(13, _wqLines.length * 3.6 + 8.5);
       doc.setFillColor(wqOk ? 240 : 254, wqOk ? 253 : 242, wqOk ? 244 : 242);
-      doc.roundedRect(margin, y, pw, 13, 2, 2, 'F');
+      doc.roundedRect(margin, y, pw, _wqBoxH, 2, 2, 'F');
       doc.setDrawColor(wqOk ? 34 : 220, wqOk ? 197 : 38, wqOk ? 94 : 38); doc.setLineWidth(0.6);
-      doc.roundedRect(margin, y, pw, 13, 2, 2, 'S');
+      doc.roundedRect(margin, y, pw, _wqBoxH, 2, 2, 'S');
       doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(wqOk ? 21 : 153, wqOk ? 128 : 27, wqOk ? 61 : 27);
       doc.text('WATER QUALITY', margin + 4, y + 5.5);
       doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
-      doc.text(doc.splitTextToSize(wqLine, pw - 42)[0] ?? wqLine, margin + 36, y + 5.5);
+      doc.text(_wqLines, margin + 36, y + 5.5);
       doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 110, 110);
-      doc.text('Modelled from regional hydrochemistry -- an ISO 17025 laboratory analysis is the only proof.', margin + 4, y + 10.5);
-      y += 17;
+      doc.text('Modelled from regional hydrochemistry -- an ISO 17025 laboratory analysis is the only proof.', margin + 4, y + _wqBoxH - 2.5);
+      y += _wqBoxH + 4;
     }
 
     // Verified wells nearby — real registry records or an honest zero
@@ -1388,10 +1394,17 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
         doc.text(doc.splitTextToSize('No verified water-point records were found within the search radius (WPDx, UNESCO IHP-WINS, WRA, OSM). Confidence is reduced accordingly -- never faked with invented wells. WRA completion records for this area can close this gap.', pw - 8), margin + 4, y + 11);
       } else {
-        doc.text(`VERIFIED ${kindLabel} NEARBY: ${nwB.sampleSize ?? wellsB.length} REGISTRY RECORD${(nwB.sampleSize ?? wellsB.length) === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 25} KM (${Math.min(wellsB.length, 100)} NEAREST LISTED)`, margin + 4, y + 6);
+        const _totalRecs = nwB.sampleSize ?? wellsB.length;
+        const _usedRecs = Math.min(wellsB.length, 100);
+        doc.text(`VERIFIED ${kindLabel} NEARBY: ${_totalRecs} REGISTRY RECORD${_totalRecs === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 25} KM (${_usedRecs} NEAREST USED IN MODEL)`, margin + 4, y + 6);
         doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
         const statBits: string[] = [];
-        if (springCount > 0) statBits.push(`${springCount} springs + ${boreholeCount} wells/boreholes`);
+        // Account for every record: springs + wells/boreholes + any other/unclassified
+        // types, so the breakdown sums to the headline total (re-audit #2).
+        const _otherRecs = Math.max(0, _totalRecs - springCount - boreholeCount);
+        if (springCount > 0 || boreholeCount > 0) {
+          statBits.push(`${springCount} springs + ${boreholeCount} wells/boreholes${_otherRecs > 0 ? ` + ${_otherRecs} other/unclassified` : ''}`);
+        }
         if ((nwB.averageDepth ?? 0) > 0) statBits.push(`typical depth ~${nwB.averageDepth} m (regional est. where unmeasured)`);
         const knownOutcomes = wellsB.filter((w) => w.outcome === 'Success' || w.outcome === 'Fail').length;
         if (knownOutcomes > 0) statBits.push(`${Math.round((nwB.successRate ?? 0) * 100)}% functional among ${knownOutcomes} with recorded status`);
@@ -1419,7 +1432,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       body: [
         ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, eco.kes(eco.surveyCost + eco.permitCost), 'Hydrogeological survey report (required for motorised boreholes, KSh 40k-110k market) + WRA abstraction approval'],
         ['Drilling', `$${eco.drillingCost.toLocaleString()}`, eco.kes(eco.drillingCost), `${eco.depthVal} m × ~KSh ${eco.cpmKES.toLocaleString()}/m — ${eco.drillMethod}, ${eco.soilType} ground (Kenya 2026 market)`],
-        ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.kes(eco.casingCost + eco.screenCost), eco.casingNote],
+        ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.kes(eco.casingCost + eco.screenCost), `Casing ${eco.casingNote} = $${eco.casingCost.toLocaleString()}; provisional screen ${Math.round(eco.screenLength)}m x $35/m = $${eco.screenCost.toLocaleString()}`],
         ['Pump + installation', `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.kes(eco.pumpCost + eco.installCost), eco.pumpNote],
         ['Solar power system', `$${eco.solarCost.toLocaleString()}`, eco.kes(eco.solarCost), `${eco.solarKW.toFixed(1)} kW array`],
         ...(eco.wqTreatmentCost + eco.defluoridationCost > 0
@@ -2057,7 +2070,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const tempValues = result.historicalData.weather.annualTemperature?.map(t => t.avg * 30) || [];
     const precipChart = renderLineChart(precLabels, [
       { name: 'Precipitation (mm)', values: precValues, color: '#38bdf8' },
-      ...(tempValues.length ? [{ name: 'Temp ?30 (?C)', values: tempValues, color: '#ef4444' }] : []),
+      ...(tempValues.length ? [{ name: 'Temp ±30 (°C)', values: tempValues, color: '#ef4444' }] : []),
     ], '20-Year Precipitation & Temperature Trend', 500, 230);
     doc.addImage(precipChart, 'PNG', margin, y, pageW - margin * 2, 60);
     y += 65;
@@ -2171,7 +2184,19 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           doc.text(`PROPOSED BOREHOLE POSITION (WGS84): ${_coordTxt} -- SUBJECT TO ERT`, _ix + 2, y + 4.4);
         }
       } catch (_ie) { console.warn('[PDF] Primary site photo embed failed', _ie); }
-      y += _ih + 5;
+      y += _ih + 3;
+
+      // Explicit warning that the photo marker is NOT the drilling point — a
+      // customer/driller could read the crosshair (which may fall on a building)
+      // as the final peg (re-audit #8).
+      doc.setFillColor(180, 0, 0);
+      const _pwLines = doc.splitTextToSize('PHOTOGRAPHIC MARKER IS NOT A FIELD PEG AND DOES NOT SHOW THE FINAL DRILLING POSITION. It only places the analysed coordinates on the photographed plot. The final drilling point is set out on site from survey-grade GPS and interpreted ERT results.', pw - 6);
+      const _pwH = _pwLines.length * 3.3 + 4;
+      doc.roundedRect(margin, y, pw, _pwH, 1.5, 1.5, 'F');
+      doc.setTextColor(255, 255, 255); doc.setFontSize(7); doc.setFont('helvetica', 'bold');
+      doc.text(_pwLines, margin + 3, y + 4);
+      doc.setFont('helvetica', 'normal');
+      y += _pwH + 3;
 
       // Caption -- honest about what the marker means
       doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 120);
@@ -2310,7 +2335,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setTextColor(255, 255, 255);
     doc.text(`Groundwater Potential Index: ${srs.fusion.groundwaterPotentialIndex}/100 ? ${srs.fusion.potentialClass}`, margin + 6, y + 9);
     doc.setFontSize(8);
-    doc.text(`${srs.totalMethodsUsed}/${srs.totalMethodsAvailable} methods ? ${sf((srs.dataCompleteness ?? 0) * 100)}% data completeness`, margin + 6, y + 17);
+    doc.text(`${srs.totalMethodsUsed} of ${srs.totalMethodsAvailable} methods assessed — measured-data completeness varies by method (several are PARTIAL or MODELED, see status column)`, margin + 6, y + 17);
     y += 28;
 
     // 10-Method Scores Table
@@ -2439,18 +2464,30 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(56, 189, 248);
-    doc.text('SURFACE GEOPHYSICS ? 30 Non-Invasive Methods', margin, y);
+    const _sgCount = sg.methods?.length ?? 30;
+    doc.text(`SURFACE GEOPHYSICS -- ${_sgCount}-Method Reference Library`, margin, y);
     y += 8;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(180, 180, 190);
     const sgDesc = doc.splitTextToSize(
-      `Comprehensive evaluation of 30 non-invasive/minimally invasive geophysical, airborne, drone, and remote sensing methods for subsurface mapping and borehole siting. ` +
-      `Each method scored for site-specific applicability based on geology (${sg.siteContext.geology}), target depth (${sg.siteContext.targetDepth_m}m), terrain (${sg.siteContext.terrainType}), and soil conditions.`,
+      `Reference evaluation of ${_sgCount} non-invasive geophysical/remote-sensing methods, scored for site-specific applicability (geology ${sg.siteContext.geology}, target depth ${sg.siteContext.targetDepth_m}m, terrain ${sg.siteContext.terrainType}).`,
       pageW - margin * 2
     );
     doc.text(sgDesc, margin, y);
-    y += sgDesc.length * 3.5 + 4;
+    y += sgDesc.length * 3.5 + 3;
+
+    // Research-reference banner (re-audit #1): this method library is NOT the
+    // recommended project survey package and its cost range is NOT in the capital
+    // budget. The recommended field validation is a targeted 2-D ERT + VES survey.
+    doc.setFillColor(255, 247, 237); doc.setDrawColor(180, 83, 9); doc.setLineWidth(0.4);
+    const _sgBannerLines = doc.splitTextToSize('REFERENCE LIBRARY — NOT THE PROJECT SURVEY PACKAGE. The recommended field-validation method for THIS site is a targeted 2-D ERT + VES survey (see Executive Summary & Smart Survey Plan), carried out with the statutory hydrogeological survey report (Kenya market KSh 40,000-110,000). The multi-method cost/time ranges below are a research reference only and are NOT included in the project capital cost. TDEM and other methods are complementary options.', pageW - margin * 2 - 6);
+    const _sgBannerH = _sgBannerLines.length * 3.4 + 5;
+    doc.roundedRect(margin, y, pageW - margin * 2, _sgBannerH, 1.5, 1.5, 'FD');
+    doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 27, 27);
+    doc.text(_sgBannerLines, margin + 3, y + 4);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(180, 180, 190);
+    y += _sgBannerH + 4;
 
     // Summary box
     checkSpace(22);
@@ -2468,8 +2505,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(`${sg.methods.filter(m => m.priority === 'Not Applicable').length} N/A`, margin + 114, y + 7);
     doc.setTextColor(200, 200, 210);
     doc.setFontSize(9);
-    doc.text(`Est. Cost: $${plan.totalEstimatedCostUSD[0].toLocaleString()}?$${plan.totalEstimatedCostUSD[1].toLocaleString()}`, margin + 6, y + 14);
-    doc.text(`Est. Time: ${plan.totalEstimatedTimeHrs[0]}?${plan.totalEstimatedTimeHrs[1]} hrs`, margin + 82, y + 14);
+    doc.text(`Est. Cost: $${plan.totalEstimatedCostUSD[0].toLocaleString()}-$${plan.totalEstimatedCostUSD[1].toLocaleString()}`, margin + 6, y + 14);
+    doc.text(`Est. Time: ${plan.totalEstimatedTimeHrs[0]}-${plan.totalEstimatedTimeHrs[1]} hrs`, margin + 82, y + 14);
     y += 22;
 
     // Phased survey plan
@@ -2488,7 +2525,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.text(`Phase ${ph.phase}: ${ph.name}`, margin + 2, y);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(150, 150, 160);
-        doc.text(`$${ph.costUSD[0].toLocaleString()}?$${ph.costUSD[1].toLocaleString()} ? ${ph.timeHrs[0]}?${ph.timeHrs[1]} hrs`, margin + 80, y);
+        doc.text(`$${ph.costUSD[0].toLocaleString()}-$${ph.costUSD[1].toLocaleString()} | ${ph.timeHrs[0]}-${ph.timeHrs[1]} hrs`, margin + 80, y);
         y += 4;
         const phLines = doc.splitTextToSize(`${ph.purpose} ? Methods: ${ph.methods.join(', ')}`, pageW - margin * 2 - 6);
         doc.setFontSize(8);
@@ -2519,7 +2556,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         m.applicabilityScore,
         m.priority,
         m.depthCapability,
-        `$${m.estimatedCostUSD[0].toLocaleString()}?$${m.estimatedCostUSD[1].toLocaleString()}`,
+        `$${m.estimatedCostUSD[0].toLocaleString()}-$${m.estimatedCostUSD[1].toLocaleString()}`,
         m.platform,
       ]),
       styles: { fontSize: 7, cellPadding: 1.5, textColor: [200, 200, 210], fillColor: [20, 30, 40] },
@@ -2563,7 +2600,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(180, 200, 180);
-        doc.text(`${m.platform} ? Depth: ${m.depthCapability} ? Res: ${m.resolution} ? $${m.estimatedCostUSD[0].toLocaleString()}?$${m.estimatedCostUSD[1].toLocaleString()} ? ${m.estimatedTimeHrs[0]}?${m.estimatedTimeHrs[1]} hrs`, margin + 3, y + 10);
+        doc.text(`${m.platform} | Depth: ${m.depthCapability} | Res: ${m.resolution} | $${m.estimatedCostUSD[0].toLocaleString()}-$${m.estimatedCostUSD[1].toLocaleString()} | ${m.estimatedTimeHrs[0]}-${m.estimatedTimeHrs[1]} hrs`, margin + 3, y + 10);
         const exLines = doc.splitTextToSize(m.expectedOutcome, pageW - margin * 2 - 8);
         doc.setTextColor(160, 180, 160);
         doc.text(exLines, margin + 3, y + 15);
@@ -2590,7 +2627,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.text(`${m.id}. ${m.name} (${m.applicabilityScore}/100)`, margin + 2, y);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(150, 170, 190);
-        doc.text(`${m.platform} ? ${m.depthCapability} ? $${m.estimatedCostUSD[0].toLocaleString()}?$${m.estimatedCostUSD[1].toLocaleString()}`, margin + 2, y + 3.5);
+        doc.text(`${m.platform} | ${m.depthCapability} | $${m.estimatedCostUSD[0].toLocaleString()}-$${m.estimatedCostUSD[1].toLocaleString()}`, margin + 2, y + 3.5);
         y += 8;
       }
     }
@@ -3186,8 +3223,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         startY: y,
         head: [['Pump Test Method', 'Transmissivity (m²/d)', 'Storativity', 'Key Result']],
         body: [
-          ['Theis (est.)', `${fmt(pt.theis.transmissivity, 2)} ?${fmt(pt.theis.transmissivity * 0.4, 1)}`, pt.theis.storativity?.toExponential(2) || '', `Est. drawdown: ${fmt(pt.theis.drawdownAtWell, 2)}m ?40%`],
-          ['Cooper-Jacob (est.)', `${fmt(pt.cooperJacob?.transmissivity, 2)} ?${fmt((pt.cooperJacob?.transmissivity || 0) * 0.4, 1)}`, pt.cooperJacob?.storativity?.toExponential(2) || '', `Est. slope: ${fmt(pt.cooperJacob?.slopePerLogCycle, 3)}m/log-cycle`],
+          ['Theis (est.)', `${fmt(pt.theis.transmissivity, 2)} ±${fmt(pt.theis.transmissivity * 0.4, 1)}`, pt.theis.storativity?.toExponential(2) || '', `Est. drawdown: ${fmt(pt.theis.drawdownAtWell, 2)}m ±40%`],
+          ['Cooper-Jacob (est.)', `${fmt(pt.cooperJacob?.transmissivity, 2)} ±${fmt((pt.cooperJacob?.transmissivity || 0) * 0.4, 1)}`, pt.cooperJacob?.storativity?.toExponential(2) || '', `Est. slope: ${fmt(pt.cooperJacob?.slopePerLogCycle, 3)}m/log-cycle`],
           ['K (pedotransfer)', '', '', `K = ${fmt(pt.hvorslev?.hydraulicConductivity, 4)} m/day (Saxton-Rawls, not slug test)`],
           ['Specific Capacity (est.)', '', '', `${fmt(pt.specificCapacity?.value, 2)} m³/day/m (${pt.specificCapacity?.classification || ''}) ±50%`],
         ],
@@ -3258,7 +3295,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const rows: string[][] = [];
     const cw = result.realTimeWaterData.currentWeather;
     if (cw?.available) {
-      rows.push(['Temperature', `${fmt(cw.temperature, 1)}?C`]);
+      rows.push(['Temperature', `${fmt(cw.temperature, 1)}°C`]);
       rows.push(['Humidity', `${fmt(cw.relativeHumidity, 0)}%`]);
       rows.push(['24h Precipitation', `${fmt(cw.precipitation24h, 1)} mm`]);
       rows.push(['24h Evapotranspiration', `${fmt(cw.evapotranspiration24h, 1)} mm`]);
@@ -3590,7 +3627,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
-    doc.text(`Average annual precipitation: ${hw.averageAnnualPrecipitation?.toFixed(0) ?? 'N/A'} mm/yr | Avg temperature: ${hw.averageTemperature?.toFixed(1) ?? 'N/A'}?C`, margin, y); y += 6;
+    doc.text(`Average annual precipitation: ${hw.averageAnnualPrecipitation?.toFixed(0) ?? 'N/A'} mm/yr | Avg temperature: ${hw.averageTemperature?.toFixed(1) ?? 'N/A'}°C`, margin, y); y += 6;
     doc.text(`Trend: ${hw.trendDirection} (${(hw.trendPerDecade ?? 0) > 0 ? '+' : ''}${sf(hw.trendPerDecade)} mm/decade) | Best drilling season: ${hw.bestDrillingSeason}`, margin, y); y += 6;
     if (hw.droughtYears?.length) {
       doc.text(`Drought years identified: ${hw.droughtYears.join(', ')}`, margin, y); y += 6;
@@ -3632,8 +3669,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Formation Name', arm.formationName || 'N/A'],
         ['Aquifer Type', arm.aquiferType || 'N/A'],
         ['Aquifer Productivity', arm.aquiferProductivity || 'N/A'],
-        ['Ksat Range', arm.typicalKsat_m_day ? `${arm.typicalKsat_m_day[0]}?${arm.typicalKsat_m_day[1]} m/day` : 'N/A'],
-        ['Porosity Range', arm.typicalPorosity ? `${(arm.typicalPorosity[0] * 100).toFixed(0)}?${(arm.typicalPorosity[1] * 100).toFixed(0)}%` : 'N/A'],
+        ['Ksat Range', arm.typicalKsat_m_day ? `${arm.typicalKsat_m_day[0]}-${arm.typicalKsat_m_day[1]} m/day` : 'N/A'],
+        ['Porosity Range', arm.typicalPorosity ? `${(arm.typicalPorosity[0] * 100).toFixed(0)}-${(arm.typicalPorosity[1] * 100).toFixed(0)}%` : 'N/A'],
         ['Fusion Method', arm.fusionMethod || 'N/A'],
       ],
       headStyles: { fillColor: [139, 92, 246], textColor: 255, fontStyle: 'bold', fontSize: 9 },
@@ -3707,7 +3744,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Water Table Depth', `${gf.waterTableDepth_m ?? 'N/A'}m (sub-model estimate — the governing water-table/depth values are in the Executive Summary)`],
         ['Recommended Drilling Depth', `${gf.recommendedDrillingDepth_m ?? 'N/A'}m`],
         ['Recommended Casing Depth', `${gf.recommendedCasingDepth_m ?? 'N/A'}m`],
-        ['Expected Yield', gf.expectedYield_m3hr ? `${gf.expectedYield_m3hr[0]}?${gf.expectedYield_m3hr[1]} m³/hr` : 'N/A'],
+        ['Expected Yield', gf.expectedYield_m3hr ? `${gf.expectedYield_m3hr[0]}-${gf.expectedYield_m3hr[1]} m³/hr` : 'N/A'],
       ],
       headStyles: { fillColor: [6, 182, 212], textColor: 255, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 8 },
@@ -3948,8 +3985,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Primary Type Probability', `${((ac.primaryType?.probability ?? 0) * 100).toFixed(0)}%`],
         ['Secondary Type', ac.secondaryType?.type || 'None'],
         ['Aquifer Name', characs.name || 'N/A'],
-        ['Recommended Depth Range', ac.recommendedDepth_m ? `${ac.recommendedDepth_m[0]}?${ac.recommendedDepth_m[1]}m` : 'N/A'],
-        ['Expected Yield Range', ac.expectedYield_m3hr ? `${ac.expectedYield_m3hr[0]}?${ac.expectedYield_m3hr[1]} m³/hr` : 'N/A'],
+        ['Recommended Depth Range', ac.recommendedDepth_m ? `${ac.recommendedDepth_m[0]}-${ac.recommendedDepth_m[1]}m` : 'N/A'],
+        ['Expected Yield Range', ac.expectedYield_m3hr ? `${ac.expectedYield_m3hr[0]}-${ac.expectedYield_m3hr[1]} m³/hr` : 'N/A'],
         ['Recharge Rate', (characs.rechargeRate || 'N/A').toUpperCase()],
         ['Contamination Vulnerability', (characs.vulnerabilityToContamination || 'N/A').toUpperCase()],
         ['Depletion Risk', (characs.depletionRisk || 'N/A').toUpperCase()],
@@ -4068,7 +4105,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Min Relative Score', `${((dm.minProbability ?? 0) * 100).toFixed(0)}%`],
         ['High-Probability Area', `${fmt(dm.highProbabilityArea_km2)} km²`],
         ['Coverage Radius', `${fmt(dm.coverageRadius_km)} km`],
-        ['Grid Size', `${dm.gridRows ?? 0}?${dm.gridCols ?? 0} cells (${dm.cellSizeM ?? 0}m)`],
+        ['Grid Size', `${dm.gridRows ?? 0}-${dm.gridCols ?? 0} cells (${dm.cellSizeM ?? 0}m)`],
         ['Confidence', `${((dm.confidence ?? 0) * 100).toFixed(0)}%`],
       ],
       headStyles: { fillColor: [245, 158, 11], textColor: 255, fontStyle: 'bold', fontSize: 9 },
@@ -4188,7 +4225,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       // reconciled Executive Summary decision, not a second verdict. Reports
       // used to print "RELOCATE" here beside "INVESTIGATE FURTHER" up front
       // and "DRILL WITH MONITORING" later — three verdicts, zero credibility.
-      doc.text(`Risk-engine sub-verdict: ${rec.action} ? ${rec.headline}`, margin, y); y += 5;
+      doc.text(`Risk-engine sub-verdict: ${rec.action} | ${rec.headline}`, margin, y); y += 5;
       doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 100, 0);
       doc.text('This is ONE model’s input to the reconciled decision. The FINAL verdict for this site is in the Executive Summary (page 2).', margin, y); y += 5;
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
@@ -4237,7 +4274,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       head: [['Parameter (sub-model scale)', 'Value']],
       body: [
         ['Overall Confidence', `${((cw.overallConfidence ?? 0) * 100).toFixed(0)}% (sub-model; governing: ${result.confidenceMetrics?.overall ?? '--'}%)`],
-        ['Confidence Grade', `${cw.confidenceGrade || 'N/A'} ? ${cw.gradeDescription || ''}`],
+        ['Confidence Grade', `${cw.confidenceGrade || 'N/A'} | ${cw.gradeDescription || ''}`],
         ['Data Quality Score', `${((cw.dataQualityScore ?? 0) * 100).toFixed(0)}%`],
         ['Data Completeness', `${((cw.dataCompletenessScore ?? 0) * 100).toFixed(0)}%`],
         ['Source Agreement', `${((cw.sourceAgreementScore ?? 0) * 100).toFixed(0)}%`],
@@ -4472,7 +4509,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       checkSpace(20);
       const cr = la.casingRecommendation;
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
-      doc.text(`Casing: Solid ${cr.solidFrom}?${cr.solidTo}m | Screen ${cr.screenFrom}?${cr.screenTo}m | Grout Seal: ${la.groutSealDepth_m}m`, margin, y);
+      doc.text(`Casing: Solid ${cr.solidFrom}-${cr.solidTo}m | Screen ${cr.screenFrom}-${cr.screenTo}m | Grout Seal: ${la.groutSealDepth_m}m`, margin, y);
       y += 8;
     }
   }
@@ -4806,8 +4843,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Aquifer Thickness', `${fmt(ei.depthOptimization.aquiferThickness_m)}m`],
           ['Safety Margin', `${fmt(ei.depthOptimization.safetyMargin_m)}m (${ei.depthOptimization.safetyMarginPercent}%)`],
           ['Casing Depth', `${fmt(ei.depthOptimization.casingDepth_m)}m`],
-          ['Screen Interval', `${ei.depthOptimization.screenFrom_m}?${ei.depthOptimization.screenTo_m}m`],
-          ['Min?Max Depth Range', `${fmt(ei.depthOptimization.minimumDepth_m)}?${fmt(ei.depthOptimization.maximumDepth_m)}m`],
+          ['Screen Interval', `${ei.depthOptimization.screenFrom_m}-${ei.depthOptimization.screenTo_m}m`],
+          ['Min?Max Depth Range', `${fmt(ei.depthOptimization.minimumDepth_m)}-${fmt(ei.depthOptimization.maximumDepth_m)}m`],
         ],
         headStyles: { fillColor: [56, 189, 248], textColor: 255, fontStyle: 'bold', fontSize: 8 },
         bodyStyles: { fontSize: 8 },
@@ -4851,7 +4888,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Transmissivity', `${fmt(ei.yieldEstimation.transmissivity_m2day)} m²/day`],
           ['Hydraulic Conductivity', `${ei.yieldEstimation.hydraulicConductivity_mday} m/day`],
           ['Specific Capacity', `${fmt(ei.yieldEstimation.specificCapacity_m3hr_m)} m³/hr/m`],
-          ['Confidence Interval', `${fmt(ei.yieldEstimation.confidenceInterval?.lower)}?${fmt(ei.yieldEstimation.confidenceInterval?.upper)} m³/hr`],
+          ['Confidence Interval', `${fmt(ei.yieldEstimation.confidenceInterval?.lower)}-${fmt(ei.yieldEstimation.confidenceInterval?.upper)} m³/hr`],
         ],
         headStyles: { fillColor: [22, 163, 74], textColor: 255, fontStyle: 'bold', fontSize: 8 },
         bodyStyles: { fontSize: 8 },
@@ -4999,7 +5036,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           ['Total Anomalies', `${ei.features.anomalyCount ?? 0}`],
           ['Vertical Anomalies (Fractures)', `${ei.features.verticalAnomalies ?? 0}`],
           ['Horizontal Anomalies (Aquifers)', `${ei.features.horizontalAnomalies ?? 0}`],
-          ['Resistivity Range', `${fmt(ei.features.resistivityRange?.min)}?${fmt(ei.features.resistivityRange?.max)} Om`],
+          ['Resistivity Range', `${fmt(ei.features.resistivityRange?.min)}-${fmt(ei.features.resistivityRange?.max)} Om`],
         ],
         headStyles: { fillColor: [100, 116, 139], textColor: 255, fontStyle: 'bold', fontSize: 8 },
         bodyStyles: { fontSize: 8 },
@@ -5017,7 +5054,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         startY: y, margin: { left: margin, right: margin },
         head: [['Depth Range', 'Interpretation', 'Resistivity', 'Water-Bearing', 'Hydro Role', 'Confidence']],
         body: ei.interpretation1D.layers.map((l: any) => [
-          `${fmt(l.depthTop_m)}?${fmt(l.depthBottom_m)}m`, l.interpretation,
+          `${fmt(l.depthTop_m)}-${fmt(l.depthBottom_m)}m`, l.interpretation,
           `${fmt(l.resistivity_ohmm)} Om`, l.waterBearing ? 'YES' : 'NO',
           l.hydroRole || '?', `${((l.confidence ?? 0) * 100).toFixed(0)}%`,
         ]),
@@ -5037,7 +5074,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         startY: y, margin: { left: margin, right: margin },
         head: [['Rank', 'Depth Range', 'Lithology', 'Resistivity', 'Est. Yield', 'Water Quality', 'Confidence']],
         body: ei.interpretation1D.aquiferTargets.map((t: any) => [
-          `#${t.rank}`, `${t.depthTop_m}?${t.depthBottom_m}m`, t.interpretedLithology,
+          `#${t.rank}`, `${t.depthTop_m}-${t.depthBottom_m}m`, t.interpretedLithology,
           `${fmt(t.estimatedResistivity_ohmm)} Om`, `${fmt(t.estimatedYield_m3hr, 1)} m³/hr`,
           (t.waterQuality || '').toUpperCase(), `${((t.confidence ?? 0) * 100).toFixed(0)}%`,
         ]),
@@ -5057,7 +5094,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         startY: y, margin: { left: margin, right: margin },
         head: [['Parameter', 'Value']],
         body: [
-          ['Grid Size', `${ei.invertedModel.nx}?${ei.invertedModel.nz}`],
+          ['Grid Size', `${ei.invertedModel.nx}-${ei.invertedModel.nz}`],
           ['Method', ei.invertedModel.method],
           ['RMS Error', `${ei.invertedModel.rmsError_pct}%`],
           ['Iterations', `${ei.invertedModel.iterations}`],
@@ -5130,8 +5167,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Overall Confidence', `${((msa.overallConfidence ?? 0) * 100).toFixed(0)}%`],
         ['Confidence Gain', `+${fmt(msa.confidenceGain_pct)}%`],
         ['Source Count', `${msa.sourceCount ?? 0} (${msa.fieldSourceCount ?? 0} field)`],
-        ['Consensus Depth', `${fmt(msa.consensusDepth_m)}m (${msa.depthBounds ? `${msa.depthBounds.lower}?${msa.depthBounds.upper}m` : 'N/A'})`],
-        ['Consensus Yield', `${fmt(msa.consensusYield_m3hr, 1)} m³/hr (${msa.yieldBounds ? `${msa.yieldBounds.lower}?${msa.yieldBounds.upper}` : 'N/A'})`],
+        ['Consensus Depth', `${fmt(msa.consensusDepth_m)}m (${msa.depthBounds ? `${msa.depthBounds.lower}-${msa.depthBounds.upper}m` : 'N/A'})`],
+        ['Consensus Yield', `${fmt(msa.consensusYield_m3hr, 1)} m³/hr (${msa.yieldBounds ? `${msa.yieldBounds.lower}-${msa.yieldBounds.upper}` : 'N/A'})`],
         ['Consensus Probability', `${((msa.consensusProbability ?? 0) * 100).toFixed(0)}%`],
         ['Consensus Rock Type', msa.consensusRockType || 'N/A'],
         ['Consensus Aquifer Type', msa.consensusAquiferType || 'N/A'],
@@ -5218,7 +5255,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         startY: y, margin: { left: margin, right: margin },
         head: [['Period', 'Duration', 'Severity', 'Min SPI', 'Recharge Impact']],
         body: td.droughtEvents.slice(0, 6).map((d: any) => [
-          `${d.startYear}/${d.startMonth}?${d.endYear}/${d.endMonth}`,
+          `${d.startYear}/${d.startMonth}-${d.endYear}/${d.endMonth}`,
           `${d.duration_months} months`, (d.severity || '').toUpperCase(),
           fmt(d.minSPI), `${fmt(d.estimatedRechargeImpact_pct, 0)}%`,
         ]),
@@ -5725,8 +5762,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       ['Geological Age', rc.geologicalAge],
       ['Aquifer Type', rc.aquiferType],
       ['Aquifer Productivity', (rc.aquiferProductivity ?? '').toUpperCase()],
-      ['Ksat Range', `${rc.typicalKsat_m_day[0]}?${rc.typicalKsat_m_day[1]} m/day`],
-      ['Porosity Range', `${sf((rc.typicalPorosity?.[0] ?? 0) * 100)}?${sf((rc.typicalPorosity?.[1] ?? 0) * 100)}%`],
+      ['Ksat Range', `${rc.typicalKsat_m_day[0]}-${rc.typicalKsat_m_day[1]} m/day`],
+      ['Porosity Range', `${sf((rc.typicalPorosity?.[0] ?? 0) * 100)}-${sf((rc.typicalPorosity?.[1] ?? 0) * 100)}%`],
       ['Classification Confidence', `${sf((rc.confidence ?? 0) * 100)}% (SoilGrids v2.0 + Macrostrat API)`],
     ];
     autoTable(doc, {
@@ -5744,10 +5781,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       const wpRows = [
         ['Total Weathering Depth', `${wp.totalWeatheringDepth_m}m`],
         ['Saprolite (fully decomposed)', `0?${wp.saproliteDepth_m}m`],
-        ['Regolith (weathered rock)', `${wp.saproliteDepth_m}?${wp.regolithDepth_m}m`],
+        ['Regolith (weathered rock)', `${wp.saproliteDepth_m}-${wp.regolithDepth_m}m`],
         ['Fresh Bedrock', `>${wp.freshBedrockDepth_m}m`],
         ['Weathering Intensity', (wp.weatheringIntensity ?? '').toUpperCase()],
-        ['Aquifer Zone', `${wp.aquiferZone.top_m}?${wp.aquiferZone.bottom_m}m (${wp.aquiferZone.type})`],
+        ['Aquifer Zone', `${wp.aquiferZone.top_m}-${wp.aquiferZone.bottom_m}m (${wp.aquiferZone.type})`],
         ['Confidence', `${sf((wp.confidence ?? 0) * 100)}% (Bazilevskaya et al. 2013 model)`],
       ];
       autoTable(doc, {
@@ -5994,7 +6031,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       ['Vegetation-GW Proxy', 'Dry-season soil moisture as NDVI proxy (Eamus et al.)', 'ERA5-Land 2-year archive', 'R? ? 0.7 with MODIS NDVI; low-res proxy'],
       ['Bayesian Ensemble', 'Reliability-weighted multi-source fusion', `${(result as any).ensembleResult?.sourcesUsed ?? 8} independent sources`, 'Reduces uncertainty by vN; agreement-weighted'],
       ['Rock Classification', 'Soil texture - lithology mapping (Taylor & Eggleton 2001)', 'ISRIC SoilGrids + Macrostrat API', 'AI ensemble model; upgradeable with ERT survey'],
-      ['Weathering Profile', 'Bazilevskaya et al. (2013) depth regression', 'MAP + MAT + rock type', 'Statistical model; ?50% uncertainty range'],
+      ['Weathering Profile', 'Bazilevskaya et al. (2013) depth regression', 'MAP + MAT + rock type', 'Statistical model; ±50% uncertainty range'],
       ['Smart Site Selection', '8-layer spatial feature fusion (Naghibi et al. 2015)', 'Elevation + soil + climate grid', 'Multi-criteria ranking; top 3 GPS points'],
       ['Self-Learning Loop', 'Regional calibration from drilling outcomes', 'LocalStorage (client-side)', 'Improves with =3 outcomes in 0.5? grid cell'],
       ['Confidence Metrics', 'Weighted scoring: data availability \u00D7 source quality', `Internal algorithm (${(result as any).ensembleResult?.sourcesUsed ?? 8}+ sources)`, 'Self-assessed; see Appendix B for weight disclosure'],
@@ -6081,7 +6118,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('Digital Subsurface Twin ? Layered Earth Model', margin, y); y += 10;
     const twin = result.subsurfaceTwin as any;
     const layerRows = (twin.layers ?? []).map((l: any) => [
-      `${l.topDepthM ?? l.topM ?? 0}?${l.bottomDepthM ?? l.bottomM ?? 0}m`,
+      `${l.topDepthM ?? l.topM ?? 0}-${l.bottomDepthM ?? l.bottomM ?? 0}m`,
       l.lithology ?? 'Unknown',
       l.isAquifer ? 'YES ?' : 'No',
       l.porosity != null ? `${(l.porosity * 100).toFixed(0)}%` : 'N/A',
@@ -6206,7 +6243,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         startY: y,
         head: [['Step', 'Title', 'Status', 'Cost', 'Key Output']],
         body: hg.pipeline.map((s: any) => [
-          `${s.step}`, `${s.title} ? ${s.subtitle}`,
+          `${s.step}`, `${s.title} | ${s.subtitle}`,
           s.status === 'complete' ? 'DONE' : s.status === 'actionable' ? 'ACTION NEEDED' : 'PENDING',
           s.costUSD > 0 ? `$${(s.costUSD ?? 0).toLocaleString()}` : '$0',
           s.keyOutput,
@@ -6846,8 +6883,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       startY: y, margin: { left: margin, right: margin },
       head: [['Parameter', 'Value']],
       body: [
-        ['Average Borehole Depth', `${br.averageDepth} m (range: ${br.depthRange[0]}?${br.depthRange[1]} m)`],
-        ['Average Yield', `${br.averageYield} m³/hr (range: ${br.yieldRange[0]}?${br.yieldRange[1]} m³/hr)`],
+        ['Average Borehole Depth', `${br.averageDepth} m (range: ${br.depthRange[0]}-${br.depthRange[1]} m)`],
+        ['Average Yield', `${br.averageYield} m³/hr (range: ${br.yieldRange[0]}-${br.yieldRange[1]} m³/hr)`],
         ['Regional Success Rate', `${(br.successRate * 100).toFixed(0)}%`],
         ['Total Boreholes Drilled', br.totalBoreholesDrilled],
         ['Average Cost', br.averageCost],
@@ -6948,7 +6985,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (rs.climate) {
       const cl = rs.climate;
       if (cl.annualPrecipitation != null) rsRows.push(['Annual Precipitation', `${cl.annualPrecipitation} mm/yr`, 'Open-Meteo']);
-      if (cl.meanTemperature != null) rsRows.push(['Mean Temperature', `${cl.meanTemperature} ?C`, 'Open-Meteo']);
+      if (cl.meanTemperature != null) rsRows.push(['Mean Temperature', `${cl.meanTemperature} °C`, 'Open-Meteo']);
       if (cl.aridityIndex != null) rsRows.push(['Aridity Index', (cl.aridityIndex ?? 0).toFixed(2), 'P/PET ratio']);
     }
     if (rs.waterIndices) {
@@ -7029,8 +7066,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       satRows.push(['Vegetation Type (LAI)', sat.leafAreaIndex.vegetationType, 'LAI classification']);
     }
     if (sat.landSurfaceTemp) {
-      satRows.push(['Surface Temp (0-7cm)', `${sat.landSurfaceTemp.soil_temp_surface_C}?C`, 'ERA5-Land']);
-      satRows.push(['Deep Temp (28-100cm)', `${sat.landSurfaceTemp.soil_temp_deep_C}?C`, 'ERA5-Land']);
+      satRows.push(['Surface Temp (0-7cm)', `${sat.landSurfaceTemp.soil_temp_surface_C}°C`, 'ERA5-Land']);
+      satRows.push(['Deep Temp (28-100cm)', `${sat.landSurfaceTemp.soil_temp_deep_C}°C`, 'ERA5-Land']);
       satRows.push(['Thermal GW Implication', sat.landSurfaceTemp.groundwaterImplication, 'Thermal analysis']);
     }
     if (sat.evapotranspiration) {
@@ -9870,7 +9907,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
   if (result.historicalData?.weather?.annualPrecipitation?.length) {
     addSheet('Historical Weather', [
       ['20-YEAR HISTORICAL WEATHER'],
-      ['Year', 'Precipitation (mm)', 'Temperature (?C)'],
+      ['Year', 'Precipitation (mm)', 'Temperature (°C)'],
       ...result.historicalData.weather.annualPrecipitation.map((p, i) => [
         p.year, p.total,
         result.historicalData!.weather.annualTemperature?.[i]?.avg ?? '',
@@ -10016,8 +10053,8 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
       ['Primary Type', ac.primaryType?.type],
       ['Primary Probability', `${((ac.primaryType?.probability ?? 0) * 100).toFixed(0)}%`],
       ['Secondary Type', ac.secondaryType?.type || 'N/A'],
-      ['Depth Range', ac.recommendedDepth_m ? `${ac.recommendedDepth_m[0]}?${ac.recommendedDepth_m[1]}m` : ''],
-      ['Yield Range', ac.expectedYield_m3hr ? `${ac.expectedYield_m3hr[0]}?${ac.expectedYield_m3hr[1]} m³/hr` : ''],
+      ['Depth Range', ac.recommendedDepth_m ? `${ac.recommendedDepth_m[0]}-${ac.recommendedDepth_m[1]}m` : ''],
+      ['Yield Range', ac.expectedYield_m3hr ? `${ac.expectedYield_m3hr[0]}-${ac.expectedYield_m3hr[1]} m³/hr` : ''],
       ['Drilling Strategy', ac.drillingStrategy],
       ['Recharge Rate', ac.characteristics?.rechargeRate],
       ['Depletion Risk', ac.characteristics?.depletionRisk],
@@ -10228,7 +10265,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
       ['Water Table', `${gf.waterTableDepth_m}m`],
       ['Drilling Depth', `${gf.recommendedDrillingDepth_m}m`],
       ['Casing Depth', `${gf.recommendedCasingDepth_m}m`],
-      ['Expected Yield', gf.expectedYield_m3hr ? `${gf.expectedYield_m3hr[0]}?${gf.expectedYield_m3hr[1]} m³/hr` : ''],
+      ['Expected Yield', gf.expectedYield_m3hr ? `${gf.expectedYield_m3hr[0]}-${gf.expectedYield_m3hr[1]} m³/hr` : ''],
     ], [25, 30]);
   }
 
@@ -10316,7 +10353,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
       rows.push(['Aquifer Center', `${fmt(ei.depthOptimization.aquiferCenter_m)}m`]);
       rows.push(['Aquifer Thickness', `${fmt(ei.depthOptimization.aquiferThickness_m)}m`]);
       rows.push(['Casing Depth', `${fmt(ei.depthOptimization.casingDepth_m)}m`]);
-      rows.push(['Screen Interval', `${ei.depthOptimization.screenFrom_m}?${ei.depthOptimization.screenTo_m}m`]);
+      rows.push(['Screen Interval', `${ei.depthOptimization.screenFrom_m}-${ei.depthOptimization.screenTo_m}m`]);
     }
     if (ei.yieldEstimation) {
       rows.push([''], ['YIELD ESTIMATION']);
@@ -10325,7 +10362,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
       rows.push(['Category', ei.yieldEstimation.yieldCategory || '?']);
       rows.push(['Transmissivity', `${fmt(ei.yieldEstimation.transmissivity_m2day)} m²/day`]);
       rows.push(['Hydraulic Conductivity', `${ei.yieldEstimation.hydraulicConductivity_mday} m/day`]);
-      rows.push(['Confidence', `${fmt(ei.yieldEstimation.confidenceInterval?.lower)}?${fmt(ei.yieldEstimation.confidenceInterval?.upper)} m³/hr`]);
+      rows.push(['Confidence', `${fmt(ei.yieldEstimation.confidenceInterval?.lower)}-${fmt(ei.yieldEstimation.confidenceInterval?.upper)} m³/hr`]);
     }
     if (ei.hybridInterpretation) {
       rows.push([''], ['HYBRID AI INTERPRETATION']);
@@ -10344,11 +10381,11 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
     }
     if (ei.interpretation1D?.layers?.length) {
       rows.push([''], ['1D LAYERED EARTH MODEL'], ['Depth Range', 'Interpretation', 'Resistivity', 'Water-Bearing']);
-      ei.interpretation1D.layers.forEach((l: any) => rows.push([`${fmt(l.depthTop_m)}?${fmt(l.depthBottom_m)}m`, l.interpretation, `${fmt(l.resistivity_ohmm)} Om`, l.waterBearing ? 'YES' : 'NO']));
+      ei.interpretation1D.layers.forEach((l: any) => rows.push([`${fmt(l.depthTop_m)}-${fmt(l.depthBottom_m)}m`, l.interpretation, `${fmt(l.resistivity_ohmm)} Om`, l.waterBearing ? 'YES' : 'NO']));
     }
     if (ei.invertedModel) {
       rows.push([''], ['2D INVERSION MODEL']);
-      rows.push(['Grid', `${ei.invertedModel.nx}?${ei.invertedModel.nz}`]);
+      rows.push(['Grid', `${ei.invertedModel.nx}-${ei.invertedModel.nz}`]);
       rows.push(['RMS Error', `${ei.invertedModel.rmsError_pct}%`]);
       rows.push(['Profile Length', `${fmt(ei.invertedModel.profileLength_m)}m`]);
     }
@@ -10362,7 +10399,7 @@ export async function generateExcelReport(result: AnalysisResult, tier: 'basic' 
       ['CONFIDENCE-WEIGHTED PREDICTIONS'],
       ['Parameter', 'Value'],
       ['Overall Confidence', `${((cw.overallConfidence ?? 0) * 100).toFixed(0)}%`],
-      ['Confidence Grade', `${cw.confidenceGrade} ? ${cw.gradeDescription}`],
+      ['Confidence Grade', `${cw.confidenceGrade} | ${cw.gradeDescription}`],
       ['Data Quality', `${((cw.dataQualityScore ?? 0) * 100).toFixed(0)}%`],
       ['Data Completeness', `${((cw.dataCompletenessScore ?? 0) * 100).toFixed(0)}%`],
       ['Source Agreement', `${((cw.sourceAgreementScore ?? 0) * 100).toFixed(0)}%`],
@@ -10510,7 +10547,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
     sections.push(heading('5. Digital Subsurface Twin'));
     sections.push(para(`Model Confidence: ${((twin.modelConfidence ?? 0) * 100).toFixed(0)}%`, true));
     for (const l of (twin.layers ?? [])) {
-      sections.push(para(`${l.topM ?? 0}?${l.bottomM ?? 0}m: ${l.lithology ?? 'Unknown'} ${l.isAquifer ? '? AQUIFER' : ''} (K=${l.hydraulicConductivity_m_day?.toFixed(2) ?? 'N/A'} m/day, Porosity=${l.porosity != null ? (l.porosity * 100).toFixed(0) + '%' : 'N/A'})`));
+      sections.push(para(`${l.topM ?? 0}-${l.bottomM ?? 0}m: ${l.lithology ?? 'Unknown'} ${l.isAquifer ? '? AQUIFER' : ''} (K=${l.hydraulicConductivity_m_day?.toFixed(2) ?? 'N/A'} m/day, Porosity=${l.porosity != null ? (l.porosity * 100).toFixed(0) + '%' : 'N/A'})`));
     }
     if (twin.drillingPrognosis) {
       sections.push(para(`Drilling Prognosis: ${twin.drillingPrognosis.totalDepthM ?? 'N/A'}m, ${twin.drillingPrognosis.estimatedDays ?? 'N/A'} days, Yield ${twin.drillingPrognosis.predictedYield_m3h ?? 'N/A'} m³/hr`, true));
@@ -10523,7 +10560,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
     sections.push(heading('6. Smart Survey Plan'));
     sections.push(para(`Recommended: ${plan.tierName ?? 'Tier ' + plan.recommendedTier} ? Total Cost: $${(plan.totalCostUSD ?? 0).toLocaleString()}`, true, '16A34A'));
     for (const m of (plan.methods ?? [])) {
-      sections.push(para(`• ${m.method}: ${m.priority} ? $${(m.costUSD ?? 0).toLocaleString()} (+${m.confidenceGainPercent ?? 0}% confidence) ? ${m.rationale ?? ''}`));
+      sections.push(para(`• ${m.method}: ${m.priority} | $${(m.costUSD ?? 0).toLocaleString()} (+${m.confidenceGainPercent ?? 0}% confidence) ? ${m.rationale ?? ''}`));
     }
     if (plan.costSavingsPercent != null) {
       sections.push(para(`Cost savings vs full investigation: ${plan.costSavingsPercent}%`));
@@ -10563,7 +10600,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
     const ac = result.aquiferClassification as any;
     sections.push(heading(`${sectionNum}. Bayesian Aquifer Classification`)); sectionNum++;
     sections.push(para(`Primary: ${ac.primaryType?.type} (${((ac.primaryType?.probability ?? 0) * 100).toFixed(0)}%) | Secondary: ${ac.secondaryType?.type || 'N/A'}`, true));
-    sections.push(para(`Depth: ${ac.recommendedDepth_m?.[0]}?${ac.recommendedDepth_m?.[1]}m | Yield: ${ac.expectedYield_m3hr?.[0]}?${ac.expectedYield_m3hr?.[1]} m³/hr`));
+    sections.push(para(`Depth: ${ac.recommendedDepth_m?.[0]}-${ac.recommendedDepth_m?.[1]}m | Yield: ${ac.expectedYield_m3hr?.[0]}-${ac.expectedYield_m3hr?.[1]} m³/hr`));
     sections.push(para(`Strategy: ${ac.drillingStrategy} | Recharge: ${ac.characteristics?.rechargeRate} | Depletion Risk: ${ac.characteristics?.depletionRisk}`));
     sections.push(para(`Confidence: ${((ac.overallConfidence ?? 0) * 100).toFixed(0)}%`));
   }
@@ -10583,7 +10620,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
     sections.push(heading(`${sectionNum}. Probabilistic Drill Map`)); sectionNum++;
     sections.push(para(`Max Probability: ${((dm.maxProbability ?? 0) * 100).toFixed(0)}% | Mean: ${((dm.meanProbability ?? 0) * 100).toFixed(0)}%`, true));
     for (const pt of (dm.topDrillingPoints?.slice(0, 3) || [])) {
-      sections.push(para(`  ? Rank ${pt.rank}: ${pt.lat?.toFixed(5)}, ${pt.lon?.toFixed(5)} ? Score: ${pt.score} ? ${pt.primaryReason}`));
+      sections.push(para(`  ? Rank ${pt.rank}: ${pt.lat?.toFixed(5)}, ${pt.lon?.toFixed(5)} ? Score: ${pt.score} | ${pt.primaryReason}`));
     }
   }
 
@@ -10594,7 +10631,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
     sections.push(para(`Corrected Depth: ${cc.correctedDepth_m}m | Yield: ${cc.correctedYield_m3hr} m³/hr | Probability: ${((cc.correctedProbability ?? 0) * 100).toFixed(0)}%`, true));
     sections.push(para(`Calibration Sources: ${cc.calibrationSources} | Performance: ${cc.calibrationPerformance}`));
     for (const cor of (cc.corrections || [])) {
-      sections.push(para(`  ? ${cor.parameter}: ${cor.originalValue} ? ${cor.correctedValue} (${cor.reason})`));
+      sections.push(para(`  ? ${cor.parameter}: ${cor.originalValue} | ${cor.correctedValue} (${cor.reason})`));
     }
   }
 
@@ -10611,7 +10648,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
   if (result.confidenceWeighted) {
     const cw = result.confidenceWeighted as any;
     sections.push(heading(`${sectionNum}. Confidence-Weighted Predictions`)); sectionNum++;
-    sections.push(para(`Grade: ${cw.confidenceGrade} ? ${cw.gradeDescription}`, true));
+    sections.push(para(`Grade: ${cw.confidenceGrade} | ${cw.gradeDescription}`, true));
     sections.push(para(`Adjusted: Depth ${cw.adjustedDepth_m}m | Yield ${cw.adjustedYield_m3hr} m³/hr | Probability ${((cw.adjustedProbability ?? 0) * 100).toFixed(0)}%`));
     sections.push(para(`Quality: ${((cw.dataQualityScore ?? 0) * 100).toFixed(0)}% | Completeness: ${((cw.dataCompletenessScore ?? 0) * 100).toFixed(0)}% | Agreement: ${((cw.sourceAgreementScore ?? 0) * 100).toFixed(0)}%`));
   }
@@ -10670,7 +10707,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
       sections.push(para(`Confidence: Before ${((ei.confidence.beforeERT ?? 0) * 100).toFixed(0)}% ? After ${((ei.confidence.afterERT ?? 0) * 100).toFixed(0)}% (+${fmt(ei.confidence.improvementPercent)}%)`, true));
     }
     if (ei.depthOptimization) {
-      sections.push(para(`Depth: ${fmt(ei.depthOptimization.recommendedDrillingDepth_m)}m | Casing: ${fmt(ei.depthOptimization.casingDepth_m)}m | Screen: ${ei.depthOptimization.screenFrom_m}?${ei.depthOptimization.screenTo_m}m`));
+      sections.push(para(`Depth: ${fmt(ei.depthOptimization.recommendedDrillingDepth_m)}m | Casing: ${fmt(ei.depthOptimization.casingDepth_m)}m | Screen: ${ei.depthOptimization.screenFrom_m}-${ei.depthOptimization.screenTo_m}m`));
     }
     if (ei.yieldEstimation) {
       sections.push(para(`Yield: ${fmt(ei.yieldEstimation.estimatedYield_m3hr)} m³/hr (${ei.yieldEstimation.yieldCategory}) | Sustainable: ${fmt(ei.yieldEstimation.sustainableYield_m3hr)} m³/hr | T=${fmt(ei.yieldEstimation.transmissivity_m2day)} m²/day`));
@@ -10683,7 +10720,7 @@ export async function generateWordReport(result: AnalysisResult, tier: 'basic' |
     }
     if (ei.interpretation1D?.layers?.length) {
       for (const l of ei.interpretation1D.layers) {
-        sections.push(para(`  ? ${fmt(l.depthTop_m)}?${fmt(l.depthBottom_m)}m: ${l.interpretation} (${fmt(l.resistivity_ohmm)} Om)${l.waterBearing ? ' ??' : ''}`));
+        sections.push(para(`  ? ${fmt(l.depthTop_m)}-${fmt(l.depthBottom_m)}m: ${l.interpretation} (${fmt(l.resistivity_ohmm)} Om)${l.waterBearing ? ' ??' : ''}`));
       }
     }
     if (ei.executiveSummary) sections.push(para(ei.executiveSummary));
@@ -10825,7 +10862,7 @@ export function generateCSVReport(result: AnalysisResult): void {
   if (result.historicalData?.weather?.annualPrecipitation?.length) {
     rows.push(['']);
     rows.push(['HISTORICAL WEATHER (20 YEARS)']);
-    rows.push(['Year', 'Precipitation (mm)', 'Temperature (?C)']);
+    rows.push(['Year', 'Precipitation (mm)', 'Temperature (°C)']);
     for (let i = 0; i < result.historicalData.weather.annualPrecipitation.length; i++) {
       const p = result.historicalData.weather.annualPrecipitation[i];
       const t = result.historicalData.weather.annualTemperature?.[i];
@@ -10864,8 +10901,8 @@ export function generateCSVReport(result: AnalysisResult): void {
     const ac = result.aquiferClassification as any;
     rows.push([''], ['AQUIFER CLASSIFICATION']);
     rows.push(['Primary Type', ac.primaryType?.type, '', pct(ac.primaryType?.probability)]);
-    rows.push(['Depth Range', `${ac.recommendedDepth_m?.[0]}?${ac.recommendedDepth_m?.[1]}`, 'meters', '']);
-    rows.push(['Yield Range', `${ac.expectedYield_m3hr?.[0]}?${ac.expectedYield_m3hr?.[1]}`, 'm³/hr', '']);
+    rows.push(['Depth Range', `${ac.recommendedDepth_m?.[0]}-${ac.recommendedDepth_m?.[1]}`, 'meters', '']);
+    rows.push(['Yield Range', `${ac.expectedYield_m3hr?.[0]}-${ac.expectedYield_m3hr?.[1]}`, 'm³/hr', '']);
     rows.push(['Strategy', ac.drillingStrategy, '', '']);
     rows.push(['Confidence', pct(ac.overallConfidence), '', '']);
   }
@@ -11016,7 +11053,7 @@ export function generateCSVReport(result: AnalysisResult): void {
     if (ei.depthOptimization) {
       rows.push(['Recommended Depth', `${fmt(ei.depthOptimization.recommendedDrillingDepth_m)}`, 'meters', '']);
       rows.push(['Casing Depth', `${fmt(ei.depthOptimization.casingDepth_m)}`, 'meters', '']);
-      rows.push(['Screen Interval', `${ei.depthOptimization.screenFrom_m}?${ei.depthOptimization.screenTo_m}`, 'meters', '']);
+      rows.push(['Screen Interval', `${ei.depthOptimization.screenFrom_m}-${ei.depthOptimization.screenTo_m}`, 'meters', '']);
     }
     if (ei.yieldEstimation) {
       rows.push(['Estimated Yield', `${fmt(ei.yieldEstimation.estimatedYield_m3hr)}`, 'm³/hr', ei.yieldEstimation.yieldCategory || '']);

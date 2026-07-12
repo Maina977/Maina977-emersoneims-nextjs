@@ -274,13 +274,41 @@ function evaluate30Methods(ctx: SiteContext): GeophysicalMethod[] {
     });
   }
 
-  // ── 6. TIME-DOMAIN ELECTROMAGNETIC (TDEM) ──
+  // ── ESSENTIAL: 2-D ELECTRICAL RESISTIVITY TOMOGRAPHY (ERT) + VES ──
+  // This is THE recommended field-validation method throughout the report, so it
+  // must lead the ranking (re-audit #1). It was previously missing entirely while
+  // TDEM ranked Essential — a self-contradiction against every other section.
   {
-    let score = 70;
-    const notes: string[] = [];
-    if (ctx.targetDepth > 30 && ctx.targetDepth < 300) { score += 10; notes.push('Target depth ideal for TDEM — excellent 30-300m range'); }
-    if (ctx.isArid) { score += 10; notes.push('Arid region — TDEM detects conductive freshwater zones in resistive background'); }
-    if (ctx.aquiferType.toLowerCase().includes('saline') || ctx.aquiferType.toLowerCase().includes('brackish')) { score += 10; notes.push('Saline/brackish water detection — TDEM excels at conductive target mapping'); }
+    let score = 82; // ERT+VES is the default primary method for borehole siting
+    const notes: string[] = ['PRIMARY recommended field-validation method for this report — 2-D ERT profile + Schlumberger VES at the proposed point and offsets'];
+    if (ctx.targetDepth >= 5 && ctx.targetDepth <= 200) { score += 6; notes.push('Target depth ideal for ERT/VES — resolves the 0-200m weathered/fractured interval'); }
+    if (/basement|fractured|crystalline|gneiss|granite|schist/i.test(ctx.aquiferType || '')) { score += 4; notes.push('Weathered/fractured basement — ERT maps the saprolite base + fracture zones that control yield'); }
+    score = Math.max(10, Math.min(96, score));
+    methods.push({
+      id: 31, name: 'Electrical Resistivity Tomography (2-D ERT) + VES', category: 'C. Electrical / Potential',
+      principle: 'Injects current through electrode arrays (Wenner/Schlumberger/Dipole-Dipole) and measures potential differences to invert a 2-D resistivity cross-section; VES adds 1-D sounding at key points. Directly maps aquifer geometry, weathered-zone base and fracture zones.',
+      platform: 'Surface', depthCapability: '2-200m', resolution: '2-10m (spacing-dependent)',
+      applicabilityScore: score, priority: scoreToPriority(score),
+      estimatedCostUSD: [1000, 5000], estimatedTimeHrs: [4, 10],
+      expectedOutcome: `Inverted resistivity section to ~${Math.min(Math.round(ctx.targetDepth * 1.5), 200)}m: aquifer target depth/geometry, weathered-zone base, fracture zones and the survey-grade drill peg.`,
+      siteSpecificNotes: notes,
+      knowledgeGapsFilled: ['Aquifer depth & geometry', 'Weathered-zone base', 'Fracture-zone location', 'Drill-point selection', 'Casing/screen depth basis'],
+      limitations: ['Requires accessible ground for electrode spreads', 'Equivalence/suppression ambiguity (mitigate with VES + borehole control)', 'Resolution decreases with depth'],
+      kenyaRelevance: 'The standard, WRA-recognised borehole-siting survey across Kenya — routinely paired with the statutory hydrogeological survey report. Typical Kenya market cost KSh 40,000-110,000 for the combined survey + report.',
+      dataRequirements: 'Multi-electrode resistivity meter (e.g. ABEM Terrameter / IGIS SSR), cables, electrodes; 200-400m line at 5-10m spacing.',
+      integrationWith: ['VES', 'TDEM', 'Seismic Refraction', 'Magnetic Survey'],
+    });
+  }
+
+  // ── COMPLEMENTARY: TIME-DOMAIN ELECTROMAGNETIC (TDEM) ──
+  // Complementary to ERT (Recommended by default); genuinely Essential only where
+  // deep conductivity discrimination is needed (arid/saline/brackish) (re-audit #1).
+  {
+    let score = 62;
+    const notes: string[] = ['Complementary to ERT — adds deep conductivity discrimination where required'];
+    if (ctx.targetDepth > 120 && ctx.targetDepth < 300) { score += 10; notes.push('Deep target (>120m) — TDEM extends below practical ERT depth'); }
+    if (ctx.isArid) { score += 12; notes.push('Arid region — TDEM detects conductive freshwater zones in resistive background'); }
+    if (ctx.aquiferType.toLowerCase().includes('saline') || ctx.aquiferType.toLowerCase().includes('brackish')) { score += 14; notes.push('Saline/brackish water detection — TDEM excels at conductive target mapping'); }
     score = Math.max(10, Math.min(95, score));
     methods.push({
       id: 6, name: 'Time-Domain Electromagnetic (TDEM)', category: 'B. Electromagnetic / Radar',
