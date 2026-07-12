@@ -143,6 +143,15 @@ export function auditReport(result: AnalysisResult): AuditReport {
   // ═══════════════════════════════════════════════════════════════
   checks.push(auditIntegrityRegressions(result));
 
+  // ═══════════════════════════════════════════════════════════════
+  // CHECK 18: CROSS-ENGINE VALUE RECONCILIATION — the executive yield,
+  // the well-design (aquifer-limited) yield, and the aquifer-physics
+  // transmissivity must agree. This is the export gate the 2026-07-12
+  // driller audit demanded: a report may not print 4.9 m³/hr up front
+  // while the pump section designs for 0.28 m³/hr.
+  // ═══════════════════════════════════════════════════════════════
+  checks.push(auditCrossEngineReconciliation(result));
+
   // ── SCORING ──
   const failedChecks = checks.filter(c => c.severity === 'FAIL').length;
   const warningChecks = checks.filter(c => c.severity === 'WARN').length;
@@ -903,5 +912,90 @@ function auditIntegrityRegressions(result: AnalysisResult): AuditCheck {
     ...base,
     severity: 'PASS',
     details: `All integrity rules hold: ${wells.length} well record(s) all verified-source and within physical bounds; field-validation claims ${r.fieldData || r.fieldValidation ? 'backed by field data' : 'absent (desktop run, honestly labelled)'}; location grade consistent with GPS source (${gpsSource}${grade ? ` → grade ${grade}` : ''}).`,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHECK 18 — CROSS-ENGINE VALUE RECONCILIATION (2026-07-12 driller audit)
+// ═══════════════════════════════════════════════════════════════
+// The surgical driller audit rejected a report that advertised 4.9 m³/hr in the
+// executive summary while the pump/well-design section designed for 0.28 m³/hr
+// (aquifer-limited). Root cause: the well-design engine independently caps the
+// yield to what the modelled transmissivity can sustain, but that capped value is
+// never propagated back to the governing result. Until the governing yield is
+// reconciled at source, a report whose sections disagree by more than ~1.6× MUST
+// NOT export. Same rule for transmissivity across engines (aquifer sim vs
+// advanced-geophysics/provenance differing by orders of magnitude).
+function auditCrossEngineReconciliation(result: AnalysisResult): AuditCheck {
+  const base = {
+    id: 18,
+    name: 'Cross-Engine Value Reconciliation',
+    category: 'INTEGRITY',
+    description: 'Executive yield, well-design (aquifer-limited) yield and transmissivity must agree across engines — no 4.9-vs-0.28 split.',
+  };
+
+  const r = result as any;
+  const violations: string[] = [];
+
+  // ── YIELD: governing (executive/decision) vs well-design design rate ──
+  const govYield = Number(
+    r.drillDecision?.expectedYield_m3hr ?? r.estimatedYield ?? NaN,
+  );
+  const designYield = Number(r.wellDesign?.drawdown?.designPumpingRate_m3hr ?? NaN);
+  if (Number.isFinite(govYield) && Number.isFinite(designYield) && govYield > 0 && designYield > 0) {
+    const ratio = Math.max(govYield, designYield) / Math.min(govYield, designYield);
+    if (ratio > 1.6) {
+      violations.push(
+        `Executive yield ${govYield.toFixed(1)} m³/hr contradicts the well-design/pump rate ${designYield.toFixed(2)} m³/hr (${ratio.toFixed(1)}× apart). ` +
+        `The aquifer-limited design rate must become the ONE governing yield fed to the executive, costs, pump and revenue — the report may not advertise a yield the borehole cannot sustain.`,
+      );
+    }
+  }
+
+  // ── TRANSMISSIVITY: aquifer simulation vs any second engine estimate ──
+  const tAquiferSim = Number(
+    r.aquiferSimulation?.transmissivityM2Day ?? r.aquiferSimulation?.transmissivity_m2day ?? NaN,
+  );
+  const tOther = Number(
+    r.wellDesign?.drawdown?.transmissivity_m2day ??
+    r.advancedGeophysics?.transmissivity_m2day ??
+    NaN,
+  );
+  if (Number.isFinite(tAquiferSim) && Number.isFinite(tOther) && tAquiferSim > 0 && tOther > 0) {
+    const tRatio = Math.max(tAquiferSim, tOther) / Math.min(tAquiferSim, tOther);
+    if (tRatio > 10) {
+      violations.push(
+        `Transmissivity disagrees across engines: aquifer simulation ${tAquiferSim.toFixed(2)} m²/day vs ${tOther.toFixed(2)} m²/day (${Math.round(tRatio)}× apart). ` +
+        `One governing T/K model must feed sustainable yield, drawdown and specific capacity.`,
+      );
+    }
+  }
+
+  // ── GOVERNING SUCCESS PROBABILITY must be a sane, single value (catches the
+  //    "1%" provenance-matrix display bug leaking into the decision) ──
+  const govProb = Number(r.probability ?? NaN);
+  if (Number.isFinite(govProb) && (govProb < 0.05 || govProb > 1)) {
+    violations.push(
+      `Governing success probability is ${(govProb * 100).toFixed(0)}% — outside the sane 5–100% band. A sub-model/display value has leaked into the governing result.`,
+    );
+  }
+
+  if (violations.length > 0) {
+    return {
+      ...base,
+      severity: 'FAIL',
+      details: `${violations.length} cross-engine contradiction${violations.length > 1 ? 's' : ''} — report blocked until reconciled: ${violations.join(' | ')}`,
+      fix: 'Reconcile at source in boreholeAnalyzer: derive ONE governing yield from the aquifer-limited design rate (wellDesignEngine) and feed it to estimatedYield/drillDecision; reconcile transmissivity to a single basement-consistent value. Do not weaken this gate.',
+    };
+  }
+
+  return {
+    ...base,
+    severity: 'PASS',
+    details: `Cross-engine values reconciled: ` +
+      (Number.isFinite(govYield) && Number.isFinite(designYield)
+        ? `yield ${govYield.toFixed(1)} vs design ${designYield.toFixed(2)} m³/hr within tolerance; `
+        : 'yield comparison not applicable; ') +
+      `governing success probability ${Number.isFinite(govProb) ? (govProb * 100).toFixed(0) + '%' : 'n/a'}.`,
   };
 }
