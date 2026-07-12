@@ -463,11 +463,17 @@ export function propagateGoverningValues(result: any): void {
   //    AUTHORITATIVE, so they must carry the governing yield, not a stale ERT
   //    estimate. (The dedicated "ERT geophysics estimate ONLY" panel already
   //    prints its own disclaimer pointing back to the Executive Summary.) ──
+  // ONE governing transmissivity across the report: the well-design reconciled
+  // T (bounded by the regional tested-yield band). Re-stamp the ERT-interpretation
+  // T (feeds the data-provenance matrix) so it stops printing an outlier 146 while
+  // the aquifer-physics page shows 0.1–0.2 (re-audit #4).
+  const govT = result.wellDesign?.drawdown?.reconciledTransmissivity_m2day;
   const ye = result.ertInterpretation?.yieldEstimation;
   if (ye) {
     if (ye.estimatedYield_m3hr != null) ye.estimatedYield_m3hr = r2(gY);
     if (ye.sustainableYield_m3hr != null) ye.sustainableYield_m3hr = r2(gY);
     if (ye.estimatedYield_Lmin != null) ye.estimatedYield_Lmin = Math.round(gY * 1000 / 60);
+    if (Number.isFinite(govT) && ye.transmissivity_m2day != null) ye.transmissivity_m2day = govT;
     if (ye.confidenceInterval && typeof ye.confidenceInterval === 'object') {
       ye.confidenceInterval.lower = r2(gY * 0.65);
       ye.confidenceInterval.upper = r2(gY * 1.35);

@@ -1189,6 +1189,10 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
     specificCapacity_class: scCls,
     pumpingDuration_hr: 24, safetyFactor: 1.5,
   };
+  // Expose the reconciled transmissivity so the report's other T displays (data
+  // provenance, ERT interpretation) can cite ONE governing T instead of the
+  // 0.1 / 0.2 / 146 spread the re-audit flagged (#4).
+  (drawdown as any).reconciledTransmissivity_m2day = Math.round(T_recon * 1000) / 1000;
 
   // ─── WELL DEVELOPMENT ───
   const devMeth = isRock ? 'Air-lift development' : gpReq ? 'Surging + airlifting (develop gravel pack)' : 'Airlift pumping with surge blocks';
