@@ -84,6 +84,39 @@ console.log('\nA. Water balance (hydroPhysics.budykoWaterBalance)');
     hp.aridityClass(1.5) === 'semi-arid' && hp.aridityClass(3) === 'arid');
 }
 
+// ── A2. GOVERNING YIELD RECONCILIATION (2026-07-12 driller audit) ─
+console.log('\nA2. Governing yield reconciliation (hydroPhysics.reconcileGoverningYield)');
+{
+  const BASEMENT = [0.5, 3];
+  // The exact defect the driller rejected: executive 4.9 vs pump-design 0.28.
+  const vihiga = hp.reconcileGoverningYield({
+    ensembleYield_m3hr: 4.9, aquiferLimitedYield_m3hr: 0.28, regionalPriorBand_m3hr: BASEMENT });
+  check('4.9-vs-0.28 split resolves to a SINGLE governing yield in [0.5,3] basement band',
+    vihiga.governingYield_m3hr >= 0.5 && vihiga.governingYield_m3hr <= 3, `got ${vihiga.governingYield_m3hr}`);
+  check('sub-floor aquifer rate with supporting ensemble lifts to regional floor 0.5, not 0.28',
+    vihiga.governingYield_m3hr === 0.5 && vihiga.basis === 'regional-floor (low-T outlier)', `got ${vihiga.governingYield_m3hr}/${vihiga.basis}`);
+  // High-T outlier (146 m²/day → ~18 m³/hr) must not blow past the ceiling.
+  const hiT = hp.reconcileGoverningYield({
+    ensembleYield_m3hr: 4.9, aquiferLimitedYield_m3hr: 18.6, regionalPriorBand_m3hr: BASEMENT });
+  check('high-T outlier (18.6) capped to regional ceiling 3, never advertised',
+    hiT.governingYield_m3hr === 3, `got ${hiT.governingYield_m3hr}`);
+  // A physically reasonable aquifer rate within band is trusted as-is.
+  const mid = hp.reconcileGoverningYield({
+    ensembleYield_m3hr: 4.0, aquiferLimitedYield_m3hr: 1.5, regionalPriorBand_m3hr: BASEMENT });
+  check('in-band aquifer rate (1.5) is trusted unchanged',
+    mid.governingYield_m3hr === 1.5 && mid.basis === 'aquifer-limited', `got ${mid.governingYield_m3hr}/${mid.basis}`);
+  // Ensemble below aquifer physics → never advertise more than the data supports.
+  const lowEns = hp.reconcileGoverningYield({
+    ensembleYield_m3hr: 0.8, aquiferLimitedYield_m3hr: 2.5, regionalPriorBand_m3hr: BASEMENT });
+  check('governing yield never exceeds the independent ensemble estimate',
+    lowEns.governingYield_m3hr <= 0.8, `got ${lowEns.governingYield_m3hr}`);
+  // Output is always non-negative and finite.
+  const zero = hp.reconcileGoverningYield({
+    ensembleYield_m3hr: 0, aquiferLimitedYield_m3hr: 0, regionalPriorBand_m3hr: BASEMENT });
+  check('degenerate zero inputs stay non-negative & finite',
+    Number.isFinite(zero.governingYield_m3hr) && zero.governingYield_m3hr >= 0, `got ${zero.governingYield_m3hr}`);
+}
+
 // ── B. MONTE CARLO SAMPLERS ─────────────────────────────────────
 console.log('\nB. Monte Carlo samplers (engineerConfidenceEngine)');
 {

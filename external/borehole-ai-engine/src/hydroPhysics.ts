@@ -85,3 +85,83 @@ export function aridityClass(aridityIndex: number): 'humid' | 'sub-humid' | 'sem
   if (aridityIndex <= 2.0) return 'semi-arid';
   return 'arid';
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// GOVERNING YIELD RECONCILIATION  (2026-07-12 driller/surgical audit)
+// ════════════════════════════════════════════════════════════════════════════
+// The tool prints one number too many times: the ensemble/executive yield (data-
+// driven, but inflated by nearby springs) and the well-design "design rate" (the
+// aquifer-limited pump rate derived from transmissivity). When they disagree
+// (4.9 vs 0.28 m³/hr) the report contradicts itself and a driller loses trust.
+//
+// This is the single choke-point that decides THE governing yield everything
+// else must obey. It is deliberately pure and unit-tested so the policy is
+// auditable, not eyeballed:
+//
+//   1. Start from the aquifer-limited (physics) rate — a borehole can never
+//      sustainably yield more than its aquifer allows within available drawdown.
+//   2. But a single desktop transmissivity can be wildly wrong in EITHER
+//      direction (0.1 m²/day → 0.28 m³/hr, or 146 m²/day → 18 m³/hr). So bound
+//      the result by the PUBLISHED regional tested-yield band for the aquifer
+//      province (e.g. Kenya BASEMENT = [0.5, 3] m³/hr, MacDonald et al. 2012 /
+//      WRA completion stats) — real drilled outcomes, not a model.
+//   3. When the physics rate falls BELOW the regional floor *and* an independent
+//      data-driven estimate (ensemble of nearby wells, recharge, terrain) also
+//      supports at least the floor, the low-T model is the outlier: trust the
+//      published tested yield and lift to the floor.
+//   4. Never advertise more than the aquifer/ensemble/regional ceiling allows.
+//
+// The returned value becomes estimatedYield / drillDecision.expectedYield_m3hr
+// AND the well-design design rate — one number, whole report.
+export interface GoverningYieldInput {
+  /** data-driven ensemble/executive yield (may be inflated) */
+  ensembleYield_m3hr: number;
+  /** aquifer-limited design rate from wellDesignEngine (physics constraint) */
+  aquiferLimitedYield_m3hr: number;
+  /** published regional tested-yield band for the aquifer province, m³/hr */
+  regionalPriorBand_m3hr: [number, number];
+}
+export interface GoverningYieldResult {
+  governingYield_m3hr: number;
+  basis: 'aquifer-limited' | 'regional-floor (low-T outlier)' | 'ensemble-capped' | 'regional-ceiling';
+  note: string;
+}
+export function reconcileGoverningYield(input: GoverningYieldInput): GoverningYieldResult {
+  const ensemble = Math.max(0, Number(input.ensembleYield_m3hr) || 0);
+  const aquifer = Math.max(0, Number(input.aquiferLimitedYield_m3hr) || 0);
+  const [priorLoRaw, priorHiRaw] = input.regionalPriorBand_m3hr ?? [0.5, 3];
+  const priorLo = Math.max(0, Number(priorLoRaw) || 0);
+  const priorHi = Math.max(priorLo, Number(priorHiRaw) || priorLo);
+
+  let g = aquifer;
+  let basis: GoverningYieldResult['basis'] = 'aquifer-limited';
+
+  // (3) low-T outlier: aquifer rate below the regional floor but data supports it
+  if (g < priorLo && ensemble >= priorLo) {
+    g = priorLo;
+    basis = 'regional-floor (low-T outlier)';
+  }
+
+  // (4) never exceed the independent ensemble estimate...
+  if (g > ensemble && ensemble > 0) {
+    g = ensemble;
+    basis = 'ensemble-capped';
+  }
+  // ...nor the published regional ceiling
+  if (g > priorHi) {
+    g = priorHi;
+    basis = 'regional-ceiling';
+  }
+
+  g = Math.round(g * 100) / 100;
+  const note =
+    basis === 'regional-floor (low-T outlier)'
+      ? `Modelled transmissivity implies only ${aquifer.toFixed(2)} m³/hr — below the published ${priorLo}-${priorHi} m³/hr basement tested-yield band. Governing yield set to the regional floor ${g} m³/hr; confirm with a 24-h pump test.`
+      : basis === 'ensemble-capped'
+      ? `Governing yield ${g} m³/hr = data-driven ensemble estimate (aquifer physics would allow more).`
+      : basis === 'regional-ceiling'
+      ? `Governing yield capped to the published regional ceiling ${g} m³/hr.`
+      : `Governing yield ${g} m³/hr = aquifer-limited design rate (within the regional tested-yield band).`;
+
+  return { governingYield_m3hr: g, basis, note };
+}
