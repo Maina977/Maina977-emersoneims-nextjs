@@ -5240,9 +5240,17 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       startY: y, margin: { left: margin, right: margin },
       head: [['Parameter', 'Value']],
       body: [
-        ['Overall Water Quality', (hc.overallQuality || 'N/A').replace(/_/g, ' ').toUpperCase()],
-        ['Potability Score', `${hc.potabilityScore ?? 0}/100`],
-        ['Water Type', `${hc.waterType || 'N/A'} ? ${hc.waterTypeDescription || ''}`],
+        // SUB-MODEL GATING (2026-07-12): this hydrochem panel is ONE model. It
+        // must never present a rosier potability than the governing worst-case
+        // verdict. When the governing water quality (Section 3) shows a modelled
+        // WHO health exceedance, the sub-model's "GOOD/78" is explicitly
+        // superseded so the report can't say GOOD and FAILS-WHO at once.
+        ['Overall Water Quality (sub-model)',
+          ((result.waterQuality?.fluoride ?? 0) > 1.5 || (result.waterQuality?.iron ?? 0) > 0.3 || (result.waterQuality?.arsenic ?? 0) > 0.01 || (result.waterQuality?.nitrate ?? 0) > 50)
+            ? `${(hc.overallQuality || 'N/A').replace(/_/g, ' ').toUpperCase()} — SUPERSEDED: governing verdict shows a modelled WHO exceedance; NOT potable until ISO 17025 lab confirms`
+            : `${(hc.overallQuality || 'N/A').replace(/_/g, ' ').toUpperCase()} (sub-model; potability set by the governing verdict + lab test)`],
+        ['Potability Score (sub-model)', `${hc.potabilityScore ?? 0}/100 — indicative only; not a potability certificate`],
+        ['Water Type', `${hc.waterType || 'N/A'} — ${hc.waterTypeDescription || ''}`],
         ['Treatment Cost Level', (hc.treatmentCost || 'N/A').replace(/_/g, ' ').toUpperCase()],
         ['Monitoring Frequency', hc.monitoringFrequency || 'N/A'],
         ['Confidence', `${((hc.confidence ?? 0) * 100).toFixed(0)}%`],
