@@ -499,8 +499,13 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
     reportGrade = 'ENGINEERING_GRADE';
     reportGradeJustification = 'ERT geophysical data calibrated with nearby borehole records. Pump test recommended before final commitment. Suitable for engineering design with stated uncertainty.';
   } else if (hasEnsemble && hasNearby && satelliteSourceCount >= 4 && modelSourceCount >= 4) {
-    reportGrade = 'ENGINEERING_GRADE';
-    reportGradeJustification = `Bayesian ensemble fusion of ${satelliteSourceCount} satellite sources + ${modelSourceCount} model engines + ${nearbyWellList.length} nearby boreholes. Multi-source cross-validation provides engineering-grade confidence. ERT survey recommended for bankable status.`;
+    // GRADE-INFLATION FIX (2026-07-12): a desktop ensemble — however many
+    // satellite sources — is NOT engineering grade. Engineering grade and
+    // bankable REQUIRE field measurement (ERT/VES + pump test). No amount of
+    // model agreement substitutes for a field survey, so a desktop run caps at
+    // pre-feasibility, consistent with the drilling-readiness gate.
+    reportGrade = 'PRE_FEASIBILITY';
+    reportGradeJustification = `Strong desktop assessment: Bayesian ensemble of ${satelliteSourceCount} satellite sources + ${modelSourceCount} model engines + ${nearbyWellList.length} nearby water points. This is model agreement, NOT field validation — engineering grade requires a field ERT/VES survey and pump test. Suitable for site screening and budget estimation.`;
   } else if (hasNearby && satelliteSourceCount >= 3) {
     reportGrade = 'PRE_FEASIBILITY';
     reportGradeJustification = `Predictions calibrated against ${nearbyWellList.length} nearby wells + ${satelliteSourceCount} satellite sources. Recommend ERT survey before drilling. Suitable for site screening and budget estimation.`;
@@ -1156,11 +1161,17 @@ function computeCertificationReadiness(
   if (!prov.nearbyWellsUsed && satCount < 3) preFeasMissing.push('Nearby borehole data or 3+ satellite sources');
   const preFeasReady = preFeasMissing.length === 0 && trustScore >= 35;
 
+  // GRADE-INFLATION FIX (2026-07-12): engineering grade REQUIRES field
+  // measurement. Analytical engines / satellite sources can never substitute
+  // for a field ERT/VES survey — the "or 5+ engines" / "or 6+ engines"
+  // loopholes let a desktop run print "ENGINEERING GRADE — READY" with zero
+  // field data (the page-104 anomaly). Field ERT is now a hard requirement,
+  // consistent with the drilling-readiness gate.
   const engMissing: string[] = [];
-  if (!prov.ertPresent && modelCount < 5) engMissing.push('ERT geophysical survey (or 5+ analytical engines)');
+  if (!prov.ertPresent) engMissing.push('Field ERT/VES geophysical survey (no model substitute)');
   if (!prov.nearbyWellsUsed && satCount < 4) engMissing.push('Nearby borehole calibration (or 4+ satellite sources)');
   const certFieldWells = cv.fieldWellCount ?? cv.wellCount;
-  if (certFieldWells < 3 && modelCount < 6) engMissing.push(`Minimum 3 FIELD validation wells (have ${certFieldWells}; model-generated wells don't count) or 6+ cross-validating engines`);
+  if (certFieldWells < 3) engMissing.push(`Minimum 3 FIELD validation wells (have ${certFieldWells}; model-generated wells don't count)`);
   const engReady = engMissing.length === 0 && trustScore >= 60;
 
   const bankMissing: string[] = [];
