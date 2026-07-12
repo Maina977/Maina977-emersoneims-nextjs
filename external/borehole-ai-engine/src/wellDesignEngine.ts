@@ -1139,7 +1139,10 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   // ─── PUMP: FIX #5 (sized for the sustainable design rate) ───
   const pSel = selectPump(yield_m3hr_design, TDH);
   const realEff = pSel.operatingPoint.eff_pct;
-  provenance.push({ parameter: 'Pump efficiency', source: 'published_literature', note: `${realEff}% at Q=${pSel.operatingPoint.Q_m3hr} m³/hr, H=${pSel.operatingPoint.H_m}m from ${pSel.pump.name} curve.` });
+  // Report efficiency against the SYSTEM design TDH used everywhere else, not the
+  // pump's raw curve-point head — the two differed (49.9 m vs 92.5 m) and read as
+  // a contradiction (re-audit #4). Curve point noted parenthetically for traceability.
+  provenance.push({ parameter: 'Pump efficiency', source: 'published_literature', note: `${realEff}% at Q=${yield_m3hr_design.toFixed(2)} m³/hr against the ${Math.round(TDH * 10) / 10} m design TDH (${pSel.pump.name} curve; nearest curve point H=${pSel.operatingPoint.H_m}m). Final pump selected after the pump test.` });
 
   const motorkW = (Qm3s * 1000 * 9.81 * TDH) / ((realEff / 100) * 1000);
   const motorHP = motorkW * 1.341;
@@ -1503,7 +1506,10 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   const treatmentCostEst = (waterChemResult?.treatmentRequired ?? []).length > 0 ? 1500 * costAdj.multiplier : 0;
   const lifecycleResult = computeLifecycleCost(
     depth, adjCost, pCost, treatmentCostEst,
-    yield_m3hr, monitoringResult.annualMonitoringCost_usd,
+    // Production volume (and therefore unit water cost) must use the reconciled
+    // design rate. Feeding the raw ensemble yield made lifetime production ~11×
+    // too high and printed an implausible $0.15/m³ (re-audit #6).
+    yield_m3hr_design, monitoringResult.annualMonitoringCost_usd,
     costAdj.multiplier, 8
   );
 

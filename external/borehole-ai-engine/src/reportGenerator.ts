@@ -874,12 +874,25 @@ function computeCanonicalEconomics(result: AnalysisResult) {
     ? `${Math.round(screenLength)}m screen across ${aquiferThickness}m aquifer zone (${Math.round(aqZone.topM)}-${Math.round(aqZone.bottomM)}m)`
     : `${Math.round(screenLength)}m screen (30% of depth, aquifer zone unmodelled)`;
 
-  const pumpHead = Math.round(depthVal * 0.5 + 10);
-  const pumpKW = Math.max(0.37, Math.round((yieldVal * pumpHead * 9.81 / 3600 / 0.55) * 100) / 100);
+  // Prefer the well-design pump SELECTION (real pump curve) so the executive
+  // pages and the detailed Pump Selection page describe ONE pump, not three
+  // different kW/head figures (re-audit #4). Fall back to the rough estimate
+  // only when the well-design engine did not run.
+  const _wdPump: any = (result as any).wellDesign?.pump;
+  const pumpHead = _wdPump?.totalDynamicHead_m != null
+    ? Math.round(_wdPump.totalDynamicHead_m)
+    : Math.round(depthVal * 0.5 + 10);
+  const pumpKW = _wdPump?.motorRating_kW != null
+    ? _wdPump.motorRating_kW
+    : Math.max(0.37, Math.round((yieldVal * pumpHead * 9.81 / 3600 / 0.55) * 100) / 100);
   const pumpCost = yieldVal > 5 ? 3500 : yieldVal > 2 ? 2200 : 1200;
-  const pumpNote = `${yieldVal > 5 ? 'Submersible (high capacity)' : 'Submersible (standard)'}, ~${pumpKW.toFixed(1)} kW, ${pumpHead}m head`;
+  const pumpNote = _wdPump?.make_model_suggestion
+    ? `${_wdPump.make_model_suggestion} — ~${pumpKW.toFixed(2)} kW, ${pumpHead}m TDH (provisional; confirm after pump test) — same pump as the Pump Selection page`
+    : `${yieldVal > 5 ? 'Submersible (high capacity)' : 'Submersible (standard)'}, ~${pumpKW.toFixed(2)} kW, ${pumpHead}m head`;
   const installCost = Math.round(pumpCost * 0.6);
-  const solarKW = Math.max(1, Math.round(pumpKW / 0.85 * 1.2 * 10) / 10);
+  const solarKW = _wdPump?.solarPanels_kW != null
+    ? _wdPump.solarPanels_kW
+    : Math.max(1, Math.round(pumpKW / 0.85 * 1.2 * 10) / 10);
   const solarCost = Math.round(solarKW * 1500);
   const wqTreatments = result.waterQuality?.treatmentRequired || [];
   const wqTreatmentCost = !result.waterQuality?.isPotable
@@ -901,6 +914,11 @@ function computeCanonicalEconomics(result: AnalysisResult) {
   const contingency = Math.round(subtotalCost * contingencyRate);
   const totalCost = subtotalCost + contingency;
   const annualMaintenance = Math.round(totalCost * 0.045);
+  // ONE annual O&M definition used EVERYWHERE (re-audit #6). The recurring
+  // defluoridation media ($/yr) is a real operating cost separate from the 4.5%
+  // maintenance rate; omitting it from the "steady net return" but including it
+  // in the scenario table produced the $450 discrepancy (-$193 vs -$643).
+  const annualOM = annualMaintenance + annualDefluoridation;
 
   // Realistic revenue model: solar pump ~6 h/day, ~300 operating days/yr,
   // $0.80/m3 rural tariff, utilization ramp 60/75/85%.
@@ -913,13 +931,13 @@ function computeCanonicalEconomics(result: AnalysisResult) {
   const yr1Revenue = Math.round(maxAnnualRevenue * yr1Utilization);
   const yr3Revenue = Math.round(maxAnnualRevenue * yr3PlusUtilization);
   const baseAnnualRevenue = yr3Revenue;
-  const netAnnual = baseAnnualRevenue - annualMaintenance;
+  const netAnnual = baseAnnualRevenue - annualOM;
 
   const projectYears = 20;
   const cashFlows: number[] = [-totalCost];
   for (let t = 1; t <= projectYears; t++) {
     const util = t === 1 ? yr1Utilization : t === 2 ? yr2Utilization : yr3PlusUtilization;
-    cashFlows.push(Math.round(maxAnnualRevenue * util) - annualMaintenance);
+    cashFlows.push(Math.round(maxAnnualRevenue * util) - annualOM);
   }
   const npvAt = (rate: number) => {
     let npv = 0;
@@ -963,7 +981,7 @@ function computeCanonicalEconomics(result: AnalysisResult) {
     screenLength, screenCost, screenNote, pumpKW, pumpHead, pumpCost, pumpNote,
     installCost, solarKW, solarCost, wqTreatmentCost, fluorideVal,
     defluoridationCost, annualDefluoridation, subtotalCost, isHardRock,
-    contingencyRate, contingency, totalCost, annualMaintenance,
+    contingencyRate, contingency, totalCost, annualMaintenance, annualOM,
     pumpHoursPerDay, operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
     maxAnnualRevenue, yr1Utilization, yr2Utilization, yr3PlusUtilization,
     yr1Revenue, yr3Revenue, baseAnnualRevenue, netAnnual, cashFlows,
@@ -1880,7 +1898,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       { name: 'Subsidised / NGO', rate: 0.30, util: 0.60 },
     ].map(t => {
       const rev = Math.round(eco.dailyWaterM3 * eco.operatingDaysPerYear * t.rate * t.util);
-      const net = rev - (_annualMaint + eco.annualDefluoridation);
+      const net = rev - eco.annualOM; // single O&M definition (maint + media)
       const pb = net > 0 ? (_totalCap / net).toFixed(1) : 'Never';
       return { ...t, rev, net, pb };
     });
@@ -1903,7 +1921,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
           : []),
         [`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, `$${eco.contingency.toLocaleString()}`, eco.isHardRock ? 'Hard-rock drilling risk premium' : 'Standard engineering contingency'],
         ['TOTAL CAPITAL COST',         `$${_totalCap.toLocaleString()}`,  'Same model as Section 5.1. Incl. survey + statutory approvals. Excl. land, storage tank'],
-        ['Annual O&M',                 `$${_annualMaint.toLocaleString()}/yr`, '4.5% of capital (World Bank WASH benchmark)'],
+        ['Annual O&M',                 `$${eco.annualOM.toLocaleString()}/yr`, eco.annualDefluoridation > 0 ? `4.5% of capital ($${_annualMaint.toLocaleString()}) + defluoridation media ($${eco.annualDefluoridation}/yr) — same O&M used in every table` : '4.5% of capital (World Bank WASH benchmark) — same O&M used in every table'],
       ],
       headStyles: { fillColor: [15,23,42] as [number,number,number], textColor: [56,189,248] as [number,number,number], fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9 },
@@ -2869,7 +2887,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Daily Water Production', `${sf(dailyWaterM3, 1)} m³/day`, `${yieldVal} m³/hr × ${pumpHoursPerDay} hrs (solar)`],
         ['Annual Revenue (Year 1)', `$${yr1Revenue.toLocaleString()}/yr`, `@ $${waterTariffPerM3}/m³ × ${Math.round(yr1Utilization * 100)}% utilization`],
         ['Annual Revenue (Steady-state)', `$${yr3Revenue.toLocaleString()}/yr`, `@ $${waterTariffPerM3}/m³ × ${Math.round(yr3PlusUtilization * 100)}% utilization`],
-        ['Annual Maintenance', `$${annualMaintenance.toLocaleString()}/yr`, '4.5% of capital (World Bank WASH O&M benchmark)'],
+        ['Annual O&M (total)', `$${annualOM.toLocaleString()}/yr`, annualDefluoridation > 0 ? `4.5% maintenance ($${annualMaintenance.toLocaleString()}) + defluoridation media ($${annualDefluoridation}) — one O&M figure across the whole report` : '4.5% of capital (World Bank WASH O&M benchmark)'],
         ['Net Annual Return (Steady)', `$${netAnnual.toLocaleString()}/yr`, netAnnual > 0 ? 'Positive' : '[!] Negative -- project may not be viable'],
         ['Payback Period', paybackMonths > 0 && paybackMonths < 240 ? `${paybackMonths} months (${(paybackMonths / 12).toFixed(1)} years)` : 'N/A (does not break even within 20 years)', paybackMonths > 0 && paybackMonths < 36 ? 'EXCELLENT' : paybackMonths > 0 && paybackMonths < 60 ? 'GOOD' : paybackMonths > 0 && paybackMonths < 120 ? 'ACCEPTABLE' : paybackMonths > 0 ? 'LONG' : 'NOT VIABLE'],
         ['IRR (20-year)', irr === -999 ? 'N/A' : irr === 999 ? '>300%' : `${irr}%`, irr === -999 ? '[!] PROJECT NOT VIABLE' : irr === 999 ? 'EXCEPTIONAL' : irr > 25 ? 'HIGH' : irr > 12 ? 'MODERATE' : irr > 0 ? 'LOW' : 'NEGATIVE'],
@@ -2968,7 +2986,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       head: [['Scenario', 'Total Cost', 'Net Annual', 'Payback', 'Assessment']],
       body: [
         ['Best Case', `$${bestCost.toLocaleString()}`, `$${bestAnnual.toLocaleString()}/yr`, bestPayback < 240 ? `${bestPayback} mo` : 'N/A', 'Higher tariff, full utilization, competitive pricing'],
-        ['Base Case', `$${totalCost.toLocaleString()}`, `$${netAnnual.toLocaleString()}/yr`, paybackMonths < 240 ? `${paybackMonths} mo` : 'N/A', 'Expected conditions, 85% utilization'],
+        ['Base Case', `$${totalCost.toLocaleString()}`, `$${netAnnual.toLocaleString()}/yr`, paybackMonths > 0 && paybackMonths < 240 ? `${paybackMonths} mo` : 'Never', 'Expected conditions, 85% utilization'],
         ['Rural Conservative', `$${totalCost.toLocaleString()}`, `$${ruralAnnual.toLocaleString()}/yr`, ruralPayback < 240 ? `${ruralPayback} mo` : 'N/A', '60% utilization, $' + ruralTariff.toFixed(2) + '/m3 community kiosk'],
         ['Worst Case', `$${worstCost.toLocaleString()}`, `$${worstAnnual.toLocaleString()}/yr`, worstPayback < 240 ? `${worstPayback} mo` : 'N/A', 'Lower yield, poor demand, cost overruns'],
       ],
