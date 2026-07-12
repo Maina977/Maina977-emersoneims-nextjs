@@ -7516,11 +7516,16 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(`Expected Yield: ${dd.expectedYield_m3hr} m3/hr (range: ${dd.yieldRange_m3hr[0]}-${dd.yieldRange_m3hr[1]})`, margin + 6, y + 20);
     doc.text(`Success Probability: ${dd.successProbability}%`, margin + 6, y + 28);
     doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
-    doc.text(`Casing: ${dd.casingDepth_m}m | Screen: ${dd.screenInterval_m[0]}-${dd.screenInterval_m[1]}m | Pump: ${dd.pumpType}`, margin + 6, y + 38);
-    doc.text(`Preliminary Cost Estimate: $${(dd.estimatedCost_usd ?? 0).toLocaleString()} (see Detailed Cost Breakdown for itemized budget)`, margin + 6, y + 46);
+    // PROVISIONAL TENDER ALLOWANCE — not a fixed completion design. The exact
+    // casing/screen intervals are issued from the drill log after drilling; the
+    // report must not present a single hard interval as committed (re-audit #8).
+    doc.text(`Provisional casing allowance: to ~${dd.casingDepth_m}m | Provisional screen allowance: across the ${dd.screenInterval_m[0]}-${dd.screenInterval_m[1]}m aquifer zone | Pump: ${dd.pumpType}`, margin + 6, y + 38);
+    // ONE canonical cost (Section 5.1); do not print a second total here.
+    const _ddEco = computeCanonicalEconomics(result);
+    doc.text(`Preliminary Cost Estimate: $${_ddEco.totalCost.toLocaleString()} (same model as Section 5.1 — see Detailed Cost Breakdown)`, margin + 6, y + 46);
     doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-    doc.text('Screen interval from modelled aquifer zone. Confirm with lithology log during drilling. Casing to top of aquifer + 2m safety. Depth range: ?15% model uncertainty.', margin + 6, y + 53);
-    y += 66;
+    doc.text('PROVISIONAL TENDER ALLOWANCE ONLY — casing depth, screen interval and screen length are provisional and MUST be finalised from the drill-cutting log, sieve analysis and geophysical logs during drilling. Do not procure casing/screen from this figure. Depth range: +/-15% model uncertainty.', margin + 6, y + 53, { maxWidth: pageW - margin * 2 - 12 });
+    y += 70;
 
     // Alternative points
     if (dd.alternativePoints?.length && isRegionalPreScreening) {

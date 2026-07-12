@@ -1886,19 +1886,42 @@ export class BoreholeAnalyzer {
     if (!rechargeModel) {
       const lat = effectiveLat ?? 0;
       const annualP = remoteSensing?.climate?.annualPrecipitation ?? 700;
-      const rechargeFrac = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
-      const avgRecharge = annualP * rechargeFrac;
       const meanTemp = remoteSensing?.climate?.meanTemperature ?? 22;
       const etFactor = meanTemp > 25 ? 0.70 : meanTemp > 15 ? 0.55 : 0.40;
+      const runoffFactor = 0.15;
+      // ONE water balance (re-audit #11): recharge = P - ET - runoff, evaluated
+      // MONTHLY, then summed for the annual total. The old fallback set the
+      // annual from a separate coarse fraction (0.15) while the monthly rows used
+      // (1 - ET - runoff) ~= 0.30, so the 12 monthly rows summed to ~2x the
+      // stated annual — a self-contradiction on a single page.
+      const monthlyRecharge = Array.from({ length: 12 }, (_, i) => {
+        const precip = annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6));
+        const et = precip * etFactor;
+        const runoff = precip * runoffFactor;
+        const net = Math.max(0, precip - et - runoff);
+        return {
+          monthName: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
+          precipitation_mm: precip,
+          et_mm: et,
+          runoff_mm: runoff,
+          grossRecharge_mm: net,
+          netRecharge_mm: net,
+          isRechargeMonth: net > 0,
+        };
+      });
+      const avgRecharge = monthlyRecharge.reduce((s, m) => s + m.netRecharge_mm, 0);
+      const annualET = monthlyRecharge.reduce((s, m) => s + m.et_mm, 0);
+      const annualRunoff = monthlyRecharge.reduce((s, m) => s + m.runoff_mm, 0);
+      const rechargeFrac = annualP > 0 ? avgRecharge / annualP : 0;
       rechargeModel = {
         avgAnnualPrecipitation_mm: annualP,
-        avgAnnualET_mm: Math.round(annualP * etFactor),
+        avgAnnualET_mm: Math.round(annualET),
         avgAnnualRecharge_mm: Math.round(avgRecharge),
-        rechargeFraction: rechargeFrac,
+        rechargeFraction: Math.round(rechargeFrac * 1000) / 1000,
         // Sustainable yield is a RECHARGE-limited quantity, not the ensemble
-        // yield. Deriving it from the water balance (recharge x 10 km2 catchment
-        // x allocatable fraction) keeps p44 consistent with the governing rate;
-        // the central propagation pass caps it to the governing design yield.
+        // yield. Derived from the SAME water balance (recharge x 10 km2 catchment
+        // x allocatable fraction); the central propagation pass caps it to the
+        // governing design yield.
         sustainableYield_m3hr: Math.round(
           (avgRecharge / 1000 * 10 * 1e6 * 0.4 / 365 / 24) * 100
         ) / 100,
@@ -1907,27 +1930,9 @@ export class BoreholeAnalyzer {
         climateRiskLevel: meanTemp > 28 ? 'MODERATE' : 'LOW',
         projectedRecharge2050_mm: Math.round(avgRecharge * 0.88),
         confidence: 0.62,
-        monthlyRecharge: Array.from({ length: 12 }, (_, i) => {
-          const precip = annualP / 12 * (1 + 0.5 * Math.sin((i - 3) * Math.PI / 6));
-          const et = precip * etFactor;
-          const runoff = precip * 0.15;
-          const net = Math.max(0, precip - et - runoff);
-          return {
-            monthName: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
-            precipitation_mm: precip,
-            et_mm: et,
-            runoff_mm: runoff,
-            grossRecharge_mm: net,
-            netRecharge_mm: net,
-            // BUG FIX (audit 2026-07-10): this flag was missing from the
-            // fallback rows, so the report printed "Recharge? No" beside
-            // 20-62 mm of monthly recharge -- a self-contradiction.
-            isRechargeMonth: net > 0,
-          };
-        }),
-        // Fields the report prints that the fallback used to omit (showed N/A
-        // beside populated monthly rows): annual runoff + peak recharge month.
-        avgAnnualRunoff_mm: Math.round(annualP * 0.15),
+        monthlyRecharge,
+        // Annual runoff summed from the SAME monthly balance (consistency).
+        avgAnnualRunoff_mm: Math.round(annualRunoff),
         peakRechargeMonth: 7, // sinusoid above peaks at i=6 (July, 1-based 7)
         dataSource: 'Climate-based recharge model (computed fallback)',
       };
@@ -3139,7 +3144,14 @@ export class BoreholeAnalyzer {
           silt: l.siltPct ?? l.silt,
           clay: l.clayPct ?? l.clay,
         })),
-        countryCode: result.clientLocation?.country?.slice(0, 2)?.toUpperCase(),
+        // Country code drives the EIA/permit threshold. The old slice(0,2) of the
+        // country NAME was fragile (undefined here → DEFAULT 200 m³/day, which
+        // contradicted the Kenya=500 threshold cited in the Regulatory section).
+        // A Kenya hydro-prior is definitive that the site is in Kenya → 'KE'.
+        countryCode: (this as any)._kenyaPrior
+          ? 'KE'
+          : (result.clientLocation?.countryCode
+             ?? (result.clientLocation?.country?.slice(0, 2)?.toUpperCase())),
         waterQualityPH: labWQ?.pH ?? wqRemote?.pH,
         yieldSource,
         // v3: comprehensive engineering inputs
