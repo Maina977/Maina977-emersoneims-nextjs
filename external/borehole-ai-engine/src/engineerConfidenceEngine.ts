@@ -335,7 +335,10 @@ function buildProvenanceMatrix(r: any): ProvenanceMatrix {
   // â”€â”€ Success Probability â”€â”€
   items.push({
     parameter: 'Drilling Success Probability',
-    value: r.probability ?? 0,
+    // DISPLAY FIX (2026-07-12): r.probability is a 0-1 fraction; the provenance
+    // matrix renders `value + unit`, so it printed "1 %" for a 0.64 probability.
+    // Express as a whole percentage to match the governing 64% everywhere else.
+    value: Math.round((r.probability ?? 0) * 100),
     unit: '%',
     tier: hasNearby && hasERT ? 'CALIBRATED' : (hasEnsemble && hasNearby) ? 'CALIBRATED' : (hasEnsemble || satelliteSourceCount >= 4) ? 'CALIBRATED' : hasNearby ? 'ESTIMATED' : 'ESTIMATED',
     category: 'model_derived',

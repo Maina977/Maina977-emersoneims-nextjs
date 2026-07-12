@@ -181,13 +181,18 @@ export function computeWaterChemistry(input: WaterChemistryInput): WaterChemistr
     treatmentRequired.push('Manganese removal: oxidation + filtration');
   }
 
-  // Salinity classification (ASTM D4382)
+  // Salinity classification (ASTM D4382) — describes SALINITY ONLY.
+  // SAFETY FIX (2026-07-12): a TDS band must NEVER assert potability. Low TDS
+  // says nothing about fluoride/arsenic/nitrate/pathogens, and the report was
+  // printing "Suitable for drinking" on water the same report flags for a
+  // fluoride WHO exceedance. Potability is governed solely by the worst-case
+  // water-quality verdict + accredited lab analysis, never by salinity class.
   let salinityClass: string;
-  if (TDS < 500) salinityClass = 'Fresh (<500 mg/L). Suitable for drinking.';
-  else if (TDS < 1000) salinityClass = 'Fresh-Brackish (500-1000 mg/L). Potable with treatment.';
-  else if (TDS < 3000) salinityClass = 'Brackish (1000-3000 mg/L). Requires desalination for drinking.';
-  else if (TDS < 10000) salinityClass = 'Moderately saline (3000-10000 mg/L). RO required.';
-  else if (TDS < 35000) salinityClass = 'Saline (10000-35000 mg/L). Only suitable for industrial use.';
+  if (TDS < 500) salinityClass = 'Fresh (<500 mg/L). Low salinity — potability still depends on fluoride/arsenic/nitrate/bacteriology (see water-quality verdict; lab test required).';
+  else if (TDS < 1000) salinityClass = 'Fresh-Brackish (500-1000 mg/L). Low-moderate salinity; may need treatment. Potability set by the water-quality verdict + lab test.';
+  else if (TDS < 3000) salinityClass = 'Brackish (1000-3000 mg/L). Desalination likely needed for drinking use.';
+  else if (TDS < 10000) salinityClass = 'Moderately saline (3000-10000 mg/L). RO required for drinking.';
+  else if (TDS < 35000) salinityClass = 'Saline (10000-35000 mg/L). Industrial use only without desalination.';
   else salinityClass = 'Brine (>35000 mg/L). Not usable without major desalination.';
 
   // Ionic strength: I = 0.5 × Σ(Ci × Zi²)  — simplified from TDS
