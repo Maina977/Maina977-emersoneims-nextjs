@@ -1504,8 +1504,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(148, 163, 184);
     doc.text('Full technical annex follows', pageW - margin - 5, y + 9.5, { align: 'right' });
     y += 20;
-
-    addPage(); // annex starts clean
+    // NOTE: do NOT addPage() here — the next section (Drilling Readiness) starts
+    // with its own addPage(). A second break here left a blank page 4 (re-audit #7).
   });
 
   // ══════════════════════════════════════════════════════════════
@@ -2033,15 +2033,19 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.text(`${overallRiskPct}%`, margin + 120, y + 20);
   doc.setFontSize(10);
   doc.text(`Overall Risk -- ${riskLabel(result.risk?.overallRisk)}`, margin + 120, y + 28);
-  doc.setFontSize(14);
+  // Plain-English viability wording, always conditional on the field work.
+  // Font reduced + wrapped so it no longer runs off the right margin (the 14pt
+  // line clipped to "CONDITIONAL -- pendin" on p9, re-audit #7).
+  doc.setFontSize(10);
   doc.setTextColor(80, 80, 80);
   {
-    // Plain-English viability wording, always conditional on the field work.
     const viaMap: Record<string, string> = {
       high: 'FAVOURABLE (pending ERT)', medium: 'CONDITIONAL -- pending ERT',
       low: 'MARGINAL -- survey first', not_recommended: 'NOT RECOMMENDED',
     };
-    doc.text(`Viability: ${viaMap[String(result.risk?.viability)] ?? 'N/A'}`, margin + 120, y + 40);
+    const _viaText = `Viability: ${viaMap[String(result.risk?.viability)] ?? 'N/A'}`;
+    const _viaLines = doc.splitTextToSize(_viaText, pageW - (margin + 120) - margin);
+    doc.text(_viaLines, margin + 120, y + 40);
   }
   y += 58;
 
@@ -2851,7 +2855,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
 
     // -- COST BREAKDOWN & ROI (within Risk section) --
-    checkSpace(80);
+    // addPage() already guarantees a fresh page; a preceding checkSpace(80) could
+    // ALSO break, producing a blank page 24 (re-audit #7). Use addPage() alone.
     addPage();
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
@@ -2909,8 +2914,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('MARKET CAUTION: do not accept drilling quotes below ~KSh 5,000/m without a written scope — cheap quotes typically exclude casing, gravel pack,', margin, y); y += 3.5;
     doc.text('development, test pumping, water analysis, mobilisation or VAT. Compare scope line-by-line, not the headline price.', margin, y); y += 8;
 
-    // ROI Table
-    checkSpace(50);
+    // ROI Table — reserve enough height for the heading PLUS the first rows so
+    // the heading is never orphaned at the bottom of a page with the table
+    // pushed to the next page (empty-heading artifact, re-audit #7).
+    checkSpace(90);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(139, 92, 246);
@@ -5556,7 +5563,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // -------------------------------------------------------------------
 
   // -- FIELD RECOMMENDATIONS SECTION --
-  checkSpace(90);
+  // addPage() alone (a preceding checkSpace could double-break to a blank page).
   addPage();
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
