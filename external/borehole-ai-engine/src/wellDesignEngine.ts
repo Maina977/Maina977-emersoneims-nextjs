@@ -645,6 +645,13 @@ function selectPump(Q_m3hr: number, TDH_m: number): PumpSelection {
   let best: PumpSelection | null = null;
 
   for (const pump of PUMP_DATABASE) {
+    // Reject grossly OVERSIZED pumps. A pump family whose smallest rated flow is
+    // far above the design flow can nominally deliver a trickle at its top-of-curve
+    // head, but specifying an 8–20 m³/hr / 4–11 kW pump for a 0.45 m³/hr borehole is
+    // physically absurd and was the source of the "Grundfos SP17 for 0.11 kW" bug.
+    // Only consider a pump if the design flow is within (or just below) its rated band.
+    const minCurveQ = pump.curve[0].Q_m3hr;
+    if (Q_m3hr < minCurveQ * 0.5) continue;
     for (let i = 0; i < pump.curve.length - 1; i++) {
       const p1 = pump.curve[i];
       const p2 = pump.curve[i + 1];
@@ -679,8 +686,15 @@ function selectPump(Q_m3hr: number, TDH_m: number): PumpSelection {
   }
 
   if (!best) {
-    const fb = PUMP_DATABASE.find(p => p.type.includes('3-phase')) ?? PUMP_DATABASE[3];
-    const mid = fb.curve[Math.floor(fb.curve.length / 2)];
+    // No exact head/flow match — pick the pump family whose rated flow band is
+    // CLOSEST to the design flow (never default to an oversized 3-phase unit for a
+    // low-yield borehole). Final pump make/model is anyway deferred to the pump test.
+    const fb = [...PUMP_DATABASE].sort((a, b) => {
+      const am = (a.curve[0].Q_m3hr + a.curve[a.curve.length - 1].Q_m3hr) / 2;
+      const bm = (b.curve[0].Q_m3hr + b.curve[b.curve.length - 1].Q_m3hr) / 2;
+      return Math.abs(am - Q_m3hr) - Math.abs(bm - Q_m3hr);
+    })[0];
+    const mid = fb.curve.reduce((p, c) => Math.abs(c.Q_m3hr - Q_m3hr) < Math.abs(p.Q_m3hr - Q_m3hr) ? c : p, fb.curve[0]);
     best = { pump: fb, operatingPoint: mid, matchScore: 0 };
   }
   return best;
@@ -1479,7 +1493,11 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   );
 
   // ─── PUMP TEST PROTOCOL ───
-  const pumpTestProto = generatePumpTestProtocol(yield_m3hr, depth, aquiferType);
+  // Pump-test rates MUST be driven by the aquifer-reconciled design yield, not the
+  // raw ensemble input yield. Passing the un-reconciled yield_m3hr produced step
+  // rates (e.g. 1.2→6.1 m³/hr) an order of magnitude above a low-yield borehole's
+  // sustainable rate — a schedule that would dewater the hole and yield nonsense.
+  const pumpTestProto = generatePumpTestProtocol(yield_m3hr_design, depth, aquiferType);
 
   // ─── WELLHEAD SPEC ───
   const wellheadResult = computeWellheadSpec(pSel.pump.type, yield_m3hr);

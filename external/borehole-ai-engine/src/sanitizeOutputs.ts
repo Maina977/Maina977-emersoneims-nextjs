@@ -349,10 +349,98 @@ export function sanitizeAnalysisResult(result: any): void {
   }
 
   // ══════════════════════════════════════════════════════════════
+  // GOVERNING-VALUE PROPAGATION — the single source of truth reaches
+  // EVERY design/driller-authoritative sub-object. Runs on every site,
+  // so no annex section can ever contradict the executive headline.
+  // ══════════════════════════════════════════════════════════════
+  propagateGoverningValues(result);
+
+  // ══════════════════════════════════════════════════════════════
   // FINAL CONSENSUS — ONE authoritative answer reconciling all
   // independent estimates. This is THE definitive recommendation.
   // ══════════════════════════════════════════════════════════════
   result.finalConsensus = computeFinalConsensus(result);
+}
+
+/**
+ * Force the governing yield/depth (result.estimatedYield / result.recommendedDepth —
+ * already reconciled against aquifer physics + the regional tested-yield band) into
+ * every sub-object the report treats as AUTHORITATIVE for design, procurement or
+ * driller instructions. Pure diagnostic panels that exist to SHOW model disagreement
+ * keep their own numbers (the report labels them "sub-model; governing: X"); this pass
+ * only fixes the places that were silently presenting a stale value as the answer.
+ *
+ * This is the architectural cure for the "corrected front-end, contradictory annex"
+ * problem: one function, run centrally, guarantees consistency for ALL sites.
+ */
+export function propagateGoverningValues(result: any): void {
+  if (!result) return;
+  const gY = result.estimatedYield;
+  const gD = result.recommendedDepth;
+  if (!Number.isFinite(gY) || gY <= 0) return;
+
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const r1 = (n: number) => Math.round(n * 10) / 10;
+
+  // A field-validated result (real pump test) keeps its measured numbers.
+  const fieldValidated =
+    result.assessmentType === 'FIELD_VALIDATED' ||
+    !!result.pumpTestProtocol?.isRealPumpTest ||
+    !!result.fieldData?.pumpTest;
+  if (fieldValidated) return;
+
+  // ── Pump-test protocol (the "Planned" analyzer protocol) — step rates are
+  //    fractions of the GOVERNING yield, never the raw ensemble yield. ──
+  const ptp = result.pumpTestProtocol;
+  if (ptp && Array.isArray(ptp.plannedRates_m3hr)) {
+    ptp.plannedRates_m3hr = [0.3, 0.6, 0.9].map(f => r1(gY * f));
+    if (Array.isArray(ptp.equipmentRequired) && ptp.equipmentRequired.length) {
+      ptp.equipmentRequired[0] = `Submersible test pump (rated for ${r1(gY * 1.5)} m3/hr)`;
+    }
+    ptp.ratesNote =
+      'Indicative only — final step rates must be set from the measured blow yield / initial development yield on site, not this desktop estimate.';
+  }
+
+  // ── Prediction-vs-reality table: the predicted pump-test yield must equal the
+  //    governing yield, not a superseded sub-model figure. ──
+  if (Array.isArray(result.predictionTable)) {
+    for (const row of result.predictionTable) {
+      if (row && typeof row.metric === 'string' && /yield/i.test(row.metric)) {
+        row.predicted = `${r1(gY)} m3/hr`;
+      }
+    }
+  }
+
+  // ── "Corrected" calibration outputs are, by definition, the reconciled answer.
+  //    They must not print a value that disagrees with the governing yield. ──
+  if (result.calibrationCorrection) {
+    if (result.calibrationCorrection.correctedYield_m3hr != null) result.calibrationCorrection.correctedYield_m3hr = r2(gY);
+    if (result.calibrationCorrection.correctedYield_m3h != null) result.calibrationCorrection.correctedYield_m3h = r2(gY);
+    if (Number.isFinite(gD) && result.calibrationCorrection.correctedDepth_m != null) result.calibrationCorrection.correctedDepth_m = Math.round(gD);
+  }
+  if (result.regionalModel?.correctedYield_m3h != null) result.regionalModel.correctedYield_m3h = r2(gY);
+  if (result.realTimeCalibration) {
+    if (result.realTimeCalibration.correctedYield_m3hr != null) result.realTimeCalibration.correctedYield_m3hr = r2(gY);
+    if (result.realTimeCalibration.correctedYield != null) result.realTimeCalibration.correctedYield = r2(gY);
+  }
+
+  // ── Driller-facing hybrid interpretation drives the printed "Driller Brief".
+  //    It must state the governing yield/depth, not a stale ensemble value. ──
+  if (result.hybridGeophysics?.hybridInterpretation) {
+    const hi = result.hybridGeophysics.hybridInterpretation;
+    if (hi.expectedYield_m3hr != null) hi.expectedYield_m3hr = r2(gY);
+    if (Number.isFinite(gD) && hi.targetDepth_m != null) hi.targetDepth_m = Math.round(gD);
+  }
+
+  // ── Projected "integrated survey" drill spec must not advertise an order-of-
+  //    magnitude-higher yield than the governing sustainable rate. A survey can
+  //    refine the target; it cannot conjure 18.6 m³/hr from a 0.5 m³/hr aquifer.
+  //    Cap any projected drill-spec yield to at most 2× the governing yield. ──
+  const capY = r2(gY * 2);
+  const dsA = result.advancedGeophysics?.drillSpec;
+  if (dsA?.expectedYield_m3hr != null && dsA.expectedYield_m3hr > capY) dsA.expectedYield_m3hr = capY;
+  const iss = result.advancedGeophysics?.integratedSurvey?.drillSpec ?? result.integratedSurvey?.drillSpec;
+  if (iss?.expectedYield_m3hr != null && iss.expectedYield_m3hr > capY) iss.expectedYield_m3hr = capY;
 }
 
 /**
