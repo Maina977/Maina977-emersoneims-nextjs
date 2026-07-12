@@ -3075,6 +3075,9 @@ export class BoreholeAnalyzer {
         storativity: aqSim?.pumpTest?.theis?.storativity,
         hydraulicConductivity_m_day: aqSim?.pumpTest?.hvorslev?.hydraulicConductivity ?? subsurfaceModel?.lithologicalColumn?.aquifers?.[0]?.hydraulicConductivity,
         aquiferThickness_m: subsurfaceModel?.lithologicalColumn?.aquifers?.[0]?.thicknessM,
+        // Published regional tested-yield band → reconciles an outlier desktop
+        // transmissivity to real drilled outcomes (one consistent T → one yield).
+        regionalTestedYieldBand_m3hr: (this as any)._kenyaPrior?.typicalYieldM3h,
         hasPumpTestData: isFieldValidated && !!fieldData?.pumpTest,
         precipitation_mm_yr: historicalData?.weather?.averageAnnualPrecipitation,
         isFieldValidated,
@@ -3124,6 +3127,41 @@ export class BoreholeAnalyzer {
         isRemoteSite: fieldData?.isRemoteSite ?? false,
       });
     } catch (e) { console.warn('[Pipeline] Well Design engine failed:', e); }
+
+    // ─── GOVERNING YIELD: the ONE number every client-facing section obeys ───
+    // The well-design engine reconciled transmissivity against the published
+    // regional tested-yield band and produced a physically-consistent design
+    // rate. That rate — NOT the spring-inflated ensemble yield — becomes the
+    // governing yield fed to the executive summary, drill decision, cost/ROI
+    // and pump. This is the single source of truth that stops the 4.9-vs-0.28
+    // contradiction at its root. Field pump-test data always wins (skip then).
+    try {
+      const designRate = result.wellDesign?.drawdown?.designPumpingRate_m3hr;
+      if (
+        !isFieldValidated &&
+        typeof designRate === 'number' && designRate > 0 &&
+        typeof result.estimatedYield === 'number' &&
+        Math.abs(result.estimatedYield - designRate) / Math.max(designRate, 0.01) > 0.05
+      ) {
+        const prev = result.estimatedYield;
+        result.estimatedYield = designRate;
+        if (result.uncertainty) {
+          result.uncertainty.yieldRange = [
+            Math.round(designRate * 0.7 * 100) / 100,
+            Math.round(designRate * 1.3 * 100) / 100,
+          ];
+        }
+        if (result.drillDecision) {
+          result.drillDecision.expectedYield_m3hr = designRate;
+          if ((result.drillDecision as any).sustainableYield_m3hr != null) {
+            (result.drillDecision as any).sustainableYield_m3hr = designRate;
+          }
+        }
+        (result as any).governingYieldNote =
+          `Governing yield reconciled from ${prev} to ${designRate} m³/hr (aquifer physics + published regional tested-yield band). One value now governs the executive summary, costs, pump and drill decision.`;
+        console.log(`[GOVERNING] yield ${prev} → ${designRate} m³/hr (single source of truth)`);
+      }
+    } catch (e) { console.warn('[Pipeline] Governing-yield reconciliation failed:', e); }
 
     // â”€â”€â”€ PINN + EXPLAINABLE AI (runs on full result) â”€â”€â”€
     try {

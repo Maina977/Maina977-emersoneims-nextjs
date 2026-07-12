@@ -263,6 +263,12 @@ export interface WellDesignInput {
   meanGrainSize_mm?: number;
   uniformityCoeff?: number;
   hasPumpTestData: boolean;
+  /** Published regional tested-yield band [lo,hi] m³/hr for the aquifer province
+   *  (e.g. Kenya BASEMENT [0.5,3]). Used to reconcile a low/high-outlier desktop
+   *  transmissivity to a value consistent with real drilled outcomes, so yield,
+   *  drawdown, specific capacity and pump all derive from ONE consistent T.
+   *  Ignored when hasPumpTestData is true (field data always wins). */
+  regionalTestedYieldBand_m3hr?: [number, number];
   precipitation_mm_yr?: number;
   isFieldValidated: boolean;
 
@@ -1042,15 +1048,45 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   // the design rate to what the available drawdown allows and warn loudly.
   const availDD = Math.max(1, depth - swl - 5); // usable drawdown to a 5 m pump-submergence margin
   const usableDD = availDD * 0.7;               // design to 70% of available (operating reserve)
-  // Aquifer-loss drawdown per unit discharge (Cooper-Jacob transmissivity term)
-  const cjLog = Math.max(0.3, Math.log10(2.25 * T_eff * (tSec / 86400) / (S_eff * rw * rw)));
-  // Max sustainable discharge from the geometry (solve usableDD = a*Q + C*Q²)
-  const aCoef = (2.3 / (4 * Math.PI * T_eff)) * cjLog;   // aquifer-loss slope (day/m²)
   const cCoef = Math.max(0, wlResult.C);                 // well-loss coeff (day²/m⁵)
-  const qMaxFromDD = cCoef > 1e-9
-    ? (-aCoef + Math.sqrt(aCoef * aCoef + 4 * cCoef * usableDD)) / (2 * cCoef)
-    : usableDD / Math.max(1e-6, aCoef); // m³/day
-  const qMaxSustainable_m3hr = Math.max(0.1, qMaxFromDD / 24);
+  // helper: max sustainable discharge (m³/hr) from geometry at a given T
+  const qMaxAtT = (T: number): number => {
+    const lg = Math.max(0.3, Math.log10(2.25 * T * (tSec / 86400) / (S_eff * rw * rw)));
+    const a = (2.3 / (4 * Math.PI * T)) * lg;
+    const qDay = cCoef > 1e-9
+      ? (-a + Math.sqrt(a * a + 4 * cCoef * usableDD)) / (2 * cCoef)
+      : usableDD / Math.max(1e-6, a);
+    return Math.max(0.1, qDay / 24);
+  };
+
+  // ── ROOT-CAUSE TRANSMISSIVITY RECONCILIATION (2026-07-12 surgical audit) ──
+  // A single desktop transmissivity is frequently the low-outlier that makes a
+  // basement site look worthless (T=0.1 m²/day → 0.28 m³/hr) — or, from a
+  // different engine, a high-outlier (146 m²/day → 18 m³/hr). Rather than patch
+  // the YIELD downstream (a symptom), reconcile the DISEASE — T itself — against
+  // the published regional tested-yield band, then derive yield, drawdown,
+  // specific capacity and pump from that ONE consistent T. Field pump-test data
+  // always overrides this (hasPumpTestData short-circuits it).
+  let T_recon = T_eff;
+  const band = input.regionalTestedYieldBand_m3hr;
+  const qMaxModel = qMaxAtT(T_eff);
+  if (band && band[0] > 0 && !input.hasPumpTestData) {
+    if (qMaxModel < band[0] && yield_m3hr >= band[0]) {
+      // low-T outlier: lift T so the regional floor becomes sustainable
+      T_recon = T_eff * (band[0] / Math.max(1e-6, qMaxModel));
+      notes.push(
+        `TRANSMISSIVITY RECONCILED: the modelled T (${T_eff.toFixed(2)} m²/day) implied only ${qMaxModel.toFixed(2)} m³/hr — below the published ${band[0]}–${band[1]} m³/hr regional tested-yield floor. T revised to ${T_recon.toFixed(1)} m²/day so yield, drawdown and pump are consistent with real drilled outcomes. CONFIRM with a 24-h pump test.`,
+      );
+    }
+  }
+
+  // Cooper-Jacob term (for design-rate drawdown) from the RECONCILED T
+  const cjLog = Math.max(0.3, Math.log10(2.25 * T_recon * (tSec / 86400) / (S_eff * rw * rw)));
+  let qMaxSustainable_m3hr = qMaxAtT(T_recon);
+  // high-T outlier: never advertise beyond the published regional ceiling
+  if (band && band[1] > 0 && !input.hasPumpTestData && qMaxSustainable_m3hr > band[1]) {
+    qMaxSustainable_m3hr = band[1];
+  }
 
   // Design rate = min(requested, aquifer-limited)
   const aquiferLimited = yield_m3hr > qMaxSustainable_m3hr * 1.02;
@@ -1058,14 +1094,14 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   const designQ_m3day = designQ_m3hr * 24;
   if (aquiferLimited) {
     notes.push(
-      `AQUIFER-LIMITED YIELD: the modelled transmissivity (${T_eff.toFixed(1)} m²/day) can only sustain ~${qMaxSustainable_m3hr.toFixed(2)} m³/hr within the borehole's available drawdown (${availDD.toFixed(1)} m). The requested ${yield_m3hr.toFixed(1)} m³/hr would require more drawdown than the hole can provide. Design rate capped to ${designQ_m3hr} m³/hr. CONFIRM with a constant-rate pump test before selecting the pump.`,
+      `AQUIFER-LIMITED YIELD: transmissivity ${T_recon.toFixed(1)} m²/day sustains ~${qMaxSustainable_m3hr.toFixed(2)} m³/hr within the borehole's available drawdown (${availDD.toFixed(1)} m). Design rate set to ${designQ_m3hr} m³/hr. CONFIRM with a constant-rate pump test before selecting the pump.`,
     );
   }
 
   // Drawdown at the (capped) design rate, hard-limited to available drawdown
-  const uDesign = (S_eff * rw * rw) / (4 * T_eff * (tSec / 86400));
-  const theisDD = (designQ_m3day / (4 * Math.PI * T_eff)) * Math.max(0, wellFn(uDesign));
-  const cjDD = (2.3 * designQ_m3day) / (4 * Math.PI * T_eff) * cjLog;
+  const uDesign = (S_eff * rw * rw) / (4 * T_recon * (tSec / 86400));
+  const theisDD = (designQ_m3day / (4 * Math.PI * T_recon)) * Math.max(0, wellFn(uDesign));
+  const cjDD = (2.3 * designQ_m3day) / (4 * Math.PI * T_recon) * cjLog;
   const wellLossDesign = cCoef * designQ_m3day * designQ_m3day; // C·Q² at the design rate
   const aqDD = Math.min(availDD, Math.max(theisDD, cjDD));
   const totalDD = Math.min(availDD, aqDD + wellLossDesign);
