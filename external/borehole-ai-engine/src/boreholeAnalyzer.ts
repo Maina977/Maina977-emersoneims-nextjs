@@ -1888,7 +1888,14 @@ export class BoreholeAnalyzer {
         avgAnnualET_mm: Math.round(annualP * etFactor),
         avgAnnualRecharge_mm: Math.round(avgRecharge),
         rechargeFraction: rechargeFrac,
-        sustainableYield_m3hr: calibratedYield,
+        // Sustainable yield is a RECHARGE-limited quantity, not the ensemble
+        // yield. Deriving it from the water balance (recharge x 10 km2 catchment
+        // x allocatable fraction) keeps p44 consistent with the governing rate;
+        // the central propagation pass caps it to the governing design yield.
+        sustainableYield_m3hr: Math.round(
+          (avgRecharge / 1000 * 10 * 1e6 * 0.4 / 365 / 24) * 100
+        ) / 100,
+        safeYieldFraction: 0.4,
         depletionRisk: avgRecharge > 80 ? 'LOW' : avgRecharge > 30 ? 'MODERATE' : 'HIGH',
         climateRiskLevel: meanTemp > 28 ? 'MODERATE' : 'LOW',
         projectedRecharge2050_mm: Math.round(avgRecharge * 0.88),
@@ -2684,7 +2691,11 @@ export class BoreholeAnalyzer {
         { item: 'ERT geophysical survey', category: 'geophysics', status: isFieldValidated && fieldData?.ertSurvey ? 'PRESENT' : 'PLANNED', detail: isFieldValidated && fieldData?.ertSurvey ? 'Field ERT data integrated' : 'AI-modelled; field ERT recommended', requiredForBankable: true },
         { item: 'Geological model (layered)', category: 'geology', status: subsurfaceModel?.lithologicalColumn?.layers?.length ? 'PRESENT' : 'PARTIAL', detail: subsurfaceModel?.lithologicalColumn?.layers?.length ? `${subsurfaceModel.lithologicalColumn.layers.length} layers defined` : 'Estimated from pedotransfer', requiredForBankable: true },
         { item: 'Aquifer physics (T, S, K)', category: 'aquifer', status: aquiferSimulation?.pumpTest?.theis ? 'PRESENT' : 'PARTIAL', detail: aquiferSimulation?.pumpTest?.theis ? 'Theis + Cooper-Jacob computed' : 'Estimated parameters', requiredForBankable: true },
-        { item: 'Water quality analysis', category: 'water_quality', status: waterQuality ? 'PRESENT' : 'MISSING', detail: waterQuality ? `Score: ${Math.round((waterQuality.score ?? 0) * 100)}/100` : 'No data', requiredForBankable: true },
+        // A proprietary desktop WQ score is NOT a lab analysis. Presenting it as
+        // "PRESENT — Score 94/100" implied a certified result that does not exist.
+        // Bankability requires a field sample + ISO 17025 lab; until then this is a
+        // PARTIAL desktop risk screen only (re-audit #12).
+        { item: 'Water quality analysis', category: 'water_quality', status: (isFieldValidated && fieldData?.labWaterAnalysis) ? 'PRESENT' : 'PARTIAL', detail: (isFieldValidated && fieldData?.labWaterAnalysis) ? 'ISO 17025 lab analysis integrated' : 'Desktop risk screen only — no field sample; accredited lab analysis OUTSTANDING', requiredForBankable: true },
         { item: 'Nearby borehole records', category: 'calibration', status: nearbyWells && (nearbyWells.sampleSize ?? 0) >= 3 ? 'PRESENT' : nearbyWells ? 'PARTIAL' : 'MISSING', detail: nearbyWells ? `${nearbyWells.sampleSize ?? 0} wells within search radius` : 'No nearby wells found', requiredForBankable: true },
         { item: 'Pump test (24-hr)', category: 'calibration', status: isFieldValidated && fieldData?.pumpTest ? 'PRESENT' : 'PLANNED', detail: isFieldValidated && fieldData?.pumpTest ? 'Field pump test data integrated' : 'Protocol prepared; awaiting field execution', requiredForBankable: true },
         { item: 'Lab water analysis (WHO panel)', category: 'water_quality', status: isFieldValidated && fieldData?.labWaterAnalysis ? 'PRESENT' : 'PLANNED', detail: isFieldValidated ? 'Lab results integrated' : 'Recommended post-drilling ($500-1,200)', requiredForBankable: true },

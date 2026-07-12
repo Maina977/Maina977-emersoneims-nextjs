@@ -863,10 +863,10 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   provenance.push({
     parameter: 'Estimated yield',
     source: hasPumpTestData ? 'field_measured' : 'estimated',
-    note: input.yieldSource ?? (hasPumpTestData ? `${yield_m3hr} m³/hr from pump test` : `${yield_m3hr} m³/hr — ESTIMATED (image analysis + regional statistics). Pump test REQUIRED.`),
+    note: input.yieldSource ?? (hasPumpTestData ? `${yield_m3hr} m³/hr from pump test` : `${yield_m3hr} m³/hr — ensemble INPUT estimate (image analysis + regional statistics), superseded by the reconciled design rate below. Pump test REQUIRED.`),
   });
   if (!hasPumpTestData) {
-    notes.push(`CRITICAL: Design yield (${yield_m3hr} m³/hr) is estimated from satellite imagery and regional statistics, NOT from a pump test. 24-hour constant-rate pump test MANDATORY before procurement.`);
+    notes.push(`CRITICAL: The design yield is estimated from satellite imagery and regional statistics, NOT from a pump test — a 24-hour constant-rate pump test is MANDATORY before procurement. (The reconciled design rate is stated in the aquifer-limited-yield note below; the raw ensemble input of ${yield_m3hr} m³/hr must not be used for design.)`);
   }
 
   // ─── RESOLVE T, S: prefer field data ───
@@ -1207,10 +1207,14 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
       'Install temporary airline and eductor pipe',
       `Airlift bottom-up (${Math.round(depth)}m to ${Math.round(depth * 0.5)}m)`,
       'Surge in screen zone (5-10 cycles per 3m interval)',
-      `Pump at 50% (${(yield_m3hr * 0.5).toFixed(1)} m³/hr) for 2 hours`,
-      `Increase to 100% (${yield_m3hr.toFixed(1)} m³/hr) for 2 hours`,
-      `Increase to 150% (${(yield_m3hr * 1.5).toFixed(1)} m³/hr) for 1 hour`,
+      // Development rates track the aquifer-reconciled DESIGN rate, not the raw
+      // ensemble yield — over-pumping a 0.45 m³/hr basement hole at 7.4 m³/hr
+      // would dewater it. Final rates are set from measured airlift/blow yield.
+      `Pump at 50% (${(yield_m3hr_design * 0.5).toFixed(2)} m³/hr) for 2 hours`,
+      `Increase to 100% (${yield_m3hr_design.toFixed(2)} m³/hr) for 2 hours`,
+      `Short over-pumping stage at ~150% (${(yield_m3hr_design * 1.5).toFixed(2)} m³/hr) for 1 hour, subject to borehole response`,
       'Monitor sand content and specific capacity at each step',
+      'Final development and test rates SHALL be set from the measured airlift/blow yield and water-level response, not this desktop estimate',
       'Continue until sand < 5 mg/L and yield stable',
     ],
   };
@@ -1388,7 +1392,8 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   const setbackResult = computeSetbackAnalysis(
     contSources, aquiferType,
     soilType, swl, K_eff_setback, gradient_setback, porosity_setback,
-    yield_m3day, input.countryCode
+    // Reconciled design rate — abstraction volume drives the EIA/permit test.
+    yield_m3day_design, input.countryCode
   );
   setbackResult.recommendations.forEach(r => notes.push(r));
   if (!setbackResult.overallCompliance) {
@@ -1417,7 +1422,9 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
   const estPopulation = input.populationServed ?? 500;
   const hasUserPop = !!input.populationServed;
   const demandResult = computeDemandAnalysis(
-    yield_m3hr,
+    // Supply must be built from the aquifer-reconciled DESIGN rate, not the raw
+    // ensemble yield — a 0.45 m³/hr borehole cannot deliver 39 m³/day.
+    yield_m3hr_design,
     estPopulation,
     input.growthRate_pct ?? 2.5,
     input.perCapitaDemand_Lpd ?? 50,

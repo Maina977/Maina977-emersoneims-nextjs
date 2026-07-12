@@ -441,6 +441,107 @@ export function propagateGoverningValues(result: any): void {
   if (dsA?.expectedYield_m3hr != null && dsA.expectedYield_m3hr > capY) dsA.expectedYield_m3hr = capY;
   const iss = result.advancedGeophysics?.integratedSurvey?.drillSpec ?? result.integratedSurvey?.drillSpec;
   if (iss?.expectedYield_m3hr != null && iss.expectedYield_m3hr > capY) iss.expectedYield_m3hr = capY;
+
+  // ── ERT interpretation yield estimation drives the printed Driller Brief,
+  //    Technical Summary AND the Data-Provenance matrix. All three are read as
+  //    AUTHORITATIVE, so they must carry the governing yield, not a stale ERT
+  //    estimate. (The dedicated "ERT geophysics estimate ONLY" panel already
+  //    prints its own disclaimer pointing back to the Executive Summary.) ──
+  const ye = result.ertInterpretation?.yieldEstimation;
+  if (ye) {
+    if (ye.estimatedYield_m3hr != null) ye.estimatedYield_m3hr = r2(gY);
+    if (ye.sustainableYield_m3hr != null) ye.sustainableYield_m3hr = r2(gY);
+    if (ye.estimatedYield_Lmin != null) ye.estimatedYield_Lmin = Math.round(gY * 1000 / 60);
+    if (ye.confidenceInterval && typeof ye.confidenceInterval === 'object') {
+      ye.confidenceInterval.lower = r2(gY * 0.65);
+      ye.confidenceInterval.upper = r2(gY * 1.35);
+    }
+  }
+
+  // ── Recharge-limited sustainable yield is a SEPARATE physical quantity, but
+  //    the recommended well can never sustainably deliver MORE than the
+  //    governing design rate on a desktop screen. Cap it so p44 cannot print a
+  //    4.9 m³/hr "sustainable yield" beside a 0.5 m³/hr governing rate.
+  //    (The fallback recharge model used to stuff the raw ensemble yield here.) ──
+  if (result.rechargeModel?.sustainableYield_m3hr != null && result.rechargeModel.sustainableYield_m3hr > gY) {
+    result.rechargeModel.sustainableYield_m3hr = r2(gY);
+    if (result.rechargeModel.sustainableYield_m3day != null) {
+      result.rechargeModel.sustainableYield_m3day = Math.round(gY * 24);
+    }
+  }
+
+  // ── Cross-validation per-well "predicted yield": the model predicts ONE
+  //    governing yield for the site, so every row must show that value, not a
+  //    stale 4.9 assigned to springs that carry no measured yield at all. ──
+  const xvWells = result.engineerConfidence?.crossValidation?.wells;
+  if (Array.isArray(xvWells)) {
+    for (const w of xvWells) {
+      if (w && w.predictedYield_m3hr != null) w.predictedYield_m3hr = r2(gY);
+    }
+  }
+
+  // ── Sub-model diagnostic panels keep their own numbers (they are LABELLED
+  //    "sub-model; governing: X"), but their PREDICTED (not diagnostic) yield
+  //    fields that feed design must track the governing value. ──
+  if (result.drillingPrediction?.predictedYield_m3h != null && !result.drillingPrediction._diagnostic) {
+    // predictedYield_m3h is shown labelled as a sub-model on p56 — leave it,
+    // but keep the drill-decision expectedYield (procurement-facing) aligned.
+  }
+  if (result.drillDecision) {
+    if (result.drillDecision.expectedYield_m3hr != null) result.drillDecision.expectedYield_m3hr = r2(gY);
+    if (Number.isFinite(gD) && result.drillDecision.targetDepth_m != null) result.drillDecision.targetDepth_m = Math.round(gD);
+    if (result.drillDecision.yieldRange_m3hr) {
+      result.drillDecision.yieldRange_m3hr = [r2(gY * 0.65), r2(gY * 1.3)];
+    }
+  }
+
+  // ── Aquifer-physics simulation (Theis/Cooper-Jacob, cone of depression):
+  //    the raw sim was run at the pre-reconciliation ensemble rate (e.g. 117.6
+  //    m³/day), producing a physically-impossible 632 m drawdown on a 61 m hole.
+  //    Theis drawdown is LINEAR in Q, so rescale every drawdown to the governing
+  //    rate (Q_gov = gY×24). Specific capacity (Q/s) is invariant under this
+  //    scaling — correct, it is an aquifer property. Then run a hard physics
+  //    guard: if predicted drawdown at the well still exceeds the borehole depth,
+  //    the (T,Q) pair is unsustainable → flag MODEL INCONSISTENT (do NOT cap the
+  //    number silently, which would inflate specific capacity and hide a bad well).
+  const aq = result.aquiferSimulation;
+  if (aq?.pumpTest?.theis && aq?.coneOfDepression) {
+    const newQ = r2(gY * 24);
+    const oldQ = Number(aq.coneOfDepression.pumpingRateM3day) || 0;
+    if (oldQ > 0 && newQ > 0) {
+      const ratio = newQ / oldQ;
+      const scale = (v: any) => (Number.isFinite(v) ? Math.round(v * ratio * 1000) / 1000 : v);
+      const th = aq.pumpTest.theis;
+      th.drawdownAtWell = scale(th.drawdownAtWell);
+      th.drawdownAt100m = scale(th.drawdownAt100m);
+      th.drawdownAt500m = scale(th.drawdownAt500m);
+      if (aq.pumpTest.cooperJacob) {
+        aq.pumpTest.cooperJacob.slopePerLogCycle = scale(aq.pumpTest.cooperJacob.slopePerLogCycle);
+        if (Array.isArray(aq.pumpTest.cooperJacob.drawdownVsTime)) {
+          for (const d of aq.pumpTest.cooperJacob.drawdownVsTime) if (d) d.drawdown_m = scale(d.drawdown_m);
+        }
+      }
+      aq.coneOfDepression.pumpingRateM3day = newQ;
+      aq.coneOfDepression.maxDrawdownM = scale(aq.coneOfDepression.maxDrawdownM);
+      if (Array.isArray(aq.coneOfDepression.drawdownProfile)) {
+        for (const p of aq.coneOfDepression.drawdownProfile) if (p) p.drawdownM = scale(p.drawdownM);
+      }
+      // Groundwater budget pumping-derived figures scale too.
+      if (aq.groundwaterBudget && Number.isFinite(aq.groundwaterBudget.pumpingDemand_m3day)) {
+        aq.groundwaterBudget.pumpingDemand_m3day = newQ;
+      }
+    }
+    // Physics guard: drawdown at the well cannot exceed the borehole depth.
+    const boreDepth = Number.isFinite(gD) ? gD : (Number(result.recommendedDepth) || 0);
+    const sWell = Number(aq.pumpTest.theis.drawdownAtWell) || 0;
+    if (boreDepth > 0 && sWell > boreDepth) {
+      aq.pumpTest.physicsConsistent = false;
+      aq.pumpTest.consistencyNote =
+        `MODEL INCONSISTENT — the modelled transmissivity implies a drawdown (${Math.round(sWell)} m) deeper than the borehole itself (${Math.round(boreDepth)} m). Transmissivity is under-constrained by desktop data; treat this panel as a solver diagnostic only. A field pump test is required to measure the true drawdown/yield relationship.`;
+    } else {
+      aq.pumpTest.physicsConsistent = true;
+    }
+  }
 }
 
 /**

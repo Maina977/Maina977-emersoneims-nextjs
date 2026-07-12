@@ -1540,14 +1540,26 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
       head: [['Mandatory gate', 'Status']],
-      body: gateRows.map(([g, ok]) => [g, ok ? 'SATISFIED' : 'OUTSTANDING']),
+      // The consistency gate can only be AUTOMATED-passed on desktop data; it is
+      // not field-reconciled until the drill log exists. Show it as PROVISIONAL
+      // (amber), never a green SATISFIED that would imply drill-readiness
+      // (re-audit #14). Field gates remain OUTSTANDING.
+      body: gateRows.map(([g, ok]) => {
+        if (g === 'No contradictory values or software errors') {
+          return [g, ok ? 'AUTOMATED PASS — FIELD RECONCILIATION PENDING' : 'OUTSTANDING'];
+        }
+        return [g, ok ? 'SATISFIED' : 'OUTSTANDING'];
+      }),
       headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold', fontSize: 8 },
       bodyStyles: { fontSize: 8 },
-      columnStyles: { 1: { cellWidth: 34 } },
+      columnStyles: { 1: { cellWidth: 48 } },
       theme: 'grid',
       didParseCell: (d: any) => {
         if (d.column.index === 1 && d.section === 'body') {
-          d.cell.styles.textColor = d.cell.raw === 'SATISFIED' ? [22, 163, 74] : [220, 38, 38];
+          const raw = String(d.cell.raw);
+          d.cell.styles.textColor = raw === 'SATISFIED' ? [22, 163, 74]
+            : raw.startsWith('AUTOMATED PASS') ? [180, 83, 9]
+            : [220, 38, 38];
           d.cell.styles.fontStyle = 'bold';
         }
       },
@@ -3141,6 +3153,16 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setTextColor(50, 50, 50); doc.setFont('helvetica', 'normal');
 
     const pt = result.aquiferSimulation.pumpTest;
+    if (pt?.physicsConsistent === false && pt?.consistencyNote) {
+      doc.setFillColor(254, 242, 242); doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.4);
+      const _noteLines = doc.splitTextToSize(`[!] ${pt.consistencyNote}`, pageW - margin * 2 - 6);
+      const _boxH = _noteLines.length * 4 + 6;
+      doc.roundedRect(margin, y, pageW - margin * 2, _boxH, 1.5, 1.5, 'FD');
+      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 27, 27);
+      doc.text(_noteLines, margin + 3, y + 5);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+      y += _boxH + 4;
+    }
     if (pt?.theis) {
       autoTable(doc, {
         startY: y,
@@ -4247,14 +4269,18 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
     doc.text('26. Micro-Siting Optimizer ? Precision Drilling Point', margin, y); y += 8;
 
+    doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 83, 9);
+    doc.text('DESKTOP CANDIDATE ONLY — computed from terrain/drainage rasters, NOT field-surveyed and NOT a drilling coordinate. The governing site coordinate is in the Executive Summary; the final peg is set on site after ERT.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+
     const bp = ms.bestPoint || {};
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
       head: [['Parameter', 'Value']],
       body: [
-        ['Best Point Coordinates', `${bp.latitude?.toFixed(6) ?? 'N/A'}, ${bp.longitude?.toFixed(6) ?? 'N/A'}`],
-        ['GPS Output', ms.gpsCoordinates ? `${ms.gpsCoordinates.lat}, ${ms.gpsCoordinates.lon}` : 'N/A'],
-        ['GPS Accuracy', ms.gpsCoordinates ? `?${ms.gpsCoordinates.accuracy_m}m` : 'N/A'],
+        ['Desktop candidate point', `${bp.latitude?.toFixed(6) ?? 'N/A'}, ${bp.longitude?.toFixed(6) ?? 'N/A'} — not field-surveyed`],
+        ['Desktop optimizer output', ms.gpsCoordinates ? `${ms.gpsCoordinates.lat}, ${ms.gpsCoordinates.lon} (raster-derived, not a GPS fix)` : 'N/A'],
+        ['Model grid resolution', ms.gpsCoordinates ? `?${ms.gpsCoordinates.accuracy_m}m (model grid, not survey accuracy)` : 'N/A'],
         ['Confidence Radius', `${ms.confidenceRadius_m ?? 'N/A'}m`],
         ['Best Point Score', `${bp.score ?? 'N/A'}/100`],
         ['Improvement Over Center', `+${fmt(ms.improvementOverCenter_pct)}%`],
