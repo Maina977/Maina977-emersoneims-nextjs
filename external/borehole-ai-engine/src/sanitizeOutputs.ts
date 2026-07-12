@@ -439,8 +439,24 @@ export function propagateGoverningValues(result: any): void {
   const capY = r2(gY * 2);
   const dsA = result.advancedGeophysics?.drillSpec;
   if (dsA?.expectedYield_m3hr != null && dsA.expectedYield_m3hr > capY) dsA.expectedYield_m3hr = capY;
-  const iss = result.advancedGeophysics?.integratedSurvey?.drillSpec ?? result.integratedSurvey?.drillSpec;
+  // The integrated-survey drill spec lives at advancedGeophysics.integratedResult
+  // (the p67 "Expected Yield 18.6 m³/hr" leak). Cap it and its fracture-zone
+  // yield hints so a survey cannot advertise 40× the governing sustainable rate.
+  const iss = result.advancedGeophysics?.integratedResult?.drillSpec
+    ?? result.advancedGeophysics?.integratedSurvey?.drillSpec
+    ?? result.integratedSurvey?.drillSpec;
   if (iss?.expectedYield_m3hr != null && iss.expectedYield_m3hr > capY) iss.expectedYield_m3hr = capY;
+
+  // The advancedGeophysics narrative strings were built at the pre-reconciliation
+  // rate; rewrite any "<n> m³/hr yield" mention to the governing yield so the
+  // Technical Summary (p68) and recommendation cannot print a stale 4.9.
+  const ag = result.advancedGeophysics;
+  if (ag) {
+    const reYield = /[\d.]+\s*m³\/hr yield/g;
+    if (typeof ag.technicalSummary === 'string') {
+      ag.technicalSummary = ag.technicalSummary.replace(reYield, `${r2(gY)} m³/hr yield`);
+    }
+  }
 
   // ── ERT interpretation yield estimation drives the printed Driller Brief,
   //    Technical Summary AND the Data-Provenance matrix. All three are read as

@@ -1499,9 +1499,16 @@ export class BoreholeAnalyzer {
       const hasFieldMagnetic = false;
       const hasFieldGPR = false;
       const hasFieldFDEM = false;
-      const isCrystalline = /gneiss|granite|schist|quartzite|metamorphic|crystalline|basement/i.test(rockClassification?.primaryRockType ?? '');
-      const isKarst = /karst|limestone|dolomite|marble|chalk/i.test(rockClassification?.primaryRockType ?? '');
-      const isSedimentary = /sandstone|shale|mudstone|siltstone|alluvial|sediment|clay/i.test(rockClassification?.primaryRockType ?? '') || (!isCrystalline && !isKarst);
+      // Governing-geology hint = the site's own rock class PLUS the regional
+      // aquifer types (WRA/BGS). Do NOT default unknown geology to sedimentary —
+      // most of Kenya/East Africa is weathered/fractured crystalline basement, and
+      // defaulting to "sedimentary" produced a contradictory hypothetical (Rotary
+      // Mud drilling + inflated yield) that fought the governing basement model
+      // (re-audit #9). Depart from the basement default only on positive evidence.
+      const _geoHint = `${rockClassification?.primaryRockType ?? ''} ${(boreholeRecords?.commonAquiferTypes ?? []).join(' ')}`;
+      const isKarst = /karst|limestone|dolomite|marble|chalk|coral/i.test(_geoHint);
+      const isSedimentary = !isKarst && /sandstone|shale|mudstone|siltstone|alluvial|sediment|coastal/i.test(_geoHint);
+      const isCrystalline = !isKarst && !isSedimentary; // basement/volcanic/unknown → basement
 
       advancedGeophysicsResult = computeAdvancedGeophysics({
         lat: effectiveLat ?? 0,

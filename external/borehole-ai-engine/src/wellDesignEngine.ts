@@ -1395,9 +1395,17 @@ export function computeWellDesign(input: WellDesignInput): WellDesignResult {
     // Reconciled design rate — abstraction volume drives the EIA/permit test.
     yield_m3day_design, input.countryCode
   );
+  // Flag whether the contamination distances are FIELD-MEASURED or merely
+  // assumed defaults. An assumed distance cannot establish a real compliance
+  // FAILURE — the report must say "not measured / recon required", and the
+  // site is not-ready because reconnaissance is absent, not because an invented
+  // livestock distance "failed" (re-audit #10).
+  (setbackResult as any).distancesMeasured = hasUserContSources;
   setbackResult.recommendations.forEach(r => notes.push(r));
-  if (!setbackResult.overallCompliance) {
-    notes.push('WARNING: Setback distance requirements NOT MET for assumed contamination sources. Contamination risk is elevated. Site survey required to confirm actual distances.');
+  if (!hasUserContSources) {
+    notes.push('WARNING: Contamination-source setback distances are NOT MEASURED (assumed defaults). Field reconnaissance is required to confirm actual distances before drilling — the site is not drill-ready until this is done.');
+  } else if (!setbackResult.overallCompliance) {
+    notes.push('WARNING: Setback distance requirements NOT MET for measured contamination sources. Contamination risk is elevated. Relocate borehole or install sanitary seal + upstream barrier.');
   }
   if (!hasUserContSources) {
     notes.push('SETBACK: Analysis based on ASSUMED typical rural contamination sources (pit latrine 30m, septic 25m, agriculture 100m, livestock 50m). Conduct site reconnaissance to confirm actual contamination source locations and distances.');

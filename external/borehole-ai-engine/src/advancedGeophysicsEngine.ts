@@ -1312,12 +1312,15 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
   };
 
   // ═══ RECOMMENDATION ═══
+  // A geophysical survey raises SITING/INFORMATION confidence — it cannot
+  // guarantee drilling success or sustainable yield (re-audit #13). Framed as a
+  // projected information-confidence, conditional on the methods agreeing.
   const recommendation = successRateAnalysis.meetsTarget
-    ? `RECOMMENDED: "${optimalPackage.name}" achieves ${expectedSuccessRate}% expected success rate (≥90% target). ` +
+    ? `RECOMMENDED: "${optimalPackage.name}" reaches ${expectedSuccessRate}% projected siting/information confidence IF the surveys are carried out and their results are mutually consistent (planning target ≥90%). This is not a drilling-success guarantee — the governing site probability is unchanged until field data exists. ` +
       `Cost: $${optimalPackage.cost_usd.toLocaleString()} | Time: ${optimalPackage.time_hrs}h field work. ` +
       `${methodCount} independent geophysical methods with AI-assisted inversion provide comprehensive subsurface characterization.`
-    : `RECOMMENDED: Upgrade to "${rankedPackages.find(p => aiOnlySuccess + p.successRateBoost_pct >= 90)?.name ?? 'Combined Geophysics'}" to reach 90% target. ` +
-      `Current optimal package "${optimalPackage.name}" achieves ${expectedSuccessRate}% (below 90% target). ` +
+    : `RECOMMENDED: Upgrade to "${rankedPackages.find(p => aiOnlySuccess + p.successRateBoost_pct >= 90)?.name ?? 'Combined Geophysics'}" to reach the 90% projected-confidence planning target. ` +
+      `Current optimal package "${optimalPackage.name}" reaches ${expectedSuccessRate}% projected information-confidence (below the 90% target). ` +
       `Adding methods increases cross-validation and eliminates interpretation ambiguities.`;
 
   const technicalSummary = [
@@ -1326,7 +1329,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
     `AI prediction: ${predictedDepth_m}m depth, ${input.predictedYield_m3hr} m³/hr yield, ${aiOnlySuccess}% probability`,
     `Weathering: ${weatheringDepth_m}m | Water table: ${waterTableDepth_m}m | Bedrock: ${input.bedrockDepth_m}m`,
     `Optimal survey: ${optimalPackage.name} (${methodCount} methods, $${optimalPackage.cost_usd.toLocaleString()})`,
-    `Expected success rate: ${expectedSuccessRate}% (AI-only: ${aiOnlySuccess}%, boost: +${optimalPackage.successRateBoost_pct}%)`,
+    `Projected siting/information confidence if surveys confirm the model: ${expectedSuccessRate}% (AI-only: ${aiOnlySuccess}%, boost: +${optimalPackage.successRateBoost_pct}%) — NOT a drilling-success guarantee`,
     `Fracture targets: ${ertInversion.fractureZones.length} zones modelled (projected from geology — not field-detected)`,
     `Weathered layer: ${ertInversion.weatheredLayer.classification} (${ertInversion.weatheredLayer.thickness_m}m thick)`,
     `Drill depth recommendation: ${Math.round(drillSpecDepth)}m`,

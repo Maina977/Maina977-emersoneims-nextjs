@@ -8378,48 +8378,72 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
       doc.text(`Aquifer Vulnerability: ${((sa as any).aquiferVulnerability ?? '').toUpperCase()} (GOD method, Foster et al. 2002)`, margin, y); y += 6;
 
+      const distancesMeasured = (sa as any).distancesMeasured === true;
       if (sa.sources.length > 0) {
         autoTable(doc, {
           startY: y, margin: { left: margin, right: margin },
-          head: [['Source', 'Min. Setback (m)', 'Assumed Dist. (m)', 'Travel Time', 'Compliant?', 'Risk']],
+          head: [['Source', 'Min. Setback (m)', distancesMeasured ? 'Measured Dist. (m)' : 'Distance (m)', 'Travel Time', 'Compliant?', 'Risk']],
           body: sa.sources.map(s => [
             s.type, String(s.baseSetback_m),
-            (s as any).estimatedDistance_m != null ? String((s as any).estimatedDistance_m) : 'unknown',
-            s.travelTime_days > 99999 ? 'N/A' : `${s.travelTime_days} days`,
-            s.isCompliant ? 'YES' : 'NO', s.riskIfNonCompliant,
+            // An ASSUMED distance is not a datum — show it as not measured so the
+            // report never presents an invented number as a real site distance.
+            distancesMeasured
+              ? ((s as any).estimatedDistance_m != null ? String((s as any).estimatedDistance_m) : 'unknown')
+              : 'Not measured',
+            distancesMeasured ? (s.travelTime_days > 99999 ? 'N/A' : `${s.travelTime_days} days`) : 'Not measured',
+            distancesMeasured ? (s.isCompliant ? 'YES' : 'NO') : 'Not assessed',
+            s.riskIfNonCompliant,
           ]),
           headStyles: { fillColor: [13, 17, 23], textColor: 255, fontSize: 6.5 },
           bodyStyles: { fontSize: 6.5 },
           theme: 'striped',
           didParseCell: (data: any) => {
             if (data.section === 'body' && data.column.index === 4) {
-              data.cell.styles.textColor = String(data.cell.raw) === 'YES' ? [22, 163, 74] : [220, 38, 38];
+              const raw = String(data.cell.raw);
+              data.cell.styles.textColor = raw === 'YES' ? [22, 163, 74] : raw === 'Not assessed' ? [180, 83, 9] : [220, 38, 38];
               data.cell.styles.fontStyle = 'bold';
             }
           },
         });
         y = lastY(4);
 
-        // Non-compliance alert for any source (livestock, septic, etc.)
-        const nonCompliant = sa.sources.filter(s => !s.isCompliant);
-        if (nonCompliant.length > 0) {
-          checkSpace(20);
-          doc.setFillColor(254, 226, 226);
+        if (!distancesMeasured) {
+          // Distances are assumed defaults — do NOT declare a compliance failure.
+          // The site is not-ready because reconnaissance is ABSENT (re-audit #10).
+          checkSpace(24);
+          doc.setFillColor(255, 247, 237);
           doc.rect(margin, y - 2, pageW - margin * 2, 14, 'F');
-          doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.6);
+          doc.setDrawColor(180, 83, 9); doc.setLineWidth(0.5);
           doc.rect(margin, y - 2, pageW - margin * 2, 14, 'S');
-          doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
-          doc.text(`WARNING: ${nonCompliant.length} SETBACK NON-COMPLIANCE(S) DETECTED`, margin + 4, y + 4);
+          doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+          doc.text('CONTAMINATION SETBACKS: NOT MEASURED', margin + 4, y + 4);
           doc.setFontSize(7); doc.setFont('helvetica', 'normal');
-          doc.text(`Non-compliant: ${nonCompliant.map(s => `${s.type} (${(s as any).estimatedDistance_m ?? '?'}m assumed < ${s.baseSetback_m}m min)`).join('; ')}. Distances are ASSUMED — verify on site. Mitigation: relocate borehole or install sanitary seal + upstream barrier.`, margin + 4, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+          doc.text('Distances above are typical rural DEFAULTS, not site data. No compliance pass/fail can be asserted until a field reconnaissance measures the actual pit-latrine / septic / livestock / cultivation distances.', margin + 4, y + 9, { maxWidth: pageW - margin * 2 - 8 });
           y += 18;
-
-          // Audit fix #7: Hard-stop -- drilling not permitted without mitigation
-          doc.setFillColor(180, 0, 0);
+          doc.setFillColor(180, 83, 9);
           doc.roundedRect(margin, y - 2, pageW - margin * 2, 10, 2, 2, 'F');
           doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-          doc.text('DRILLING STATUS: NOT READY -- Setback non-compliance must be resolved before drilling. Submit mitigation plan.', margin + 4, y + 5);
+          doc.text('DRILLING STATUS: NOT READY -- contamination setback distances not measured; field reconnaissance required.', margin + 4, y + 5);
           y += 14;
+        } else {
+          const nonCompliant = sa.sources.filter(s => !s.isCompliant);
+          if (nonCompliant.length > 0) {
+            checkSpace(20);
+            doc.setFillColor(254, 226, 226);
+            doc.rect(margin, y - 2, pageW - margin * 2, 14, 'F');
+            doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.6);
+            doc.rect(margin, y - 2, pageW - margin * 2, 14, 'S');
+            doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
+            doc.text(`WARNING: ${nonCompliant.length} SETBACK NON-COMPLIANCE(S) DETECTED`, margin + 4, y + 4);
+            doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+            doc.text(`Non-compliant: ${nonCompliant.map(s => `${s.type} (${(s as any).estimatedDistance_m ?? '?'}m measured < ${s.baseSetback_m}m min)`).join('; ')}. Mitigation: relocate borehole or install sanitary seal + upstream barrier.`, margin + 4, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+            y += 18;
+            doc.setFillColor(180, 0, 0);
+            doc.roundedRect(margin, y - 2, pageW - margin * 2, 10, 2, 2, 'F');
+            doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+            doc.text('DRILLING STATUS: NOT READY -- Setback non-compliance must be resolved before drilling. Submit mitigation plan.', margin + 4, y + 5);
+            y += 14;
+          }
         }
       }
 

@@ -576,8 +576,22 @@ function performCrossValidation(r: any): CrossValidationResult {
 
   // Compute statistics
   const n = wells.length;
-  const syntheticCount = wells.filter(w => /synth|model|estimat/i.test(w.source)).length;
-  const realCount = n - syntheticCount;
+  // FIELD-MEASURED means a drilled borehole with a measured depth/yield — NOT a
+  // spring occurrence and NOT a regional-estimate registry row. The old test
+  // (/synth|model|estimat/) missed "regional est." so 150 springs counted as
+  // "real validation wells", inflating the Validation score and letting the
+  // report claim "validated against 150 real wells" (re-audit #7). A spring
+  // proves groundwater OCCURRENCE regionally; it cannot validate a drilled
+  // depth, yield, screen interval, transmissivity or pump size.
+  const isFieldMeasured = (w: any): boolean => {
+    const src = String(w.source ?? '').toLowerCase();
+    const id = String(w.wellId ?? '').toLowerCase();
+    if (/spring/.test(id) || /spring/.test(src)) return false;         // occurrence, no drill
+    if (/reg(ional)?\.?\s*est|estimat|modelled|model[- ]generated|synth|county database/.test(src)) return false;
+    return (w.actualDepth_m > 0 || w.actualYield_m3hr > 0);
+  };
+  const realCount = wells.filter(isFieldMeasured).length;
+  const syntheticCount = n - realCount;
   if (n === 0) {
     return {
       wellCount: 0,
@@ -643,9 +657,15 @@ function performCrossValidation(r: any): CrossValidationResult {
   } else if (realCount >= 1) {
     engineerVerdict = 'USE_WITH_CAUTION';
     verdictJustification = `Only ${realCount} real validation well(s) available${syntheticNote}. Error margins are high (depth MAPE ${depthMAPE.toFixed(1)}%). Predictions should be treated as preliminary estimates only.`;
+  } else if (n >= 1 && realCount === 0) {
+    // Registry OCCURRENCE records (springs / regional-estimate rows) with no
+    // measured depth or yield. This is a regional-consistency check, NOT a
+    // validation of drilled outcomes (re-audit #7).
+    engineerVerdict = 'USE_WITH_CAUTION';
+    verdictJustification = `Regional groundwater-occurrence consistency check against ${n} registry records (0 field-measured boreholes — the rows are springs / regional-estimate points carrying no drilled depth or yield). This supports that the aquifer is present regionally; it does NOT validate the drilling depth, borehole yield, screen interval, transmissivity or pump size. Treat all error metrics as indicative of registry consistency only, not field accuracy. Field ERT + pump test required.`;
   } else if (n >= 1 && syntheticCount > 0) {
     engineerVerdict = 'USE_WITH_CAUTION';
-    verdictJustification = `All ${n} validation wells are model-generated (not field-verified). Cross-validation against synthetic data has limited value. Field investigation strongly recommended.`;
+    verdictJustification = `Only ${realCount} field-measured well(s) of ${n}; the remainder are model-generated / registry-estimate records. Cross-validation value is limited. Field investigation strongly recommended.`;
   } else {
     engineerVerdict = 'INSUFFICIENT_DATA';
     verdictJustification = 'No validation data. Use for screening only.';
