@@ -3321,6 +3321,22 @@ export class BoreholeAnalyzer {
       };
     }
 
+    // ─── THREE-SCORE STATUS ARCHITECTURE (DDTR / FRR / MAG) ───
+    // Global Desktop Drill-Target Intelligence: DDTR (desktop evidence strength,
+    // ≤95), FRR (field/regulatory completion), MAG (mobilisation gate) — computed
+    // from the evidence already gathered. Uses the consistency validator's FAIL
+    // count so an unresolved contradiction caps DDTR and BLOCKS the gate.
+    try {
+      const { auditReport } = await import('./reportAuditor');
+      const { computeDesktopDrillTargetReadiness } = await import('./desktopDrillTargetReadiness');
+      const _audit = auditReport(result);
+      (result as any).desktopDrillTarget = computeDesktopDrillTargetReadiness(result, _audit.failedChecks);
+      const ddt = (result as any).desktopDrillTarget;
+      console.log(`[Pipeline] DDTR ${ddt.ddtr}/100 (${ddt.ddtrClass}) | FRR ${ddt.frr}/100 | MAG ${ddt.mag}`);
+    } catch (e) {
+      console.warn('[Pipeline] Desktop drill-target readiness failed:', e);
+    }
+
     return result;
   }
 }

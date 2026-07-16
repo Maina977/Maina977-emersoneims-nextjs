@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts', 'desktopDrillTargetReadiness.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -591,6 +591,44 @@ console.log('\nP. Measured validation benchmark (validationBenchmark)');
     /yield could not be reliably predicted/i.test(stmt) && /pump test/i.test(stmt));
   check('benchmark carries the survivorship-bias caveat',
     vb.KENYA_NORTH_BENCHMARK.caveats.some(c => /survivorship|under-record/i.test(c)));
+}
+
+// ── S. THREE-SCORE STATUS ARCHITECTURE (DDTR / FRR / MAG) ───────
+console.log('\nS. Desktop drill-target readiness (DDTR / FRR / MAG)');
+{
+  const ddt = req(join(OUT, 'desktopDrillTargetReadiness.js'));
+  const baseSite = {
+    gpsSource: 'manual', locationConfidence: { grade: 'C' }, latitude: 0.0267,
+    siteIdentity: { adminHierarchy: {} }, locationContext: { county: 'Vihiga' },
+    nearbyWells: { sampleSize: 160, successRate: 1.0, nearbyWells: Array.from({ length: 150 }, (_, i) => ({ id: `Spring ${i}`, outcome: 'Success', depth_m: 58 })) },
+    subsurfaceModel: {}, kenyaHydroPrior: { province: 'BASEMENT' }, aquiferClassification: {},
+    lineamentAnalysis: { lineamentDensity: 0.3, intersectionCount: 5 },
+    demHydrology: { twi: 11.9, slope_degrees: 2, drainageDensity: 0.45, relativePosition: 'mid', groundwaterFavorability: 65 },
+    rechargeModel: { confidence: 0.62 }, historicalData: { weather: {} },
+    satelliteRemoteSensing: { totalMethodsUsed: 10 }, vegetationGWProxy: { ndviSeasonalRange: 0.22 },
+    soil: { type: 'loamy', permeability: 0.45, porosity: 0.48 },
+    waterQuality: {}, wellDesign: { setbackAnalysis: {} },
+    engineerConfidence: { provenance: { overallAccuracy_pct: 65 } }, _auditFlags: {},
+  };
+  const desktop = ddt.computeDesktopDrillTargetReadiness(baseSite, 0);
+  check('DDTR is in 0-95 (desktop can never reach 100)', desktop.ddtr >= 0 && desktop.ddtr <= 95);
+  check('desktop-only MAG is CONDITIONALLY RELEASED, never RELEASED FOR DRILLING', desktop.mag === 'CONDITIONALLY RELEASED');
+  check('FRR is 0 when no field/regulatory work is done', desktop.frr === 0);
+  check('manual-coords + springs-only apply penalties', desktop.penalties.length >= 2 && desktop.penalties.every(p => p.points < 0));
+
+  const contradiction = ddt.computeDesktopDrillTargetReadiness(baseSite, 2);
+  check('unresolved audit FAIL BLOCKS the mobilisation gate (§9)', contradiction.mag === 'BLOCKED');
+  check('unresolved contradiction caps DDTR below 90', contradiction.ddtr < 90 && contradiction.ddtr < desktop.ddtr);
+
+  const full = JSON.parse(JSON.stringify(baseSite));
+  full.gpsSource = 'device';
+  full.nearbyWells.nearbyWells = Array.from({ length: 40 }, (_, i) => ({ id: `BH-${i}`, outcome: i % 5 ? 'Success' : 'Fail', depth_m: 80, yield_m3h: 6 }));
+  full._auditFlags = { hasFieldRecon: true, hasFieldPeg: true, hasFieldERT: true, hasHydrogeologistSignoff: true, hasWRAAuthorisation: true, hasEnvAuthorisation: true, hasFieldPumpTest: true, hasLabWaterAnalysis: true };
+  const released = ddt.computeDesktopDrillTargetReadiness(full, 0);
+  check('all field+regulatory gates done → MAG RELEASED FOR DRILLING', released.mag === 'RELEASED FOR DRILLING');
+  check('field-complete FRR reaches 100', released.frr === 100);
+  check('even a strong+field-complete site never exceeds DDTR 95', released.ddtr <= 95);
+  check('DDTR classification bands map correctly', ddt.classifyDDTR(30) === 'DESKTOP TARGET REJECTED' && ddt.classifyDDTR(92) === 'HIGH-CONFIDENCE DESKTOP DRILL TARGET');
 }
 
 rmSync(OUT, { recursive: true, force: true });
