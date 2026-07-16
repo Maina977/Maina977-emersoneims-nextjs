@@ -589,6 +589,29 @@ export function propagateGoverningValues(result: any): void {
     } else {
       aq.pumpTest.physicsConsistent = true;
     }
+    // SUPPRESSION TIER (live block 2026-07-16: a 40,247 m drawdown reached the
+    // export gate and correctly FAILED Check 20 — but that left the customer
+    // unable to print at all). A merely-inconsistent value is LABELLED (above);
+    // a physically absurd magnitude (>5× the hole, or >1,000 m absolute) is
+    // WITHHELD: numbers are nulled so nothing impossible can be printed, and
+    // the diagnostic note explains why. Never silently capped — capping would
+    // fabricate a plausible-looking specific capacity.
+    const absurd = sWell > Math.max(1000, boreDepth * 5);
+    if (absurd) {
+      const th2 = aq.pumpTest.theis;
+      aq.pumpTest.numbersWithheld = true;
+      aq.pumpTest.consistencyNote =
+        `MODEL INCONSISTENT — NUMERIC OUTPUT WITHHELD. The desktop transmissivity produced a physically impossible drawdown (~${Math.round(sWell).toLocaleString()} m against a ${Math.round(boreDepth)} m hole), so the Theis/cone figures are not printed: they are solver artifacts of an under-constrained T, not aquifer predictions. The drawdown/yield relationship at this site can only come from a field pump test (24 h constant-rate + ≥20 h recovery).`;
+      th2.drawdownAtWell = null; th2.drawdownAt100m = null; th2.drawdownAt500m = null;
+      if (aq.pumpTest.cooperJacob) {
+        aq.pumpTest.cooperJacob.slopePerLogCycle = null;
+        if (Array.isArray(aq.pumpTest.cooperJacob.drawdownVsTime)) aq.pumpTest.cooperJacob.drawdownVsTime = [];
+      }
+      if (aq.coneOfDepression) {
+        aq.coneOfDepression.maxDrawdownM = null;
+        if (Array.isArray(aq.coneOfDepression.drawdownProfile)) aq.coneOfDepression.drawdownProfile = [];
+      }
+    }
   }
 
   // ═══ EXTERNAL AUDIT #2 (2026-07-16, 45/100): the governing stamp missed

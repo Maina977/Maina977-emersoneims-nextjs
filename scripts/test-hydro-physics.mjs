@@ -794,6 +794,24 @@ console.log('\nT. Final consensus vs governing value (sanitizeOutputs + reportAu
   const auditBad = ra.auditReport(rBad);
   const c20b = auditBad.checks.find((c) => c.id === 20);
   check('Check 20 BLOCKS a surviving Driller-Brief fork + 40,247 m drawdown', c20b.severity === 'FAIL', c20b.details.slice(0, 100));
+
+  // ── LIVE BLOCK 2026-07-16 22:37: the pipeline itself produced a 40,247 m
+  //    drawdown and Check 20 blocked the export, leaving the customer unable
+  //    to print. Correct chain: sanitize WITHHOLDS the impossible numbers
+  //    (nulls + MODEL INCONSISTENT note) → Check 20 passes → report printable.
+  const rLive = JSON.parse(JSON.stringify(r));
+  rLive.aquiferSimulation = {
+    pumpTest: { theis: { drawdownAtWell: 40247, drawdownAt100m: 8200, drawdownAt500m: 900, transmissivity: 0.001 }, cooperJacob: { slopePerLogCycle: 5000, drawdownVsTime: [{ drawdown_m: 40000 }] } },
+    coneOfDepression: { pumpingRateM3day: 9.84, maxDrawdownM: 40247, drawdownProfile: [{ drawdownM: 40247 }] },
+  };
+  so.sanitizeAnalysisResult(rLive);
+  check('impossible drawdown numbers are WITHHELD (nulled), never printed',
+    rLive.aquiferSimulation.pumpTest.numbersWithheld === true && rLive.aquiferSimulation.pumpTest.theis.drawdownAtWell === null && rLive.aquiferSimulation.coneOfDepression.maxDrawdownM === null);
+  check('withheld panel carries the MODEL INCONSISTENT explanation',
+    /NUMERIC OUTPUT WITHHELD/.test(rLive.aquiferSimulation.pumpTest.consistencyNote ?? ''));
+  const auditLive = ra.auditReport(rLive);
+  const c20L = auditLive.checks.find((c) => c.id === 20);
+  check('after suppression Check 20 PASSES — the report is printable again', c20L.severity === 'PASS', c20L.details.slice(0, 90));
 }
 
 rmSync(OUT, { recursive: true, force: true });

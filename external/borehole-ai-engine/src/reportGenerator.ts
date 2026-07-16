@@ -3542,15 +3542,20 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       y += _pgH + 4;
     }
     if (pt?.theis) {
-      const _ddCell = _pg && !_pg.sustainableAtRequestedRate
+      const _ddCell = (pt as any)?.numbersWithheld
+        ? 'WITHHELD — physically impossible at the desktop T; see MODEL INCONSISTENT note above. Field pump test required.'
+        : _pg && !_pg.sustainableAtRequestedRate
         ? `Drawdown at requested rate exceeds usable drawdown (${_pg.availableDrawdown_m}m of ${_pg.saturatedThickness_m}m saturated) — UNSUSTAINABLE; max sustainable ~${fmt(_pg.maxSustainableRate_m3day / 24, 2)} m³/hr`
         : `Est. drawdown: ${fmt(pt.theis.drawdownAtWell, 2)}m ±40%`;
+      const _cjCell = (pt as any)?.numbersWithheld
+        ? 'WITHHELD — see MODEL INCONSISTENT note'
+        : `Est. slope: ${fmt(pt.cooperJacob?.slopePerLogCycle, 3)}m/log-cycle`;
       autoTable(doc, {
         startY: y,
         head: [['Pump Test Method', 'Transmissivity (m²/d)', 'Storativity', 'Key Result']],
         body: [
           ['Theis (est.)', `${fmt(pt.theis.transmissivity, 2)} ±${fmt(pt.theis.transmissivity * 0.4, 1)}`, pt.theis.storativity?.toExponential(2) || '', _ddCell],
-          ['Cooper-Jacob (est.)', `${fmt(pt.cooperJacob?.transmissivity, 2)} ±${fmt((pt.cooperJacob?.transmissivity || 0) * 0.4, 1)}`, pt.cooperJacob?.storativity?.toExponential(2) || '', `Est. slope: ${fmt(pt.cooperJacob?.slopePerLogCycle, 3)}m/log-cycle`],
+          ['Cooper-Jacob (est.)', `${fmt(pt.cooperJacob?.transmissivity, 2)} ±${fmt((pt.cooperJacob?.transmissivity || 0) * 0.4, 1)}`, pt.cooperJacob?.storativity?.toExponential(2) || '', _cjCell],
           ['K (pedotransfer)', '', '', `K = ${fmt(pt.hvorslev?.hydraulicConductivity, 4)} m/day (Saxton-Rawls, not slug test)`],
           ['Specific Capacity (est.)', '', '', `${fmt(pt.specificCapacity?.value, 2)} m³/day/m (${pt.specificCapacity?.classification || ''}) ±50%`],
         ],
