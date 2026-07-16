@@ -1208,7 +1208,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 110);
   doc.text('SCOPE: This report is a filter, not a final decision-maker. Its real power is saving money before mistakes happen -- not replacing the final validation step.', margin, y); y += 3.5;
   doc.text('Multi-source AI ensemble (11+ sources). Screens out siting-stage errors before fieldwork; its measured failure-reduction rate is published in the public validation ledger as drilled outcomes accumulate.', margin, y); y += 3.5;
-  doc.text('Upgrade path to bankable grade: add ERT + pump test + lab to reach \u226590% confidence for institutional finance (IDA / AfDB / World Bank).', margin, y); y += 6;
+  doc.text('Upgrade path: completing the listed field investigations (ERT, pump test, lab) may support progression to a field-validated feasibility assessment. Financing eligibility remains subject to the requirements and due diligence of the relevant institution.', margin, y, { maxWidth: pageW - margin * 2 }); y += 6;
 
   // Audit fix #1,2,6,10: Field-data gates -- prominent warnings for missing field data
   {
@@ -2149,7 +2149,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(_bkBorder[0], _bkBorder[1], _bkBorder[2]);
     doc.text(_bankable ? '\u2714 BANKABLE GRADE ACHIEVED -- All upgrade path items complete. Eligible for institutional finance submission.' : '\u26a0 PRE-FEASIBILITY REPORT -- Upgrade path to bankable: ERT survey + 24-hr pump test + ISO lab analysis', margin + 6, y + 9);
     doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(80,80,80);
-    doc.text(_bankable ? 'Upgrade path complete. Eligible for IDA/AfDB/World Bank institutional finance submission.' : 'This report filters out poor sites before fieldwork costs are incurred. It does not replace the final validation step -- it reduces the risk of reaching that step on a bad site.', margin + 6, y + 17);
+    doc.text(_bankable ? 'Upgrade path complete. May support a financing submission — eligibility remains subject to the institution\'s own requirements and due diligence.' : 'This report filters out poor sites before fieldwork costs are incurred. It does not replace the final validation step -- it reduces the risk of reaching that step on a bad site.', margin + 6, y + 17);
     y += 28;
   } catch (_invErr) { console.warn('[PDF] Investor page error:', _invErr); }
   // -- CHARTS --
@@ -2816,7 +2816,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setTextColor(100, 100, 140);
   doc.text('Values derived from ISRIC SoilGrids v2.0 pedotransfer models + regional hydrogeochemical inference. Laboratory analysis recommended for commissioning.', margin, y); y += 4;
   doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(220, 38, 38);
-  doc.text('NOTE: The Water Quality Score is a proprietary health-impact index based on WHO 2011 guideline exceedance penalties. It is NOT a WHO-endorsed standard.', margin, y); y += 3;
+  doc.text('NOTE: The Water Quality Score is a proprietary health-impact index based on WHO Guidelines for Drinking-water Quality (4th ed. incl. addenda; 2026 consolidated) exceedance penalties. It is NOT a WHO-endorsed standard.', margin, y); y += 3;
   doc.text('For bankable/regulatory reports, use binary potability assessment (Meets/Exceeds WHO limits per parameter) confirmed by ISO 17025 accredited laboratory.', margin, y); y += 3;
   // Show regional hydrogeological province if detected
   const _rwqProv = (result.waterQuality as any)?.regionalProvince;
@@ -2834,7 +2834,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   const _wqStatus = (ok: boolean, aesthetic: boolean) => (ok ? 'PASS' : aesthetic ? 'AESTHETIC CONCERN' : 'HEALTH EXCEEDANCE');
   autoTable(doc, {
     startY: y,
-    head: [['Parameter', 'Value', 'WHO 2011 reference', 'Basis', 'Status', 'Data Source']],
+    head: [['Parameter', 'Value', 'WHO GDWQ reference', 'Basis', 'Status', 'Data Source']],
     body: [
       ['pH', fmt(result.waterQuality?.pH), '6.5 - 8.5', 'Operational', _wqStatus((result.waterQuality?.pH ?? 7) >= 6.5 && (result.waterQuality?.pH ?? 7) <= 8.5, true), 'Pedotransfer Model'],
       ['TDS (mg/L)', fmt(result.waterQuality?.tds, 0), '< 1000', 'Palatability', _wqStatus((result.waterQuality?.tds ?? 0) < 1000, true), 'SoilGrids + Geology'],
@@ -3664,7 +3664,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       if (nw.averageYield != null) { doc.text(`- Yield validation: Nearby yields (${sf(nw.averageYield, 1)} m³/h avg) provide ground-truth bounds for expected productivity.`, margin + 2, y); y += 3.5; }
       if (lithologies.length > 0) { doc.text(`- Lithology confirmation: Observed lithologies (${lithologies.join(', ')}) validate geological model assumptions.`, margin + 2, y); y += 3.5; }
       const productiveCount = successCount + moderateCount;
-      if (nw.successRate != null) { doc.text(`- Success rate: ${Math.round(nw.successRate * 100)}% of nearby water points productive (${productiveCount} productive, ${failCount} dry) — directly informs probability estimate.`, margin + 2, y); y += 3.5; }
+      if (nw.successRate != null) { doc.text(`- Functional share: ${Math.round(nw.successRate * 100)}% of surveyed water points functional (${productiveCount} functional, ${failCount} dry). This is groundwater-OCCURRENCE evidence (springs included) — it is NOT a borehole drilling success rate and does not by itself set the probability.`, margin + 2, y, { maxWidth: pw - 4 }); y += 7; }
       if (failCount > 0) { doc.text(`- Failed wells: ${failCount} failed well(s) inform risk register and siting avoidance zones.`, margin + 2, y); y += 3.5; }
       y += 4;
     } else {
@@ -4173,10 +4173,23 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('17. Multi-Geophysics Fusion', margin, y); y += 8;
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
     const gfSource = gf.dataSource || '';
-    const gfIsModelled = gfSource.toUpperCase().includes('MODELLED') || gfSource.toUpperCase().includes('NO FIELD');
-    doc.text(gfIsModelled
-      ? 'MODELLED geophysics fusion ? no field geophysical survey data provided. Values are model estimates, not measurements. Field ERT survey recommended for verification.'
-      : 'Integrated ERT + TDEM + Seismic Refraction + GPR + NMR geophysical data fusion.', margin, y, { maxWidth: pw }); y += gfIsModelled ? 10 : 7;
+    const gfIsModelled = gfSource.toUpperCase().includes('MODELLED') || gfSource.toUpperCase().includes('NO FIELD') || !ertIsFieldData(result);
+    // External audit #2: synthetic sections must not resemble processed field
+    // geophysics — a full-width watermark banner, not a one-line italic note.
+    if (gfIsModelled) {
+      doc.setFillColor(254, 226, 226);
+      doc.roundedRect(margin, y, pw, 14, 2, 2, 'F');
+      doc.setDrawColor(185, 28, 28); doc.setLineWidth(0.7);
+      doc.roundedRect(margin, y, pw, 14, 2, 2, 'S');
+      doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
+      doc.text('HYPOTHETICAL CONCEPTUAL MODEL — NOT GEOPHYSICAL FIELD DATA', margin + 4, y + 6);
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 40, 40);
+      doc.text('No electrodes, currents or field measurements exist for this section. It is a geological hypothesis for planning the REAL survey — never drill from it.', margin + 4, y + 11);
+      y += 18;
+    } else {
+      doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
+      doc.text('Integrated ERT + TDEM + Seismic Refraction + GPR + NMR geophysical data fusion.', margin, y, { maxWidth: pw }); y += 7;
+    }
 
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
@@ -8076,7 +8089,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(56, 189, 248);
     doc.text('PUMP TEST PROTOCOL (Planned)', margin, y); y += 4;
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-    doc.text('Upgrade path to bankable grade: these field steps elevate this pre-feasibility report to \u226590% confidence for institutional finance (IDA / AfDB / World Bank).', margin, y); y += 8;
+    doc.text('Upgrade path: these field steps may support progression to a field-validated feasibility assessment. Financing eligibility remains subject to the relevant institution\'s requirements and due diligence.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
 
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
@@ -8219,7 +8232,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
     const missingItems = result.bankableChecklist.filter(c => c.requiredForBankable && c.status !== 'PRESENT');
     if (missingItems.length > 0) {
-      doc.text('Upgrade path to bankable grade -- complete these steps to reach \u226590% confidence for institutional finance:', margin, y); y += 4;
+      doc.text('Upgrade path -- complete these field steps to progress toward a field-validated feasibility assessment:', margin, y); y += 4;
       missingItems.forEach(item => {
         checkSpace(6);
         doc.text(`  - ${item.item}: ${item.detail}`, margin + 2, y); y += 3.5;
@@ -8237,9 +8250,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.text(`\u26a0 PRE-FEASIBILITY STATUS (${_conf2}% confidence) -- NOT YET BANKABLE`, margin + 4, y + 5);
         doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 60, 0);
         doc.text('This report meets PRE-FEASIBILITY standards. Field validation (ERT survey, 24-hr pump test, ISO-certified lab analysis) is required', margin + 4, y + 11);
-        doc.text('before bankable certification or financial commitment (IDA / AfDB / World Bank eligibility).', margin + 4, y + 15);
+        doc.text('before certification or financial commitment. Financing eligibility is decided by the institution, not this score.', margin + 4, y + 15);
       } else {
-        doc.text('All upgrade path items complete. This pre-feasibility report has been elevated to bankable grade and is eligible for IDA/AfDB/World Bank institutional finance submission.', margin, y);
+        doc.text('All upgrade path items complete. This report may support a financing submission — eligibility remains subject to the institution\'s own requirements and due diligence.', margin, y);
       }
     }
     y += 8;
@@ -10104,7 +10117,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.text('B.5 Water Quality Score Methodology', margin, y); y += 4;
   doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
   const wqMethodText = [
-    'The Water Quality Score (0-100) is a PROPRIETARY health-impact index computed from WHO 2011 Drinking Water Quality guideline exceedance penalties.',
+    'The Water Quality Score (0-100) is a PROPRIETARY health-impact index computed from WHO Guidelines for Drinking-water Quality (4th ed. incl. addenda) exceedance penalties.',
     'It is NOT a WHO-endorsed metric and is NOT suitable as a standalone bankable indicator. For regulatory or financing purposes, use binary',
     'potability assessment: each parameter individually compared against WHO guideline values, confirmed by ISO 17025 accredited laboratory analysis.',
     'Without laboratory verification, all water quality values in this report are MODELLED estimates derived from soil chemistry and geological context.',
@@ -10223,7 +10236,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       'Theis C.V. (1935). Trans. AGU 16 — non-equilibrium well hydraulics.  |  Cooper H.H. & Jacob C.E. (1946). Trans. AGU 27.',
       'Budyko M.I. (1974). Climate and Life — water-balance recharge banding (Fu parameterisation).',
       'WHO (2011, 4th ed.). Guidelines for Drinking-water Quality.  |  Saaty T.L. (1980). The Analytic Hierarchy Process.',
-      'RWSN/UNICEF guidance on professional borehole siting & supervision.  |  Kenya Water Resources Regulations (2021).',
+      'RWSN/UNICEF guidance on professional borehole siting & supervision.  |  Kenya Water (Resources) Regulations, 2025 (LN 58/2025) — verify current provisions with WRA.',
     ];
     doc.setFontSize(6.5); doc.setTextColor(90, 90, 100);
     refs.forEach((r, i) => { doc.text(`${i + 1}. ${r}`, margin, y, { maxWidth: pw }); y += doc.splitTextToSize(r, pw).length * 2.9 + 1.2; });

@@ -160,6 +160,15 @@ export function auditReport(result: AnalysisResult): AuditReport {
   // ═══════════════════════════════════════════════════════════════
   checks.push(auditReconciliationMatrix(result));
 
+  // ═══════════════════════════════════════════════════════════════
+  // CHECK 20: PHYSICS PLAUSIBILITY + ANNEX YIELD-FORK GATE (external
+  // audit #2, 2026-07-16, credibility 45/100): the Driller Brief said
+  // 3.8 m³/hr while the executive said 0.4, and a 40,247 m drawdown was
+  // PRINTED instead of blocked. Any physically impossible hydraulic
+  // output or client-facing yield fork now FAILS the export.
+  // ═══════════════════════════════════════════════════════════════
+  checks.push(auditPhysicsAndAnnexForks(result));
+
   // ── SCORING ──
   const failedChecks = checks.filter(c => c.severity === 'FAIL').length;
   const warningChecks = checks.filter(c => c.severity === 'WARN').length;
@@ -1104,5 +1113,87 @@ function auditReconciliationMatrix(result: AnalysisResult): AuditCheck {
     ...base,
     severity: 'PASS',
     details: `Reconciliation matrix passed (${passes.length} invariant${passes.length === 1 ? '' : 's'} checked: ${passes.join(', ') || 'none applicable on this dataset'}).`,
+  };
+}
+
+/**
+ * CHECK 20 — PHYSICS PLAUSIBILITY + ANNEX YIELD-FORK GATE (external audit #2,
+ * 2026-07-16). Two failure classes this gate exists for:
+ *   (a) physically impossible hydraulics being PRINTED (40,247 m drawdown on a
+ *       40 m hole; safe yields differing 1000× within one section), and
+ *   (b) annex/client-facing objects still carrying a pre-reconciliation yield
+ *       (Driller Brief said 3.8 m³/hr while the executive said 0.4).
+ * Any physically impossible figure or >1.6× client-facing yield fork FAILS the
+ * export — the report is blocked, never shipped with the contradiction.
+ */
+function auditPhysicsAndAnnexForks(result: AnalysisResult): AuditCheck {
+  const base = {
+    id: 20,
+    name: 'Physics Plausibility & Annex Yield Forks',
+    category: 'INTEGRITY',
+    description: 'No physically impossible hydraulic output may be printed; every client-facing yield/depth must track the governing value within tolerance.',
+  };
+  const r = result as any;
+  const violations: string[] = [];
+  const passes: string[] = [];
+  const gY = Number(r.estimatedYield) || 0;
+  const gD = Number(r.recommendedDepth) || 0;
+  const forked = (v: any) => Number.isFinite(Number(v)) && gY > 0 && (Number(v) / gY > 1.6 || gY / Number(v) > 1.6);
+
+  // (a) PHYSICS: drawdown cannot exceed borehole depth unless flagged inconsistent
+  const th = r.aquiferSimulation?.pumpTest?.theis;
+  if (th && gD > 0) {
+    const sWell = Number(th.drawdownAtWell) || 0;
+    if (sWell > gD * 1.05 && r.aquiferSimulation?.pumpTest?.physicsConsistent !== false) {
+      violations.push(`Theis drawdown ${Math.round(sWell)} m exceeds the ${Math.round(gD)} m borehole without a MODEL INCONSISTENT flag`);
+    } else passes.push('drawdown-vs-depth');
+    if (sWell > 10000) violations.push(`Physically impossible drawdown printed (${Math.round(sWell)} m)`);
+  }
+  const cone = r.aquiferSimulation?.coneOfDepression;
+  if (cone && Number(cone.maxDrawdownM) > 10000) {
+    violations.push(`Physically impossible cone-of-depression drawdown (${Math.round(Number(cone.maxDrawdownM))} m)`);
+  }
+  // Groundwater budget internal coherence: safe yield vs governing rate
+  const gb = r.aquiferSimulation?.groundwaterBudget;
+  if (gb && gY > 0) {
+    const gQday = gY * 24;
+    if (Number.isFinite(gb.safeYield_m3day) && (gb.safeYield_m3day > gQday * 3 || (gb.safeYield_m3day > 0 && gQday / gb.safeYield_m3day > 100))) {
+      violations.push(`Groundwater-budget safe yield ${gb.safeYield_m3day} m³/day irreconcilable with governing rate ${gQday.toFixed(1)} m³/day`);
+    } else passes.push('budget-vs-governing');
+  }
+
+  // (b) ANNEX FORKS: client-facing objects must track the governing yield
+  if (gY > 0) {
+    if (r.ensembleResult && forked(r.ensembleResult.yield_m3hr ?? r.ensembleResult.fusedYield_m3hr)) {
+      violations.push(`Bayesian-ensemble summary yield ${r.ensembleResult.yield_m3hr ?? r.ensembleResult.fusedYield_m3hr} diverges >1.6× from governing ${gY}`);
+    } else passes.push('ensemble-tracks-governing');
+    const gf = r.geophysicsFusion;
+    if (gf && typeof gf.expectedYield_m3hr === 'number' && forked(gf.expectedYield_m3hr)) {
+      violations.push(`Geophysics-fusion yield ${gf.expectedYield_m3hr} diverges >1.6× from governing ${gY}`);
+    } else if (gf) passes.push('fusion-tracks-governing');
+    // Prose briefs: any "Expected yield: X m³/hr" must be within tolerance
+    const briefs = [r.hybridGeophysics?.drillerBrief, r.hybridGeophysics?.clientBrief];
+    for (const b of briefs) {
+      if (typeof b === 'string') {
+        const m = b.match(/Expected yield:\s*([\d.]+)\s*m³?\/?h/i);
+        if (m && forked(parseFloat(m[1]))) {
+          violations.push(`Driller/Client Brief states "Expected yield: ${m[1]} m³/hr" vs governing ${gY} m³/hr — client-facing fork`);
+        } else if (m) passes.push('brief-tracks-governing');
+      }
+    }
+  }
+
+  if (violations.length > 0) {
+    return {
+      ...base,
+      severity: 'FAIL',
+      details: `${violations.length} physics/fork failure${violations.length > 1 ? 's' : ''} — report blocked: ${violations.join(' | ')}`,
+      fix: 'propagateGoverningValues must stamp every client-facing object (incl. prose briefs), and physically impossible hydraulics must carry the MODEL INCONSISTENT flag or be suppressed — never printed as results.',
+    };
+  }
+  return {
+    ...base,
+    severity: 'PASS',
+    details: `Physics plausibility and annex-fork gate passed (${passes.join(', ') || 'no applicable objects'}).`,
   };
 }

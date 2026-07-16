@@ -590,6 +590,70 @@ export function propagateGoverningValues(result: any): void {
       aq.pumpTest.physicsConsistent = true;
     }
   }
+
+  // ═══ EXTERNAL AUDIT #2 (2026-07-16, 45/100): the governing stamp missed
+  //     several annex objects, so the Driller Brief said 3.8 m³/hr while the
+  //     executive said 0.4 — an 8-12× client-facing fork. Every remaining
+  //     yield/depth-bearing object is stamped here; prose briefs are rewritten
+  //     because their numbers were baked in before reconciliation. ═══
+
+  // Bayesian ensemble summary (annex section) — track governing.
+  if (result.ensembleResult) {
+    const ens = result.ensembleResult;
+    if (ens.yield_m3hr != null) ens.yield_m3hr = r2(gY);
+    if (ens.yield_m3h != null) ens.yield_m3h = r2(gY);
+    if (ens.fusedYield_m3hr != null) ens.fusedYield_m3hr = r2(gY);
+    if (Number.isFinite(gD) && ens.depth_m != null) ens.depth_m = Math.round(gD);
+    if (Number.isFinite(gD) && ens.fusedDepth_m != null) ens.fusedDepth_m = Math.round(gD);
+    ens._governingNote = 'Central values stamped from the governing reconciled result; source spread is retained in the per-source table.';
+  }
+
+  // Hybrid geophysics (Driller Brief / Client Brief) — prose carried stale
+  // pre-reconciliation numbers. Rewrite the yield/depth phrases in place.
+  if (result.hybridGeophysics) {
+    const hg = result.hybridGeophysics;
+    const gyTxt = `${r2(gY)}`;
+    const gdTxt = Number.isFinite(gD) ? `${Math.round(gD)}` : null;
+    const stampProse = (s: any) => {
+      if (typeof s !== 'string') return s;
+      let out = s.replace(/Expected yield:\s*[\d.]+\s*m³?\/?h(r|our)?/gi, `Expected yield: ${gyTxt} m³/hr (governing reconciled value)`);
+      if (gdTxt) out = out.replace(/Target depth:\s*[\d.]+\s*m/gi, `Target depth: ${gdTxt}m (governing)`);
+      return out;
+    };
+    hg.drillerBrief = stampProse(hg.drillerBrief);
+    hg.clientBrief = stampProse(hg.clientBrief);
+    if (Array.isArray(hg.topDrillPoints)) {
+      for (const p of hg.topDrillPoints) {
+        if (p && p.expectedYield_m3hr != null) p.expectedYield_m3hr = r2(gY);
+        if (p && p.predictedYield_m3hr != null) p.predictedYield_m3hr = r2(gY);
+      }
+    }
+  }
+
+  // Geophysics fusion & multi-geophysics — depth/yield central values.
+  if (result.geophysicsFusion) {
+    const gf = result.geophysicsFusion;
+    if (typeof gf.expectedYield_m3hr === 'number') gf.expectedYield_m3hr = r2(gY);
+    if (Array.isArray(gf.expectedYield_m3hr) && gf.expectedYield_m3hr.length === 2) {
+      gf.expectedYield_m3hr = [r2(gY * 0.65), r2(gY * 1.35)];
+    }
+    if (Number.isFinite(gD) && gf.recommendedDrillingDepth_m != null) gf.recommendedDrillingDepth_m = Math.round(gD);
+  }
+
+  // Groundwater-budget style "safe yield / max sustainable abstraction" figures
+  // must never exceed the governing sustainable rate by an order of magnitude —
+  // they are recharge-side estimates, capped by the aquifer-side governing value.
+  if (aq?.groundwaterBudget) {
+    const gb = aq.groundwaterBudget;
+    const gQday = r2(gY * 24);
+    if (Number.isFinite(gb.safeYield_m3day) && gb.safeYield_m3day > gQday * 2) {
+      gb.safeYield_note = `Recharge-side estimate capped to the governing aquifer-limited rate (${gQday} m³/day) — the aquifer, not recharge, is the binding constraint at this site.`;
+      gb.safeYield_m3day = gQday;
+    }
+    if (Number.isFinite(gb.maxSustainableAbstraction_m3hr) && gb.maxSustainableAbstraction_m3hr > gY * 2) {
+      gb.maxSustainableAbstraction_m3hr = r2(gY);
+    }
+  }
 }
 
 /**

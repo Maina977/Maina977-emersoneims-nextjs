@@ -768,6 +768,32 @@ console.log('\nT. Final consensus vs governing value (sanitizeOutputs + reportAu
   const c18 = audit.checks.find((c) => c.id === 18), c19 = audit.checks.find((c) => c.id === 19);
   check('Check 18 (cross-engine) passes on the reconciled result', c18.severity === 'PASS', c18.details.slice(0, 80));
   check('Check 19 (reconciliation matrix) passes — report no longer blocked', c19.severity === 'PASS', c19.details.slice(0, 80));
+
+  // ── External audit #2 (45/100): the Driller Brief said 3.8 m³/hr while the
+  //    executive said 0.4. Prose briefs + ensemble summaries must be stamped,
+  //    and Check 20 must BLOCK any surviving fork or impossible drawdown.
+  const r2x = {
+    ...JSON.parse(JSON.stringify(r)),
+    hybridGeophysics: { drillerBrief: 'Target depth: 49m. Expected yield: 3.8 m³/hr. Conduct step-drawdown test.', clientBrief: 'Expected yield: 3.8 m³/hr at this site.' },
+    ensembleResult: { yield_m3hr: 3.8, depth_m: 49, sourcesUsed: 8 },
+    geophysicsFusion: { expectedYield_m3hr: 3.2, recommendedDrillingDepth_m: 52, dataSource: 'MODELLED (no field geophysics)' },
+  };
+  so.sanitizeAnalysisResult(r2x);
+  check('Driller Brief prose re-stamped to the governing yield (no 3.8-vs-0.4 fork)',
+    /Expected yield: 0\.41 m³\/hr/.test(r2x.hybridGeophysics.drillerBrief), r2x.hybridGeophysics.drillerBrief.slice(0, 90));
+  check('ensemble & fusion summaries track the governing yield',
+    Math.abs(r2x.ensembleResult.yield_m3hr - 0.41) < 0.01 && Math.abs(r2x.geophysicsFusion.expectedYield_m3hr - 0.41) < 0.01);
+  const audit2 = ra.auditReport(r2x);
+  const c20 = audit2.checks.find((c) => c.id === 20);
+  check('Check 20 passes after stamping', c20.severity === 'PASS', c20.details.slice(0, 80));
+
+  // A surviving fork or impossible drawdown must BLOCK the export.
+  const rBad = JSON.parse(JSON.stringify(r2x));
+  rBad.hybridGeophysics.drillerBrief = 'Expected yield: 3.8 m³/hr.';
+  rBad.aquiferSimulation = { pumpTest: { theis: { drawdownAtWell: 40247 } }, coneOfDepression: { maxDrawdownM: 40247, pumpingRateM3day: 91 } };
+  const auditBad = ra.auditReport(rBad);
+  const c20b = auditBad.checks.find((c) => c.id === 20);
+  check('Check 20 BLOCKS a surviving Driller-Brief fork + 40,247 m drawdown', c20b.severity === 'FAIL', c20b.details.slice(0, 100));
 }
 
 rmSync(OUT, { recursive: true, force: true });
