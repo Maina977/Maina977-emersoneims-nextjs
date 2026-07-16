@@ -1808,6 +1808,78 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('The driller shall not pass a hold point without written approval from the supervising hydrogeologist or authorised water-sector professional.', margin, y, { maxWidth: pw }); y += 8;
   });
 
+  // ── GOVERNING ENGINEERING REGISTER + DRILLING INSTRUCTION PACKAGE ──
+  // Advisor directive 2026-07-16: ONE approved value per parameter, visibly
+  // stated; the Drilling Instruction Package unlocks ONLY when the field and
+  // regulatory gates are satisfied — otherwise it renders locked.
+  safeSection('Governing Register & Drilling Package', () => {
+    const ddtG = (result as any).desktopDrillTarget;
+    const rmG = (result as any).rechargeModel;
+    const wdG = (result as any).wellDesign;
+    checkSpace(90);
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 50, 100);
+    doc.text('GOVERNING ENGINEERING REGISTER — one approved value per parameter', margin, y); y += 5;
+    doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 90, 100);
+    doc.text('Every section, chart, table and brief in this report reads from this register. Contradictions beyond tolerance BLOCK report generation (automated Checks 18-20).', margin, y, { maxWidth: pw }); y += 6;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Parameter', 'Governing value', 'Evidence class']],
+      body: [
+        ['Success probability', `${pct(result.probability)}${result.uncertainty ? ` (range ${(result.uncertainty.probabilityRange[0] * 100).toFixed(0)}-${(result.uncertainty.probabilityRange[1] * 100).toFixed(0)}%)` : ''}`, 'Modelled (reconciled ensemble)'],
+        ['Provisional investigation depth', `${fmt(result.recommendedDepth, 0)} m${result.uncertainty ? ` (range ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]} m)` : ''}`, 'Modelled — revise after ERT'],
+        ['Expected yield (planning)', `${fmt(result.estimatedYield, 1)} m³/hr${result.uncertainty ? ` (range ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ''}`, 'Modelled — pump test decides'],
+        ['Water table (modelled)', (result as any).waterTableDepth != null ? `~${fmt((result as any).waterTableDepth, 0)} m` : 'not modelled', 'Modelled — confirm by drilling'],
+        ['Transmissivity (working)', wdG?.drawdown?.transmissivity_m2day != null ? `${wdG.drawdown.transmissivity_m2day} m²/day` : 'unconstrained (field test required)', 'Modelled — measured by pump test'],
+        ['Recharge (governing)', rmG?.avgAnnualRecharge_mm != null ? `${fmt(rmG.avgAnnualRecharge_mm, 0)} mm/yr (${((rmG.rechargeFraction ?? 0) * 100).toFixed(0)}% of rainfall)` : 'not modelled', 'Modelled (multi-year water balance)'],
+        ['Overall risk', `${pct(result.risk?.overallRisk)}`, 'Modelled'],
+        ['Desktop readiness (DDTR)', ddtG ? `${ddtG.ddtr}/100 — ${ddtG.ddtrClass}` : 'n/a', 'Scored (capped at 95)'],
+      ],
+      headStyles: { fillColor: [14, 50, 100], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      theme: 'grid',
+    });
+    y = lastY(6);
+
+    // ── DRILLING INSTRUCTION PACKAGE — gated ──
+    const f = (result as any)._auditFlags ?? {};
+    const packageUnlocked = ddtG?.mag === 'RELEASED FOR DRILLING';
+    checkSpace(60);
+    if (packageUnlocked) {
+      doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(22, 101, 52);
+      doc.text('DRILLING INSTRUCTION PACKAGE — RELEASED', margin, y); y += 6;
+      autoTable(doc, {
+        startY: y, margin: { left: margin, right: margin },
+        head: [['Item', 'Instruction']],
+        body: [
+          ['Pegged position', `${getCoords(result)} (survey-grade peg verified on site)`],
+          ['Primary target', `${fmt(result.recommendedDepth, 0)} m in the ERT-confirmed zone; maximum investigation depth ${Math.round((result.recommendedDepth ?? 40) * 1.75)} m`],
+          ['Expected sequence', (result as any).subsurfaceModel?.lithologicalColumn?.layers?.map((l: any) => l.lithology).slice(0, 4).join(' → ') || 'per interpreted ERT section'],
+          ['Logging', 'Metre-by-metre lithological log; record EVERY water strike depth + blow yield; penetration-rate log'],
+          ['Stop / deepen / abandon', 'Hydrogeologist decides at target depth against the stopping criteria; no deepening beyond maximum investigation depth without written approval'],
+          ['Casing & seal', 'Surface casing + sanitary seal per hold points HP-02/HP-08; FINAL screen interval designed from the drill log — not from this desktop model'],
+          ['Testing', '24 h constant-rate + ≥20 h recovery; monitor the registered springs/wells during the test'],
+        ],
+        headStyles: { fillColor: [22, 101, 52], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+        bodyStyles: { fontSize: 7.5 },
+        columnStyles: { 0: { cellWidth: 42, fontStyle: 'bold' } },
+        theme: 'grid',
+      });
+      y = lastY(6);
+    } else {
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(margin, y, pw, 34, 3, 3, 'F');
+      doc.setDrawColor(100, 116, 139); doc.setLineWidth(0.7);
+      doc.roundedRect(margin, y, pw, 34, 3, 3, 'S');
+      doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(71, 85, 105);
+      doc.text('DRILLING INSTRUCTION PACKAGE — LOCKED', margin + 5, y + 8);
+      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 27, 27);
+      doc.text('FIELD SURVEY TARGET — DRILLING NOT YET AUTHORISED', margin + 5, y + 14);
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 90, 100);
+      doc.text(doc.splitTextToSize('This package (peg coordinates, drill targets, stopping criteria, casing/seal requirements, logging procedure) is generated ONLY when the mandatory gates are verified: survey-grade peg • licensed hydrogeologist reconnaissance & sign-off • real ERT/VES raw data + QA • verified local completion records • sanitary inspection • WRA authorisation. Upload the field evidence in AquaScan Pro to unlock — the desktop model never pre-fixes the final drill point or screen interval.', pw - 10), margin + 5, y + 19);
+      y += 40;
+    }
+  });
+
   // -- EXECUTIVE SUMMARY --
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -2474,6 +2546,24 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y += mapH + 4;
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
     doc.text('Source: NASA GIBS MODIS Terra NDVI 8-day rolling composite (250 m map layer); numeric NDVI analysis uses MOD13Q1 (250 m, 16-day) / MOD13A2 (1 km, 16-day) as labelled per section. Dense vegetation corridors indicate shallow groundwater and active recharge zones.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
+
+    // ── MAP D: EXISTING WATER POINTS & BOREHOLES (owner directive 2026-07-16:
+    //    the hydrocensus-style map a field hydrogeologist would carry) ──
+    try {
+      const { generateWaterPointsMap } = await import('./reportMapGenerator');
+      const wpMap = await generateWaterPointsMap(siteLat, siteLon, (result as any).nearbyWells?.nearbyWells ?? []);
+      if (wpMap) {
+        addPage();
+        doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(21, 90, 50);
+        doc.text('D. Existing Water Points & Boreholes Map (registry positions)', margin, y); y += 3;
+        doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+        doc.text('Every registry record around the site at its TRUE position: blue circles = springs (discharge points), green squares = wells/boreholes, red = dry/failed. Red crosshair = proposed site.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
+        try { doc.addImage(wpMap, 'PNG', margin, y, mapW, mapH); } catch { /* skip */ }
+        y += mapH + 4;
+        doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
+        doc.text('Positions from WPDx / OpenStreetMap / UNESCO IHP-WINS / WRA registries — the desktop equivalent of a field hydrocensus map. Verify names door-to-door during reconnaissance (see the 50 km roll in section 11b).', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
+      }
+    } catch (_wpErr) { console.warn('[PDF] water-points map skipped', _wpErr); }
   }
 
   // SATELLITE REMOTE SENSING ? 10-Method Non-Invasive Analysis

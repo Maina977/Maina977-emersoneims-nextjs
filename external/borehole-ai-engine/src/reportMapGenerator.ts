@@ -1353,3 +1353,70 @@ export async function generateReportMaps(
 
   return { waterMap, soilMap, vegetationMap, drillHereMap, waterTableMap };
 }
+
+/**
+ * EXISTING WATER POINTS & BOREHOLES MAP (owner directive 2026-07-16):
+ * plot every REAL registry record around the site on a topographic base —
+ * springs (blue), wells/boreholes (green), dry/failed (red) — so the customer
+ * sees the drilled evidence in the same area, like a field hydrocensus map.
+ * Positions come from official registries; nothing is invented.
+ */
+export async function generateWaterPointsMap(
+  lat: number, lon: number,
+  wells: { id?: string; lat?: number; lon?: number; outcome?: string }[],
+): Promise<string | null> {
+  try {
+    const pts = (wells || []).filter((w) => Number.isFinite(w?.lat) && Number.isFinite(w?.lon));
+    if (pts.length === 0) return null;
+    const zoom = 10, gridSize = 4, CANVAS_W = 1024, CANVAS_H = 700;
+    const topoGrid = await fetchTileGrid(lat, lon, zoom, topoTileUrl, gridSize);
+    if (topoGrid.tilesLoaded < gridSize) return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = CANVAS_W; canvas.height = CANVAS_H;
+    const ctx = canvas.getContext('2d')!;
+    const mapAreaY = 51, mapAreaH = CANVAS_H - 91;
+    const srcSize = gridSize * TILE_SIZE;
+    ctx.drawImage(topoGrid.canvas, 0, 0, srcSize, srcSize, 0, mapAreaY, CANVAS_W, mapAreaH);
+
+    const toXY = (la: number, lo: number) => {
+      const { px, py } = latLonToPixel(la, lo, zoom, topoGrid.originX, topoGrid.originY);
+      return { x: (px / srcSize) * CANVAS_W, y: mapAreaY + (py / srcSize) * mapAreaH };
+    };
+    let plotted = 0;
+    for (const w of pts) {
+      const { x, y } = toXY(w.lat!, w.lon!);
+      if (x < 4 || x > CANVAS_W - 4 || y < mapAreaY + 4 || y > CANVAS_H - 44) continue;
+      const isSpring = /sp?ring/i.test(String(w.id ?? ''));
+      const isDry = w.outcome === 'Fail';
+      ctx.beginPath();
+      if (isSpring) {
+        ctx.fillStyle = 'rgba(37, 99, 235, 0.85)';
+        ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.fillStyle = isDry ? 'rgba(220, 38, 38, 0.9)' : 'rgba(22, 163, 74, 0.9)';
+        ctx.fillRect(x - 5, y - 5, 10, 10);
+      }
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2;
+      if (isSpring) { ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.stroke(); }
+      else ctx.strokeRect(x - 5, y - 5, 10, 10);
+      plotted++;
+    }
+    const { x: sx, y: sy } = toXY(lat, lon);
+    drawSiteMarker(ctx, sx, sy);
+    drawMapFrame(ctx, CANVAS_W, CANVAS_H,
+      'EXISTING WATER POINTS & BOREHOLES — REGISTRY POSITIONS',
+      `${plotted} registry record(s) plotted at true positions (WPDx / OSM / IHP-WINS / WRA)  •  OpenTopoMap base`,
+      lat, lon,
+      [
+        { color: '#2563eb', label: 'Spring (discharge point)' },
+        { color: '#16a34a', label: 'Well / Borehole (functional)' },
+        { color: '#dc2626', label: 'Dry / failed' },
+        { color: '#ef4444', label: 'Proposed site' },
+      ],
+    );
+    return canvas.toDataURL('image/png', 0.92);
+  } catch (e) {
+    console.warn('[ReportMaps] water-points map failed', e);
+    return null;
+  }
+}
