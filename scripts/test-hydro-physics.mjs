@@ -650,6 +650,46 @@ console.log('\nS. Desktop drill-target readiness (DDTR / FRR / MAG)');
   check('field-complete FRR reaches 100', released.frr === 100);
   check('even a strong+field-complete site never exceeds DDTR 95', released.ddtr <= 95);
   check('DDTR classification bands map correctly', ddt.classifyDDTR(30) === 'DESKTOP TARGET REJECTED' && ddt.classifyDDTR(92) === 'HIGH-CONFIDENCE DESKTOP DRILL TARGET');
+
+  // ── Owner directive 2026-07-16: a COMPLETE, convergent desktop study must
+  //    legitimately reach 80+ (the remaining ~20% is the actual site survey),
+  //    while a data-poor site must stay far below — the score discriminates.
+  //    Mirrors the real Vihiga run: 188 registry points (147 springs, 100%
+  //    functional), full satellite stack, county drilled-borehole intelligence
+  //    (250 boreholes, 72% success, band 10-90 m) concordant with 40 m target.
+  const rich = JSON.parse(JSON.stringify(baseSite));
+  rich.locationConfidence = { grade: 'B' };
+  rich.recommendedDepth = 40;
+  rich.nearbyWells = {
+    sampleSize: 188, successRate: 1.0,
+    nearbyWells: [
+      ...Array.from({ length: 147 }, (_, i) => ({ id: `Water Spring ${i}`, outcome: 'Success', depth_m: 58, source: 'WPDx' })),
+      ...Array.from({ length: 3 }, (_, i) => ({ id: `Community Well ${i}`, outcome: 'Success', depth_m: 55, yield_m3h: 4, source: 'WPDx (regional est. from county database)' })),
+    ],
+  };
+  rich.boreholeRecords = { countyIntelligence: { county: 'Vihiga', estimatedBoreholes: 250, successRate: 0.72, avgDepth_m: 40, depthRange: [10, 90], avgYield_m3h: 4.0, yieldRange: [0.3, 12], primaryGeology: 'Precambrian basement' } };
+  rich.risk = { categories: { contamination: 10 }, contaminationRisk: { level: 0.1 } };
+  const richR = ddt.computeDesktopDrillTargetReadiness(rich, 0);
+  check('evidence-rich COMPLETE desktop study reaches DDTR >= 80 (desktop pre-feasibility earns its 80%+)',
+    richR.ddtr >= 80, `ddtr ${richR.ddtr}`);
+  check('...and is classed ADVANCED or HIGH-CONFIDENCE desktop target',
+    /ADVANCED|HIGH-CONFIDENCE/.test(richR.ddtrClass), richR.ddtrClass);
+  check('...but MAG still NOT released for drilling (the ~20% field share is explicit)',
+    richR.mag === 'CONDITIONALLY RELEASED' && richR.frr === 0);
+  check('regional-est outcomes earn NO drilled-analogue credit (no synthetic validation)',
+    !richR.categories.some(c => /analogue/i.test(c.category) && /\b3 drilled-outcome/i.test(c.basis)));
+  check('county drilled-borehole intelligence is credited and named in the basis',
+    richR.categories.some(c => /analogue/i.test(c.category) && /250 boreholes/.test(c.basis)));
+
+  const poor = {
+    gpsSource: 'none', latitude: 1.0,
+    nearbyWells: { sampleSize: 0, successRate: 0, nearbyWells: [] },
+    _auditFlags: {},
+  };
+  const poorR = ddt.computeDesktopDrillTargetReadiness(poor, 0);
+  check('data-poor site stays far below (score discriminates, no participation trophy)',
+    poorR.ddtr < 40, `ddtr ${poorR.ddtr}`);
+  check('data-poor MAG is BLOCKED', poorR.mag === 'BLOCKED');
 }
 
 // ── T. FINAL CONSENSUS TRACKS THE GOVERNING VALUE (live Check-19 block, 2026-07-16) ──

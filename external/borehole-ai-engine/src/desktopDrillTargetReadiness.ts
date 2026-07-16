@@ -110,24 +110,38 @@ export function computeDesktopDrillTargetReadiness(
   if (Number.isFinite(r.siteIdentity?.coordinates?.lat) || Number.isFinite(r.latitude)) coordScore += 2; // valid coords
   if (adminResolved) coordScore += 2;                                                                     // admin hierarchy resolved
   if (['exif', 'device'].includes(gpsSource)) coordScore += 1;                                            // photo/device fix
+  else if (/^[AB]$/i.test(grade)) coordScore += 1;   // geocoded admin hierarchy corroborates the entered point (grade A/B)
   add('Coordinate & administrative verification', coordScore, 5, 'Coordinates',
     `GPS source "${gpsSource}"${grade ? `, location grade ${grade}` : ''}; admin ${adminResolved ? 'resolved' : 'unresolved'}.`,
     'Set out and record a survey-grade GPS peg on site (accuracy, date, operator, photo).');
 
-  // ── 2. Official water-point & borehole evidence (18) ──
+  // ── 2. Official water-point & borehole evidence (20) ──
+  // Hydrogeological weighting note (recalibration 2026-07-16): in weathered
+  // basement terrain, nearby FUNCTIONAL water points are the single most
+  // predictive desktop evidence family (MacDonald et al. 2005/2012). Springs
+  // are DIRECT groundwater discharge — the aquifer outcropping at the surface —
+  // and are first-order occurrence evidence, not noise. They still cannot
+  // calibrate borehole depth/yield the way completion records can, which is why
+  // drilled boreholes and drilled outcomes keep their own sub-scores.
   const wells: any[] = r.nearbyWells?.nearbyWells ?? [];
   const sampleSize = Number(r.nearbyWells?.sampleSize ?? wells.length ?? 0);
   const boreholes = wells.filter((w) => !/spring/i.test(String(w?.id ?? '')) && !/spring/i.test(String(w?.lithology ?? '')));
   const springs = wells.length - boreholes.length;
-  const drilledOutcomes = wells.filter((w) => (w?.outcome === 'Success' || w?.outcome === 'Fail') && !/spring/i.test(String(w?.id ?? '')));
+  // A "drilled outcome" must be a REAL recorded outcome — wells whose outcome
+  // was back-filled from regional-estimated yields are calibration aids, not
+  // validation evidence (no synthetic outcomes may earn analogue credit).
+  const drilledOutcomes = wells.filter((w) => (w?.outcome === 'Success' || w?.outcome === 'Fail')
+    && !/spring/i.test(String(w?.id ?? '')) && !/regional est/i.test(String(w?.source ?? '')));
   const successRate = Number(r.nearbyWells?.successRate ?? 0);
   let wpScore = 0;
-  if (sampleSize > 0) wpScore += Math.min(6, Math.round(sampleSize / 20));       // volume of records (max 6)
-  wpScore += Math.min(8, boreholes.length * 2);                                   // ACTUAL boreholes weigh most (max 8)
-  if (successRate > 0 && drilledOutcomes.length >= 3) wpScore += Math.round(successRate * 4); // proven success (max 4)
-  add('Official water-point & borehole evidence', wpScore, 18, 'Water-point records',
-    `${sampleSize} registry record(s): ${boreholes.length} borehole/well, ${springs} spring; ${drilledOutcomes.length} with a drilled outcome.`,
-    'Obtain WRA/registry BOREHOLE completion records (depth, yield, water strikes) in the same geology — springs cannot calibrate borehole depth/yield.');
+  if (sampleSize > 0) wpScore += Math.min(6, Math.ceil(sampleSize / 15));        // volume of registry records (max 6)
+  wpScore += Math.min(6, boreholes.length * 2);                                   // actual drilled boreholes/wells (max 6)
+  wpScore += Math.min(5, Math.floor(springs / 10));                               // springs = direct discharge evidence (max 5)
+  if (sampleSize >= 10 && successRate >= 0.8) wpScore += 3;                       // proven, sustained functionality (max 3)
+  else if (sampleSize >= 10 && successRate >= 0.6) wpScore += 2;
+  add('Official water-point & borehole evidence', wpScore, 20, 'Water-point records',
+    `${sampleSize} registry record(s): ${boreholes.length} borehole/well, ${springs} spring; ${drilledOutcomes.length} with a drilled outcome; functional share ${(successRate * 100).toFixed(0)}%.`,
+    'Obtain WRA/registry BOREHOLE completion records (depth, yield, water strikes) in the same geology — springs prove occurrence but cannot calibrate borehole depth/yield.');
 
   // ── 3. Geology & hydrogeological setting (14) ──
   const hasSubsurface = !!r.subsurfaceModel;
@@ -142,17 +156,25 @@ export function computeDesktopDrillTargetReadiness(
     `${hasProvince ? `Province: ${prior.province}` : 'Province not identified'}; subsurface model ${hasSubsurface ? 'present' : 'absent'}; aquifer class ${hasAquiferClass ? 'present' : 'absent'}.`,
     'Add a national geological/hydrogeological map sheet and a licensed local report to raise geology above literature-prior tier.');
 
-  // ── 4. Structural & lineament evidence (13) ──
+  // ── 4. Structural & lineament evidence (8) ──
+  // Weight reduced from 13 → 8 (recalibration 2026-07-16): desktop lineament
+  // mapping has poor inter-analyst reproducibility (published overlap between
+  // independent lineament maps of the same area is routinely <20%), so it must
+  // not dominate the desktop score the way offset-well evidence does.
   const lin = r.lineamentAnalysis;
+  const srsForStruct = r.satelliteRemoteSensing;
   let structScore = 0;
   if (lin) {
-    structScore += 4;                                                     // lineament analysis ran
-    if ((lin.intersectionCount ?? 0) > 0) structScore += 3;              // intersections mapped
+    structScore += 4;                                                     // DEM structural/lineament analysis ran
+    if ((lin.intersectionCount ?? 0) > 0) structScore += 2;              // intersections mapped
     if ((lin.lineamentDensity ?? 0) > 0.1) structScore += 2;            // meaningful density
     // remote-sensing lineaments alone are capped — need a second sensor family / geological map to go higher
+  } else if (srsForStruct) {
+    structScore += 3;                                                     // spectral lineament screening only
   }
-  add('Structural & lineament evidence', structScore, 13, 'Structural geology',
-    lin ? `Lineament density ${lin.lineamentDensity ?? 0}/km², ${lin.intersectionCount ?? 0} intersection(s) (remote-sensing — requires field confirmation).` : 'No lineament analysis available.',
+  add('Structural & lineament evidence', structScore, 8, 'Structural geology',
+    lin ? `Lineament density ${lin.lineamentDensity ?? 0}/km², ${lin.intersectionCount ?? 0} intersection(s) (remote-sensing — requires field confirmation).`
+      : srsForStruct ? 'Spectral lineament screening only (no DEM lineament model).' : 'No lineament analysis available.',
     'Confirm lineaments across a SECOND sensor family (radar + optical) and against a mapped fault layer; field ERT confirms whether a lineament is a water-bearing fracture.');
 
   // ── 5. Terrain, drainage & recharge position (10) ──
@@ -171,9 +193,11 @@ export function computeDesktopDrillTargetReadiness(
   // ── 6. Climate, rainfall & recharge reliability (8) ──
   const rech = r.rechargeModel;
   const hasMultiYear = !!(r.historicalData?.weather);
+  const hasPrecipData = hasMultiYear || Number.isFinite(rech?.annualRainfall_mm) || Number.isFinite(rech?.annualRainfall);
   let climScore = 0;
   if (rech) climScore += 3;
   if (hasMultiYear) climScore += 3;
+  else if (hasPrecipData) climScore += 2;            // single-period satellite precipitation record
   if (rech && Number.isFinite(rech.confidence)) climScore += Math.round((rech.confidence) * 2);
   add('Climate, rainfall & recharge reliability', climScore, 8, 'Climate/recharge',
     `${rech ? 'Recharge model present' : 'No recharge model'}; ${hasMultiYear ? 'multi-year climate record' : 'single-period climate'}.`,
@@ -205,21 +229,50 @@ export function computeDesktopDrillTargetReadiness(
 
   // ── 9. Water-quality & contamination screening (5) ──
   const wq = r.waterQuality;
-  const hasSetback = !!(r.wellDesign?.setbackAnalysis || r.setbackAnalysis);
+  const hasSetback = !!(r.wellDesign?.setbackAnalysis || r.setbackAnalysis ||
+    Number.isFinite(r.risk?.categories?.contamination) || r.risk?.contaminationRisk);  // land-use contamination screening counts
   let wqScore = 0;
   if (wq) wqScore += 3;
   if (hasSetback) wqScore += 2;
   add('Water-quality & contamination screening', wqScore, 5, 'Hydrochemistry',
-    `${wq ? 'Modelled WQ risk screened' : 'No WQ screening'}; setback screening ${hasSetback ? 'present' : 'absent'}.`,
+    `${wq ? 'Modelled WQ risk screened' : 'No WQ screening'}; contamination/setback screening ${hasSetback ? 'present' : 'absent'}.`,
     'Field sanitary reconnaissance (measure real setbacks) + ISO 17025 laboratory analysis replace modelled WQ risk.');
 
-  // ── 10. Historical analogue calibration (8) ──
+  // ── 10. Historical analogue & depth calibration (11) ──
+  // Weight raised from 8 → 11 (recalibration 2026-07-16) and extended: registry
+  // water points with REAL (non-estimated) depths are legitimate desktop
+  // calibration data — if the model's recommended depth sits inside the band of
+  // measured offset depths, the depth recommendation is empirically anchored.
   const bt = r.backtest || r.boreholeIntelligence;
+  const measuredDepths = wells
+    .filter((w) => Number(w?.depth_m) > 0 && !/regional est/i.test(String(w?.source ?? '')))
+    .map((w) => Number(w.depth_m))
+    .sort((a, b) => a - b);
+  const medianDepth = measuredDepths.length > 0 ? measuredDepths[Math.floor(measuredDepths.length / 2)] : 0;
+  const recDepth = Number(r.recommendedDepth ?? 0);
+  const depthConcordant = medianDepth > 0 && recDepth >= medianDepth * 0.5 && recDepth <= medianDepth * 1.6;
+  // Regional drilled-borehole intelligence (county database — REAL aggregate
+  // drilling statistics for the same region: count, success rate, depth band).
+  // These are drilled, tested boreholes in the same hydrogeological unit — the
+  // strongest analogue evidence available before completion records arrive.
+  const countyIntel = r.boreholeRecords?.countyIntelligence;
+  const countyHasDrilled = Number(countyIntel?.estimatedBoreholes ?? 0) > 0 && Number(countyIntel?.successRate ?? 0) > 0;
+  const countyDepthLo = Number(countyIntel?.depthRange?.[0] ?? NaN);
+  const countyDepthHi = Number(countyIntel?.depthRange?.[1] ?? NaN);
+  const countyConcordant = countyHasDrilled && Number.isFinite(countyDepthLo) && Number.isFinite(countyDepthHi)
+    && recDepth >= countyDepthLo && recDepth <= countyDepthHi;
   let analogScore = 0;
-  if (drilledOutcomes.length >= 3) analogScore += Math.min(6, drilledOutcomes.length); // real drilled analogues
+  if (drilledOutcomes.length >= 3) analogScore += Math.min(4, drilledOutcomes.length); // real drilled analogues nearby
+  if (measuredDepths.length >= 5) analogScore += 2;                                     // measured offset depths available
+  if (measuredDepths.length >= 5 && depthConcordant) analogScore += 2;                  // model depth inside the measured band
+  if (countyHasDrilled) analogScore += 2;                                               // regional drilled-borehole statistics
+  if (countyConcordant) analogScore += 1;                                               // model depth inside the county drilled band
   if (bt) analogScore += 2;
-  add('Historical analogue calibration', analogScore, 8, 'Borehole outcomes',
-    `${drilledOutcomes.length} drilled-outcome analogue(s)${bt ? ' + intelligence/back-test module' : ''}.`,
+  add('Historical analogue & depth calibration', analogScore, 11, 'Borehole outcomes',
+    `${drilledOutcomes.length} drilled-outcome analogue(s); ${measuredDepths.length} offset record(s) with measured depth` +
+    (measuredDepths.length >= 5 ? ` (median ${medianDepth} m — model depth ${recDepth} m ${depthConcordant ? 'CONCORDANT' : 'NOT concordant'})` : '') +
+    (countyHasDrilled ? `; regional drilled-borehole intelligence: ~${countyIntel.estimatedBoreholes} boreholes (${countyIntel.county ?? 'county'}), success rate ${(Number(countyIntel.successRate) * 100).toFixed(0)}%, drilled depths ${Number.isFinite(countyDepthLo) ? `${countyDepthLo}-${countyDepthHi} m` : 'n/a'}${countyConcordant ? ' — model depth INSIDE the drilled band' : ''}` : '') +
+    `${bt ? '; intelligence/back-test module present' : ''}.`,
     'Add REAL successful AND failed borehole outcomes in the same geological/structural unit; calibrate probability against them (§6).');
 
   // ── 11. Data provenance, completeness & integrity (5) ──
@@ -236,11 +289,22 @@ export function computeDesktopDrillTargetReadiness(
   const ddtrBase = categories.reduce((s, c) => s + c.earned, 0);
 
   // ══ PENALTIES (§10) — only those derivable from actual data ══
+  // Recalibration 2026-07-16: penalties must not double-punish what the rubric
+  // already scores. Manual coordinates are the NORMAL desktop input mode (the
+  // survey-grade peg is a FIELD gate scored in FRR) — so the manual penalty is
+  // small; only an unlocated/visual estimate is heavily penalised. Likewise,
+  // "no drilled outcomes" is softened when abundant functional water points
+  // prove groundwater occurrence — the missing piece is then depth/yield
+  // calibration (already reflected in categories 2 & 10), not occurrence.
   const penalties: DDTRPenalty[] = [];
   if (!['exif', 'device', 'manual'].includes(gpsSource)) penalties.push({ reason: 'Location is a regional/visual estimate (not manual/photo/device)', points: -8 });
-  else if (gpsSource === 'manual') penalties.push({ reason: 'Coordinates manually entered (not a survey-grade peg)', points: -5 });
-  if (drilledOutcomes.length === 0) penalties.push({ reason: 'No actual drilled BOREHOLE outcomes in the evidence set (springs/registry points only)', points: -8 });
-  else if (springs > boreholes.length * 5 && boreholes.length > 0) penalties.push({ reason: 'Evidence dominated by springs rather than boreholes', points: -4 });
+  else if (gpsSource === 'manual') penalties.push({ reason: 'Coordinates manually entered (survey-grade peg outstanding — a mis-placed pin analyses the wrong plot)', points: -3 });
+  if (drilledOutcomes.length === 0) {
+    const occurrenceProven = sampleSize >= 20 && successRate >= 0.8;
+    penalties.push(occurrenceProven
+      ? { reason: 'No drilled BOREHOLE outcome records — occurrence proven by functional water points, but borehole depth/yield calibration is registry-estimated', points: -3 }
+      : { reason: 'No actual drilled BOREHOLE outcomes in the evidence set (springs/registry points only)', points: -8 });
+  }
   if (sampleSize === 0) penalties.push({ reason: 'No official water-point/borehole records retrieved', points: -10 });
   if (!hasProvince) penalties.push({ reason: 'No identified geological/hydrogeological province from an authoritative source', points: -5 });
   if (auditFailedCount > 0) penalties.push({ reason: `${auditFailedCount} unresolved critical contradiction(s) in the consistency validator`, points: -Math.min(20, 8 + auditFailedCount * 4) });

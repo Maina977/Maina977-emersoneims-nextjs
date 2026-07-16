@@ -29,6 +29,7 @@ import { recordReport, type ReportFormat } from './reportTracker';
 import { generateReportMaps, renderDrillHereMap, renderWaterTableDepthMap, type ReportMapImages } from './reportMapGenerator';
 import type { VerificationReport } from './preReportVerification';
 import { computeDrillReadiness } from './drillReadiness';
+import { computeDesktopDrillTargetReadiness } from './desktopDrillTargetReadiness';
 import { validationStatement } from './validationBenchmark';
 
 // --- AUDIT GATE ? EVERY EXPORT MUST PASS ---
@@ -1297,6 +1298,22 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       y += 19;
     }
 
+    // ── DESKTOP PRE-FEASIBILITY READINESS strip (owner directive 2026-07-16) ──
+    // The desktop score IS the product of this report — lead with it. Field
+    // validation is stated as the remaining step, not as a failing grade.
+    const ddtB = (result as any).desktopDrillTarget;
+    if (ddtB?.ddtr != null) {
+      const dStrong = ddtB.ddtr >= 80;
+      const dc: [number, number, number] = dStrong ? [22, 101, 52] : ddtB.ddtr >= 55 ? [180, 83, 9] : [153, 27, 27];
+      doc.setFillColor(dc[0], dc[1], dc[2]);
+      doc.roundedRect(margin, y, pw, 15, 2.5, 2.5, 'F');
+      doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+      doc.text(`DESKTOP PRE-FEASIBILITY READINESS: ${ddtB.ddtr}/100 -- ${ddtB.ddtrClass}`, margin + 5, y + 6.2);
+      doc.setFontSize(6.8); doc.setFont('helvetica', 'normal'); doc.setTextColor(240, 246, 240);
+      doc.text(`Completeness of the desktop evidence stack (${ddtB.evidenceFamilyCount} independent evidence families; desktop max 95). The remaining share is the field step: ERT survey, survey-grade peg, sign-off & WRA approval.`, margin + 5, y + 11.5);
+      y += 19;
+    }
+
     // Headline tiles (2 rows x 3)
     const tiles = [
       { lbl: 'SUCCESS PROBABILITY', val: pct(result.probability), sub: u ? `range ${(u.probabilityRange[0] * 100).toFixed(0)}-${(u.probabilityRange[1] * 100).toFixed(0)}%` : 'satellite-only estimate', c: fv.color },
@@ -1509,9 +1526,13 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   });
 
   // ══════════════════════════════════════════════════════════════
-  //  DRILLING-READINESS STATUS  (reviewer 2026-07-11)
-  //  A single, honest answer to "is this authority to mobilise a rig?"
-  //  Separate from AI confidence; capped at 79/100 until field gates pass.
+  //  READINESS — THREE-SCORE STATUS (owner directive 2026-07-16)
+  //  The HEADLINE is the DESKTOP PRE-FEASIBILITY READINESS (DDTR): how complete
+  //  and convergent the desktop evidence stack is (0-95; a well-evidenced site
+  //  legitimately reaches 80+ with no field work). The field/regulatory work is
+  //  the REMAINING step — shown as an explicit checklist (FRR), never as a
+  //  failing headline grade that buries a strong desktop study under "28/100".
+  //  Mobilisation authority is still gated (MAG) — honesty is preserved.
   // ══════════════════════════════════════════════════════════════
   safeSection('Drilling Readiness', () => {
     const dr = result.drillReadiness ?? computeDrillReadiness({
@@ -1521,21 +1542,24 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       hasLabWaterAnalysis: !!(result as any)._auditFlags?.hasLabWaterAnalysis,
       reportConsistent: true,
     });
+    const ddt = (result as any).desktopDrillTarget ?? computeDesktopDrillTargetReadiness(result, 0);
     addPage();
-    const isReady = dr.status === 'ISSUED FOR DRILLING' || dr.status === 'COMPLETED / BANKABLE RECORD';
-    const bandColor: [number, number, number] = isReady ? [22, 101, 52] : dr.status === 'FIELD VALIDATION IN PROGRESS' ? [180, 83, 9] : [153, 27, 27];
+    const ddtrStrong = ddt.ddtr >= 80;
+    const ddtrColor: [number, number, number] = ddtrStrong ? [22, 101, 52] : ddt.ddtr >= 55 ? [180, 83, 9] : [153, 27, 27];
 
-    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(bandColor[0], bandColor[1], bandColor[2]);
-    doc.text('DRILLING READINESS', margin, y); y += 8;
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(ddtrColor[0], ddtrColor[1], ddtrColor[2]);
+    doc.text('READINESS ASSESSMENT', margin, y); y += 8;
 
-    // Status banner
-    doc.setFillColor(bandColor[0], bandColor[1], bandColor[2]);
-    doc.roundedRect(margin, y, pw, 22, 3, 3, 'F');
+    // ── HEADLINE: DESKTOP PRE-FEASIBILITY READINESS (DDTR) ──
+    doc.setFillColor(ddtrColor[0], ddtrColor[1], ddtrColor[2]);
+    doc.roundedRect(margin, y, pw, 24, 3, 3, 'F');
     doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-    doc.text(`STATUS: ${dr.status}`, margin + 5, y + 9);
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(240, 240, 240);
-    doc.text(`Drilling-Readiness Score: ${dr.score}/100   —   ${dr.stage}`, margin + 5, y + 16);
-    y += 27;
+    doc.text(`DESKTOP PRE-FEASIBILITY READINESS: ${ddt.ddtr}/100`, margin + 5, y + 9);
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(250, 250, 250);
+    doc.text(String(ddt.ddtrClass), margin + 5, y + 15.5);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(235, 235, 235);
+    doc.text(`Completeness & convergence of the desktop evidence stack (${ddt.evidenceFamilyCount} independent evidence families). Desktop max is 95 — the final points belong to fieldwork.`, margin + 5, y + 21);
+    y += 29;
 
     // ── GROUNDWATER PROSPECT (chance of water) — data-backed, SEPARATE axis ──
     if (dr.groundwaterProspect) {
@@ -1554,9 +1578,93 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       y += doc.splitTextToSize(dr.prospectStatement, pw).length * 3.6 + 3;
     }
 
+    const threeScoreNote = 'This assessment reports THREE separate scores so each question gets an honest answer. DESKTOP PRE-FEASIBILITY READINESS (headline) = how complete and convergent the desktop evidence is — a well-evidenced site legitimately scores 80+ with no field visit. GROUNDWATER PROSPECT = the data-backed chance of striking water. FIELD & REGULATORY READINESS (below) = the remaining field work — the ERT survey, survey-grade peg, professional sign-off and WRA authorisation that only a site visit can close. No desktop score, however high, is authority to mobilise a rig.';
     doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 90, 90);
-    doc.text(doc.splitTextToSize('The two axes above answer different questions. GROUNDWATER PROSPECT = how likely water is here (raised legitimately by proven nearby boreholes and convergent vegetation/drainage/recharge evidence). DRILLING READINESS = whether this is authority to mobilise a rig on the exact spot. Adding more AI cannot raise the readiness score past 79 — only field data can — but a strong data-backed prospect stands on its own.', pw), margin, y);
-    y += doc.splitTextToSize('The two axes above answer different questions. GROUNDWATER PROSPECT = how likely water is here (raised legitimately by proven nearby boreholes and convergent vegetation/drainage/recharge evidence). DRILLING READINESS = whether this is authority to mobilise a rig on the exact spot. Adding more AI cannot raise the readiness score past 79 — only field data can — but a strong data-backed prospect stands on its own.', pw).length * 3.4 + 4;
+    doc.text(doc.splitTextToSize(threeScoreNote, pw), margin, y);
+    y += doc.splitTextToSize(threeScoreNote, pw).length * 3.4 + 4;
+
+    // ── DESKTOP EVIDENCE SCORE BREAKDOWN (DDTR categories) ──
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('Desktop evidence score breakdown', margin, y); y += 6;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Evidence category', 'Earned', 'Max', 'Basis / what lifts it']],
+      body: [
+        ...ddt.categories.map((c: any) => [c.category, String(c.earned), String(c.max), `${c.basis} LIFT: ${c.lifts}`]),
+        ...ddt.penalties.map((p: any) => ['PENALTY', String(p.points), '—', p.reason]),
+        ['DESKTOP READINESS (after penalties, max 95)', String(ddt.ddtr), '95', String(ddt.ddtrClass)],
+      ],
+      headStyles: { fillColor: [30, 58, 95], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+      bodyStyles: { fontSize: 6.5 },
+      columnStyles: { 1: { cellWidth: 14 }, 2: { cellWidth: 12 }, 3: { cellWidth: 82 } },
+      theme: 'grid',
+      didParseCell: (d: any) => {
+        if (d.section === 'body' && String(d.row.raw?.[0] ?? '').startsWith('PENALTY')) d.cell.styles.textColor = [180, 60, 30];
+        if (d.section === 'body' && String(d.row.raw?.[0] ?? '').startsWith('DESKTOP READINESS')) d.cell.styles.fontStyle = 'bold';
+      },
+    });
+    y = lastY(6);
+
+    // ── REGIONAL DRILLED-BOREHOLE EVIDENCE (same region — REAL records only) ──
+    // Owner directive 2026-07-16: show the successful drilled boreholes in the
+    // same region explicitly. Sources: compiled county drilling statistics
+    // (WRA/literature) + named non-spring wells from the registries. Nothing is
+    // invented — if neither source has data, this block states that honestly.
+    {
+      const ciR = (result as any).boreholeRecords?.countyIntelligence;
+      const wellsR: any[] = result.nearbyWells?.nearbyWells ?? [];
+      const drilledR = wellsR.filter((w: any) => !/spring/i.test(String(w?.id ?? '')) && String(w?.id ?? '').trim());
+      if (ciR || drilledR.length > 0) {
+        checkSpace(30);
+        doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+        doc.text('Regional drilled-borehole evidence (same hydrogeological unit)', margin, y); y += 6;
+        if (ciR && Number(ciR.estimatedBoreholes ?? 0) > 0) {
+          const ciLine = `${ciR.county ?? 'County'} drilling record: ~${ciR.estimatedBoreholes} boreholes drilled — success rate ${(Number(ciR.successRate ?? 0) * 100).toFixed(0)}%, average depth ${ciR.avgDepth_m ?? '—'} m (drilled band ${ciR.depthRange?.[0] ?? '—'}-${ciR.depthRange?.[1] ?? '—'} m), average tested yield ${ciR.avgYield_m3h ?? '—'} m³/hr (range ${ciR.yieldRange?.[0] ?? '—'}-${ciR.yieldRange?.[1] ?? '—'}). Geology: ${ciR.primaryGeology ?? '—'}. ` +
+            (Number.isFinite(result.recommendedDepth) && Array.isArray(ciR.depthRange) && result.recommendedDepth >= ciR.depthRange[0] && result.recommendedDepth <= ciR.depthRange[1]
+              ? `This report's recommended depth (${Math.round(result.recommendedDepth)} m) sits INSIDE the region's proven drilled band — the depth target is empirically anchored to successful boreholes in the same unit.`
+              : `Compare this report's recommended depth (${Math.round(result.recommendedDepth ?? 0)} m) against the drilled band during the ERT survey.`);
+          const ciLines = doc.splitTextToSize(ciLine, pw - 8);
+          const ciH = ciLines.length * 3.5 + 8;
+          doc.setFillColor(240, 253, 244);
+          doc.roundedRect(margin, y, pw, ciH, 2, 2, 'F');
+          doc.setDrawColor(22, 163, 74); doc.setLineWidth(0.5);
+          doc.roundedRect(margin, y, pw, ciH, 2, 2, 'S');
+          doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(21, 90, 50);
+          doc.text(ciLines, margin + 4, y + 5);
+          y += ciH + 3;
+        }
+        if (drilledR.length > 0) {
+          autoTable(doc, {
+            startY: y, margin: { left: margin, right: margin },
+            head: [['Registry well/borehole (non-spring)', 'Depth', 'Yield', 'Distance', 'Status']],
+            body: drilledR.slice(0, 6).map((w: any) => [
+              String(w.id).slice(0, 55),
+              (w.depth_m ?? 0) > 0 ? `${Math.round(w.depth_m)} m${/regional est/i.test(String(w.source ?? '')) ? ' (regional est.)' : ''}` : 'not published',
+              (w.yield_m3h ?? 0) > 0 ? `${w.yield_m3h} m³/hr${/regional est/i.test(String(w.source ?? '')) ? ' (regional est.)' : ''}` : 'not published',
+              (w.distance_km ?? null) != null ? `${w.distance_km} km` : '—',
+              String(w.outcome ?? 'Unknown'),
+            ]),
+            headStyles: { fillColor: [21, 90, 50], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+            bodyStyles: { fontSize: 7 },
+            theme: 'grid',
+          });
+          y = lastY(4);
+        }
+        doc.setFontSize(6.8); doc.setFont('helvetica', 'italic'); doc.setTextColor(110, 110, 110);
+        doc.text(doc.splitTextToSize('County statistics are compiled from WRA and published drilling records for the region; registry wells come from official water-point databases at true positions. Values marked "(regional est.)" are estimates, not field measurements — no borehole is ever invented.', pw), margin, y);
+        y += 10;
+      }
+    }
+
+    // ── FIELD & REGULATORY READINESS — the remaining step ──
+    checkSpace(24);
+    doc.setFillColor(180, 83, 9);
+    doc.roundedRect(margin, y, pw, 16, 3, 3, 'F');
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+    doc.text(`FIELD & REGULATORY READINESS: ${ddt.frrGates.filter((g: any) => g.done).length} of ${ddt.frrGates.length} gates complete — THE REMAINING STEP`, margin + 5, y + 7);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(250, 245, 235);
+    doc.text('This is the site-survey work (~the final validation share) that converts the desktop target into drilling authority.', margin + 5, y + 13);
+    y += 20;
 
     // Mandatory gate checklist
     doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
@@ -1597,19 +1705,21 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     });
     y = lastY(6);
 
-    // Category breakdown
-    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
-    doc.text('Score breakdown', margin, y); y += 6;
-    autoTable(doc, {
-      startY: y, margin: { left: margin, right: margin },
-      head: [['Category', 'Earned', 'Max', 'What lifts it']],
-      body: dr.breakdown.map(c => [c.category, String(Math.min(c.max, c.earned)), String(c.max), c.note]),
-      headStyles: { fillColor: [71, 85, 105], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
-      bodyStyles: { fontSize: 7 },
-      columnStyles: { 1: { cellWidth: 15 }, 2: { cellWidth: 12 }, 3: { cellWidth: 78 } },
-      theme: 'grid',
-    });
-    y = lastY(6);
+    // ── MOBILISATION AUTHORISATION GATE (MAG) ──
+    checkSpace(26);
+    const magColor: [number, number, number] = ddt.mag === 'RELEASED FOR DRILLING' ? [22, 101, 52] : ddt.mag === 'CONDITIONALLY RELEASED' ? [180, 83, 9] : [153, 27, 27];
+    const magLabel = ddt.mag === 'CONDITIONALLY RELEASED' ? 'CONDITIONALLY RELEASED — PROCEED TO FIELD CONFIRMATION' : ddt.mag;
+    const magReasonLines = doc.splitTextToSize(String(ddt.magReason), pw - 10);
+    const magH = 12 + magReasonLines.length * 3.4;
+    doc.setFillColor(ddt.mag === 'BLOCKED' ? 254 : 255, ddt.mag === 'BLOCKED' ? 242 : 251, ddt.mag === 'BLOCKED' ? 242 : 235);
+    doc.roundedRect(margin, y, pw, magH, 2, 2, 'F');
+    doc.setDrawColor(magColor[0], magColor[1], magColor[2]); doc.setLineWidth(0.7);
+    doc.roundedRect(margin, y, pw, magH, 2, 2, 'S');
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(magColor[0], magColor[1], magColor[2]);
+    doc.text(`MOBILISATION AUTHORISATION: ${magLabel}`, margin + 4, y + 6);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(70, 70, 70);
+    doc.text(magReasonLines, margin + 4, y + 11);
+    y += magH + 5;
 
     // Handover statement box
     checkSpace(28);
