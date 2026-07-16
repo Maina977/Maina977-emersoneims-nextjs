@@ -679,32 +679,32 @@ function computeFinalConsensus(r: any): FinalConsensus {
   // 6. Drill decision (synced, but confirm it matches)
   // Not adding — it's already synced to canonical
 
-  // Weighted fusion
-  let totalW = 0, wDepth = 0, wYield = 0, wProb = 0;
-  for (const e of estimates) {
-    if (!Number.isFinite(e.depth) || !Number.isFinite(e.yield) || !Number.isFinite(e.prob)) continue;
-    totalW += e.weight;
-    wDepth += e.depth * e.weight;
-    wYield += e.yield * e.weight;
-    wProb += e.prob * e.weight;
-  }
+  // ── THE CONSENSUS CENTRAL VALUES ARE THE GOVERNING VALUES ──
+  // The governing yield/depth/probability were already reconciled at source
+  // (Bayesian ensemble → transmissivity reconciliation → regional tested-yield
+  // band → propagation). Re-averaging them with the sub-model diagnostics that
+  // deliberately keep their own stale numbers resurrects the pre-reconciliation
+  // value and forks a SECOND competing "consensus" — the exact defect Check 19
+  // blocked on the live site 2026-07-16 (consensus 2.43 vs governing 0.41
+  // m³/hr, 5.9× apart). Sub-model estimates below inform ONLY the uncertainty
+  // ranges and the agreement level, never the central value.
+  const finalDepth = safeDepth(r.recommendedDepth);
+  const finalYield = safeYield(r.estimatedYield);
+  const finalProb = safeProb(r.probability);
 
-  const finalDepth = totalW > 0 ? safeDepth(wDepth / totalW) : safeDepth(r.recommendedDepth);
-  const finalYield = totalW > 0 ? safeYield(wYield / totalW) : safeYield(r.estimatedYield);
-  const finalProb = totalW > 0 ? safeProb(wProb / totalW) : safeProb(r.probability);
-
-  // Compute ranges from estimate spread
+  // Compute ranges from estimate spread — expanded to always contain the
+  // governing central value (range-containment invariant, Check 19.1-3).
   const depths = estimates.map(e => e.depth).filter(Number.isFinite);
   const yields = estimates.map(e => e.yield).filter(Number.isFinite);
   const probs = estimates.map(e => e.prob).filter(Number.isFinite);
   const depthRange: [number, number] = depths.length > 1
-    ? [safeDepth(Math.min(...depths)), safeDepth(Math.max(...depths))]
+    ? [safeDepth(Math.min(...depths, finalDepth)), safeDepth(Math.max(...depths, finalDepth))]
     : [safeDepth(finalDepth * 0.8), safeDepth(finalDepth * 1.2)];
   const yieldRange: [number, number] = yields.length > 1
-    ? [safeYield(Math.min(...yields)), safeYield(Math.max(...yields))]
+    ? [safeYield(Math.min(...yields, finalYield)), safeYield(Math.max(...yields, finalYield))]
     : [safeYield(finalYield * 0.7), safeYield(finalYield * 1.3)];
   const probabilityRange: [number, number] = probs.length > 1
-    ? [safeProb(Math.min(...probs)), safeProb(Math.max(...probs))]
+    ? [safeProb(Math.min(...probs, finalProb)), safeProb(Math.max(...probs, finalProb))]
     : [safeProb(finalProb * 0.85), safeProb(finalProb * 1.15)];
 
   // Agreement: how close are the estimates?
@@ -739,6 +739,6 @@ function computeFinalConsensus(r: any): FinalConsensus {
       : assessmentGrade === 'ENGINEERING GRADE'
       ? 'This engineering-grade assessment is supported by field geophysical data. Suitable for preliminary design, subject to pump test verification.'
       : 'This bankable-grade assessment meets the requirements for investment decisions. Field data, pump test, and independent verification have been incorporated.',
-    methodology: `Weighted fusion of ${estimates.length} independent models: ${estimates.map(e => `${e.label} (w=${e.weight})`).join(', ')}. Agreement: ${agreementLevel} (probability spread: ±${(probSpread * 50).toFixed(0)}%).`,
+    methodology: `Central values = the GOVERNING reconciled result (ensemble → aquifer-physics reconciliation → regional tested-yield band). ${estimates.length} sub-model estimate(s) (${estimates.map(e => e.label).join(', ')}) inform the uncertainty ranges and agreement level only — they do not re-vote on the central value. Agreement: ${agreementLevel} (probability spread: ±${(probSpread * 50).toFixed(0)}%).`,
   };
 }

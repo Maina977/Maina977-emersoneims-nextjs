@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts', 'desktopDrillTargetReadiness.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts', 'desktopDrillTargetReadiness.ts', 'sanitizeOutputs.ts', 'reportAuditor.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -650,6 +650,41 @@ console.log('\nS. Desktop drill-target readiness (DDTR / FRR / MAG)');
   check('field-complete FRR reaches 100', released.frr === 100);
   check('even a strong+field-complete site never exceeds DDTR 95', released.ddtr <= 95);
   check('DDTR classification bands map correctly', ddt.classifyDDTR(30) === 'DESKTOP TARGET REJECTED' && ddt.classifyDDTR(92) === 'HIGH-CONFIDENCE DESKTOP DRILL TARGET');
+}
+
+// ── T. FINAL CONSENSUS TRACKS THE GOVERNING VALUE (live Check-19 block, 2026-07-16) ──
+console.log('\nT. Final consensus vs governing value (sanitizeOutputs + reportAuditor)');
+{
+  const so = req(join(OUT, 'sanitizeOutputs.js'));
+  const ra = req(join(OUT, 'reportAuditor.js'));
+  // Exact live-block scenario: governing 0.41 m³/hr; sub-model diagnostics
+  // still carry 4.1 (confidence-weighted) and 4.9 (ML predictor).
+  const r = {
+    probability: 0.65, recommendedDepth: 61, estimatedYield: 0.41,
+    uncertainty: { yieldRange: [3.3, 6.5], depthRange: [48, 74], probabilityRange: [0.48, 0.80], depthConfidence: 0.57 },
+    confidenceWeighted: { adjustedProbability: 0.54, adjustedDepth_m: 61, adjustedYield_m3hr: 4.1, overallConfidence: 0.46 },
+    drillingPrediction: { successProbability: 49, predictedDepth_m: 49, predictedYield_m3h: 4.9, modelConfidence: 65 },
+    drillDecision: { expectedYield_m3hr: 0.41, targetDepth_m: 61, yieldRange_m3hr: [0.3, 0.6], primaryPoint: { lat: 0.02, lon: 34.6 }, successProbability: 65 },
+    wellDesign: { drawdown: { designPumpingRate_m3hr: 0.41, transmissivity_m2day: 0.2 } },
+    nearbyWells: { sampleSize: 160, successRate: 1, nearbyWells: Array.from({ length: 150 }, (_, i) => ({ id: `Spring ${i}`, outcome: 'Success', depth_m: 58, yield_m3h: 5 })) },
+    risk: { overallRisk: 0.29, viability: 'medium' },
+    waterQuality: { score: 0.7, isPotable: false, pH: 6.8, tds: 360, fluoride: 0.4, iron: 0.15, arsenic: 0.003, nitrate: 5.6, turbidity: 1, hardness: 120, dataSource: 'model' },
+    soil: { porosity: 0.48, pH: 6.8, dataSource: 'SoilGrids' },
+    assessmentType: 'DESKTOP_ESTIMATE', assessmentDisclaimer: 'Desktop pre-feasibility only; no field measurements. ERT, pump test and lab analysis required before drilling.',
+  };
+  so.sanitizeAnalysisResult(r);
+  check('finalConsensus yield equals the governing yield (no re-vote by stale sub-models)',
+    Math.abs(r.finalConsensus.yield_m3hr - 0.41) < 0.01, `${r.finalConsensus.yield_m3hr}`);
+  check('finalConsensus depth/probability equal the governing values',
+    Math.abs(r.finalConsensus.depth_m - 61) < 1 && Math.abs(r.finalConsensus.successProbability - 0.65) < 0.01);
+  check('consensus ranges contain the governing central value',
+    r.finalConsensus.yieldRange[0] <= 0.41 && r.finalConsensus.yieldRange[1] >= 0.41);
+  check('sub-model diagnostic panels keep their own labelled numbers',
+    r.confidenceWeighted.adjustedYield_m3hr === 4.1 && r.drillingPrediction.predictedYield_m3h === 4.9);
+  const audit = ra.auditReport(r);
+  const c18 = audit.checks.find((c) => c.id === 18), c19 = audit.checks.find((c) => c.id === 19);
+  check('Check 18 (cross-engine) passes on the reconciled result', c18.severity === 'PASS', c18.details.slice(0, 80));
+  check('Check 19 (reconciliation matrix) passes — report no longer blocked', c19.severity === 'PASS', c19.details.slice(0, 80));
 }
 
 rmSync(OUT, { recursive: true, force: true });
