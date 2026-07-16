@@ -1116,7 +1116,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // screening study — and that it is not a drilling instruction.
   doc.text('Desktop Groundwater & Hydroecological Screening Report', pageW / 2, 32, { align: 'center' });
   doc.setFontSize(9); doc.setTextColor(251, 191, 36);
-  doc.text('NOT FOR DRILLING MOBILISATION — field survey, professional sign-off and WRA authorisation required first', pageW / 2, 37.5, { align: 'center' });
+  doc.text('NOT FOR DRILLING MOBILISATION — to present to a driller, complete and attach the Field Validation Attachment Pack (final section)', pageW / 2, 37.5, { align: 'center' });
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(148, 163, 184);
@@ -10359,6 +10359,82 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('Computed from this report\'s governing coordinates, probability, depth and yield at generation time. If any of those figures in a circulated copy has been altered, the fingerprint will not match. Verification: emersoneims.com/aquascan-pro-v3/methodology', margin + 4, y + 10.5, { maxWidth: pw - 8 });
     y += 21;
   } catch (_refErr) { console.warn('[PDF] references/fingerprint section skipped', _refErr); }
+
+  // ══ FIELD VALIDATION ATTACHMENT PACK (owner directive 2026-07-16) ══
+  // Template pages for the field documents that must be obtained AFTER this
+  // report and physically attached to it. Report + completed attachments
+  // together form the package presented to a driller.
+  try {
+    doc.addPage(); y = 20;
+    doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 50, 100);
+    doc.text('FIELD VALIDATION ATTACHMENT PACK', margin, y); y += 7;
+
+    // The caveat — the rule of the whole pack
+    doc.setFillColor(255, 243, 224);
+    doc.roundedRect(margin, y, pw, 24, 3, 3, 'F');
+    doc.setDrawColor(194, 65, 12); doc.setLineWidth(0.8);
+    doc.roundedRect(margin, y, pw, 24, 3, 3, 'S');
+    doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(154, 52, 18);
+    doc.text('CAVEAT — HOW TO USE THIS REPORT WITH A DRILLER', margin + 4, y + 6);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 60, 20);
+    doc.text(doc.splitTextToSize('This desktop report alone is NOT a drilling instruction. Obtain and ATTACH the six documents below, completed and signed by the licensed professionals named. ONLY this report TOGETHER WITH the completed attachments may be presented to a drilling contractor. A driller who is shown this report without the attachments must treat the site as a FIELD SURVEY TARGET — NOT AUTHORISED FOR DRILLING.', pw - 8), margin + 4, y + 10.5);
+    y += 29;
+
+    const attachments: { no: string; title: string; fields: string[] }[] = [
+      { no: 'A1', title: 'Survey-grade drill peg record', fields: ['Pegged coordinates (WGS84) + datum', 'GPS receiver model & accuracy (m)', 'Set out by (name) / date', 'Photo reference of peg on site'] },
+      { no: 'A2', title: 'Licensed hydrogeologist reconnaissance & sign-off', fields: ['Hydrogeologist name & licence no.', 'Date of site visit', 'Key findings / revisions to this report', 'Signature & stamp'] },
+      { no: 'A3', title: 'Field ERT/VES survey — raw data + QA', fields: ['Survey line coordinates & orientation', 'Array type / electrode spacing / instrument & serial no.', 'Raw apparent-resistivity data file reference', 'Inversion software + version / RMS error', 'Interpreted target depth & signed interpretation'] },
+      { no: 'A4', title: 'Verified borehole completion records (offset calibration)', fields: ['Record 1: name / WRA ref / drilled depth / tested yield', 'Record 2: name / WRA ref / drilled depth / tested yield', 'Record 3 (incl. any DRY/failed hole): name / ref / outcome', 'Source office & date obtained'] },
+      { no: 'A5', title: 'Sanitary & contamination inspection', fields: ['Nearest latrine/septic distance (m)', 'Livestock / waste / fuel storage within 100 m (list)', 'Flood or ponding observed (Y/N + notes)', 'Inspector name, date & signature'] },
+      { no: 'A6', title: 'WRA authorisation (and environmental requirement)', fields: ['WRA authorisation reference no. & date', 'Conditions attached (summary)', 'Environmental requirement status (NEMA/county)', 'Verified by (name) / date'] },
+    ];
+    for (const a of attachments) {
+      const boxH = 14 + a.fields.length * 7 + 4;
+      checkSpace(boxH + 8);
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(margin, y, pw, boxH, 2, 2, 'F');
+      doc.setDrawColor(71, 85, 105); doc.setLineWidth(0.5);
+      doc.roundedRect(margin, y, pw, boxH, 2, 2, 'S');
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+      doc.text(`ATTACHMENT ${a.no} — ${a.title}`, margin + 4, y + 6);
+      doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 27, 27);
+      doc.text('REQUIRED — attach document / certificate behind this page', pageW - margin - 4, y + 6, { align: 'right' });
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(70, 80, 95);
+      let fy = y + 12;
+      for (const fLine of a.fields) {
+        doc.text(`${fLine}:`, margin + 5, fy);
+        doc.setDrawColor(160, 170, 185); doc.setLineWidth(0.3);
+        doc.line(margin + 5 + Math.min(doc.getTextWidth(fLine) + 4, 95), fy + 0.5, pageW - margin - 6, fy + 0.5);
+        fy += 7;
+      }
+      y += boxH + 5;
+    }
+
+    // Driller handover checklist
+    checkSpace(46);
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('DRILLER HANDOVER CHECKLIST — complete before presenting this package', margin, y); y += 6;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['#', 'Item', 'Attached & signed?']],
+      body: [
+        ['1', 'This AquaScan Pro report (all pages, integrity fingerprint intact)', '[   ]'],
+        ['2', 'A1 Survey-grade peg record', '[   ]'],
+        ['3', 'A2 Hydrogeologist reconnaissance & sign-off', '[   ]'],
+        ['4', 'A3 ERT/VES raw data + signed interpretation', '[   ]'],
+        ['5', 'A4 Verified completion records (incl. any failed holes)', '[   ]'],
+        ['6', 'A5 Sanitary inspection', '[   ]'],
+        ['7', 'A6 WRA authorisation + environmental status', '[   ]'],
+      ],
+      headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      columnStyles: { 0: { cellWidth: 8 }, 2: { cellWidth: 34, halign: 'center' } },
+      theme: 'grid',
+    });
+    y = lastY(4);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(110, 110, 110);
+    doc.text(doc.splitTextToSize('When all seven boxes are ticked and the attachments are signed, this package constitutes the field-validated submission for drilling mobilisation, subject to the hold points in this report. Uploading the same documents into AquaScan Pro regenerates this report at field-validated grade with the Drilling Instruction Package unlocked.', pw), margin, y); y += 10;
+  } catch (_fvErr) { console.warn('[PDF] attachment pack skipped', _fvErr); }
 
   // -- ASSESSMENT DISCLAIMER (dynamic based on field data) --
   checkSpace(60);
