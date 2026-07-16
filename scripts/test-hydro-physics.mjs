@@ -277,6 +277,27 @@ console.log('\nH. Aquifer simulation physics (aquiferSimulator)');
     `dry ${dry.groundwaterBudget.inflows.rechargeFromPrecipitation} vs wet ${wet.groundwaterBudget.inflows.rechargeFromPrecipitation}`);
   check('sustainable pumping is non-negative',
     lowQ.groundwaterBudget.balance.maxSustainablePumping >= 0, `${lowQ.groundwaterBudget.balance.maxSustainablePumping}`);
+
+  // ── PHYSICS GUARD (hydrogeologist audit 2026-07-12): the exact p30 defect —
+  // T=0.1 m²/d with Q=117.6 m³/day printed a 632.9 m drawdown on a 60 m aquifer.
+  const defect = asim.runAquiferSimulation(0.1, 0.104, 0.093, 60, 0.25, 21, 1656, 1325, 117.6, 99);
+  const pg = defect.pumpTest.physicsGuard;
+  check('physics guard flags drawdown > 2/3 saturated thickness as UNSUSTAINABLE',
+    pg && pg.sustainableAtRequestedRate === false, JSON.stringify(pg?.sustainableAtRequestedRate));
+  check('guard computes a max sustainable rate below the requested rate',
+    pg.maxSustainableRate_m3day > 0 && pg.maxSustainableRate_m3day < 117.6, `${pg.maxSustainableRate_m3day}`);
+  check('guard max-rate agrees with wellDesignEngine aquifer-limited band (0.2-0.6 m³/hr at T≈0.1)',
+    pg.maxSustainableRate_m3day / 24 > 0.2 && pg.maxSustainableRate_m3day / 24 < 0.6, `${(pg.maxSustainableRate_m3day / 24).toFixed(2)} m³/hr`);
+  check('cone of depression is redrawn at the sustainable rate (max drawdown physical)',
+    defect.coneOfDepression.maxDrawdownM <= pg.availableDrawdown_m * 1.05,
+    `cone max ${defect.coneOfDepression.maxDrawdownM} vs available ${pg.availableDrawdown_m}`);
+  check('guard consistency note names the inconsistency and the pump test',
+    /MODEL INCONSISTENT/i.test(pg.consistencyNote) && /pump test/i.test(pg.consistencyNote));
+  const sane = asim.runAquiferSimulation(25, 0.05, 1.2, 40, 0.2, 15, 1200, 900, 48);
+  check('sane aquifer (T=25, Q=2 m³/hr) passes the guard untouched',
+    sane.pumpTest.physicsGuard.sustainableAtRequestedRate === true &&
+    sane.coneOfDepression.pumpingRateM3day === 48,
+    `sustainable=${sane.pumpTest.physicsGuard.sustainableAtRequestedRate}, coneQ=${sane.coneOfDepression.pumpingRateM3day}`);
 }
 
 // ── I. MULTI-GEOPHYSICS FUSION (multiGeophysicsFusion) ──

@@ -3225,12 +3225,30 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
       y += _boxH + 4;
     }
+    // ── PHYSICS GUARD (hydrogeologist audit): if the Theis drawdown at the
+    // requested rate exceeds the usable drawdown, the honest statement is
+    // "rate unsustainable at modelled T", never a 632 m drawdown figure. ──
+    const _pg = (pt as any)?.physicsGuard;
+    if (_pg && !_pg.sustainableAtRequestedRate) {
+      checkSpace(24);
+      doc.setFillColor(254, 242, 242); doc.setDrawColor(220, 38, 38); doc.setLineWidth(0.5);
+      const _pgLines = doc.splitTextToSize(_pg.consistencyNote, pageW - margin * 2 - 6);
+      const _pgH = _pgLines.length * 3.4 + 5;
+      doc.roundedRect(margin, y, pageW - margin * 2, _pgH, 1.5, 1.5, 'FD');
+      doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(153, 27, 27);
+      doc.text(_pgLines, margin + 3, y + 4);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+      y += _pgH + 4;
+    }
     if (pt?.theis) {
+      const _ddCell = _pg && !_pg.sustainableAtRequestedRate
+        ? `Drawdown at requested rate exceeds usable drawdown (${_pg.availableDrawdown_m}m of ${_pg.saturatedThickness_m}m saturated) — UNSUSTAINABLE; max sustainable ~${fmt(_pg.maxSustainableRate_m3day / 24, 2)} m³/hr`
+        : `Est. drawdown: ${fmt(pt.theis.drawdownAtWell, 2)}m ±40%`;
       autoTable(doc, {
         startY: y,
         head: [['Pump Test Method', 'Transmissivity (m²/d)', 'Storativity', 'Key Result']],
         body: [
-          ['Theis (est.)', `${fmt(pt.theis.transmissivity, 2)} ±${fmt(pt.theis.transmissivity * 0.4, 1)}`, pt.theis.storativity?.toExponential(2) || '', `Est. drawdown: ${fmt(pt.theis.drawdownAtWell, 2)}m ±40%`],
+          ['Theis (est.)', `${fmt(pt.theis.transmissivity, 2)} ±${fmt(pt.theis.transmissivity * 0.4, 1)}`, pt.theis.storativity?.toExponential(2) || '', _ddCell],
           ['Cooper-Jacob (est.)', `${fmt(pt.cooperJacob?.transmissivity, 2)} ±${fmt((pt.cooperJacob?.transmissivity || 0) * 0.4, 1)}`, pt.cooperJacob?.storativity?.toExponential(2) || '', `Est. slope: ${fmt(pt.cooperJacob?.slopePerLogCycle, 3)}m/log-cycle`],
           ['K (pedotransfer)', '', '', `K = ${fmt(pt.hvorslev?.hydraulicConductivity, 4)} m/day (Saxton-Rawls, not slug test)`],
           ['Specific Capacity (est.)', '', '', `${fmt(pt.specificCapacity?.value, 2)} m³/day/m (${pt.specificCapacity?.classification || ''}) ±50%`],
@@ -3252,7 +3270,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Max Drawdown: ${fmt(cone.maxDrawdownM, 2)}m  |  Radius of Influence: ${fmt(cone.radiusOfInfluenceM, 0)}m  |  Pumping Rate: ${fmt(cone.pumpingRateM3day, 1)} m³/day`, margin, y);
-      y += 8;
+      y += 5;
+      if (_pg && !_pg.sustainableAtRequestedRate) {
+        doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(153, 27, 27);
+        doc.text(`Cone drawn at the maximum SUSTAINABLE rate (${fmt(cone.pumpingRateM3day, 1)} m³/day) — the requested rate (${fmt(_pg.requestedRate_m3day, 1)} m³/day) would dewater the well at the modelled T.`, margin, y);
+        doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50); doc.setFontSize(9);
+        y += 4;
+      }
+      y += 3;
 
       if (cone.drawdownProfile?.length) {
         const coneLabels = cone.drawdownProfile.map((p: any) => `${p.distanceM}m`);

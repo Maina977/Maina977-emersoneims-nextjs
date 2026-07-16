@@ -95,6 +95,28 @@ export interface PumpTestResult {
     residualDrawdown: { tOverTprime: number; residualDrawdown_m: number }[];
     transmissivityFromRecovery: number;
   };
+  /** ── PHYSICS GUARD (hydrogeologist audit 2026-07-12) ──
+   * In an UNCONFINED aquifer, drawdown at the well cannot exceed the saturated
+   * thickness — the well simply dewaters. Usable design drawdown ≈ 2/3 of
+   * saturated thickness (Driscoll 1986). When the Theis drawdown at the
+   * requested rate exceeds this, the RATE is unsustainable with the modelled T:
+   * the report must say so instead of printing a physically impossible number.
+   */
+  physicsGuard: {
+    /** saturated thickness used as the physical limit, m */
+    saturatedThickness_m: number;
+    /** usable design drawdown ≈ 0.67 × b, m */
+    availableDrawdown_m: number;
+    /** was the requested rate sustainable within available drawdown? */
+    sustainableAtRequestedRate: boolean;
+    /** requested rate, m³/day */
+    requestedRate_m3day: number;
+    /** max rate the modelled T can sustain within available drawdown (Theis is
+     *  linear in Q), m³/day */
+    maxSustainableRate_m3day: number;
+    /** honest one-line statement for the report */
+    consistencyNote: string;
+  };
 }
 
 export interface ConeOfDepression {
@@ -302,7 +324,30 @@ function simulatePumpTest(
     });
   }
 
+  // ── PHYSICS GUARD: drawdown vs saturated thickness ──
+  // Unconfined design limit: usable drawdown ≈ 2/3 of saturated thickness
+  // (Driscoll 1986). Theis drawdown is linear in Q, so the max sustainable rate
+  // scales directly: Q_max = Q × s_available / s_well. We deliberately DO NOT
+  // cap the reported drawdown silently — that would fabricate a feasible-looking
+  // result; instead we flag the inconsistency and state the sustainable rate.
+  const availableDrawdown = Math.round(b * 0.67 * 100) / 100;
+  const sustainableAtRequestedRate = s_well <= availableDrawdown;
+  const maxSustainableRate_m3day = s_well > 0
+    ? Math.round(Q * (availableDrawdown / s_well) * 100) / 100
+    : Q;
+  const consistencyNote = sustainableAtRequestedRate
+    ? `Requested rate ${Q.toFixed(1)} m³/day draws ${s_well.toFixed(1)} m — within the ${availableDrawdown} m usable drawdown (2/3 of ${b} m saturated thickness).`
+    : `MODEL INCONSISTENT AT REQUESTED RATE: Theis drawdown ${s_well.toFixed(1)} m exceeds the ${availableDrawdown} m usable drawdown (2/3 of ${b} m saturated thickness) — the well would dewater. With the modelled T (${T.toFixed(2)} m²/day, desktop estimate, under-constrained), the maximum sustainable rate is ~${maxSustainableRate_m3day.toFixed(1)} m³/day (${(maxSustainableRate_m3day / 24).toFixed(2)} m³/hr). The governing design rate and a 24-h constant-rate pump test control the final figure.`;
+
   return {
+    physicsGuard: {
+      saturatedThickness_m: b,
+      availableDrawdown_m: availableDrawdown,
+      sustainableAtRequestedRate,
+      requestedRate_m3day: Math.round(Q * 10) / 10,
+      maxSustainableRate_m3day,
+      consistencyNote,
+    },
     theis: {
       transmissivity: Math.round(T * 100) / 100,
       storativity: S,
@@ -690,8 +735,14 @@ export function runAquiferSimulation(
   // 1. Pump test analysis
   const pumpTest = simulatePumpTest(T, S, K, b, Q);
 
-  // 2. Cone of depression (at 30 days)
-  const cone = calculateConeOfDepression(T, S, Q, 30);
+  // 2. Cone of depression (at 30 days) — drawn at the SUSTAINABLE rate.
+  // If the requested rate would dewater the well (physics guard), plotting its
+  // cone would print hundreds of metres of impossible drawdown; the physically
+  // meaningful scenario is the maximum rate the aquifer can actually sustain.
+  const coneQ = pumpTest.physicsGuard.sustainableAtRequestedRate
+    ? Q
+    : pumpTest.physicsGuard.maxSustainableRate_m3day;
+  const cone = calculateConeOfDepression(T, S, coneQ, 30);
 
   // 3. Transient flow (1 year simulation)
   const rechargeRate = Math.max(0, (precipitationMmYr - evapotranspirationMmYr) * (1 - runoffFraction)) / 365 / 1000;
