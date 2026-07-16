@@ -21,7 +21,7 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'external', 'borehole-ai-engine', 'src');
 const OUT = mkdtempSync(join(tmpdir(), 'aquascan-vv-'));
 
-const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts', 'desktopDrillTargetReadiness.ts', 'sanitizeOutputs.ts', 'reportAuditor.ts'];
+const files = ['hydroPhysics.ts', 'dynamicRechargeModel.ts', 'engineerConfidenceEngine.ts', 'advancedHydroEngine.ts', 'pumpTestAnalyzer.ts', 'subsurfaceModeler.ts', 'drillReadiness.ts', 'aquiferSimulator.ts', 'multiGeophysicsFusion.ts', 'vesInversionEngine.ts', 'satelliteETEngine.ts', 'backtestEngine.ts', 'dataCoverageEngine.ts', 'climateClassifier.ts', 'wraIngestEngine.ts', 'validationBenchmark.ts', 'desktopDrillTargetReadiness.ts', 'sanitizeOutputs.ts', 'reportAuditor.ts', 'boreholeDatabase.ts'];
 try {
   execSync(
     `node "${join(ROOT, 'node_modules', 'typescript', 'lib', 'tsc.js')}" ` +
@@ -690,6 +690,49 @@ console.log('\nS. Desktop drill-target readiness (DDTR / FRR / MAG)');
   check('data-poor site stays far below (score discriminates, no participation trophy)',
     poorR.ddtr < 40, `ddtr ${poorR.ddtr}`);
   check('data-poor MAG is BLOCKED', poorR.mag === 'BLOCKED');
+
+  // ── Anomaly audit 2026-07-16 regressions ──
+  // #7: a registry typo ("Water Sring") must still classify as a spring, never
+  //     as a drilled borehole in the evidence tables.
+  const typoSite = { ...JSON.parse(JSON.stringify(baseSite)) };
+  typoSite.nearbyWells = { sampleSize: 10, successRate: 1, nearbyWells: [
+    { id: 'Eliangoma Water Sring', outcome: 'Success', depth_m: 62, source: 'WPDx (regional est. from county database)' },
+    { id: 'Community Borehole A', outcome: 'Success', depth_m: 55, source: 'WPDx' },
+  ]};
+  const typoR = ddt.computeDesktopDrillTargetReadiness(typoSite, 0);
+  const wpCat = typoR.categories.find(c => /water-point/i.test(c.category));
+  check('registry typo "Sring" classifies as spring, not borehole (audit #7)',
+    /1 borehole\/well, 1 spring/.test(wpCat.basis), wpCat.basis);
+
+  // #3: geocoded admin hierarchy on resolvedLocation counts as resolved
+  const adminSite = JSON.parse(JSON.stringify(baseSite));
+  delete adminSite.siteIdentity; delete adminSite.locationContext;
+  adminSite.resolvedLocation = { county: 'Vihiga', state: 'Vihiga County' };
+  const adminR = ddt.computeDesktopDrillTargetReadiness(adminSite, 0);
+  const coordCat = adminR.categories.find(c => /Coordinate/i.test(c.category));
+  check('resolvedLocation admin hierarchy counts as resolved (audit #3)', /admin resolved/.test(coordCat.basis), coordCat.basis);
+
+  // #4: multi-year recharge time series counts as a multi-year climate record
+  const climSite = JSON.parse(JSON.stringify(baseSite));
+  delete climSite.historicalData;
+  climSite.rechargeModel = { confidence: 0.62, annualRechargeTimeSeries: [{ year: 2021 }, { year: 2022 }, { year: 2023 }] };
+  const climR = ddt.computeDesktopDrillTargetReadiness(climSite, 0);
+  const climCat = climR.categories.find(c => /Climate/i.test(c.category));
+  check('multi-year recharge series counts as multi-year climate (audit #4)', /multi-year/.test(climCat.basis), climCat.basis);
+}
+
+// ── U. COUNTY LOOKUP — name beats bounding box (audit #2, 2026-07-16) ──
+console.log('\nU. Kenya county intelligence lookup (boreholeDatabase)');
+{
+  const bdb = req(join(OUT, 'boreholeDatabase.js'));
+  // The live Vihiga defect: site at (0.0267, 34.6472) geocoded to "Vihiga
+  // County" but the bbox test assigned KAKAMEGA's drilling record.
+  const byName = bdb.getKenyaCountyBoreholeStatsByName('Vihiga County');
+  check('name lookup "Vihiga County" returns the VIHIGA record', byName?.county === 'Vihiga', byName?.county);
+  check('name lookup normalizes hyphens/case ("uasin-gishu")', bdb.getKenyaCountyBoreholeStatsByName('Uasin-Gishu')?.county === 'Uasin Gishu' || !!bdb.getKenyaCountyBoreholeStatsByName('Uasin-Gishu'));
+  check('name lookup returns null for unknown, never a wrong county', bdb.getKenyaCountyBoreholeStatsByName('Atlantis') === null);
+  const byCoords = bdb.getKenyaCountyBoreholeStats(0.026677, 34.647174);
+  check('widened bbox: the live-defect coordinates now resolve to Vihiga', byCoords?.county === 'Vihiga', byCoords?.county);
 }
 
 // ── T. FINAL CONSENSUS TRACKS THE GOVERNING VALUE (live Check-19 block, 2026-07-16) ──

@@ -279,7 +279,11 @@ function analyzeMultispectral(
   )));
 
   const findings: string[] = [];
-  if (hasSoil) findings.push(`Soil composition: ${clay}% clay, ${sand}% sand — ${clayRatio > 0.5 ? 'clay-rich (lower permeability)' : 'sand-rich (higher permeability)'}`);
+  // AUDIT FIX (2026-07-16): 0% clay + 0% sand means NO usable retrieval — the
+  // old line narrated empty data as "sand-rich (higher permeability)" and then
+  // contradicted the soil section (LOAMY) and the hyperspectral proxy.
+  if (hasSoil && clay + sand > 0) findings.push(`Soil composition: ${clay}% clay, ${sand}% sand — ${clayRatio > 0.5 ? 'clay-rich (lower permeability)' : 'sand-rich (higher permeability)'}`);
+  else findings.push('Soil composition: no usable spectral soil-composition retrieval at this site — permeability is NOT inferred from this method (see the Soil Analysis section for the governing soil classification)');
   findings.push(`Lineament density: ${lineamentDensity} (spectral contrast ${(spectralContrast * 100).toFixed(0)}%)`);
   findings.push(`Drainage pattern density: ${drainageDensity}`);
   if (hasNdvi) findings.push(`Dry-season NDVI ${ndviMin.toFixed(2)} — ${ndviMin > 0.3 ? 'phreatophyte vegetation detected (GW access likely)' : ndviMin > 0.15 ? 'moderate vegetation persistence' : 'sparse dry-season cover'}`);
@@ -359,8 +363,15 @@ function analyzeSAR(
       sceneCount,
       temporalSpan: insarData?.temporalSpan ?? 'N/A',
     },
-    implication: hasInsar ? (insarData.groundwaterImplication || 'SAR data available for deformation monitoring')
-      : 'InSAR analysis unavailable — field-based subsidence monitoring recommended',
+    // AUDIT FIX (2026-07-16): the proxy's canned groundwaterImplication ("Ground
+    // is stable. No signs of aquifer compaction...") was printed right after the
+    // honest "no site-specific InSAR conclusion" bullets — a direct
+    // self-contradiction. A stability implication may only come from REAL
+    // processed scenes (isRealInsar).
+    implication: isRealInsar ? (insarData.groundwaterImplication || 'SAR data available for deformation monitoring')
+      : hasInsar
+        ? 'No stability/compaction implication can be drawn from the desktop proxy — a processed Sentinel-1 interferogram stack is required.'
+        : 'InSAR analysis unavailable — field-based subsidence monitoring recommended',
   };
 }
 
@@ -393,6 +404,10 @@ function analyzeGRACE(
     findings.push(`Storage trend: ${trend > 0 ? '+' : ''}${trend.toFixed(2)} cm/year — ${trend > 0 ? 'increasing (positive recharge)' : trend > -0.5 ? 'relatively stable' : 'declining (depletion concern)'}`);
     findings.push(`Basin status: ${status}`);
     if (graceData?.seasonalAmplitude_cm) findings.push(`Seasonal amplitude: ${graceData.seasonalAmplitude_cm.toFixed(1)} cm (indicates ${graceData.seasonalAmplitude_cm > 10 ? 'strong' : 'moderate'} seasonal recharge cycle)`);
+    // AUDIT FIX (2026-07-16): reconcile the ~300 km GRACE footprint with local
+    // recharge — a "losing basin" flag beside a high-rainfall site with dense
+    // functional springs read as an unexplained contradiction.
+    findings.push('SCALE NOTE: GRACE senses a ~300 km regional footprint — a BASIN-average storage signal, not a site measurement. The basin trend can decline while local recharge stays strong (or vice versa); site recharge in this report is assessed by the water-balance/recharge model and local water-point evidence.');
   } else {
     findings.push('GRACE/GRACE-FO data not retrieved — regional-scale assessment unavailable');
   }

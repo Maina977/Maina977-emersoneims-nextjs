@@ -795,7 +795,9 @@ function getKenyaCountyFromCoords(lat: number, lon: number): string | null {
     // ─── Small/Urban counties (check first) ───
     { county: 'mombasa', latRange: [-4.15, -3.9], lonRange: [39.55, 39.8] },
     { county: 'nairobi', latRange: [-1.45, -1.15], lonRange: [36.65, 37.0] },
-    { county: 'vihiga', latRange: [0.0, 0.15], lonRange: [34.65, 34.85] },
+    // Vihiga spans ~34.55-34.85E (Luanda sub-county sits at ~34.56-34.65E) —
+    // the old 34.65 west edge dropped real Vihiga sites into Kakamega's box.
+    { county: 'vihiga', latRange: [-0.02, 0.15], lonRange: [34.55, 34.85] },
 
     // ─── Central Highlands ───
     { county: "murang'a", latRange: [-1.12, -0.58], lonRange: [36.7, 37.35] },
@@ -864,6 +866,31 @@ export function getKenyaCountyBoreholeStats(lat: number, lon: number): CountyBor
   const county = getKenyaCountyFromCoords(lat, lon);
   if (!county) return null;
   return KENYA_COUNTY_BOREHOLE_DATA[county] ?? null;
+}
+
+/**
+ * Name-based county lookup — ALWAYS preferred over the coordinate bounding-box
+ * test when a geocoded admin hierarchy is available.
+ *
+ * AUDIT FIX (2026-07-16): a Vihiga site at lon 34.6472 fell 0.003° outside
+ * Vihiga's approximate bbox and was silently assigned KAKAMEGA's drilling
+ * record ("same hydrogeological unit" with the wrong county's geology). The
+ * report already KNEW the county from reverse geocoding — trust that first.
+ */
+export function getKenyaCountyBoreholeStatsByName(...names: (string | undefined | null)[]): CountyBoreholeStats | null {
+  for (const raw of names) {
+    if (!raw) continue;
+    const n = String(raw).toLowerCase()
+      .replace(/\bcounty\b/g, '').replace(/[’]/g, "'").replace(/\s+/g, ' ').trim();
+    if (!n) continue;
+    if (KENYA_COUNTY_BOREHOLE_DATA[n]) return KENYA_COUNTY_BOREHOLE_DATA[n];
+    // tolerate "Vihiga District", "Uasin-Gishu", hyphen/space variants
+    const compact = n.replace(/[^a-z']/g, '');
+    for (const key of Object.keys(KENYA_COUNTY_BOREHOLE_DATA)) {
+      if (key.replace(/[^a-z']/g, '') === compact) return KENYA_COUNTY_BOREHOLE_DATA[key];
+    }
+  }
+  return null;
 }
 
 export interface RegionalBoreholeStats {

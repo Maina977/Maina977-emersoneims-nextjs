@@ -435,9 +435,17 @@ export class BoreholeAnalyzer {
         boreholeRecords = getRegionalBoreholeStats(cc, cn, rg);
       }
 
-      // Kenya county-level intelligence â€” much more precise than national stats
+      // Kenya county-level intelligence â€” much more precise than national stats.
+      // AUDIT FIX (2026-07-16): prefer the GEOCODED county NAME over the
+      // coordinate bounding-box test â€” a Vihiga site 0.003Â° outside Vihiga's
+      // approximate bbox was silently assigned Kakamega's drilling record.
       if ((cc === 'KE' || cn?.toLowerCase().includes('kenya')) && effectiveLat && effectiveLon) {
-        const countyStats = getKenyaCountyBoreholeStats(effectiveLat, effectiveLon);
+        const { getKenyaCountyBoreholeStatsByName } = await import('./boreholeDatabase');
+        const countyStats =
+          getKenyaCountyBoreholeStatsByName(
+            (clientGeo as any)?.county, (clientLocation as any)?.county, rg,
+            (features as any)?.resolvedLocation?.county, (features as any)?.resolvedLocation?.state,
+          ) ?? getKenyaCountyBoreholeStats(effectiveLat, effectiveLon);
         if (countyStats) {
           (boreholeRecords as any).countyIntelligence = countyStats;
         }

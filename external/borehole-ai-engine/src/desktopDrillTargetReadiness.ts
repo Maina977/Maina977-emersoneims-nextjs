@@ -105,7 +105,14 @@ export function computeDesktopDrillTargetReadiness(
   // ── 1. Coordinate & administrative verification (5) ──
   const gpsSource = String(r.gpsSource ?? 'none');
   const grade = String(r.locationConfidence?.grade ?? r.siteIdentity?.locationConfidenceGrade ?? '');
-  const adminResolved = !!(r.siteIdentity?.adminHierarchy || r.locationContext?.county || r.administrativeLocation?.county);
+  // AUDIT FIX (2026-07-16): the pipeline stores the geocoded admin hierarchy on
+  // resolvedLocation / geocodedDisplayName — the old field list missed them, so
+  // the report printed a full village→ward→county hierarchy on page 1 while
+  // this category claimed "admin unresolved" (2 points wrongly withheld).
+  const adminResolved = !!(r.siteIdentity?.adminHierarchy || r.locationContext?.county || r.administrativeLocation?.county
+    || r.resolvedLocation?.county || r.resolvedLocation?.state || r.locationContext?.state
+    || (typeof r.geocodedDisplayName === 'string' && r.geocodedDisplayName.includes(','))
+    || (typeof r.resolvedLocation?.displayName === 'string' && r.resolvedLocation.displayName.includes(',')));
   let coordScore = 0;
   if (Number.isFinite(r.siteIdentity?.coordinates?.lat) || Number.isFinite(r.latitude)) coordScore += 2; // valid coords
   if (adminResolved) coordScore += 2;                                                                     // admin hierarchy resolved
@@ -125,13 +132,15 @@ export function computeDesktopDrillTargetReadiness(
   // drilled boreholes and drilled outcomes keep their own sub-scores.
   const wells: any[] = r.nearbyWells?.nearbyWells ?? [];
   const sampleSize = Number(r.nearbyWells?.sampleSize ?? wells.length ?? 0);
-  const boreholes = wells.filter((w) => !/spring/i.test(String(w?.id ?? '')) && !/spring/i.test(String(w?.lithology ?? '')));
+  // /sp?ring/i tolerates registry typos ("Water Sring") — a misspelled spring
+  // must not be counted (and displayed) as a drilled borehole (audit #7).
+  const boreholes = wells.filter((w) => !/sp?ring/i.test(String(w?.id ?? '')) && !/sp?ring/i.test(String(w?.lithology ?? '')));
   const springs = wells.length - boreholes.length;
   // A "drilled outcome" must be a REAL recorded outcome — wells whose outcome
   // was back-filled from regional-estimated yields are calibration aids, not
   // validation evidence (no synthetic outcomes may earn analogue credit).
   const drilledOutcomes = wells.filter((w) => (w?.outcome === 'Success' || w?.outcome === 'Fail')
-    && !/spring/i.test(String(w?.id ?? '')) && !/regional est/i.test(String(w?.source ?? '')));
+    && !/sp?ring/i.test(String(w?.id ?? '')) && !/regional est/i.test(String(w?.source ?? '')));
   const successRate = Number(r.nearbyWells?.successRate ?? 0);
   let wpScore = 0;
   if (sampleSize > 0) wpScore += Math.min(6, Math.ceil(sampleSize / 15));        // volume of registry records (max 6)
@@ -192,8 +201,14 @@ export function computeDesktopDrillTargetReadiness(
 
   // ── 6. Climate, rainfall & recharge reliability (8) ──
   const rech = r.rechargeModel;
-  const hasMultiYear = !!(r.historicalData?.weather);
-  const hasPrecipData = hasMultiYear || Number.isFinite(rech?.annualRainfall_mm) || Number.isFinite(rech?.annualRainfall);
+  // AUDIT FIX (2026-07-16): the dynamic recharge model itself carries a
+  // multi-year annual time series (NASA POWER-derived). The old check only
+  // looked at historicalData.weather, so a report with a full multi-year
+  // recharge series was scored "single-period climate" (2-3 points withheld).
+  const rechYears = Array.isArray(rech?.annualRechargeTimeSeries) ? rech.annualRechargeTimeSeries.length : 0;
+  const hasMultiYear = !!(r.historicalData?.weather) || rechYears >= 3;
+  const hasPrecipData = hasMultiYear || rechYears > 0
+    || Number.isFinite(rech?.annualRainfall_mm) || Number.isFinite(rech?.annualRainfall) || Number.isFinite(rech?.precipitation_mm);
   let climScore = 0;
   if (rech) climScore += 3;
   if (hasMultiYear) climScore += 3;
@@ -283,7 +298,7 @@ export function computeDesktopDrillTargetReadiness(
   if (Number.isFinite(prov?.overallAccuracy_pct) && prov.overallAccuracy_pct >= 50) provScore += 1;
   if (reportConsistent) provScore += 2;
   add('Data provenance, completeness & integrity', provScore, 5, 'Provenance',
-    `Provenance ${prov ? `tracked (${prov.overallAccuracy_pct ?? '—'}% accuracy)` : 'absent'}; ${reportConsistent ? 'no unresolved contradiction' : `${auditFailedCount} unresolved audit failure(s)`}.`,
+    `Provenance ${prov ? `tracked (${prov.overallAccuracy_pct ?? '—'}% of source-level values from measured/verified data — a stricter metric than the report confidence %)` : 'absent'}; ${reportConsistent ? 'no unresolved contradiction' : `${auditFailedCount} unresolved audit failure(s)`}.`,
     'Resolve any audit FAIL and ensure every governing value traces to a cited source.');
 
   const ddtrBase = categories.reduce((s, c) => s + c.earned, 0);

@@ -248,12 +248,14 @@ export interface NearbyBoreholeData {
  *
  * Each source is queried independently with a 15 s timeout.
  * Results are deduplicated, merged, and sorted by distance.
- * Adaptive radius: expands from 25 km to 50 km if fewer than 3 wells found.
+ * Base radius 50 km (owner requirement 2026-07-16).
  */
 export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise<NearbyBoreholeData | null> {
   const wells: NearbyBoreholeData['nearbyWells'] = [];
   const dataSources: string[] = [];
-  const searchRadius = 25; // km
+  // Owner requirement (2026-07-16): report must cover successful water points
+  // and boreholes within 50 km of the site (was 25 km).
+  const searchRadius = 50; // km
 
   // Convert km to degrees (approximate)
   const degOffset = searchRadius / 111;
@@ -309,7 +311,7 @@ export async function fetchNearbyBoreholeData(lat: number, lon: number): Promise
     // synthetic wells. Current public WPDx resource is `jfkt-jmqa` (39,959
     // Kenya records incl. government/ministry submissions); geo column is
     // `geocoded_column`; place names live in clean_adm2/clean_adm3.
-    const wpdxUrl = `https://data.waterpointdata.org/resource/jfkt-jmqa.json?$where=within_circle(geocoded_column,${lat},${lon},${searchRadius * 1000})&$limit=50&$select=row_id,lat_deg,lon_deg,water_source,water_tech,status_id,status_clean,water_source_clean,water_source_category,install_year,report_date,clean_adm2,clean_adm3,source`;
+    const wpdxUrl = `https://data.waterpointdata.org/resource/jfkt-jmqa.json?$where=within_circle(geocoded_column,${lat},${lon},${searchRadius * 1000})&$limit=250&$select=row_id,lat_deg,lon_deg,water_source,water_tech,status_id,status_clean,water_source_clean,water_source_category,install_year,report_date,clean_adm2,clean_adm3,source`;
     const resp = await fetch(wpdxUrl, { signal: AbortSignal.timeout(12000) });
     if (resp.ok) {
       const data = await resp.json();

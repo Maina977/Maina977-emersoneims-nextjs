@@ -2976,7 +2976,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               {/* Nearby Wells — REAL data from USGS NWIS + OSM + WPDx */}
               {nearby.length > 0 && (
                 <>
-                <h4 className="tab-title" style={{marginTop:24}}>{'\u{1F5FA}\uFE0F'} Nearby Wells ({nearby.length} found within {result.nearbyWells?.searchRadius_km ?? 25}km)</h4>
+                <h4 className="tab-title" style={{marginTop:24}}>{'\u{1F5FA}\uFE0F'} Nearby Wells ({nearby.length} found within {result.nearbyWells?.searchRadius_km ?? 50}km)</h4>
 
                 {/* ── Borehole Density Analysis Panel ── */}
                 {(result.nearbyWells as any)?.densityAnalysis && (

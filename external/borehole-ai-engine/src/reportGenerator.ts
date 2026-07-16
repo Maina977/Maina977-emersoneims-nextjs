@@ -862,18 +862,29 @@ function computeCanonicalEconomics(result: AnalysisResult) {
   const wci = (result as any).waterDesign?.waterChemistryIndices;
   const isCorrosive = wci && (wci.langelierSaturationIndex ?? 0) < -1.5;
   const casingRatePerM = isCorrosive ? 32 : 18; // HDPE/SS316L vs standard steel
-  const casingCost = Math.round(depthVal * casingRatePerM);
-  const casingNote = isCorrosive
-    ? `${depthVal}m x $${casingRatePerM}/m -- HDPE/SS316L (corrosive water, LSI ${wci.langelierSaturationIndex?.toFixed(2)})`
-    : `${depthVal}m x $${casingRatePerM}/m`;
 
   const aqZone = (result as any).subsurfaceModel?.aquiferZones?.[0] ?? (result as any).geophysicsFusion?.aquiferZones?.[0];
   const aquiferThickness = aqZone ? Math.round(aqZone.bottomM - aqZone.topM) : 0;
   const screenLength = aquiferThickness > 0 ? Math.min(aquiferThickness, 20) : Math.min(depthVal * 0.3, 20);
   const screenCost = Math.round(screenLength * 35);
-  const screenNote = aquiferThickness > 0
+  // AUDIT FIX (2026-07-16, water engineer): screen REPLACES blind casing over
+  // its interval — the old model billed full-depth casing PLUS the screen
+  // (60 m of string in a 40 m hole, ~$360 double-count). Blind casing = depth
+  // minus screen length (min 6 m surface/sump stick-up allowance).
+  const blindCasingLen = Math.max(Math.round(depthVal - screenLength), 6);
+  const casingCost = Math.round(blindCasingLen * casingRatePerM);
+  const casingNote = (isCorrosive
+    ? `${blindCasingLen}m blind casing x $${casingRatePerM}/m -- HDPE/SS316L (corrosive water, LSI ${wci.langelierSaturationIndex?.toFixed(2)})`
+    : `${blindCasingLen}m blind casing x $${casingRatePerM}/m`)
+    + ` (+ ${Math.round(screenLength)}m screen = ${blindCasingLen + Math.round(screenLength)}m string in a ${depthVal}m hole)`;
+  // The modelled static water level (for the screen-spans-SWL note below).
+  const _swl = (result as any).waterTableDepth ?? (result as any).estimatedWaterTable ?? (result as any).subsurfaceModel?.waterTableDepth_m;
+  const screenNote = (aquiferThickness > 0
     ? `${Math.round(screenLength)}m screen across ${aquiferThickness}m aquifer zone (${Math.round(aqZone.topM)}-${Math.round(aqZone.bottomM)}m)`
-    : `${Math.round(screenLength)}m screen (30% of depth, aquifer zone unmodelled)`;
+    : `${Math.round(screenLength)}m screen (30% of depth, aquifer zone unmodelled)`)
+    + (aqZone && Number.isFinite(_swl) && aqZone.topM <= _swl
+      ? `. Screen spans the modelled static water level (~${Math.round(_swl)}m) — normal completion in an unconfined weathered aquifer: it captures the drawdown zone. Final screen setting comes from the drill log.`
+      : '');
 
   // Prefer the well-design pump SELECTION (real pump curve) so the executive
   // pages and the detailed Pump Selection page describe ONE pump, not three
@@ -891,13 +902,25 @@ function computeCanonicalEconomics(result: AnalysisResult) {
     ? `${_wdPump.make_model_suggestion} — ~${pumpKW.toFixed(2)} kW, ${pumpHead}m TDH. Budgetary placeholder only; final pump model, duty point and motor rating are selected after the constant-rate pump test confirms sustainable yield, dynamic water level and TDH.`
     : `${yieldVal > 5 ? 'Submersible (high capacity)' : 'Submersible (standard)'}, ~${pumpKW.toFixed(2)} kW, ${pumpHead}m head`;
   const installCost = Math.round(pumpCost * 0.6);
-  const solarKW = _wdPump?.solarPanels_kW != null
-    ? _wdPump.solarPanels_kW
-    : Math.max(1, Math.round(pumpKW / 0.85 * 1.2 * 10) / 10);
+  // AUDIT FIX (2026-07-16, water engineer): when the well-design engine selects
+  // a HAND PUMP (correct at very low yields), the system needs NO solar array —
+  // the old model billed an Afridev hand pump AND a 1 kW solar power system in
+  // the same BOQ, and priced water sales on solar pumping hours.
+  const isHandPump = /hand\s*pump|afridev|india\s*mk/i.test(String(_wdPump?.make_model_suggestion ?? pumpNote ?? ''));
+  const solarKW = isHandPump ? 0
+    : _wdPump?.solarPanels_kW != null
+      ? _wdPump.solarPanels_kW
+      : Math.max(1, Math.round(pumpKW / 0.85 * 1.2 * 10) / 10);
   const solarCost = Math.round(solarKW * 1500);
   const wqTreatments = result.waterQuality?.treatmentRequired || [];
+  // AUDIT FIX (2026-07-16): right-size treatment. A single MINOR aesthetic iron
+  // exceedance (0.3-1.0 mg/L) on a household/hand-pump system needs simple
+  // aeration + sand filtration (~KSh 40-50k), not a $1,500 plant — the oversized
+  // line was 13% of capex and unfairly sank the project NPV.
+  const _ironOnly = wqTreatments.length <= 1 && (result.waterQuality?.iron ?? 0) > 0.3;
+  const _ironMinor = _ironOnly && (result.waterQuality?.iron ?? 0) <= 1.0;
   const wqTreatmentCost = !result.waterQuality?.isPotable
-    ? (wqTreatments.length > 2 ? 4000 : (result.waterQuality?.iron ?? 0) > 0.3 ? 1500 : 2500)
+    ? (wqTreatments.length > 2 ? 4000 : _ironMinor && isHandPump ? 400 : _ironOnly ? 1500 : 2500)
     : 0;
   const fluorideVal = result.waterQuality?.fluoride ?? 0;
   const defluoridationCost = fluorideVal > 1.5 ? 2500 : 0;
@@ -921,9 +944,11 @@ function computeCanonicalEconomics(result: AnalysisResult) {
   // in the scenario table produced the $450 discrepancy (-$193 vs -$643).
   const annualOM = annualMaintenance + annualDefluoridation;
 
-  // Realistic revenue model: solar pump ~6 h/day, ~300 operating days/yr,
-  // $0.80/m3 rural tariff, utilization ramp 60/75/85%.
-  const pumpHoursPerDay = 6;
+  // Realistic revenue model: solar pump ~6 h/day (hand pump: ~4 h/day of
+  // realistic manual pumping), ~300 operating days/yr, $0.80/m3 rural tariff,
+  // utilization ramp 60/75/85%. AUDIT FIX (2026-07-16): pumping hours must
+  // describe the machine actually in the BOQ.
+  const pumpHoursPerDay = isHandPump ? 4 : 6;
   const operatingDaysPerYear = 300;
   const waterTariffPerM3 = 0.80;
   const dailyWaterM3 = yieldVal * pumpHoursPerDay;
@@ -980,7 +1005,7 @@ function computeCanonicalEconomics(result: AnalysisResult) {
   return {
     depthVal, yieldVal, soilType, cpm, drillingCost, casingCost, casingNote,
     screenLength, screenCost, screenNote, pumpKW, pumpHead, pumpCost, pumpNote,
-    installCost, solarKW, solarCost, wqTreatmentCost, fluorideVal,
+    installCost, solarKW, solarCost, isHandPump, wqTreatmentCost, fluorideVal,
     defluoridationCost, annualDefluoridation, subtotalCost, isHardRock,
     contingencyRate, contingency, totalCost, annualMaintenance, annualOM,
     pumpHoursPerDay, operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
@@ -1403,7 +1428,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 116, 144);
       // Springs are real registry water points, but they are NOT drilled
       // boreholes -- say so, or the whole report loses credibility.
-      const springCount = wellsB.filter((w) => /spring/i.test(String(w?.id ?? ''))).length;
+      const springCount = wellsB.filter((w) => /sp?ring/i.test(String(w?.id ?? ''))).length;
       const boreholeCount = wellsB.length - springCount;
       const kindLabel = springCount > boreholeCount ? 'WATER POINTS' : 'BOREHOLES / WATER POINTS';
       if (wellsB.length === 0) {
@@ -1413,7 +1438,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       } else {
         const _totalRecs = nwB.sampleSize ?? wellsB.length;
         const _usedRecs = Math.min(wellsB.length, 100);
-        doc.text(`VERIFIED ${kindLabel} NEARBY: ${_totalRecs} REGISTRY RECORD${_totalRecs === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 25} KM (${_usedRecs} NEAREST USED IN MODEL)`, margin + 4, y + 6);
+        doc.text(`VERIFIED ${kindLabel} NEARBY: ${_totalRecs} REGISTRY RECORD${_totalRecs === 1 ? '' : 'S'} WITHIN ${nwB.searchRadius_km ?? 50} KM (${_usedRecs} NEAREST USED IN MODEL)`, margin + 4, y + 6);
         doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 90, 110);
         const statBits: string[] = [];
         // Account for every record: springs + wells/boreholes + any other/unclassified
@@ -1428,7 +1453,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         doc.text(statBits.length ? statBits.join('  •  ') : 'Depths/outcomes not published for most records -- names and positions are verified.', margin + 4, y + 11);
         named.slice(0, 5).forEach((w, i) => {
           const bits = [String(w.id).slice(0, 52)];
-          if ((w.depth_m ?? 0) > 0) bits.push(`${Math.round(w.depth_m)} m`);
+          // Mark regional-estimated depths inline — the footnote alone let
+          // estimated depths read as measurements (audit #16).
+          if ((w.depth_m ?? 0) > 0) bits.push(`${Math.round(w.depth_m)} m${/regional est/i.test(String(w.source ?? '')) ? ' (est.)' : ''}`);
           if (w.distance_km != null) bits.push(`${w.distance_km} km away`);
           doc.text(`• ${bits.join('  --  ')}`, margin + 6, y + 17 + i * 5);
         });
@@ -1451,13 +1478,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Drilling', `$${eco.drillingCost.toLocaleString()}`, eco.kes(eco.drillingCost), `${eco.depthVal} m × ~KSh ${eco.cpmKES.toLocaleString()}/m — ${eco.drillMethod}, ${eco.soilType} ground (Kenya 2026 market)`],
         ['Casing + screen', `$${(eco.casingCost + eco.screenCost).toLocaleString()}`, eco.kes(eco.casingCost + eco.screenCost), `Casing ${eco.casingNote} = $${eco.casingCost.toLocaleString()}; provisional screen ${Math.round(eco.screenLength)}m x $35/m = $${eco.screenCost.toLocaleString()}`],
         ['Pump + installation', `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.kes(eco.pumpCost + eco.installCost), eco.pumpNote],
-        ['Solar power system', `$${eco.solarCost.toLocaleString()}`, eco.kes(eco.solarCost), `${eco.solarKW.toFixed(1)} kW array`],
+        // Hand-pump systems need no solar array — omit the row entirely (audit #9)
+        ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, eco.kes(eco.solarCost), `${eco.solarKW.toFixed(1)} kW array`] as string[]] : []),
         ...(eco.wqTreatmentCost + eco.defluoridationCost > 0
           ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.kes(eco.wqTreatmentCost + eco.defluoridationCost), eco.defluoridationCost > 0 ? `incl. defluoridation (+$${eco.annualDefluoridation}/yr media)` : 'per modelled water quality'] as string[]]
           : []),
         ['Contingency', `$${eco.contingency.toLocaleString()}`, eco.kes(eco.contingency), `${(eco.contingencyRate * 100).toFixed(0)}%${eco.isHardRock ? ' (hard rock)' : ''}`],
         ['TOTAL CAPITAL', `$${eco.totalCost.toLocaleString()}`, eco.kes(eco.totalCost), 'Complete functional borehole. Excl. land, storage tank, distribution'],
-        ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, solar ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr`],
+        ['Payback', eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, ${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr${eco.isHandPump ? ' — household use case: the real value is avoided vendor-water cost, not sales' : ''}`],
         ['NPV @ 10% / 20 yrs', `$${eco.npv10Rounded.toLocaleString()}`, '', eco.irr === 999 ? 'IRR >100%' : eco.irr === -999 ? 'IRR negative' : `IRR ~${eco.irr}%`],
       ],
       headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
@@ -1613,7 +1641,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     {
       const ciR = (result as any).boreholeRecords?.countyIntelligence;
       const wellsR: any[] = result.nearbyWells?.nearbyWells ?? [];
-      const drilledR = wellsR.filter((w: any) => !/spring/i.test(String(w?.id ?? '')) && String(w?.id ?? '').trim());
+      // /sp?ring/i tolerates registry typos ("Water Sring") — audit #7: a
+      // misspelled spring appeared in this table as a drilled well.
+      const drilledR = wellsR.filter((w: any) => !/sp?ring/i.test(String(w?.id ?? '')) && String(w?.id ?? '').trim());
       if (ciR || drilledR.length > 0) {
         checkSpace(30);
         doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
@@ -1642,7 +1672,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
               (w.depth_m ?? 0) > 0 ? `${Math.round(w.depth_m)} m${/regional est/i.test(String(w.source ?? '')) ? ' (regional est.)' : ''}` : 'not published',
               (w.yield_m3h ?? 0) > 0 ? `${w.yield_m3h} m³/hr${/regional est/i.test(String(w.source ?? '')) ? ' (regional est.)' : ''}` : 'not published',
               (w.distance_km ?? null) != null ? `${w.distance_km} km` : '—',
-              String(w.outcome ?? 'Unknown'),
+              // A status back-filled from regional-estimated yield is an
+              // estimate, not a recorded outcome — say so (audit #7).
+              `${String(w.outcome ?? 'Unknown')}${/regional est/i.test(String(w.source ?? '')) && (w.outcome === 'Success' || w.outcome === 'Fail' || w.outcome === 'Moderate') ? ' (est.)' : ''}`,
             ]),
             headStyles: { fillColor: [21, 90, 50], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
             bodyStyles: { fontSize: 7 },
@@ -1721,13 +1753,14 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(magReasonLines, margin + 4, y + 11);
     y += magH + 5;
 
-    // Handover statement box
+    // Handover statement box (colour follows the mobilisation gate)
     checkSpace(28);
-    doc.setFillColor(isReady ? 240 : 254, isReady ? 253 : 243, isReady ? 244 : 199);
+    const handoverReady = ddt.mag === 'RELEASED FOR DRILLING';
+    doc.setFillColor(handoverReady ? 240 : 254, handoverReady ? 253 : 243, handoverReady ? 244 : 199);
     doc.roundedRect(margin, y, pw, 24, 2, 2, 'F');
-    doc.setDrawColor(bandColor[0], bandColor[1], bandColor[2]); doc.setLineWidth(0.6);
+    doc.setDrawColor(magColor[0], magColor[1], magColor[2]); doc.setLineWidth(0.6);
     doc.roundedRect(margin, y, pw, 24, 2, 2, 'S');
-    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(bandColor[0], bandColor[1], bandColor[2]);
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(magColor[0], magColor[1], magColor[2]);
     doc.text('HANDOVER STATUS', margin + 4, y + 6);
     doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
     doc.text(doc.splitTextToSize(dr.handoverStatement, pw - 8), margin + 4, y + 11);
@@ -2038,7 +2071,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Survey + statutory approvals', `$${(eco.surveyCost + eco.permitCost).toLocaleString()}`, 'Hydrogeological survey report + WRA abstraction approval (required)'],
         ['Drilling, casing & screen',  `$${(eco.drillingCost + eco.casingCost + eco.screenCost).toLocaleString()}`, `${eco.depthVal}m at ~KSh ${eco.cpmKES.toLocaleString()}/m (${eco.drillMethod}, ${eco.soilType}) + casing + screen`],
         ['Pump & installation',        `$${(eco.pumpCost + eco.installCost).toLocaleString()}`, eco.pumpNote],
-        ['Solar power system',         `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW} kW array + controller`],
+        ...(eco.solarCost > 0 ? [['Solar power system', `$${eco.solarCost.toLocaleString()}`, `${eco.solarKW} kW array + controller`] as [string, string, string]] : []),
         ...((eco.wqTreatmentCost + eco.defluoridationCost) > 0
           ? [['Water treatment', `$${(eco.wqTreatmentCost + eco.defluoridationCost).toLocaleString()}`, eco.defluoridationCost > 0 ? 'Incl. defluoridation (fluoride > WHO 1.5 mg/L)' : 'Per water-quality model'] as [string, string, string]]
           : []),
@@ -2654,7 +2687,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(56, 189, 248);
-    doc.text('All 30 Methods ? Ranked by Site Applicability', margin, y);
+    doc.text(`All ${_sgCount} Methods -- Ranked by Site Applicability`, margin, y);
     y += 5;
 
     const sortedMethods = [...sg.methods].sort((a, b) => b.applicabilityScore - a.applicabilityScore);
@@ -2749,7 +2782,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
+  // TRUNCATION GUARD (2026-07-16): this long stretch previously ran UNPROTECTED
+  // at top level — one ReferenceError (bare `annualOM` in the ROI table) aborted
+  // every section after page 24 and shipped a silently truncated report. Each
+  // major section below now runs inside its own guard, like sections 16-39.
   // -- WATER QUALITY TABLE --
+  try {
   addPage();
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -2843,7 +2881,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- SOIL ANALYSIS --
+  try {
   checkSpace(60);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -2873,7 +2914,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   });
   y = lastY(10);
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- RISK ASSESSMENT (Professional + Expert) --
+  try {
   if (tier !== 'basic') {
     checkSpace(60);
     doc.setFontSize(16);
@@ -2984,9 +3028,9 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const {
       depthVal, yieldVal, soilType, cpm, drillingCost, casingCost, casingNote,
       screenCost, screenNote, pumpCost, pumpNote, installCost, solarKW,
-      solarCost, wqTreatmentCost, fluorideVal, defluoridationCost,
+      solarCost, isHandPump, wqTreatmentCost, fluorideVal, defluoridationCost,
       annualDefluoridation, subtotalCost, isHardRock, contingencyRate,
-      contingency, totalCost, annualMaintenance, pumpHoursPerDay,
+      contingency, totalCost, annualMaintenance, annualOM, pumpHoursPerDay,
       operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
       yr1Utilization, yr3PlusUtilization, yr1Revenue, yr3Revenue,
       netAnnual, cashFlows, irr, paybackMonths, npv10Rounded,
@@ -3004,8 +3048,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['Well Screen', `$${screenCost.toLocaleString()}`, screenNote],
         ['Pump Unit', `$${pumpCost.toLocaleString()}`, pumpNote],
         ['Installation & Pipe', `$${installCost.toLocaleString()}`, 'Rising main, fittings, civil works'],
-        ['Solar Power System', `$${solarCost.toLocaleString()}`, `${solarKW} kW solar array + controller (~$1,500/kW, IRENA 2023)`],
-        ...(wqTreatmentCost > 0 ? [['Water Treatment', `$${wqTreatmentCost.toLocaleString()}`, `Conservative upper bound -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'Filtration system'}`]] : []),
+        ...(solarCost > 0 ? [['Solar Power System', `$${solarCost.toLocaleString()}`, `${solarKW} kW solar array + controller (~$1,500/kW, IRENA 2023)`]] : []),
+        ...(wqTreatmentCost > 0 ? [['Water Treatment', `$${wqTreatmentCost.toLocaleString()}`, wqTreatmentCost <= 400
+          ? `Right-sized household option -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'iron removal'}: simple aeration + sand filtration (~KSh ${Math.round(wqTreatmentCost * 129 / 1000) * 1000 / 1000}k). Lab analysis confirms the need before purchase.`
+          : `Conservative upper bound -- ${result.waterQuality?.treatmentRequired?.join(', ') || 'Filtration system'}`]] : []),
         ...(defluoridationCost > 0 ? [['Defluoridation Unit', `$${defluoridationCost.toLocaleString()}`, `Fluoride ${fluorideVal.toFixed(1)} mg/L > 1.5 WHO limit -- bone-char/activated alumina (+$${annualDefluoridation}/yr media)`]] : []),
         [`Contingency (${Math.round(contingencyRate * 100)}%)`, `$${contingency.toLocaleString()}`, isHardRock ? 'Hard rock (gneiss/granite) -- DTH hammer, bit changes, foam drilling complications' : 'Standard engineering contingency for unforeseen conditions'],
         ['', '', ''],
@@ -3056,7 +3102,12 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y = lastY(10);
 
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
-    doc.text('Revenue assumptions: solar pump 6hrs/day, 300 operating days/yr, $0.80/m3 rural tariff (WASH benchmarks), 60%->85% utilization ramp.', margin, y); y += 4;
+    doc.text(`Revenue assumptions: ${isHandPump ? 'hand pump ~4 hrs/day realistic manual pumping (no solar system in this BOQ)' : `solar pump ${pumpHoursPerDay}hrs/day`}, ${operatingDaysPerYear} operating days/yr, $${waterTariffPerM3.toFixed(2)}/m3 rural tariff (WASH benchmarks), 60%->85% utilization ramp.`, margin, y); y += 4;
+    if (isHandPump) {
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 90, 140);
+      doc.text('USE-CASE NOTE: this is a household/homestead hand-pump scheme. Commercial water-sales payback is NOT the use case — the economic value is avoided vendor-water cost, reliability and time saved.', margin, y, { maxWidth: pageW - margin * 2 }); y += 7;
+      doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
+    }
     doc.text('IRR via NPV=0 bisection (20yr). Discount rate: 10% (World Bank standard for Sub-Saharan infrastructure). Obtain local contractor quotes before commitment.', margin, y); y += 4;
     // NPV sensitivity at multiple discount rates
     let npv125 = 0, npv15 = 0;
@@ -3171,7 +3222,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y += 68;
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- GLDAS GROUNDWATER (Professional + Expert) --
+  try {
   if (tier !== 'basic' && result.gldasGroundwater) {
     addPage();
     doc.setFontSize(16);
@@ -3220,7 +3274,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- SUBSURFACE MODEL --
+  try {
   if (tier !== 'basic' && result.subsurfaceModel) {
     addPage();
     doc.setFontSize(16);
@@ -3312,7 +3369,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- AQUIFER SIMULATION --
+  try {
   if (tier !== 'basic' && result.aquiferSimulation) {
     addPage();
     doc.setFontSize(16);
@@ -3426,7 +3486,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- REAL-TIME WATER DATA --
+  try {
   if (tier !== 'basic' && result.realTimeWaterData) {
     checkSpace(60);
     doc.setFontSize(16);
@@ -3470,7 +3533,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     }
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- GRACE-FO DEEP STORAGE ANALYSIS --
+  try {
   if (tier !== 'basic' && (result as any).graceData) {
     addPage();
     doc.setFontSize(16);
@@ -3497,7 +3563,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     y = lastY(10);
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- NEARBY WELLS (USGS / OSM) -- (only show if actual wells were found)
+  try {
   if (tier !== 'basic' && (result as any).nearbyWells && (result as any).nearbyWells.sampleSize > 0) {
     const nw = (result as any).nearbyWells;
     checkSpace(80);
@@ -3574,9 +3643,55 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(120, 120, 120);
     doc.text('Positions and names come from official registries (WRA, WPDx, UNESCO IHP-WINS, USGS NWIS, OSM); no water points are ever invented. Records include springs as well as drilled boreholes -- rows marked "(regional est.)" carry estimated depths/yields, not field measurements.', margin, y, { maxWidth: pageW - margin * 2 }); y += 13;
+
+    // ── 11b. SUCCESSFUL WATER POINTS & BOREHOLES (owner directive 2026-07-16) ──
+    // A dedicated names-and-depths roll of every FUNCTIONAL/SUCCESSFUL record in
+    // the search radius. Real registry records only; estimated values marked.
+    {
+      const _isEst = (w: any) => /regional est/i.test(String(w?.source ?? ''));
+      const _isSpr = (w: any) => /sp?ring/i.test(String(w?.id ?? '')) || /sp?ring/i.test(String(w?.lithology ?? ''));
+      const successful = (nw.nearbyWells as any[])
+        .filter((w) => (w.outcome === 'Success' || w.outcome === 'Moderate') && String(w?.id ?? '').trim())
+        .sort((a, b) => (a.distance_km ?? 999) - (b.distance_km ?? 999));
+      if (successful.length > 0) {
+        addPage();
+        doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(21, 90, 50);
+        doc.text(`11b. Successful Water Points & Boreholes within ${nw.searchRadius_km ?? 50} km (${successful.length} of ${nw.sampleSize} records)`, margin, y); y += 6;
+        doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+        doc.text(doc.splitTextToSize(`Every registry record with a functional/successful status inside the search radius, nearest first — names verified at true positions. "BH/Well" rows are drilled sources; "Spring" rows are natural discharge points (they prove groundwater occurrence but are not drilled boreholes). Depths/yields marked "(est.)" are regional estimates pending WRA completion records.`, pw), margin, y); y += 10;
+        autoTable(doc, {
+          startY: y, margin: { left: margin, right: margin },
+          head: [['#', 'Name (registry ID)', 'Type', 'Depth', 'Yield', 'Distance', 'Status']],
+          body: successful.slice(0, 150).map((w: any, i: number) => [
+            String(i + 1),
+            String(w.id).slice(0, 48),
+            _isSpr(w) ? 'Spring' : 'BH/Well',
+            (w.depth_m ?? 0) > 0 ? `${Math.round(w.depth_m)} m${_isEst(w) ? ' (est.)' : ''}` : 'not published',
+            (w.yield_m3h ?? 0) > 0 ? `${(w.yield_m3h ?? 0).toFixed(1)} m³/h${_isEst(w) ? ' (est.)' : ''}` : 'not published',
+            w.distance_km != null ? `${sf(w.distance_km, 1)} km` : '—',
+            `${w.outcome === 'Moderate' ? 'Functional (moderate)' : 'Functional'}${_isEst(w) ? ' (est.)' : ''}`,
+          ]),
+          headStyles: { fillColor: [21, 90, 50], textColor: 255, fontStyle: 'bold', fontSize: 7 },
+          bodyStyles: { fontSize: 6.5 },
+          columnStyles: { 0: { cellWidth: 8 }, 2: { cellWidth: 16 }, 5: { cellWidth: 18 } },
+          alternateRowStyles: { fillColor: [240, 253, 244] },
+          theme: 'grid',
+        });
+        y = lastY(4);
+        if (successful.length > 150) {
+          doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
+          doc.text(`+ ${successful.length - 150} further functional records beyond the 150 nearest (full set available on request).`, margin, y); y += 6;
+        }
+        doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
+        doc.text(doc.splitTextToSize('Use this roll for door-to-door verification: each name can be confirmed with the community and WRA sub-regional office. Confirmed offset boreholes with completion records are the single cheapest way to upgrade this desktop study.', pw), margin, y); y += 10;
+      }
+    }
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- DEM TOPOGRAPHIC & LINEAMENT ANALYSIS --
+  try {
   if (tier !== 'basic' && (result as any).demHydrology) {
     addPage();
     doc.setFontSize(16);
@@ -3634,7 +3749,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(dem.methodology, margin, y, { maxWidth: 170 }); y += 12;
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- VEGETATION GROUNDWATER PROXY --
+  try {
   if (tier !== 'basic' && (result as any).vegetationGWProxy) {
     checkSpace(60);
     doc.setFontSize(16);
@@ -3664,7 +3782,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(veg.methodology, margin, y, { maxWidth: 170 }); y += 12;
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- BAYESIAN ENSEMBLE SUMMARY --
+  try {
   if (tier !== 'basic' && (result as any).ensembleResult) {
     addPage();
     doc.setFontSize(16);
@@ -3728,7 +3849,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text(ens.bayesianUpdate, margin, y, { maxWidth: 170 }); y += 12;
   }
 
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
   // -- HISTORICAL WEATHER DATA --
+  try {
   if (tier !== 'basic' && result.historicalData?.weather) {
     addPage();
     doc.setFontSize(16);
@@ -3779,6 +3903,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setTextColor(120, 120, 120);
     doc.text('Data from NASA Prediction Of Worldwide Energy Resources (POWER) API. Free, no API key required.', margin, y); y += 10;
   }
+  } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
 
   // -------------------------------------------------------------------
   // PHASE 5-8 ADVANCED ANALYSIS SECTIONS
