@@ -196,7 +196,10 @@ function sf(v: any, decimals = 0): string {
 
 function pct(v: number | undefined | null): string {
   if (v == null || typeof v !== 'number' || !Number.isFinite(v)) return 'N/A';
-  return `${(v * 100).toFixed(1)}%`;
+  // AUDIT FIX (2026-07-16 external review): decimal-level probability ("64.1%")
+  // implies statistical calibration a desktop model cannot demonstrate. Client-
+  // facing probabilities are whole percentages, always shown with their range.
+  return `${Math.round(v * 100)}%`;
 }
 
 /** True only when a REAL field ERT/resistivity survey was uploaded. */
@@ -879,11 +882,15 @@ function computeCanonicalEconomics(result: AnalysisResult) {
     + ` (+ ${Math.round(screenLength)}m screen = ${blindCasingLen + Math.round(screenLength)}m string in a ${depthVal}m hole)`;
   // The modelled static water level (for the screen-spans-SWL note below).
   const _swl = (result as any).waterTableDepth ?? (result as any).estimatedWaterTable ?? (result as any).subsurfaceModel?.waterTableDepth_m;
+  // AUDIT FIX (2026-07-16 external review): a desktop model must not SPECIFY a
+  // screen interval — no lithological log or water strikes exist yet. The
+  // interval below is a COSTING ALLOWANCE only.
   const screenNote = (aquiferThickness > 0
-    ? `${Math.round(screenLength)}m screen across ${aquiferThickness}m aquifer zone (${Math.round(aqZone.topM)}-${Math.round(aqZone.bottomM)}m)`
-    : `${Math.round(screenLength)}m screen (30% of depth, aquifer zone unmodelled)`)
+    ? `${Math.round(screenLength)}m screen allowance against the ${aquiferThickness}m MODELLED aquifer zone (${Math.round(aqZone.topM)}-${Math.round(aqZone.bottomM)}m)`
+    : `${Math.round(screenLength)}m screen allowance (30% of depth, aquifer zone unmodelled)`)
+    + '. COSTING ALLOWANCE ONLY — the actual screen interval, gravel pack and sanitary seal are designed from the driller\'s lithological log, water strikes and interpreted ERT, never from this desktop model.'
     + (aqZone && Number.isFinite(_swl) && aqZone.topM <= _swl
-      ? `. Screen spans the modelled static water level (~${Math.round(_swl)}m) — normal completion in an unconfined weathered aquifer: it captures the drawdown zone. Final screen setting comes from the drill log.`
+      ? ` (The modelled zone spans the modelled static water level ~${Math.round(_swl)}m — normal in an unconfined weathered aquifer.)`
       : '');
 
   // Prefer the well-design pump SELECTION (real pump curve) so the executive
@@ -1105,7 +1112,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFont('helvetica', 'bold');
   doc.text('EMERSON EIMS AquaScan Pro', pageW / 2, 22, { align: 'center' });
   doc.setFontSize(14);
-  doc.text('AI Borehole Analysis Report', pageW / 2, 32, { align: 'center' });
+  // External audit: the title must say what the document IS — a desktop
+  // screening study — and that it is not a drilling instruction.
+  doc.text('Desktop Groundwater & Hydroecological Screening Report', pageW / 2, 32, { align: 'center' });
+  doc.setFontSize(9); doc.setTextColor(251, 191, 36);
+  doc.text('NOT FOR DRILLING MOBILISATION — field survey, professional sign-off and WRA authorisation required first', pageW / 2, 37.5, { align: 'center' });
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(148, 163, 184);
@@ -1196,7 +1207,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   // -- REPORT SCOPE STATEMENT --
   doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 110);
   doc.text('SCOPE: This report is a filter, not a final decision-maker. Its real power is saving money before mistakes happen -- not replacing the final validation step.', margin, y); y += 3.5;
-  doc.text('Multi-source AI ensemble (11+ sources). Reduces failed drilling by 40-60% before any fieldwork. Expert-level pre-feasibility screening accessible to non-experts.', margin, y); y += 3.5;
+  doc.text('Multi-source AI ensemble (11+ sources). Screens out siting-stage errors before fieldwork; its measured failure-reduction rate is published in the public validation ledger as drilled outcomes accumulate.', margin, y); y += 3.5;
   doc.text('Upgrade path to bankable grade: add ERT + pump test + lab to reach \u226590% confidence for institutional finance (IDA / AfDB / World Bank).', margin, y); y += 6;
 
   // Audit fix #1,2,6,10: Field-data gates -- prominent warnings for missing field data
@@ -1296,7 +1307,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     const briefCond = !af.hasFieldERT
       ? 'Key condition: perform an ERT geophysical survey before drilling mobilization.'
       : !af.hasFieldPumpTest
-        ? 'Key condition: conduct a 24-hour pump test immediately after borehole completion.'
+        ? 'Key condition: conduct a 24-hour constant-rate pump test + >=20 h recovery monitoring (Kenya Water Resources Regulations) immediately after borehole completion.'
         : 'Key condition: submit ISO 17025 lab water analysis before community use.';
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(226, 232, 240);
     doc.text(briefCond, margin + 5, y + 25);
@@ -1335,18 +1346,20 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
       doc.text(`DESKTOP PRE-FEASIBILITY READINESS: ${ddtB.ddtr}/100 -- ${ddtB.ddtrClass}`, margin + 5, y + 6.2);
       doc.setFontSize(6.8); doc.setFont('helvetica', 'normal'); doc.setTextColor(240, 246, 240);
-      doc.text(`Completeness of the desktop evidence stack (${ddtB.evidenceFamilyCount} independent evidence families; desktop max 95). The remaining share is the field step: ERT survey, survey-grade peg, sign-off & WRA approval.`, margin + 5, y + 11.5);
+      doc.text(`Completeness of the desktop evidence stack (${ddtB.evidenceFamilyCount} evidence families; related satellite inputs share discounted weight; desktop max 95). The remaining share is the field step: ERT, peg, sign-off & WRA approval.`, margin + 5, y + 11.5);
       y += 19;
     }
 
     // Headline tiles (2 rows x 3)
     const tiles = [
       { lbl: 'SUCCESS PROBABILITY', val: pct(result.probability), sub: u ? `range ${(u.probabilityRange[0] * 100).toFixed(0)}-${(u.probabilityRange[1] * 100).toFixed(0)}%` : 'satellite-only estimate', c: fv.color },
-      { lbl: 'RECOMMENDED DEPTH', val: `${fmt(result.recommendedDepth, 0)} m`, sub: u ? `range ${u.depthRange[0]}-${u.depthRange[1]} m` : 'satellite-only estimate', c: [56, 189, 248] as [number, number, number] },
+      { lbl: 'PROVISIONAL INVESTIGATION DEPTH', val: `${fmt(result.recommendedDepth, 0)} m`, sub: u ? `range ${u.depthRange[0]}-${u.depthRange[1]} m — revise after ERT` : 'satellite-only estimate — revise after ERT', c: [56, 189, 248] as [number, number, number] },
       { lbl: 'EXPECTED YIELD', val: `${fmt(result.estimatedYield, 1)} m³/hr`, sub: u ? `range ${u.yieldRange[0]}-${u.yieldRange[1]} m³/hr` : 'satellite-only estimate', c: [34, 197, 94] as [number, number, number] },
       { lbl: 'WATER TABLE (MODELLED)', val: wtDepth != null ? `${fmt(wtDepth, 0)} m` : 'N/A', sub: 'confirm with ERT', c: [129, 140, 248] as [number, number, number] },
       { lbl: 'TOTAL INVESTMENT', val: `${eco.kes(eco.totalCost)}`, sub: `$${eco.totalCost.toLocaleString()} · incl. survey, permits, ${(eco.contingencyRate * 100).toFixed(0)}% contingency`, c: [251, 191, 36] as [number, number, number] },
-      { lbl: 'PAYBACK (WATER SALES)', val: eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} yrs` : '>20 yrs', sub: `solar ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³`, c: [56, 189, 248] as [number, number, number] },
+      // "Not viable (sales)" and ">20 yrs" must never disagree across pages —
+      // one label, everywhere (external audit item 13).
+      { lbl: 'PAYBACK (WATER SALES)', val: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${(eco.paybackMonths / 12).toFixed(1)} yrs` : 'Not viable as sales', sub: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³` : `value = avoided vendor-water cost${eco.isHandPump ? ' (household hand-pump scheme)' : ''}`, c: [56, 189, 248] as [number, number, number] },
     ];
     const tW = (pw - 8) / 3, tH = 23;
     tiles.forEach((t, i) => {
@@ -1514,7 +1527,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       head: [['Step', 'Status', 'What it proves', 'Typical cost']],
       body: [
         ['1. Hydrogeological survey + ERT geophysics', af.hasFieldERT ? 'DONE' : 'PLANNED', 'Statutory survey report (required for WRA approval) + ERT confirms aquifer zones and drill depth before the rig mobilizes', 'KSh 40,000-110,000'],
-        ['2. Drill + 24-hour pump test', af.hasFieldPumpTest ? 'DONE' : 'PLANNED', 'Proves the sustainable yield this report estimates', 'Included in drilling contract'],
+        ['2. Drill + 24-h constant-rate pump test + ≥20 h recovery', af.hasFieldPumpTest ? 'DONE' : 'PLANNED', 'Proves the sustainable yield this report estimates (test + recovery per Kenya Water Resources Regulations)', 'Included in drilling contract'],
         ['3. ISO 17025 lab water analysis', af.hasLabWaterAnalysis ? 'DONE' : 'PLANNED', 'Replaces modelled water quality with certified results', '$150-400'],
       ],
       headStyles: { fillColor: [21, 128, 61], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
@@ -1534,8 +1547,8 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(154, 92, 6);
     doc.text('WHAT THIS BRIEF IS -- AND IS NOT', margin + 4, y + 6);
     doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(110, 75, 20);
-    doc.text('IS: an expert pre-drilling filter built from satellite data, physics models and verified registry records. It removes 40-60% of failed', margin + 4, y + 11.5);
-    doc.text('drilling before any money is spent, and hands you the exact field-validation plan above.', margin + 4, y + 15.5);
+    doc.text('IS: an expert pre-drilling filter built from satellite data, physics models and verified registry records. It screens out siting-stage', margin + 4, y + 11.5);
+    doc.text('errors before any money is spent, and hands you the exact field-validation plan above.', margin + 4, y + 15.5);
     doc.text(`IS NOT: a substitute for the ERT survey and pump test${isRegionalPreScreening ? ', nor a site report -- the location itself is unverified' : ''}. No desktop analysis anywhere can be.`, margin + 4, y + 20);
     y += 30;
 
@@ -1586,7 +1599,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(250, 250, 250);
     doc.text(String(ddt.ddtrClass), margin + 5, y + 15.5);
     doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(235, 235, 235);
-    doc.text(`Completeness & convergence of the desktop evidence stack (${ddt.evidenceFamilyCount} independent evidence families). Desktop max is 95 — the final points belong to fieldwork.`, margin + 5, y + 21);
+    doc.text(`Completeness & convergence of the desktop evidence stack (${ddt.evidenceFamilyCount} evidence families — correlated satellite inputs carry discounted weight, and the fusion output is never double-counted). Desktop max is 95 — the final points belong to fieldwork.`, margin + 5, y + 21);
     y += 29;
 
     // ── GROUNDWATER PROSPECT (chance of water) — data-backed, SEPARATE axis ──
@@ -1698,32 +1711,27 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('This is the site-survey work (~the final validation share) that converts the desktop target into drilling authority.', margin + 5, y + 13);
     y += 20;
 
-    // Mandatory gate checklist
+    // Full 10-gate FRR checklist (external audit: the banner said "0 of 10"
+    // while only 5 mandatory gates were displayed — show all 10, mark the 5
+    // mandatory ones, and keep the consistency gate as a separate advisory row).
     doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
-    doc.text('Mandatory gates before a driller may mobilise', margin, y); y += 6;
-    const gateRows = [
-      ['Actual ERT/VES field data uploaded', (result as any)._auditFlags?.hasFieldERT],
-      ['Coordinates field-verified (survey-grade peg)', dr.openGates.indexOf('Coordinates field-verified (survey-grade peg)') === -1],
-      ['Hydrogeologist has signed the survey report', dr.openGates.indexOf('Hydrogeologist has signed the survey report') === -1],
-      ['WRA/NEMA authorisation attached or verified', dr.openGates.indexOf('WRA/NEMA authorisation attached or verified') === -1],
-      ['No contradictory values or software errors', dr.openGates.indexOf('No contradictory values or software errors') === -1],
-    ] as [string, boolean][];
+    doc.text('Field & regulatory gates (all 10) — mandatory gates marked ◆', margin, y); y += 6;
+    const _mandatoryGates = ['Survey-grade drill peg recorded', 'Actual ERT/VES field data uploaded', 'Hydrogeologist interpretation & sign-off', 'WRA authorisation verified'];
     autoTable(doc, {
       startY: y, margin: { left: margin, right: margin },
-      head: [['Mandatory gate', 'Status']],
-      // The consistency gate can only be AUTOMATED-passed on desktop data; it is
-      // not field-reconciled until the drill log exists. Show it as PROVISIONAL
-      // (amber), never a green SATISFIED that would imply drill-readiness
-      // (re-audit #14). Field gates remain OUTSTANDING.
-      body: gateRows.map(([g, ok]) => {
-        if (g === 'No contradictory values or software errors') {
-          return [g, ok ? 'AUTOMATED PASS — FIELD RECONCILIATION PENDING' : 'OUTSTANDING'];
-        }
-        return [g, ok ? 'SATISFIED' : 'OUTSTANDING'];
-      }),
+      head: [['Gate', 'Status']],
+      body: [
+        ...(ddt.frrGates as { gate: string; done: boolean }[]).map((g) => [
+          `${_mandatoryGates.includes(g.gate) ? '◆ ' : ''}${g.gate}`,
+          g.done ? 'SATISFIED' : 'OUTSTANDING',
+        ]),
+        // The consistency check is automated on desktop data; it is not
+        // field-reconciled until the drill log exists (re-audit #14).
+        ['◆ No contradictory values or software errors', dr.openGates.indexOf('No contradictory values or software errors') === -1 ? 'AUTOMATED PASS — FIELD RECONCILIATION PENDING' : 'OUTSTANDING'],
+      ],
       headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-      bodyStyles: { fontSize: 8 },
-      columnStyles: { 1: { cellWidth: 48 } },
+      bodyStyles: { fontSize: 7.5 },
+      columnStyles: { 1: { cellWidth: 52 } },
       theme: 'grid',
       didParseCell: (d: any) => {
         if (d.column.index === 1 && d.section === 'body') {
@@ -1740,7 +1748,11 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     // ── MOBILISATION AUTHORISATION GATE (MAG) ──
     checkSpace(26);
     const magColor: [number, number, number] = ddt.mag === 'RELEASED FOR DRILLING' ? [22, 101, 52] : ddt.mag === 'CONDITIONALLY RELEASED' ? [180, 83, 9] : [153, 27, 27];
-    const magLabel = ddt.mag === 'CONDITIONALLY RELEASED' ? 'CONDITIONALLY RELEASED — PROCEED TO FIELD CONFIRMATION' : ddt.mag;
+    // External audit: "conditionally released" must be unambiguous — released
+    // for the FIELD SURVEY only, and drilling explicitly NOT authorised.
+    const magLabel = ddt.mag === 'CONDITIONALLY RELEASED'
+      ? 'RELEASED FOR FIELD SURVEY ONLY — DRILLING NOT AUTHORISED'
+      : ddt.mag === 'BLOCKED' ? 'BLOCKED — NOT AUTHORISED FOR DRILLING OR FIELD MOBILISATION' : ddt.mag;
     const magReasonLines = doc.splitTextToSize(String(ddt.magReason), pw - 10);
     const magH = 12 + magReasonLines.length * 3.4;
     doc.setFillColor(ddt.mag === 'BLOCKED' ? 254 : 255, ddt.mag === 'BLOCKED' ? 242 : 251, ddt.mag === 'BLOCKED' ? 242 : 235);
@@ -1784,7 +1796,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
         ['HP-08 Sanitary seal', 'Seal depth and grout mix verified'],
         ['HP-09 Development', 'Water clarity and sand content accepted'],
         ['HP-10 Pump test', 'Test pump, discharge measurement & observation set-up approved'],
-        ['HP-11 Final acceptance', 'Records, 24h test data and lab samples submitted'],
+        ['HP-11 Final acceptance', 'Records, 24h constant-rate test + ≥20h recovery data and lab samples submitted'],
       ],
       headStyles: { fillColor: [180, 83, 9], textColor: 255, fontStyle: 'bold', fontSize: 8 },
       bodyStyles: { fontSize: 7.5 },
@@ -1811,7 +1823,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     head: [['Parameter', 'Value', 'Assessment']],
     body: [
       ['Success Probability', `${pct(result.probability)}${result.uncertainty ? ` (±${((result.uncertainty.probabilityRange[1] - result.uncertainty.probabilityRange[0]) * 50).toFixed(0)}%)` : ''}`, result.probability > 0.7 ? 'FAVORABLE' : result.probability > 0.5 ? 'MODERATE' : 'LOW'],
-      ['Recommended Depth', `${fmt(result.recommendedDepth, 0)}m${result.uncertainty ? ` (range: ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]}m)` : ` (\u00B1${Math.round((result.recommendedDepth ?? 40) * 0.35)}m, satellite-only est.)`}`, result.recommendedDepth < 50 ? 'Shallow' : result.recommendedDepth < 100 ? 'Medium' : 'Deep'],
+      ['Provisional Investigation Depth', `${fmt(result.recommendedDepth, 0)}m${result.uncertainty ? ` (range: ${result.uncertainty.depthRange[0]}-${result.uncertainty.depthRange[1]}m)` : ` (\u00B1${Math.round((result.recommendedDepth ?? 40) * 0.35)}m, satellite-only est.)`} \u2014 to be revised after ERT/VES and verified during drilling`, result.recommendedDepth < 50 ? 'Shallow' : result.recommendedDepth < 100 ? 'Medium' : 'Deep'],
       ['Estimated Yield (PRELIMINARY)', `${fmt(result.estimatedYield, 1)} m³/hr${result.uncertainty ? ` (range: ${result.uncertainty.yieldRange[0]}-${result.uncertainty.yieldRange[1]})` : ` (\u00B1${fmt((result.estimatedYield ?? 1.5) * 0.45, 1)} m\u00B3/hr, satellite-only est.)`}`, 'Planning value only -- sub-models span a wide range; the sustainable rate is set by the pump test, not this figure'],
       ['Overall Risk', `${pct(result.risk?.overallRisk)} -- ${riskLabel(result.risk?.overallRisk)}`, 'Drivers: depth, financial & technical uncertainty (desktop-only)'],
       // B7 — the drilling window was computed from measured rainfall history
@@ -2004,7 +2016,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.line(margin + 4, y + 44, margin + (pageW - margin * 2) - 4, y + 44);
 
     doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(226,232,240);
-    doc.text(`RECOMMENDED DEPTH:  ${_dep}m`, margin + 6, y + 53);
+    doc.text(`PROVISIONAL INVESTIGATION DEPTH:  ${_dep}m (final depth from ERT + drill log)`, margin + 6, y + 53);
 
     doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(251,191,36);
     doc.text('\u26a0  KEY CONDITION:', margin + 6, y + 63);
@@ -2015,7 +2027,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.text('\u2191 USE THIS PROBABILITY FOR INVESTMENT DECISIONS. Other values are sub-model outputs, not the final verdict.', margin + 6, y + 73);
 
     doc.setFontSize(6); doc.setFont('helvetica', 'italic'); doc.setTextColor(100,116,139);
-    doc.text('This report is a filter, not a final decision-maker. Saves money before mistakes happen. Reduces failed drilling by 40-60%. Upgrade path: ERT + pump test + lab.', margin + 6, y + 83);
+    doc.text('This report is a filter, not a final decision-maker. Saves money before mistakes happen. Measured performance: see the public validation ledger. Upgrade path: ERT + pump test + lab.', margin + 6, y + 83);
 
     y += _bh + 10;
   }
@@ -2257,7 +2269,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.setTextColor(239, 68, 68);
     doc.text('DRILL SITE LOCATION MAP -- Proposed Borehole', margin, y); y += 5;
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 140);
-    doc.text('Red crosshair = proposed borehole. Concentric zones = AI-derived groundwater potential. Confirm with ERT survey before drilling.', margin, y); y += 6;
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+    doc.text('CONCEPTUAL SCHEMATIC — NOT A MEASURED CONTOUR MAP.', margin, y); y += 4;
+    doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
+    doc.text('Red crosshair = proposed borehole at the analysed coordinates. The concentric zones are an illustrative rendering of the SITE-LEVEL potential score — they do NOT depict measured spatial variation away from the point. Spatial targeting requires field ERT profiles.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
     doc.addImage(drillImg, 'PNG', margin, y, mapW, mapH);
     y += mapH + 4;
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
@@ -2408,7 +2423,10 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(56, 130, 240);
     doc.text('Water Table Depth Contour Map', margin, y); y += 5;
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 140);
-    doc.text('(regional est.) -- Depth contours from AI analysis + regional hydrogeology. Verify with ERT survey before drilling.', margin, y); y += 6;
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+    doc.text('CONCEPTUAL SCHEMATIC — NOT A MEASURED WATER-TABLE CONTOUR MAP.', margin, y); y += 4;
+    doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
+    doc.text('(regional est.) — an illustrative depiction of the MODELLED water-table depth at the analysed point, not an interpolated raster surface. The true water table is confirmed only by drilling/ERT; do not present this figure to a driller as evidence of the water table.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
     doc.addImage(wtImg, 'PNG', margin, y, mapW, mapH);
     y += mapH + 4;
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
@@ -2455,7 +2473,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
     if (mapImages?.vegetationMap) { try { doc.addImage(mapImages.vegetationMap, 'PNG', margin, y, mapW, mapH); } catch { /* skip */ } }
     y += mapH + 4;
     doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120);
-    doc.text('Source: NASA MODIS (MOD13A2) via GIBS. Dense vegetation corridors indicate shallow groundwater and active recharge zones.', margin, y); y += 8;
+    doc.text('Source: NASA GIBS MODIS Terra NDVI 8-day rolling composite (250 m map layer); numeric NDVI analysis uses MOD13Q1 (250 m, 16-day) / MOD13A2 (1 km, 16-day) as labelled per section. Dense vegetation corridors indicate shallow groundwater and active recharge zones.', margin, y, { maxWidth: pageW - margin * 2 }); y += 8;
   }
 
   // SATELLITE REMOTE SENSING ? 10-Method Non-Invasive Analysis
@@ -2808,48 +2826,71 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
   y += 2;
 
+  // AUDIT FIX (2026-07-16 external review): WHO 2011 sets HEALTH-BASED guideline
+  // values for fluoride, arsenic and nitrate. Iron 0.3, TDS 1000, hardness,
+  // turbidity and pH 6.5-8.5 are AESTHETIC/OPERATIONAL reference levels — WHO
+  // proposes NO health-based guideline for them. An iron exceedance is an
+  // appearance/taste/staining concern, never a "FAIL" implying non-potability.
+  const _wqStatus = (ok: boolean, aesthetic: boolean) => (ok ? 'PASS' : aesthetic ? 'AESTHETIC CONCERN' : 'HEALTH EXCEEDANCE');
   autoTable(doc, {
     startY: y,
-    head: [['Parameter', 'Value', 'WHO Guideline', 'Status', 'Data Source']],
+    head: [['Parameter', 'Value', 'WHO 2011 reference', 'Basis', 'Status', 'Data Source']],
     body: [
-      ['pH', fmt(result.waterQuality?.pH), '6.5 - 8.5', (result.waterQuality?.pH ?? 7) >= 6.5 && (result.waterQuality?.pH ?? 7) <= 8.5 ? '? PASS' : '? FAIL', 'Pedotransfer Model'],
-      ['TDS (mg/L)', fmt(result.waterQuality?.tds, 0), '< 1000', (result.waterQuality?.tds ?? 0) < 1000 ? '? PASS' : '? FAIL', 'SoilGrids + Geology'],
-      ['Hardness (mg/L)', fmt(result.waterQuality?.hardness, 0), '< 500', (result.waterQuality?.hardness ?? 0) < 500 ? '? PASS' : '? FAIL', 'Geochemical Model'],
-      ['Fluoride (mg/L)', fmt(result.waterQuality?.fluoride, 2), '< 1.5', (result.waterQuality?.fluoride ?? 0) < 1.5 ? '? PASS' : '? FAIL', 'Regional Database'],
-      ['Iron (mg/L)', fmt(result.waterQuality?.iron, 3), '< 0.3', (result.waterQuality?.iron ?? 0) < 0.3 ? '? PASS' : '? FAIL', 'Soil Chemistry Model'],
-      ['Arsenic (mg/L)', fmt(result.waterQuality?.arsenic, 4), '< 0.01', (result.waterQuality?.arsenic ?? 0) < 0.01 ? '? PASS' : '? FAIL', 'Geogenic Risk Model'],
-      ['Nitrate (mg/L)', fmt(result.waterQuality?.nitrate, 1), '< 50', (result.waterQuality?.nitrate ?? 0) < 50 ? '? PASS' : '? FAIL', 'Land Use Model'],
-      ['Turbidity (NTU)', fmt(result.waterQuality?.turbidity, 1), '< 5', (result.waterQuality?.turbidity ?? 0) < 5 ? '? PASS' : '? FAIL', 'Sediment Model'],
+      ['pH', fmt(result.waterQuality?.pH), '6.5 - 8.5', 'Operational', _wqStatus((result.waterQuality?.pH ?? 7) >= 6.5 && (result.waterQuality?.pH ?? 7) <= 8.5, true), 'Pedotransfer Model'],
+      ['TDS (mg/L)', fmt(result.waterQuality?.tds, 0), '< 1000', 'Palatability', _wqStatus((result.waterQuality?.tds ?? 0) < 1000, true), 'SoilGrids + Geology'],
+      ['Hardness (mg/L)', fmt(result.waterQuality?.hardness, 0), '< 500', 'Aesthetic', _wqStatus((result.waterQuality?.hardness ?? 0) < 500, true), 'Geochemical Model'],
+      ['Fluoride (mg/L)', fmt(result.waterQuality?.fluoride, 2), '< 1.5', 'HEALTH', _wqStatus((result.waterQuality?.fluoride ?? 0) < 1.5, false), 'Regional Database'],
+      ['Iron (mg/L)', fmt(result.waterQuality?.iron, 3), '< 0.3', 'Aesthetic (no health guideline)', _wqStatus((result.waterQuality?.iron ?? 0) < 0.3, true), 'Soil Chemistry Model'],
+      ['Arsenic (mg/L)', fmt(result.waterQuality?.arsenic, 4), '< 0.01', 'HEALTH', _wqStatus((result.waterQuality?.arsenic ?? 0) < 0.01, false), 'Geogenic Risk Model'],
+      ['Nitrate (mg/L)', fmt(result.waterQuality?.nitrate, 1), '< 50', 'HEALTH', _wqStatus((result.waterQuality?.nitrate ?? 0) < 50, false), 'Land Use Model'],
+      ['Turbidity (NTU)', fmt(result.waterQuality?.turbidity, 1), '< 5', 'Operational', _wqStatus((result.waterQuality?.turbidity ?? 0) < 5, true), 'Sediment Model'],
     ],
-    headStyles: { fillColor: [34, 197, 94], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 9 },
+    headStyles: { fillColor: [34, 197, 94], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+    bodyStyles: { fontSize: 8 },
     alternateRowStyles: { fillColor: [240, 255, 244] },
     margin: { left: margin, right: margin },
     theme: 'grid',
+    didParseCell: (d: any) => {
+      if (d.section === 'body' && d.column.index === 4) {
+        const raw = String(d.cell.raw);
+        d.cell.styles.fontStyle = 'bold';
+        d.cell.styles.textColor = raw === 'PASS' ? [22, 163, 74] : raw === 'AESTHETIC CONCERN' ? [180, 83, 9] : [220, 38, 38];
+      }
+    },
   });
   y = lastY(10);
 
-  // Audit fix #13: Binary WHO potability verdict
+  // Binary WHO screening verdict — health-based vs aesthetic, kept separate
   {
     const wq = result.waterQuality;
-    const whoFails: string[] = [];
-    if ((wq?.fluoride ?? 0) >= 1.5) whoFails.push(`Fluoride ${fmt(wq?.fluoride, 2)} mg/L > 1.5`);
-    if ((wq?.arsenic ?? 0) >= 0.01) whoFails.push(`Arsenic ${fmt(wq?.arsenic, 4)} mg/L > 0.01`);
-    if ((wq?.nitrate ?? 0) >= 50) whoFails.push(`Nitrate ${fmt(wq?.nitrate, 1)} mg/L > 50`);
-    if ((wq?.iron ?? 0) >= 0.3) whoFails.push(`Iron ${fmt(wq?.iron, 3)} mg/L > 0.3`);
-    if ((wq?.tds ?? 0) >= 1000) whoFails.push(`TDS ${fmt(wq?.tds, 0)} mg/L > 1000`);
-    if ((wq?.pH ?? 7) < 6.5 || (wq?.pH ?? 7) > 8.5) whoFails.push(`pH ${fmt(wq?.pH)} outside 6.5-8.5`);
-
+    const healthFails: string[] = [];
+    const aestheticFlags: string[] = [];
+    if ((wq?.fluoride ?? 0) >= 1.5) healthFails.push(`Fluoride ${fmt(wq?.fluoride, 2)} mg/L > 1.5`);
+    if ((wq?.arsenic ?? 0) >= 0.01) healthFails.push(`Arsenic ${fmt(wq?.arsenic, 4)} mg/L > 0.01`);
+    if ((wq?.nitrate ?? 0) >= 50) healthFails.push(`Nitrate ${fmt(wq?.nitrate, 1)} mg/L > 50`);
+    if ((wq?.iron ?? 0) >= 0.3) aestheticFlags.push(`Iron ${fmt(wq?.iron, 3)} mg/L > 0.3 (taste/staining)`);
+    if ((wq?.tds ?? 0) >= 1000) aestheticFlags.push(`TDS ${fmt(wq?.tds, 0)} mg/L > 1000 (palatability)`);
+    if ((wq?.pH ?? 7) < 6.5 || (wq?.pH ?? 7) > 8.5) aestheticFlags.push(`pH ${fmt(wq?.pH)} outside 6.5-8.5 (operational)`);
     checkSpace(20);
-    if (whoFails.length > 0) {
+    if (healthFails.length > 0) {
       doc.setFillColor(254, 226, 226);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'F');
       doc.setDrawColor(220, 38, 38);
       doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'S');
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 28, 28);
-      doc.text('MODELLED WHO SCREENING: LIKELY EXCEEDANCE', margin + 3, y + 4);
+      doc.text('MODELLED WHO SCREENING: LIKELY HEALTH-GUIDELINE EXCEEDANCE', margin + 3, y + 4);
       doc.setFontSize(7); doc.setFont('helvetica', 'normal');
-      doc.text(`Modelled exceedances: ${whoFails.join('; ')}. Do not use for drinking until an accredited laboratory confirms actual chemistry; budget treatment accordingly.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+      doc.text(`Modelled health exceedances: ${healthFails.join('; ')}. Do not use for drinking until an accredited laboratory confirms actual chemistry; budget treatment accordingly.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
+      y += 18;
+    } else if (aestheticFlags.length > 0) {
+      doc.setFillColor(255, 247, 230);
+      doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'F');
+      doc.setDrawColor(217, 119, 6);
+      doc.roundedRect(margin, y - 2, pageW - margin * 2, 14, 2, 2, 'S');
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(180, 83, 9);
+      doc.text('MODELLED SCREENING: AESTHETIC/OPERATIONAL CONCERN — NOT A POTABILITY FAILURE', margin + 3, y + 4);
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 80, 20);
+      doc.text(`${aestheticFlags.join('; ')}. WHO proposes no health-based guideline for these parameters. Laboratory confirmation required; simple treatment (e.g. aeration + filtration for iron) is budgeted.`, margin + 3, y + 9, { maxWidth: pageW - margin * 2 - 8 });
       y += 18;
     } else {
       doc.setFillColor(240, 253, 244);
@@ -3689,6 +3730,146 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   }
 
   } catch (_secErr) { console.warn('[PDF] section skipped', _secErr); }
+
+  // ── 11c. HYDROECOLOGICAL SCREENING & ENVIRONMENTAL MANAGEMENT ──
+  // External audit 2026-07-16: the report was a groundwater remote-sensing
+  // study, not a hydroecological assessment. This section adds the missing
+  // components from REAL data where it exists (springs = groundwater-dependent
+  // features; recharge model = water balance) and marks every field-only item
+  // NOT ASSESSED — never pretending a desktop can do a field survey.
+  try {
+    const nwH = (result as any).nearbyWells;
+    const rmH = (result as any).rechargeModel;
+    const wellsH: any[] = nwH?.nearbyWells ?? [];
+    const springsH = wellsH.filter((w) => /sp?ring/i.test(String(w?.id ?? '')))
+      .sort((a, b) => (a.distance_km ?? 999) - (b.distance_km ?? 999));
+    addPage();
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 110, 90);
+    doc.text('11c. Hydroecological Screening & Environmental Management', margin, y); y += 7;
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 100, 95);
+    doc.text(doc.splitTextToSize('Desktop screening of groundwater-dependent ecosystems, surface water-groundwater interaction, abstraction sustainability and construction-phase environmental management. Items that require a site visit are marked FIELD RECON REQUIRED — a desktop study cannot substitute for them.', pw), margin, y); y += 10;
+
+    // ── A. Groundwater-dependent features (REAL registry data) ──
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('A. Groundwater-dependent features near the site', margin, y); y += 5;
+    if (springsH.length > 0) {
+      const near3km = springsH.filter((s) => (s.distance_km ?? 99) <= 3);
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+      doc.text(doc.splitTextToSize(`${springsH.length} spring(s) in the search radius are DIRECT groundwater discharge features — households and livestock may depend on them. The ${Math.min(near3km.length, 8)} nearest (within 3 km) form the interference-monitoring register below. Wetlands, riparian corridors and stream baseflow reaches: FIELD RECON REQUIRED (not resolvable from desktop data).`, pw), margin, y); y += 9;
+      if (near3km.length > 0) {
+        autoTable(doc, {
+          startY: y, margin: { left: margin, right: margin },
+          head: [['Groundwater-dependent feature', 'Distance', 'Screening role']],
+          body: near3km.slice(0, 8).map((s: any) => [
+            String(s.id).slice(0, 50), s.distance_km != null ? `${s.distance_km} km` : '—',
+            'Monitor during test pumping (flow/level before, during, after)',
+          ]),
+          headStyles: { fillColor: [13, 110, 90], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+          bodyStyles: { fontSize: 7 },
+          theme: 'grid',
+        });
+        y = lastY(5);
+      }
+    } else {
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+      doc.text('No spring records found in the registries for this radius. Field reconnaissance must still map any unrecorded springs, wetlands and riparian vegetation before drilling.', margin, y, { maxWidth: pw }); y += 8;
+    }
+
+    // ── B. Surface water–groundwater interaction & interference ──
+    checkSpace(30);
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('B. Abstraction interference screening', margin, y); y += 5;
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+    const _nearestSpr = springsH[0];
+    const interferenceText =
+      `Proposed abstraction ${fmt(result.estimatedYield, 1)} m³/hr is small in absolute terms, but interference radius depends on transmissivity and CANNOT be computed until the pump test measures it. ` +
+      (_nearestSpr ? `The nearest groundwater-dependent feature (${String(_nearestSpr.id).slice(0, 40)}, ${_nearestSpr.distance_km ?? '—'} km) and any shallow wells within ~500 m must be monitored during the constant-rate test; a measurable decline in spring flow or neighbouring water levels is a STOP-AND-REASSESS trigger. ` : '') +
+      'Whether pumping could reduce dry-season stream baseflow, intercept a perched aquifer or interfere with neighbouring boreholes is a FIELD determination — required inputs: measured transmissivity, storativity and the pumping-test observation network.';
+    doc.text(doc.splitTextToSize(interferenceText, pw), margin, y);
+    y += doc.splitTextToSize(interferenceText, pw).length * 3.2 + 5;
+
+    // ── C. Site water balance (REAL recharge model outputs) ──
+    if (rmH) {
+      checkSpace(50);
+      doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+      doc.text('C. Site water balance & sustainable abstraction', margin, y); y += 5;
+      const _absM3yr = Math.round((result.estimatedYield ?? 0) * 6 * 300);
+      const _rechargeM3PerKm2 = Math.round((rmH.avgAnnualRecharge_mm ?? 0) * 1000); // mm over 1 km² = 1000 m³/mm
+      autoTable(doc, {
+        startY: y, margin: { left: margin, right: margin },
+        head: [['Water-balance component', 'Value', 'Basis']],
+        body: [
+          ['Mean annual rainfall', `${fmt(rmH.avgAnnualPrecipitation_mm, 0)} mm/yr`, 'Multi-year satellite/reanalysis record'],
+          ['Actual evapotranspiration', `${fmt(rmH.avgAnnualET_mm, 0)} mm/yr`, 'Water-balance model'],
+          ['Runoff / quickflow', `${fmt(rmH.avgAnnualRunoff_mm, 0)} mm/yr`, 'SCS runoff + quickflow separation'],
+          ['Estimated recharge', `${fmt(rmH.avgAnnualRecharge_mm, 0)} mm/yr (${((rmH.rechargeFraction ?? 0) * 100).toFixed(0)}% of rainfall)`, 'Banded Budyko water balance'],
+          ['Recharge volume (per km² of catchment)', `~${_rechargeM3PerKm2.toLocaleString()} m³/yr`, 'Recharge depth × unit area'],
+          ['Proposed annual abstraction', `~${_absM3yr.toLocaleString()} m³/yr`, `${fmt(result.estimatedYield, 1)} m³/hr × 6 h × 300 d (planning basis)`],
+          ['Abstraction as share of 1 km² recharge', _rechargeM3PerKm2 > 0 ? `~${Math.min(999, Math.round((_absM3yr / _rechargeM3PerKm2) * 100))}%` : 'n/a', 'Capture area is NOT yet delineated — indicative only'],
+          ['Drought-year recharge', Array.isArray(rmH.droughtYears) && rmH.droughtYears.length > 0 ? `Drought years on record: ${rmH.droughtYears.slice(0, 5).join(', ')}` : 'No drought years detected in record', 'Annual recharge time series'],
+          ['Existing abstraction (neighbouring users)', 'FIELD RECON REQUIRED', 'Hydrocensus during field survey'],
+        ],
+        headStyles: { fillColor: [30, 90, 160], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+        bodyStyles: { fontSize: 7 },
+        theme: 'grid',
+      });
+      y = lastY(4);
+      doc.setFontSize(6.8); doc.setFont('helvetica', 'italic'); doc.setTextColor(110, 110, 110);
+      doc.text(doc.splitTextToSize('Drilling-success probability is NOT sustainable yield: sustainability is set by recharge, capture area and interference — confirmed by the pump test and, for larger schemes, a WRA abstraction assessment.', pw), margin, y); y += 8;
+    }
+
+    // ── D. Sanitary & contamination reconnaissance (field checklist) ──
+    checkSpace(50);
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('D. Sanitary & contamination reconnaissance — REQUIRED FIELD SURVEY', margin, y); y += 5;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Potential contamination source', 'Desktop status', 'Field requirement']],
+      body: [
+        ['Pit latrines / septic systems', 'NOT ASSESSED (below imagery resolution)', 'Map all within 100 m; enforce >30 m setback (WHO)'],
+        ['Livestock enclosures / bomas', 'NOT ASSESSED', 'Map within 100 m; setback per WRA guidance'],
+        ['Cemeteries / burial sites', 'NOT ASSESSED', 'Community consultation + mapping'],
+        ['Waste dumps / refuse pits', 'NOT ASSESSED', 'Map within 150 m'],
+        ['Fuel / chemical storage', 'NOT ASSESSED', 'Site walkover'],
+        ['Agrochemical use (fertiliser/pesticide)', `Land-use model risk: ${result.risk?.categories?.contamination != null ? `${fmt(result.risk.categories.contamination, 0)}%` : 'screened'}`, 'Farmer interviews + upslope survey'],
+        ['Drainage pathways / flood ponding', 'Partially screened (DEM)', 'Wet-season observation + local knowledge'],
+      ],
+      headStyles: { fillColor: [153, 60, 20], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+      bodyStyles: { fontSize: 7 },
+      theme: 'grid',
+      didParseCell: (d: any) => {
+        if (d.section === 'body' && d.column.index === 1 && String(d.cell.raw).startsWith('NOT ASSESSED')) {
+          d.cell.styles.textColor = [200, 80, 20]; d.cell.styles.fontStyle = 'bold';
+        }
+      },
+    });
+    y = lastY(5);
+
+    // ── E. Construction-phase environmental management commitments ──
+    checkSpace(45);
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.text('E. Construction-phase environmental management (drilling contractor commitments)', margin, y); y += 5;
+    autoTable(doc, {
+      startY: y, margin: { left: margin, right: margin },
+      head: [['Aspect', 'Required management measure']],
+      body: [
+        ['Drill cuttings', 'Contain in lined pit; do not discharge to drains/streams; backfill or dispose per county direction'],
+        ['Drilling fluids', 'Biodegradable polymer preferred; settlement pit; no discharge to watercourses'],
+        ['Fuel & oil', 'Drip trays under rig/compressor; spill kit on site; refuelling >30 m from any water point'],
+        ['Erosion & sediment', 'Bund the work area; divert stormwater around open pits'],
+        ['Noise & community safety', 'Daylight working hours near homesteads; barricade open borehole; community notice before mobilisation'],
+        ['Development & test water', 'Discharge via silt trap to a vegetated area >50 m from springs/streams — never directly to a watercourse'],
+        ['Site rehabilitation', 'Backfill pits, remove waste, regrade and reinstate vegetation within 30 days of completion'],
+      ],
+      headStyles: { fillColor: [70, 90, 60], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+      bodyStyles: { fontSize: 7 },
+      columnStyles: { 0: { cellWidth: 42, fontStyle: 'bold' } },
+      theme: 'grid',
+    });
+    y = lastY(4);
+    doc.setFontSize(6.8); doc.setFont('helvetica', 'italic'); doc.setTextColor(110, 110, 110);
+    doc.text('These commitments should be written into the drilling contract. Environmental authorisation requirements (NEMA/county) are verified at the regulatory gate before mobilisation.', margin, y, { maxWidth: pw }); y += 8;
+  } catch (_secErr) { console.warn('[PDF] hydroecology section skipped', _secErr); }
 
   // -- DEM TOPOGRAPHIC & LINEAMENT ANALYSIS --
   try {
@@ -5991,7 +6172,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
   const tierLegend = [
     ['<50%', 'PRELIMINARY', 'Use for awareness only -- additional data sources needed'],
-    ['50-69%', 'STANDARD SCREENING', 'Good filter -- reduces failed drilling 40-60% before fieldwork. Does not replace final validation step.'],
+    ['50-69%', 'STANDARD SCREENING', 'Good filter -- screens out siting-stage errors before fieldwork. Does not replace final validation step.'],
     ['70-79%', 'PRE-FEASIBILITY', 'Strong filter -- expert-level screening. Saves money before mistakes. Pursue ERT to validate.'],
     ['80-89%', 'ENGINEERING GRADE', 'High-confidence filter -- ERT + pump test are the remaining validation steps.'],
     ['>=90%', 'BANKABLE', 'Filter AND validated -- upgrade path complete. Eligible for IDA/AfDB/World Bank submission.'],
@@ -6008,7 +6189,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.setFontSize(8.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(80, 80, 80);
   doc.text('This report is a filter, not a final decision-maker. Real power: saves money before mistakes happen -- not replacing the final validation step.', margin, y);
   y += 5;
-  doc.text('Reduces failed drilling by 40-60% before any fieldwork. Expert-level pre-feasibility screening accessible to non-experts.', margin, y);
+  doc.text('Screens out siting-stage errors before any fieldwork; measured performance is published in the validation ledger. Expert-level pre-feasibility screening accessible to non-experts.', margin, y);
   y += 5;
   doc.text(`Upgrade path to bankable: ERT + pump test + lab (~$5,500-10,000) elevates to \u226590% for IDA/AfDB/World Bank. Filter first -- validate after.`, margin, y);
   y += 8;
@@ -8880,7 +9061,7 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
       doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 17, 23);
       doc.text('PUMP TEST PROTOCOL (USGS Standard)', margin, y); y += 4;
       doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
-      doc.text('Print and follow during field pump testing. Minimum 24-hour constant-rate test required.', margin, y); y += 7;
+      doc.text('Print and follow during field pump testing. Minimum 24-hour constant-rate test + >=20 h recovery monitoring required (Kenya Water Resources Regulations).', margin, y); y += 7;
 
       // Step test
       doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(59, 130, 246);

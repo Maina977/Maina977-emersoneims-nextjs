@@ -161,7 +161,10 @@ async function fetchModisNDVI(lat: number, lon: number): Promise<{
       ndviMean: mean, ndviMax: max, ndviMin: min, ndviStdDev: stdDev,
       seasonalAmplitude: max - min, greenUpMonth, senescenceMonth,
       monthlyProfile, trend,
-      source: 'ORNL DAAC MOD13A2 (250m, 16-day composite)',
+      // AUDIT FIX (2026-07-16 external review): MOD13A2 is the 1 km, 16-day
+      // product (MOD13Q1 is the 250 m one) — the label must match the product
+      // actually queried above.
+      source: 'ORNL DAAC MOD13A2 (1 km, 16-day composite)',
     };
   } catch {
     return null;
@@ -296,7 +299,7 @@ function analyzeMultispectral(
     confidence: hasRS && hasNdvi ? 0.78 : hasRS ? 0.6 : 0.4,
     groundwaterScore: Math.min(100, Math.max(0, score)),
     keyFindings: findings,
-    dataSource: `ISRIC SoilGrids v2.0 (250m)${hasNdvi ? ', ORNL DAAC MOD13A2 (250m)' : ''}, Sentinel-2 spectral proxy`,
+    dataSource: `ISRIC SoilGrids v2.0 (250m)${hasNdvi ? ', ORNL DAAC MOD13A2 (1 km, 16-day)' : ''}, Sentinel-2 spectral proxy`,
     metrics: {
       clayPercent: clay, sandPercent: sand, lineamentDensity,
       drainageDensity, drySeasonNDVI: ndviMin,
@@ -650,8 +653,8 @@ function analyzeNDVI(
 
   return {
     method: '7. NDVI & Vegetation Indices',
-    platform: 'MODIS (MOD13A2 250m), Sentinel-2 NDVI',
-    resolution: '250m (16-day composite)',
+    platform: 'MODIS (MOD13A2, 1 km 16-day), Sentinel-2 NDVI',
+    resolution: '1 km (MOD13A2, 16-day composite)',
     status: hasModis ? 'available' : hasProxy || hasSatVeg ? 'partial' : 'modeled',
     confidence: hasModis ? 0.8 : hasProxy ? 0.65 : 0.4,
     groundwaterScore: score,
@@ -832,6 +835,18 @@ function runMultiSensorFusion(methods: SatelliteMethodResult[]): MultiSensorFusi
 
   const gpi = totalWeight > 0 ? Math.min(100, Math.max(0, Math.round(weightedSum / totalWeight))) : 50;
 
+  // AUDIT FIX (2026-07-16 external review): the GPI is computed over NORMALISED
+  // weights (weightedSum / totalWeight) but the table displayed the raw
+  // confidence-adjusted weights, which summed to ~58% and made the 62/100
+  // result look irreproducible. Display the true normalised weights (sum = 100%)
+  // and the contributions that actually produce the GPI.
+  if (totalWeight > 0) {
+    for (const ws of weightedScores) {
+      ws.weight = Number((ws.weight / totalWeight).toFixed(4));
+      ws.weightedContribution = Number((ws.score * ws.weight).toFixed(2));
+    }
+  }
+
   const potentialClass: MultiSensorFusionResult['potentialClass'] =
     gpi >= 80 ? 'Very High' :
     gpi >= 65 ? 'High' :
@@ -865,7 +880,7 @@ function runMultiSensorFusion(methods: SatelliteMethodResult[]): MultiSensorFusi
   return {
     groundwaterPotentialIndex: gpi,
     potentialClass,
-    fusionMethod: 'GIS Weighted Overlay Analysis (Saaty AHP-derived weights, confidence-adjusted)',
+    fusionMethod: 'GIS Weighted Overlay Analysis (Saaty AHP-derived weights, confidence-adjusted, renormalised to 100% over the 9 contributing methods; the fusion output itself is NOT counted as an independent input). Correlated inputs (DEM-family, optical/NDVI-family) share reduced weights to limit double counting.',
     weightedScores: weightedScores.sort((a, b) => b.weightedContribution - a.weightedContribution),
     topIndicators,
     limitingFactors,

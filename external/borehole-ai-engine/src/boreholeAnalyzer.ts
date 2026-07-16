@@ -871,13 +871,19 @@ export class BoreholeAnalyzer {
 
       for (let i = 0; i < nearbyWells.nearbyWells.length; i++) {
         const w = nearbyWells.nearbyWells[i];
+        // EXTERNAL AUDIT FIX (2026-07-16): a SPRING has no drilled depth or
+        // tested borehole yield — back-filling regional estimates onto spring
+        // records made estimates look like measurements ("Wambeba Water Spring
+        // — 60 m"). Springs keep their registry data only; /sp?ring/i also
+        // catches registry typos ("Water Sring").
+        const _isSpringRec = /sp?ring/i.test(String(w.id ?? '')) || /sp?ring/i.test(String(w.lithology ?? ''));
         // Only fill from regional stats if regional data exists â€” never from calibratedDepth
-        if ((!w.depth_m || w.depth_m === 0) && regionalAvgDepth > 0) {
+        if (!_isSpringRec && (!w.depth_m || w.depth_m === 0) && regionalAvgDepth > 0) {
           const variation = 0.85 + 0.30 * (Math.abs(Math.sin(i * 7.919 + (w.distance_km ?? 1) * 3.14159)) % 1);
           w.depth_m = Math.round(regionalAvgDepth * variation);
           w.source = w.source.includes('(regional est') ? w.source : w.source + ' (regional est. from county database)';
         }
-        if ((!w.yield_m3h || w.yield_m3h === 0) && regionalAvgYield > 0) {
+        if (!_isSpringRec && (!w.yield_m3h || w.yield_m3h === 0) && regionalAvgYield > 0) {
           const variation = 0.85 + 0.30 * (Math.abs(Math.sin(i * 7.919 + (w.distance_km ?? 1) * 3.14159)) % 1);
           w.yield_m3h = parseFloat((regionalAvgYield * variation).toFixed(1));
           if (!w.source.includes('regional est')) w.source = w.source + ' (regional est. from county database)';
@@ -885,8 +891,9 @@ export class BoreholeAnalyzer {
         if (!w.lithology) {
           w.lithology = geoLithology;
         }
-        // Only assign outcome based on actual or regionally-estimated yield
-        if (w.outcome === 'Unknown' && w.yield_m3h > 0) {
+        // Only assign outcome based on actual or regionally-estimated yield —
+        // never for springs (their functionality comes from registry status).
+        if (!_isSpringRec && w.outcome === 'Unknown' && w.yield_m3h > 0) {
           w.outcome = w.yield_m3h >= 2 ? 'Success' : w.yield_m3h >= 0.5 ? 'Moderate' : 'Fail';
         }
       }

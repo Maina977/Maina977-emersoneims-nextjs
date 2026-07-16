@@ -211,7 +211,7 @@ export function computeDrillReadiness(input: DrillReadinessInput): DrillReadines
     : analogN > 0
     ? `${analogN} nearby water-point record(s) and `
     : '';
-  const prospectStatement = `${analogPhrase}together with convergent vegetation, drainage, water-body and recharge signals, indicate a ${groundwaterProspect} groundwater prospect (~${prospectIndex}%). This is the DATA-BACKED chance of striking water and does not require field validation. Drilling READINESS — pegging the exact point and depth and holding regulatory authority — is scored separately and still requires the field steps below.`;
+  const prospectStatement = `${analogPhrase}together with convergent vegetation, drainage, water-body and recharge signals, indicate a ${groundwaterProspect} groundwater prospect (~${prospectIndex}%). This is the DATA-BACKED chance of groundwater OCCURRENCE at this location. NOTE: the functionality of nearby springs and water points proves groundwater is present — it is NOT a borehole drilling success rate; borehole success additionally depends on striking a productive zone at depth, which only field geophysics and drilling confirm. Drilling READINESS — pegging the exact point and depth and holding regulatory authority — is scored separately and still requires the field steps below.`;
 
   return {
     score, status, stage, openGates, breakdown: cats, cappedByGates, handoverStatement,
