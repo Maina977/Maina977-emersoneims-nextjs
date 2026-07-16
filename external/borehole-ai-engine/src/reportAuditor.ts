@@ -152,6 +152,14 @@ export function auditReport(result: AnalysisResult): AuditReport {
   // ═══════════════════════════════════════════════════════════════
   checks.push(auditCrossEngineReconciliation(result));
 
+  // ═══════════════════════════════════════════════════════════════
+  // CHECK 19: REPORT-WIDE RECONCILIATION MATRIX — arithmetic & range
+  // containment the §35 validator demands: every central value must sit
+  // inside its stated range; water-point category counts must not exceed
+  // the total; the final consensus must track the governing yield/depth.
+  // ═══════════════════════════════════════════════════════════════
+  checks.push(auditReconciliationMatrix(result));
+
   // ── SCORING ──
   const failedChecks = checks.filter(c => c.severity === 'FAIL').length;
   const warningChecks = checks.filter(c => c.severity === 'WARN').length;
@@ -997,5 +1005,104 @@ function auditCrossEngineReconciliation(result: AnalysisResult): AuditCheck {
         ? `yield ${govYield.toFixed(1)} vs design ${designYield.toFixed(2)} m³/hr within tolerance; `
         : 'yield comparison not applicable; ') +
       `governing success probability ${Number.isFinite(govProb) ? (govProb * 100).toFixed(0) + '%' : 'n/a'}.`,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHECK 19 — REPORT-WIDE RECONCILIATION MATRIX (§35 acceptance rules)
+// ═══════════════════════════════════════════════════════════════
+// Enforces the arithmetic/range invariants the surgical spec requires as
+// blocking rules. Each is checked ONLY when the underlying data exists, so a
+// desktop run with missing sub-objects is not penalised — but a genuine
+// contradiction (central value outside its range, category counts exceeding the
+// total, consensus disagreeing with the governing value) blocks export.
+function auditReconciliationMatrix(result: AnalysisResult): AuditCheck {
+  const base = {
+    id: 19,
+    name: 'Report-Wide Reconciliation Matrix',
+    category: 'INTEGRITY',
+    description: 'Central values must sit inside their stated ranges; water-point category counts must reconcile to the total; the final consensus must track the governing yield/depth.',
+  };
+
+  const r = result as any;
+  const violations: string[] = [];
+  const passes: string[] = [];
+  const near = (a: number, b: number, tol = 0.02) => Math.abs(a - b) <= Math.max(tol, Math.abs(b) * tol);
+
+  // ── RULE 19.1-3 — RANGE CONTAINMENT: prob / depth / yield ──
+  const u = r.uncertainty;
+  if (u) {
+    const p = Number(r.probability);
+    if (Array.isArray(u.probabilityRange) && Number.isFinite(p)) {
+      const [lo, hi] = u.probabilityRange.map(Number);
+      // allow a 1-pt rounding slack
+      if (p < lo - 0.01 || p > hi + 0.01) violations.push(`Success probability ${(p * 100).toFixed(0)}% falls outside its stated range ${(lo * 100).toFixed(0)}-${(hi * 100).toFixed(0)}%`);
+      else passes.push('prob-in-range');
+    }
+    const d = Number(r.recommendedDepth);
+    if (Array.isArray(u.depthRange) && Number.isFinite(d)) {
+      const [lo, hi] = u.depthRange.map(Number);
+      if (d < lo - 1 || d > hi + 1) violations.push(`Recommended depth ${d}m falls outside its stated range ${lo}-${hi}m`);
+      else passes.push('depth-in-range');
+    }
+    const yv = Number(r.estimatedYield);
+    if (Array.isArray(u.yieldRange) && Number.isFinite(yv)) {
+      const [lo, hi] = u.yieldRange.map(Number);
+      if (yv < lo - 0.05 || yv > hi + 0.05) violations.push(`Expected yield ${yv} m³/hr falls outside its stated range ${lo}-${hi} m³/hr`);
+      else passes.push('yield-in-range');
+    }
+  }
+
+  // ── RULE 19.4 — WATER-POINT ARITHMETIC: classified records must not exceed
+  //    the reported total; status counts must not exceed records-with-status. ──
+  const nw = r.nearbyWells;
+  const wells: any[] = nw?.nearbyWells ?? [];
+  if (nw && Number.isFinite(nw.sampleSize)) {
+    const total = Number(nw.sampleSize);
+    if (wells.length > total + 0) violations.push(`Water-point records displayed (${wells.length}) exceed the reported total (${total})`);
+    else passes.push('waterpoint-total');
+    const withStatus = wells.filter((w) => w?.outcome === 'Success' || w?.outcome === 'Fail').length;
+    const functional = wells.filter((w) => w?.outcome === 'Success').length;
+    if (functional > withStatus) violations.push(`Functional count (${functional}) exceeds records with recorded status (${withStatus})`);
+    else if (withStatus > 0) passes.push('waterpoint-status');
+  }
+
+  // ── RULE 19.5 — FINAL CONSENSUS tracks the governing yield/depth (the single
+  //    source of truth must not fork a second "consensus" number). ──
+  const fc = r.finalConsensus;
+  if (fc) {
+    const gY = Number(r.estimatedYield);
+    if (Number.isFinite(fc.yield_m3hr) && Number.isFinite(gY) && gY > 0) {
+      const ratio = Math.max(fc.yield_m3hr, gY) / Math.min(fc.yield_m3hr, gY);
+      if (ratio > 1.6) violations.push(`Final-consensus yield ${fc.yield_m3hr} m³/hr diverges from governing yield ${gY} m³/hr (${ratio.toFixed(1)}× apart)`);
+      else passes.push('consensus-yield');
+    }
+    const gD = Number(r.recommendedDepth);
+    if (Number.isFinite(fc.depth_m) && Number.isFinite(gD) && gD > 0 && !near(fc.depth_m, gD, 0.25)) {
+      violations.push(`Final-consensus depth ${fc.depth_m}m diverges >25% from governing depth ${gD}m`);
+    } else if (Number.isFinite(fc.depth_m)) passes.push('consensus-depth');
+  }
+
+  // ── RULE 19.6 — CONFIDENCE MUST NOT MASQUERADE AS DRILL-READINESS: a desktop
+  //    run must never present a DRILL-READY / bankable grade without field data. ──
+  const grade = String(r.finalConsensus?.assessmentGrade ?? '');
+  const hasFieldERT = !!r._auditFlags?.hasFieldERT || !!r.fieldData?.ert;
+  if (/BANKABLE/i.test(grade) && !hasFieldERT) {
+    violations.push(`Assessment grade "${grade}" claims bankable without any field ERT/pump data — desktop runs cap at PRE-FEASIBILITY`);
+  }
+
+  if (violations.length > 0) {
+    return {
+      ...base,
+      severity: 'FAIL',
+      details: `${violations.length} reconciliation failure${violations.length > 1 ? 's' : ''} — report blocked: ${violations.join(' | ')}`,
+      fix: 'Feed one governing object to every section: central values must lie inside their ranges, water-point counts must reconcile to the total, and finalConsensus must equal the governing yield/depth. Do not weaken this gate.',
+    };
+  }
+
+  return {
+    ...base,
+    severity: 'PASS',
+    details: `Reconciliation matrix passed (${passes.length} invariant${passes.length === 1 ? '' : 's'} checked: ${passes.join(', ') || 'none applicable on this dataset'}).`,
   };
 }

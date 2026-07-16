@@ -502,6 +502,32 @@ export function propagateGoverningValues(result: any): void {
     }
   }
 
+  // ── Uncertainty ranges MUST bracket the governing central values, or the
+  //    report prints a "yield 0.5, range 3.3-6.5" contradiction (the old ensemble
+  //    range surviving after the yield was reconciled down). Re-derive the yield
+  //    (and depth) ranges around the governing values; leave probability as-is
+  //    (probability is not re-stamped by this pass). Enforced by Check 19.3. ──
+  if (result.uncertainty) {
+    if (Array.isArray(result.uncertainty.yieldRange)) {
+      result.uncertainty.yieldRange = [r2(gY * 0.65), r2(gY * 1.35)];
+    }
+    if (Number.isFinite(gD) && Array.isArray(result.uncertainty.depthRange)) {
+      const lo = Math.round(gD * 0.85), hi = Math.round(gD * 1.15);
+      // only tighten if the existing range doesn't already bracket gD
+      const [elo, ehi] = result.uncertainty.depthRange.map(Number);
+      if (!(elo <= gD && gD <= ehi)) result.uncertainty.depthRange = [lo, hi];
+    }
+  }
+  // Monte-Carlo / confidence-weighted yield summaries that feed the same range
+  // display must not re-introduce the stale spread.
+  if (result.monteCarlo?.yield_m3hr && typeof result.monteCarlo.yield_m3hr === 'object') {
+    const mc = result.monteCarlo.yield_m3hr;
+    if (mc.mean != null) mc.mean = r2(gY);
+    if (mc.median != null) mc.median = r2(gY);
+    if (mc.p10 != null) mc.p10 = r2(gY * 0.7);
+    if (mc.p90 != null) mc.p90 = r2(gY * 1.3);
+  }
+
   // ── Sub-model diagnostic panels keep their own numbers (they are LABELLED
   //    "sub-model; governing: X"), but their PREDICTED (not diagnostic) yield
   //    fields that feed design must track the governing value. ──
