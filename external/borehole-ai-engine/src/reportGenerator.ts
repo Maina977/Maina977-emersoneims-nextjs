@@ -10026,6 +10026,56 @@ export async function generatePDFReport(result: AnalysisResult, tier: 'basic' | 
   doc.text(intLines, margin + 4, y + 10);
   y += 36;
 
+  // ── SCIENTIFIC REFERENCES & METHODOLOGY STATEMENT (trust charter 2026-07-16) ──
+  try {
+    checkSpace(80);
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(14, 50, 100);
+    doc.text('SCIENTIFIC REFERENCES & METHODOLOGY STATEMENT', margin, y); y += 6;
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(70, 70, 80);
+    const methodStatement = 'This report was produced by the AquaScan Pro desktop pre-feasibility methodology: multi-source evidence fusion (registries, satellite physics, regional drilling statistics) reconciled to ONE governing result through published hydrogeological physics, then audited by a 19-check consistency validator before export. The full methodology, data-source registry, known limitations and the public validation ledger are published at emersoneims.com/aquascan-pro-v3/methodology — customers and reviewing hydrogeologists are invited to check our work.';
+    doc.text(doc.splitTextToSize(methodStatement, pw), margin, y);
+    y += doc.splitTextToSize(methodStatement, pw).length * 3.2 + 4;
+    const refs = [
+      'MacDonald A.M., Bonsor H.C., Ó Dochartaigh B.É., Taylor R.G. (2012). Quantitative maps of groundwater resources in Africa. Environ. Res. Lett. 7(2).',
+      'MacDonald A.M., Davies J., Calow R.C., Chilton P.J. (2005). Developing Groundwater: A Guide for Rural Water Supply. ITDG Publishing.',
+      'Driscoll F.G. (1986). Groundwater and Wells, 2nd ed. (usable drawdown <= 2/3 saturated thickness, unconfined).',
+      'Theis C.V. (1935). Trans. AGU 16 — non-equilibrium well hydraulics.  |  Cooper H.H. & Jacob C.E. (1946). Trans. AGU 27.',
+      'Budyko M.I. (1974). Climate and Life — water-balance recharge banding (Fu parameterisation).',
+      'WHO (2011, 4th ed.). Guidelines for Drinking-water Quality.  |  Saaty T.L. (1980). The Analytic Hierarchy Process.',
+      'RWSN/UNICEF guidance on professional borehole siting & supervision.  |  Kenya Water Resources Regulations (2021).',
+    ];
+    doc.setFontSize(6.5); doc.setTextColor(90, 90, 100);
+    refs.forEach((r, i) => { doc.text(`${i + 1}. ${r}`, margin, y, { maxWidth: pw }); y += doc.splitTextToSize(r, pw).length * 2.9 + 1.2; });
+    y += 4;
+
+    // Integrity fingerprint: SHA-256 over the governing values + timestamp.
+    // Any alteration of a circulated copy's figures breaks the fingerprint —
+    // customers can ask EmersonEIMS to verify a report they have been shown.
+    const _fpPayload = JSON.stringify({
+      lat: result.latitude, lon: result.longitude,
+      prob: result.probability, depth: result.recommendedDepth, yield: result.estimatedYield,
+      generated: new Date().toISOString().slice(0, 16),
+    });
+    let _fpHex = 'unavailable';
+    try {
+      const _cr: any = (globalThis as any).crypto;
+      if (_cr?.subtle) {
+        const _buf = await _cr.subtle.digest('SHA-256', new TextEncoder().encode(_fpPayload));
+        _fpHex = Array.from(new Uint8Array(_buf)).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16).toUpperCase();
+      }
+    } catch { /* keep 'unavailable' — never fake a fingerprint */ }
+    checkSpace(20);
+    doc.setFillColor(240, 248, 255);
+    doc.roundedRect(margin, y, pw, 16, 2, 2, 'F');
+    doc.setDrawColor(30, 90, 160); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, y, pw, 16, 2, 2, 'S');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 90, 160);
+    doc.text(`REPORT INTEGRITY FINGERPRINT: ${_fpHex}`, margin + 4, y + 6);
+    doc.setFontSize(6.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(70, 80, 95);
+    doc.text('Computed from this report\'s governing coordinates, probability, depth and yield at generation time. If any of those figures in a circulated copy has been altered, the fingerprint will not match. Verification: emersoneims.com/aquascan-pro-v3/methodology', margin + 4, y + 10.5, { maxWidth: pw - 8 });
+    y += 21;
+  } catch (_refErr) { console.warn('[PDF] references/fingerprint section skipped', _refErr); }
+
   // -- ASSESSMENT DISCLAIMER (dynamic based on field data) --
   checkSpace(60);
   const isDesktop = result.assessmentType !== 'FIELD_VALIDATED';
