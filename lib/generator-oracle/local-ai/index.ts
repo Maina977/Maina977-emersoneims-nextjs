@@ -39,3 +39,12 @@ export {
 export type { RetrievalHit, RetrievalQuery } from './retrievalClient';
 export { getLocalAiHealth } from './health';
 export type { LocalAiHealth } from './health';
+export {
+  isGeminiConfigured,
+  geminiChat,
+  geminiVision,
+  geminiPing,
+  getGeminiEnv,
+  GeminiUnavailableError,
+  GeminiResponseError,
+} from './geminiClient';

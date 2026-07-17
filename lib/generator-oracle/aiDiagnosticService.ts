@@ -42,6 +42,7 @@ import {
   summarizeViolations,
   getLocalAiEnv,
   getLocalAiHealth,
+  isGeminiConfigured,
 } from './local-ai';
 
 export interface AIDiagnosticRequest {
@@ -69,7 +70,13 @@ export interface AIDiagnosticResponse {
 
 export function isAIDiagnosticsEnabled(): boolean {
   if (isAIDisabledServer()) return false;
-  return !!process.env.LOCAL_AI_BASE_URL;
+  // FIX (2026-07-17): this gate only checked LOCAL_AI_BASE_URL, so the AI
+  // Parameter Analysis surface stayed dark on Vercel even though the generation
+  // path (ollamaChat) transparently falls back to Gemini — the exact
+  // inconsistency that left this surface off while Expert Chat and Visual
+  // Diagnosis (which use the Gemini-aware health check) went live. Mirror that
+  // health path: AI is available with a local Ollama server OR a Gemini key.
+  return !!process.env.LOCAL_AI_BASE_URL || isGeminiConfigured();
 }
 
 function readingsSummary(r: GeneratorReadings, faultCodes?: string[], symptoms?: string): string {
