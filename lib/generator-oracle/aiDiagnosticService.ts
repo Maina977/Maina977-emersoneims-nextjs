@@ -43,6 +43,7 @@ import {
   getLocalAiEnv,
   getLocalAiHealth,
   isGeminiConfigured,
+  isGroqConfigured,
 } from './local-ai';
 
 export interface AIDiagnosticRequest {
@@ -75,8 +76,9 @@ export function isAIDiagnosticsEnabled(): boolean {
   // path (ollamaChat) transparently falls back to Gemini — the exact
   // inconsistency that left this surface off while Expert Chat and Visual
   // Diagnosis (which use the Gemini-aware health check) went live. Mirror that
-  // health path: AI is available with a local Ollama server OR a Gemini key.
-  return !!process.env.LOCAL_AI_BASE_URL || isGeminiConfigured();
+  // health path: AI is available with a local Ollama server OR a hosted key
+  // (Groq — free, no billing — or Gemini).
+  return !!process.env.LOCAL_AI_BASE_URL || isGroqConfigured() || isGeminiConfigured();
 }
 
 function readingsSummary(r: GeneratorReadings, faultCodes?: string[], symptoms?: string): string {

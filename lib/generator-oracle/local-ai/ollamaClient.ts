@@ -22,6 +22,14 @@ import {
   GeminiUnavailableError,
   GeminiResponseError,
 } from './geminiClient';
+import {
+  groqChat,
+  groqVision,
+  groqPing,
+  isGroqConfigured,
+  GroqUnavailableError,
+  GroqResponseError,
+} from './groqClient';
 
 export interface OllamaChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -84,12 +92,29 @@ export async function ollamaChat(opts: {
 }): Promise<OllamaGenerateResult> {
   const env = getLocalAiEnv();
 
-  // Provider routing: if no local Ollama is configured but a Gemini key is
-  // present, transparently use Gemini. Routes and the diagnostic service
-  // continue to call this function — the abstraction lets them stay
-  // backend-agnostic. Errors are remapped onto the existing typed error
-  // classes so the route's `instanceof OllamaUnavailableError` checks still
-  // trigger the same `AI_UNAVAILABLE` envelope.
+  // Provider routing: when no local Ollama is configured, transparently use a
+  // hosted provider. Order: GROQ first (genuinely free, no billing), then
+  // Gemini. Routes and the diagnostic service continue to call this function —
+  // the abstraction keeps them backend-agnostic. Errors are remapped onto the
+  // existing typed error classes so `instanceof OllamaUnavailableError` still
+  // triggers the same `AI_UNAVAILABLE` envelope.
+  if (!env.baseUrl && isGroqConfigured()) {
+    try {
+      const r = await groqChat(opts);
+      return {
+        text: r.text,
+        model: r.model,
+        totalDurationMs: r.totalDurationMs,
+        promptEvalCount: r.promptTokens,
+        evalCount: r.outputTokens,
+        done: true,
+      };
+    } catch (err) {
+      if (err instanceof GroqUnavailableError) throw new OllamaUnavailableError(err.message, err);
+      if (err instanceof GroqResponseError) throw new OllamaResponseError(err.message, err.status);
+      throw err;
+    }
+  }
   if (!env.baseUrl && isGeminiConfigured()) {
     try {
       const r = await geminiChat(opts);
@@ -178,8 +203,25 @@ export async function ollamaVision(opts: {
 }): Promise<OllamaGenerateResult> {
   const env = getLocalAiEnv();
 
-  // Same provider routing as ollamaChat — Gemini's multimodal model
-  // handles vision requests with the exact same call surface.
+  // Same provider routing as ollamaChat — Groq first (free), then Gemini.
+  // Both providers' multimodal models handle vision with this call surface.
+  if (!env.baseUrl && isGroqConfigured()) {
+    try {
+      const r = await groqVision(opts);
+      return {
+        text: r.text,
+        model: r.model,
+        totalDurationMs: r.totalDurationMs,
+        promptEvalCount: r.promptTokens,
+        evalCount: r.outputTokens,
+        done: true,
+      };
+    } catch (err) {
+      if (err instanceof GroqUnavailableError) throw new OllamaUnavailableError(err.message, err);
+      if (err instanceof GroqResponseError) throw new OllamaResponseError(err.message, err.status);
+      throw err;
+    }
+  }
   if (!env.baseUrl && isGeminiConfigured()) {
     try {
       const r = await geminiVision(opts);
@@ -226,8 +268,17 @@ export async function ollamaPing(timeoutMs = 4000): Promise<{
 }> {
   const env = getLocalAiEnv();
   if (!env.baseUrl) {
-    // No Ollama configured — report Gemini as the active backend if its
-    // key is set. The shape stays compatible with the health check.
+    // No Ollama configured — report the active hosted backend. Groq first
+    // (free, no billing), then Gemini. Shape stays health-check compatible.
+    if (isGroqConfigured()) {
+      const g = await groqPing(timeoutMs);
+      return {
+        ok: g.ok,
+        baseUrl: 'groq://api.groq.com',
+        reason: g.reason,
+        modelsAvailable: g.modelsAvailable,
+      };
+    }
     if (isGeminiConfigured()) {
       const g = await geminiPing(timeoutMs);
       return {

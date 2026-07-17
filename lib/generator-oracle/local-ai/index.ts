@@ -48,3 +48,12 @@ export {
   GeminiUnavailableError,
   GeminiResponseError,
 } from './geminiClient';
+export {
+  isGroqConfigured,
+  groqChat,
+  groqVision,
+  groqPing,
+  getGroqEnv,
+  GroqUnavailableError,
+  GroqResponseError,
+} from './groqClient';

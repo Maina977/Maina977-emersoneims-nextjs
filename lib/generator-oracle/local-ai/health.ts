@@ -13,6 +13,7 @@ import { paddleOcrPing } from './paddleOcrClient';
 import { retrievalPing } from './retrievalClient';
 import { getLocalAiEnv } from './env';
 import { isGeminiConfigured, getGeminiEnv } from './geminiClient';
+import { isGroqConfigured, getGroqEnv } from './groqClient';
 
 export interface LocalAiHealth {
   ok: boolean; // text reasoning available — required for any diagnosis
@@ -26,8 +27,12 @@ export interface LocalAiHealth {
 
 export async function getLocalAiHealth(): Promise<LocalAiHealth> {
   const env = getLocalAiEnv();
-  const geminiActive = !env.baseUrl && isGeminiConfigured();
+  // Cloud provider precedence when no local Ollama: Groq (free) then Gemini.
+  const groqActive = !env.baseUrl && isGroqConfigured();
+  const geminiActive = !env.baseUrl && !groqActive && isGeminiConfigured();
+  const groq = groqActive ? getGroqEnv() : null;
   const gemini = geminiActive ? getGeminiEnv() : null;
+  const hostedActive = groqActive || geminiActive;
 
   const [tagsResult, ocr, retrieval] = await Promise.all([
     ollamaPing(),
@@ -35,15 +40,14 @@ export async function getLocalAiHealth(): Promise<LocalAiHealth> {
     retrievalPing(),
   ]);
 
-  // "Configured" means SOME text backend is wired up (Ollama OR Gemini).
-  const textConfigured = !!env.baseUrl || isGeminiConfigured();
+  // "Configured" means SOME text backend is wired up (Ollama OR Groq OR Gemini).
+  const textConfigured = !!env.baseUrl || isGroqConfigured() || isGeminiConfigured();
   const textReachable = tagsResult.ok;
   const models = tagsResult.modelsAvailable ?? [];
 
-  // Vision availability: when Gemini is the backend, the configured vision
-  // model (gemini-2.0-flash by default) is multimodal — vision is on.
-  // When Ollama is the backend, vision is on only if a *VL* model is loaded.
-  const visionReachable = geminiActive
+  // Vision availability: a hosted multimodal model is on when the backend is
+  // reachable. For Ollama it's on only if a *VL*/vision model is loaded.
+  const visionReachable = hostedActive
     ? textReachable
     : textReachable &&
       models.some((m) => m.toLowerCase().includes('vl') || m.toLowerCase().includes('vision'));
@@ -61,8 +65,8 @@ export async function getLocalAiHealth(): Promise<LocalAiHealth> {
       reachable: visionReachable,
       reason: visionReachable
         ? undefined
-        : geminiActive
-          ? 'Gemini vision unreachable'
+        : hostedActive
+          ? 'hosted vision unreachable'
           : 'vision model not loaded in Ollama',
     },
     ocr: {
@@ -75,7 +79,7 @@ export async function getLocalAiHealth(): Promise<LocalAiHealth> {
       reachable: retrieval.ok,
       reason: retrieval.reason,
     },
-    textModel: gemini?.textModel ?? env.textModel,
-    visionModel: gemini?.visionModel ?? env.visionModel,
+    textModel: groq?.textModel ?? gemini?.textModel ?? env.textModel,
+    visionModel: groq?.visionModel ?? gemini?.visionModel ?? env.visionModel,
   };
 }
