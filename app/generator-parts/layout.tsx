@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ToolSeoContent from '@/components/seo/ToolSeoContent';
 
 export const metadata: Metadata = {
   title: "Generator Parts Kenya | Filters, Controls, Engine Spares | Same Day Nairobi",
@@ -11,5 +12,6 @@ export default function GeneratorPartsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <>{children}
+      <ToolSeoContent tool="generator-parts" /></>;
 }

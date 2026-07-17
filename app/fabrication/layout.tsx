@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ToolSeoContent from '@/components/seo/ToolSeoContent';
 
 export const metadata: Metadata = {
   title: "Generator Fabrication Kenya | Canopies, Exhaust, Fuel Tanks | EmersonEIMS",
@@ -11,5 +12,6 @@ export default function FabricationLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <>{children}
+      <ToolSeoContent tool="fabrication" /></>;
 }

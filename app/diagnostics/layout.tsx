@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import type { ReactNode } from 'react';
 import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
 
@@ -32,6 +33,7 @@ export default function DiagnosticsLayout({ children }: { children: ReactNode })
         priceKes="Free"
       />
       {children}
+      <ToolSeoContent tool="diagnostics" />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import Script from 'next/script';
 
 /**
@@ -186,6 +187,7 @@ export default function SolarLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       {children}
+      <ToolSeoContent tool="solar" />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import type { ReactNode } from 'react';
 import Script from 'next/script';
 
@@ -146,6 +147,7 @@ export default function AIToolsLayout({ children }: { children: ReactNode }) {
         />
       ))}
       {children}
+      <ToolSeoContent tool="ai-tools" />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import type { ReactNode } from 'react';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
@@ -20,5 +21,6 @@ export const metadata: Metadata = {
 };
 
 export default function CalculatorsLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return <>{children}
+      <ToolSeoContent tool="calculators" /></>;
 }

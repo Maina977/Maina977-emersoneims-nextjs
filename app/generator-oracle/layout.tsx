@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import ToolSeoContent from '@/components/seo/ToolSeoContent';
 import FlagshipProductSchema from '@/components/seo/FlagshipProductSchema';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
@@ -71,6 +72,7 @@ export default function GeneratorOracleLayout({ children }: { children: React.Re
         priceKes="Free"
       />
       {children}
+      <ToolSeoContent tool="generator-oracle" />
     </main>
   );
 }
