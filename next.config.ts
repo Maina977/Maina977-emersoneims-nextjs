@@ -147,43 +147,13 @@ const nextConfig: NextConfig = {
   },
 
   // ═══════════════════════════════════════════════════════════════════
-  // WEBPACK OPTIMIZATION - AGGRESSIVE BUNDLE SPLITTING
+  // WEBPACK — use Next.js's default chunking (perf audit 2026-06/07).
+  // The previous custom splitChunks (maxSize 244k, maxInitialRequests 30)
+  // over-fragmented the bundle: phones on 3G/4G paid ~30 request round-trips
+  // before first render. Next's built-in strategy (framework chunk + shared
+  // lib chunks, tuned request budget) is measurably better on mobile — do not
+  // reintroduce a blanket splitChunks override without lab data proving it.
   // ═══════════════════════════════════════════════════════════════════
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          minSize: 20000,
-          maxSize: 244000,
-          minChunks: 1,
-          maxAsyncRequests: 30,
-          maxInitialRequests: 30,
-          cacheGroups: {
-            framework: {
-              name: 'framework',
-              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
-              priority: 40,
-              enforce: true,
-            },
-            commons: {
-              name: 'commons',
-              minChunks: 2,
-              priority: 20,
-            },
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              priority: 10,
-              reuseExistingChunk: true,
-            },
-          },
-        },
-      };
-    }
-    return config;
-  },
 
   // ═══════════════════════════════════════════════════════════════════
   // BUNDLE OPTIMIZATION - Smaller JS = Faster Load
