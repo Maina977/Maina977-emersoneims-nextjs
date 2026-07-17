@@ -389,46 +389,69 @@ export function diagnoseFromSymptoms(input: DiagnoseInput): DiagnoseResponse {
     };
   }
 
-  const ranked: RankedFault[] = [];
-  for (const c of filtered) {
-    const haystack = [
-      c.title,
-      c.description,
-      c.subcategory,
-      c.category,
-      ...(c.symptoms || []),
-      ...(c.possibleCauses || []).map((p) => p.cause),
-    ]
-      .join(' ')
-      .toLowerCase();
+  // Score a pool of codes against the symptom terms (keyword overlap).
+  const rankPool = (codes: ControllerFaultCode[]): RankedFault[] => {
+    const out: RankedFault[] = [];
+    for (const c of codes) {
+      const haystack = [
+        c.title,
+        c.description,
+        c.subcategory,
+        c.category,
+        ...(c.symptoms || []),
+        ...(c.possibleCauses || []).map((p) => p.cause),
+      ]
+        .join(' ')
+        .toLowerCase();
 
-    const matched: string[] = [];
-    let score = 0;
-    for (const t of terms) {
-      if (haystack.includes(t)) {
-        matched.push(t);
-        score += 2;
-        if ((c.symptoms || []).some((s) => s.toLowerCase().includes(t))) score += 2;
-        if ((c.possibleCauses || []).some((p) => p.cause.toLowerCase().includes(t))) score += 1;
+      const matched: string[] = [];
+      let score = 0;
+      for (const t of terms) {
+        if (haystack.includes(t)) {
+          matched.push(t);
+          score += 2;
+          if ((c.symptoms || []).some((s) => s.toLowerCase().includes(t))) score += 2;
+          if ((c.possibleCauses || []).some((p) => p.cause.toLowerCase().includes(t))) score += 1;
+        }
       }
+      if (score === 0) continue;
+      if (c.verified === true) score += 1;
+      out.push({ ...SLIM_FIELDS(c), score, matchedTerms: matched });
     }
-    if (score === 0) continue;
-    if (c.verified === true) score += 1;
+    out.sort((a, b) => b.score - a.score || Number(b.verified) - Number(a.verified));
+    return out;
+  };
 
-    ranked.push({ ...SLIM_FIELDS(c), score, matchedTerms: matched });
+  let ranked = rankPool(filtered);
+  let considered = filtered.length;
+  const notes = [
+    'Ranking is keyword-overlap based against curated symptoms / causes / titles in the fault index.',
+    'Manufacturer-curated entries are boosted; template entries are still returned to widen coverage.',
+  ];
+
+  // BRAND-FALLBACK FIX (2026-07-17 Oracle audit): the fault index is keyed by
+  // CONTROLLER brand (DSE, ComAp, PowerWizard…), but users naturally type their
+  // ENGINE brand (Perkins, Cummins, Volvo). That filtered the pool to empty and
+  // returned zero results for common symptoms — the tool looked broken. When a
+  // brand filter yields no ranked matches, retry brand-agnostically so the
+  // symptom evidence still surfaces, and say why honestly.
+  if (ranked.length === 0 && input.brand) {
+    const allRanked = rankPool(applyFilters(getAllFaultCodes(), { model: input.model, category: input.category }));
+    if (allRanked.length > 0) {
+      ranked = allRanked;
+      considered = allRanked.length;
+      notes.unshift(
+        `No fault codes are indexed under the brand "${input.brand}". The fault database is organised by CONTROLLER brand (DeepSea, ComAp, CAT PowerWizard, SmartGen, Woodward, Datakom, Lovato, Siemens, ENKO, VODIA), not engine brand — results below are matched across all controllers by symptom. Identify your controller model for brand-specific codes.`,
+      );
+    }
   }
-
-  ranked.sort((a, b) => b.score - a.score || Number(b.verified) - Number(a.verified));
 
   return {
     input: { ...input, topN },
     ranked: ranked.slice(0, topN),
-    considered: filtered.length,
+    considered,
     source: 'index',
-    notes: [
-      'Ranking is keyword-overlap based against curated symptoms / causes / titles in the fault index.',
-      'Manufacturer-curated entries are boosted; template entries are still returned to widen coverage.',
-    ],
+    notes,
   };
 }
 
