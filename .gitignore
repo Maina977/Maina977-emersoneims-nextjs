@@ -64,3 +64,9 @@ external/**/.pytest_cache/
 .vercel
 .env*.local
 .env*
+
+# Secrets — never commit API keys (2026-07-17)
+GEMINI KEY.txt
+*KEY*.txt
+*.key
+NETLIFY TOKEN.txt
