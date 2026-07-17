@@ -49,7 +49,13 @@ export type EvidenceCitation = z.infer<typeof EvidenceCitationSchema>;
 
 export const DiagnosisOutputSchema = z.object({
   verdict: z.string().min(1).max(500),
-  confidence: ConfidenceLabelSchema,
+  // The model's self-assessed confidence is DISCARDED and overwritten by the
+  // deterministic verifier (labelConfidence) in every route. So an off-enum or
+  // missing value from the model (e.g. Llama-3.3 returning "high") must not
+  // fail the whole diagnosis — coerce it to the conservative default here; the
+  // verifier sets the authoritative label immediately after parse. This keeps
+  // the output contract model-agnostic (Gemini complied; Groq/Llama needed it).
+  confidence: ConfidenceLabelSchema.catch('verification_required'),
   evidenceUsed: z.array(EvidenceCitationSchema).default([]),
   evidenceMissing: z.array(z.string()).default([]),
   userSafeChecks: z.array(z.string()).default([]),
