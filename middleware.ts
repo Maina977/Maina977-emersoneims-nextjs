@@ -158,8 +158,29 @@ const ALLOWED_BOTS = [
   'whatsapp',
   'telegrambot',
   'applebot',
+  'applebot-extended',
   'pinterest',
   'redditbot',
+  // AI assistants / LLM crawlers (2026-07-17) — allow so EmersonEIMS services
+  // and AI tools can be discovered, cited and answered by AI search. These
+  // are the branded crawlers of the major assistants; letting them in is how a
+  // business appears when users ask ChatGPT/Perplexity/Gemini/etc. about it.
+  'gptbot',              // OpenAI — model training + knowledge
+  'oai-searchbot',       // OpenAI — ChatGPT Search index
+  'chatgpt-user',        // OpenAI — ChatGPT browsing on user request
+  'perplexitybot',       // Perplexity — search index
+  'perplexity-user',     // Perplexity — user-initiated fetch
+  'claudebot',           // Anthropic — crawler
+  'anthropic-ai',        // Anthropic
+  'claude-web',          // Anthropic — user-initiated
+  'ccbot',               // Common Crawl — feeds many open models
+  'bytespider',          // ByteDance / Doubao
+  'amazonbot',           // Amazon (Alexa / Rufus)
+  'cohere-ai',           // Cohere
+  'deepseekbot',         // DeepSeek
+  'qwenbot',             // Alibaba Qwen
+  'youbot',              // You.com
+  'meta-externalagent',  // Meta AI
   // Monitoring
   'vercel',
   'uptimerobot',

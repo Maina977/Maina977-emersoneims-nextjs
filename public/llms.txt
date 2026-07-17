@@ -20,8 +20,8 @@ Coverage: Kenya (all 47 counties), Uganda, Tanzania, Rwanda, South Sudan.
 - [All services](https://www.emersoneims.com/services)
 
 ## Free AI Engineering Tools
+- [Generator Oracle](https://www.emersoneims.com/generator-oracle): AI generator diagnostics — Expert AI Chat, image-based Visual Diagnosis and sensor Parameter Analysis, backed by 450,000+ fault codes across 10 controller brands (DeepSea, CAT PowerWizard, ComAp, Woodward, SmartGen, Datakom, Lovato, Siemens, ENKO, Volvo VODIA). Diagnoses starting, fuel, cooling, AVR, ECM, electrical and control-panel faults for Cummins, Perkins, CAT, FG Wilson, Kohler and all major brands 20–2000 kVA, with escalation to EmersonEIMS 24/7 field repair.
 - [AquaScan Pro](https://www.emersoneims.com/aquascan-pro-v3): desktop borehole & groundwater pre-feasibility reports with maps of existing boreholes, springs, soil and vegetation; methodology published at https://www.emersoneims.com/aquascan-pro-v3/methodology
-- [Generator Oracle](https://www.emersoneims.com/generator-oracle): AI generator fault diagnosis by brand and error code
 - [SolarGenius Pro](https://www.emersoneims.com/solar-genius-pro): solar system design, sizing and payback for Kenya
 - [Engineering calculators](https://www.emersoneims.com/calculators): generator sizing, UPS runtime, cable sizing, fuel cost
 - [Equipment diagnostics](https://www.emersoneims.com/diagnostics) · [All AI tools](https://www.emersoneims.com/ai-tools)

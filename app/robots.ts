@@ -80,6 +80,27 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         crawlDelay: 2,
       },
+      // ─── AI ASSISTANTS / LLM CRAWLERS (2026-07-17) ───
+      // Explicitly welcome AI search + assistants so EmersonEIMS services and
+      // AI tools can be discovered, cited and answered when users ask
+      // ChatGPT / Perplexity / Gemini / Claude / DeepSeek about generators,
+      // solar, boreholes, spare parts and repairs in Kenya & East Africa.
+      { userAgent: 'GPTBot', allow: '/' },              // OpenAI (ChatGPT)
+      { userAgent: 'OAI-SearchBot', allow: '/' },       // ChatGPT Search
+      { userAgent: 'ChatGPT-User', allow: '/' },        // ChatGPT browsing
+      { userAgent: 'PerplexityBot', allow: '/' },       // Perplexity
+      { userAgent: 'Perplexity-User', allow: '/' },
+      { userAgent: 'ClaudeBot', allow: '/' },           // Anthropic (Claude)
+      { userAgent: 'anthropic-ai', allow: '/' },
+      { userAgent: 'Claude-Web', allow: '/' },
+      { userAgent: 'Google-Extended', allow: '/' },     // Gemini
+      { userAgent: 'CCBot', allow: '/' },               // Common Crawl (many models)
+      { userAgent: 'DeepSeekBot', allow: '/' },         // DeepSeek
+      { userAgent: 'Amazonbot', allow: '/' },           // Amazon (Rufus/Alexa)
+      { userAgent: 'Applebot-Extended', allow: '/' },   // Apple Intelligence
+      { userAgent: 'cohere-ai', allow: '/' },           // Cohere
+      { userAgent: 'Bytespider', allow: '/' },          // ByteDance / Doubao
+      { userAgent: 'meta-externalagent', allow: '/' },  // Meta AI
       // Facebook crawler
       {
         userAgent: 'facebookexternalhit',
