@@ -733,15 +733,21 @@ export function getCountyBySlug(slug: string): County | undefined {
  * If a real, locally-relevant page is needed for a smaller town, add it
  * here once authored with unique content.
  */
+// Curated, high-INTENT locations. Expanded 2026-07-18 from 8 → the real
+// economic centres + key Nairobi commercial/industrial areas the business
+// actually serves. getIndexedServiceLocationPaths() filters each against the
+// live location registry, so any slug that doesn't resolve is silently
+// skipped — never a broken page. This is a QUALITY set (real data + unique
+// per-page content), not the ~1,000-location doorway matrix that was removed.
 const INDEXED_TOP_LOCATIONS = [
-  'nairobi',
-  'mombasa',
-  'kisumu',
-  'nakuru',
-  'eldoret',
-  'thika',
-  'westlands',
-  'karen',
+  // Major cities / towns
+  'nairobi', 'mombasa', 'kisumu', 'nakuru', 'eldoret', 'thika',
+  // Nairobi commercial & industrial areas (B2B power demand)
+  'westlands', 'karen', 'kilimani', 'industrial-area', 'embakasi',
+  'ruaraka', 'kasarani',
+  // Regional economic centres (counties)
+  'kiambu', 'machakos', 'kajiado', 'uasin-gishu', 'kakamega', 'meru',
+  'nyeri', 'kericho', 'kisii', 'kilifi', 'bungoma', 'kitui', 'nyandarua',
 ];
 
 const INDEXED_TOP_SERVICES = [
@@ -750,6 +756,9 @@ const INDEXED_TOP_SERVICES = [
   'ups',
   'electrical',
   'generator-diagnostics',
+  'spare-parts',
+  'borehole',
+  'ac',
 ];
 
 export function getIndexedServiceLocationPaths(): { service: string; location: string }[] {

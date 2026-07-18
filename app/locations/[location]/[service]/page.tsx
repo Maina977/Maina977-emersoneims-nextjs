@@ -45,7 +45,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { location: locationSlug, service: serviceSlug } = await params;
   const seo = generateLocationSEO(serviceSlug, locationSlug);
 
-  if (!seo) return { title: 'Page Not Found' };
+  // SOFT-404 FIX (2026-07-18): returning a "Page Not Found" metadata object
+  // while the page body calls notFound() left Next.js serving these with HTTP
+  // 200 — a soft-404 that Google flags and that drags down site-wide quality.
+  // Calling notFound() HERE too makes the 404 status authoritative.
+  if (!seo) notFound();
 
   return {
     title: seo.title,
