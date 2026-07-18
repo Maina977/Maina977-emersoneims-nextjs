@@ -27,7 +27,6 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { isIndexedLocationService } from '@/lib/seo/indexedMatrix';
 
 // Supported locales
 const locales = ['en', 'sw', 'fr', 'de', 'es', 'pt', 'zh', 'nl', 'am', 'so', 'ar'];
@@ -522,10 +521,14 @@ export function middleware(request: NextRequest) {
     if (m) {
       let loc = m[1], svc = m[2];
       try { loc = decodeURIComponent(loc); svc = decodeURIComponent(svc); } catch { /* keep raw */ }
-      if (!isIndexedLocationService(loc, svc)) {
+      // Inlined (no import) so the edge bundle can't fail and fall open to 200.
+      // Keep in sync with lib/seo/indexedMatrix.ts.
+      const OK_LOC = new Set(['nairobi','mombasa','kisumu','nakuru','eldoret','thika','westlands','karen','kilimani','industrial-area','embakasi','ruaraka','kasarani','kiambu','machakos','kajiado','uasin-gishu','kakamega','meru','nyeri','kericho','kisii','kilifi','bungoma','kitui','nyandarua']);
+      const OK_SVC = new Set(['generators','solar','ups','electrical','generator-diagnostics','spare-parts','borehole','ac']);
+      if (!(OK_LOC.has(loc) && OK_SVC.has(svc))) {
         return new NextResponse('Not Found', {
           status: 404,
-          headers: { 'X-Robots-Tag': 'noindex, follow', 'Content-Type': 'text/plain' },
+          headers: { 'X-Robots-Tag': 'noindex, follow', 'Content-Type': 'text/plain', 'X-Loc-Guard': '404' },
         });
       }
     }
