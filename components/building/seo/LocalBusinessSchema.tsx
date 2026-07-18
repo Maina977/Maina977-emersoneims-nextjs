@@ -36,11 +36,13 @@ export default function LocalBusinessSchema({
     "priceRange": priceRange,
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": address?.streetAddress || "Industrial Area",
-      "addressLocality": address?.addressLocality,
-      "addressRegion": address?.addressRegion,
-      "postalCode": address?.postalCode || "00100",
-      "addressCountry": address?.addressCountry
+      // Correct location (2026-07-18): Embakasi, off Airport North Road —
+      // near KEMSA Head Office, behind Coca-Cola, close to Pride Centre.
+      "streetAddress": address?.streetAddress || "Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi",
+      "addressLocality": address?.addressLocality || "Nairobi",
+      "addressRegion": address?.addressRegion || "Nairobi",
+      "postalCode": address?.postalCode || "00519",
+      "addressCountry": address?.addressCountry || "KE"
     },
     "openingHoursSpecification": [
       {

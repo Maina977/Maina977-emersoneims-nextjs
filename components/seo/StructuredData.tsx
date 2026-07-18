@@ -34,7 +34,7 @@ export function OrganizationSchema() {
     foundingDate: '2010',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Embakasi, off Airport North Road',
+      streetAddress: 'Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
       postalCode: '00521',
@@ -99,7 +99,7 @@ export function LocalBusinessSchema({ county }: { county?: string }) {
     priceRange: 'KES 50,000 - KES 10,000,000',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Embakasi, off Airport North Road',
+      streetAddress: 'Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi',
       addressLocality: county || 'Nairobi',
       addressRegion: county ? `${county} County` : 'Nairobi County',
       addressCountry: 'KE'
@@ -445,7 +445,7 @@ export function ProfessionalServiceSchema({
     priceRange: priceRange || 'KES 5,000 - KES 10,000,000',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Embakasi, off Airport North Road',
+      streetAddress: 'Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi',
       addressLocality: 'Nairobi',
       addressRegion: 'Nairobi County',
       addressCountry: 'KE'
@@ -603,7 +603,7 @@ export function ComprehensiveLocalBusinessSchema({
     paymentAccepted: 'Cash, M-Pesa, Bank Transfer, Credit Card, Cheque',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Embakasi, off Airport North Road',
+      streetAddress: 'Off Airport North Road, near KEMSA Head Office (behind Coca-Cola, near Pride Centre), Embakasi',
       addressLocality: county,
       addressRegion: `${county} County`,
       addressCountry: 'KE'
