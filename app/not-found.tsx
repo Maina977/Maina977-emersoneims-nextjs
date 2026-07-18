@@ -1,11 +1,12 @@
-'use client';
-
+// SERVER COMPONENT (2026-07-18): previously 'use client' with useState, which
+// made Next.js serve notFound() responses with HTTP 200 — a soft-404 that
+// Google flags and that dragged down site-wide quality (e.g. invalid
+// /locations/[area]/[service] combos returned 200 + this page). A server
+// not-found lets the framework emit the correct HTTP 404 status. The search
+// box is now a plain GET form, so no client state is needed.
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 export default function NotFound() {
-  const [searchQuery, setSearchQuery] = useState('');
-
   // Popular pages for suggestions
   const popularPages = [
     { name: 'Generators', href: '/generators', icon: '⚡' },
@@ -36,23 +37,23 @@ export default function NotFound() {
           Let us help you find what you need.
         </p>
 
-        {/* Quick Search */}
+        {/* Quick Search — native GET form (no client JS needed) */}
         <div className="mb-8">
-          <div className="flex max-w-md mx-auto">
+          <form action="/search" method="get" className="flex max-w-md mx-auto">
             <input
               type="text"
+              name="q"
               placeholder="Search our site..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-l-lg focus:border-orange-500 focus:outline-none transition"
             />
-            <Link
-              href={`/search?q=${encodeURIComponent(searchQuery)}`}
+            <button
+              type="submit"
+              aria-label="Search"
               className="px-6 py-3 bg-orange-500 rounded-r-lg hover:bg-orange-600 transition"
             >
               🔍
-            </Link>
-          </div>
+            </button>
+          </form>
         </div>
 
         {/* Popular Pages */}

@@ -27,6 +27,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { isIndexedLocationService } from '@/lib/seo/indexedMatrix';
 
 // Supported locales
 const locales = ['en', 'sw', 'fr', 'de', 'es', 'pt', 'zh', 'nl', 'am', 'so', 'ar'];
@@ -507,6 +508,28 @@ export function middleware(request: NextRequest) {
   const userAgent = request.headers.get('user-agent') || '';
   const clientIP = getClientIP(request);
   const hostname = request.nextUrl.hostname;
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 0a. HARD 404 for non-curated /locations/[location]/[service] combos.
+  //     Next 16 serves notFound() inside a matched dynamic route as HTTP 200
+  //     (a soft-404 Google penalises and that dragged down site-wide quality).
+  //     Returning a real 404 here — BEFORE the route renders and before the
+  //     crawler fast-path — guarantees a hard status for users and crawlers.
+  //     Runs first so an invalid combo can never be 200 via any later branch.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    const m = pathname.match(/^\/locations\/([^/]+)\/([^/]+)\/?$/);
+    if (m) {
+      let loc = m[1], svc = m[2];
+      try { loc = decodeURIComponent(loc); svc = decodeURIComponent(svc); } catch { /* keep raw */ }
+      if (!isIndexedLocationService(loc, svc)) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: { 'X-Robots-Tag': 'noindex, follow', 'Content-Type': 'text/plain' },
+        });
+      }
+    }
+  }
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 0. VERIFIED CRAWLER FAST-PATH (Googlebot, Bingbot, etc.)
