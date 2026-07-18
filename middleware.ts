@@ -535,6 +535,47 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0b. HARD 404 for clearly-invalid /kenya/[county]/[...] combos.
+  //     Same Next-16 soft-404 quirk (notFound() -> HTTP 200 + indexable "Not
+  //     Found" page + self-canonical = "Duplicate without user-selected
+  //     canonical" in Search Console). CONSERVATIVE by design: only 404 combos
+  //     that are DEFINITELY invalid, never a real page. Valid /kenya set =
+  //     county (47) + county×core-service, plus constituency pages for the 10
+  //     PRIORITY counties only. Single-segment /kenya/[county] is a separate
+  //     route — left untouched here.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    const km = pathname.match(/^\/kenya\/([^/]+)\/(.+?)\/?$/);
+    if (km) {
+      let county = km[1];
+      const rest = km[2].split('/').filter(Boolean);
+      try { county = decodeURIComponent(county); } catch { /* keep raw */ }
+      const KENYA_COUNTIES = new Set(['nairobi','mombasa','kwale','kilifi','tana-river','lamu','taita-taveta','garissa','wajir','mandera','marsabit','isiolo','meru','tharaka-nithi','embu','kitui','machakos','makueni','nyandarua','nyeri','kirinyaga','muranga','kiambu','turkana','west-pokot','samburu','trans-nzoia','uasin-gishu','elgeyo-marakwet','nandi','baringo','laikipia','nakuru','narok','kajiado','kericho','bomet','kakamega','vihiga','bungoma','busia','siaya','kisumu','homa-bay','migori','kisii','nyamira']);
+      const CORE_SVC = new Set(['generator-companies','generators','generator-repairs','generator-maintenance','generator-spare-parts','solar-installation','solar-companies','motor-rewinding','ups-systems','electrical-services']);
+      const PRIORITY = new Set(['nairobi','mombasa','kisumu','nakuru','kiambu','machakos','kajiado','nyeri','meru','uasin-gishu']);
+      let invalid = false;
+      if (!KENYA_COUNTIES.has(county)) {
+        invalid = true;                                   // unknown county → definitely invalid
+      } else if (rest.length === 1) {
+        // /kenya/[county]/[x]: valid if x is a core service, OR (priority county)
+        // x may be a constituency — allow those through to the page.
+        if (!CORE_SVC.has(rest[0]) && !PRIORITY.has(county)) invalid = true;
+      } else if (rest.length === 2) {
+        // /kenya/[county]/[constituency]/[service]: only priority counties have these.
+        if (!PRIORITY.has(county)) invalid = true;
+      } else {
+        invalid = true;                                   // 3+ deep segments → never valid
+      }
+      if (invalid) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: { 'X-Robots-Tag': 'noindex, follow', 'Content-Type': 'text/plain', 'X-Loc-Guard': 'kenya-404' },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0. VERIFIED CRAWLER FAST-PATH (Googlebot, Bingbot, etc.)
   //     Search engines & social previewers MUST never be rate-limited,
   //     scrape-blocked, or 403'd. Short-circuit the entire access-control
