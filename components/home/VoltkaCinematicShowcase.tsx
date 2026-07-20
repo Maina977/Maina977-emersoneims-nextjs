@@ -73,6 +73,33 @@ export default function VoltkaCinematicShowcase() {
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
 
+  /**
+   * PERF (audit 2026-07-20): every slide used to mount its <Image> up front.
+   * Measured cost was ~2.3 MB of WebP for a section that sits BELOW the fold —
+   * by far the heaviest thing on the homepage.
+   *
+   * Fix: mount a slide's image only once it is reachable. We seed with the
+   * first slide plus its two neighbours (the crossfade target and the
+   * back-arrow target), then add each index as it is reached. Indices are
+   * never removed, so the outgoing slide stays mounted for the full 700ms
+   * opacity crossfade — the animation is byte-for-byte unchanged, the images
+   * simply arrive progressively instead of all at once.
+   */
+  const [mounted, setMounted] = useState<ReadonlySet<number>>(
+    () => new Set([0, 1, SLIDES.length - 1])
+  );
+
+  useEffect(() => {
+    setMounted((prev) => {
+      if (prev.has(index) && prev.has((index + 1) % SLIDES.length)) return prev;
+      const next = new Set(prev);
+      next.add(index);
+      next.add((index + 1) % SLIDES.length); // pre-warm the incoming slide
+      next.add((index - 1 + SLIDES.length) % SLIDES.length);
+      return next;
+    });
+  }, [index]);
+
   const go = useCallback(
     (dir: 1 | -1) => setIndex((i) => (i + dir + SLIDES.length) % SLIDES.length),
     []
@@ -122,15 +149,21 @@ export default function VoltkaCinematicShowcase() {
           }`}
           aria-hidden={i !== index}
         >
-          <Image
-            src={s.src}
-            alt={s.alt}
-            fill
-            sizes="100vw"
-            quality={90}
-            className="object-cover"
-            priority={i === 0}
-          />
+          {/* PERF: `priority` was removed here (audit 2026-07-20). This
+              section renders BELOW the full-height hero, so preloading slide 0
+              put a ~277 KB fetch in direct bandwidth competition with the
+              actual LCP element (the hero). Non-priority images lazy-load,
+              which is the correct behaviour for below-fold content. */}
+          {mounted.has(i) && (
+            <Image
+              src={s.src}
+              alt={s.alt}
+              fill
+              sizes="100vw"
+              quality={90}
+              className="object-cover"
+            />
+          )}
         </div>
       ))}
 
