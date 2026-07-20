@@ -316,8 +316,20 @@ export async function recordEvent(
     // every backend stores identically-shaped, identically-cleaned rows.
     if (isBot(input.ua)) return { ok: false, dropped: 'bot' };
 
+    // NOTE (2026-07-20): this is the SECOND type coercion in the pipeline —
+    // the collect route has one too. Adding 'vitals' to AnalyticsEventInput
+    // changed nothing here, because TypeScript unions are erased at runtime,
+    // so every Core Web Vitals beacon was silently rewritten to 'pageview'.
+    // That produced BOTH an empty vitals dataset and inflated pageview counts.
+    // Any new event type must be added in BOTH places.
     const type =
-      input.type === 'click' ? 'click' : input.type === 'ping' ? 'ping' : 'pageview';
+      input.type === 'click'
+        ? 'click'
+        : input.type === 'ping'
+          ? 'ping'
+          : input.type === 'vitals'
+            ? 'vitals'
+            : 'pageview';
 
     const ts = Math.floor(Date.now() / 1000);
     const day = dayUTC(ts);
