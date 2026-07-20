@@ -198,16 +198,18 @@ export default function LocationsPage() {
             generator installation, solar power systems, UPS solutions, and electrical services.
           </p>
           <p>
-            {/* "Our strategically located teams" implied depots around the
-                country. We work from a single Embakasi, Nairobi base, so that
-                was not true — replaced with the actual model (audit
-                2026-07-20). No response-time figure is quoted because we hold
-                no measured one. */}
-            Our engineering teams work from our Embakasi, Nairobi base and travel to site
-            with the spares, tooling and test equipment a job needs, so diagnosis and repair
-            can usually be completed in one visit. We understand that power reliability is
-            critical for your business, which is why we offer 24/7 emergency support and back
-            all our work with a comprehensive 3-Year Warranty.
+            {/* The original "strategically located teams" implied depots in every
+                town. The first correction over-swung and described us as working
+                out of Embakasi alone, which UNDERSTATES the business — owner
+                correction 2026-07-20: EmersonEIMS runs a mobile workshop team
+                covering the whole country. That is the accurate model stated
+                below. No hours-to-site figure is quoted, as none is measured. */}
+            We operate a mobile workshop team that covers all 47 counties. A fully-equipped
+            unit travels to your site with the tooling, spares and test equipment the job
+            needs, so diagnosis, repair and commissioning happen where your plant is rather
+            than requiring it to be moved. We understand that power reliability is critical
+            for your business, which is why we offer 24/7 emergency support and back all our
+            work with a comprehensive 3-Year Warranty.
           </p>
           <p>
             Contact us today to discuss your power needs. Our experts will assess your requirements

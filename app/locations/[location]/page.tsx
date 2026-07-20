@@ -330,19 +330,19 @@ export default async function LocationPage({ params }: Props) {
           </p>
 
           <h3>Serving All of {isCounty ? locationName : county?.name || locationName}</h3>
-          {/* The sentence removed here read: "Our technicians are based
-              strategically to ensure fast response times throughout
-              {locationName}." That asserted resident local technicians in ~190
-              towns. We operate from ONE base, so it was false on almost every
-              page it rendered. No response-time promise replaces it, because
-              we hold no measured figure to support one. */}
+          {/* The original sentence claimed resident technicians in ~190 towns.
+              The first correction then over-swung and implied we only work out
+              of Embakasi, which understates the business. Owner correction
+              2026-07-20: a MOBILE WORKSHOP TEAM covers the whole country, with
+              Embakasi as HQ. That is what is stated below. Still no
+              hours-to-site promise — no measured figure exists. */}
           <p>
             Whether you need emergency generator repair, scheduled maintenance or a
-            new installation, we cover {locationName}
-            {!isCounty && county ? ` and the wider ${county.name} County` : ''} from our{' '}
-            {OPERATING_BASE.label} workshop. Call +254 768 860 665 to discuss the site
-            and we will confirm scheduling and what the visit involves before anyone
-            travels.
+            new installation, our mobile workshop team covers {locationName}
+            {!isCounty && county ? ` and the wider ${county.name} County` : ''} as part
+            of our nationwide service, backed by our {OPERATING_BASE.label} headquarters.
+            Call +254 768 860 665 to discuss the site and we will confirm scheduling and
+            what the visit involves before anyone travels.
           </p>
           {facts.nearby.length > 0 && (
             <>

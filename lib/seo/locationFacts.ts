@@ -31,10 +31,16 @@
 import { COUNTIES, getLocationBySlug, type Location } from '@/lib/seo/kenyaLocations';
 
 /**
- * Our single operating base: Embakasi, Nairobi — off Airport North Road, near
- * the KEMSA head office. Confirmed by the owner 2026-07-18. Coordinates are
- * the Embakasi area centroid, NOT a surveyed pin: they are used only to
- * compute approximate road-trip context, never presented as an exact address.
+ * Our headquarters and main workshop: Embakasi, Nairobi — off Airport North
+ * Road, near the KEMSA head office. Confirmed by the owner 2026-07-18.
+ *
+ * NOTE (owner correction, 2026-07-20): this is the HQ, not the boundary of
+ * where we work. EmersonEIMS operates a mobile workshop team covering all 47
+ * counties, so copy must never imply that service is limited to Nairobi or
+ * that a distant county is awkward to reach.
+ *
+ * Coordinates are the Embakasi area centroid, NOT a surveyed pin: they are
+ * used only for approximate geographic context, never as an exact address.
  */
 const BASE = { lat: -1.3200, lng: 36.8900, label: 'Embakasi, Nairobi' };
 
@@ -138,26 +144,40 @@ export function getLocationFacts(slug: string): LocationFacts | null {
 }
 
 /**
- * The honest service-model sentence that REPLACES the old
- * "our technicians are based strategically in {location}" claim.
+ * The service-model sentence, describing HOW we actually deliver work.
  *
- * It states what is actually true: one Nairobi base, teams dispatched from it,
- * with the real travel distance given so the customer can judge response time
- * for themselves. It deliberately makes NO promise about hours-to-site — we
- * have no measured figure for that, so none is offered.
+ * HISTORY — two corrections, both worth keeping in view:
+ *
+ *   1. The original text claimed "our technicians are based strategically to
+ *      ensure fast response times throughout {location}" on ~190 pages. That
+ *      implied resident staff in every town, which is not the model.
+ *
+ *   2. The first fix over-corrected the other way, describing us as working
+ *      FROM the Embakasi base as though everything ran out of one building.
+ *      The owner corrected this on 2026-07-20: EmersonEIMS runs a MOBILE
+ *      WORKSHOP TEAM that serves clients nationwide. Embakasi is the
+ *      headquarters and main workshop, not the limit of where we work.
+ *
+ * So the accurate statement is: a fully-equipped mobile workshop delivers the
+ * work on site anywhere in Kenya, backed by the Nairobi HQ.
+ *
+ * Still deliberately absent: any hours-to-site promise, any count of mobile
+ * units, any claim of resident staff in a named town. Those are unmeasured or
+ * unstated, and the owner's brief forbids publishing unverified specifics.
  */
 export function serviceModelSentence(facts: LocationFacts): string {
+  const mobile = `Our mobile workshop team serves ${facts.name} as part of our nationwide coverage — a fully-equipped unit brings the tooling, spares and test equipment to your site`;
+
   if (facts.distanceKm == null) {
-    return `Our engineering teams are dispatched from our ${BASE.label} base to ${facts.name}, with equipment, spares and test gear carried to site.`;
+    return `${mobile}, so diagnosis and repair happen where the plant is, without hauling equipment back to Nairobi.`;
   }
   if (facts.distanceKm <= 25) {
-    return `${facts.name} sits roughly ${facts.distanceKm} km from our ${BASE.label} workshop, so our teams reach it directly from base with spares and test equipment on board.`;
+    return `${mobile}. At roughly ${facts.distanceKm} km from our ${BASE.label} headquarters, ${facts.name} is also within easy reach of our main workshop for anything needing bench work.`;
   }
   // "in a straight line" is stated deliberately. These are great-circle
-  // distances, and the road journey is always longer (e.g. Mombasa is 432 km
-  // direct but about 485 km by road). Quoting the direct figure without that
-  // qualifier would understate the travel actually involved.
-  return `${facts.name} lies about ${facts.distanceKm} km ${facts.direction} of our ${BASE.label} workshop in a straight line, further by road. Teams travel from base with the spares, tooling and test equipment the job needs, so a single visit can cover diagnosis and repair rather than requiring a return trip.`;
+  // distances and the road journey is always longer (Mombasa is 432 km direct
+  // but about 485 km by road), so the bare figure would understate the trip.
+  return `${mobile}, so work is completed on site rather than requiring plant to be moved. ${facts.name} lies about ${facts.distanceKm} km ${facts.direction} of our ${BASE.label} headquarters in a straight line, further by road — a routine run for our mobile team, which covers all 47 counties.`;
 }
 
 export const OPERATING_BASE = BASE;
