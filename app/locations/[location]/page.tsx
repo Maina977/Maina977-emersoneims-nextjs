@@ -219,37 +219,20 @@ export default async function LocationPage({ params }: Props) {
         </section>
       )}
 
-      {/* Why Choose Us */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-8">
-            Why Choose EmersonEIMS in {locationName}?
-          </h2>
+      {/* REMOVED 2026-07-20 — the "Why Choose EmersonEIMS in {location}?" block.
+          Four cards that were byte-identical on all ~190 location pages apart
+          from the substituted town name, contributing directly to the measured
+          82% body-text duplication that makes this set look like doorway pages.
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 bg-slate-800/30 rounded-xl border border-slate-700">
-              <div className="text-4xl mb-4">🛡️</div>
-              <h3 className="text-lg font-semibold text-white mb-2">3-Year Warranty</h3>
-              <p className="text-slate-400 text-sm">Industry-leading warranty on all our installations and services.</p>
-            </div>
-            <div className="p-6 bg-slate-800/30 rounded-xl border border-slate-700">
-              <div className="text-4xl mb-4">⚡</div>
-              <h3 className="text-lg font-semibold text-white mb-2">24/7 Emergency</h3>
-              <p className="text-slate-400 text-sm">Round-the-clock emergency support for {locationName} and surrounding areas.</p>
-            </div>
-            <div className="p-6 bg-slate-800/30 rounded-xl border border-slate-700">
-              <div className="text-4xl mb-4">🔧</div>
-              <h3 className="text-lg font-semibold text-white mb-2">Expert Technicians</h3>
-              <p className="text-slate-400 text-sm">Certified professionals with years of experience in power solutions.</p>
-            </div>
-            <div className="p-6 bg-slate-800/30 rounded-xl border border-slate-700">
-              <div className="text-4xl mb-4">🚚</div>
-              <h3 className="text-lg font-semibold text-white mb-2">Fast Response</h3>
-              <p className="text-slate-400 text-sm">Quick response times for all service calls in {locationName}.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+          It also carried three claims already removed elsewhere in this audit:
+            - "Industry-leading warranty"  — unsupported superlative
+            - "Certified professionals"    — certification unverified
+            - "Quick response times"       — no measured response time exists
+
+          Nothing factual was lost: the 3-year warranty and 24/7 emergency
+          cover are both stated in this page's hero, and the genuine
+          differentiator (the nationwide mobile workshop) is covered in the
+          prose below with per-location facts. */}
 
       {/* CTA Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-cyan-900/30 to-blue-900/30">
@@ -314,19 +297,25 @@ export default async function LocationPage({ params }: Props) {
             {!isCounty && county ? ` and across ${county.name} County` : ''}.
           </p>
 
-          <h3>Generator Services in {locationName}</h3>
+          {/* CONDENSED 2026-07-20. Two paragraphs ("Generator Services in X",
+              "Solar Power Solutions in X") ran here verbatim on all ~190 pages
+              with only the town name swapped, and they restated what
+              /generators and /solar already say in full. Thin copies of a
+              canonical page compete with it rather than support it, so this is
+              now one paragraph that LINKS to those pages — the same topical
+              relevance, less duplicate text, and internal link equity pointed
+              at the pages that should actually rank. */}
+          <h3>What we install and maintain in {locationName}</h3>
           <p>
-            Our generator services in {locationName} include new generator sales (Cummins, Perkins, FG Wilson, Caterpillar),
-            used/refurbished generators, professional installation, scheduled maintenance, emergency repairs,
-            and 24/7 breakdown support. We provide generators ranging from 10kVA for small businesses to
-            2000kVA for industrial applications.
-          </p>
-
-          <h3>Solar Power Solutions in {locationName}</h3>
-          <p>
-            Go green with our solar power systems in {locationName}. We design and install residential
-            solar systems, commercial solar installations, off-grid solutions, and hybrid solar-generator
-            systems. Reduce your electricity bills and enjoy reliable power with our solar solutions.
+            Sites in {locationName} are served with the same range we run nationwide:{' '}
+            <Link href="/generators">diesel generators</Link> from 10 kVA to 2000 kVA
+            (Cummins, Perkins, FG Wilson, Caterpillar), including used and refurbished
+            sets, installation, scheduled maintenance and emergency repair;{' '}
+            <Link href="/solar">solar power</Link> for homes, commercial rooftops,
+            off-grid sites and solar-generator hybrids; plus{' '}
+            <Link href="/services">UPS, electrical and controls work</Link>. Which
+            option suits a given site depends on its load profile and how often
+            grid power fails there — that is what the site survey establishes.
           </p>
 
           <h3>Serving All of {isCounty ? locationName : county?.name || locationName}</h3>
