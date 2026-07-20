@@ -70,3 +70,7 @@ GEMINI KEY.txt
 *KEY*.txt
 *.key
 NETLIFY TOKEN.txt
+
+# Work-in-progress previews — not for deployment
+app/swoosh-preview/
+app/swoosh-x/
