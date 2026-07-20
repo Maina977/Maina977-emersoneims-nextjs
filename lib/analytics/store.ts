@@ -27,11 +27,15 @@ import { getPostgresPool } from '@/lib/db';
 type Pool = NonNullable<Awaited<ReturnType<typeof getPostgresPool>>>;
 
 export type AnalyticsEventInput = {
-  type: 'pageview' | 'click' | 'ping';
+  // 'vitals' (added 2026-07-20) carries a Core Web Vitals sample. It reuses
+  // the existing `label` column rather than requiring a migration — the value
+  // is encoded as `<METRIC>:<value>`, e.g. "LCP:2340" (ms) or "CLS:0.042".
+  // The `type` column is TEXT, so no schema change is needed.
+  type: 'pageview' | 'click' | 'ping' | 'vitals';
   path: string;
   host?: string;
   ref?: string; // referrer hostname only
-  label?: string; // click label (CTA text/href), '' otherwise
+  label?: string; // click label (CTA text/href), vitals sample, '' otherwise
   ip: string;
   ua: string;
   // Geolocation derived from edge headers (Vercel) — NOT from the client. Empty
@@ -55,6 +59,14 @@ export type AnalyticsStats = {
   top_countries: Array<{ country: string; views: number; visitors: number }>;
   top_regions: Array<{ country: string; region: string; views: number; visitors: number }>;
   top_cities: Array<{ country: string; region: string; city: string; views: number; visitors: number }>;
+  /**
+   * Core Web Vitals from REAL visitors (field data), added 2026-07-20.
+   * `p75` is the 75th percentile — the same statistic Google uses to grade a
+   * page — so these are directly comparable to Search Console. Milliseconds
+   * for LCP/INP/FCP/TTFB; CLS is unitless.
+   * Empty until WebVitalsReporter has collected samples.
+   */
+  web_vitals: Array<{ metric: string; p75: number; samples: number }>;
 };
 
 const SALT = process.env.ANALYTICS_SALT || 'eims';
@@ -286,6 +298,11 @@ async function getStatsFromSheet(days: number): Promise<AnalyticsStats> {
       views: num(r.views),
       visitors: num(r.visitors),
     })),
+    web_vitals: asArr(d.web_vitals).map((r) => ({
+      metric: String(r.metric ?? ''),
+      p75: num(r.p75),
+      samples: num(r.samples),
+    })),
   };
 }
 
@@ -379,6 +396,7 @@ function zeroedStats(days: number): AnalyticsStats {
     top_countries: [],
     top_regions: [],
     top_cities: [],
+    web_vitals: [],
   };
 }
 
@@ -419,6 +437,7 @@ export async function getStats(days: number): Promise<AnalyticsStats> {
       topCountriesRes,
       topRegionsRes,
       topCitiesRes,
+      vitalsRes,
     ] = await Promise.all([
       pool.query(
         `SELECT
@@ -517,6 +536,30 @@ export async function getStats(days: number): Promise<AnalyticsStats> {
          LIMIT 50`,
         [sinceDay],
       ),
+      // Core Web Vitals, field data (added 2026-07-20). Samples arrive as
+      // type='vitals' with label='<METRIC>:<value>' — see WebVitalsReporter.
+      //
+      // p75 is deliberate: it is the statistic Google itself uses to assess a
+      // page's Core Web Vitals, so this number is directly comparable to
+      // Search Console's report rather than being an average we invented.
+      //
+      // The regex guard keeps a malformed label from aborting the whole stats
+      // query with a numeric cast error.
+      pool.query(
+        `SELECT
+           split_part(label, ':', 1) AS metric,
+           COUNT(*)                  AS samples,
+           PERCENTILE_CONT(0.75) WITHIN GROUP (
+             ORDER BY split_part(label, ':', 2)::numeric
+           )                         AS p75
+         FROM web_analytics_events
+         WHERE type='vitals'
+           AND day >= $1::date
+           AND split_part(label, ':', 2) ~ '^[0-9]+(\\.[0-9]+)?$'
+         GROUP BY 1
+         ORDER BY 1`,
+        [sinceDay],
+      ),
     ]);
 
     const totalsRow = totalsRes.rows[0] || {};
@@ -575,6 +618,11 @@ export async function getStats(days: number): Promise<AnalyticsStats> {
         city: String(r.city ?? ''),
         views: num(r.views),
         visitors: num(r.visitors),
+      })),
+      web_vitals: vitalsRes.rows.map((r) => ({
+        metric: String(r.metric ?? ''),
+        p75: num(r.p75),
+        samples: num(r.samples),
       })),
     };
   } catch (error) {

@@ -23,6 +23,7 @@ import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import WebVitalsReporter from '@/components/analytics/WebVitalsReporter';
 import { ALL_SERVICES } from '@/lib/services/allServices';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -470,6 +471,11 @@ export default async function RootLayout({
         
         {/* Real-time Analytics Tracker */}
         <AnalyticsTracker />
+        {/* Real-user Core Web Vitals -> /api/analytics/collect (type='vitals').
+            Mounted HERE, next to the tracker that actually runs, because the
+            repo's two pre-existing web-vitals implementations were both dead
+            (never imported / never-mounted parent). See the component header. */}
+        <WebVitalsReporter />
         
         {/* ═══════════════════════════════════════════════════════════════════
             WCAG 2.1 AAA ACCESSIBILITY - Screen Reader Support

@@ -149,8 +149,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const rawType = (raw.t ?? raw.action) as unknown;
-    const type: 'pageview' | 'click' | 'ping' =
-      rawType === 'click' ? 'click' : rawType === 'ping' ? 'ping' : 'pageview';
+    // 'vitals' added 2026-07-20 (Phase 5 monitoring). Anything unrecognised
+    // still falls back to 'pageview', preserving the original contract.
+    //
+    // Safe against existing metrics: every `views`/`clicks` aggregate in
+    // store.ts is explicitly filtered by type, so vitals rows are invisible to
+    // them. The `visitors` aggregates count DISTINCT visitor across all types,
+    // but a vitals beacon only ever fires on a page that already sent its
+    // pageview, so the distinct set is unchanged.
+    const type: 'pageview' | 'click' | 'ping' | 'vitals' =
+      rawType === 'click'
+        ? 'click'
+        : rawType === 'ping'
+          ? 'ping'
+          : rawType === 'vitals'
+            ? 'vitals'
+            : 'pageview';
 
     const path = String(raw.p ?? raw.page ?? '/');
     const host = String(raw.h ?? request.headers.get('host') ?? '');
