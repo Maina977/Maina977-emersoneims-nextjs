@@ -13,6 +13,7 @@
  */
 
 import Link from 'next/link';
+import MobileWorkshopBand from '@/components/trust/MobileWorkshopBand';
 import dynamic from 'next/dynamic';
 import {
   ALL_SERVICES,
@@ -530,6 +531,12 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* Nationwide mobile workshop — owner-confirmed capability that was
+          effectively invisible on the site before 2026-07-20. Placed after the
+          service list so a visitor who has just read WHAT we do immediately
+          learns WHERE we can do it. */}
+      <MobileWorkshopBand />
     </div>
   );
 }

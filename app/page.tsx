@@ -209,7 +209,14 @@ function StaticHeroFallback() {
               Removed "500+ Projects" and "98.7% Uptime" — both lacked
               provenance and violate the project data policy. */}
           <div className="mt-10 sm:mt-12 grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-4 sm:gap-6 text-gray-400 text-sm">
-            <span className="flex items-center justify-center gap-1">✓ 47 Counties Covered</span>
+            {/* "47 Counties Covered" alone did not say HOW. The nationwide
+                mobile workshop is a real, owner-confirmed capability (2026-07-20)
+                and a genuine differentiator — most competitors cannot service
+                up-country plant on site — yet it appeared exactly ONCE on the
+                whole website before this. Stated here rather than as a new
+                section, so it gains top-of-page visibility without adding to
+                the homepage's existing length. */}
+            <span className="flex items-center justify-center gap-1">✓ Mobile Workshop · 47 Counties</span>
             <span className="flex items-center justify-center gap-1">✓ 24/7 Emergency Response</span>
             <span className="flex items-center justify-center gap-1">✓ 3-Year Warranty</span>
             <span className="flex items-center justify-center gap-1">✓ SLA Maintenance</span>
