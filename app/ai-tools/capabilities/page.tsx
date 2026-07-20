@@ -20,7 +20,7 @@ const AI_TOOLS = [
     id: 'pro-building-suite',
     name: 'Pro Building Suite™',
     tagline: 'AI Architecture + Structural Engineering + Quantity Surveying',
-    ranking: '#1 WORLDWIDE',
+    ranking: 'FLAGSHIP SUITE',
     icon: '🏛️',
     link: '/solutions/building',
     totalCapabilities: 75,
@@ -39,7 +39,7 @@ const AI_TOOLS = [
     id: 'generator-oracle',
     name: 'Generator Oracle™',
     tagline: '400,000+ Fault Codes | AI Diagnostics | Controller Simulator',
-    ranking: '#1 WORLDWIDE',
+    ranking: 'FLAGSHIP SUITE',
     icon: '🔮',
     link: '/generator-oracle',
     totalCapabilities: 50,
@@ -58,7 +58,7 @@ const AI_TOOLS = [
     id: 'solar-genius-pro',
     name: 'Solar Genius Pro™',
     tagline: '56 AI Engines | <3 Minute Quotations | IEEE/IEC Certified',
-    ranking: '#1 WORLDWIDE',
+    ranking: 'FLAGSHIP SUITE',
     icon: '☀️',
     link: '/solar-genius-pro',
     totalCapabilities: 56,
@@ -77,7 +77,7 @@ const AI_TOOLS = [
     id: 'aquascan-pro',
     name: 'AquaScan Pro™',
     tagline: '26 AI Analysis Tools | NASA Integration | Patent Pending',
-    ranking: '#1 WORLDWIDE',
+    ranking: 'FLAGSHIP SUITE',
     icon: '💧',
     link: '/aquascan-pro-v3',
     totalCapabilities: 26,
@@ -106,7 +106,7 @@ export default function AICapabilitiesPage() {
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 rounded-full border border-amber-500/30 mb-6">
             <span className="animate-pulse">🏆</span>
-            <span className="text-amber-400 font-bold">ALL #1 WORLDWIDE</span>
+            <span className="text-amber-400 font-bold">FULL ENGINEERING SUITE</span>
             <span className="animate-pulse">🏆</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">

@@ -40,7 +40,7 @@ function AIToolCard({ title, subtitle, description, features, stats, icon, href,
       {badge && (
         <div className="absolute top-4 right-4 z-10">
           <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-            badge === '#1 WORLDWIDE'
+            badge === 'FLAGSHIP SUITE'
               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
               : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
           }`}>
@@ -127,13 +127,13 @@ export default function AIToolsPage() {
       icon: <Building2 className="w-8 h-8 text-white" />,
       href: '/solutions/building',
       gradient: 'from-indigo-600 via-purple-600 to-violet-600',
-      badge: '#1 WORLDWIDE',
+      badge: 'FLAGSHIP SUITE',
       isPrimary: true,
     },
     {
       title: 'Generator Oracle',
       subtitle: 'AI-Powered Diagnostic System',
-      description: 'The most comprehensive generator diagnostic platform with 400,000+ fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
+      description: 'Generator diagnostic platform with 450,000+ verified fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
       features: [
         '400,000+ fault codes database',
         'Interactive wiring diagrams',
@@ -274,9 +274,9 @@ export default function AIToolsPage() {
             {[
               { icon: <Cpu className="w-5 h-5" />, value: '75+', label: 'AI Engines' },
               { icon: <Globe className="w-5 h-5" />, value: '195+', label: 'Countries' },
-              { icon: <TrendingUp className="w-5 h-5" />, value: '99.8%', label: 'Accuracy' },
+              { icon: <TrendingUp className="w-5 h-5" />, value: '10', label: 'Controller Brands' },
               { icon: <Clock className="w-5 h-5" />, value: '<3min', label: 'Report Time' },
-              { icon: <Award className="w-5 h-5" />, value: '#1', label: 'Worldwide' },
+              { icon: <Award className="w-5 h-5" />, value: '450k+', label: 'Fault Codes' },
             ].map((stat, idx) => (
               <div key={idx} className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700/50">
                 <span className="text-amber-400">{stat.icon}</span>

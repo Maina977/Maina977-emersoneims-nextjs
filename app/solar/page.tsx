@@ -3,7 +3,7 @@
 /**
  * SOLAR BIBLE - THE COMPLETE SOLAR ENERGY SOLUTIONS CENTER
  *
- * The most comprehensive solar resource in Kenya
+ * a detailed solar resource in Kenya
  * Everything from sales to installation, maintenance to financing
  *
  * Score Target: 95/100 (Matching Generator Bible standards)
@@ -800,7 +800,7 @@ export default function SolarBible() {
             transition={{ duration: 0.8 }}
           >
             <span className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-400 text-sm mb-8">
-              ☀️ Kenya's Most Comprehensive Solar Resource
+              ☀️ A Practical Solar Resource for Kenya
             </span>
           </motion.div>
 
@@ -1601,7 +1601,7 @@ export default function SolarBible() {
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-white mb-2">🔋 Solar Equipment Database</h2>
                   <p className="text-amber-400 text-lg">1000+ Products with Full Specifications & Pricing</p>
-                  <p className="text-gray-500 text-sm mt-2">The most comprehensive solar equipment database in East Africa</p>
+                  <p className="text-gray-500 text-sm mt-2">A detailed solar equipment database in East Africa</p>
                 </div>
 
                 {/* Solar Panels Database */}

@@ -639,7 +639,7 @@ export default function GeneratorMaintenancePage() {
               transition={{ duration: 0.8, delay: 0.7 }}
               className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed mb-8"
             >
-              Kenya&apos;s most comprehensive generator maintenance network. Expert technicians serving all 47 counties.
+              A generator maintenance network. Expert technicians serving all 47 counties.
             </motion.p>
 
             {/* CTA Buttons */}

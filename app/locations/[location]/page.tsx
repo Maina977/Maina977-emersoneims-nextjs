@@ -55,7 +55,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ],
     openGraph: {
       title: `EmersonEIMS - Power Solutions in ${locationName}`,
-      description: `Kenya's #1 generator and solar company serving ${locationName}. 3-Year Warranty. 9 Services. Call +254768860665`,
+      // Credibility audit 2026-07-18: replaced the unsubstantiated "Kenya's #1"
+      // superiority claim (it appeared on ~190 indexed location pages and in
+      // Google results). Kept only verifiable facts: services, warranty, phone.
+      description: `Generator, solar, UPS and electrical engineering services in ${locationName}. 3-year installation warranty. 24/7 emergency response. Call +254768860665`,
       type: 'website',
     },
     alternates: {

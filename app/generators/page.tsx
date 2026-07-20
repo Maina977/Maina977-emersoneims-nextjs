@@ -1471,7 +1471,7 @@ const GuaranteeSection = () => {
           </h2>
 
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            We're so confident in our generators and service that we offer the most comprehensive guarantee in Kenya:
+            We're so confident in our generators and service that we offer one of the strongest guarantees available in Kenya:
           </p>
 
           <div className="grid md:grid-cols-3 gap-6 mb-8">

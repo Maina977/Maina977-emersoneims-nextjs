@@ -266,8 +266,9 @@ function AITechnologyShowcase() {
       id: 'generator-oracle',
       title: 'Generator Oracle',
       subtitle: 'AI Diagnostic System',
-      description: 'AI-assisted diagnostic assistant that analyses generator symptoms, looks them up against an extensive fault-code database, and connects you with certified technicians.',
-      description: 'AI-powered diagnostic assistant that analyses generator symptoms, looks them up against an extensive fault-code database and connects you with certified technicians.',
+      // Audit 2026-07-18: removed a duplicate `description` key (pre-existing —
+      // the first value was silently discarded by JS and flagged TS1117).
+      description: 'AI-assisted diagnostic assistant that analyses generator symptoms, looks them up against a 450,000+ fault-code database, and connects you with certified technicians.',
       features: ['Symptom-based Diagnosis', 'Voice-Activated', 'Fault Code Database', 'Real-time Analysis'],
       icon: '🔧',
       gradient: 'from-amber-500 to-orange-600',
@@ -278,7 +279,10 @@ function AITechnologyShowcase() {
       id: 'borehole-analyzer',
       title: 'AquaScan Pro',
       subtitle: 'AI Borehole Analyzer - 195+ Countries',
-      description: 'World\'s most comprehensive AI that analyzes borehole sites remotely using NASA GLDAS, satellite imagery, LiDAR, and hyperspectral data. Global coverage - no site visits needed.',
+      // "no site visits needed" removed: it contradicted AquaScan's own
+      // methodology, which requires a field survey (ERT + WRA approval) before
+      // any drilling. The tool screens sites BEFORE that survey.
+      description: 'Desktop borehole pre-feasibility using NASA GLDAS, satellite imagery and terrain data. Screens a site before the statutory hydrogeological survey — it does not replace it.',
       features: ['195+ Countries', 'NASA GLDAS Data', 'Satellite Rock Mapping', 'Virtual VES/ERT'],
       icon: '💧',
       gradient: 'from-cyan-500 to-teal-500',

@@ -513,7 +513,7 @@ export default function ControlsSolutionHub() {
               transition={{ duration: 0.8, delay: 0.7 }}
               className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed"
             >
-              The most comprehensive generator controller programming, configuration, and troubleshooting guide in East Africa.
+              Detailed generator controller programming, configuration, and troubleshooting guide in East Africa.
             </motion.p>
 
             {/* Decorative Line */}

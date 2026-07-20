@@ -2,7 +2,7 @@
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * THE SOLAR BIBLE - KENYA'S MOST COMPREHENSIVE SOLAR ENERGY GUIDE
+ * THE SOLAR BIBLE - A detailed SOLAR ENERGY GUIDE
  * World's Most Complete Solar Maintenance & Installation Hub
  * ═══════════════════════════════════════════════════════════════════════════════
  */
@@ -641,7 +641,7 @@ export default function SolarBible() {
               THE SOLAR BIBLE
             </span>
           </motion.h1>
-          <p className="text-slate-400">Kenya's Most Comprehensive Solar Energy Guide | All 47 Counties | Complete Calculator | Installation Guide</p>
+          <p className="text-slate-400">A Practical Solar Energy Guide for Kenya | All 47 Counties | Complete Calculator | Installation Guide</p>
         </div>
 
         {/* Stats Bar */}
@@ -1706,7 +1706,7 @@ export default function SolarBible() {
         {/* Footer */}
         <div className="mt-12 text-center">
           <p className="text-slate-500 text-sm">
-            THE SOLAR BIBLE v2.0 | Kenya's Most Comprehensive Solar Energy Resource
+            THE SOLAR BIBLE v2.0 | A Practical Solar Energy Resource for Kenya
           </p>
           <p className="text-amber-400/50 text-xs mt-2">
             47 Counties | {FAULT_CODE_STATS.totalCodes}+ Fault Codes | {MANUAL_STATS.inverterManuals} Repair Manuals | {CABLE_SIZING_GUIDE.length} Cable Guides | Complete Installation Guide

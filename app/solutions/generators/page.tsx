@@ -732,7 +732,7 @@ export default function GeneratorsSolutionHub() {
 
               <p className="text-lg md:text-xl text-gray-200 max-w-2xl leading-relaxed mb-8">
                 Installation guides, maintenance schedules, fault diagnosis, and repair procedures.
-                <span className="text-amber-400 font-medium"> The most comprehensive generator resource in East Africa.</span>
+                <span className="text-amber-400 font-medium"> Detailed generator resource in East Africa.</span>
               </p>
 
               {/* Quick Stats */}
@@ -781,7 +781,7 @@ export default function GeneratorsSolutionHub() {
 
       <SectionLead
         title="Diesel Generator Solutions Hub"
-        subtitle="The most comprehensive generator troubleshooting, installation, maintenance &amp; repair guide in East Africa. No one else provides this depth of technical knowledge."
+        subtitle="Detailed generator troubleshooting, installation, maintenance &amp; repair guide in East Africa. No one else provides this depth of technical knowledge."
       />
 
       {/* Category Navigation */}

@@ -27,7 +27,7 @@ const BoreholeAIAnalyzer = dynamic(
 );
 
 const TABS = [
-  { id: 'ai-analyzer', label: 'AquaScan Pro', color: 'gradient', badge: 'WORLD #1' },
+  { id: 'ai-analyzer', label: 'AquaScan Pro', color: 'gradient', badge: 'DESKTOP PRE-FEASIBILITY' },
   { id: 'ai-capabilities', label: 'AI Capabilities', color: 'cyan', badge: '85% ACC' },
   { id: 'overview', label: 'Overview', color: 'cyan' },
   { id: 'types', label: 'Pump Types', color: 'blue' },
@@ -828,25 +828,25 @@ export default function BoreholePumpsPage() {
             >
               {/* Header */}
               <div className="text-center mb-8">
-                {/* World's #1 Badge */}
+                {/* Desktop pre-feasibility badge */}
                 <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 text-black px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg shadow-amber-500/30 animate-pulse">
                   <span className="text-xl">🏆</span>
-                  <span>WORLD&apos;S #1 AI BOREHOLE ANALYZER</span>
+                  <span>AI DESKTOP BOREHOLE PRE-FEASIBILITY</span>
                   <span className="text-xl">🌍</span>
                 </div>
                 <div className="flex flex-wrap justify-center gap-2 mb-4">
                   <span className="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-xs font-medium border border-cyan-500/30">195+ COUNTRIES</span>
-                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium border border-green-500/30">85% ACCURACY</span>
+                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium border border-green-500/30">AUDITED REPORTS</span>
                   <span className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-xs font-medium border border-purple-500/30">NASA GLDAS DATA</span>
-                  <span className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-xs font-medium border border-orange-500/30">NO SITE VISIT</span>
+                  <span className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-xs font-medium border border-orange-500/30">BEFORE YOU DRILL</span>
                   <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-medium border border-red-500/30">6 CONTINENTS</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                   AquaScan Pro - AI Borehole Analyzer
                 </h2>
                 <p className="text-gray-400 max-w-3xl mx-auto">
-                  The world&apos;s most comprehensive AI platform for groundwater exploration.
-                  NASA GLDAS + Google Earth Engine + 15 satellite sources. 195+ countries covered. No site visits needed.
+                  A desktop groundwater pre-feasibility platform.
+                  NASA GLDAS + Google Earth Engine + 15 satellite sources. Global data coverage. Screens sites BEFORE the statutory hydrogeological survey — it does not replace it.
                 </p>
                 {/* Quick Stats */}
                 <div className="flex flex-wrap justify-center gap-6 mt-6">

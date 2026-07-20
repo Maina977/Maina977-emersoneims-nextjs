@@ -2,7 +2,7 @@
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * THE WELDING BIBLE - KENYA'S MOST COMPREHENSIVE WELDING SERVICES GUIDE
+ * THE WELDING BIBLE - A detailed WELDING SERVICES GUIDE
  * Complete Welding Procedures, Certifications & Fabrication Hub
  * 150+ Procedures | All Welding Types | Safety Standards | Certifications
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -445,7 +445,7 @@ export default function WeldingMaintenanceHub() {
             🔥 The Welding Bible
           </h1>
           <p className="text-xl text-white/90 mb-6">
-            Kenya&apos;s Most Comprehensive Welding & Fabrication Guide
+            A Practical Welding & Fabrication Guide for Kenya
           </p>
           <div className="flex flex-wrap gap-4 text-white/90">
             <span className="bg-white/20 px-4 py-2 rounded-full">150+ Defect Codes</span>

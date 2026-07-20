@@ -18,7 +18,7 @@ const SolarGeniusProHub = dynamic(() => import('@/components/solar/SolarGeniusPr
         <div className="w-20 h-20 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p className="text-white text-xl font-bold">Loading SolarGenius Pro™ V2</p>
         <p className="text-amber-400 text-sm mt-2">56 AI Engines | 25+ Modules | 195+ Countries</p>
-        <p className="text-green-400 text-xs mt-1">#1 WORLDWIDE | IEEE/IEC CERTIFIED | &lt;3 MIN QUOTES</p>
+        <p className="text-green-400 text-xs mt-1">IEEE/IEC DESIGN METHODS | FAST QUOTES</p>
       </div>
     </div>
   ),

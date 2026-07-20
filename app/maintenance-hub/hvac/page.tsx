@@ -381,7 +381,7 @@ export default function HVACBible() {
               </span>
             </h1>
             <p className="text-xl text-gray-300 mb-6">
-              Kenya's Most Comprehensive HVAC, Refrigeration & Air Conditioning Guide
+              A Practical HVAC, Refrigeration & Air Conditioning Guide for Kenya
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <span className="bg-cyan-600/30 px-4 py-2 rounded-full">28,000+ Fault Codes</span>
@@ -1060,7 +1060,7 @@ export default function HVACBible() {
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 px-4 mt-12">
         <div className="max-w-7xl mx-auto text-center text-gray-400">
-          <p>The HVAC Bible - Kenya's Most Comprehensive HVAC & Refrigeration Guide</p>
+          <p>The HVAC Bible - A Practical HVAC & Refrigeration Guide for Kenya</p>
           <p className="text-sm mt-2">Part of EmersonEIMS Maintenance Hub</p>
         </div>
       </footer>

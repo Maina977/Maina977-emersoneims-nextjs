@@ -3,7 +3,7 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
  * UNIVERSAL COMMAND BRIDGE - SCI-FI COCKPIT INTERFACE
- * World's Most Comprehensive Maintenance Hub
+ * Multi-Discipline Maintenance Hub
  * Central command center for all maintenance services
  * ═══════════════════════════════════════════════════════════════════════════════
  */
@@ -22,7 +22,7 @@ const SERVICES = [
     id: 'generators',
     name: 'Generator Oracle',
     icon: '⚡',
-    description: 'World\'s most comprehensive generator diagnostic platform with 400,000+ fault codes, AI-powered diagnostics, and expert repair guides for all major controller brands.',
+    description: 'A detailed generator diagnostic platform with 400,000+ fault codes, AI-powered diagnostics, and expert repair guides for all major controller brands.',
     href: '/maintenance-hub/generators',
     stats: { value: '230K+', label: 'Fault Codes' },
     color: 'amber',
@@ -33,7 +33,7 @@ const SERVICES = [
     id: 'solar',
     name: 'Solar Bible',
     icon: '☀️',
-    description: 'Kenya\'s most comprehensive solar energy guide with all 47 counties, advanced calculator, installation guides, and complete FAQ covering residential to industrial.',
+    description: 'A detailed solar energy guide with all 47 counties, advanced calculator, installation guides, and complete FAQ covering residential to industrial.',
     href: '/maintenance-hub/solar',
     stats: { value: '47', label: 'Counties' },
     color: 'cyan',
@@ -55,7 +55,7 @@ const SERVICES = [
     id: 'motors',
     name: 'Motor Control Bible',
     icon: '⚙️',
-    description: 'World\'s most comprehensive motor rewinding guide with 200+ fault codes, VFD installation, bearing analysis, and shaft repair for motors from 0.25 HP to 500 HP.',
+    description: 'A detailed motor rewinding guide with 200+ fault codes, VFD installation, bearing analysis, and shaft repair for motors from 0.25 HP to 500 HP.',
     href: '/maintenance-hub/motors',
     stats: { value: '200+', label: 'Fault Codes' },
     color: 'purple',
@@ -77,7 +77,7 @@ const SERVICES = [
     id: 'electrical',
     name: 'Electrical Bible',
     icon: '⚡',
-    description: 'Kenya\'s most comprehensive electrical systems guide with KPLC standards, wiring diagrams, earthing systems, and load calculations.',
+    description: 'A detailed electrical systems guide with KPLC standards, wiring diagrams, earthing systems, and load calculations.',
     href: '/maintenance-hub/electrical',
     stats: { value: '200+', label: 'Fault Codes' },
     color: 'yellow',
@@ -496,7 +496,7 @@ export default function UniversalCommandBridge() {
               <span className="text-white">COMMAND BRIDGE</span>
             </h1>
             <p className="text-slate-400 text-lg">
-              World's Most Comprehensive Maintenance Hub • 400,000+ Fault Codes • All 47 Kenya Counties
+              Multi-Discipline Maintenance Hub • 400,000+ Fault Codes • All 47 Kenya Counties
             </p>
           </div>
 
@@ -582,7 +582,7 @@ export default function UniversalCommandBridge() {
             <span className="text-cyan-400 text-sm">COMMAND BRIDGE v3.0</span>
           </div>
           <p className="text-slate-500 text-xs mt-4">
-            © 2024 EmersonEIMS • World's Most Comprehensive Maintenance Platform
+            © 2024 EmersonEIMS • Multi-Discipline Maintenance Platform
           </p>
         </motion.div>
       </div>

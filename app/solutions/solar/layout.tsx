@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   keywords: "solar installation Kenya, solar panels Kenya, solar inverter fault codes, SMA error codes, Fronius fault codes, solar maintenance Kenya, solar troubleshooting, KPLC net metering, hybrid solar Kenya, off-grid solar Kenya, solar battery Kenya",
   openGraph: {
     title: "Solar Solutions Kenya | Installation, Maintenance & Repairs | EmersonEIMS",
-    description: "Kenya's most comprehensive solar resource. Installation guides, inverter troubleshooting, maintenance schedules.",
+    description: "A Practical Solar Resource for Kenya. Installation guides, inverter troubleshooting, maintenance schedules.",
     url: "https://www.emersoneims.com/solutions/solar",
     siteName: "EmersonEIMS",
     locale: "en_KE",

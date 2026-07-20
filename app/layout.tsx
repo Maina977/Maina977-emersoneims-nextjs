@@ -356,7 +356,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="EmersonEIMS" />
         
         {/* ═══════════════════════════════════════════════════════════════════
-            🚀 WORLD'S #1 FASTEST WEBSITE - ULTRA PERFORMANCE
+            🚀 PERFORMANCE-OPTIMISED DELIVERY
             Target: Sub-500ms First Contentful Paint (FCP)
             Target: Sub-100ms Time to First Byte (TTFB)
             Target: 100/100 Lighthouse Score

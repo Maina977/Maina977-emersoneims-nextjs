@@ -567,7 +567,7 @@ export default function GeneralServicesBible() {
                 <span className="text-white">THE</span>
                 <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent"> SERVICES BIBLE</span>
               </h1>
-              <p className="text-slate-400 text-sm">Kenya's Most Comprehensive Maintenance & Services Guide</p>
+              <p className="text-slate-400 text-sm">Practical Maintenance & Services Guide for Kenya</p>
             </div>
             <div className="hidden md:flex items-center gap-3">
               <a href="tel:+254782914717" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
@@ -975,7 +975,7 @@ export default function GeneralServicesBible() {
       <footer className="bg-slate-900 border-t border-slate-800 py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-slate-500 text-sm">© 2026 Emerson Industrial Maintenance Services Limited</p>
-          <p className="text-slate-600 text-xs mt-2">Kenya's Most Comprehensive Maintenance Services Provider</p>
+          <p className="text-slate-600 text-xs mt-2">Multi-discipline Maintenance Services across Kenya</p>
         </div>
       </footer>
     </div>

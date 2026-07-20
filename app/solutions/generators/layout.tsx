@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   keywords: "generator installation Kenya, generator repair Kenya, generator maintenance Kenya, generator service Nairobi, Cummins generator Kenya, Perkins generator Kenya, CAT generator Kenya, diesel generator Kenya, standby generator Kenya, generator fault codes, generator troubleshooting, AMF panel Kenya, ATS installation Kenya, generator parts Kenya",
   openGraph: {
     title: "Generator Solutions Hub | Expert Installation & Repairs | EmersonEIMS Kenya",
-    description: "Kenya's most comprehensive generator resource. Installation guides, maintenance schedules, fault codes & troubleshooting. 24/7 emergency service.",
+    description: "A detailed generator resource. Installation guides, maintenance schedules, fault codes & troubleshooting. 24/7 emergency service.",
     url: "https://www.emersoneims.com/solutions/generators",
     siteName: "EmersonEIMS",
     locale: "en_KE",
