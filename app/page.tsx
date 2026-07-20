@@ -105,11 +105,14 @@ function StaticHeroFallback() {
           height={1080}
           priority
           fetchPriority="high"
-          // PERF (audit 2026-07-20): 90 -> 85 on the LCP element itself, so
-          // the saving lands directly on Largest Contentful Paint. Measured
-          // -24% on the live pipeline. The CSS brightness/contrast/saturate
-          // filter below further masks any compression difference.
-          quality={85}
+          // PERF (audit 2026-07-20): DELIBERATELY LEFT AT 90.
+          // 85 was tried here and reverted. Measured on the live pipeline,
+          // w=1920: q90 = 39 KB, q85 = 39 KB — a 0% saving, because this
+          // source file is already heavily compressed and re-encoding it
+          // lower yields nothing. (The same change on the VOLTKA showcase art
+          // is worth -21% to -24%, so it was kept there.) Dropping quality on
+          // the LCP element for no measured benefit is a pure downside.
+          quality={90}
           className="object-cover w-full h-full [filter:brightness(1.14)_contrast(1.07)_saturate(1.15)]"
           style={{ aspectRatio: '16/9', width: '100%', height: '100%' }}
           sizes="100vw"
