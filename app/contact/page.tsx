@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
+import SiteSurveyPolicy from '@/components/trust/SiteSurveyPolicy';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import Link from 'next/link';
 import HolographicMap from '@/components/map/HolographicMap';
@@ -1078,6 +1079,11 @@ export default function SciFiContactPage() {
                   Our command center receives your message instantly. Expect a response 
                   within 2 hours during business hours, or immediately for emergencies.
                 </p>
+
+                {/* Official survey-fee policy — sets the correct expectation
+                    before the enquiry, and states the fee is deducted from the
+                    contract when the work is awarded. */}
+                <SiteSurveyPolicy className="mt-8" />
               </motion.div>
 
               {/* Response Time Indicators */}

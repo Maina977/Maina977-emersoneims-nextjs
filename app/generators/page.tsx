@@ -1601,7 +1601,7 @@ const FAQSection = () => {
     },
     {
       question: 'What size generator do I need?',
-      answer: 'Use our free sizing calculator on this page, or call us for a free site survey. We analyze your load, future growth, and backup requirements to recommend the perfect size. Oversizing wastes money; undersizing causes problems.'
+      answer: 'Use our free sizing calculator on this page, or call us to book a site survey. We analyze your load, future growth, and backup requirements to recommend the perfect size. Oversizing wastes money; undersizing causes problems.'
     },
     {
       question: 'Do you offer maintenance contracts?',
@@ -1786,7 +1786,7 @@ const FinalCTA = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 text-white/80 text-sm">
-            <span className="flex items-center gap-2">✅ Free Site Survey</span>
+            <span className="flex items-center gap-2">✅ Technician Site Survey</span>
             <span className="flex items-center gap-2">✅ No Obligation Quote</span>
             <span className="flex items-center gap-2">✅ Response Within 2 Hours</span>
           </div>

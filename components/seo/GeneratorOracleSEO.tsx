@@ -88,7 +88,7 @@ export default function GeneratorOracleSEO({ pageType = 'home' }: GeneratorOracl
         name: 'What size generator do I need for my home/business?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Calculate total wattage of essential equipment, add 25% safety margin. Homes typically need 10-25kVA. Small businesses 30-100kVA. Factories 200-2000kVA. Contact EmersonEIMS for a free site survey and sizing consultation.',
+          text: 'Calculate total wattage of essential equipment, add 25% safety margin. Homes typically need 10-25kVA. Small businesses 30-100kVA. Factories 200-2000kVA. Contact EmersonEIMS to book a site survey and sizing consultation.',
         },
       },
       {

@@ -602,7 +602,7 @@ export default function IndustriesExperience({ industries, stats }: IndustriesEx
             </h2>
             <p className="mt-6 text-slate-300 text-lg md:text-xl max-w-2xl mx-auto">
               Our power experts will assess your specific needs and recommend the perfect solution.
-              Free consultation, free site survey, no obligation.
+              Free phone consultation. Site survey fee deducted from the contract when work is awarded.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <a

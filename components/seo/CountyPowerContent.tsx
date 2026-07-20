@@ -106,7 +106,7 @@ export default function CountyPowerContent({ county }: { county: County }) {
       <Callout title={`Get a quote for ${county.name} County`} accent="amber">
         Generators, solar, UPS, motors, HVAC, boreholes and electrical works — installed and maintained anywhere in{' '}
         {county.name}. Call <strong>+254&nbsp;768&nbsp;860&nbsp;665</strong> or <strong>+254&nbsp;782&nbsp;914&nbsp;717</strong>{' '}
-        for a free site survey and quote.
+        to book a site survey and quote.
       </Callout>
     </DeepDiveSection>
   );

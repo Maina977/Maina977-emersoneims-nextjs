@@ -356,7 +356,7 @@ const SOLAR_PROJECTS = [
 const SOLAR_FAQ = [
   {
     question: 'How much does a solar system cost in Kenya?',
-    answer: 'Solar system costs in Kenya range from KES 350,000 for a basic 3kW residential system to KES 15M+ for industrial installations over 100kW. The exact cost depends on your energy needs, panel quality, battery capacity, and whether you need grid-tie or off-grid configuration. We offer free site surveys to give you an accurate quote.'
+    answer: 'Solar system costs in Kenya range from KES 350,000 for a basic 3kW residential system to KES 15M+ for industrial installations over 100kW. The exact cost depends on your energy needs, panel quality, battery capacity, and whether you need grid-tie or off-grid configuration. We offer site surveys to give you an accurate quote.'
   },
   {
     question: 'How long is the payback period for solar in Kenya?',
@@ -401,7 +401,7 @@ const SOLAR_GUARANTEES = [
     icon: '💰'
   },
   {
-    title: 'Free Site Survey',
+    title: 'Site Survey',
     description: 'Professional assessment of your property with detailed proposal - no obligation',
     icon: '📋'
   },
@@ -840,7 +840,7 @@ export default function SolarBible() {
               href="https://wa.me/254768860665?text=I%20want%20a%20free%20solar%20site%20survey"
               className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 text-white font-bold rounded-full hover:bg-white/20 transition-all"
             >
-              Free Site Survey
+              Site Survey
             </a>
             <Link
               href="/solutions/solar-sizing"
@@ -2141,14 +2141,14 @@ export default function SolarBible() {
             Ready to Harness the Power of the Sun?
           </h2>
           <p className="text-xl text-amber-100 mb-8">
-            Get a free site survey from our solar engineers. We design to your roof, load profile and budget.
+            Book a site survey with our solar engineers. We design to your roof, load profile and budget.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="https://wa.me/254768860665?text=I%20want%20a%20free%20solar%20site%20survey"
               className="px-8 py-4 bg-white text-orange-600 font-bold rounded-full hover:bg-amber-100 transition-all shadow-lg"
             >
-              📞 Get Free Site Survey
+              📞 Book a Site Survey
             </a>
             <a
               href="tel:+254768860665"

@@ -462,7 +462,7 @@ export default function FabricationPage() {
               Ready to Start Your Project?
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Free site visit and consultation. CAD drawings and quote within 48 hours.
+              Technician site survey and consultation. CAD drawings and quote within 48 hours. Survey fee deducted from the contract when the work is awarded.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <a

@@ -84,7 +84,7 @@ export default function IndustriesPage() {
             ],
             ctas: [
               { label: 'Get Industry Proposal', href: '/contact?topic=industry-proposal', variant: 'primary' },
-              { label: 'Book Free Site Survey', href: '/booking?service=industry-audit', variant: 'secondary' },
+              { label: 'Book a Site Survey', href: '/booking?service=industry-audit', variant: 'secondary' },
               { label: 'WhatsApp Industry Desk', href: 'https://wa.me/254768860665', variant: 'tertiary' },
             ],
             accent: 'cyan',

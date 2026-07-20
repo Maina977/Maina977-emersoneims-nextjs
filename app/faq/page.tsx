@@ -253,9 +253,9 @@ const FAQ_DATA = [
   {
     id: 'price-3',
     category: 'Pricing',
-    question: 'Do you offer free site surveys?',
-    answer: 'Yes! We provide free site surveys and consultations for projects within Nairobi. For upcountry locations, a nominal transport fee may apply, which is waived if you proceed with the project.',
-    tags: ['site survey', 'consultation', 'free', 'quote']
+    question: 'Do you charge for a site survey?',
+    answer: 'We charge a modest site survey and diagnostic fee. It covers the technician\u2019s visit, inspection, testing, troubleshooting and fault identification, plus preparation of a clear technical solution and quotation. If you award the work to EmersonEIMS, the full survey fee is deducted from the total contract amount. This protects you from incorrect diagnosis, unnecessary expenditure and inaccurate quotations. Initial phone and WhatsApp consultations remain free.',
+    tags: ['site survey', 'diagnostic fee', 'consultation', 'quote']
   }
 ];
 

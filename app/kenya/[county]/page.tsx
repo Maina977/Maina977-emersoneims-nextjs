@@ -294,7 +294,7 @@ export default async function CountyPage({ params }: Props) {
           </h2>
           <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
             Contact our team for professional generator installation, repair, and maintenance
-            anywhere in {county.name} County. Free site surveys and competitive quotes.
+            anywhere in {county.name} County. Technician site surveys and competitive quotes (survey fee deducted from the contract when work is awarded).
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link

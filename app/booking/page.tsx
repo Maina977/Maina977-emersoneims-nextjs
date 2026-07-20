@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import SiteSurveyPolicy from '@/components/trust/SiteSurveyPolicy';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
@@ -258,6 +259,12 @@ export default function BookingPage() {
                     Still want a visit? Pick a service below — and remember every job &amp; part we supply is covered by our warranty.
                   </p>
                 </div>
+
+                {/* Official survey-fee policy — sets the correct expectation
+                    BEFORE the customer books, and states the fee is deducted
+                    from the contract when the work is awarded. */}
+                <SiteSurveyPolicy className="mb-6" />
+
                 <h2 className="text-2xl font-bold text-white mb-6">What service do you need?</h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   {SERVICE_TYPES.map(service => (

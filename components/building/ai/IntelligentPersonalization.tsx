@@ -312,7 +312,7 @@ export function SmartCTA({ className = '' }: { className?: string }) {
     }
     // Weekend
     else if (new Date().getDay() === 0 || new Date().getDay() === 6) {
-      setCtaText('Weekend Special - Free Site Survey');
+      setCtaText('Weekend Special - Book a Site Survey');
       setCtaUrl('/contact?promo=weekend');
     }
   }, []);

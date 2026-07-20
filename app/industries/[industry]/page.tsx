@@ -153,7 +153,7 @@ export default async function IndustryPage({ params }: Props) {
                     <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span className="text-cyan-400 font-semibold">FREE Site Survey</span>
+                    <span className="text-cyan-400 font-semibold">Site Survey</span>
                   </div>
                   <p className="text-slate-300 text-sm">
                     We'll assess your facility and provide a detailed power analysis at no cost.
