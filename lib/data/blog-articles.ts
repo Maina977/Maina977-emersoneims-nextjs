@@ -1817,7 +1817,7 @@ For hybrid systems:
 - Nationwide coverage (47 counties)
 
 **Our Process:**
-1. Free written quotation
+1. Site survey and load assessment
 2. Custom system design
 3. Transparent quotation
 4. Professional installation

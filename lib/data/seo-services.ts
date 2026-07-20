@@ -864,7 +864,7 @@ export const SEO_SERVICES: SEOService[] = [
     category: 'solar',
     metaTemplate: {
       title: 'Solar for Hotels in {location} | Hospitality Solar Solutions',
-      description: 'Solar for hotels in {location}. Reduce hotel electricity bills by 70%. Solar water heating, power systems. Site survey. Call +254768860665',
+      description: 'Solar for hotels in {location}. Reduce hotel electricity bills by 70%. Solar water heating, power systems. Book a site survey. Call +254768860665',
       h1: 'Solar for Hotels in {location}'
     },
     features: [
@@ -1297,7 +1297,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'How much does motor repair cost in {location}?',
-        answer: 'Repair costs in {location} depend on motor size and damage. We provide free written quotation and quotes before repairs.'
+        answer: 'Repair costs in {location} depend on motor size and damage. We assess the motor and give you a written quote before any repair work begins.'
       },
       {
         question: 'Do you repair pump motors in {location}?',
