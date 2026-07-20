@@ -14,7 +14,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-const SLIDES = [
+/**
+ * Every VOLTKA showcase frame we hold. NOTHING IS DELETED HERE — the homepage
+ * renders a curated subset (see HOMEPAGE_SLIDES below), and the unused frames
+ * remain defined so they can be restored or reused on other pages by changing
+ * one array.
+ */
+const ALL_SLIDES = [
   {
     src: '/images/voltka/voltka-vks44-hero-profile.webp',
     alt: 'VOLTKA Cummins VKS 44 super silent generator side profile with VOLTKA branding at EmersonEIMS Nairobi warehouse',
@@ -65,6 +71,26 @@ const SLIDES = [
     sub: 'Order today, on your site this week — anywhere in Kenya.',
   },
 ];
+
+/**
+ * Homepage curation (audit 2026-07-20, owner-approved).
+ *
+ * All 7 frames used to run here. Three of them (indices 2, 4 and 6) were the
+ * same crane/transport story told three times, and 7 slides at ~330 KB each
+ * made this the heaviest thing on the page. We keep the strongest four, each
+ * carrying a DISTINCT buying message, in a deliberate narrative order:
+ *
+ *   0 — the product itself (Cummins, 10-2000 kVA)
+ *   1 — availability ("on the floor today, not on order")
+ *   2 — speed ("delivered in 48 hours", reinforcing the hero's primary CTA)
+ *   5 — commissioning ("we hand over running systems", ATS, 47 counties)
+ *
+ * Dropped: 3 (industrial range — its warranty claim already appears in the
+ * hero trust badges and its kVA range in slide 0), 4 and 6 (duplicate crane
+ * shots with weaker copy). No photograph was removed from the repo.
+ */
+const HOMEPAGE_SLIDES = [0, 1, 2, 5] as const;
+const SLIDES = HOMEPAGE_SLIDES.map((i) => ALL_SLIDES[i]);
 
 const SLIDE_MS = 4000; // faster automatic slide cadence
 

@@ -154,15 +154,30 @@ function StaticHeroFallback() {
           </div>
 
           {/* Hero Title - Apple-style display typography */}
+          {/* H1 (audit 2026-07-20, owner-approved): was "POWER & BUILD /
+              REDEFINED BY AI". That wording carried no service word and no
+              place name, so the single strongest on-page ranking signal on the
+              site earned nothing for "generator", "solar" or "Kenya". The AI
+              identity and the two-line cinematic cadence are retained — the
+              first line now names what we actually sell. */}
           <h1 className="apple-display mb-6 sm:mb-8">
-            <span className="block text-white">POWER &amp; BUILD</span>
-            <span className="block text-amber-500">REDEFINED BY AI</span>
+            <span className="block text-white">GENERATORS · SOLAR · UPS</span>
+            <span className="block text-amber-500">POWER, REDEFINED BY AI</span>
           </h1>
 
-          {/* Subtitle - Apple-style subheadline */}
+          {/* Subtitle - Apple-style subheadline.
+              Rebalanced to lead with the core power business (the brief's
+              priority order: emergency repair, then sales/installation, then
+              solar/UPS/electrical) while keeping every AI tool named — the
+              tools keep their homepage link equity, they simply no longer
+              open the pitch. */}
           <p className="apple-subheadline text-gray-200 mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-            Generators · Solar · UPS · Boreholes · Buildings — one AI-native platform.
-            <span className="text-amber-400 font-medium"> Engineering-grade</span> reliability for East Africa, now with Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro &amp; the Solar &amp; UPS Intelligence Hub.
+            Kenya’s B2B power and engineering partner — generator sales, installation
+            and 24/7 emergency repair, plus solar, UPS, boreholes and buildings across
+            all 47 counties.
+            <span className="text-amber-400 font-medium"> Engineering-grade</span> reliability,
+            now with Generator Oracle, Solar Genius Pro, AquaScan Pro, Building Suite Pro
+            &amp; the Solar &amp; UPS Intelligence Hub.
           </p>
 
           {/* CTAs - Apple-style buttons with mobile optimization */}
