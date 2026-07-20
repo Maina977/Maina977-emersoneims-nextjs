@@ -14,6 +14,11 @@ import {
   SERVICES,
   COUNTIES
 } from '@/lib/seo/kenyaLocations';
+import {
+  getLocationFacts,
+  serviceModelSentence,
+  OPERATING_BASE,
+} from '@/lib/seo/locationFacts';
 import { notFound } from 'next/navigation';
 
 interface Props {
@@ -78,6 +83,11 @@ export default async function LocationPage({ params }: Props) {
   if (!location) {
     notFound();
   }
+
+  // Real, per-location facts (distance from base, census population,
+  // administrative hierarchy, sibling areas). Null only if the slug is
+  // unknown, which notFound() above has already excluded.
+  const facts = getLocationFacts(locationSlug)!;
 
   const isCounty = location.type === 'county';
   const locationName = location.name;
@@ -270,12 +280,38 @@ export default async function LocationPage({ params }: Props) {
       {/* Local SEO Content */}
       <section className="py-16 px-4">
         <div className="max-w-4xl mx-auto prose prose-invert">
-          <h2>About EmersonEIMS Services in {locationName}</h2>
+          {/* CREDIBILITY + DUPLICATE-CONTENT FIX (audit 2026-07-20).
+              This block previously ran the SAME sentences on ~190 pages with
+              only the town name swapped — measured at 84% identical body text
+              across different towns, the signature of scaled content abuse.
+              It also claimed "EmersonEIMS is {location}'s trusted partner"
+              (unverifiable) and resident local technicians (untrue — we work
+              from one Embakasi base).
+
+              Every number below is real: census population, official
+              coordinates and administrative hierarchy already held in
+              kenyaLocations, or arithmetic on them. Nothing is invented, and
+              where a fact is unknown the sentence is simply omitted. */}
+          <h2>EmersonEIMS Services in {locationName}</h2>
+          <p>{serviceModelSentence(facts)}</p>
+          {(facts.countyName || facts.population) && (
+            <p>
+              {facts.countyName && !isCounty
+                ? `${locationName} falls within ${facts.countyName} County${facts.countyCapital ? `, whose administrative centre is ${facts.countyCapital}` : ''}. `
+                : ''}
+              {isCounty && facts.constituencyCount
+                ? `${locationName} County comprises ${facts.constituencyCount} constituencies. `
+                : ''}
+              {facts.population
+                ? `It has a recorded population of about ${facts.population.toLocaleString('en-KE')}, which shapes the scale of standby power, solar and UPS systems most sites here require.`
+                : ''}
+            </p>
+          )}
           <p>
-            EmersonEIMS is {locationName}'s trusted partner for all power generation and energy solutions.
-            We specialize in diesel generator sales, installation, and maintenance, serving businesses,
-            hospitals, hotels, schools, and residential properties throughout {locationName}
-            {!isCounty && county ? ` and ${county.name} County` : ''}.
+            We specialise in diesel generator sales, installation and maintenance for
+            businesses, hospitals, hotels, schools and residential properties in{' '}
+            {locationName}
+            {!isCounty && county ? ` and across ${county.name} County` : ''}.
           </p>
 
           <h3>Generator Services in {locationName}</h3>
@@ -294,12 +330,34 @@ export default async function LocationPage({ params }: Props) {
           </p>
 
           <h3>Serving All of {isCounty ? locationName : county?.name || locationName}</h3>
+          {/* The sentence removed here read: "Our technicians are based
+              strategically to ensure fast response times throughout
+              {locationName}." That asserted resident local technicians in ~190
+              towns. We operate from ONE base, so it was false on almost every
+              page it rendered. No response-time promise replaces it, because
+              we hold no measured figure to support one. */}
           <p>
-            Our technicians are based strategically to ensure fast response times throughout {locationName}.
-            Whether you need emergency generator repair, scheduled maintenance, or a new installation,
-            we're ready to serve you. Contact us today at +254768860665 for professional power solutions
-            in {locationName}.
+            Whether you need emergency generator repair, scheduled maintenance or a
+            new installation, we cover {locationName}
+            {!isCounty && county ? ` and the wider ${county.name} County` : ''} from our{' '}
+            {OPERATING_BASE.label} workshop. Call +254 768 860 665 to discuss the site
+            and we will confirm scheduling and what the visit involves before anyone
+            travels.
           </p>
+          {facts.nearby.length > 0 && (
+            <>
+              <h3>Nearby areas we also cover</h3>
+              <p>
+                {facts.nearby.map((n, i) => (
+                  <span key={n.slug}>
+                    {i > 0 ? ', ' : ''}
+                    <Link href={`/locations/${n.slug}`}>{n.name}</Link>
+                  </span>
+                ))}
+                .
+              </p>
+            </>
+          )}
         </div>
       </section>
     </div>

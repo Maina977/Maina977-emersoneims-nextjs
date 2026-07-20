@@ -198,10 +198,16 @@ export default function LocationsPage() {
             generator installation, solar power systems, UPS solutions, and electrical services.
           </p>
           <p>
-            Our strategically located teams ensure fast response times for emergency repairs
-            and scheduled maintenance. We understand that power reliability is critical for
-            your business, which is why we offer 24/7 emergency support and back all our work
-            with a comprehensive 3-Year Warranty.
+            {/* "Our strategically located teams" implied depots around the
+                country. We work from a single Embakasi, Nairobi base, so that
+                was not true — replaced with the actual model (audit
+                2026-07-20). No response-time figure is quoted because we hold
+                no measured one. */}
+            Our engineering teams work from our Embakasi, Nairobi base and travel to site
+            with the spares, tooling and test equipment a job needs, so diagnosis and repair
+            can usually be completed in one visit. We understand that power reliability is
+            critical for your business, which is why we offer 24/7 emergency support and back
+            all our work with a comprehensive 3-Year Warranty.
           </p>
           <p>
             Contact us today to discuss your power needs. Our experts will assess your requirements
