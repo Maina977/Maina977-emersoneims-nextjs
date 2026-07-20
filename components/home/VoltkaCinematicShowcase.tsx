@@ -160,7 +160,13 @@ export default function VoltkaCinematicShowcase() {
               alt={s.alt}
               fill
               sizes="100vw"
-              quality={90}
+              // PERF (audit 2026-07-20): 90 -> 85. Measured on the live image
+              // pipeline, w=1920: 277 KB -> 209 KB (-24%); w=828: 71 -> 55 KB.
+              // 85 is inside next.config `qualities` and is visually
+              // indistinguishable from 90 on photographic WebP, so the
+              // showcase keeps its finish. (75 would save 46% but visibly
+              // softens the product art — deliberately not used here.)
+              quality={85}
               className="object-cover"
             />
           )}

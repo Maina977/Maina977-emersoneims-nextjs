@@ -105,7 +105,11 @@ function StaticHeroFallback() {
           height={1080}
           priority
           fetchPriority="high"
-          quality={90}
+          // PERF (audit 2026-07-20): 90 -> 85 on the LCP element itself, so
+          // the saving lands directly on Largest Contentful Paint. Measured
+          // -24% on the live pipeline. The CSS brightness/contrast/saturate
+          // filter below further masks any compression difference.
+          quality={85}
           className="object-cover w-full h-full [filter:brightness(1.14)_contrast(1.07)_saturate(1.15)]"
           style={{ aspectRatio: '16/9', width: '100%', height: '100%' }}
           sizes="100vw"

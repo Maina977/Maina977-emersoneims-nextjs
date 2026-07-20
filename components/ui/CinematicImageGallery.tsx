@@ -271,6 +271,15 @@ export default function CinematicImageGallery({
                   fill
                   className="object-cover cinematic-filter"
                   sizes="320px"
+                  /* PERF (audit 2026-07-20): the `hero` and `nike-style`
+                     variants already prioritise their first image; `carousel`
+                     did not, so on /solar — which renders this variant as its
+                     `heroGalleryImages` band — the first above-the-fold image
+                     was emitted with loading="lazy" and could not start
+                     fetching until layout settled. Only index 0 is promoted:
+                     the remaining cards stay lazy so a long carousel never
+                     floods the connection. Cost is small (sizes="320px"). */
+                  priority={idx === 0}
                 />
                 {/* Rounded corners with shadow */}
                 <div className="absolute inset-0 rounded-2xl ring-1 ring-white/10" />
