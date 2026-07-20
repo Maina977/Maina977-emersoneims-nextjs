@@ -74,3 +74,5 @@ NETLIFY TOKEN.txt
 # Work-in-progress previews — not for deployment
 app/swoosh-preview/
 app/swoosh-x/
+components/home/SwooshGallery.tsx
+components/home/FreshBoot.tsx
