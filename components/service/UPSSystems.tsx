@@ -130,7 +130,7 @@ export default function UPSSystems({ performanceTier }: UPSSystemsProps) {
         >
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-8">
             <h3 className="text-2xl font-bold text-white mb-4">Free UPS Health Check</h3>
-            <p className="text-slate-300 mb-6">Schedule a free assessment of your current UPS systems and get expert recommendations.</p>
+            <p className="text-slate-300 mb-6">Request a quotation for your current UPS systems and get expert recommendations.</p>
             <a href="/contact?type=ups-assessment" className="inline-flex items-center px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors">
               Schedule Assessment
               <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

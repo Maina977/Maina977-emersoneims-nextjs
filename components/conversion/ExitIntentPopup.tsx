@@ -155,7 +155,7 @@ export default function ExitIntentPopup() {
                   {/* Offer */}
                   <div className="text-center mb-6">
                     <h3 className="text-2xl font-bold text-white mb-2">
-                      FREE Site Assessment
+                      FREE Quotation
                     </h3>
                     <p className="text-gray-400">
                       Get a professional power assessment worth <span className="text-amber-500 font-bold">KES 15,000</span> absolutely FREE!
@@ -209,7 +209,7 @@ export default function ExitIntentPopup() {
                         Call
                       </a>
                       <a
-                        href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent("Hi! I saw your special offer. I'm interested in a free site assessment.")}`}
+                        href={`https://wa.me/${COMPANY_WHATSAPP}?text=${encodeURIComponent("Hi! I saw your special offer. I'm interested in a quotation.")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#25D366] text-white font-semibold rounded-lg hover:bg-[#22c55e]"

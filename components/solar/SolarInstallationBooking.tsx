@@ -155,7 +155,7 @@ Please schedule a site assessment.`
         <Calendar className="w-7 h-7 text-amber-400" />
         Book Solar Installation
       </h2>
-      <p className="text-slate-400 mb-6">Schedule a free site assessment with our certified technicians</p>
+      <p className="text-slate-400 mb-6">Book a site survey with our technicians</p>
 
       {/* Progress Steps */}
       <div className="flex items-center justify-between mb-8">

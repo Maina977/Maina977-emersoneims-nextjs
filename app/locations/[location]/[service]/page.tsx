@@ -346,7 +346,7 @@ function getServiceContent(serviceSlug: string, locationName: string) {
       ],
       seoContent: [
         { heading: 'Solar Installation in {location}', content: 'Go solar in {location} with EmersonEIMS. We design and install complete solar power systems tailored to your energy needs. Our solar panels are sourced from top manufacturers and come with comprehensive warranties for peace of mind.' },
-        { heading: 'Solar Panel Prices in {location}', content: 'Looking for affordable solar panels in {location}? We offer competitive pricing on all our solar solutions. Contact us for a free site assessment and customized quote based on your energy consumption and roof space.' },
+        { heading: 'Solar Panel Prices in {location}', content: 'Looking for affordable solar panels in {location}? We offer competitive pricing on all our solar solutions. Contact us for a customised quote based on your energy consumption and roof space.' },
         { heading: 'Benefits of Solar Power in {location}', content: 'Solar power in {location} makes excellent economic sense. With abundant sunshine year-round, you can significantly reduce or eliminate your electricity bills while contributing to a cleaner environment. Our solar systems typically pay for themselves within 3-5 years.' },
       ]
     },

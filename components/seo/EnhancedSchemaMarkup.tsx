@@ -420,7 +420,7 @@ export const GENERATOR_FAQS = [
 export const SOLAR_FAQS = [
   {
     question: 'How much does solar installation cost in Kenya?',
-    answer: 'Solar installation costs in Kenya range from KES 150,000 for a basic home system (1.5kW) to KES 10,000,000+ for large commercial installations. EmersonEIMS offers free site assessments and competitive quotes.'
+    answer: 'Solar installation costs in Kenya range from KES 150,000 for a basic home system (1.5kW) to KES 10,000,000+ for large commercial installations. EmersonEIMS provides competitive written quotes.'
   },
   {
     question: 'Is solar power worth it in Kenya?',

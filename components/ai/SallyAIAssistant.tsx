@@ -357,9 +357,18 @@ export default function SallyAIAssistant() {
     let locationResponse = `Perfect, ${name}! We provide full service coverage in ${location}.\n\n`;
 
     if (location === 'Nairobi') {
-      locationResponse += 'For Nairobi clients:\n- Emergency response within 2 hours\n- Same-day parts delivery\n- Free site assessments\n\n';
+      // Was: "Emergency response within 2 hours ... Free site assessments".
+      // Both removed 2026-07-20 — the 2-hour figure is an unmeasured SLA and
+      // the free assessment contradicted the owner's site-survey fee policy
+      // (see components/trust/SiteSurveyPolicy.tsx). Quotations ARE free; the
+      // on-site diagnostic visit carries a fee, deducted from the contract if
+      // the work is awarded to us.
+      locationResponse += 'For Nairobi clients:\n- Priority emergency callout\n- Fast access to parts from our stores\n- Free written quotation\n\n';
     } else {
-      locationResponse += `For ${location} clients:\n- Same-day emergency response\n- Next-day parts delivery\n- Remote diagnostic support\n\n`;
+      // "Same-day emergency response" / "Next-day parts delivery" are likewise
+      // unmeasured promises for up-country sites; replaced with what we can
+      // stand behind — the nationwide mobile workshop.
+      locationResponse += `For ${location} clients:\n- Mobile workshop callout, all 47 counties\n- Parts dispatched from our Nairobi stores\n- Remote diagnostic support\n\n`;
     }
 
     locationResponse += 'How would you like to proceed?';
@@ -461,7 +470,7 @@ export default function SallyAIAssistant() {
         `Or you can:\n` +
         `- Browse our services\n` +
         `- Check our diagnostic tools\n` +
-        `- Request a free site assessment`,
+        `- Request a written quotation`,
         [
           { label: '📞 Call Now', action: 'call' },
           { label: '💬 WhatsApp', action: 'whatsapp' },

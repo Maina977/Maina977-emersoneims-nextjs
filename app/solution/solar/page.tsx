@@ -155,7 +155,7 @@ export default function SolarSolutionPage() {
                 href="/contact"
                 className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-semibold rounded-lg hover:from-amber-500 hover:to-amber-700 transition-all"
               >
-                Get Free Assessment
+                Get a Free Quote
               </a>
               <a
                 href="/solar"

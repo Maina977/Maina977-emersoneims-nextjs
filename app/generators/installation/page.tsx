@@ -904,7 +904,7 @@ export default function GeneratorInstallationPage() {
             Ready to Install Your Generator?
           </h2>
           <p className="text-xl text-white/80 mb-8">
-            Contact us for a free site assessment and detailed quotation. Our engineers are ready to design 
+            Contact us for a detailed quotation. Our engineers are ready to design 
             the perfect installation for your facility.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

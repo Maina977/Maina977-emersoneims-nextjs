@@ -797,7 +797,7 @@ export default function SolarSizingHub() {
           <h2 className="text-3xl font-bold text-white mb-4">Need Professional System Design?</h2>
           <p className="text-gray-400 max-w-2xl mx-auto mb-8">
             Our solar engineers will design a custom system tailored to your specific requirements, 
-            budget, and location. Free site assessment included.
+            budget, and location. Written quotation provided.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <UnifiedCTA action="get-quote" size="lg" label="Get Solar Quote" />

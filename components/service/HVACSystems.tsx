@@ -126,7 +126,7 @@ export default function HVACSystems({ performanceTier }: HVACSystemsProps) {
               <p className="text-slate-300">Upgrade to inverter technology and smart controls. Our energy-efficient HVAC solutions pay for themselves.</p>
             </div>
             <a href="/contact?type=hvac-consultation" className="px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-lg transition-colors whitespace-nowrap">
-              Get Free Assessment
+              Get a Quote
             </a>
           </div>
         </motion.div>

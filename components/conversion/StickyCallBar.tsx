@@ -21,7 +21,7 @@ export default function StickyCallBar() {
   // Urgency messages that rotate
   const urgencyMessages = [
     "24/7 Emergency Service Available",
-    "Free Site Assessment - Limited Time!",
+    "Free Quotation - Fast Turnaround!",
     "Same-Day Response Guaranteed",
     "3-Year Warranty on All Services",
     "Serving All 47 Counties in Kenya",

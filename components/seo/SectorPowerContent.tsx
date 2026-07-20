@@ -61,7 +61,7 @@ export default function SectorPowerContent({ sector }: { sector: Sector }) {
       <Callout title={`Power solutions for ${sector.name}`} accent="cyan">
         Generators, solar, UPS, motors, HVAC and electrical works engineered for {sector.name.toLowerCase()} across all 47
         counties. Call <strong>+254&nbsp;768&nbsp;860&nbsp;665</strong> or <strong>+254&nbsp;782&nbsp;914&nbsp;717</strong> for a
-        free assessment.
+        written quotation.
       </Callout>
     </DeepDiveSection>
   );
