@@ -271,7 +271,7 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
       },
       {
         question: 'What size Cummins generator do I need?',
-        answer: 'Generator sizing depends on your total load and startup requirements. As a guide: Small office (10-20kVA), Medium business (30-100kVA), Hotel/Factory (150-500kVA), Hospital/Data Center (500-2000kVA). We provide FREE site surveys to calculate your exact requirements.'
+        answer: 'Generator sizing depends on your total load and startup requirements. As a guide: Small office (10-20kVA), Medium business (30-100kVA), Hotel/Factory (150-500kVA), Hospital/Data Center (500-2000kVA). We provide site surveys to calculate your exact requirements.'
       },
       {
         question: 'What is included in the 3-Year Warranty?',
@@ -953,8 +953,8 @@ SERVICES INCLUDE:
     slug: 'solar-energy',
     name: 'Solar Energy Solutions',
     shortName: 'Solar Energy',
-    tagline: 'Cut Electricity Bills by 80% | Free Site Assessment',
-    description: 'Complete solar energy solutions in Kenya. Residential, commercial, and industrial solar installation. Hybrid systems, battery storage, and net metering. Free site assessment.',
+    tagline: 'Cut Electricity Bills by 80% | Free Written Quotation',
+    description: 'Complete solar energy solutions in Kenya. Residential, commercial, and industrial solar installation. Hybrid systems, battery storage, and net metering. Free written quotation.',
     longDescription: `Harness Kenya's abundant sunshine to power your home or business. EmersonEIMS provides complete solar energy solutions - from small residential systems to large commercial installations.
 
 With Kenya's high electricity costs and unreliable grid, solar power makes excellent economic sense. Our solar systems can reduce your electricity bills by up to 80%, provide energy independence, and contribute to a cleaner environment.
@@ -967,7 +967,7 @@ WE OFFER:
 - Solar water heating
 - Solar pumping systems
 
-FREE SITE ASSESSMENT: Our solar experts will analyze your energy consumption, roof space, and requirements to design the optimal system for your needs.`,
+SITE SURVEY: Our solar experts will analyze your energy consumption, roof space, and requirements to design the optimal system for your needs.`,
 
     icon: '☀️',
     heroImage: '/images/solar%20power%20farms.png',
@@ -978,7 +978,7 @@ FREE SITE ASSESSMENT: Our solar experts will analyze your energy consumption, ro
     ],
 
     metaTitle: 'Solar Installation Kenya | Solar Panels | Solar Companies Nairobi | EmersonEIMS',
-    metaDescription: 'Solar installation in Kenya. Residential & commercial solar panels. Grid-tied, off-grid, hybrid systems. Free site assessment. Cut bills by 80%. Call +254768860665',
+    metaDescription: 'Solar installation in Kenya. Residential & commercial solar panels. Grid-tied, off-grid, hybrid systems. Free written quotation. Cut bills by 80%. Call +254768860665',
     keywords: [
       'solar installation Kenya',
       'solar panels Kenya',
@@ -1008,7 +1008,7 @@ FREE SITE ASSESSMENT: Our solar experts will analyze your energy consumption, ro
         icon: '🛡️'
       },
       {
-        title: 'Free Site Assessment',
+        title: 'Free Written Quotation',
         description: 'Our experts analyze your needs and design the optimal system at no cost.',
         icon: '📋'
       },
@@ -1147,7 +1147,7 @@ FREE SITE ASSESSMENT: Our solar experts will analyze your energy consumption, ro
 
     relatedServices: ['cummins-generators', 'ups-systems', 'borehole-pumps', 'ats-changeover'],
 
-    primaryCTA: 'Get FREE Assessment',
+    primaryCTA: 'Get a Free Quote',
     secondaryCTA: 'Calculate Savings',
 
     category: 'renewable'
@@ -2240,5 +2240,5 @@ export const TRUST_BADGES = [
   { title: '3-Year Warranty', description: 'Generator warranty available', icon: '🛡️' },
   { title: '24/7 Support', description: 'Round-the-clock emergency service', icon: '📞' },
   { title: 'Nationwide Service', description: 'Serving all of Kenya', icon: '🇰🇪' },
-  { title: 'Free Consultation', description: 'No obligation site assessment', icon: '💬' },
+  { title: 'Free Quotation', description: 'Written quote, no obligation', icon: '💬' },
 ];

@@ -178,7 +178,7 @@ export const INDUSTRIES: Industry[] = [
       },
       {
         question: 'What size generator do I need for my hotel?',
-        answer: 'Hotel generator sizing depends on: number of rooms, kitchen equipment, AC units, elevators, and common areas. A 50-room hotel with central AC typically needs 150-200kVA. We provide FREE site surveys to calculate exact requirements - we\'ll check every circuit and give you a professional load analysis.'
+        answer: 'Hotel generator sizing depends on: number of rooms, kitchen equipment, AC units, elevators, and common areas. A 50-room hotel with central AC typically needs 150-200kVA. We provide site surveys to calculate exact requirements - we\'ll check every circuit and give you a professional load analysis.'
       },
       {
         question: 'Do you service generators you didn\'t install?',
@@ -207,7 +207,7 @@ export const INDUSTRIES: Industry[] = [
     ],
     relatedIndustries: ['real-estate-construction', 'churches-religious'],
     ctaText: 'Get FREE Hotel Power Audit',
-    whatsappMessage: 'Hi EmersonEIMS, I manage a hotel and need a reliable generator solution. Please contact me for a free site survey.',
+    whatsappMessage: 'Hi EmersonEIMS, I manage a hotel and need a reliable generator solution. Please contact me for a site survey.',
     stats: [
       { label: 'Hotels Served', value: '200+' },
       { label: 'Response Time', value: '4 Hours' },
@@ -444,7 +444,7 @@ export const INDUSTRIES: Industry[] = [
       },
       {
         question: 'What size generator does a typical secondary school need?',
-        answer: 'It depends on your facilities. A day school with one computer lab typically needs 15-25kVA. A boarding school with dormitories, kitchen, and multiple labs may need 50-100kVA. We provide FREE site surveys and load calculations - no obligation.'
+        answer: 'It depends on your facilities. A day school with one computer lab typically needs 15-25kVA. A boarding school with dormitories, kitchen, and multiple labs may need 50-100kVA. We provide site surveys and load calculations - no obligation.'
       },
       {
         question: 'Can solar power a whole school?',
@@ -473,7 +473,7 @@ export const INDUSTRIES: Industry[] = [
     ],
     relatedIndustries: ['hospitals-healthcare', 'churches-religious'],
     ctaText: 'Get FREE School Power Assessment',
-    whatsappMessage: 'Hi EmersonEIMS, I\'m from a school/university and need reliable power solutions. Please contact me for a free assessment.',
+    whatsappMessage: 'Hi EmersonEIMS, I\'m from a school/university and need reliable power solutions. Please contact me for a free written quotation.',
     stats: [
       { label: 'Schools Powered', value: '500+' },
       { label: 'Payment Plans', value: 'Available' },
@@ -976,7 +976,7 @@ export const INDUSTRIES: Industry[] = [
       },
       {
         question: 'How do you size a generator for an apartment building?',
-        answer: 'We calculate based on: elevator motor sizes, water pump requirements, common area lighting, and any tenant backup loads. A typical 50-unit building with 2 elevators and borehole needs 50-80kVA. We do detailed load calculations during our FREE site survey.'
+        answer: 'We calculate based on: elevator motor sizes, water pump requirements, common area lighting, and any tenant backup loads. A typical 50-unit building with 2 elevators and borehole needs 50-80kVA. We do detailed load calculations during our site survey.'
       },
       {
         question: 'What about noise in residential areas?',
@@ -1113,7 +1113,7 @@ export const INDUSTRIES: Industry[] = [
       },
       {
         question: 'What size generator does a church need?',
-        answer: 'It depends on your equipment. A typical church with PA system, projector, and basic lighting needs 10-15kVA. Large churches with concert-level sound and lighting may need 50-100kVA. We provide FREE site surveys to calculate your exact needs.'
+        answer: 'It depends on your equipment. A typical church with PA system, projector, and basic lighting needs 10-15kVA. Large churches with concert-level sound and lighting may need 50-100kVA. We provide site surveys to calculate your exact needs.'
       },
       {
         question: 'How quiet are your generators?',

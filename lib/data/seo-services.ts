@@ -97,7 +97,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'What size generator do I need in {location}?',
-        answer: 'Generator size depends on your power needs. Contact us for a free site survey and load analysis in {location}.'
+        answer: 'Generator size depends on your power needs. Contact us for a site survey and load analysis in {location}.'
       },
       {
         question: 'Are your generators fuel efficient?',
@@ -583,7 +583,7 @@ export const SEO_SERVICES: SEOService[] = [
       'Grid-tied & off-grid systems',
       'KPLC net metering approval',
       '25-year panel warranty',
-      'Free site assessment'
+      'Free written quotation'
     ],
     faqs: [
       {
@@ -637,7 +637,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'Do your solar experts offer free consultations in {location}?',
-        answer: 'Yes, we offer free site assessments and consultations in {location} to help you choose the right solar solution.'
+        answer: 'Yes, we offer free written quotations in {location} to help you choose the right solar solution.'
       }
     ]
   },
@@ -675,7 +675,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'How many solar panels do I need for my home in {location}?',
-        answer: 'A typical 3-bedroom home in {location} needs 8-12 panels (3-5kW system). We offer free assessments to determine your exact needs.'
+        answer: 'A typical 3-bedroom home in {location} needs 8-12 panels (3-5kW system). We provide free written quotes to determine your exact needs.'
       },
       {
         question: 'What type of solar panel is best for {location}?',
@@ -823,7 +823,7 @@ export const SEO_SERVICES: SEOService[] = [
     category: 'solar',
     metaTemplate: {
       title: 'Solar for Farms in {location} | Agricultural Solar Solutions',
-      description: 'Solar for farms in {location}. Solar irrigation, water pumps, poultry & dairy farms. Reduce farming costs. Free assessment. Call +254768860665',
+      description: 'Solar for farms in {location}. Solar irrigation, water pumps, poultry & dairy farms. Reduce farming costs. Free quotation. Call +254768860665',
       h1: 'Solar for Farms in {location}'
     },
     features: [
@@ -864,7 +864,7 @@ export const SEO_SERVICES: SEOService[] = [
     category: 'solar',
     metaTemplate: {
       title: 'Solar for Hotels in {location} | Hospitality Solar Solutions',
-      description: 'Solar for hotels in {location}. Reduce hotel electricity bills by 70%. Solar water heating, power systems. Free site survey. Call +254768860665',
+      description: 'Solar for hotels in {location}. Reduce hotel electricity bills by 70%. Solar water heating, power systems. Site survey. Call +254768860665',
       h1: 'Solar for Hotels in {location}'
     },
     features: [
@@ -1091,7 +1091,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'How much do solar repairs cost in {location}?',
-        answer: 'Repair costs in {location} depend on the issue. We provide free diagnosis and upfront quotes before any repairs.'
+        answer: 'Repair costs in {location} depend on the issue. We provide a written diagnosis and upfront quotes before any repairs.'
       }
     ]
   },
@@ -1297,7 +1297,7 @@ export const SEO_SERVICES: SEOService[] = [
       },
       {
         question: 'How much does motor repair cost in {location}?',
-        answer: 'Repair costs in {location} depend on motor size and damage. We provide free assessment and quotes before repairs.'
+        answer: 'Repair costs in {location} depend on motor size and damage. We provide free written quotation and quotes before repairs.'
       },
       {
         question: 'Do you repair pump motors in {location}?',
@@ -1503,7 +1503,7 @@ export const SEO_SERVICES: SEOService[] = [
     faqs: [
       {
         question: 'What size UPS do I need in {location}?',
-        answer: 'UPS size depends on your load. We offer free site assessments in {location} to recommend the right capacity.'
+        answer: 'UPS size depends on your load. We provide free written quotes in {location} to recommend the right capacity.'
       },
       {
         question: 'What brands of UPS do you supply in {location}?',
@@ -1578,7 +1578,7 @@ export const SEO_SERVICES: SEOService[] = [
     features: ['Licensed AC contractors', 'All major brands', 'Residential & commercial', 'Installation & repairs', 'Maintenance contracts', '24/7 emergency service'],
     faqs: [
       { question: 'What is the best AC company in {location}?', answer: 'EmersonEIMS is a leading AC company in {location}, offering professional installation, repair, and maintenance for all AC brands.' },
-      { question: 'Do AC companies in {location} offer free quotes?', answer: 'Yes, we provide free site assessments and quotes for AC installation in {location}. No obligation.' },
+      { question: 'Do AC companies in {location} offer free quotes?', answer: 'Yes, we provide free written quotes for AC installation in {location}. No obligation.' },
       { question: 'Which AC brands do you install in {location}?', answer: 'We install all major brands including Daikin, Samsung, LG, Carrier, Midea, and more in {location}.' }
     ]
   },
@@ -1886,13 +1886,13 @@ export const SEO_SERVICES: SEOService[] = [
     category: 'ups',
     metaTemplate: {
       title: 'Power Backup in {location} | Backup Power Solutions Kenya',
-      description: 'Power backup solutions in {location}. Generators, UPS, solar, inverters. Never lose power again. Free assessment. Call +254768860665',
+      description: 'Power backup solutions in {location}. Generators, UPS, solar, inverters. Never lose power again. Free quotation. Call +254768860665',
       h1: 'Power Backup in {location}'
     },
     features: ['Generator backup', 'UPS systems', 'Solar backup', 'Inverter systems', 'Hybrid solutions', 'Automatic changeover'],
     faqs: [
       { question: 'What is the best power backup solution in {location}?', answer: 'The best solution depends on your needs. Generators for long outages, UPS for instant backup, solar for sustainability.' },
-      { question: 'How do I choose power backup in {location}?', answer: 'Consider outage duration, critical loads, budget, and space. We provide free assessments in {location}.' },
+      { question: 'How do I choose power backup in {location}?', answer: 'Consider outage duration, critical loads, budget, and space. We provide free written quotes in {location}.' },
       { question: 'Can I combine different backup systems in {location}?', answer: 'Yes, hybrid systems combining solar, batteries, and generators provide the best reliability.' }
     ]
   },

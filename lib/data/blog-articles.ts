@@ -1817,7 +1817,7 @@ For hybrid systems:
 - Nationwide coverage (47 counties)
 
 **Our Process:**
-1. Free site assessment
+1. Free written quotation
 2. Custom system design
 3. Transparent quotation
 4. Professional installation
@@ -1830,7 +1830,7 @@ For hybrid systems:
 - WhatsApp: +254 768 860 665
 - Website: www.emersoneims.com
 
-Start your solar journey today. Free assessment in Nairobi and surrounding areas.
+Start your solar journey today. Free quotation in Nairobi and surrounding areas.
     `
   },
 
@@ -2783,7 +2783,7 @@ Solar installation is a significant investment. These insider tips will help you
 For transparent, professional solar installation:
 - Phone: +254 768 860 665 / +254 782 914 717
 - Email: info@emersoneims.com
-- Free site assessment in Nairobi area
+- Free written quotation in Nairobi area
 
 ERC licensed. Quality components. Honest pricing.
     `

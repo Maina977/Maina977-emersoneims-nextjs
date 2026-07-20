@@ -456,7 +456,7 @@ export const PAGE_META = {
   },
   solar: {
     title: "Solar Installation Kenya | All 47 Counties | 25-Year Warranty | EmersonEIMS",
-    description: "Best solar company in Kenya. Grid-tie, off-grid, hybrid systems. 25-year panel warranty. Serving all 47 counties, 16,245+ hotels, 93,988+ schools. Free site assessment. Call +254768860665"
+    description: "Best solar company in Kenya. Grid-tie, off-grid, hybrid systems. 25-year panel warranty. Serving all 47 counties, 16,245+ hotels, 93,988+ schools. Free written quotation. Call +254768860665"
   },
   maintenanceHub: {
     title: "Maintenance Hub | 400,000+ Fault Codes | 47 Counties | EmersonEIMS",
