@@ -41,13 +41,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const city = country ? getCityBySlug(resolvedParams.country, resolvedParams.city) : undefined;
 
   if (!country || !city) {
-    // Fallback for unknown locations
-    const countryName = resolvedParams.country.charAt(0).toUpperCase() + resolvedParams.country.slice(1);
-    const cityName = resolvedParams.city.charAt(0).toUpperCase() + resolvedParams.city.slice(1).replace(/-/g, ' ');
-
+    /**
+     * SOFT-404 FIX (audit 2026-07-21). This used to mint a title and
+     * description out of the URL slug itself — "Energy Solutions in
+     * Zzzznotreal, Regions" — which gave crawlable, indexable-looking metadata
+     * to pages that describe nothing real, and implied we serve places we have
+     * never heard of.
+     *
+     * The route is now dynamicParams=false so unknown params 404 before this
+     * runs. Kept as a guard: return noindex metadata rather than inventing a
+     * location, so nothing unreal can ever be indexed.
+     */
     return {
-      title: `Energy Solutions in ${cityName}, ${countryName} | EmersonEIMS`,
-      description: `B2B power and engineering services in ${cityName}, ${countryName}: generators, solar, UPS, motors and HVAC. Serving East Africa.`,
+      title: 'Page Not Found | EmersonEIMS',
+      robots: { index: false, follow: false },
     };
   }
 
@@ -73,38 +80,54 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Enable ISR
 export const revalidate = 86400;
-export const dynamicParams = true;
+
+/**
+ * SOFT-404 FIX (audit 2026-07-21). This was `true`, which made this
+ * root-level two-segment catch-all answer HTTP 200 for ANY /<x>/<y> URL that
+ * no more-specific route claimed. Verified on live before the change:
+ *
+ *   /regions/uganda      -> 200   (there is no /regions section at all)
+ *   /regions/zzzznotreal -> 200
+ *   /notarealsection/foo -> 200
+ *   /xyz/abc             -> 200
+ *
+ * Each rendered a templated "Energy Solutions in <Slug>" page built from the
+ * URL text itself, so Google could crawl an unbounded number of near-identical
+ * 200-OK pages. That is scaled content abuse and a classic soft-404 surface,
+ * and it is the most likely remaining cause of the Search Console "Duplicate
+ * without user-selected canonical" reports.
+ *
+ * With `false`, Next serves a genuine 404 for any params not returned by
+ * generateStaticParams, which enumerates the full real set from
+ * lib/data/east-africa-locations.ts. No legitimate page is lost.
+ *
+ * Checked before changing: all 14 first-path-segments present in sitemap.xml
+ * (/kenya, /locations, /blog, /hub, /faults, /services, /industries,
+ * /generators, /solutions, /maintenance-hub, /products, /ai-tools,
+ * /aquascan-pro-v3, /solar-genius-pro) each own an explicit route directory,
+ * so nothing in the sitemap was being served by this catch-all.
+ */
+export const dynamicParams = false;
 
 export default async function InternationalCityPage({ params }: Props) {
   const resolvedParams = await params;
   const country = getCountryBySlug(resolvedParams.country);
   const city = country ? getCityBySlug(resolvedParams.country, resolvedParams.city) : undefined;
 
-  // Handle known countries with unknown cities - use fallback
+  /**
+   * SOFT-404 FIX (audit 2026-07-21). This branch used to RENDER a generic
+   * "Energy Solutions in <Slug>" page for any unrecognised country, returning
+   * HTTP 200 with a heading derived from the URL string. That is what let
+   * /regions/uganda, /notarealsection/foo and /xyz/abc all resolve 200.
+   *
+   * `dynamicParams = false` above now stops unknown params reaching this file
+   * at all, so this is defence in depth: if anyone re-enables dynamicParams,
+   * an unknown country still 404s instead of silently minting another
+   * templated page. No real content was removed — the block only ever
+   * displayed text generated from the requested URL.
+   */
   if (!country) {
-    // Unknown country - use generic page
-    const countryName = resolvedParams.country.charAt(0).toUpperCase() + resolvedParams.country.slice(1);
-    const cityName = resolvedParams.city.charAt(0).toUpperCase() + resolvedParams.city.slice(1).replace(/-/g, ' ');
-
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-950 via-black to-gray-950">
-        <div className="container mx-auto px-4 py-24">
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Energy Solutions in {cityName}
-            </h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              EmersonEIMS provides generator and power solutions across East Africa, including {countryName}.
-            </p>
-          </div>
-          <div className="text-center">
-            <Link href="/contact" className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold rounded-lg">
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   if (!city) {

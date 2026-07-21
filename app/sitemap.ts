@@ -2,6 +2,10 @@ import { MetadataRoute } from 'next';
 import { getAllServiceSlugs } from '@/lib/services/allServices';
 import { getIndexedServiceLocationPaths } from '@/lib/seo/kenyaLocations';
 import { getIndexableKenyaUrls } from '@/lib/seo/kenyaIndexable';
+import {
+  getAllCountrySlugs,
+  getCitySlugsForCountry,
+} from '@/lib/data/east-africa-locations';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -294,6 +298,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.85,
     });
+  }
+
+  /**
+   * East African city pages — /<country>/<city>, served by app/[country]/[city].
+   *
+   * Audit 2026-07-21 found these were fully built and returning HTTP 200
+   * (Uganda, Tanzania, Rwanda, South Sudan and their cities) while being
+   * completely invisible to search engines: ZERO sitemap entries and zero
+   * internal links. The regional expansion existed but earned nothing.
+   *
+   * The set comes from the same functions the route's generateStaticParams
+   * uses, so the sitemap cannot drift from what actually renders — and now
+   * that the route is dynamicParams=false, every URL emitted here is a real
+   * pre-generated page rather than a templated fallback.
+   *
+   * Priority sits below Kenyan service pages: this is a supporting regional
+   * presence, not the core market.
+   */
+  for (const countrySlug of getAllCountrySlugs()) {
+    for (const citySlug of getCitySlugsForCountry(countrySlug)) {
+      urls.push({
+        url: `${BASE_URL}/${countrySlug}/${citySlug}`,
+        lastModified: currentDate,
+        changeFrequency: 'monthly',
+        priority: 0.6,
+      });
+    }
   }
 
   return urls;
