@@ -576,6 +576,29 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0e. HARD 404 for unknown /generators/spare-parts/engine/[model] slugs.
+  //     Same Next 16 + Vercel behaviour as guards 0a-0d: notFound() inside an
+  //     already-matched dynamic route still answers 200, so the allowlist must
+  //     live here. Kept in sync by hand with lib/parts/engineIndex.ts
+  //     (engines with >= 5 real parts).
+  {
+    const em = pathname.match(/^\/generators\/spare-parts\/engine\/([^/]+)\/?$/);
+    if (em) {
+      const OK_ENGINES = new Set(['6bt5-9','6bta5-9','4bt3-9','1104c-44','1106c-e66t','4bta3-9','isbe6','isbe4','6ct8-3','1104c-44t','6cta8-3','3054c','3056e','c6-6','403c-15','404c-22','qsb6-7','c7-1','403d-15','404d-22','qsb4-5','nt855','1104c-e44t']);
+      if (!OK_ENGINES.has(decodeURIComponent(em[1]).toLowerCase())) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': 'engine-404',
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0d. HARD 404 for unknown /generators/spare-parts/[category] slugs.
   //
   //     The category route sets dynamicParams=false, which correctly stops

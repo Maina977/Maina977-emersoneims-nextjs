@@ -15,6 +15,7 @@
  */
 import Link from 'next/link';
 import partsDb from '@/app/data/spare-parts-database-COMPLETE.json';
+import { getEngineIndex } from '@/lib/parts/engineIndex';
 
 type Sub = { id: string; name: string; parts?: unknown[] };
 
@@ -51,7 +52,31 @@ export default function PartsCategoryLinks({ className = '' }: { className?: str
           the parts and request a quotation.
         </p>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* BROWSE BY ENGINE (owner point 2026-07-21: "we have over 200 generator
+            makes"). The catalogue could only be browsed by part type, so a
+            customer who knows their engine had no entry point. These pivot the
+            existing real fitment data — nothing generated. */}
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-white">Browse by engine</h3>
+          <p className="mt-2 text-sm text-slate-400">
+            Know your engine? Jump straight to the parts that fit it.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {getEngineIndex().map((e) => (
+              <Link
+                key={e.slug}
+                href={`/generators/spare-parts/engine/${e.slug}`}
+                className="rounded-lg border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm text-slate-300 transition hover:border-amber-500 hover:text-amber-400"
+              >
+                {e.make ? `${e.make} ${e.model}` : e.model}{' '}
+                <span className="text-slate-500">({e.parts.length})</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <h3 className="mt-12 text-lg font-semibold text-white">Browse by part type</h3>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {subs.map((s) => (
             <Link
               key={s.id}

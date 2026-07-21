@@ -7,6 +7,7 @@ import {
   getCitySlugsForCountry,
 } from '@/lib/data/east-africa-locations';
 import sparePartsDb from '@/app/data/spare-parts-database-COMPLETE.json';
+import { getEngineIndex } from '@/lib/parts/engineIndex';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -328,6 +329,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.8,
       });
     }
+  }
+
+  /**
+   * Engine-model parts pages — /generators/spare-parts/engine/<model>.
+   *
+   * Added 2026-07-21. The catalogue could only be browsed by part type, so a
+   * customer who knows they have a Cummins 6BT5.9 had no way to ask what fits
+   * it — even though 72 parts already carried that fitment. These pivot the
+   * EXISTING real compatibility data; nothing is generated. Engines with fewer
+   * than 5 parts get no page, so none are thin.
+   */
+  for (const e of getEngineIndex()) {
+    urls.push({
+      url: `${BASE_URL}/generators/spare-parts/engine/${e.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    });
   }
 
   /**
