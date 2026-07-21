@@ -7,7 +7,7 @@
  *   - No noise-level figures for canopies (that needs acoustic design + test).
  *   - No claim that every damaged component can be economically repaired.
  *   - No claim of workshops or staff outside the Embakasi, Nairobi base.
- *   - Calibration/測試 equipment is described as "where available" rather than
+ *   - Calibration and test equipment is described as "where available" rather than
  *     asserted, per the brief's instruction not to claim equipment we may not
  *     directly control.
  */
@@ -27,6 +27,22 @@ export type WorkshopService = {
   relatedLabel?: string;
   /** Honest limitation shown on the card. */
   caveat?: string;
+  /**
+   * Photograph for this service. ONLY set where the image has been opened and
+   * visually confirmed to show that work — never assigned from a filename.
+   *
+   * That rule is not theoretical. public/images/generator-canopy-fabrication.png
+   * is a stock photograph of high-voltage substation insulators, and
+   * public/images/repairs/repair-13.webp is a polished cutaway display engine
+   * from a trade stand. Either would have been published as EmersonEIMS
+   * workshop work if filenames had been trusted.
+   *
+   * Services with no confirmed photograph deliberately carry none. A wrong or
+   * generic image is worse than white space on a page selling technical
+   * credibility.
+   */
+  image?: string;
+  imageAlt?: string;
 };
 
 export const DIVISIONS = [
@@ -157,6 +173,8 @@ export const WORKSHOP_SERVICES: WorkshopService[] = [
   },
   {
     id: 'engine-overhauls',
+    image: '/images/repairs/repair-01.webp',
+    imageAlt: 'EmersonEIMS technician lowering a cylinder liner into a stripped six-cylinder diesel engine block during a generator engine overhaul',
     title: 'Complete Engine Overhauls',
     nav: 'Engine Overhauls',
     division: 'components',
@@ -224,6 +242,8 @@ export const WORKSHOP_SERVICES: WorkshopService[] = [
   },
   {
     id: 'canopies',
+    image: '/images/work-photos/IMG-20260110-WA0006.jpg',
+    imageAlt: 'Canopied VOLTKA VKS 44 super silent generator lifted by crane onto a delivery truck inside the EmersonEIMS warehouse, showing the acoustic enclosure, access doors and control panel cut-out',
     title: 'Generator Canopy Fabrication',
     nav: 'Generator Canopies',
     division: 'fabrication',
@@ -281,6 +301,8 @@ export const WORKSHOP_SERVICES: WorkshopService[] = [
   },
   {
     id: 'fuel-automation',
+    image: '/images/work-photos/IMG-20250607-WA0006.jpg',
+    imageAlt: 'Fabricated powder-coated control and distribution panels built by EmersonEIMS, one wrapped for dispatch, beside a board populated with miniature circuit breakers',
     title: 'Fuel-Tank Automation & Monitoring',
     nav: 'Fuel Automation',
     division: 'fabrication',
