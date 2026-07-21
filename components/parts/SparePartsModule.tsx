@@ -269,8 +269,14 @@ export default function SparePartsModule() {
           </div>
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center">
             <Truck className="w-6 h-6 text-green-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">Same Day</p>
-            <p className="text-gray-400 text-sm">Delivery in Nairobi</p>
+            {/* CREDIBILITY (audit 2026-07-21): was "Same Day / Delivery in
+                Nairobi" — an unsupported delivery guarantee (directive §14),
+                and it contradicted the dispatch section further down the page
+                which states we agree the method and cost per order before
+                quoting any timeframe. Replaced with our actual, verified
+                reach. */}
+            <p className="text-2xl font-bold text-white">47 Counties</p>
+            <p className="text-gray-400 text-sm">Nationwide dispatch</p>
           </div>
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center">
             <Shield className="w-6 h-6 text-purple-400 mx-auto mb-2" />

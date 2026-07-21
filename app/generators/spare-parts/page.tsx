@@ -111,7 +111,13 @@ export default function SparePartsPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
             >
               <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">2,000+ Genuine Parts in Stock</span>
+              {/* CREDIBILITY (audit 2026-07-21): was "2,000+ Genuine Parts in
+                  Stock". The catalogue is a STATIC dataset — there is no
+                  inventory API — so we cannot assert that any of it is
+                  physically in stock right now. "Catalogued" is accurate and
+                  still conveys the range. Directive §14 forbids publishing
+                  inaccurate spare-part availability. */}
+              <span className="text-sm font-medium text-white/90 tracking-wider uppercase">2,000+ Genuine Parts Catalogued</span>
             </motion.div>
 
             {/* Main Title with Cinematic Typography */}
@@ -131,7 +137,11 @@ export default function SparePartsPage() {
               transition={{ duration: 0.8, delay: 0.7 }}
               className="text-lg md:text-xl lg:text-2xl text-gray-200/90 max-w-3xl mx-auto leading-relaxed mb-8"
             >
-              Real-Time Inventory • Instant WhatsApp Quotes • All Major Brands
+              {/* CREDIBILITY (audit 2026-07-21): was "Real-Time Inventory".
+                  Stock status is read from a static JSON catalogue
+                  (app/data/spare-parts-database-COMPLETE.json); no live
+                  inventory system exists, so "real-time" was untrue. */}
+              Full Parts Catalogue • Instant WhatsApp Quotes • All Major Brands
             </motion.p>
 
             {/* Decorative Line */}
