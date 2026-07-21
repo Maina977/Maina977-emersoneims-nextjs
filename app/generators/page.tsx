@@ -110,6 +110,16 @@ const GENERATOR_HUB_SECTIONS = [
     color: 'purple',
     description: 'Professional 8-phase installation'
   },
+  // Workshop Repairs & Fabrication — added 2026-07-21 (owner brief). Placed
+  // alongside the existing service cards; nothing was removed or reordered.
+  {
+    id: 'workshop-services',
+    title: 'Workshop Repairs & Fabrication',
+    icon: '🏭',
+    href: '/generators/workshop-services',
+    color: 'amber',
+    description: 'Radiators, starters, alternators, injectors, turbos, engine overhauls, UPS, pumps, canopies, tanks & fabrication'
+  },
   {
     id: 'ai-diagnostic',
     title: 'AI Diagnostic',

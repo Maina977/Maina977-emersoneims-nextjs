@@ -59,6 +59,7 @@ const MEGA_MENUS = {
         items: [
           { href: '/generators/installation', label: 'Installation', icon: '🔧', desc: '8-phase setup' },
           { href: '/generators/maintenance', label: 'Maintenance', icon: '🛠️', desc: 'Preventive & repair' },
+          { href: '/generators/workshop-services', label: 'Workshop Repairs & Fabrication', icon: '🏭', desc: 'Rebuilds & custom steel' },
           { href: '/generators/spare-parts', label: 'Spare Parts', icon: '🔩', desc: 'OEM & aftermarket' },
           { href: '/generator-parts', label: 'Parts Catalog', icon: '📦', desc: '1,560+ SKUs' },
           { href: '/generators/systems', label: 'Systems Guide', icon: '📚', desc: 'Educational hub' },
