@@ -32,6 +32,7 @@ import { notFound } from 'next/navigation';
 import partsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import verifiedAdditions from '@/app/data/spare-parts-verified-additions.json';
 import PartsDeliveryNationwide from '@/components/parts/PartsDeliveryNationwide';
+import { getCategoryGuide } from '@/lib/parts/categoryGuides';
 
 type Part = {
   partNo: string;
@@ -129,6 +130,7 @@ export default async function SparePartsCategoryPage({
   const parts = cat.parts ?? [];
   const brands = [...new Set(parts.map((p) => p.brand).filter(Boolean))] as string[];
   const others = getSubcategories().filter((s) => s.id !== cat.id && (s.parts?.length ?? 0) > 0);
+  const guide = getCategoryGuide(cat.id);
 
   const waFor = (p: Part) =>
     'https://wa.me/254768860665?text=' +
@@ -214,6 +216,57 @@ export default async function SparePartsCategoryPage({
             Call +254 768 860 665
           </a>
         </div>
+
+        {/* WHAT THESE PARTS ARE (owner direction 2026-07-21: "we need enough
+            description and names"). Component names are generic industry terms
+            and the descriptions are engineering fact — function and failure
+            symptoms — so this adds real depth without inventing part numbers,
+            prices or stock. It also matches how buyers actually search
+            ("generator AVR not charging" far outnumbers any part number). */}
+        {guide && (
+          <section aria-labelledby="guide-heading" className="mt-14">
+            <h2 id="guide-heading" className="text-2xl font-bold text-white md:text-3xl">
+              About {cat.name.split(' - ')[0].split(',')[0].toLowerCase()}
+            </h2>
+            <p className="mt-4 max-w-4xl leading-relaxed text-slate-300">{guide.overview}</p>
+
+            <h3 className="mt-8 text-lg font-semibold text-white">What we supply in this category</h3>
+            <div className="mt-4 grid gap-5 md:grid-cols-2">
+              {guide.components.map((c) => (
+                <div
+                  key={c.name}
+                  className="rounded-2xl border border-slate-700/70 bg-slate-900/40 p-5 transition-colors hover:border-amber-500/40"
+                >
+                  <h4 className="font-semibold text-amber-400">{c.name}</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">{c.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {guide.symptoms && guide.symptoms.length > 0 && (
+              <>
+                <h3 className="mt-10 text-lg font-semibold text-white">
+                  Symptoms that usually point to this category
+                </h3>
+                <ul className="mt-4 flex flex-wrap gap-2">
+                  {guide.symptoms.map((sy) => (
+                    <li
+                      key={sy}
+                      className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-300"
+                    >
+                      {sy}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-400">
+                  Symptoms overlap between systems, so tell us what the set is doing rather
+                  than which part you think has failed — we will help identify it before you
+                  buy anything.
+                </p>
+              </>
+            )}
+          </section>
+        )}
 
         {/* Parts table */}
         <div className="mt-12 overflow-x-auto rounded-2xl border border-slate-700">
