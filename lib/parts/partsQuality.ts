@@ -47,6 +47,45 @@ export type PartLike = {
  */
 const GENERATED_NAME = /\b(part|item|component|accessory|spare)\s*#\s*\d+/i;
 
+/**
+ * A second, distinct class of generated padding missed by the first pass — and
+ * the reason category counts were inconsistent after the initial clean-up
+ * (batteries dropped 100 -> 20 while tools stayed at 100).
+ *
+ * Three different shapes exist in the data and they need different treatment:
+ *
+ *   1. Pure filler  — "Lubricant Product #81", "Gauge Variant #79". Strip the
+ *      suffix and nothing identifying remains. These are DROPPED.
+ *   2. Real product with a filler suffix — "Socket Set - Professional Grade
+ *      #1". A socket set is a real product; only the numbering is padding.
+ *      The suffix is STRIPPED and the row kept, then de-duplication collapses
+ *      the repeats.
+ *   3. Genuinely specified — "Generator Enclosure - 30kVA #4", "Socket Head
+ *      Cap Screw - M8 x 30mm". The kVA rating or thread size IS the
+ *      identification, so these are LEFT ALONE.
+ */
+const FILLER_SUFFIX = /\s*[-–]?\s*(professional grade|standard grade|variant|product|type|model|version)\s*#\s*\d+\s*$/i;
+
+/** Names that identify nothing once the filler suffix is removed. */
+const GENERIC_STEM = /^(lubricant|gauge|tool|battery|fuel tank|enclosure|accessory|spare|part|item|component)s?$/i;
+
+/**
+ * Remove a trailing filler suffix. Returns the cleaned name, or null when the
+ * remainder identifies nothing and the row should be dropped.
+ */
+export function cleanName(raw: string): string | null {
+  const name = String(raw ?? '').trim();
+  if (!name) return null;
+  if (!FILLER_SUFFIX.test(name)) return name;
+
+  // Keep rows whose remaining text carries a real specification (a rating,
+  // size or dimension) — "Generator Enclosure - 30kVA" identifies itself.
+  const stripped = name.replace(FILLER_SUFFIX, '').replace(/\s*[-–]\s*$/, '').trim();
+  if (!stripped) return null;
+  if (GENERIC_STEM.test(stripped)) return null;
+  return stripped;
+}
+
 /** Fitment values that identify nothing on their own. */
 const EMPTY_FITMENT = new Set(['', '-', '--', 'n/a', 'na', 'tbc', 'tbd', 'unknown', 'any', 'various', 'all']);
 
@@ -96,16 +135,30 @@ export function cleanParts(parts: PartLike[]): PartLike[] {
   const seen = new Set<string>();
   const out: PartLike[] = [];
 
+  const seenName = new Set<string>();
+
   for (const p of parts) {
     if (!p?.partNo || !p?.name) continue;
     if (isGeneratedFiller(p)) continue;
 
+    // Strip filler numbering; null means nothing identifying remained.
+    const name = cleanName(p.name);
+    if (!name) continue;
+
     const key = normalisePartNo(p.partNo);
     if (!key || seen.has(key)) continue;
+
+    // After stripping "…Grade #1…#100" many rows collapse to the same product.
+    // De-duplicate on the cleaned name too, so the customer sees "Socket Set"
+    // once rather than a hundred times.
+    const nameKey = name.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (seenName.has(nameKey)) continue;
+
     seen.add(key);
+    seenName.add(nameKey);
 
     const correction = FITMENT_CORRECTIONS[key];
-    out.push(correction ? { ...p, compatibility: correction } : p);
+    out.push({ ...p, name, ...(correction ? { compatibility: correction } : {}) });
   }
 
   return out;
