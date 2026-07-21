@@ -576,6 +576,48 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0c. HARD 404 for the root-level /[country]/[city] catch-all.
+  //
+  //     app/[country]/[city] matches ANY two-segment URL that no more specific
+  //     route claims. It previously answered HTTP 200 for every one of them,
+  //     rendering a page whose heading and title were built from the URL text:
+  //
+  //       /regions/uganda -> 200, /notarealsection/foo -> 200, /xyz/abc -> 200
+  //
+  //     Setting dynamicParams=false removed the fabricated CONTENT (those URLs
+  //     now render "Page Not Found" and are noindex), but Next 16 on Vercel
+  //     still returns HTTP 200 when notFound() fires inside an already-matched
+  //     dynamic route. Only a middleware guard can produce a real 404 — the
+  //     same reason sections 0a and 0b above exist.
+  //
+  //     Inverse allowlist: a two-segment path is legitimate only if its FIRST
+  //     segment is a real top-level route directory or a real East African
+  //     country. Anything else is the catch-all and gets a hard 404.
+  //
+  //     The sets are INLINED deliberately. Importing from @/lib inside the edge
+  //     runtime fails open (proven when the /locations guard silently did
+  //     nothing), so these must be kept in sync by hand with the app directory
+  //     and lib/data/east-africa-locations.ts.
+  {
+    const seg = pathname.split('/').filter(Boolean);
+    if (seg.length === 2 && !pathname.startsWith('/api/')) {
+      const ROUTE_SEGMENTS = new Set(['about-us','admin','ai-tools','all-tools','alltools','analytics','api','aquascan-pro','aquascan-pro-v3','blog','booking','brands','calculators','careers','case-studies','case-study','collab','components','console','contact','counties','curation','data','diagnostics','eims-pro','fabrication','faq','faults','gallery','generator','generator-oracle','generator-parts','generator-problems','generator-services','generators','guides','healthcare','high-rise','hub','industries','innovations','interior','kenya','knowledge-base','lib','locations','maintenance-hub','mep-clash','privacy','pro-building-suite','pro-console','products','qs','resources','safety','sectors','service','services','solar','solar-design-studio','solar-genius-pro','solar-genius-pro-futuristic','solar-genius-pro-tools','solution','solutions','styles','swoosh-preview','swoosh-x','technical-bible','terms','troubleshooting']);
+      const EA_COUNTRIES = new Set(['uganda','tanzania','rwanda','south-sudan','drc','ethiopia','djibouti','eritrea','somaliland']);
+      const first = seg[0].toLowerCase();
+      if (!ROUTE_SEGMENTS.has(first) && !EA_COUNTRIES.has(first)) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': 'catchall-404',
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0. VERIFIED CRAWLER FAST-PATH (Googlebot, Bingbot, etc.)
   //     Search engines & social previewers MUST never be rate-limited,
   //     scrape-blocked, or 403'd. Short-circuit the entire access-control
