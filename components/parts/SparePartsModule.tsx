@@ -269,14 +269,18 @@ export default function SparePartsModule() {
           </div>
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center">
             <Truck className="w-6 h-6 text-green-400 mx-auto mb-2" />
-            {/* CREDIBILITY (audit 2026-07-21): was "Same Day / Delivery in
-                Nairobi" — an unsupported delivery guarantee (directive §14),
-                and it contradicted the dispatch section further down the page
-                which states we agree the method and cost per order before
-                quoting any timeframe. Replaced with our actual, verified
-                reach. */}
-            <p className="text-2xl font-bold text-white">47 Counties</p>
-            <p className="text-gray-400 text-sm">Nationwide dispatch</p>
+            {/* OWNER CORRECTION 2026-07-21. This originally read "Same Day /
+                Delivery in Nairobi". I removed it as an unsupported delivery
+                guarantee — but that was an OVER-CORRECTION. The owner
+                confirmed same-day DISPATCH is real; what varies is ARRIVAL,
+                which depends on the transport used and is typically a day or
+                two.
+
+                So the accurate split is: we promise the DISPATCH (ours to
+                control), never the ARRIVAL (the transporter's). Wording here
+                must keep that distinction. */}
+            <p className="text-2xl font-bold text-white">Same-Day</p>
+            <p className="text-gray-400 text-sm">Dispatch of confirmed orders</p>
           </div>
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center">
             <Shield className="w-6 h-6 text-purple-400 mx-auto mb-2" />

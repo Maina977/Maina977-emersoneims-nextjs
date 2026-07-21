@@ -78,11 +78,10 @@ export default function SparePartsConversion() {
               <li>✓ Genuine OEM &amp; quality-equivalent parts for all major brands</li>
               <li>✓ Send a photo of the part or nameplate — we identify it</li>
               <li>✓ Price &amp; stock confirmed on WhatsApp, countrywide dispatch</li>
-              {/* CREDIBILITY (audit 2026-07-21): was "Fast-moving parts held in
-                  stock for same-day supply" — an unsupported delivery
-                  guarantee. The line above already, and accurately, says stock
-                  is confirmed on WhatsApp per enquiry. */}
-              <li>✓ Common service items are the ones we move most often</li>
+              {/* OWNER CORRECTION 2026-07-21: same-day DISPATCH is real, so the
+                  original claim was closer to the truth than my replacement.
+                  Restored with the dispatch/arrival distinction intact. */}
+              <li>✓ Confirmed orders dispatched the same day — arrival depends on transport, often a day or two</li>
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">
               <a href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20need%20generator%20spare%20parts." target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-[#25D366] text-black font-bold rounded-xl hover:brightness-110">💬 WhatsApp parts desk</a>

@@ -105,9 +105,24 @@ export default function PartsDeliveryNationwide({
         </div>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-400">
           The channel used depends on the part, its value and where it is going, so we
-          agree it with you per order and confirm the cost before anything is sent. We
-          do not quote a delivery time until the dispatch method is agreed.
+          agree it with you per order and confirm the cost before anything is sent.
         </p>
+
+        {/* OWNER-CONFIRMED 2026-07-21. Same-day DISPATCH is a real commitment;
+            ARRIVAL is not ours to promise — it depends on the transporter and
+            the route, and is typically a day or two. Those two things are kept
+            deliberately separate here so the page never guarantees something
+            outside our control. */}
+        <div className="mt-5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
+          <p className="text-sm leading-relaxed text-emerald-100">
+            <span className="font-semibold text-emerald-300">
+              Confirmed orders are dispatched the same day.
+            </span>{' '}
+            How quickly they reach you then depends on the transport chosen — commonly a
+            day or two up-country. We will tell you which channel we are using and when
+            the parcel has been sent, so you can track it from your end.
+          </p>
+        </div>
 
         {/* What to send */}
         <h3 className="mt-12 text-lg font-semibold text-white">
