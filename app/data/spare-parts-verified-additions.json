@@ -7,88 +7,659 @@
     {
       "subcategoryId": "control-panels",
       "parts": [
-        { "partNo": "DSE7320", "name": "Deep Sea DSE7320 AMF Auto-Start Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": ["Single-set AMF applications"] },
-        { "partNo": "DSE7310", "name": "Deep Sea DSE7310 Auto-Start Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": ["Single-set auto-start"] },
-        { "partNo": "DSE6120", "name": "Deep Sea DSE6120 MKIII AMF Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": ["Single-set AMF"] },
-        { "partNo": "DSE6020", "name": "Deep Sea DSE6020 MKIII Auto-Start Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "DSE4520", "name": "Deep Sea DSE4520 MKII AMF Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "DSE4510", "name": "Deep Sea DSE4510 MKII Auto-Start Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "DSE3110", "name": "Deep Sea DSE3110 Auto-Start Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "DSE8610", "name": "Deep Sea DSE8610 MKII Load-Share Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": ["Multi-set synchronising"] },
-        { "partNo": "DSE8620", "name": "Deep Sea DSE8620 MKII Synchronising AMF Controller", "brand": "Deep Sea Electronics", "category": "Generator Controller", "compatibility": ["Multi-set synchronising"] },
-        { "partNo": "DSE334", "name": "Deep Sea DSE334 Battery Charger", "brand": "Deep Sea Electronics", "category": "Battery Charger", "compatibility": [] },
-        { "partNo": "DSE9470", "name": "Deep Sea DSE9470 Intelligent Battery Charger 24V 10A", "brand": "Deep Sea Electronics", "category": "Battery Charger", "compatibility": [] },
-        { "partNo": "DSE9460", "name": "Deep Sea DSE9460 Intelligent Battery Charger 12V 10A", "brand": "Deep Sea Electronics", "category": "Battery Charger", "compatibility": [] },
-        { "partNo": "HGM6120", "name": "SmartGen HGM6120 AMF Generator Controller", "brand": "SmartGen", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "HGM6110", "name": "SmartGen HGM6110 Auto-Start Controller", "brand": "SmartGen", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "HGM420", "name": "SmartGen HGM420 Auto-Start Controller", "brand": "SmartGen", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "HGM410", "name": "SmartGen HGM410 Manual-Start Controller", "brand": "SmartGen", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "HGM9510", "name": "SmartGen HGM9510 Parallel Controller", "brand": "SmartGen", "category": "Generator Controller", "compatibility": ["Multi-set parallel"] },
-        { "partNo": "IL-NT-AMF25", "name": "ComAp InteliLite NT AMF25 Controller", "brand": "ComAp", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "IL-NT-AMF20", "name": "ComAp InteliLite NT AMF20 Controller", "brand": "ComAp", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "IL-NT-MRS16", "name": "ComAp InteliLite NT MRS16 Controller", "brand": "ComAp", "category": "Generator Controller", "compatibility": [] },
-        { "partNo": "IL4-AMF25", "name": "ComAp InteliLite 4 AMF25 Controller", "brand": "ComAp", "category": "Generator Controller", "compatibility": [] }
+        {
+          "partNo": "DSE7320",
+          "name": "Deep Sea DSE7320 AMF Auto-Start Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Single-set AMF applications"
+          ]
+        },
+        {
+          "partNo": "DSE7310",
+          "name": "Deep Sea DSE7310 Auto-Start Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Single-set auto-start"
+          ]
+        },
+        {
+          "partNo": "DSE6120",
+          "name": "Deep Sea DSE6120 MKIII AMF Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Single-set AMF"
+          ]
+        },
+        {
+          "partNo": "DSE6020",
+          "name": "Deep Sea DSE6020 MKIII Auto-Start Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set, auto-start",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "DSE4520",
+          "name": "Deep Sea DSE4520 MKII AMF Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set with mains failure",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "DSE4510",
+          "name": "Deep Sea DSE4510 MKII Auto-Start Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set, auto-start",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "DSE3110",
+          "name": "Deep Sea DSE3110 Auto-Start Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set, auto-start",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "DSE8610",
+          "name": "Deep Sea DSE8610 MKII Load-Share Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Multi-set synchronising"
+          ]
+        },
+        {
+          "partNo": "DSE8620",
+          "name": "Deep Sea DSE8620 MKII Synchronising AMF Controller",
+          "brand": "Deep Sea Electronics",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Multi-set synchronising"
+          ]
+        },
+        {
+          "partNo": "DSE334",
+          "name": "Deep Sea DSE334 Battery Charger",
+          "brand": "Deep Sea Electronics",
+          "category": "Battery Charger",
+          "compatibility": [
+            "Generator starting batteries — lead-acid",
+            "12V and 24V, 5A"
+          ]
+        },
+        {
+          "partNo": "DSE9470",
+          "name": "Deep Sea DSE9470 Intelligent Battery Charger 24V 10A",
+          "brand": "Deep Sea Electronics",
+          "category": "Battery Charger",
+          "compatibility": [
+            "Generator starting batteries — lead-acid",
+            "24V, 10A"
+          ]
+        },
+        {
+          "partNo": "DSE9460",
+          "name": "Deep Sea DSE9460 Intelligent Battery Charger 12V 10A",
+          "brand": "Deep Sea Electronics",
+          "category": "Battery Charger",
+          "compatibility": [
+            "Generator starting batteries — lead-acid",
+            "12V, 10A"
+          ]
+        },
+        {
+          "partNo": "HGM6120",
+          "name": "SmartGen HGM6120 AMF Generator Controller",
+          "brand": "SmartGen",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set with mains failure",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "HGM6110",
+          "name": "SmartGen HGM6110 Auto-Start Controller",
+          "brand": "SmartGen",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set, auto-start",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "HGM420",
+          "name": "SmartGen HGM420 Auto-Start Controller",
+          "brand": "SmartGen",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set, auto-start",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "HGM410",
+          "name": "SmartGen HGM410 Manual-Start Controller",
+          "brand": "SmartGen",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set, manual start",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "HGM9510",
+          "name": "SmartGen HGM9510 Parallel Controller",
+          "brand": "SmartGen",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Multi-set parallel"
+          ]
+        },
+        {
+          "partNo": "IL-NT-AMF25",
+          "name": "ComAp InteliLite NT AMF25 Controller",
+          "brand": "ComAp",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set with mains failure",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "IL-NT-AMF20",
+          "name": "ComAp InteliLite NT AMF20 Controller",
+          "brand": "ComAp",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set with mains failure",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "IL-NT-MRS16",
+          "name": "ComAp InteliLite NT MRS16 Controller",
+          "brand": "ComAp",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set, manual/remote start",
+            "12V or 24V systems"
+          ]
+        },
+        {
+          "partNo": "IL4-AMF25",
+          "name": "ComAp InteliLite 4 AMF25 Controller",
+          "brand": "ComAp",
+          "category": "Generator Controller",
+          "compatibility": [
+            "Any diesel genset — single set with mains failure",
+            "12V or 24V systems"
+          ]
+        }
       ]
     },
     {
       "subcategoryId": "alternators",
       "parts": [
-        { "partNo": "SX460", "name": "Stamford SX460 Automatic Voltage Regulator", "brand": "Stamford", "category": "AVR", "compatibility": ["Stamford BC/UC/S0/S1 series"] },
-        { "partNo": "SX440", "name": "Stamford SX440 Automatic Voltage Regulator", "brand": "Stamford", "category": "AVR", "compatibility": ["Stamford UC/HC series"] },
-        { "partNo": "MX341", "name": "Stamford MX341 Automatic Voltage Regulator", "brand": "Stamford", "category": "AVR", "compatibility": ["Stamford PMG-excited sets"] },
-        { "partNo": "MX321", "name": "Stamford MX321 Automatic Voltage Regulator", "brand": "Stamford", "category": "AVR", "compatibility": ["Stamford PMG-excited sets"] },
-        { "partNo": "AS440", "name": "Stamford AS440 Automatic Voltage Regulator", "brand": "Stamford", "category": "AVR", "compatibility": ["Stamford self-excited sets"] },
-        { "partNo": "AS480", "name": "Stamford AS480 Automatic Voltage Regulator", "brand": "Stamford", "category": "AVR", "compatibility": [] },
-        { "partNo": "R220", "name": "Leroy Somer R220 Automatic Voltage Regulator", "brand": "Leroy Somer", "category": "AVR", "compatibility": ["Leroy Somer LSA series"] },
-        { "partNo": "R230", "name": "Leroy Somer R230 Automatic Voltage Regulator", "brand": "Leroy Somer", "category": "AVR", "compatibility": ["Leroy Somer LSA series"] },
-        { "partNo": "R250", "name": "Leroy Somer R250 Automatic Voltage Regulator", "brand": "Leroy Somer", "category": "AVR", "compatibility": ["Leroy Somer LSA series"] },
-        { "partNo": "R438", "name": "Leroy Somer R438 Automatic Voltage Regulator", "brand": "Leroy Somer", "category": "AVR", "compatibility": [] },
-        { "partNo": "R448", "name": "Leroy Somer R448 Automatic Voltage Regulator", "brand": "Leroy Somer", "category": "AVR", "compatibility": ["Leroy Somer LSA 42.3/43.2/44.2"] },
-        { "partNo": "R449", "name": "Leroy Somer R449 Automatic Voltage Regulator", "brand": "Leroy Somer", "category": "AVR", "compatibility": [] },
-        { "partNo": "R726", "name": "Leroy Somer R726 Automatic Voltage Regulator", "brand": "Leroy Somer", "category": "AVR", "compatibility": [] },
-        { "partNo": "EA05A", "name": "Kutai EA05A Automatic Voltage Regulator", "brand": "Kutai", "category": "AVR", "compatibility": [] },
-        { "partNo": "EA16", "name": "Kutai EA16 Automatic Voltage Regulator", "brand": "Kutai", "category": "AVR", "compatibility": [] },
-        { "partNo": "GAVR-8A", "name": "Universal GAVR-8A Automatic Voltage Regulator 8A", "brand": "Generic", "category": "AVR", "compatibility": ["Brushless alternators up to 20 kVA"] },
-        { "partNo": "GAVR-12A", "name": "Universal GAVR-12A Automatic Voltage Regulator 12A", "brand": "Generic", "category": "AVR", "compatibility": [] },
-        { "partNo": "GAVR-15A", "name": "Universal GAVR-15A Automatic Voltage Regulator 15A", "brand": "Generic", "category": "AVR", "compatibility": [] }
+        {
+          "partNo": "SX460",
+          "name": "Stamford SX460 Automatic Voltage Regulator",
+          "brand": "Stamford",
+          "category": "AVR",
+          "compatibility": [
+            "Stamford BC/UC/S0/S1 series"
+          ]
+        },
+        {
+          "partNo": "SX440",
+          "name": "Stamford SX440 Automatic Voltage Regulator",
+          "brand": "Stamford",
+          "category": "AVR",
+          "compatibility": [
+            "Stamford UC/HC series"
+          ]
+        },
+        {
+          "partNo": "MX341",
+          "name": "Stamford MX341 Automatic Voltage Regulator",
+          "brand": "Stamford",
+          "category": "AVR",
+          "compatibility": [
+            "Stamford PMG-excited sets"
+          ]
+        },
+        {
+          "partNo": "MX321",
+          "name": "Stamford MX321 Automatic Voltage Regulator",
+          "brand": "Stamford",
+          "category": "AVR",
+          "compatibility": [
+            "Stamford PMG-excited sets"
+          ]
+        },
+        {
+          "partNo": "AS440",
+          "name": "Stamford AS440 Automatic Voltage Regulator",
+          "brand": "Stamford",
+          "category": "AVR",
+          "compatibility": [
+            "Stamford self-excited sets"
+          ]
+        },
+        {
+          "partNo": "AS480",
+          "name": "Stamford AS480 Automatic Voltage Regulator",
+          "brand": "Stamford",
+          "category": "AVR",
+          "compatibility": [
+            "Stamford self-excited alternators"
+          ]
+        },
+        {
+          "partNo": "R220",
+          "name": "Leroy Somer R220 Automatic Voltage Regulator",
+          "brand": "Leroy Somer",
+          "category": "AVR",
+          "compatibility": [
+            "Leroy Somer LSA series"
+          ]
+        },
+        {
+          "partNo": "R230",
+          "name": "Leroy Somer R230 Automatic Voltage Regulator",
+          "brand": "Leroy Somer",
+          "category": "AVR",
+          "compatibility": [
+            "Leroy Somer LSA series"
+          ]
+        },
+        {
+          "partNo": "R250",
+          "name": "Leroy Somer R250 Automatic Voltage Regulator",
+          "brand": "Leroy Somer",
+          "category": "AVR",
+          "compatibility": [
+            "Leroy Somer LSA series"
+          ]
+        },
+        {
+          "partNo": "R438",
+          "name": "Leroy Somer R438 Automatic Voltage Regulator",
+          "brand": "Leroy Somer",
+          "category": "AVR",
+          "compatibility": [
+            "Leroy Somer LSA series alternators"
+          ]
+        },
+        {
+          "partNo": "R448",
+          "name": "Leroy Somer R448 Automatic Voltage Regulator",
+          "brand": "Leroy Somer",
+          "category": "AVR",
+          "compatibility": [
+            "Leroy Somer LSA 42.3/43.2/44.2"
+          ]
+        },
+        {
+          "partNo": "R449",
+          "name": "Leroy Somer R449 Automatic Voltage Regulator",
+          "brand": "Leroy Somer",
+          "category": "AVR",
+          "compatibility": [
+            "Leroy Somer LSA series alternators (PMG-excited)"
+          ]
+        },
+        {
+          "partNo": "R726",
+          "name": "Leroy Somer R726 Automatic Voltage Regulator",
+          "brand": "Leroy Somer",
+          "category": "AVR",
+          "compatibility": [
+            "Leroy Somer LSA series alternators"
+          ]
+        },
+        {
+          "partNo": "EA05A",
+          "name": "Kutai EA05A Automatic Voltage Regulator",
+          "brand": "Kutai",
+          "category": "AVR",
+          "compatibility": [
+            "Brushless self-excited alternators"
+          ]
+        },
+        {
+          "partNo": "EA16",
+          "name": "Kutai EA16 Automatic Voltage Regulator",
+          "brand": "Kutai",
+          "category": "AVR",
+          "compatibility": [
+            "Brushless self-excited alternators"
+          ]
+        },
+        {
+          "partNo": "GAVR-8A",
+          "name": "Universal GAVR-8A Automatic Voltage Regulator 8A",
+          "brand": "Generic",
+          "category": "AVR",
+          "compatibility": [
+            "Brushless alternators up to 20 kVA"
+          ]
+        },
+        {
+          "partNo": "GAVR-12A",
+          "name": "Universal GAVR-12A Automatic Voltage Regulator 12A",
+          "brand": "Generic",
+          "category": "AVR",
+          "compatibility": [
+            "Brushless self-excited alternators — 12A field rating"
+          ]
+        },
+        {
+          "partNo": "GAVR-15A",
+          "name": "Universal GAVR-15A Automatic Voltage Regulator 15A",
+          "brand": "Generic",
+          "category": "AVR",
+          "compatibility": [
+            "Brushless self-excited alternators — 15A field rating"
+          ]
+        }
       ]
     },
     {
       "subcategoryId": "filters",
       "parts": [
-        { "partNo": "LF3349", "name": "Oil Filter - Cummins NT855 / NTA855", "brand": "Fleetguard", "category": "Oil Filter", "compatibility": ["NT855", "NTA855"] },
-        { "partNo": "LF3000", "name": "Oil Filter - Cummins NT855 Series", "brand": "Fleetguard", "category": "Oil Filter", "compatibility": ["NT855"] },
-        { "partNo": "LF777", "name": "Oil Filter - Cummins KTA19 / KTA38", "brand": "Fleetguard", "category": "Oil Filter", "compatibility": ["KTA19", "KTA38", "KTA50"] },
-        { "partNo": "LF670", "name": "Oil Filter - Cummins K19 / K38 Series", "brand": "Fleetguard", "category": "Oil Filter", "compatibility": ["K19", "K38"] },
-        { "partNo": "LF691A", "name": "Oil Filter - Cummins L10 / M11", "brand": "Fleetguard", "category": "Oil Filter", "compatibility": ["L10", "M11"] },
-        { "partNo": "LF9080", "name": "Oil Filter - Cummins ISX / QSX15", "brand": "Fleetguard", "category": "Oil Filter", "compatibility": ["ISX15", "QSX15"] },
-        { "partNo": "LF16352", "name": "Oil Filter - Cummins ISF / QSB Series", "brand": "Fleetguard", "category": "Oil Filter", "compatibility": ["ISF3.8", "QSB"] },
-        { "partNo": "LF14000NN", "name": "Oil Filter Venturi Combo - Cummins ISX", "brand": "Fleetguard", "category": "Oil Filter", "compatibility": ["ISX15"] },
-        { "partNo": "FF5018", "name": "Fuel Filter - Cummins NT/NTA855", "brand": "Fleetguard", "category": "Fuel Filter", "compatibility": ["NT855", "NTA855"] },
-        { "partNo": "FF5052", "name": "Fuel Filter - Cummins 6BT / 6CT", "brand": "Fleetguard", "category": "Fuel Filter", "compatibility": ["6BT5.9", "6CT8.3"] },
-        { "partNo": "FF5320", "name": "Fuel Filter - Cummins QSB / QSC", "brand": "Fleetguard", "category": "Fuel Filter", "compatibility": ["QSB6.7", "QSC8.3"] },
-        { "partNo": "FF5624", "name": "Fuel Filter - Cummins ISBe / QSB", "brand": "Fleetguard", "category": "Fuel Filter", "compatibility": ["ISBe", "QSB"] },
-        { "partNo": "FF105", "name": "Fuel Filter - Cummins K Series", "brand": "Fleetguard", "category": "Fuel Filter", "compatibility": ["KTA19", "KTA38"] },
-        { "partNo": "FF167", "name": "Fuel Filter - Cummins K/N Series", "brand": "Fleetguard", "category": "Fuel Filter", "compatibility": [] },
-        { "partNo": "AF26094", "name": "Air Filter - Cummins Generator Sets", "brand": "Fleetguard", "category": "Air Filter", "compatibility": [] },
-        { "partNo": "AF25139M", "name": "Air Filter Primary - Cummins 6BT/6CT", "brand": "Fleetguard", "category": "Air Filter", "compatibility": ["6BT5.9", "6CT8.3"] },
-        { "partNo": "AF25550", "name": "Air Filter Secondary/Safety", "brand": "Fleetguard", "category": "Air Filter", "compatibility": [] },
-        { "partNo": "AF25708", "name": "Air Filter - Cummins ISX Series", "brand": "Fleetguard", "category": "Air Filter", "compatibility": ["ISX15"] },
-        { "partNo": "AF872M", "name": "Air Filter - Cummins NT/KT Series", "brand": "Fleetguard", "category": "Air Filter", "compatibility": ["NT855", "KTA19"] },
-        { "partNo": "WF2076", "name": "Coolant/Water Filter - Cummins", "brand": "Fleetguard", "category": "Coolant Filter", "compatibility": ["6BT5.9", "6CT8.3", "NT855"] },
-        { "partNo": "WF2071", "name": "Coolant/Water Filter - Cummins", "brand": "Fleetguard", "category": "Coolant Filter", "compatibility": [] },
-        { "partNo": "WF2073", "name": "Coolant/Water Filter - Cummins", "brand": "Fleetguard", "category": "Coolant Filter", "compatibility": [] },
-        { "partNo": "2654403", "name": "Oil Filter - Perkins 1000 Series", "brand": "Perkins", "category": "Oil Filter", "compatibility": ["1004", "1006", "1103", "1104"] },
-        { "partNo": "26560201", "name": "Fuel Filter Element - Perkins", "brand": "Perkins", "category": "Fuel Filter", "compatibility": ["1103", "1104", "1106"] },
-        { "partNo": "26561117", "name": "Fuel Filter/Water Separator - Perkins", "brand": "Perkins", "category": "Fuel Filter", "compatibility": ["1103", "1104"] },
-        { "partNo": "P550008", "name": "Oil Filter - Donaldson Spin-On", "brand": "Donaldson", "category": "Oil Filter", "compatibility": [] },
-        { "partNo": "P551670", "name": "Fuel Filter - Donaldson Spin-On", "brand": "Donaldson", "category": "Fuel Filter", "compatibility": [] },
-        { "partNo": "P552100", "name": "Coolant Filter - Donaldson", "brand": "Donaldson", "category": "Coolant Filter", "compatibility": [] },
-        { "partNo": "R90P", "name": "Racor R90P Fuel Filter/Water Separator Element 30 micron", "brand": "Racor", "category": "Fuel Filter", "compatibility": ["Racor 490R series"] },
-        { "partNo": "R120P", "name": "Racor R120P Fuel Filter/Water Separator Element 30 micron", "brand": "Racor", "category": "Fuel Filter", "compatibility": ["Racor 120R series"] },
-        { "partNo": "2010PM", "name": "Racor 2010PM Turbine Series Element 30 micron", "brand": "Racor", "category": "Fuel Filter", "compatibility": ["Racor 1000FH"] },
-        { "partNo": "2020PM", "name": "Racor 2020PM Turbine Series Element 30 micron", "brand": "Racor", "category": "Fuel Filter", "compatibility": ["Racor 900FH"] }
+        {
+          "partNo": "LF3349",
+          "name": "Oil Filter - Cummins NT855 / NTA855",
+          "brand": "Fleetguard",
+          "category": "Oil Filter",
+          "compatibility": [
+            "NT855",
+            "NTA855"
+          ]
+        },
+        {
+          "partNo": "LF3000",
+          "name": "Oil Filter - Cummins NT855 Series",
+          "brand": "Fleetguard",
+          "category": "Oil Filter",
+          "compatibility": [
+            "NT855"
+          ]
+        },
+        {
+          "partNo": "LF777",
+          "name": "Oil Filter - Cummins KTA19 / KTA38",
+          "brand": "Fleetguard",
+          "category": "Oil Filter",
+          "compatibility": [
+            "KTA19",
+            "KTA38",
+            "KTA50"
+          ]
+        },
+        {
+          "partNo": "LF670",
+          "name": "Oil Filter - Cummins K19 / K38 Series",
+          "brand": "Fleetguard",
+          "category": "Oil Filter",
+          "compatibility": [
+            "K19",
+            "K38"
+          ]
+        },
+        {
+          "partNo": "LF691A",
+          "name": "Oil Filter - Cummins L10 / M11",
+          "brand": "Fleetguard",
+          "category": "Oil Filter",
+          "compatibility": [
+            "L10",
+            "M11"
+          ]
+        },
+        {
+          "partNo": "LF9080",
+          "name": "Oil Filter - Cummins ISX / QSX15",
+          "brand": "Fleetguard",
+          "category": "Oil Filter",
+          "compatibility": [
+            "ISX15",
+            "QSX15"
+          ]
+        },
+        {
+          "partNo": "LF16352",
+          "name": "Oil Filter - Cummins ISF / QSB Series",
+          "brand": "Fleetguard",
+          "category": "Oil Filter",
+          "compatibility": [
+            "ISF3.8",
+            "QSB"
+          ]
+        },
+        {
+          "partNo": "LF14000NN",
+          "name": "Oil Filter Venturi Combo - Cummins ISX",
+          "brand": "Fleetguard",
+          "category": "Oil Filter",
+          "compatibility": [
+            "ISX15"
+          ]
+        },
+        {
+          "partNo": "FF5018",
+          "name": "Fuel Filter - Cummins NT/NTA855",
+          "brand": "Fleetguard",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "NT855",
+            "NTA855"
+          ]
+        },
+        {
+          "partNo": "FF5052",
+          "name": "Fuel Filter - Cummins 6BT / 6CT",
+          "brand": "Fleetguard",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "6BT5.9",
+            "6CT8.3"
+          ]
+        },
+        {
+          "partNo": "FF5320",
+          "name": "Fuel Filter - Cummins QSB / QSC",
+          "brand": "Fleetguard",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "QSB6.7",
+            "QSC8.3"
+          ]
+        },
+        {
+          "partNo": "FF5624",
+          "name": "Fuel Filter - Cummins ISBe / QSB",
+          "brand": "Fleetguard",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "ISBe",
+            "QSB"
+          ]
+        },
+        {
+          "partNo": "FF105",
+          "name": "Fuel Filter - Cummins K Series",
+          "brand": "Fleetguard",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "KTA19",
+            "KTA38"
+          ]
+        },
+        {
+          "partNo": "FF167",
+          "name": "Fuel Filter - Cummins K/N Series",
+          "brand": "Fleetguard",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "Cummins K Series",
+            "Cummins N Series"
+          ]
+        },
+        {
+          "partNo": "AF26094",
+          "name": "Air Filter - Cummins Generator Sets",
+          "brand": "Fleetguard",
+          "category": "Air Filter",
+          "compatibility": [
+            "Cummins-powered generator sets"
+          ]
+        },
+        {
+          "partNo": "AF25139M",
+          "name": "Air Filter Primary - Cummins 6BT/6CT",
+          "brand": "Fleetguard",
+          "category": "Air Filter",
+          "compatibility": [
+            "6BT5.9",
+            "6CT8.3"
+          ]
+        },
+        {
+          "partNo": "AF25708",
+          "name": "Air Filter - Cummins ISX Series",
+          "brand": "Fleetguard",
+          "category": "Air Filter",
+          "compatibility": [
+            "ISX15"
+          ]
+        },
+        {
+          "partNo": "AF872M",
+          "name": "Air Filter - Cummins NT/KT Series",
+          "brand": "Fleetguard",
+          "category": "Air Filter",
+          "compatibility": [
+            "NT855",
+            "KTA19"
+          ]
+        },
+        {
+          "partNo": "WF2076",
+          "name": "Coolant/Water Filter - Cummins",
+          "brand": "Fleetguard",
+          "category": "Coolant Filter",
+          "compatibility": [
+            "6BT5.9",
+            "6CT8.3",
+            "NT855"
+          ]
+        },
+        {
+          "partNo": "WF2071",
+          "name": "Coolant/Water Filter - Cummins",
+          "brand": "Fleetguard",
+          "category": "Coolant Filter",
+          "compatibility": [
+            "Cummins wet-liner engines"
+          ]
+        },
+        {
+          "partNo": "WF2073",
+          "name": "Coolant/Water Filter - Cummins",
+          "brand": "Fleetguard",
+          "category": "Coolant Filter",
+          "compatibility": [
+            "Cummins wet-liner engines"
+          ]
+        },
+        {
+          "partNo": "2654403",
+          "name": "Oil Filter - Perkins 1000 Series",
+          "brand": "Perkins",
+          "category": "Oil Filter",
+          "compatibility": [
+            "1004",
+            "1006",
+            "1103",
+            "1104"
+          ]
+        },
+        {
+          "partNo": "26560201",
+          "name": "Fuel Filter Element - Perkins",
+          "brand": "Perkins",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "1103",
+            "1104",
+            "1106"
+          ]
+        },
+        {
+          "partNo": "26561117",
+          "name": "Fuel Filter/Water Separator - Perkins",
+          "brand": "Perkins",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "1103",
+            "1104"
+          ]
+        },
+        {
+          "partNo": "R90P",
+          "name": "Racor R90P Fuel Filter/Water Separator Element 30 micron",
+          "brand": "Racor",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "Racor 490R series"
+          ]
+        },
+        {
+          "partNo": "R120P",
+          "name": "Racor R120P Fuel Filter/Water Separator Element 30 micron",
+          "brand": "Racor",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "Racor 120R series"
+          ]
+        },
+        {
+          "partNo": "2010PM",
+          "name": "Racor 2010PM Turbine Series Element 30 micron",
+          "brand": "Racor",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "Racor 1000FH"
+          ]
+        },
+        {
+          "partNo": "2020PM",
+          "name": "Racor 2020PM Turbine Series Element 30 micron",
+          "brand": "Racor",
+          "category": "Fuel Filter",
+          "compatibility": [
+            "Racor 900FH"
+          ]
+        }
       ]
     }
-  ]
+  ],
+  "rule": "Every part must carry a machine identification — the engine, alternator family or application it fits. Owner rule 2026-07-21: a part number with no fitment is not identifiable by the customer. Where fitment could not be stated with confidence the part was REMOVED rather than guessed."
 }

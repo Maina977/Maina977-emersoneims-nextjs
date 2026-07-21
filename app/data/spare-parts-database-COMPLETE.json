@@ -6,7 +6,7 @@
     {
       "id": "generators",
       "name": "Generator Parts",
-      "icon": "\u00e2\u0161\u00a1",
+      "icon": "âš¡",
       "description": "Comprehensive generator components for all major brands",
       "subcategories": [
         {
@@ -3278,7 +3278,7 @@
             },
             {
               "partNo": "3802378",
-              "name": "Thermostat - Cummins 6BT (82\u00b0C)",
+              "name": "Thermostat - Cummins 6BT (82°C)",
               "brand": "Cummins",
               "category": "Thermostat",
               "compatibility": [
@@ -3286,7 +3286,7 @@
                 "6BTA5.9"
               ],
               "specifications": {
-                "specification": "82\u00b0C",
+                "specification": "82°C",
                 "application": "Engine Cooling System"
               },
               "pricing": {
@@ -3309,7 +3309,7 @@
             },
             {
               "partNo": "3802379",
-              "name": "Thermostat - Cummins 6BT (71\u00b0C)",
+              "name": "Thermostat - Cummins 6BT (71°C)",
               "brand": "Cummins",
               "category": "Thermostat",
               "compatibility": [
@@ -3317,7 +3317,7 @@
                 "6BTA5.9"
               ],
               "specifications": {
-                "specification": "71\u00b0C",
+                "specification": "71°C",
                 "application": "Engine Cooling System"
               },
               "pricing": {
@@ -3340,7 +3340,7 @@
             },
             {
               "partNo": "3928639",
-              "name": "Thermostat - Cummins 4BT (82\u00b0C)",
+              "name": "Thermostat - Cummins 4BT (82°C)",
               "brand": "Cummins",
               "category": "Thermostat",
               "compatibility": [
@@ -3348,7 +3348,7 @@
                 "4BTA3.9"
               ],
               "specifications": {
-                "specification": "82\u00b0C",
+                "specification": "82°C",
                 "application": "Engine Cooling System"
               },
               "pricing": {
@@ -3371,7 +3371,7 @@
             },
             {
               "partNo": "5259452",
-              "name": "Thermostat - Cummins ISBe (88\u00b0C)",
+              "name": "Thermostat - Cummins ISBe (88°C)",
               "brand": "Cummins",
               "category": "Thermostat",
               "compatibility": [
@@ -3379,7 +3379,7 @@
                 "ISBe6"
               ],
               "specifications": {
-                "specification": "88\u00b0C",
+                "specification": "88°C",
                 "application": "Engine Cooling System"
               },
               "pricing": {
@@ -3402,7 +3402,7 @@
             },
             {
               "partNo": "U5MW0048",
-              "name": "Thermostat - Perkins 1104C (82\u00b0C)",
+              "name": "Thermostat - Perkins 1104C (82°C)",
               "brand": "Perkins",
               "category": "Thermostat",
               "compatibility": [
@@ -3410,7 +3410,7 @@
                 "1104C-44T"
               ],
               "specifications": {
-                "specification": "82\u00b0C",
+                "specification": "82°C",
                 "application": "Engine Cooling System"
               },
               "pricing": {
@@ -3433,14 +3433,14 @@
             },
             {
               "partNo": "U5MW0062",
-              "name": "Thermostat - Perkins 1106C (88\u00b0C)",
+              "name": "Thermostat - Perkins 1106C (88°C)",
               "brand": "Perkins",
               "category": "Thermostat",
               "compatibility": [
                 "1106C-E66T"
               ],
               "specifications": {
-                "specification": "88\u00b0C",
+                "specification": "88°C",
                 "application": "Engine Cooling System"
               },
               "pricing": {
@@ -3463,7 +3463,7 @@
             },
             {
               "partNo": "265-1345",
-              "name": "Thermostat - CAT 3054 (82\u00b0C)",
+              "name": "Thermostat - CAT 3054 (82°C)",
               "brand": "Caterpillar",
               "category": "Thermostat",
               "compatibility": [
@@ -3471,7 +3471,7 @@
                 "3056E"
               ],
               "specifications": {
-                "specification": "82\u00b0C",
+                "specification": "82°C",
                 "application": "Engine Cooling System"
               },
               "pricing": {
@@ -4273,7 +4273,7 @@
               "brand": "Stamford",
               "category": "AVR",
               "compatibility": [
-                "Universal"
+                "Stamford BC / UC / S0 / S1 series alternators"
               ],
               "specifications": {
                 "powerRating": "Universal - Up to 150kVA",
@@ -4304,7 +4304,7 @@
               "brand": "Stamford",
               "category": "AVR",
               "compatibility": [
-                "Universal"
+                "Stamford UC / HC series alternators"
               ],
               "specifications": {
                 "powerRating": "Universal - Up to 100kVA",
@@ -4335,7 +4335,7 @@
               "brand": "Leroy Somer",
               "category": "AVR",
               "compatibility": [
-                "Universal"
+                "Leroy Somer LSA series alternators"
               ],
               "specifications": {
                 "powerRating": "Universal - Up to 200kVA",
@@ -4366,7 +4366,7 @@
               "brand": "Leroy Somer",
               "category": "AVR",
               "compatibility": [
-                "Universal"
+                "Leroy Somer LSA series alternators (PMG-excited)"
               ],
               "specifications": {
                 "powerRating": "Universal - Up to 350kVA",
@@ -4397,7 +4397,7 @@
               "brand": "Mecc Alte",
               "category": "AVR",
               "compatibility": [
-                "Universal"
+                "Mecc Alte alternators"
               ],
               "specifications": {
                 "powerRating": "Universal - Up to 100kVA",
@@ -4428,7 +4428,7 @@
               "brand": "Mecc Alte",
               "category": "AVR",
               "compatibility": [
-                "Universal"
+                "Mecc Alte alternators"
               ],
               "specifications": {
                 "powerRating": "Universal - Up to 250kVA",
@@ -5265,7 +5265,7 @@
             },
             {
               "partNo": "3015237",
-              "name": "Water Temperature Switch - Cummins (98\u00b0C)",
+              "name": "Water Temperature Switch - Cummins (98°C)",
               "brand": "Cummins",
               "category": "Switch/Solenoid",
               "compatibility": [
@@ -5273,7 +5273,7 @@
               ],
               "specifications": {
                 "specification": "Warning Switch",
-                "output": "98\u00b0C"
+                "output": "98°C"
               },
               "pricing": {
                 "currency": "KES",
@@ -16907,7 +16907,7 @@
           "parts": [
             {
               "partNo": "GAUGE-TEMP-52",
-              "name": "Water Temperature Gauge - 52mm (40-120\u00b0C)",
+              "name": "Water Temperature Gauge - 52mm (40-120°C)",
               "brand": "VDO",
               "category": "OEM Part",
               "compatibility": [
@@ -17057,7 +17057,7 @@
             },
             {
               "partNo": "GAUGE-AMP-52",
-              "name": "Ammeter Gauge - 52mm (\u00b160A)",
+              "name": "Ammeter Gauge - 52mm (±60A)",
               "brand": "VDO",
               "category": "OEM Part",
               "compatibility": [
@@ -17147,7 +17147,7 @@
             },
             {
               "partNo": "GAUGE-TEMP-80",
-              "name": "Water Temperature Gauge - 80mm (40-120\u00b0C)",
+              "name": "Water Temperature Gauge - 80mm (40-120°C)",
               "brand": "VDO",
               "category": "OEM Part",
               "compatibility": [
@@ -35190,7 +35190,7 @@
           "parts": [
             {
               "partNo": "CABLE-1.5-R",
-              "name": "Electrical Cable 1.5mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 1.5mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35221,7 +35221,7 @@
             },
             {
               "partNo": "CABLE-1.5-B",
-              "name": "Electrical Cable 1.5mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 1.5mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35252,7 +35252,7 @@
             },
             {
               "partNo": "CABLE-1.5-G",
-              "name": "Electrical Cable 1.5mm\u00b2 Single Core - Green (Per Meter)",
+              "name": "Electrical Cable 1.5mm² Single Core - Green (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35283,7 +35283,7 @@
             },
             {
               "partNo": "CABLE-2.5-R",
-              "name": "Electrical Cable 2.5mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 2.5mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35314,7 +35314,7 @@
             },
             {
               "partNo": "CABLE-2.5-B",
-              "name": "Electrical Cable 2.5mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 2.5mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35345,7 +35345,7 @@
             },
             {
               "partNo": "CABLE-4-R",
-              "name": "Electrical Cable 4mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 4mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35376,7 +35376,7 @@
             },
             {
               "partNo": "CABLE-4-B",
-              "name": "Electrical Cable 4mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 4mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35407,7 +35407,7 @@
             },
             {
               "partNo": "CABLE-6-R",
-              "name": "Electrical Cable 6mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 6mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35438,7 +35438,7 @@
             },
             {
               "partNo": "CABLE-6-B",
-              "name": "Electrical Cable 6mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 6mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35469,7 +35469,7 @@
             },
             {
               "partNo": "CABLE-10-R",
-              "name": "Electrical Cable 10mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 10mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35500,7 +35500,7 @@
             },
             {
               "partNo": "CABLE-10-B",
-              "name": "Electrical Cable 10mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 10mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35531,7 +35531,7 @@
             },
             {
               "partNo": "CABLE-16-R",
-              "name": "Electrical Cable 16mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 16mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35562,7 +35562,7 @@
             },
             {
               "partNo": "CABLE-16-B",
-              "name": "Electrical Cable 16mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 16mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35593,7 +35593,7 @@
             },
             {
               "partNo": "CABLE-25-R",
-              "name": "Electrical Cable 25mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 25mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35624,7 +35624,7 @@
             },
             {
               "partNo": "CABLE-25-B",
-              "name": "Electrical Cable 25mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 25mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35655,7 +35655,7 @@
             },
             {
               "partNo": "CABLE-35-R",
-              "name": "Electrical Cable 35mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 35mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35686,7 +35686,7 @@
             },
             {
               "partNo": "CABLE-35-B",
-              "name": "Electrical Cable 35mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 35mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35717,7 +35717,7 @@
             },
             {
               "partNo": "CABLE-50-R",
-              "name": "Electrical Cable 50mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 50mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35748,7 +35748,7 @@
             },
             {
               "partNo": "CABLE-50-B",
-              "name": "Electrical Cable 50mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 50mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35779,7 +35779,7 @@
             },
             {
               "partNo": "CABLE-70-R",
-              "name": "Electrical Cable 70mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 70mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35810,7 +35810,7 @@
             },
             {
               "partNo": "CABLE-70-B",
-              "name": "Electrical Cable 70mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 70mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35841,7 +35841,7 @@
             },
             {
               "partNo": "CABLE-95-R",
-              "name": "Electrical Cable 95mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 95mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35872,7 +35872,7 @@
             },
             {
               "partNo": "CABLE-95-B",
-              "name": "Electrical Cable 95mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 95mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35903,7 +35903,7 @@
             },
             {
               "partNo": "CABLE-120-R",
-              "name": "Electrical Cable 120mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 120mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35934,7 +35934,7 @@
             },
             {
               "partNo": "CABLE-120-B",
-              "name": "Electrical Cable 120mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 120mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35965,7 +35965,7 @@
             },
             {
               "partNo": "CABLE-150-R",
-              "name": "Electrical Cable 150mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 150mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -35996,7 +35996,7 @@
             },
             {
               "partNo": "CABLE-150-B",
-              "name": "Electrical Cable 150mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 150mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36027,7 +36027,7 @@
             },
             {
               "partNo": "CABLE-185-R",
-              "name": "Electrical Cable 185mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 185mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36058,7 +36058,7 @@
             },
             {
               "partNo": "CABLE-185-B",
-              "name": "Electrical Cable 185mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 185mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36089,7 +36089,7 @@
             },
             {
               "partNo": "CABLE-240-R",
-              "name": "Electrical Cable 240mm\u00b2 Single Core - Red (Per Meter)",
+              "name": "Electrical Cable 240mm² Single Core - Red (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36120,7 +36120,7 @@
             },
             {
               "partNo": "CABLE-240-B",
-              "name": "Electrical Cable 240mm\u00b2 Single Core - Black (Per Meter)",
+              "name": "Electrical Cable 240mm² Single Core - Black (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36151,7 +36151,7 @@
             },
             {
               "partNo": "CTRL-CABLE-12C",
-              "name": "Control Cable 12 Core 1.5mm\u00b2 - Shielded (Per Meter)",
+              "name": "Control Cable 12 Core 1.5mm² - Shielded (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36182,7 +36182,7 @@
             },
             {
               "partNo": "CTRL-CABLE-18C",
-              "name": "Control Cable 18 Core 1.5mm\u00b2 - Shielded (Per Meter)",
+              "name": "Control Cable 18 Core 1.5mm² - Shielded (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36213,7 +36213,7 @@
             },
             {
               "partNo": "CTRL-CABLE-24C",
-              "name": "Control Cable 24 Core 1.5mm\u00b2 - Shielded (Per Meter)",
+              "name": "Control Cable 24 Core 1.5mm² - Shielded (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36244,7 +36244,7 @@
             },
             {
               "partNo": "FLEX-CABLE-3C",
-              "name": "Flexible Cable 3 Core 2.5mm\u00b2 (Per Meter)",
+              "name": "Flexible Cable 3 Core 2.5mm² (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36275,7 +36275,7 @@
             },
             {
               "partNo": "FLEX-CABLE-4C",
-              "name": "Flexible Cable 4 Core 2.5mm\u00b2 (Per Meter)",
+              "name": "Flexible Cable 4 Core 2.5mm² (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36492,7 +36492,7 @@
             },
             {
               "partNo": "LUG-6-M6",
-              "name": "Cable Lug 6mm\u00b2 - M6 Ring Terminal",
+              "name": "Cable Lug 6mm² - M6 Ring Terminal",
               "brand": "Universal",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36523,7 +36523,7 @@
             },
             {
               "partNo": "LUG-10-M8",
-              "name": "Cable Lug 10mm\u00b2 - M8 Ring Terminal",
+              "name": "Cable Lug 10mm² - M8 Ring Terminal",
               "brand": "Universal",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36554,7 +36554,7 @@
             },
             {
               "partNo": "LUG-16-M10",
-              "name": "Cable Lug 16mm\u00b2 - M10 Ring Terminal",
+              "name": "Cable Lug 16mm² - M10 Ring Terminal",
               "brand": "Universal",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36585,7 +36585,7 @@
             },
             {
               "partNo": "LUG-25-M10",
-              "name": "Cable Lug 25mm\u00b2 - M10 Ring Terminal",
+              "name": "Cable Lug 25mm² - M10 Ring Terminal",
               "brand": "Universal",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36616,7 +36616,7 @@
             },
             {
               "partNo": "LUG-35-M12",
-              "name": "Cable Lug 35mm\u00b2 - M12 Ring Terminal",
+              "name": "Cable Lug 35mm² - M12 Ring Terminal",
               "brand": "Universal",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36647,7 +36647,7 @@
             },
             {
               "partNo": "LUG-50-M12",
-              "name": "Cable Lug 50mm\u00b2 - M12 Ring Terminal",
+              "name": "Cable Lug 50mm² - M12 Ring Terminal",
               "brand": "Universal",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36678,7 +36678,7 @@
             },
             {
               "partNo": "LUG-70-M12",
-              "name": "Cable Lug 70mm\u00b2 - M12 Ring Terminal",
+              "name": "Cable Lug 70mm² - M12 Ring Terminal",
               "brand": "Universal",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -36709,7 +36709,7 @@
             },
             {
               "partNo": "LUG-95-M12",
-              "name": "Cable Lug 95mm\u00b2 - M12 Ring Terminal",
+              "name": "Cable Lug 95mm² - M12 Ring Terminal",
               "brand": "Universal",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -37360,7 +37360,7 @@
             },
             {
               "partNo": "EARTH-CABLE-16",
-              "name": "Earth Cable 16mm\u00b2 - Green/Yellow (Per Meter)",
+              "name": "Earth Cable 16mm² - Green/Yellow (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -37391,7 +37391,7 @@
             },
             {
               "partNo": "EARTH-CABLE-25",
-              "name": "Earth Cable 25mm\u00b2 - Green/Yellow (Per Meter)",
+              "name": "Earth Cable 25mm² - Green/Yellow (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -37422,7 +37422,7 @@
             },
             {
               "partNo": "EARTH-CABLE-35",
-              "name": "Earth Cable 35mm\u00b2 - Green/Yellow (Per Meter)",
+              "name": "Earth Cable 35mm² - Green/Yellow (Per Meter)",
               "brand": "Doncaster",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -37546,7 +37546,7 @@
             },
             {
               "partNo": "CRIMP-TOOL",
-              "name": "Hydraulic Crimping Tool - 6-95mm\u00b2",
+              "name": "Hydraulic Crimping Tool - 6-95mm²",
               "brand": "Burndy",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -37577,7 +37577,7 @@
             },
             {
               "partNo": "WIRE-STRIPPER",
-              "name": "Automatic Wire Stripper - 0.2-6mm\u00b2",
+              "name": "Automatic Wire Stripper - 0.2-6mm²",
               "brand": "Weidmuller",
               "category": "Electrical Wiring",
               "compatibility": [
@@ -37608,7 +37608,7 @@
             },
             {
               "partNo": "CABLE-CUTTER",
-              "name": "Cable Cutter - Up to 32mm\u00b2",
+              "name": "Cable Cutter - Up to 32mm²",
               "brand": "Knipex",
               "category": "Electrical Wiring",
               "compatibility": [

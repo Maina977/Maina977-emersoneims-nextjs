@@ -33,6 +33,7 @@ import partsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import verifiedAdditions from '@/app/data/spare-parts-verified-additions.json';
 import PartsDeliveryNationwide from '@/components/parts/PartsDeliveryNationwide';
 import { getCategoryGuide } from '@/lib/parts/categoryGuides';
+import { cleanParts, fitmentLabel } from '@/lib/parts/partsQuality';
 
 type Part = {
   partNo: string;
@@ -69,14 +70,17 @@ function withAdditions(sub: Subcategory): Subcategory {
   const add = (verifiedAdditions as { additions?: Array<{ subcategoryId: string; parts: Part[] }> })
     .additions?.find((a) => a.subcategoryId === sub.id);
   if (!add) return sub;
-  const seen = new Set((sub.parts ?? []).map((p) => p.partNo.toUpperCase()));
-  const extra = add.parts.filter((p) => !seen.has(p.partNo.toUpperCase()));
-  return { ...sub, parts: [...(sub.parts ?? []), ...extra] };
+  return { ...sub, parts: [...(sub.parts ?? []), ...add.parts] };
 }
 
 function getCategory(slug: string): Subcategory | undefined {
   const sub = getSubcategories().find((s) => s.id === slug);
-  return sub ? withAdditions(sub) : undefined;
+  if (!sub) return undefined;
+  const merged = withAdditions(sub);
+  // cleanParts enforces the owner's identification rule: drops auto-generated
+  // filler rows, corrects brand-specific fitment wrongly marked "Universal",
+  // and de-duplicates across numbering styles (SX460 vs SX460-AVR).
+  return { ...merged, parts: cleanParts(merged.parts ?? []) };
 }
 
 /**
@@ -289,7 +293,7 @@ export default async function SparePartsCategoryPage({
                   <td className="px-4 py-3 text-slate-200">{p.name}</td>
                   <td className="px-4 py-3 text-slate-400">{p.brand ?? '—'}</td>
                   <td className="px-4 py-3 text-slate-400">
-                    {p.compatibility?.length ? p.compatibility.slice(0, 4).join(', ') : '—'}
+                    {fitmentLabel(p)}
                   </td>
                   <td className="px-4 py-3 text-slate-300">
                     {p.pricing?.retailPrice
