@@ -23,6 +23,7 @@
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   DIVISIONS,
   WORKSHOP_SERVICES,
@@ -193,14 +194,15 @@ export default function WorkshopServicesPage() {
               )}
               target="_blank"
               rel="noopener noreferrer"
+              data-track="workshop:hero:whatsapp"
               className="rounded-lg bg-green-600 px-5 py-3 font-semibold text-white transition hover:bg-green-500"
             >
               Send equipment photos on WhatsApp
             </a>
-            <a href={`tel:${PHONE}`} className="rounded-lg bg-amber-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-400">
+            <a href={`tel:${PHONE}`} data-track="workshop:hero:call" className="rounded-lg bg-amber-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-400">
               Call the workshop
             </a>
-            <Link href="/contact?type=workshop" className="rounded-lg border border-slate-600 px-5 py-3 font-semibold text-slate-200 transition hover:border-amber-500 hover:text-amber-400">
+            <Link href="/contact?type=workshop" data-track="workshop:hero:assessment" className="rounded-lg border border-slate-600 px-5 py-3 font-semibold text-slate-200 transition hover:border-amber-500 hover:text-amber-400">
               Request a repair assessment
             </Link>
           </div>
@@ -216,6 +218,7 @@ export default function WorkshopServicesPage() {
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
+                  data-track={`workshop:nav:${s.id}`}
                   className="inline-block rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-300 transition hover:border-amber-500 hover:text-amber-400"
                 >
                   {s.nav}
@@ -225,6 +228,59 @@ export default function WorkshopServicesPage() {
           </ul>
         </div>
       </nav>
+
+      {/* ── REAL WORKSHOP PHOTOGRAPHY ────────────────────────────────────
+          Every image below was OPENED AND VISUALLY VERIFIED before use, not
+          selected on filename. That check mattered: public/images/
+          generator-canopy-fabrication.png is not a canopy at all — it is a
+          stock photograph of high-voltage substation insulators. Publishing it
+          as our fabrication work is exactly what brief section 13 forbids.
+
+          Alt text describes what is visibly happening in each frame. No claim
+          is made about client, site or date, because none is recorded. */}
+      <section aria-labelledby="workshop-photos" className="border-b border-slate-800 py-14 md:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <h2 id="workshop-photos" className="text-2xl font-bold text-white md:text-3xl">
+            Inside the workshop
+          </h2>
+          <p className="mt-3 max-w-3xl leading-relaxed text-slate-400">
+            Engine strip-down, liner and block work photographed during actual jobs.
+          </p>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                src: '/images/repairs/repair-01.webp',
+                alt: 'EmersonEIMS technician lowering a new cylinder liner into a stripped six-cylinder diesel engine block during an overhaul',
+                cap: 'Cylinder liner being fitted to a stripped block',
+              },
+              {
+                src: '/images/desktop/overhaul/engine-overhaul-2.jpg',
+                alt: 'Technician handling a numbered cylinder liner over an open engine block, with bores and head-bolt holes visible during a generator engine overhaul',
+                cap: 'Liners marked and matched to their bores',
+              },
+              {
+                src: '/images/repairs/repair-06.webp',
+                alt: 'Large diesel engine block stripped to the bare casting and supported on timber and lifting gear in the EmersonEIMS workshop',
+                cap: 'Block stripped for measurement and rebuild',
+              },
+            ].map((img) => (
+              <figure key={img.src} className="overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900/40">
+                <Image
+                  src={img.src}
+                  alt={img.alt}
+                  width={800}
+                  height={600}
+                  quality={85}
+                  loading="lazy"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="h-56 w-full object-cover"
+                />
+                <figcaption className="px-4 py-3 text-sm text-slate-400">{img.cap}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── DIVISIONS + SERVICES ─────────────────────────────────────────── */}
       {DIVISIONS.map((div) => (
@@ -288,12 +344,13 @@ export default function WorkshopServicesPage() {
                       )}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-track={`workshop:service:${s.id}`}
                       className="rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-500"
                     >
                       {s.cta}
                     </a>
                     {s.relatedHref && (
-                      <Link href={s.relatedHref} className="text-sm font-semibold text-amber-400 hover:underline">
+                      <Link href={s.relatedHref} data-track={`workshop:detail:${s.id}`} className="text-sm font-semibold text-amber-400 hover:underline">
                         {s.relatedLabel} →
                       </Link>
                     )}
@@ -433,11 +490,12 @@ export default function WorkshopServicesPage() {
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-track="workshop:quote:started"
                 className="rounded-lg bg-green-600 px-5 py-3 font-semibold text-white transition hover:bg-green-500"
               >
                 Start the enquiry on WhatsApp
               </a>
-              <Link href="/contact?type=workshop" className="rounded-lg bg-amber-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-400">
+              <Link href="/contact?type=workshop" data-track="workshop:quote:contact-form" className="rounded-lg bg-amber-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-400">
                 Use the contact form instead
               </Link>
               <a href={`tel:${PHONE}`} className="rounded-lg border border-slate-600 px-5 py-3 font-semibold text-slate-200 transition hover:border-amber-500 hover:text-amber-400">
