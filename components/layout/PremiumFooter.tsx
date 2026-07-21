@@ -37,6 +37,11 @@ const FOOTER_LINKS = {
     { label: 'Generator Rental', href: '/generators/rental' },
     { label: 'Generator Installation', href: '/generators/installation' },
     { label: 'Generator Spare Parts', href: '/generators/spare-parts' },
+    // Workshop Repairs & Fabrication (added 2026-07-21). The page had only ONE
+    // crawlable inbound link (/generators) because the nav mega-menu renders
+    // client-side and crawlers never see it. The footer gives every page a
+    // server-rendered link, which is what brief section 10 asked for.
+    { label: 'Workshop Repairs & Fabrication', href: '/generators/workshop-services' },
     { label: 'Power Interruption Solutions', href: '/solutions/power-interruptions' },
   ],
   servicesRenewable: [

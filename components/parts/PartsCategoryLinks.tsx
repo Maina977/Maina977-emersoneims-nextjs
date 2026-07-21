@@ -75,6 +75,18 @@ export default function PartsCategoryLinks({ className = '' }: { className?: str
           </div>
         </div>
 
+        {/* Contextual cross-link (brief section 10, added 2026-07-21). A part is
+            often only half the job — the component still has to be repaired or
+            rebuilt. Descriptive anchor, not "click here". */}
+        <p className="mt-8 text-sm leading-relaxed text-slate-400">
+          Component needs repair rather than replacement? See{' '}
+          <Link href="/generators/workshop-services" className="font-semibold text-amber-400 hover:underline">
+            workshop repairs and fabrication
+          </Link>{' '}
+          — radiators, starters, alternators, injectors, turbochargers, engine
+          overhauls, UPS and pump repairs.
+        </p>
+
         <h3 className="mt-12 text-lg font-semibold text-white">Browse by part type</h3>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {subs.map((s) => (
