@@ -6,6 +6,7 @@ import {
   getAllCountrySlugs,
   getCitySlugsForCountry,
 } from '@/lib/data/east-africa-locations';
+import sparePartsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -298,6 +299,35 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.85,
     });
+  }
+
+  /**
+   * Spare-parts category pages — /generators/spare-parts/<category>.
+   *
+   * Added 2026-07-21 (directive Phase Four). 1,248 real parts across 27
+   * categories previously lived only inside a client-side module that crawlers
+   * cannot browse, so none of it could rank for "generator spare parts in
+   * Kenya", "Cummins generator parts Kenya" and similar commercial queries.
+   *
+   * Slugs come from the same JSON the route's generateStaticParams reads, so
+   * the sitemap cannot drift from what actually renders.
+   */
+  {
+    const root = sparePartsDb as unknown as Record<string, unknown>;
+    const cats = (Array.isArray(root)
+      ? root
+      : Object.values(root).find((v) => Array.isArray(v))) as
+      | Array<{ subcategories?: Array<{ id: string; parts?: unknown[] }> }>
+      | undefined;
+    for (const sub of cats?.[0]?.subcategories ?? []) {
+      if (!sub.id || !(sub.parts?.length ?? 0)) continue;
+      urls.push({
+        url: `${BASE_URL}/generators/spare-parts/${sub.id}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      });
+    }
   }
 
   /**

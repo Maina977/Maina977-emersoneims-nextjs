@@ -22,6 +22,7 @@ import Image from 'next/image';
 import SparePartsModule from '@/components/parts/SparePartsModule';
 import SparePartsConversion from '@/components/parts/SparePartsConversion';
 import PartsDeliveryNationwide from '@/components/parts/PartsDeliveryNationwide';
+import PartsCategoryLinks from '@/components/parts/PartsCategoryLinks';
 
 export default function SparePartsPage() {
   const heroRef = useRef<HTMLElement>(null);
@@ -192,6 +193,11 @@ export default function SparePartsPage() {
           receives it — zero mentions of bus/matatu parcels, couriers or serial
           numbers. Owner-approved dispatch channels only; no delivery-time or
           stock promises. */}
+      {/* Crawlable links to the 27 category pages (audit 2026-07-21). Without
+          these the new pages would be orphaned — the same defect this audit
+          found on /sectors and the East African city pages. */}
+      <PartsCategoryLinks />
+
       <PartsDeliveryNationwide />
     </main>
   );
