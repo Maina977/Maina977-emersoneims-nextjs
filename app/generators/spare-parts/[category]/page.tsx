@@ -30,6 +30,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import partsDb from '@/app/data/spare-parts-database-COMPLETE.json';
+import verifiedAdditions from '@/app/data/spare-parts-verified-additions.json';
 import PartsDeliveryNationwide from '@/components/parts/PartsDeliveryNationwide';
 
 type Part = {
@@ -52,8 +53,29 @@ function getSubcategories(): Subcategory[] {
   return cats?.[0]?.subcategories ?? [];
 }
 
+/**
+ * Real, publicly-documented manufacturer part numbers added 2026-07-21 to widen
+ * coverage of high-intent part-number searches ("DSE7320 Kenya", "SX460 price
+ * Kenya"). Merged at read time so the original dataset file is never mutated —
+ * additions can be removed by deleting one import.
+ *
+ * These carry NO price and render as "On request" until real EmersonEIMS prices
+ * are imported via scripts/import-parts-prices.mjs. That is deliberate: part
+ * numbers are manufacturer facts I can verify, selling prices are commercial
+ * data only the ERP holds.
+ */
+function withAdditions(sub: Subcategory): Subcategory {
+  const add = (verifiedAdditions as { additions?: Array<{ subcategoryId: string; parts: Part[] }> })
+    .additions?.find((a) => a.subcategoryId === sub.id);
+  if (!add) return sub;
+  const seen = new Set((sub.parts ?? []).map((p) => p.partNo.toUpperCase()));
+  const extra = add.parts.filter((p) => !seen.has(p.partNo.toUpperCase()));
+  return { ...sub, parts: [...(sub.parts ?? []), ...extra] };
+}
+
 function getCategory(slug: string): Subcategory | undefined {
-  return getSubcategories().find((s) => s.id === slug);
+  const sub = getSubcategories().find((s) => s.id === slug);
+  return sub ? withAdditions(sub) : undefined;
 }
 
 /**
