@@ -576,6 +576,35 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0d. HARD 404 for unknown /generators/spare-parts/[category] slugs.
+  //
+  //     The category route sets dynamicParams=false, which correctly stops
+  //     unknown slugs rendering a parts table — but Next 16 on Vercel still
+  //     answers HTTP 200 when notFound() fires inside an already-matched
+  //     dynamic route, so /generators/spare-parts/notreal was a soft-404.
+  //     Same reason guards 0a, 0b and 0c exist.
+  //
+  //     Inlined deliberately: importing the 1.2 MB parts JSON into the edge
+  //     runtime is both too heavy and fails open. Keep in sync by hand with
+  //     the subcategory ids in app/data/spare-parts-database-COMPLETE.json.
+  {
+    const m = pathname.match(/^\/generators\/spare-parts\/([^/]+)\/?$/);
+    if (m) {
+      const OK_PART_CATS = new Set(['filters','pistons-rings','injectors-fuel','cooling-system','alternators','electrical-components','control-panels','turbochargers','bearings-seals','valves-train','crankshafts-rods','cylinder-liners','engine-block','timing-gears','oil-pumps','exhaust-system','belts-pulleys','hoses-clamps','batteries','gauges','hardware','fuel-tanks','lubricants','tools','enclosures','wiring-electrical','safety-fire']);
+      if (!OK_PART_CATS.has(decodeURIComponent(m[1]).toLowerCase())) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': 'parts-cat-404',
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0c. HARD 404 for the root-level /[country]/[city] catch-all.
   //
   //     app/[country]/[city] matches ANY two-segment URL that no more specific
