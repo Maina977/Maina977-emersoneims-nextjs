@@ -21,6 +21,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import SparePartsModule from '@/components/parts/SparePartsModule';
 import SparePartsConversion from '@/components/parts/SparePartsConversion';
+import PartsDeliveryNationwide from '@/components/parts/PartsDeliveryNationwide';
 
 export default function SparePartsPage() {
   const heroRef = useRef<HTMLElement>(null);
@@ -175,6 +176,13 @@ export default function SparePartsPage() {
 
       {/* CONVERSION + SEO — WhatsApp parts-quote flow, categories, genuine-parts content */}
       <SparePartsConversion />
+
+      {/* NATIONAL/REGIONAL ORDERING (audit 2026-07-21). This page described what
+          we stock but never how a customer outside Nairobi actually orders and
+          receives it — zero mentions of bus/matatu parcels, couriers or serial
+          numbers. Owner-approved dispatch channels only; no delivery-time or
+          stock promises. */}
+      <PartsDeliveryNationwide />
     </main>
   );
 }

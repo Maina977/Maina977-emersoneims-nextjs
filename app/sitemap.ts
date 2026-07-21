@@ -301,6 +301,52 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }
 
   /**
+   * Sector pages — /sectors/<slug>, served by app/sectors/[sector].
+   *
+   * Audit 2026-07-21: all 27 sector pages return HTTP 200 but had ZERO sitemap
+   * entries and zero internal links, so they were invisible to search engines.
+   *
+   * Only a CURATED SUBSET is emitted. /industries/<slug> already owns the big
+   * sector hubs (hotels, hospitals, schools, banks, churches, flower farms,
+   * real estate) with far more depth — /industries/hospitals-healthcare is
+   * ~1,520 words against ~485 on /sectors/hospitals. Listing both would put two
+   * of our own pages in front of the same query, which is why a previous audit
+   * deliberately retired the third /solutions/<sector> set.
+   *
+   * So this list is restricted to sectors with NO /industries counterpart.
+   * Every one is a real target market named in the owner's directive
+   * (supermarkets and malls, restaurants, mining and quarrying, residential
+   * estates and apartments, agriculture/farms/ranches, tourism and game
+   * reserves) that currently has no other page competing for it.
+   *
+   * Anything whose head noun already has an /industries hub — schools,
+   * hospitals, hotels, banks, churches, NGOs, flower farms, real estate, and
+   * their "private-" variants — is deliberately EXCLUDED.
+   */
+  const SECTORS_WITHOUT_INDUSTRY_HUB = [
+    'supermarkets',
+    'restaurants',
+    'quarries',
+    'apartments',
+    'homes',
+    'farms',
+    'ranches',
+    'embassies',
+    'consulates',
+    'private-offices',
+    'tourist-destinations',
+    'masai-mara',
+  ];
+  for (const slug of SECTORS_WITHOUT_INDUSTRY_HUB) {
+    urls.push({
+      url: `${BASE_URL}/sectors/${slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    });
+  }
+
+  /**
    * East African city pages — /<country>/<city>, served by app/[country]/[city].
    *
    * Audit 2026-07-21 found these were fully built and returning HTTP 200
