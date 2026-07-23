@@ -50,6 +50,13 @@ const IMG = (slug: string, n: number, alt: string): EduImage => ({
   alt,
 });
 
+/**
+ * For images that already live elsewhere in /public with their own path — used
+ * for the engine-overhaul set, which is the existing, verified St Austin Academy
+ * 50 kVA Perkins job and related overhaul photography already on the site.
+ */
+const IMG_ABS = (src: string, alt: string): EduImage => ({ src, alt });
+
 export const WORKSHOP_EDUCATION: ServiceEducation[] = [
   // ─── COOLING / RADIATORS ────────────────────────────────────────────────
   {
@@ -296,6 +303,47 @@ export const WORKSHOP_EDUCATION: ServiceEducation[] = [
       IMG('turbochargers', 2, 'Turbocharger assessed for shaft play and wheel damage on the workshop bench'),
       IMG('turbochargers', 3, 'Turbocharger turbine and housing detail during teardown and inspection'),
       IMG('turbochargers', 4, 'Turbocharger components during rebuild at EmersonEIMS'),
+    ],
+  },
+
+  // ─── ENGINE OVERHAULS ───────────────────────────────────────────────────
+  {
+    id: 'engine-overhauls',
+    whatItIs:
+      'An overhaul restores a worn diesel engine to serviceable condition by measuring every major component, renewing what is out of limit and rebuilding to specification. It is a measured process, not a parts swap: the scope is set only after the engine is stripped and measured, because what a worn engine actually needs is rarely what its symptoms first suggested. Done properly, an overhaul gives a tired set years of further reliable service for a fraction of replacement cost.',
+    causes: [
+      { title: 'High running hours and normal wear', detail: 'Bores, rings, bearings and valve gear wear with hours. Eventually compression, oil control and oil pressure all fall together — the classic sign a full overhaul is due rather than another patch.' },
+      { title: 'Overheating damage', detail: 'A cooling failure warps heads, cracks liners and pistons and wipes bearings. Overheat damage is the commonest reason a mid-life engine needs opening up.' },
+      { title: 'Oil starvation and contamination', detail: 'Low oil pressure, missed oil changes or coolant/fuel in the oil destroy bearings and journals and score the bores.' },
+      { title: 'Poor combustion and fuel faults', detail: 'Worn injectors and pumps, and dirty fuel, wash bores and hole pistons — fuel-system faults left unfixed end as engine damage.' },
+      { title: 'Neglected maintenance', detail: 'Skipped filter and oil changes, dirty air and untreated coolant accelerate every wear mechanism at once.' },
+    ],
+    symptoms: ['Blue smoke and high oil consumption', 'Low compression and hard starting', 'Knocking or heavy noise under load', 'Metal in the oil or oil filter', 'Low oil pressure hot', 'Heavy crankcase blow-by at the breather'],
+    repairSteps: [
+      'Diagnose and measure before dismantling — compression and where possible cylinder-leakage tests to confirm the engine, not an ancillary, is at fault.',
+      'Strip the engine and measure every major component against the manufacturer\'s limits: bores/liners, crankshaft journals, bearings, pistons, valves and seats.',
+      'Recondition or renew to the measured need — rebore or renew liners, grind or renew the crankshaft to matched bearing sizes, renew pistons, rings, valves, guides and the full gasket set.',
+      'Assess and repair the lubrication, cooling and fuel systems at the same time, so a fixed engine is not returned to the fault that killed it.',
+      'Reassemble to the specified torques, clearances and timing — the difference between an overhaul that lasts and one that fails is in these numbers.',
+      'Static test, then controlled run-in, then load test where facilities allow, before handover.',
+    ],
+    testing: [
+      'Compression and (where available) cylinder-leakage testing to confirm the diagnosis before work begins.',
+      'Dimensional measurement of every reused component against the manufacturer\'s wear limits.',
+      'Static checks on reassembly — oil pressure and no leaks on first prime and crank.',
+      'Controlled run-in and, where facilities allow, load testing to prove power and stable running before release.',
+    ],
+    parts: ['Pistons, rings and gudgeon pins', 'Cylinder liners / rebore to oversize', 'Main and big-end bearing shells (standard/undersize)', 'Crankshaft (reground or renewed) and thrust washers', 'Valves, guides, springs and seats', 'Full gasket and seal set', 'Oil and coolant service items'],
+    prevention: [
+      'Service on schedule — oil, filters, air and coolant. Most overhauls are premature and avoidable.',
+      'Fix cooling and fuel faults immediately; both end as engine damage if ignored.',
+      'Watch oil pressure and consumption as early warnings, and act before metal reaches the filter.',
+      'Fix the root cause at overhaul — an engine rebuilt but returned to a cooling or fuel fault simply fails again.',
+    ],
+    images: [
+      IMG_ABS('/images/ST-AUSTIN-4K-CINEMATIC.jpg', 'Two EmersonEIMS technicians overhauling the St Austin Academy 50 kVA Perkins generator engine on site, with the Perkins engine and an open tool kit visible'),
+      IMG_ABS('/images/desktop/overhaul/engine-liner-overhaul.jpg', 'Technician fitting a new cylinder liner into a diesel generator engine block during an overhaul'),
+      IMG_ABS('/images/desktop/overhaul/engine-overhaul-4.jpg', 'Pistons seated in the bores of an inline diesel engine during overhaul and reassembly'),
     ],
   },
 
