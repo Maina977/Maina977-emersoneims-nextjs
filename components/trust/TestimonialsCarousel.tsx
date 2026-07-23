@@ -54,42 +54,6 @@ const TESTIMONIALS: Testimonial[] = [
     date: "2024"
   },
   {
-    id: '2',
-    quote: "We reduced our electricity costs by 45% after EmersonEIMS installed our hybrid solar-generator system. The ROI was achieved in under 3 years, way ahead of projections. Their engineering team really understood our production needs.",
-    author: "Peter Odhiambo",
-    role: "Plant Operations Director",
-    company: "East African Breweries",
-    location: "Ruaraka, Nairobi",
-    rating: 5,
-    verified: true,
-    service: "Solar + Generator Hybrid",
-    date: "2024"
-  },
-  {
-    id: '3',
-    quote: "After years of power complaints from tenants, we finally found a solution. EmersonEIMS upgraded our entire electrical infrastructure. Tenant satisfaction went from 68% to 96%. Best investment we've made.",
-    author: "Alice Wanjiku",
-    role: "Property Manager",
-    company: "Garden City Mall",
-    location: "Kasarani, Nairobi",
-    rating: 5,
-    verified: true,
-    service: "Complete Power Upgrade",
-    date: "2023"
-  },
-  {
-    id: '4',
-    quote: "Our cold chain used to lose KES 500,000 monthly to power gaps. EmersonEIMS installed an automatic system that switches in under 3 seconds. We haven't lost a single product in 18 months.",
-    author: "David Kariuki",
-    role: "Operations Manager",
-    company: "Twiga Foods",
-    location: "Industrial Area",
-    rating: 5,
-    verified: true,
-    service: "ATS & Generator Systems",
-    date: "2024"
-  },
-  {
     id: '5',
     quote: "Professional, fast, and reliable. They rewound our 500kW motor in 4 days when others quoted 3 weeks. Our production was back online quickly. Highly recommend for any motor work.",
     author: "John Kimani",
@@ -102,30 +66,6 @@ const TESTIMONIALS: Testimonial[] = [
     date: "2024"
   },
   {
-    id: '6',
-    quote: "EmersonEIMS installed solar for our school campus. Students can now study in the evenings, computer labs run full-time, and we save KES 2.1 million annually. Transformative work!",
-    author: "Principal Nelson Mutua",
-    role: "School Principal",
-    company: "Starehe Boys Centre",
-    location: "Nairobi",
-    rating: 5,
-    verified: true,
-    service: "Solar Installation",
-    date: "2024"
-  },
-  {
-    id: '7',
-    quote: "24/7 support means exactly that. Called at 2 AM on a Sunday when our generator failed. Technician arrived by 3:30 AM. That's the kind of service that keeps businesses running.",
-    author: "Sarah Kimani",
-    role: "General Manager",
-    company: "Sankara Nairobi Hotel",
-    location: "Westlands",
-    rating: 5,
-    verified: true,
-    service: "24/7 Maintenance",
-    date: "2023"
-  },
-  {
     id: '8',
     quote: "The Generator Oracle diagnostic tool is incredible. We can now troubleshoot issues before calling a technician. It's saved us countless emergency callouts. Revolutionary tool!",
     author: "Michael Otieno",
@@ -136,7 +76,7 @@ const TESTIMONIALS: Testimonial[] = [
     verified: true,
     service: "Generator Oracle",
     date: "2024"
-  }
+  },
 ];
 
 interface TestimonialsCarouselProps {

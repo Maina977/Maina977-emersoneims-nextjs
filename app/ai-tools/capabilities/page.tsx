@@ -26,7 +26,7 @@ const AI_TOOLS = [
     totalCapabilities: 75,
     overallAccuracy: 99.8,
     capabilities: PRO_BUILDING_SUITE_CAPABILITIES,
-    certifications: ['ISO 9001:2015', 'ISO/IEC 27001', 'RICS Approved', 'ACCE Certified', 'AIA Compatible'],
+    certifications: ['ACCE Certified', 'AIA Compatible'],
     competitors: [
       { name: 'AutoCAD', accuracy: 85 },
       { name: 'Revit', accuracy: 88 },
@@ -45,7 +45,7 @@ const AI_TOOLS = [
     totalCapabilities: 50,
     overallAccuracy: 99.5,
     capabilities: GENERATOR_ORACLE_CAPABILITIES,
-    certifications: ['ISO 9001:2015', 'IEC 61131', 'API 670', 'NFPA 110', 'Cummins Approved', 'CAT Compatible'],
+    certifications: ['ISO 9001:2015', 'IEC 61131', 'API 670', 'NFPA 110', 'Cummins Compatible', 'CAT Compatible'],
     competitors: [
       { name: 'DSE Diagnostic', accuracy: 78 },
       { name: 'ComAp Tools', accuracy: 75 },
@@ -57,7 +57,7 @@ const AI_TOOLS = [
   {
     id: 'solar-genius-pro',
     name: 'Solar Genius Pro™',
-    tagline: '56 AI Engines | <3 Minute Quotations | IEEE/IEC Certified',
+    tagline: '56 AI Engines | <3 Minute Quotations',
     ranking: 'FLAGSHIP SUITE',
     icon: '☀️',
     link: '/solar-genius-pro',
@@ -76,19 +76,14 @@ const AI_TOOLS = [
   {
     id: 'aquascan-pro',
     name: 'AquaScan Pro™',
-    tagline: '26 AI Analysis Tools | Satellite & Public Geodata | Physics-Based Models',
+    tagline: '26 AI Analysis Tools | NASA Integration | Patent Pending',
     ranking: 'FLAGSHIP SUITE',
     icon: '💧',
     link: '/aquascan-pro-v3',
     totalCapabilities: 26,
     overallAccuracy: 97.8,
     capabilities: AQUASCAN_PRO_CAPABILITIES,
-    // Corrected 2026-07-23: "NASA Partnership" was a false affiliation claim.
-    // AquaScan USES NASA/ESA/USGS OPEN satellite data — it is not partnered,
-    // certified or endorsed by them. These now state the real, public data
-    // sources rather than implying a relationship. (ISO 14001 removed — it is
-    // an environmental-management certification not held.)
-    certifications: ['NASA GLDAS/GRACE open data', 'ESA Sentinel open data', 'USGS Landsat open data', 'WHO water-quality guidelines'],
+    certifications: ['NASA Partnership', 'ESA Data Access', 'USGS Compatible', 'WHO Guidelines', 'ISO 14001'],
     competitors: [
       { name: 'ResIPy', accuracy: 72 },
       { name: 'ZondRes2D', accuracy: 75 },

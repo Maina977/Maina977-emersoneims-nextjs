@@ -351,9 +351,20 @@ function ServiceCalculator({ serviceId }: { serviceId: string }) {
   const CalculatorComponent = CALCULATOR_COMPONENTS[serviceId];
   
   if (!CalculatorComponent) {
+    // No inline calculator mapped for this service — instead of a "coming soon"
+    // placeholder (owner note 2026-07-23), point to the full, working
+    // calculator suite so the user always reaches a real tool.
     return (
-      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600">
-        <p className="text-gray-400 text-center">Calculator coming soon...</p>
+      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600 text-center">
+        <p className="text-gray-300">
+          Use our engineering calculators for sizing, load and cost estimates.
+        </p>
+        <Link
+          href="/calculators"
+          className="mt-3 inline-block rounded-lg bg-amber-500 px-5 py-2.5 font-semibold text-slate-950 transition hover:bg-amber-400"
+        >
+          Open the calculators
+        </Link>
       </div>
     );
   }

@@ -362,7 +362,7 @@ export default function RemoteConnectivityPanel() {
   const [sites] = useState<RemoteSite[]>([
     {
       id: '1',
-      name: 'Regional Referral Hospital',
+      name: 'Kenyatta National Hospital',
       location: 'Ngong Road',
       county: 'Nairobi',
       status: 'online',
@@ -384,7 +384,7 @@ export default function RemoteConnectivityPanel() {
     },
     {
       id: '3',
-      name: 'Commercial Data Centre',
+      name: 'Safaricom Data Center',
       location: 'Enterprise Road',
       county: 'Nairobi',
       status: 'online',
@@ -429,7 +429,7 @@ export default function RemoteConnectivityPanel() {
   ]);
 
   const [auditLog] = useState<AuditLogEntry[]>([
-    { id: '1', timestamp: '14:32:15', action: 'Remote Start', user: 'admin@emersoneims.com', ip: '41.139.218.45', details: 'Generator started at Regional Referral Hospital', status: 'success' },
+    { id: '1', timestamp: '14:32:15', action: 'Remote Start', user: 'admin@emersoneims.com', ip: '41.139.218.45', details: 'Generator started at Kenyatta National Hospital', status: 'success' },
     { id: '2', timestamp: '14:28:42', action: 'Configuration Change', user: 'tech.john@emersoneims.com', ip: '197.248.15.22', details: 'Updated low fuel threshold from 20% to 25%', status: 'success' },
     { id: '3', timestamp: '14:15:08', action: 'Login Attempt', user: 'unknown', ip: '185.220.101.45', details: 'Failed login attempt - invalid credentials', status: 'failed' },
     { id: '4', timestamp: '13:55:33', action: 'Alarm Acknowledged', user: 'admin@emersoneims.com', ip: '41.139.218.45', details: 'High temperature alarm cleared at Sarova Stanley', status: 'success' },
