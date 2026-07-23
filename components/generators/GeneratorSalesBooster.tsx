@@ -72,7 +72,6 @@ const HOT_DEALS: GeneratorDeal[] = [
 // Recent purchases for social proof
 const RECENT_PURCHASES = [
   { name: 'Safari Park Hotel', location: 'Nairobi', generator: '150KVA Cummins', time: '2 hours ago' },
-  { name: 'Kenyatta Hospital', location: 'Nairobi', generator: '500KVA Perkins', time: '5 hours ago' },
   { name: 'Greenspan Mall', location: 'Donholm', generator: '250KVA FG Wilson', time: 'Yesterday' },
   { name: 'Strathmore University', location: 'Madaraka', generator: '200KVA Cummins', time: 'Yesterday' },
   { name: 'Serena Hotel', location: 'Mombasa', generator: '300KVA Perkins', time: '2 days ago' },

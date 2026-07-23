@@ -76,14 +76,19 @@ const AI_TOOLS = [
   {
     id: 'aquascan-pro',
     name: 'AquaScan Pro™',
-    tagline: '26 AI Analysis Tools | NASA Integration | Patent Pending',
+    tagline: '26 AI Analysis Tools | Satellite & Public Geodata | Physics-Based Models',
     ranking: 'FLAGSHIP SUITE',
     icon: '💧',
     link: '/aquascan-pro-v3',
     totalCapabilities: 26,
     overallAccuracy: 97.8,
     capabilities: AQUASCAN_PRO_CAPABILITIES,
-    certifications: ['NASA Partnership', 'ESA Data Access', 'USGS Compatible', 'WHO Guidelines', 'ISO 14001'],
+    // Corrected 2026-07-23: "NASA Partnership" was a false affiliation claim.
+    // AquaScan USES NASA/ESA/USGS OPEN satellite data — it is not partnered,
+    // certified or endorsed by them. These now state the real, public data
+    // sources rather than implying a relationship. (ISO 14001 removed — it is
+    // an environmental-management certification not held.)
+    certifications: ['NASA GLDAS/GRACE open data', 'ESA Sentinel open data', 'USGS Landsat open data', 'WHO water-quality guidelines'],
     competitors: [
       { name: 'ResIPy', accuracy: 72 },
       { name: 'ZondRes2D', accuracy: 75 },

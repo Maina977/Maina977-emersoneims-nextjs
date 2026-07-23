@@ -936,7 +936,7 @@ function PMICalculator() {
 
                 <div className="bg-white/5 rounded-xl p-4 border border-amber-500/30">
                   <p className="text-xs text-gray-400 text-center">
-                    PMI™ Algorithm: Patent Pending KE/P/2025/XXXXX<br/>
+                    PMI™ Algorithm: proprietary in-house model<br/>
                     Based on 15 years field data from 47 Kenyan counties
                   </p>
                 </div>

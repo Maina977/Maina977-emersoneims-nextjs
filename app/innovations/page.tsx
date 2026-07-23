@@ -37,7 +37,7 @@ const innovations: Innovation[] = [
     ],
     icon: '🧠',
     color: 'from-purple-500 to-pink-500',
-    patent: 'KE/P/2025/XXXXX'
+    patent: 'Proprietary in-house R&D'
   },
   {
     id: 'pmi',
@@ -56,7 +56,7 @@ const innovations: Innovation[] = [
     ],
     icon: '🔮',
     color: 'from-cyan-500 to-blue-500',
-    patent: 'KE/P/2025/XXXXX'
+    patent: 'Proprietary in-house R&D'
   },
   {
     id: 'multi-brand',
@@ -75,7 +75,7 @@ const innovations: Innovation[] = [
     ],
     icon: '🔗',
     color: 'from-amber-500 to-orange-500',
-    patent: 'KE/P/2025/XXXXX'
+    patent: 'Proprietary in-house R&D'
   },
   {
     id: 'voice-search',
@@ -94,7 +94,7 @@ const innovations: Innovation[] = [
     ],
     icon: '🎙️',
     color: 'from-green-500 to-teal-500',
-    patent: 'Pending'
+    patent: 'Proprietary in-house R&D'
   },
   {
     id: 'ar-overlay',
@@ -113,7 +113,7 @@ const innovations: Innovation[] = [
     ],
     icon: '👓',
     color: 'from-red-500 to-pink-500',
-    patent: 'Pending'
+    patent: 'Proprietary in-house R&D'
   },
   {
     id: '3d-models',
@@ -294,7 +294,7 @@ export default function InnovationsPage() {
                 {innovation.patent && (
                   <div className={`border-l-4 border-amber-500 bg-gradient-to-r ${innovation.color} bg-opacity-10 rounded-r-lg p-4`}>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-amber-400 font-bold">🏆 Patent:</span>
+                      <span className="text-amber-400 font-bold">🏆 Technology:</span>
                       <span className="text-white font-mono">{innovation.patent}</span>
                     </div>
                   </div>

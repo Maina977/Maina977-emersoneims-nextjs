@@ -52,27 +52,17 @@ const STATS = [
   { value: '24/7', label: 'Support' },
 ];
 
+// Testimonials audit 2026-07-23 (owner-directed): the Radisson Blu Nairobi and
+// Safaricom Data Centers entries were removed — they attributed invented quotes
+// and figures to named organisations that are not confirmed clients. The
+// remaining entry is retained per the owner as a genuine client. The `image`
+// field is intentionally gone: the card renders an initials avatar, not a photo.
 const TESTIMONIALS = [
-  {
-    quote: "Generator Oracle saved us KES 200,000 in unnecessary part replacements. The fault code lookup is incredibly accurate.",
-    name: "James Mwangi",
-    title: "Chief Engineer",
-    company: "Radisson Blu Nairobi",
-    image: "/images/testimonials/hotel-engineer.jpg",
-  },
   {
     quote: "Our field technicians use it every day. The offline capability is crucial for our rural hospital network.",
     name: "Dr. Sarah Wambui",
     title: "Facilities Director",
     company: "PCEA Kikuyu Hospital",
-    image: "/images/testimonials/hospital-director.jpg",
-  },
-  {
-    quote: "As a fleet manager with 50+ generators, this tool has reduced our diagnostic time by 80%.",
-    name: "Peter Ochieng",
-    title: "Operations Manager",
-    company: "Safaricom Data Centers",
-    image: "/images/testimonials/data-center.jpg",
   },
 ];
 

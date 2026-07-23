@@ -76,11 +76,14 @@ const AQUASCAN_PRO_LICENSE = {
   owner: 'EmersonEIMS / Emerson Industrial Maintenance Services',
   copyright: '© 2024-2026 All Rights Reserved Worldwide',
   trademark: 'AquaScan Pro™ is a registered trademark',
-  patents: [
-    'Patent Pending - AI Groundwater Prediction Algorithms',
-    'Patent Pending - Virtual Geophysical Survey Methods',
-    'Patent Pending - Multi-Source Satellite Data Fusion',
-    'Patent Pending - 26-Parameter AI Analysis Framework',
+  // "Patent Pending" claims removed 2026-07-23 — no patent has been filed, so
+  // the wording was unsubstantiated. These describe proprietary in-house
+  // methods, which is the accurate framing.
+  methods: [
+    'Proprietary AI groundwater-prediction methodology',
+    'Virtual geophysical-survey modelling',
+    'Multi-source satellite-data fusion',
+    '26-parameter analysis framework',
   ],
   aiTools: 26, // Total AI analysis tools
   coverage: '195+ Countries | 6 Continents | All Climate Zones',

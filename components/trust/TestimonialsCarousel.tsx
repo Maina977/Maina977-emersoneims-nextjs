@@ -46,7 +46,7 @@ const TESTIMONIALS: Testimonial[] = [
     quote: "EmersonEIMS saved our hospital during a critical blackout. Their team arrived within 90 minutes and had our backup power running before the batteries ran out. They've been maintaining our generators ever since - zero downtime in 3 years.",
     author: "Dr. James Mwangi",
     role: "Chief Medical Officer",
-    company: "Kenyatta National Hospital",
+    company: "Level 5 Referral Hospital",
     location: "Nairobi",
     rating: 5,
     verified: true,

@@ -13,7 +13,7 @@ const testimonials = [
     id: 1,
     name: "Dr. Sarah Kimani",
     title: "Chief Operations Officer",
-    company: "Kenyatta National Hospital",
+    company: "Level 5 Referral Hospital",
     image: "/testimonials/hospital-director.jpg",
     quote: "EmersonEIMS saved us from critical blackouts. Their emergency generator installation during our power crisis was executed flawlessly in 48 hours. 100% uptime for 3 years now.",
     impact: "24/7 Hospital Operations",

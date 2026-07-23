@@ -64,7 +64,7 @@ const CASE_STUDIES: CaseStudy[] = [
   {
     id: 'hospital-power',
     title: 'Critical Power System for Level 5 Hospital',
-    client: 'Kenyatta National Hospital Annex',
+    client: 'Level 5 Referral Hospital',
     clientType: 'Healthcare',
     location: 'Nairobi, Kenya',
     date: '2024',
