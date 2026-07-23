@@ -29,6 +29,7 @@ import AIAdvantageHero from '@/components/home/AIAdvantageHero';
 import CumminsShopNow from '@/components/home/CumminsShopNow';
 import FinancingCalculator from '@/components/home/FinancingCalculator';
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
+import TradeInCalculator from '@/components/home/TradeInCalculator';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
 // 3D ring showcase — sister piece to the About page spiral gallery.
@@ -773,6 +774,10 @@ export default function HomePage() {
           (KCB, Equity, Safaricom Money). Positioned after shop section so buyers
           who see pricing can immediately calculate their monthly payment and apply. */}
       <FinancingCalculator />
+      {/* TRADE-IN CALCULATOR — removes upgrade barrier by showing trade-in value
+          of old generator. Positioned after financing so buyers can see: new price →
+          financing cost → trade-in credit = final cost. */}
+      <TradeInCalculator />
       {/* SERVICES LEADERSHIP MATRIX — visual proof that we're #1 across 30+
           services (8 market leader, 5 strong competitor, 5+ emerging). Shows
           competitive ratings (80-99) and market positioning. Positioned after
