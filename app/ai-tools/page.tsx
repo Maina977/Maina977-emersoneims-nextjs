@@ -260,8 +260,8 @@ export default function AIToolsPage() {
             transition={{ delay: 0.2 }}
             className="text-xl text-gray-300 max-w-3xl mx-auto mb-8"
           >
-            The world&apos;s most advanced AI-powered tools for construction, power generation,
-            solar energy, and water systems. Industry-leading accuracy. Lightning-fast results.
+            Comprehensive AI-powered tools for construction, power generation,
+            solar energy, and water systems. Designed for accuracy and speed across industries.
           </motion.p>
 
           {/* Stats Bar */}

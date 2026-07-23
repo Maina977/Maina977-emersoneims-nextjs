@@ -243,7 +243,7 @@ export default function GeneratorServicesPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { icon: '🏆', title: '15+ Years', desc: 'Industry experience since 2009' },
+              { icon: '🏆', title: '11+ Years', desc: 'Operating since 2013' },
               { icon: '⚡', title: '24/7 Support', desc: 'Emergency response anytime' },
               { icon: '✓', title: 'All Brands', desc: 'Cummins, Perkins, CAT, Volvo, FG Wilson' },
               { icon: '🛡️', title: 'Warranty', desc: 'All work guaranteed' },

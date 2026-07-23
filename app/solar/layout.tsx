@@ -9,7 +9,7 @@ import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Solar Solution School | 10 AI Engines | World\'s Most Advanced Solar Platform | EmersonEIMS',
-  description: 'World\'s most advanced solar design platform with 10 AI engines. 3D AI modeling, voice commands, neural optimization, 25-year predictions. Covers 15 African countries. Enterprise integrations with Salesforce & DocuSign. Free AI-powered solar design.',
+  description: 'Comprehensive solar design platform with 10 AI engines with 10 AI engines. 3D AI modeling, voice commands, neural optimization, 25-year predictions. Covers 15 African countries. Enterprise integrations with Salesforce & DocuSign. Free AI-powered solar design.',
   authors: [{ name: 'EmersonEIMS' }],
   creator: 'EmersonEIMS',
   publisher: 'EmersonEIMS',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     url: 'https://www.emersoneims.com/solar',
     siteName: 'EmersonEIMS',
     title: 'Solar Solution School | 10 AI Engines | EmersonEIMS',
-    description: 'World\'s most advanced solar platform. 10 AI engines: 3D Design, Voice Control, Neural Optimizer, Permit Generator, Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, Grid Analyzer. 15 African countries.',
+    description: 'Leading solar design platform. 10 AI engines: 3D Design, Voice Control, Neural Optimizer, Permit Generator, Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, Grid Analyzer. 15 African countries.',
     images: [
       {
         url: '/images/solar-ai-platform-og.jpg',
@@ -61,7 +61,7 @@ const structuredData = {
       '@type': 'SoftwareApplication',
       name: 'Solar Solution School',
       applicationCategory: 'BusinessApplication',
-      description: 'World\'s most advanced solar design platform featuring 10 AI engines: AI Depth Estimator, Neural Panel Optimizer, AI Permit Generator, Satellite Roof Analyzer, AI Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, and Grid Analyzer.',
+      description: 'Comprehensive solar design platform with 10 AI engines featuring 10 AI engines: AI Depth Estimator, Neural Panel Optimizer, AI Permit Generator, Satellite Roof Analyzer, AI Energy Oracle, Financial Genius, Design Copilot, Anomaly Detector, Drone Commander, and Grid Analyzer.',
       operatingSystem: 'Any (Web-based)',
       url: 'https://www.emersoneims.com/solar',
       offers: {

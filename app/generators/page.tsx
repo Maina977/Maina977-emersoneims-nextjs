@@ -1400,9 +1400,9 @@ const WhyChooseUs = () => {
     },
     {
       icon: '🔧',
-      title: '15+ Years Experience',
-      description: 'Our senior technicians have serviced 5,000+ generators. We\'ve seen every problem twice.',
-      highlight: 'EXPERTISE'
+      title: '11+ Years Track Record',
+      description: 'Our senior technicians have serviced generators across Kenya since 2013. Factory-trained on Cummins, Perkins, Caterpillar and 10+ other brands.',
+      highlight: 'PROVEN EXPERTISE'
     },
     {
       icon: '📦',

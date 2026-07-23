@@ -11,7 +11,7 @@
  * - Quick view & wishlist
  * - SEO optimized for Kenya market
  *
- * Serving Kenya's generator maintenance needs since 2010
+ * Serving Kenya's generator maintenance needs since 2013
  */
 
 'use client';

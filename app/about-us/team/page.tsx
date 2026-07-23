@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { Metadata } from 'next';
 
@@ -17,25 +15,25 @@ export default function TeamPage() {
       name: 'Eng. Samuel Kipchoge',
       role: 'Head of Engineering',
       certifications: ['Cummins Factory Certification', 'ISO 9001 Lead Auditor', 'Diesel Engine Specialist'],
-      experience: '18 years',
+      experience: '18 years industry',
       specialization: 'Generator design, load calculations, grid integration systems',
-      bio: 'Samuel leads technical strategy and oversees all commercial generator projects. Previously worked with Kengen on thermal power generation.',
+      bio: 'Samuel leads technical strategy and oversees all commercial generator projects. Brings 18 years of power industry experience including thermal generation at Kengen.',
     },
     {
       name: 'Eng. Margaret Mwangi',
       role: 'Solar Systems Engineer',
       certifications: ['Solar PV Design (MNRE)', 'Battery Storage Specialist', 'Electrical Safety'],
-      experience: '12 years',
+      experience: '12 years industry',
       specialization: 'Hybrid solar-diesel systems, battery sizing, control architecture',
-      bio: 'Margaret designs solar installations across Kenya\'s diverse climates. Expert in off-grid and hybrid-mode optimization.',
+      bio: 'Margaret designs solar installations across Kenya\'s diverse climates. Brings 12 years of renewable energy expertise in off-grid and hybrid-mode optimization.',
     },
     {
       name: 'Eng. David Ochieng',
       role: 'Maintenance & Service Director',
       certifications: ['Perkins Service Certificate', 'Caterpillar Training', 'Predictive Maintenance'],
-      experience: '15 years',
+      experience: '15 years industry',
       specialization: 'Generator maintenance, vibration analysis, condition monitoring',
-      bio: 'David manages all maintenance contracts and emergency response. Pioneered predictive maintenance protocols at EmersonEIMS.',
+      bio: 'David manages all maintenance contracts and emergency response. Brings 15 years of generator service expertise and has pioneered predictive maintenance protocols at EmersonEIMS.',
     },
     {
       name: 'Eng. Patricia Nyambura',
