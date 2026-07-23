@@ -25,6 +25,10 @@ const RingGallery = dynamic(() => import('@/components/home/RingGallery'), {
 });
 import HomeEngineeringAuthority from '@/components/home/HomeEngineeringAuthority';
 import AIToolsPromo from '@/components/ai/AIToolsPromo';
+import AIAdvantageHero from '@/components/home/AIAdvantageHero';
+import CumminsShopNow from '@/components/home/CumminsShopNow';
+import FinancingCalculator from '@/components/home/FinancingCalculator';
+import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
 // 3D ring showcase — sister piece to the About page spiral gallery.
@@ -760,6 +764,25 @@ export default function HomePage() {
       {/* VOLTKA Cummins cinematic showcase — flagship product directly
           under the hero so generator buyers see it before anything else. */}
       <VoltkaCinematicShowcase />
+      {/* SHOP NOW SECTION — live pricing, stock availability, and BUY NOW buttons
+          for top 5 Cummins models. This is the PRIMARY CONVERSION POINT where
+          online browsers become paying customers. Positioned immediately after
+          product showcase to capture buying intent. */}
+      <CumminsShopNow />
+      {/* FINANCING CALCULATOR — shows payment options and financing partners
+          (KCB, Equity, Safaricom Money). Positioned after shop section so buyers
+          who see pricing can immediately calculate their monthly payment and apply. */}
+      <FinancingCalculator />
+      {/* SERVICES LEADERSHIP MATRIX — visual proof that we're #1 across 30+
+          services (8 market leader, 5 strong competitor, 5+ emerging). Shows
+          competitive ratings (80-99) and market positioning. Positioned after
+          finance to anchor the claim "we're not just a generator company, we're
+          a complete power solutions company." */}
+      <ServicesLeadershipMatrix />
+      {/* AI ADVANTAGE SECTION — showcases our 4 flagship AI tools as
+          competitive differentiators. Positioned after leadership matrix so
+          buyers see our FULL SCOPE first (30+ services), then our UNIQUE TECH (AI). */}
+      <AIAdvantageHero />
       <SolutionsBySector />
       <StaticFeaturesSection />
       {/* Auto-rotating 3D ring of real project photography — images "go

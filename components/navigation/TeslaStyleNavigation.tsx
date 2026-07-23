@@ -250,6 +250,7 @@ const MEGA_MENUS = {
 const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
+  { href: '/why-emersoneims', label: 'WHY US', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
   // INDUSTRIES — direct link to the live B2B sector hub at /industries.
   // (We previously experimented with a parallel /solutions/<sector> system;

@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { Metadata } from 'next';
 
@@ -11,19 +9,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function WhyEmersonEIMS() {
+const WhyEmersonEIMS = () => {
   const competitors = [
     {
       name: 'Jua Energy',
       claim: 'Solar Company',
-      weakness: 'Only does solar—you need generator backup',
+      weakness: 'Only does solar — you need generator backup',
       ourEdge: 'We handle solar + generator + UPS + automation in one system',
       proof: '500+ integrated installations across 47 counties',
     },
     {
       name: 'Fenix Group',
       claim: 'Battery Platform',
-      weakness: 'Batteries alone don't solve power problems',
+      weakness: 'Batteries alone do not solve power problems',
       ourEdge: 'Our AI optimizes batteries within complete power systems',
       proof: 'Energy Intelligence Hub manages 40-60% efficiency gains',
     },
@@ -37,14 +35,14 @@ export default function WhyEmersonEIMS() {
     {
       name: 'Kenol Kobil',
       claim: 'Commodity Trader',
-      weakness: 'No engineering capability—just distribution',
+      weakness: 'No engineering capability — just distribution',
       ourEdge: 'We design, install, service, and optimize complete systems',
       proof: '18+ years of engineering expertise in East Africa',
     },
     {
       name: 'SunCulture',
       claim: 'Agri-Solar Specialist',
-      weakness: 'Limited to agriculture; can't handle industrial power',
+      weakness: 'Limited to agriculture; cannot handle industrial power',
       ourEdge: 'We serve agriculture + commercial + industrial + utilities',
       proof: 'Multi-sector installations (hospitals, factories, farms, data centers)',
     },
@@ -139,7 +137,7 @@ export default function WhyEmersonEIMS() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            We're not just different. We're better in every way that matters:
+            We are not just different. We are better in every way that matters:
             AI intelligence, geographic reach, full-spectrum solutions, and verified expertise.
           </p>
         </div>
@@ -189,7 +187,7 @@ export default function WhyEmersonEIMS() {
       <section className="py-20 px-4 bg-slate-900/30">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold mb-12 text-center">
-            Six Reasons We're Unstoppable
+            Six Reasons We are Unstoppable
           </h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -228,7 +226,7 @@ export default function WhyEmersonEIMS() {
             The #1 Market Position
           </h2>
           <p className="text-lg text-gray-200 mb-10">
-            Every competitor is strong in ONE category. We're the ONLY company
+            Every competitor is strong in ONE category. We are the ONLY company
             that combines AI intelligence + full-spectrum solutions + nationwide coverage + verified expertise.
           </p>
 
@@ -323,4 +321,6 @@ export default function WhyEmersonEIMS() {
       </section>
     </main>
   );
-}
+};
+
+export default WhyEmersonEIMS;
