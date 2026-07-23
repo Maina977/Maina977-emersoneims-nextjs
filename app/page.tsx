@@ -30,6 +30,8 @@ import CumminsShopNow from '@/components/home/CumminsShopNow';
 import FinancingCalculator from '@/components/home/FinancingCalculator';
 import ServicesLeadershipMatrix from '@/components/home/ServicesLeadershipMatrix';
 import TradeInCalculator from '@/components/home/TradeInCalculator';
+import SocialProofWidget from '@/components/home/SocialProofWidget';
+import CountyCoverageMap from '@/components/home/CountyCoverageMap';
 
 // Real EmersonEIMS project photography (see /gallery) for the rotating
 // 3D ring showcase — sister piece to the About page spiral gallery.
@@ -788,6 +790,15 @@ export default function HomePage() {
           competitive differentiators. Positioned after leadership matrix so
           buyers see our FULL SCOPE first (30+ services), then our UNIQUE TECH (AI). */}
       <AIAdvantageHero />
+      {/* SOCIAL PROOF WIDGET — real customer testimonials with verified badges & metrics.
+          Positioned after AI advantage to build trust with concrete success stories before
+          asking for a decision. 5 verified case studies spanning healthcare, finance,
+          manufacturing, agriculture, telecom. */}
+      <SocialProofWidget />
+      {/* COUNTY COVERAGE MAP — visual proof of nationwide presence across all 47 counties.
+          Shows delivery times and emergency response times per region. Positioned before
+          final navigation to emphasize geographic advantage that competitors lack. */}
+      <CountyCoverageMap />
       <SolutionsBySector />
       <StaticFeaturesSection />
       {/* Auto-rotating 3D ring of real project photography — images "go
