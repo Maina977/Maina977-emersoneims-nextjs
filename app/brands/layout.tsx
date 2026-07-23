@@ -4,14 +4,14 @@ import type { ReactNode } from 'react';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emersoneims.com';
 
 export const metadata: Metadata = {
-  title: 'Authorized Brands | Cummins · Perkins · FG Wilson · ABB | EmersonEIMS',
+  title: 'Multi-Brand Generator & Engineering Services | Cummins · Perkins · FG Wilson · ABB | EmersonEIMS',
   description:
-    'EmersonEIMS is the authorized Kenya dealer for Cummins, Perkins, FG Wilson, ABB, Schneider Electric, Caterpillar, John Deere, and more. Genuine parts, factory training, OEM warranty.',
+    'EmersonEIMS supplies and maintains Cummins, Perkins, FG Wilson, ABB, Schneider Electric, Caterpillar generators and equipment across Kenya. Specialist sales, maintenance, genuine parts & technical support.',
   alternates: { canonical: `${siteUrl}/brands` },
   openGraph: {
-    title: 'Authorized Brands | EmersonEIMS Kenya',
+    title: 'Multi-Brand Generators & Engineering | EmersonEIMS Kenya',
     description:
-      'Cummins, Perkins, FG Wilson, ABB, Schneider, Caterpillar — authorized Kenya dealer. Genuine parts + OEM warranty.',
+      'Cummins, Perkins, FG Wilson, ABB, Schneider, Caterpillar sales & maintenance specialist. Genuine parts & expert support across Kenya.',
     url: `${siteUrl}/brands`,
     type: 'website',
   },

@@ -53,10 +53,10 @@ const RING_GALLERY_ITEMS = [
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.emersoneims.com'),
   title: "EmersonEIMS | B2B Generators, Solar & Engineering Partner — Kenya | 3-Year Warranty",
-  description: "EmersonEIMS — B2B power & engineering for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators. 3-year warranty, SLA-backed maintenance, 24/7 emergency response across 47 counties. Authorised Cummins / Perkins / FG Wilson dealer. Call +254768860665.",
+  description: "EmersonEIMS — B2B power & engineering for industry, healthcare, telecom and commercial property in Kenya. Generators, solar, UPS, motors, HVAC, boreholes and incinerators. Cummins, Perkins & FG Wilson specialist. 3-year warranty, SLA-backed maintenance, 24/7 emergency response across 47 counties. Call +254768860665.",
   openGraph: {
     title: "EmersonEIMS | B2B Power & Engineering Partner — Kenya",
-    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. 3-year warranty, SLA maintenance, 24/7 emergency. Authorised Cummins dealer. AI-assisted diagnostic and design tools.",
+    description: "Engineering-grade generators, solar, UPS, motors, HVAC, boreholes & incinerators. 3-year warranty, SLA maintenance, 24/7 emergency. Cummins, Perkins & FG Wilson specialist. AI-assisted diagnostic and design tools.",
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
     type: 'website',
     locale: 'en_KE',
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'EmersonEIMS | B2B Power & Engineering — Kenya',
-    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. 3-year warranty, SLA maintenance, 24/7 emergency. Authorised Cummins dealer. Call +254768860665',
+    description: 'Generators, solar, UPS, HVAC, boreholes, incinerators. Cummins specialist. 3-year warranty, SLA maintenance, 24/7 emergency response. Call +254768860665',
     images: ['/images/tnpl-diesal-generator-1000x1000-1920x1080.webp'],
   },
   alternates: {

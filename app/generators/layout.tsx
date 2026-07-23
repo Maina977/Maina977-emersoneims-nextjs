@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "CUMMINS Generators Kenya | Authorized VOLTKA Dealer | 3-YEAR WARRANTY + 1 Year Free Service | EmersonEIMS",
-  description: "Kenya's AUTHORIZED CUMMINS/VOLTKA Dealer. 10KVA-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation, 24/7 support. Serving Nairobi, Mombasa, Kisumu & all 47 counties. Call +254768860665",
+  title: "Cummins Generators Kenya | Diesel Generators 10-2000kVA | 3-Year Warranty | EmersonEIMS",
+  description: "Cummins generator sales, maintenance & spare-parts specialist in Kenya. 10KVA-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation, 24/7 support. Serving all 47 counties. Call +254768860665",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA | EmersonEIMS',
-    description: 'Kenya\'s leading generator supplier. Cummins authorized dealer. NEW generators with warranty + 1 year free maintenance. All 47 counties.',
+    description: 'Cummins generator sales & maintenance specialist. NEW generators with warranty + 1 year free maintenance. Serving all 47 counties. Expert installation & support.',
     type: 'website',
     url: 'https://www.emersoneims.com/generators',
     siteName: 'EmersonEIMS',
@@ -94,7 +94,7 @@ const jsonLd = {
     {
       '@type': 'Product',
       '@id': 'https://www.emersoneims.com/generators/#product',
-      name: 'Cummins Diesel Generators by Voltka - Authorized Dealer Kenya',
+      name: 'Cummins Diesel Generators by Voltka - Kenya',
       image: 'https://www.emersoneims.com/wp-content/uploads/2024/09/cummins-generator.jpg',
       brand: {
         '@type': 'Brand',
@@ -104,7 +104,7 @@ const jsonLd = {
         '@type': 'Organization',
         name: 'Voltka',
       },
-      description: 'Authorized Cummins/Voltka dealer in Kenya. 10KVA to 2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation.',
+      description: 'Cummins & Voltka diesel generators in Kenya. 10KVA to 2000KVA with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation. Multi-brand specialist.',
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'KES',

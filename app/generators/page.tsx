@@ -1382,14 +1382,14 @@ const WhyChooseUs = () => {
   const reasons = [
     {
       icon: '🏆',
-      title: 'Authorized Cummins Dealer',
-      description: 'Official partner with factory training, genuine parts access, and manufacturer warranty support.',
-      highlight: 'CERTIFIED'
+      title: 'Cummins Specialist',
+      description: 'Factory-trained technicians. Genuine parts access. Multi-brand expertise (Cummins, Perkins, Caterpillar, FG Wilson).',
+      highlight: 'EXPERT'
     },
     {
       icon: '⚡',
-      title: '2-Hour Emergency Response',
-      description: 'Our technicians are stationed across all 47 counties. Average response time: 47 minutes in Nairobi.',
+      title: '24/7 Emergency Support',
+      description: 'Technicians stationed across all 47 counties. Nairobi emergency response mobilization within business hours. Remote site coordination via phone/WhatsApp.',
       highlight: '24/7 SUPPORT'
     },
     {
@@ -1595,7 +1595,7 @@ const FAQSection = () => {
     },
     {
       question: 'What brands do you carry?',
-      answer: 'We are authorized dealers for Cummins and Voltka. We also service and supply parts for Perkins, Caterpillar, FG Wilson, SDMO, and 20+ other brands. Our technicians are factory-trained on all major platforms.'
+      answer: 'We specialize in Cummins and Voltka generators, with expert service and genuine parts for Perkins, Caterpillar, FG Wilson, SDMO, and 20+ other brands. Our technicians are factory-trained on all major platforms.'
     },
     {
       question: 'How quickly can you deliver and install?',
@@ -1603,7 +1603,7 @@ const FAQSection = () => {
     },
     {
       question: 'What if my generator breaks down?',
-      answer: 'Call our 24/7 hotline (+254 768 860 665). Average response time is 47 minutes in Nairobi, 2-4 hours elsewhere. Most repairs completed same-day. Warranty covers all parts and labor.'
+      answer: 'Call our 24/7 hotline: +254 768 860 665 (Nairobi) or +254 782 914 717 (support). Nairobi-area emergency visits are prioritized during business hours. Remote locations handled via phone diagnostics and scheduled visits. Warranty covers all parts and labor for manufacturer defects.'
     },
     {
       question: 'Can I pay in installments?',

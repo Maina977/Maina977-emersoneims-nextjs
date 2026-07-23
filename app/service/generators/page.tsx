@@ -94,7 +94,7 @@ export default function GeneratorsServicePage() {
           <div className="eims-shell py-0">
             <ServiceOverview
               title="Diesel Generator Services"
-              description="Comprehensive generator services including installation, maintenance, repairs, and parts supply. As authorized Cummins Voltka partners, we specialize in Cummins and Perkins systems."
+              description="Comprehensive generator services including installation, maintenance, repairs, and parts supply. Cummins & Perkins specialists with factory training and expert multi-brand support."
               image="/images/GEN%202-1920x1080.png"
               features={[
                 'Generator installation and commissioning',

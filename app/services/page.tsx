@@ -341,7 +341,7 @@ export default function ServicesPage() {
                 step: '02',
                 title: 'Install & commission',
                 problem: 'Cheap installs cost more in 3 years than they save on day one.',
-                action: 'Authorised Cummins/Voltka kit, IEC-grade panels, ATS, earthing, SPDs, full commissioning records.',
+                action: 'Cummins/Voltka generators, IEC-grade panels, ATS, earthing, SPDs, full commissioning records. Factory-trained installation.',
                 outcome: '3-year warranty, 1-year free service and a complete documentation pack.',
               },
               {
@@ -470,8 +470,8 @@ export default function ServicesPage() {
               <span className="text-amber-400">3-Year Warranty</span>
             </h2>
             <p className="text-slate-300 mb-5">
-              Authorised Cummins dealer. Premium 10 kVA – 2000 kVA generators,
-              professional installation, genuine parts, 24/7 support.
+              Cummins specialist. Premium 10 kVA – 2000 kVA generators,
+              professional installation, genuine parts, 24/7 expert support.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link

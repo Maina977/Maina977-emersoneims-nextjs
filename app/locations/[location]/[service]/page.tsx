@@ -330,7 +330,7 @@ function getServiceContent(serviceSlug: string, locationName: string) {
         { icon: '📋', title: 'Load Bank Testing', description: 'Comprehensive load testing to verify generator performance and reliability.' },
       ],
       seoContent: [
-        { heading: 'Generator Sales in {location}', content: 'EmersonEIMS offers a wide range of diesel generators for sale in {location}. Whether you need a small 10kVA generator for your home or a large 2000kVA industrial generator for your factory, we have the perfect solution. We are authorized dealers for Cummins, Perkins, FG Wilson, and Caterpillar generators.' },
+        { heading: 'Generator Sales in {location}', content: 'EmersonEIMS offers a wide range of diesel generators for sale in {location}. Whether you need a small 10kVA generator for your home or a large 2000kVA industrial generator for your factory, we have the perfect solution. We specialize in Cummins, Perkins, FG Wilson, and Caterpillar generators with expert installation and support.' },
         { heading: 'Generator Repair Services in {location}', content: 'Is your generator not starting? Experiencing power fluctuations? Our expert technicians in {location} can diagnose and repair any generator problem. We carry genuine spare parts and offer fast turnaround times to minimize your downtime.' },
         { heading: 'Generator Maintenance in {location}', content: 'Regular maintenance is key to generator reliability. Our maintenance programs in {location} include oil and filter changes, cooling system service, fuel system cleaning, battery testing, and comprehensive inspections to catch problems before they cause failures.' },
       ]

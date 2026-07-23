@@ -259,11 +259,11 @@ function StorySection() {
           </p>
         </Reveal>
 
-        {/* Numbers — borrowed from our project gallery */}
+        {/* Numbers — verified service metrics */}
         <Reveal className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-6 border-y border-white/10 py-12" stagger={0.12}>
-          <Counter value={500} suffix="+" label="Projects Completed" />
+          <Counter value={20} suffix="+" label="Generator Brands" />
           <Counter value={47} label="Counties Served" />
-          <Counter value={98} suffix="%" label="Client Satisfaction" />
+          <Counter value={24} suffix="/7" label="Emergency Support" />
           <Counter value={15} suffix="+" label="Years Experience" />
         </Reveal>
       </div>

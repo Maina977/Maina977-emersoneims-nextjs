@@ -25,7 +25,7 @@ const FAQ_DATA = [
     id: 'gen-3',
     category: 'Generators',
     question: 'What brands of generators do you supply?',
-    answer: 'We are authorized dealers for Cummins and Voltka generators. We also supply and service Caterpillar, FG Wilson, Perkins, Kohler, SDMO, MTU, Deutz, Volvo Penta, and other major brands from 20kVA to 2000kVA.',
+    answer: 'We specialize in Cummins and Voltka generators. We also supply and service Caterpillar, FG Wilson, Perkins, Kohler, SDMO, MTU, Deutz, Volvo Penta, and other major brands from 20kVA to 2000kVA. Factory-trained technicians, genuine parts, full support.',
     tags: ['brands', 'cummins', 'caterpillar', 'kohler']
   },
   {
@@ -171,7 +171,7 @@ const FAQ_DATA = [
     id: 'srv-5',
     category: 'Services',
     question: 'What warranty do you provide?',
-    answer: 'Warranty varies by product: Generators 1-2 years or 2000 hours, Solar panels 25 years performance warranty, Inverters 5-10 years, UPS systems 2-3 years. All warranties are manufacturer-backed through our authorized dealership.',
+    answer: 'Warranty varies by product: Generators 1-3 years or 2000 hours (3 years standard at EmersonEIMS), Solar panels 25 years performance warranty, Inverters 5-10 years, UPS systems 2-3 years. All warranties are manufacturer-backed, with support through our maintenance programs.',
     tags: ['warranty', 'guarantee', 'coverage']
   },
 
