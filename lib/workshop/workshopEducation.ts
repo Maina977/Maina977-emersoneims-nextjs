@@ -454,7 +454,10 @@ export const WORKSHOP_EDUCATION: ServiceEducation[] = [
       'Keep louvres and air paths clear in service.',
       'Design in the exhaust route and service access from the start.',
     ],
-    images: [],
+    images: [
+      IMG_ABS('/images/work-photos/IMG-20260110-WA0006.jpg', 'Canopied super-silent generator set lifted by crane inside the EmersonEIMS warehouse, showing the complete acoustic enclosure, access doors and control-panel cut-out'),
+      IMG_ABS('/images/desktop/generators/cummins-teal-canopy.jpg', 'Canopied generator with the enclosure access doors open, showing the control panel, cable inlet and the engine bay inside the acoustic canopy'),
+    ],
   },
 
   // ─── EXHAUST SYSTEMS ────────────────────────────────────────────────────
