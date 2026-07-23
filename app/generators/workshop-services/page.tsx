@@ -30,6 +30,7 @@ import {
   WORKSHOP_PROCESS,
   WORKSHOP_FAQS,
 } from '@/lib/workshop/workshopServices';
+import ServiceEducation from '@/components/workshop/ServiceEducation';
 
 const BASE = 'https://www.emersoneims.com';
 const PATH = '/generators/workshop-services';
@@ -299,25 +300,6 @@ export default function WorkshopServicesPage() {
                   <h3 className="text-xl font-bold text-white md:text-2xl">{s.title}</h3>
                   <p className="mt-3 max-w-3xl leading-relaxed text-slate-300">{s.intro}</p>
 
-                  {/* Photograph, only where one has been visually confirmed to show
-                      THIS work. Services without a confirmed image render none —
-                      a generic or wrong photo on a technical services page costs
-                      more credibility than empty space. */}
-                  {s.image && s.imageAlt && (
-                    <figure className="mt-6 overflow-hidden rounded-xl border border-slate-700/70">
-                      <Image
-                        src={s.image}
-                        alt={s.imageAlt}
-                        width={1200}
-                        height={675}
-                        quality={85}
-                        loading="lazy"
-                        sizes="(max-width: 768px) 100vw, 720px"
-                        className="h-64 w-full object-cover md:h-80"
-                      />
-                    </figure>
-                  )}
-
                   <div className="mt-6 grid gap-8 md:grid-cols-2">
                     <div>
                       <h4 className="text-sm font-semibold uppercase tracking-wider text-amber-400">
@@ -348,6 +330,11 @@ export default function WorkshopServicesPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Verified photo gallery + full technical guide (causes,
+                      repair, testing, parts, prevention) — the client/technician/
+                      lecturer content. Every image was visually verified. */}
+                  <ServiceEducation serviceId={s.id} />
 
                   {s.caveat && (
                     <p className="mt-6 rounded-xl border border-slate-700 bg-slate-950/60 p-4 text-sm leading-relaxed text-slate-400">
