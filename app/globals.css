@@ -2021,6 +2021,36 @@ html {
 }
 
 /* Tesla-style CTA group */
+/* Tesla Slide Gallery — Ken Burns animation */
+@keyframes tesla-kenburns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+.tesla-kenburns {
+  animation: tesla-kenburns 6s ease-out forwards;
+  transform-origin: center center;
+}
+
+.tesla-cap {
+  animation: slideInDown 0.6s ease-out 0.3s both;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .cta-tesla {
   display: flex;
   gap: var(--space-3);

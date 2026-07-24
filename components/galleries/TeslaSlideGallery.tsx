@@ -79,14 +79,15 @@ export default function TeslaSlideGallery({
           className={`absolute inset-0 transition-opacity duration-[1100ms] ease-out ${i === index ? 'opacity-100' : 'opacity-0'}`}
           aria-hidden={i !== index}
         >
-          <div className={`absolute inset-0 ${i === index && !prefersReducedMotion ? 'tesla-kenburns' : ''}`}>
+          <div className={`absolute inset-0 overflow-hidden ${i === index && !prefersReducedMotion ? 'tesla-kenburns' : ''}`} style={{ perspective: '1000px' }}>
             <Image
               src={slide.src}
               alt={slide.title}
               fill
               priority={i === 0}
-              className="object-cover"
+              className="object-cover w-full h-full"
               sizes="100vw"
+              quality={90}
             />
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/40" />
