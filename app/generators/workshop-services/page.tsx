@@ -31,6 +31,7 @@ import {
   WORKSHOP_FAQS,
 } from '@/lib/workshop/workshopServices';
 import ServiceEducation from '@/components/workshop/ServiceEducation';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 const BASE = 'https://www.emersoneims.com';
 const PATH = '/generators/workshop-services';
@@ -569,6 +570,20 @@ export default function WorkshopServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* Quick Workshop Repair CTA */}
+      <ServiceCTASection
+        title="Ready for a Workshop Repair or Fabrication?"
+        subtitle="From radiator repairs to engine overhauls to custom steel fabrication — our Embakasi workshop is equipped for generators across all brands and sizes."
+        primaryService="Workshop Service"
+        primaryLabel="Request Workshop Quote"
+        secondaryServices={[
+          { label: 'Engine Overhaul', service: 'Engine Overhaul' },
+          { label: 'Urgent Repair', service: 'Emergency Repair' },
+        ]}
+        backgroundColor="from-orange-900/50 to-amber-900/50"
+        icon="🏭"
+      />
     </main>
   );
 }

@@ -7,6 +7,7 @@ import UnifiedCTA from "@/components/cta/UnifiedCTA";
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import UPSEngineeringDeepDive from '@/components/solutions/UPSEngineeringDeepDive';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 const TABS = [
   { id: 'overview', label: 'Overview', color: 'cyan' },
@@ -874,17 +875,18 @@ export default function UPSPage() {
       <UPSEngineeringDeepDive />
 
       {/* CTA Section */}
-      <section className="mx-auto max-w-7xl px-6 py-16">
-        <div className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-3xl p-8 md:p-12 border border-purple-500/30 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Need UPS Solutions?</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto mb-8">Professional UPS supply, installation, battery replacement, and maintenance. All sizes from 650VA to 500kVA. 12-24 months warranty.</p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <UnifiedCTA action="custom" href="https://wa.me/254768860665?text=UPS%20Quote%20Request" size="lg" label="Get Free Quote" />
-            <UnifiedCTA action="custom" href="tel:+254768860665" variant="secondary" size="lg" label="Call Us Now" />
-            <UnifiedCTA action="site-survey" variant="secondary" size="lg" label="Request Site Survey" />
-          </div>
-        </div>
-      </section>
+      <ServiceCTASection
+        title="Need UPS Solutions?"
+        subtitle="Professional UPS supply, installation, battery replacement, and maintenance. All sizes from 650VA to 500kVA. 12-24 months warranty. Serving all 47 Kenya counties."
+        primaryService="UPS Consultation"
+        primaryLabel="Get UPS Quote"
+        secondaryServices={[
+          { label: 'Battery Replacement', service: 'UPS Battery Replacement' },
+          { label: 'Site Survey', service: 'UPS Site Survey' },
+        ]}
+        backgroundColor="from-purple-900/30 to-indigo-900/30"
+        icon="⚡"
+      />
     </main>
   );
 }

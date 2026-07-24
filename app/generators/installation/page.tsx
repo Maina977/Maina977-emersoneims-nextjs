@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { GeneratorEducationCompact } from '@/components/generators/GeneratorEducationPanel';
 import GeneratorInstallationSizer from '@/components/generators/GeneratorInstallationSizer';
 import GeneratorInstallationGuide from '@/components/generators/GeneratorInstallationGuide';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 // Comprehensive Installation Knowledge Database
 const installationPhases = [
@@ -898,39 +899,18 @@ export default function GeneratorInstallationPage() {
       <GeneratorInstallationGuide />
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-green-900/50 to-blue-900/50">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Install Your Generator?
-          </h2>
-          <p className="text-xl text-white/80 mb-8">
-            Contact us for a detailed quotation. Our engineers are ready to design 
-            the perfect installation for your facility.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="tel:+254768860665"
-              className="px-8 py-4 bg-gradient-to-r from-green-400 to-green-600 text-black font-bold rounded-xl hover:from-green-500 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg shadow-green-500/30"
-            >
-              📞 Call: +254 768 860 665
-            </a>
-            <a
-              href="tel:+254782914717"
-              className="px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-600 text-white font-bold rounded-xl hover:from-blue-500 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/30"
-            >
-              📞 Call: +254782914717
-            </a>
-          </div>
-          <div className="mt-8">
-            <Link
-              href="/generators/maintenance"
-              className="text-green-400 hover:text-green-300 underline"
-            >
-              Already have a generator? View our maintenance services →
-            </Link>
-          </div>
-        </div>
-      </section>
+      <ServiceCTASection
+        title="Ready to Install Your Generator?"
+        subtitle="Contact us for a detailed quotation. Our engineers are ready to design the perfect installation for your facility across all 47 Kenya counties."
+        primaryService="Generator Installation"
+        primaryLabel="Book Installation Consultation"
+        secondaryServices={[
+          { label: 'Get Installation Quote', service: 'Installation Quote' },
+          { label: 'Site Assessment', service: 'Site Survey' },
+        ]}
+        backgroundColor="from-green-900/50 to-blue-900/50"
+        icon="🏗️"
+      />
 
       {/* Footer Navigation */}
       <section className="py-10 bg-black border-t border-white/10">

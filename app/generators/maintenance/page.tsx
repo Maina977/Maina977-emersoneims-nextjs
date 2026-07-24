@@ -8,6 +8,7 @@ import { GeneratorEducationCompact } from '@/components/generators/GeneratorEduc
 import WavesGallery from '@/components/galleries/WavesGallery';
 import GeneratorSynchronizationGuide from '@/components/generators/GeneratorSynchronizationGuide';
 import SynchronizationVideo from '@/components/generators/SynchronizationVideo';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 // 16 real generator repair / electrical-repair images (optimised webp in /images/repairs)
 const REPAIR_WAVE_ITEMS = [
@@ -914,22 +915,19 @@ export default function GeneratorMaintenancePage() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-20 bg-gradient-to-r from-orange-600 to-orange-700">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-4">Need Emergency Generator Service?</h2>
-          <p className="text-xl text-orange-100 mb-8">
-            Our 24/7 emergency response team is ready. Average response time: 45 minutes in Nairobi.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="tel:+254768860665" className="px-8 py-4 bg-white text-orange-600 font-bold rounded-lg text-lg hover:bg-gray-100 transition-colors">
-              📞 Call: +254 768 860 665
-            </a>
-            <a href="tel:+254782914717" className="px-8 py-4 bg-black/20 text-white font-bold rounded-lg text-lg hover:bg-black/30 transition-colors">
-              📞 Alt: +254782914717
-            </a>
-          </div>
-        </div>
-      </section>
+      <ServiceCTASection
+        title="Need Emergency Generator Service?"
+        subtitle="Our 24/7 emergency response team is ready across all 47 Kenya counties. Average response time: 45 minutes in Nairobi, 2-4 hours nationwide."
+        primaryService="Emergency Generator Service"
+        primaryLabel="Request Emergency Service"
+        secondaryServices={[
+          { label: 'Schedule Maintenance', service: 'Scheduled Maintenance' },
+          { label: 'Engine Overhaul Quote', service: 'Engine Overhaul' },
+          { label: 'SLA Contract', service: 'Maintenance Contract' },
+        ]}
+        backgroundColor="from-orange-600 to-orange-700"
+        icon="🚨"
+      />
 
       {/* ANIMATED SYNCHRONIZATION EXPLAINER ("video") — autoplay step-by-step */}
       <SynchronizationVideo />

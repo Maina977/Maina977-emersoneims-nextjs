@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 // Leasing plans data
 const LEASING_PLANS = [
@@ -328,24 +329,18 @@ export default function GeneratorLeasingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-emerald-500/10">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Power Your Business?
-          </h2>
-          <p className="text-xl text-gray-400 mb-8">
-            Get a customized leasing quote today. Our team will help you find the perfect solution.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="/contact?subject=leasing" className="cta-button-primary">
-              Request Leasing Quote
-            </a>
-            <a href="tel:+254768860665" className="cta-button-secondary">
-              Call +254 768 860 665
-            </a>
-          </div>
-        </div>
-      </section>
+      <ServiceCTASection
+        title="Ready to Power Your Business?"
+        subtitle="Get a customized leasing quote today. Our team will help you find the perfect solution for your facility across all 47 Kenya counties."
+        primaryService="Generator Leasing"
+        primaryLabel="Request Leasing Quote"
+        secondaryServices={[
+          { label: 'Lease-to-Own', service: 'Lease-to-Own Option' },
+          { label: 'Short-Term Rental', service: 'Short-Term Rental' },
+        ]}
+        backgroundColor="from-emerald-500/10 via-blue-500/10 to-emerald-500/10"
+        icon="💰"
+      />
 
       {/* Back to Generators */}
       <div className="py-8 text-center">

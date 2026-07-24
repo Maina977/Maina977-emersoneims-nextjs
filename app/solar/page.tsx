@@ -18,6 +18,7 @@ import CinematicImageGallery from '@/components/ui/CinematicImageGallery';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
 import SolarEngineeringDeepDive from '@/components/solar/SolarEngineeringDeepDive';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 // Strictly-solar rotating gallery (like the landing page ring)
 // Deterministic particle layout — fixed values so SSR and client render
@@ -2207,6 +2208,20 @@ export default function SolarBible() {
           </div>
         </div>
       </footer>
+
+      {/* Solar CTA Section */}
+      <ServiceCTASection
+        title="Ready for Solar Power?"
+        subtitle="From residential rooftop systems to commercial arrays covering hundreds of kW — we design, install, and maintain solar solutions across all 47 Kenya counties."
+        primaryService="Solar Consultation"
+        primaryLabel="Request Solar Consultation"
+        secondaryServices={[
+          { label: 'Solar Quote', service: 'Solar Design Quote' },
+          { label: 'Hybrid System', service: 'Solar-Generator Hybrid' },
+        ]}
+        backgroundColor="from-yellow-900/50 to-orange-900/50"
+        icon="☀️"
+      />
 
       {/* Floating WhatsApp */}
       <FloatingWhatsApp />

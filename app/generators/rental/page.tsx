@@ -1,4 +1,5 @@
 'use client';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -589,44 +590,18 @@ export default function GeneratorRentalPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-900/50 to-purple-900/50">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Need a Generator? Call Now!
-          </h2>
-          <p className="text-xl text-white/80 mb-8">
-            Get a quote within minutes. Same-day delivery available in Nairobi.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="tel:+254768860665"
-              className="px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-600 text-white font-bold rounded-xl hover:from-blue-500 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-500/30"
-            >
-              📞 Call: +254 768 860 665
-            </a>
-            <a
-              href="tel:+254782914717"
-              className="px-8 py-4 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/30"
-            >
-              📞 Call: +254782914717
-            </a>
-          </div>
-          <p className="mt-6 text-white/60">
-            WhatsApp available on both numbers • 24/7 for emergencies
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link href="/generators" className="text-blue-400 hover:text-blue-300 underline">
-              Buy a Generator →
-            </Link>
-            <Link href="/generators/installation" className="text-green-400 hover:text-green-300 underline">
-              Installation Services →
-            </Link>
-            <Link href="/generators/maintenance" className="text-yellow-400 hover:text-yellow-300 underline">
-              Maintenance Services →
-            </Link>
-          </div>
-        </div>
-      </section>
+      <ServiceCTASection
+        title="Need a Generator? Get a Quote Now!"
+        subtitle="Get a quote within minutes. Same-day delivery available in Nairobi. We serve all 47 Kenya counties."
+        primaryService="Generator Rental"
+        primaryLabel="Check Rental Availability"
+        secondaryServices={[
+          { label: 'Long-Term Leasing', service: 'Long-Term Leasing' },
+          { label: 'Emergency Rental', service: 'Emergency Rental' },
+        ]}
+        backgroundColor="from-blue-900/50 to-purple-900/50"
+        icon="🚚"
+      />
 
       {/* Footer Navigation */}
       <section className="py-10 bg-black border-t border-white/10">

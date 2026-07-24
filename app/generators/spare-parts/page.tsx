@@ -23,6 +23,7 @@ import SparePartsModule from '@/components/parts/SparePartsModule';
 import SparePartsConversion from '@/components/parts/SparePartsConversion';
 import PartsDeliveryNationwide from '@/components/parts/PartsDeliveryNationwide';
 import PartsCategoryLinks from '@/components/parts/PartsCategoryLinks';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 export default function SparePartsPage() {
   const heroRef = useRef<HTMLElement>(null);
@@ -199,6 +200,20 @@ export default function SparePartsPage() {
       <PartsCategoryLinks />
 
       <PartsDeliveryNationwide />
+
+      {/* Quick Parts CTA */}
+      <ServiceCTASection
+        title="Need a Specific Part?"
+        subtitle="Our 2,000+ catalogued spare parts are available with same-day delivery in Nairobi and nationwide shipping to all 47 Kenya counties."
+        primaryService="Spare Parts Quote"
+        primaryLabel="Request Spare-Part Price"
+        secondaryServices={[
+          { label: 'Find Replacement Part', service: 'Parts Search' },
+          { label: 'Emergency Parts', service: 'Emergency Parts' },
+        ]}
+        backgroundColor="from-cyan-900/50 to-blue-900/50"
+        icon="⚙️"
+      />
     </main>
   );
 }
