@@ -20,6 +20,7 @@ import ErrorBoundary from '@/components/error/ErrorBoundary';
 import { usePerformanceTier } from '@/components/performance/usePerformanceTier';
 import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
 import GeneratorEngineeringDeepDive from '@/components/generators/GeneratorEngineeringDeepDive';
+import ConversionCTA from '@/components/cta/ConversionCTA';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HEAVY COMPONENTS - Lazy loaded (Chart.js ~70KB, GSAP ~30KB saved)
@@ -53,6 +54,9 @@ const SizingCalculatorNew = dynamic(() => import('@/components/generators/Genera
 const GeneratorEducationPanel = dynamic(() => import('@/components/generators/GeneratorEducationPanel'), { ssr: false });
 const CinematicImageGallery = dynamic(() => import('@/components/ui/CinematicImageGallery'), { ssr: false });
 const CumminsBanner = dynamic(() => import('@/components/brands/CumminsBanner'), { ssr: false });
+
+// CONVERSION CTA HUB - Direct Action Buttons
+const ConversionCTAHub = dynamic(() => import('@/components/generators/ConversionCTAHub'), { ssr: false });
 
 // AI DIAGNOSTIC COMPONENTS
 const AIVisualDiagnostic = dynamic(() => import('@/components/generator-oracle/AIVisualDiagnostic'), { ssr: false });
@@ -2965,6 +2969,12 @@ export default function GeneratorPage() {
           ❓ FAQ SECTION - Handle All Objections
       ════════════════════════════════════════════════════════════════ */}
       <FAQSection />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          🎯 CONVERSION CTA HUB - 7 Direct Action Buttons
+          Request Price, Inspection, Maintenance, Availability, Spare Parts, Trade-In, Speak to Engineer
+      ════════════════════════════════════════════════════════════════ */}
+      <ConversionCTAHub />
 
       {/* ═══════════════════════════════════════════════════════════════════
           🚀 FINAL CTA - Make Them Buy NOW
