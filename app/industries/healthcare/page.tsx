@@ -22,7 +22,7 @@ export default function HealthcareIndustriesPage() {
         'Solar + battery storage for sustainability',
         'Load shedding for non-critical areas',
         'Remote monitoring + predictive maintenance',
-        'Automated failover (< 200ms)',
+        'Automated failover ({'<'} 200ms)',
       ],
       applications: 'Operating theatres, ICU, emergency wards, imaging labs, blood bank refrigeration',
       reliability: '99.8% uptime SLA',
@@ -144,7 +144,7 @@ export default function HealthcareIndustriesPage() {
             <div className="p-8 bg-slate-900/50 border border-red-500/20 rounded-lg">
               <h3 className="text-2xl font-bold text-red-400 mb-4">⚡ 99.8% Uptime SLA</h3>
               <p className="text-gray-300 mb-4">
-                Contractual guarantee. Automatic failover in < 200ms. Redundant systems. Daily monitoring.
+                Contractual guarantee. Automatic failover in {'<'} 200ms. Redundant systems. Daily monitoring.
               </p>
               <p className="text-sm text-gray-400">
                 Other providers claim reliability. We guarantee it in writing and back it with 24/7 technical support.

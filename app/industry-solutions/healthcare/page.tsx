@@ -147,7 +147,7 @@ export default function HealthcareSolutionsPage() {
               </div>
               <div className="ml-20 space-y-3 text-gray-300">
                 <p><strong>System:</strong> Hybrid: Emergency UPS + Fast-start backup generator</p>
-                <p><strong>Failover Time:</strong> < 2 seconds (UPS priority, generator backup)</p>
+                <p><strong>Failover Time:</strong> {'<'} 2 seconds (UPS priority, generator backup)</p>
                 <p><strong>Services Included:</strong> UPS, generator, ATS, emergency lighting integration</p>
                 <p><strong>Budget:</strong> KES 2M - 6M</p>
               </div>
