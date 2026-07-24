@@ -1,9 +1,10 @@
 /**
  * POST /api/orders/create
- * Creates a new order from shopping cart
+ * Creates a new order from shopping cart + sends confirmation email
  */
 
 import { orderService } from '@/lib/orders/orderService';
+import { sendOrderConfirmation } from '@/lib/email/emailService';
 
 export async function POST(request: Request) {
   try {
@@ -43,8 +44,14 @@ export async function POST(request: Request) {
       paymentMethod: paymentMethod || 'mpesa'
     });
 
-    // In production, save to database
-    // await db.orders.insert(order);
+    // Send confirmation email (async, don't wait)
+    sendOrderConfirmation(
+      customerEmail,
+      customerName,
+      order.orderId,
+      order.total,
+      shippingLocation
+    ).catch(err => console.error('Email send failed:', err));
 
     return Response.json({
       success: true,
@@ -53,7 +60,7 @@ export async function POST(request: Request) {
       subtotal: order.subtotal,
       tax: order.tax,
       shippingCost: order.shippingCost,
-      message: `Order ${order.orderId} created successfully. Ready for payment.`
+      message: `Order ${order.orderId} created successfully. Confirmation email sent.`
     });
   } catch (error: any) {
     console.error('Order creation error:', error);
