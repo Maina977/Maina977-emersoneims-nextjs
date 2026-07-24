@@ -33,6 +33,17 @@ const usedGenerators = [
       '/images/voltka/voltka-cummins-engine-open-canopy.webp',
       '/images/voltka/cummins-engine-detail.webp',
     ],
+    specifications: {
+      brand: "Cummins",
+      models: ["C50D5", "C100D5", "C250D5", "C500D5", "C750D5", "C1000D5", "C1500D5", "C2000D5"],
+      runningHours: "2,000 – 8,500 hrs",
+      fuelConsumption: "0.18 – 0.22 L/kWh",
+      engineType: "4-stroke, turbocharged diesel",
+      coolingSystem: "Radiator-cooled with electric fan",
+      noiseLevel: "72 – 82 dB @ 1m",
+      serviceAvailability: "Nationwide authorized centers",
+      description: "Industry standard for mission-critical power. Each unit includes detailed service history and OEM part availability.",
+    },
   },
   {
     brand: "Perkins",
@@ -46,6 +57,17 @@ const usedGenerators = [
       '/images/enhanced/ST AUSTINS ACADEMY 50KVA PERKINS ENGINE-4K-CINEMATIC.jpg',
       '/images/PERKINS-ENGINE-PARTS.jpg',
     ],
+    specifications: {
+      brand: "Perkins",
+      models: ["1104A-44G", "1104C-44G", "1106A-70G", "1106C-70G", "1500A-60G", "2000A-60G"],
+      runningHours: "1,500 – 6,000 hrs",
+      fuelConsumption: "0.17 – 0.19 L/kWh",
+      engineType: "4-stroke, naturally aspirated & turbocharged",
+      coolingSystem: "Water-cooled radiator with fan",
+      noiseLevel: "70 – 78 dB @ 1m",
+      serviceAvailability: "Direct service in Nairobi and regional hubs",
+      description: "Trusted by hospitals and schools across Kenya. Exceptional fuel efficiency ideal for 24/7 operations.",
+    },
   },
   {
     brand: "Caterpillar",
@@ -60,6 +82,17 @@ const usedGenerators = [
       '/images/voltka/cat-canopy-studio.webp',
       '/images/voltka/cat-open-frame.webp',
     ],
+    specifications: {
+      brand: "Caterpillar",
+      models: ["C100D5", "C130D5", "C150D5", "C250D5", "C500D5", "C750D5", "C1000D5", "C2000D5"],
+      runningHours: "3,000 – 12,000 hrs",
+      fuelConsumption: "0.19 – 0.24 L/kWh",
+      engineType: "4-stroke, turbocharged with aftercooler",
+      coolingSystem: "Radiator with thermostat control",
+      noiseLevel: "74 – 86 dB @ 1m",
+      serviceAvailability: "Dealers in Nairobi, Mombasa, Kisumu, Nakuru",
+      description: "Built for industrial mining and manufacturing. Each unit undergoes 21-point inspection including bearing assessment and compression testing.",
+    },
   },
   {
     brand: "Volvo Penta",
@@ -73,6 +106,17 @@ const usedGenerators = [
       '/images/gen00011.jpg',
       '/images/GEN 2-1920x1080.png',
     ],
+    specifications: {
+      brand: "Volvo Penta",
+      models: ["D3-110", "D4-115", "D5-200", "D9-400", "D11-350", "D13-550", "D16-735"],
+      runningHours: "2,500 – 7,500 hrs",
+      fuelConsumption: "0.20 – 0.25 L/kWh",
+      engineType: "4-stroke, turbocharged marine diesel",
+      coolingSystem: "Closed-loop water cooling with expansion tank",
+      noiseLevel: "68 – 78 dB @ 1m",
+      serviceAvailability: "Marine service centers in Mombasa & Nairobi",
+      description: "Marine-grade reliability for harsh remote locations. Low emissions meet future environmental standards.",
+    },
   },
   {
     brand: "SDMO",
@@ -86,6 +130,17 @@ const usedGenerators = [
       '/images/tnpl-diesal-generator-1000x1000-1920x1080.webp',
       '/images/generator-canopy-fabrication.png',
     ],
+    specifications: {
+      brand: "SDMO (Kohler Power)",
+      models: ["AIRDOSER 60", "AIRDOSER 80", "AIRDOSER 110", "AIRDOSER 150", "POWER FOCUS", "MDX series"],
+      runningHours: "2,000 – 8,000 hrs",
+      fuelConsumption: "0.18 – 0.21 L/kWh",
+      engineType: "4-stroke, turbocharged diesel",
+      coolingSystem: "Fan-cooled radiator",
+      noiseLevel: "70 – 80 dB @ 1m",
+      serviceAvailability: "Independent service centers across Kenya",
+      description: "French precision with proven African reliability. Popular in remote mining and agricultural operations.",
+    },
   },
   {
     brand: "Wei Chai",
@@ -99,6 +154,17 @@ const usedGenerators = [
       '/images/voltka/voltka-warehouse-fleet.webp',
       '/images/voltka/voltka-vks165-stock-forklift.webp',
     ],
+    specifications: {
+      brand: "Wei Chai",
+      models: ["WP2.9D", "WP4D", "WP5D", "WP6D", "WP7D", "WP10D", "WP13D"],
+      runningHours: "3,000 – 10,000 hrs",
+      fuelConsumption: "0.21 – 0.26 L/kWh",
+      engineType: "4-stroke, turbocharged diesel",
+      coolingSystem: "Water-cooled radiator",
+      noiseLevel: "72 – 82 dB @ 1m",
+      serviceAvailability: "Aftermarket service providers nationwide",
+      description: "Exceptional value for farmers, SMEs, and backup installations. All units mechanically sound and thoroughly tested.",
+    },
   },
 ];
 
@@ -531,10 +597,24 @@ export default function UsedGeneratorsPage() {
                   {gen.status}
                 </span>
               </div>
-              
+
               <p className="text-brand-gold font-semibold">{gen.kvaRange}</p>
               <p className="text-white/80 mt-2">Warranty: {gen.warranty}</p>
               <p className="text-white font-bold mt-2">{gen.priceRange}</p>
+
+              {/* Running Hours & Specs */}
+              {gen.specifications && (
+                <div className="mt-4 space-y-2 text-sm">
+                  <p className="text-white/70">
+                    <span className="text-brand-gold font-semibold">Running Hours: </span>
+                    {gen.specifications.runningHours}
+                  </p>
+                  <p className="text-white/70">
+                    <span className="text-brand-gold font-semibold">Fuel: </span>
+                    {gen.specifications.fuelConsumption}
+                  </p>
+                </div>
+              )}
               
               {/* Image Gallery — real unit photography with lightbox */}
               {gen.images && gen.images.length > 0 && (
@@ -553,15 +633,15 @@ export default function UsedGeneratorsPage() {
               </ul>
               
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <a 
-                  href="/contact" 
+                <a
+                  href="/contact"
                   className="sci-fi-button flex-1 text-center py-3"
                   aria-label={`Request quote for ${gen.brand} used generator`}
                 >
                   Request Quote
                 </a>
-                <a 
-                  href={`/specs/used/${gen.brand.toLowerCase()}`}
+                <a
+                  href={`/specs/used/${gen.brand.toLowerCase().replace(/\s+/g, '-')}`}
                   className="sci-fi-outline flex-1 text-center py-3"
                   aria-label={`View detailed specifications for ${gen.brand} used generator`}
                 >
