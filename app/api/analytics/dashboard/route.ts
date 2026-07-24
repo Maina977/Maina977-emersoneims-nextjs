@@ -1,39 +1,57 @@
 /**
- * ANALYTICS DASHBOARD API
- * Returns aggregated analytics data for the dashboard
+ * GET /api/analytics/dashboard
+ * Returns dashboard metrics for admin panel
  */
 
-import { NextResponse } from 'next/server';
+import { analyticsService } from '@/lib/analytics/analyticsService';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // TODO: Fetch real data from database
-    // For now, return mock data structure
-    
-    const dashboardData = {
-      visitors: {
-        total: 0, // TODO: Count from database
-        active: 0, // TODO: Count active sessions
-        new: 0, // TODO: Count new visitors today
-        returning: 0, // TODO: Count returning visitors
-      },
-      pages: [], // TODO: Aggregate page views from database
-      conversions: {
-        total: 0, // TODO: Count total conversions
-        today: 0, // TODO: Count conversions today
-        rate: 0, // TODO: Calculate conversion rate
-        byType: {}, // TODO: Group conversions by type
-      },
-      topLeads: [], // TODO: Get top leads by engagement score
-    };
+    // In production, fetch from database
+    // const orders = await db.orders.findAll();
 
-    return NextResponse.json(dashboardData);
-  } catch (error) {
-    console.error('Dashboard API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard data' },
+    // Mock data for demonstration
+    const mockOrders: any[] = [];
+
+    const dashboardData = analyticsService.getDashboardData(mockOrders);
+
+    return Response.json({
+      success: true,
+      data: dashboardData,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    return Response.json(
+      { error: error.message || 'Failed to fetch analytics' },
       { status: 500 }
     );
   }
 }
 
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { startDate, endDate, groupBy = 'monthly' } = body;
+
+    // Mock data
+    const mockOrders: any[] = [];
+
+    const report = analyticsService.generateReport(mockOrders, {
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      groupBy: groupBy as any,
+      includeProjections: true
+    });
+
+    return Response.json({
+      success: true,
+      report,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    return Response.json(
+      { error: error.message },
+      { status: 400 }
+    );
+  }
+}
