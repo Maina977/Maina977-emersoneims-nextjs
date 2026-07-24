@@ -1,15 +1,7 @@
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Warranty & Service Terms | EmersonEIMS',
-  description: 'EmersonEIMS warranty coverage for generators, solar, UPS, and engineering services. 3-year comprehensive warranty, maintenance packages, spare parts coverage.',
-  alternates: {
-    canonical: 'https://www.emersoneims.com/warranty',
-  },
-};
 
 export default function WarrantyPage() {
   const [activeTab, setActiveTab] = useState<'generators' | 'solar' | 'ups' | 'services'>('generators');
