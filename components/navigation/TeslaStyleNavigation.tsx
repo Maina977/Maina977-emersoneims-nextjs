@@ -207,13 +207,22 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Knowledge',
+        title: 'Knowledge & Learning',
         items: [
           { href: '/blog', label: 'Blog', icon: '📝', desc: 'Latest articles' },
           { href: '/knowledge-base', label: 'Knowledge Base', icon: '📚', desc: 'Guides & how-tos' },
           { href: '/technical-bible', label: 'Technical Bible', icon: '📖', desc: 'Deep reference' },
           { href: '/resources', label: 'Learning Hub', icon: '🎓', desc: 'All resources' },
           { href: '/faq', label: 'FAQ', icon: '❓', desc: 'Quick answers' },
+          { href: '/certification', label: 'Certification Program', icon: '🏆', desc: '3-tier training', badge: 'NEW' },
+        ],
+      },
+      {
+        title: 'Video & Podcast',
+        items: [
+          { href: '/videos/youtube-episodes', label: 'YouTube Episodes', icon: '📺', desc: 'Technical deep dives', badge: 'NEW' },
+          { href: '/podcasts/episodes', label: 'Power Infrastructure Podcast', icon: '🎙️', desc: 'Industry conversations', badge: 'NEW' },
+          { href: '/media', label: 'Media Hub', icon: '🎬', desc: 'All video content' },
         ],
       },
       {
@@ -227,13 +236,20 @@ const MEGA_MENUS = {
         ],
       },
       {
-        title: 'Coverage & Careers',
+        title: 'Coverage & Marketplace',
         items: [
           { href: '/counties', label: '47 Counties', icon: '📍', desc: 'Kenya nationwide' },
           { href: '/locations', label: 'Service Locations', icon: '🗺️', desc: 'Branch finder' },
+          { href: '/marketplace', label: 'Partner Marketplace', icon: '🤝', desc: '50+ vetted partners', badge: 'NEW' },
           { href: '/kenya', label: 'Kenya Hub', icon: '🇰🇪', desc: 'Country-wide' },
-          { href: '/careers', label: 'Careers', icon: '💼', desc: 'Join the team' },
           { href: '/guides/emergency-response', label: 'Emergency Guide', icon: '🚨', desc: '24/7 response' },
+        ],
+      },
+      {
+        title: 'Careers',
+        items: [
+          { href: '/careers', label: 'Careers', icon: '💼', desc: 'Join the team' },
+          { href: '/certification', label: 'Professional Training', icon: '📚', desc: 'Get certified' },
         ],
       },
     ],
