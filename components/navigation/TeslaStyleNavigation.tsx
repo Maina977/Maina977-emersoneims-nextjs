@@ -276,6 +276,7 @@ const NAV_ITEMS = [
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
   { key: 'resources', label: 'RESOURCES', type: 'mega' },
+  { href: '/phase-4', label: 'PHASE 4', type: 'link', badge: 'NEW' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
