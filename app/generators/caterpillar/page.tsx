@@ -2,17 +2,8 @@
 
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
 
 const OptimizedImage = dynamic(() => import('@/components/media/OptimizedImage'), { ssr: false });
-
-export const metadata: Metadata = {
-  title: 'Caterpillar Generators Kenya | Industrial & Heavy-Duty Power | EmersonEIMS',
-  description: 'Caterpillar Cat generators 100-2000kVA for Kenya. Heavy-duty industrial power, mining, construction. Expert installation and 24/7 maintenance support.',
-  alternates: {
-    canonical: 'https://www.emersoneims.com/generators/caterpillar',
-  },
-};
 
 export default function CaterpillarPage() {
   return (
