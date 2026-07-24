@@ -26,6 +26,7 @@ import {
 // Server component, so ssr stays on (default) — its grid fallback renders for
 // crawlers/no-WebGL; only the client chunk is deferred.
 const OrbitalGallery = dynamic(() => import('@/components/galleries/OrbitalGallery'));
+const ServiceCTASection = dynamic(() => import('@/components/cta/ServiceCTASection'));
 
 // Distinct image per service discipline (no recycling across pages) — drawn
 // from the freshly curated Desktop field photography + graded marketing set.
@@ -531,6 +532,21 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* Quick Service CTA */}
+      <ServiceCTASection
+        title="What Service Do You Need?"
+        subtitle="Generators, Solar, UPS, Maintenance, Installation, Fabrication, and more — pick your service and get a quote within 2 hours."
+        primaryService="General Inquiry"
+        primaryLabel="Get Started"
+        secondaryServices={[
+          { label: 'Generator Quote', service: 'Generator Quote' },
+          { label: 'Solar Design', service: 'Solar Design' },
+          { label: 'UPS Solutions', service: 'UPS Solutions' },
+        ]}
+        backgroundColor="from-slate-900/50 to-amber-900/50"
+        icon="🎯"
+      />
 
       {/* Nationwide mobile workshop — owner-confirmed capability that was
           effectively invisible on the site before 2026-07-20. Placed after the

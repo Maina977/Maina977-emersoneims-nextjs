@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import B2BCommercialBand from '@/components/b2b/B2BCommercialBand';
 import { B2B_PROFILES } from '@/lib/b2b/pageProfiles';
+import ServiceCTASection from '@/components/cta/ServiceCTASection';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SERVICE CATEGORIES
@@ -586,6 +587,20 @@ export default function UniversalCommandBridge() {
           </p>
         </motion.div>
       </div>
+
+      {/* Maintenance CTA */}
+      <ServiceCTASection
+        title="Need Maintenance or Repair?"
+        subtitle="Generators, Solar, UPS, Motors, Boreholes, HVAC, Fabrication, and more — get expert service across all 47 Kenya counties."
+        primaryService="Maintenance Request"
+        primaryLabel="Schedule Maintenance"
+        secondaryServices={[
+          { label: 'Emergency Repair', service: 'Emergency Repair' },
+          { label: 'Preventive Service', service: 'Preventive Maintenance' },
+        ]}
+        backgroundColor="from-cyan-900/50 to-slate-900/50"
+        icon="🔧"
+      />
 
       {/* CSS for radial gradient */}
       <style jsx>{`
