@@ -257,7 +257,7 @@ export default function Phase6Page() {
                 </div>
                 <div>
                   <p className="font-bold text-emerald-400 mb-1">Emergency Response</p>
-                  <p>51-minute emergency installation example vs industry norms</p>
+                  <p>4-hour urban response vs 24-48 hour industry norms</p>
                 </div>
                 <div>
                   <p className="font-bold text-emerald-400 mb-1">Verified Outcomes</p>

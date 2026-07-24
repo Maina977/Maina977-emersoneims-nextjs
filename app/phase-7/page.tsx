@@ -204,13 +204,13 @@ export default function Phase7Page() {
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
               <h3 className="text-xl font-bold text-emerald-400 mb-6">Customer Success Content</h3>
               <ul className="space-y-3 text-gray-300 text-sm">
-                <li>✓ Hospital power reliability story (Kivukoni)</li>
-                <li>✓ Manufacturing production continuity case</li>
-                <li>✓ Telecom network uptime guarantee</li>
-                <li>✓ Agricultural solar system ROI</li>
-                <li>✓ Commercial building emergency response</li>
-                <li>✓ Healthcare facility compliance achievement</li>
-                <li>✓ Cost savings documentation across sectors</li>
+                <li>✓ Bigot Flowers: Export quality cold chain reliability</li>
+                <li>✓ NTSA Headquarters: Government operations continuity</li>
+                <li>✓ Greenheart Kilifi: Real estate development power</li>
+                <li>✓ Sanergy Limited: Industrial operations excellence</li>
+                <li>✓ Kivukoni School: Campus power security & hybrid solar</li>
+                <li>✓ St. Austin Academy: Educational continuity solutions</li>
+                <li>✓ Cost savings documentation across verified clients</li>
               </ul>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function Phase7Page() {
               { service: 'UPS Systems', video: 'Battery backup test', case: 'Zero downtime' },
               { service: 'Incinerators', video: 'NEMA compliance test', case: 'Safe disposal' },
               { service: 'Motor Rewinding', video: 'Quality control', case: 'Equipment restored' },
-              { service: 'Gen Repairs', video: 'Emergency response', case: '51-min installation' },
+              { service: 'Gen Repairs', video: 'Emergency response', case: 'Fast field recovery' },
               { service: 'Controls (DeepSea)', video: 'Configuration tutorial', case: 'Automation solved' },
               { service: 'Fabrication', video: 'Workshop quality', case: 'Custom solutions' },
               { service: 'Load Management', video: 'Optimization demo', case: '30% cost reduction' },
