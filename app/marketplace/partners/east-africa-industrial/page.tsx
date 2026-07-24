@@ -1,0 +1,243 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'East Africa Industrial | Verified Partner | EmersonEIMS Marketplace',
+  description: 'Silver tier partner specializing in manufacturing & oil/gas backup power. 4.4 rating, 8-hour response time. Tanzania, Uganda coverage.',
+};
+
+export default function EastAfricaIndustrialPartnerPage() {
+  return (
+    <main className="min-h-screen bg-black text-white">
+      <section className="py-20 px-4 bg-gradient-to-b from-slate-900 to-black">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-5xl font-bold mb-4">East Africa Industrial</h1>
+              <p className="text-xl text-gray-300">Silver Tier Partner • Manufacturing & Oil/Gas Specialist</p>
+            </div>
+            <div className="text-right">
+              <div className="text-5xl mb-2">🥈</div>
+              <p className="text-gray-300 font-bold">4.4/5.0</p>
+              <p className="text-gray-400 text-sm">6 reviews</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-4 bg-slate-900/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <h3 className="text-lg font-bold text-cyan-400 mb-3">Response Time</h3>
+              <p className="text-3xl font-bold text-white mb-2">8 Hours</p>
+              <p className="text-gray-400 text-sm">Guaranteed emergency response SLA</p>
+            </div>
+
+            <div className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <h3 className="text-lg font-bold text-cyan-400 mb-3">Coverage Area</h3>
+              <p className="text-white font-bold mb-2">Tanzania, Uganda</p>
+              <p className="text-gray-400 text-sm">Regional operations across East Africa</p>
+            </div>
+
+            <div className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <h3 className="text-lg font-bold text-cyan-400 mb-3">Track Record</h3>
+              <p className="text-3xl font-bold text-white mb-2">5-10</p>
+              <p className="text-gray-400 text-sm">Years in backup power industry</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-4 bg-black">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold mb-8">About East Africa Industrial</h2>
+          <p className="text-gray-300 text-lg mb-6">
+            East Africa Industrial is a specialized backup power provider serving manufacturing and oil/gas operations across Tanzania and Uganda. With expertise in heavy industrial applications and proven experience with energy-intensive operations, they deliver high-capacity systems designed for continuous reliability in demanding environments.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-8 mt-12">
+            <div>
+              <h3 className="text-2xl font-bold text-cyan-400 mb-6">Specializations</h3>
+              <ul className="space-y-3 text-gray-300">
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>Manufacturing facility backup power systems</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>Oil & gas operations power redundancy</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>Large industrial generator systems (250kW-2MW)</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>Load management & power factor optimization</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>Fuel efficiency audits & optimization</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-bold text-cyan-400 mb-6">Certifications & Credentials</h3>
+              <ul className="space-y-3 text-gray-300">
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>ISO 9001:2015 (Quality Management)</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>ISO 45001:2018 (Health & Safety)</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>Authorized Kohler Power Systems distributor</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>Industrial electrical compliance certified</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span>Full liability insurance & bonded</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-4 bg-slate-900/30">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold mb-12">Customer Reviews</h2>
+
+          <div className="space-y-6">
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <div className="flex gap-4 mb-4">
+                <div>
+                  <p className="text-cyan-400 font-bold">Manufacturing Plant Manager, Uganda</p>
+                  <p className="text-gray-400 text-sm">⭐⭐⭐⭐⭐ Verified customer</p>
+                </div>
+              </div>
+              <p className="text-gray-300">
+                "East Africa Industrial designed a system for our textile plant that reduced energy costs by 20% while improving reliability. Their load management expertise is top-notch. Very professional team."
+              </p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <div className="flex gap-4 mb-4">
+                <div>
+                  <p className="text-cyan-400 font-bold">Operations Director, Oil & Gas, Tanzania</p>
+                  <p className="text-gray-400 text-sm">⭐⭐⭐⭐ Verified customer</p>
+                </div>
+              </div>
+              <p className="text-gray-300">
+                "They handle our mission-critical power needs for drilling operations. System uptime exceeds 99%. Their preventive maintenance program keeps us running without surprises."
+              </p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <div className="flex gap-4 mb-4">
+                <div>
+                  <p className="text-cyan-400 font-bold">Facility Manager, Processing Plant</p>
+                  <p className="text-gray-400 text-sm">⭐⭐⭐⭐ Verified customer</p>
+                </div>
+              </div>
+              <p className="text-gray-300">
+                "Good technical knowledge and honest advice. They didn't oversell us on features we didn't need. The 8-hour response time SLA gives us confidence they'll be there when needed."
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-4 bg-black">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold mb-8">Service Options & Pricing</h2>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <h3 className="text-xl font-bold text-cyan-400 mb-4">Installation</h3>
+              <p className="text-gray-300 mb-4">Complete system design, installation, testing for manufacturing and industrial facilities.</p>
+              <p className="text-2xl font-bold text-white mb-2">KES 1M - KES 10M</p>
+              <p className="text-gray-400 text-sm">Depending on system size and facility requirements</p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <h3 className="text-xl font-bold text-cyan-400 mb-4">Maintenance Contracts</h3>
+              <p className="text-gray-300 mb-4">Quarterly service, fuel optimization, 8-hour emergency support included.</p>
+              <p className="text-2xl font-bold text-white mb-2">KES 75K - KES 300K/month</p>
+              <p className="text-gray-400 text-sm">Based on system size and support level</p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <h3 className="text-xl font-bold text-cyan-400 mb-4">Emergency Repair</h3>
+              <p className="text-gray-300 mb-4">24/7 emergency response for system failures with 8-hour arrival target.</p>
+              <p className="text-2xl font-bold text-white mb-2">KES 40K - KES 300K</p>
+              <p className="text-gray-400 text-sm">Depending on repair complexity</p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 rounded-lg">
+              <h3 className="text-xl font-bold text-cyan-400 mb-4">Efficiency Audits</h3>
+              <p className="text-gray-300 mb-4">Load analysis, fuel consumption optimization, cost-saving recommendations.</p>
+              <p className="text-2xl font-bold text-white mb-2">KES 50K - 200K</p>
+              <p className="text-gray-400 text-sm">One-time or quarterly audits available</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-4 bg-gradient-to-r from-cyan-900/30 to-blue-900/30">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl font-bold mb-6">Get a Quote from East Africa Industrial</h2>
+          <p className="text-lg text-gray-300 mb-8">
+            Tell us about your industrial backup power needs. East Africa Industrial will respond with a detailed quote within 24 hours.
+          </p>
+          <a href="/contact?type=marketplace-quote&partner=east-africa-industrial" className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-all">
+            Request Quote from East Africa Industrial
+          </a>
+        </div>
+      </section>
+
+      <section className="py-20 px-4 bg-black">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold mb-12 text-center">Your Protection as a Customer</h2>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
+              <h3 className="text-xl font-bold text-emerald-400 mb-4">Quality Guarantee</h3>
+              <p className="text-gray-300">
+                If East Africa Industrial doesn't meet agreed quality standards, EmersonEIMS will step in and complete the work at no additional cost to you.
+              </p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
+              <h3 className="text-xl font-bold text-emerald-400 mb-4">Money-Back Guarantee</h3>
+              <p className="text-gray-300">
+                If East Africa Industrial fails to deliver and we can't fix it, you get your money back. Full refund, no questions asked.
+              </p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
+              <h3 className="text-xl font-bold text-emerald-400 mb-4">SLA Enforcement</h3>
+              <p className="text-gray-300">
+                East Africa Industrial commits to 8-hour response times. If they miss it, automatic service credit or refund to you.
+              </p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
+              <h3 className="text-xl font-bold text-emerald-400 mb-4">Dispute Resolution</h3>
+              <p className="text-gray-300">
+                If you and East Africa Industrial disagree on quality/timeline, we mediate. Our technical team visits the site and makes binding decisions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}

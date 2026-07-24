@@ -327,6 +327,7 @@ export default function MarketplacePage() {
                 specialty: 'Mining Operations',
                 response: '2 hours',
                 region: 'Kenya, Tanzania, Uganda',
+                href: '/marketplace/partners/powertech-solutions',
               },
               {
                 name: 'Reliable Energy Systems',
@@ -336,6 +337,7 @@ export default function MarketplacePage() {
                 specialty: 'Healthcare & Utilities',
                 response: '12 hours',
                 region: 'Kenya, Rwanda',
+                href: '/marketplace/partners/reliable-energy',
               },
               {
                 name: 'East Africa Industrial',
@@ -345,6 +347,7 @@ export default function MarketplacePage() {
                 specialty: 'Manufacturing & O&G',
                 response: '8 hours',
                 region: 'Tanzania, Uganda',
+                href: '/marketplace/partners/east-africa-industrial',
               },
             ].map((partner, idx) => (
               <div key={idx} className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
@@ -366,9 +369,14 @@ export default function MarketplacePage() {
                   <p>📍 {partner.region}</p>
                 </div>
 
-                <button className="w-full px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-bold rounded hover:shadow-lg hover:shadow-emerald-500/30 transition-all">
-                  Request Quote
-                </button>
+                <div className="space-y-2">
+                  <Link href={partner.href} className="block w-full px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-bold rounded hover:shadow-lg hover:shadow-emerald-500/30 transition-all text-center">
+                    View Profile
+                  </Link>
+                  <a href={`/contact?type=marketplace-quote&partner=${partner.name.toLowerCase().replace(/\s+/g, '-')}`} className="block w-full px-4 py-2 border-2 border-emerald-500 text-emerald-400 font-bold rounded hover:bg-emerald-500/10 transition-all text-center">
+                    Request Quote
+                  </a>
+                </div>
               </div>
             ))}
           </div>
