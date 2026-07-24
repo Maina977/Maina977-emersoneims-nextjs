@@ -25,24 +25,24 @@ export default function CustomerSuccessPage() {
           <div className="space-y-8">
             <div className="p-8 bg-gradient-to-br from-orange-800/20 to-slate-900/50 border border-orange-500/30 rounded-lg">
               <div className="flex gap-6 mb-4">
-                <div className="text-5xl">🏭</div>
+                <div className="text-5xl">🌻</div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-orange-400 mb-2">Major Manufacturing Plant: Production Continuity</h3>
+                  <h3 className="text-2xl font-bold text-orange-400 mb-2">Bigot Flowers: Export Quality Cold Chain</h3>
                   <p className="text-gray-300 mb-4">
-                    Textile factory eliminating production losses from power outages. Integrated generator + load management system installed. 30% reduction in electricity costs through peak shaving. Zero unplanned downtime for 18 months.
+                    Premium flower export operation in Naivasha requiring zero downtime for temperature-sensitive products. 300kVA CAT + 100kVA redundancy system installed. Achieved zero product loss due to power failures. Export-grade reliability maintained 24/7.
                   </p>
                   <div className="flex gap-8 text-sm">
                     <div>
                       <p className="text-orange-500 font-bold">Zero</p>
-                      <p className="text-gray-400">Production Stops (18mo)</p>
+                      <p className="text-gray-400">Product Loss</p>
                     </div>
                     <div>
-                      <p className="text-orange-500 font-bold">30%</p>
-                      <p className="text-gray-400">Cost Reduction</p>
+                      <p className="text-orange-500 font-bold">99.9%</p>
+                      <p className="text-gray-400">Uptime</p>
                     </div>
                     <div>
-                      <p className="text-orange-500 font-bold">KES 8M</p>
-                      <p className="text-gray-400">Annual Savings</p>
+                      <p className="text-orange-500 font-bold">24/7</p>
+                      <p className="text-gray-400">Continuous Operation</p>
                     </div>
                   </div>
                 </div>
@@ -51,24 +51,24 @@ export default function CustomerSuccessPage() {
 
             <div className="p-8 bg-gradient-to-br from-blue-800/20 to-slate-900/50 border border-blue-500/30 rounded-lg">
               <div className="flex gap-6 mb-4">
-                <div className="text-5xl">📡</div>
+                <div className="text-5xl">🏛️</div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-blue-400 mb-2">Telecom Switching Center: Network Reliability</h3>
+                  <h3 className="text-2xl font-bold text-blue-400 mb-2">NTSA Headquarters: Government Operations Continuity</h3>
                   <p className="text-gray-300 mb-4">
-                    Regional switching center requiring 99.9%+ uptime SLA. Dual generators + UPS systems + real-time monitoring installed. Achieved 99.97% uptime. 24/7 emergency response validated three times in emergency scenarios.
+                    National Transport and Safety Authority headquarters requiring uninterrupted government service delivery. 300kVA Atlas Copco system installed with real-time monitoring. Ensured 100% continuity through grid failures. Critical infrastructure reliability.
                   </p>
                   <div className="flex gap-8 text-sm">
                     <div>
-                      <p className="text-blue-500 font-bold">99.97%</p>
-                      <p className="text-gray-400">Uptime Achieved</p>
+                      <p className="text-blue-500 font-bold">100%</p>
+                      <p className="text-gray-400">Continuity</p>
                     </div>
                     <div>
                       <p className="text-blue-500 font-bold">24/7</p>
-                      <p className="text-gray-400">Emergency Response</p>
+                      <p className="text-gray-400">Monitoring</p>
                     </div>
                     <div>
-                      <p className="text-blue-500 font-bold">3</p>
-                      <p className="text-gray-400">Emergency Tests Passed</p>
+                      <p className="text-blue-500 font-bold">Real-time</p>
+                      <p className="text-gray-400">Alerts Enabled</p>
                     </div>
                   </div>
                 </div>
@@ -77,24 +77,24 @@ export default function CustomerSuccessPage() {
 
             <div className="p-8 bg-gradient-to-br from-green-800/20 to-slate-900/50 border border-green-500/30 rounded-lg">
               <div className="flex gap-6 mb-4">
-                <div className="text-5xl">🌾</div>
+                <div className="text-5xl">🏗️</div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-green-400 mb-2">Agricultural Cooperative: Solar Water Supply</h3>
+                  <h3 className="text-2xl font-bold text-green-400 mb-2">Greenheart Kilifi: Real Estate Development Power</h3>
                   <p className="text-gray-300 mb-4">
-                    Rural cooperative serving 500+ farmers. Solar borehole pump system installed with battery backup. Zero electricity costs. Reliable water supply year-round. System paid for itself in 3 years. Members added 40 more pumps.
+                    Coastal real estate development project in Kilifi requiring reliable power across multiple unit phases. 44kVA Cummins Voltka system installed. Eliminated power outages during construction and resident operations. Property value enhanced through power reliability.
                   </p>
                   <div className="flex gap-8 text-sm">
                     <div>
-                      <p className="text-green-500 font-bold">500+</p>
-                      <p className="text-gray-400">Farmers Served</p>
+                      <p className="text-green-500 font-bold">30%</p>
+                      <p className="text-gray-400">Maintenance Savings</p>
                     </div>
                     <div>
-                      <p className="text-green-500 font-bold">0</p>
-                      <p className="text-gray-400">Electricity Cost</p>
+                      <p className="text-green-500 font-bold">Coastal</p>
+                      <p className="text-gray-400">Kilifi Location</p>
                     </div>
                     <div>
-                      <p className="text-green-500 font-bold">40</p>
-                      <p className="text-gray-400">Additional Pumps</p>
+                      <p className="text-green-500 font-bold">Multi-unit</p>
+                      <p className="text-gray-400">Coverage</p>
                     </div>
                   </div>
                 </div>
@@ -103,24 +103,24 @@ export default function CustomerSuccessPage() {
 
             <div className="p-8 bg-gradient-to-br from-purple-800/20 to-slate-900/50 border border-purple-500/30 rounded-lg">
               <div className="flex gap-6 mb-4">
-                <div className="text-5xl">🏢</div>
+                <div className="text-5xl">🏭</div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-purple-400 mb-2">Commercial Real Estate: Tenant Power Reliability</h3>
+                  <h3 className="text-2xl font-bold text-purple-400 mb-2">Sanergy Limited: Industrial Operations Excellence</h3>
                   <p className="text-gray-300 mb-4">
-                    15-story commercial office building. Generator + UPS + ATS system installed. Ensures tenant operations continue during grid outages. Property value increased 8% due to power reliability guarantee. Highest occupancy rate in metro area.
+                    Manufacturing and waste management operations requiring continuous power for critical processes. FG Wilson generator system deployed. Achieved 95% reduction in downtime. Annual operational savings of KES 1.8M through uninterrupted production.
                   </p>
                   <div className="flex gap-8 text-sm">
                     <div>
-                      <p className="text-purple-500 font-bold">8%</p>
-                      <p className="text-gray-400">Value Increase</p>
+                      <p className="text-purple-500 font-bold">95%</p>
+                      <p className="text-gray-400">Downtime Reduction</p>
                     </div>
                     <div>
-                      <p className="text-purple-500 font-bold">98%</p>
-                      <p className="text-gray-400">Occupancy Rate</p>
+                      <p className="text-purple-500 font-bold">KES 1.8M</p>
+                      <p className="text-gray-400">Annual Savings</p>
                     </div>
                     <div>
-                      <p className="text-purple-500 font-bold">99.9%</p>
-                      <p className="text-gray-400">Uptime SLA</p>
+                      <p className="text-purple-500 font-bold">24/7</p>
+                      <p className="text-gray-400">Operations</p>
                     </div>
                   </div>
                 </div>
@@ -129,24 +129,24 @@ export default function CustomerSuccessPage() {
 
             <div className="p-8 bg-gradient-to-br from-cyan-800/20 to-slate-900/50 border border-cyan-500/30 rounded-lg">
               <div className="flex gap-6 mb-4">
-                <div className="text-5xl">🏨</div>
+                <div className="text-5xl">🎓</div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-cyan-400 mb-2">Hospitality Chain: Guest Experience Protection</h3>
+                  <h3 className="text-2xl font-bold text-cyan-400 mb-2">Kivukoni International School: Campus Power Security</h3>
                   <p className="text-gray-300 mb-4">
-                    Hotel chain across 5 locations. Generators + load management for critical systems (AC, lighting, security, WiFi). Zero guest interruptions in 2 years despite 12 power outages in region. Guest satisfaction scores highest in chain.
+                    Coastal educational institution in Kilifi requiring reliable power for daily operations and staff/student services. 60kVA Cummins generator with hybrid solar integration installed. Achieved 40% energy cost reduction while ensuring 24/7 campus availability.
                   </p>
                   <div className="flex gap-8 text-sm">
                     <div>
-                      <p className="text-cyan-500 font-bold">12</p>
-                      <p className="text-gray-400">Outages Handled</p>
+                      <p className="text-cyan-500 font-bold">40%</p>
+                      <p className="text-gray-400">Energy Cost Reduction</p>
                     </div>
                     <div>
-                      <p className="text-cyan-500 font-bold">0</p>
-                      <p className="text-gray-400">Guest Complaints</p>
+                      <p className="text-cyan-500 font-bold">Hybrid</p>
+                      <p className="text-gray-400">Solar + Generator</p>
                     </div>
                     <div>
-                      <p className="text-cyan-500 font-bold">5</p>
-                      <p className="text-gray-400">Locations Covered</p>
+                      <p className="text-cyan-500 font-bold">24/7</p>
+                      <p className="text-gray-400">Campus Operations</p>
                     </div>
                   </div>
                 </div>
@@ -206,7 +206,7 @@ export default function CustomerSuccessPage() {
 
           <div className="space-y-6">
             {[
-              { title: 'Proven Emergency Response', desc: '51-minute emergency installation. 5-minute response time validated in critical scenarios.' },
+              { title: 'Proven Emergency Response', desc: '24/7 emergency response with documented success across hospitals, manufacturers, and telecom facilities nationwide.' },
               { title: 'Comprehensive Solutions', desc: '15 services mean no coordination needed across multiple vendors. One contract, unified quality.' },
               { title: 'Transparent Pricing', desc: 'Fixed pricing per service. No surprise quotes. No hidden fees. Customers know costs upfront.' },
               { title: 'Written Guarantees', desc: 'SLA-based commitments with measurable SLOs. Automatic compensation if we miss targets.' },
