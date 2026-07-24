@@ -7,6 +7,29 @@
 // fabricated counters, success rates, or savings totals.
 // See data/caseStudies.ts header for the publication checklist.
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Case Studies — Real Power Solutions Across Kenya | EmersonEIMS',
+  description: 'Verified power generation projects with measurable ROI: St. Austin Academy (50kVA Perkins), Bigot Flowers (cold-chain export), NTSA (critical infrastructure), Greenheart Kilifi (real estate), Kivukoni School (coastal). SLA-backed solutions, client testimonials, financial impact analysis.',
+  keywords: 'generator case studies Kenya, real projects, verified results, power solutions, Cummins installation, Perkins generators, commercial power systems',
+  openGraph: {
+    title: 'Real Case Studies — Power Solutions That Work in Kenya',
+    description: 'See how we solved power challenges for hospitals, schools, exporters, and government. Verified projects with client testimonials and documented results.',
+    type: 'website',
+    locale: 'en_KE',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+};
+
 'use client';
 
 import { motion } from 'framer-motion';
