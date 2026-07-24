@@ -5,13 +5,6 @@ import { Metadata } from 'next';
 
 const OptimizedImage = dynamic(() => import('@/components/media/OptimizedImage'), { ssr: false });
 
-export const metadata: Metadata = {
-  title: 'Perkins Diesel Generators Kenya | Industrial Power | EmersonEIMS',
-  description: 'Perkins diesel generators 20-1000kVA for Kenya. Fuel-efficient, low-hour units. Sales, service, spare parts. Factory-trained technicians.',
-  alternates: {
-    canonical: 'https://www.emersoneims.com/generators/perkins',
-  },
-};
 
 export default function PerkinsPage() {
   return (

@@ -7,19 +7,6 @@ import dynamic from 'next/dynamic';
 
 const OptimizedImage = dynamic(() => import('@/components/media/OptimizedImage'), { ssr: false });
 
-export const metadata: Metadata = {
-  title: 'Cummins Generators Kenya | Diesel Power Solutions | EmersonEIMS',
-  description: 'Cummins diesel generators 10-2000kVA for industrial, commercial, and residential Kenya. Sales, maintenance, spare parts. 3-year warranty, factory-trained support.',
-  keywords: ['Cummins generators Kenya', 'diesel generators', 'power solutions', 'emergency backup power'],
-  openGraph: {
-    title: 'Cummins Generators Kenya | EmersonEIMS',
-    description: 'Cummins diesel generators with expert installation and 24/7 support across all 47 counties.',
-    type: 'website',
-  },
-  alternates: {
-    canonical: 'https://www.emersoneims.com/generators/cummins',
-  },
-};
 
 export default function CumminsPage() {
   const [activeTab, setActiveTab] = useState<'new' | 'used' | 'maintenance' | 'parts'>('new');

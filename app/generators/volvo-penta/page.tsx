@@ -2,13 +2,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Volvo Penta Generators Kenya | Advanced Power Technology | EmersonEIMS',
-  description: 'Volvo Penta diesel generators 50-1500kVA. Advanced engines, low emissions, smart controls. Premium power solutions for Kenya.',
-  alternates: {
-    canonical: 'https://www.emersoneims.com/generators/volvo-penta',
-  },
-};
 
 export default function VolvoPentaPage() {
   return (
