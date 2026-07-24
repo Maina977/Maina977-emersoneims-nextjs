@@ -23,32 +23,6 @@ export default function CustomerSuccessPage() {
           <h2 className="text-3xl font-bold mb-12">Featured Customer Success Stories</h2>
 
           <div className="space-y-8">
-            <Link href="/case-studies/hospital-blackout" className="block p-8 bg-gradient-to-br from-red-800/20 to-slate-900/50 border border-red-500/30 rounded-lg hover:border-red-500/60 transition-all">
-              <div className="flex gap-6 mb-4">
-                <div className="text-5xl">🏥</div>
-                <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-red-400 mb-2">Kivukoni Hospital: Emergency Response Excellence</h3>
-                  <p className="text-gray-300 mb-4">
-                    Generator failure during surgery. 47 patients on life support. Emergency response in 5 minutes, installation in 51 minutes. All patients safe. 5-year maintenance contract signed.
-                  </p>
-                  <div className="flex gap-8 text-sm">
-                    <div>
-                      <p className="text-red-500 font-bold">47</p>
-                      <p className="text-gray-400">Lives Protected</p>
-                    </div>
-                    <div>
-                      <p className="text-red-500 font-bold">51 min</p>
-                      <p className="text-gray-400">Installation Time</p>
-                    </div>
-                    <div>
-                      <p className="text-red-500 font-bold">KES 2.4M</p>
-                      <p className="text-gray-400">5-Year Contract</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Link>
-
             <div className="p-8 bg-gradient-to-br from-orange-800/20 to-slate-900/50 border border-orange-500/30 rounded-lg">
               <div className="flex gap-6 mb-4">
                 <div className="text-5xl">🏭</div>

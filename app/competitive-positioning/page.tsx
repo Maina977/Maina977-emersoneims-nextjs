@@ -118,10 +118,10 @@ export default function CompetitivePositioningPage() {
             <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-emerald-500/20 rounded-lg">
               <h3 className="text-2xl font-bold text-emerald-400 mb-4">1. Proven Emergency Response</h3>
               <p className="text-gray-300 mb-4">
-                Real-world example: Kivukoni Hospital generator failure. 47 patients at risk. EmersonEIMS responded in 5 minutes, diagnosed remotely, and installed replacement in 51 minutes. Lives saved. Competitors typically take 24+ hours.
+                Real-world proven capability: 24/7 response teams nationwide. Verified emergency response across hospitals, manufacturers, and telecom facilities. Seamless installations from remote diagnostics to on-site deployment. Competitors typically take 24+ hours; we're active in 4 hours urban.
               </p>
               <p className="text-gray-400 text-sm">
-                <strong>Why it matters:</strong> In emergencies, speed is the difference between success and catastrophe. Our 4-hour urban SLA is backed by verified performance.
+                <strong>Why it matters:</strong> In emergencies, speed is the difference between success and catastrophe. Our 4-hour urban SLA is backed by verified performance across multiple customer scenarios.
               </p>
             </div>
 
