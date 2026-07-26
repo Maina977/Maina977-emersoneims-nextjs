@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SectionLead from "../../components/generators/SectionLead";
@@ -108,12 +110,6 @@ const MAINTENANCE_SCHEDULES = [
   { period: 'Annual', items: ['Winding resistance balance test (all three phases should match ±2%)', 'Bearing condition assessment (listening, temperature, vibration)', 'Coupling and alignment check with laser alignment tool', 'No-load current measurement (trending helps detect deterioration)', 'Thermal imaging of all connections and motor body', 'Update maintenance records and plan preventive actions'] },
   { period: '2-3 Years / As Needed', items: ['Complete electrical survey: hi-pot test, surge test, core loss test', 'Bearing replacement if temperature or noise indicates wear', 'Motor realignment if vibration has increased', 'VFD-compatible retrofit if motor to be used with variable speed drive', 'Motor rewinding if insulation class needs upgrade or performance restored', 'Consider replacement if motor &gt;15 years old and efficiency significantly below modern standards'] },
 ];
-
-export const metadata = {
-  title: "Electric Motor Services & Rewinding — EmersonEIMS solutions",
-  description: "Comprehensive AC/DC motor repair, rewinding, VFD compatibility, bearing replacement, troubleshooting, and maintenance guides. Serving Kenya and East Africa.",
-  keywords: ["electric motors", "motor rewinding", "VFD motors", "bearing replacement", "motor troubleshooting", "motor maintenance", "motor repair Kenya"],
-};
 
 export default function MotorsPage() {
   const [activeTab, setActiveTab] = useState('fundamentals');
