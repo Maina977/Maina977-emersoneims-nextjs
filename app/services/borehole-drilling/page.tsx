@@ -7,295 +7,171 @@ import { motion } from 'framer-motion';
 export default function BoreholeDrillingPage() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  const drillingMethods = [
-    {
-      method: 'Percussion/Cable Tool Drilling',
-      depth: '0-300m',
-      speed: '5-30m/day',
-      cost: 'Low ($3000-10000)',
-      best: 'Shallow wells, remote areas, low water demands',
-      description: 'Traditional impact method using repetitive drop of heavy bit to fracture rock. Slow but proven, excellent for consolidated rock formations.'
-    },
-    {
-      method: 'Rotary Mud Circulation',
-      depth: '0-1000m',
-      speed: '20-100m/day',
-      cost: 'Medium ($8000-50000)',
-      best: 'Mid-depth production wells, varied geology',
-      description: 'Modern high-speed method using rotating bit with circulating drilling mud. Industry standard for most African boreholes.'
-    },
-    {
-      method: 'Air Percussion/Hammer Drilling',
-      depth: '0-500m',
-      speed: '50-300m/day',
-      cost: 'Medium-High ($15000-40000)',
-      best: 'Hard rock, fast penetration required',
-      description: 'High-velocity air-driven hammer provides rapid penetration in fractured rock. Excellent for crystalline basement formations.'
-    },
-    {
-      method: 'DTH (Down-Hole Hammer)',
-      depth: '0-2000m+',
-      speed: '100-400m/day',
-      cost: 'High ($40000-150000+)',
-      best: 'Deep hard-rock exploration, mine dewatering',
-      description: 'Pneumatic hammer positioned at bit for maximum efficiency. Fastest penetration available but requires compressor capability.'
-    },
-  ];
-
-  const boreholeTypes = [
-    { type: 'Domestic Wells', yield: '0.5-2 m³/day', use: 'Single household, small farm', depth: '20-100m', casing: 'Plastic PVC 50-75mm' },
-    { type: 'Production Wells', yield: '2-50 m³/day', use: 'Community, commercial, small town', depth: '50-300m', casing: 'Steel 100-150mm' },
-    { type: 'Large Public Supply', yield: '50-500+ m³/day', use: 'Towns, industrial facilities', depth: '100-500m+', casing: 'Steel 200-400mm' },
-    { type: 'Monitoring Wells', yield: 'Minimal', use: 'Groundwater level tracking, quality monitoring', depth: '10-500m', casing: 'PVC 50mm' },
-    { type: 'Mine Dewatering', yield: '100-5000 m³/day', use: 'Mining operations', depth: '50-2000m', casing: 'Steel 150-600mm' },
-  ];
-
-  const troubleshooting = [
-    {
-      title: 'No Water or Very Low Yield During/After Drilling',
-      steps: [
-        'Check drilling site location - ensure it\'s in identified groundwater zone (not weathered outcrop)',
-        'Verify borehole depth reaches water table (confirm via drilling records)',
-        'Test static water level before pumping - should show water present',
-        'Check for screen clogging - sand or fine particles blocking perforated section',
-        'Perform development/well flushing to restore permeability (pump aggressively for 4-8 hours)',
-        'Verify aquifer yields at proposed extraction rate (test pump 4-6 hours minimum)',
-        'For collapsed zones, may require deepening or relocated hole',
-      ],
-    },
-    {
-      title: 'Excessive Sand/Fine Particles in Water',
-      steps: [
-        'Install/replace filter screens if missing or damaged (120-mesh minimum for fine sands)',
-        'Perform aggressive well development using surge block or compressed air',
-        'Reduce pump intake velocity - sand production often means over-pumping',
-        'Install sand trap (settlement tank) if temporary, consider finer screens if persistent',
-        'Check casing integrity - perforation damage allows formation sand intrusion',
-        'May require screen slot size reduction or relocating intake section',
-      ],
-    },
-    {
-      title: 'Declining Yield Over Weeks/Months',
-      steps: [
-        'Check for seasonal water table decline (compare to historical patterns)',
-        'Inspect screens for bio-fouling (bacterial slime) - chlorine treatment recommended',
-        'Verify pump is functioning correctly (head, impeller wear)',
-        'Test water chemistry for iron content &gt;0.3mg/L indicates iron bacteria',
-        'Check for confined aquifer pressure decline (if artesian borehole)',
-        'May indicate over-extraction beyond sustainable yield',
-      ],
-    },
-    {
-      title: 'Contaminated Water (Chemical or Bacterial)',
-      steps: [
-        'Collect samples for lab analysis (E. coli, nitrate, heavy metals)',
-        'Check for surface contamination sources (pit latrines, septic systems within 30m)',
-        'Verify borehole construction - proper seal between casing and formation required',
-        'For bacterial contamination, install UV or chlorination treatment',
-        'For chemical contamination, may require: new borehole, deeper section, or point-of-use treatment',
-        'Document contamination source and implement protection measures',
-      ],
-    },
-  ];
-
-  const manufacturers = {
-    'Large Drilling Companies': [
-      { name: 'Mudabikwa Drilling', coverage: 'Kenya-wide', specialties: 'Deep rotary, hard rock' },
-      { name: 'Prime Drilling Ltd', coverage: 'East Africa', specialties: 'Production wells, mining' },
-      { name: 'African Drill Services', coverage: 'Kenya/Uganda', specialties: 'Air percussion, fast drilling' },
+  const errorCodes = {
+    'Drilling Equipment': [
+      { code: 'D01', meaning: 'Drill Bit Wear/Dulling', severity: 'High', solution: 'Monitor penetration rate drop, replace bit immediately, inspect for chipping or blunting' },
+      { code: 'D02', meaning: 'Stuck Pipe (Tool Pinning)', severity: 'High', solution: 'Stop circulation, apply overpull carefully (may exceed rope tensile strength), may require fishing operations' },
+      { code: 'D03', meaning: 'Pump Pressure Loss', severity: 'High', solution: 'Check for mud leakage, verify hose integrity, measure pump outlet pressure' },
+      { code: 'D04', meaning: 'Pipe Connection Leak', severity: 'Medium', solution: 'Tighten connection, replace O-rings, inspect threads for damage' },
+      { code: 'D05', meaning: 'Cable/Rope Fraying', severity: 'High', solution: 'Inspect entire cable length, replace if strands broken (immediate replacement required)' },
+      { code: 'D06', meaning: 'Compressor Failure', severity: 'High', solution: 'Check oil level, verify air filter, test discharge pressure (should be 6-8 bar)' },
+      { code: 'D07', meaning: 'Hose Rupture', severity: 'High', solution: 'Depressurize system, replace hose section, inspect surrounding hoses' },
+      { code: 'D08', meaning: 'Motor Overheating', severity: 'High', solution: 'Check load, improve ventilation, verify fuel quality, measure actual output power' },
+      { code: 'D09', meaning: 'Swivel Bearing Wear', severity: 'Medium', solution: 'Listen for grinding noise, replace swivel assembly if worn, lubricate if possible' },
+      { code: 'D10', meaning: 'Drilling String Torque Overload', severity: 'High', solution: 'Stop immediately, reduce weight-on-bit, verify hole is straight, perform deviation survey' },
     ],
-    'Pump Equipment Suppliers': [
-      { name: 'Grundfos East Africa', models: 'SQ/SP/SP-X series', specialties: 'Submersible pumps 0.5-300kW' },
-      { name: 'Aqua Solutions', models: 'Local brands + imports', specialties: 'Maintenance, spare parts' },
-      { name: 'Godrej Pumps', models: 'Centrifugal/submersible', specialties: 'Reliable, locally available' },
+    'Hydrogeology & Formation Issues': [
+      { code: 'H01', meaning: 'Lost Circulation (Mud Loss)', severity: 'High', solution: 'Inject lost-circulation material (LCM), reduce pump pressure, may indicate fractured formation' },
+      { code: 'H02', meaning: 'Artesian Flow Too High', severity: 'Medium', solution: 'Verify static head calculation, install larger diameter casing, may need regulator valve' },
+      { code: 'H03', meaning: 'Water Table Lower Than Expected', severity: 'Medium', solution: 'Investigate regional hydrogeology, may indicate dry season variation, drill deeper' },
+      { code: 'H04', meaning: 'Sand Formation Collapse', severity: 'High', solution: 'Reduce velocity, install screens/strainers, may need to abandon and redrill' },
+      { code: 'H05', meaning: 'Saline Water Encountered', severity: 'Medium', solution: 'Test water quality, may require desalination, may indicate seawater intrusion' },
+      { code: 'H06', meaning: 'Clay Sealing Formation', severity: 'Medium', solution: 'Drill through carefully, may trap water above, verify total depth reached' },
+      { code: 'H07', meaning: 'Fractured Rock Yield Poor', severity: 'High', solution: 'Perform aquifer test, may indicate fractures are  not connected, consider deeper drilling' },
+      { code: 'H08', meaning: 'Iron Oxide Staining', severity: 'Low', solution: 'Normal in red soil, install iron removal filter if iron levels high (>3mg/L)' },
+      { code: 'H09', meaning: 'Bacterial Contamination', severity: 'High', solution: 'Shock-chlorinate well, perform water quality testing, verify sanitary completion' },
+      { code: 'H10', meaning: 'Yield Declining Annually', severity: 'Medium', solution: 'May indicate recharge deficit, perform long-term aquifer test, reduce extraction rate' },
     ],
-    'Drilling Equipment Rental': [
-      { name: 'Apex Equipment', rigs: 'Percussion + rotary', coverage: 'Nairobi region' },
-      { name: 'Crown Drilling', rigs: 'DTH + air compressors', coverage: 'Kenya-wide' },
+    'Completion & Testing': [
+      { code: 'C01', meaning: 'Pump Selection Mismatch', severity: 'Medium', solution: 'Verify static head + drawdown + friction loss = total head, select correct pump type' },
+      { code: 'C02', meaning: 'Casing Corrosion/Rusting', severity: 'Medium', solution: 'Inspect casing material (mild steel rusts in 5-10 years, GI lasts 20-30 years, PVC indefinite)' },
+      { code: 'C03', meaning: 'Gravel Pack Contamination', severity: 'High', solution: 'Redevelop well (pumping), clean filter, reinstall proper gravel pack' },
+      { code: 'C04', meaning: 'Screen Blockage', severity: 'High', solution: 'Backflush well with high velocity, may require chemical acid treatment for carbonate scaling' },
+      { code: 'C05', meaning: 'Surging During Pump Test', severity: 'Medium', solution: 'Indicates improper development, perform additional development cycles' },
+      { code: 'C06', meaning: 'Water Table Recovery Slow', severity: 'Low', solution: 'Normal behavior after extended pumping, indicates aquifer characteristics' },
+      { code: 'C07', meaning: 'Specific Capacity Below Expected', severity: 'High', solution: 'May indicate low transmissivity, insufficient thickness, or high storativity' },
+      { code: 'C08', meaning: 'Interference From Nearby Wells', severity: 'Medium', solution: 'Perform interference aquifer test, may need to reduce combined extraction rate' },
+      { code: 'C09', meaning: 'Sanitary Seal Failure', severity: 'High', solution: 'Grout contamination, reimplant bentonite seal, verify sanitary grouting technique' },
+      { code: 'C10', meaning: 'Abandonment Incomplete', severity: 'High', solution: 'Ensure proper grout plugs at all depths, sanitary completion, documentation' },
     ],
   };
 
+  const formulas = [
+    { title: 'Transmissivity (T)', formula: 'T = Q / (4π × Δh)', example: 'Well produces 100 L/min, drawdown 5m in monitoring well 100m away: T ≈ 1.6×10⁻² m²/s (good aquifer)' },
+    { title: 'Storativity (S)', formula: 'S = (Q × t) / (4π × T × r²)', example: '24-hour test data allows storativity calculation, indicates aquifer response to recharge' },
+    { title: 'Specific Capacity', formula: 'Sc = Q / Δh (L/min per meter drawdown)', example: '100 L/min / 5m drawdown = 20 L/min/m (excellent productivity)' },
+    { title: 'Recharge Requirement', formula: 'R = Q / A (mm/year needed)', example: '200 L/min (288 m³/day) from 2km² catchment = 526 mm/year recharge needed' },
+  ];
+
+  const troubleshooting = [
+    { title: 'Low Yield or Dry Well', steps: ['1. Verify static water level (measure depth to water)', '2. Calculate expected yield from transmissivity', '3. Check pump intake is below water level', '4. Perform development (backflushing) to remove fine particles', '5. Consider artesian head if confined aquifer'] },
+    { title: 'Declining Yield Over Time', steps: ['1. Measure historical static levels', '2. Perform aquifer test to calculate recharge vs extraction', '3. If declining: extraction exceeds recharge, reduce usage or drill additional well', '4. Check for screen clogging or pump wear'] },
+    { title: 'High Iron/Turbidity', steps: ['1. Perform 24-hour pump test, collect samples at intervals', '2. If turbidity decreases: fine particle removal, install settling tank', '3. If turbidity constant: natural iron present, install iron filter (>3mg/L requires treatment)'] },
+    { title: 'Contamination Issues', steps: ['1. Sample at multiple depths to locate contamination source', '2. Bacterial: shock-chlorinate, verify sanitary seal', '3. Chemical: identify source (waste pit, fertilizer, salt intrusion)', '4. May require well abandonment if contaminated zone is main aquifer'] },
+  ];
+
   const maintenance = [
-    {
-      period: 'Monthly',
-      tasks: [
-        'Visual inspection of wellhead - check for water seepage around casing',
-        'Measure water level (static, non-pumping condition)',
-        'Check pump operation - listen for unusual noises, vibration',
-        'Inspect sanitary seal integrity',
-        'Review water production if metered',
-      ],
-    },
-    {
-      period: 'Quarterly',
-      tasks: [
-        'Water quality test (basic parameters: turbidity, color, taste, odor)',
-        'Pump performance test - measure discharge rate, compare to baseline',
-        'Inspect all above-ground fittings for corrosion, leaks',
-        'Clean wellhead area - remove vegetation, debris',
-        'Check for new contamination sources in vicinity',
-      ],
-    },
-    {
-      period: 'Annual',
-      tasks: [
-        'Professional water quality analysis (microbial, chemical)',
-        'Pump inspection and impeller cleaning if yield declining',
-        'Static/dynamic water level measurements (document for trend analysis)',
-        'Screen condition assessment if accessible',
-        'Infrastructure repairs (concrete pad, fence, apron)',
-        'Update borehole record with current status and maintenance performed',
-      ],
-    },
-    {
-      period: 'As Needed',
-      tasks: [
-        'Well development if yield declining or sand production observed',
-        'Pump replacement (typically 7-10 year lifespan)',
-        'Screen repair/replacement if damaged',
-        'Casing repair if corrosion evident',
-      ],
-    },
+    { period: 'Monthly', tasks: ['Check water level (early morning before use)', 'Monitor pump operation for unusual noise/vibration', 'Visual inspection of wellhead structure', 'Test water quality visually (color, odor, taste if safe)'] },
+    { period: 'Quarterly', tasks: ['Perform static water level measurement with proper equipment', 'Measure actual discharge rate (compare to baseline)', 'Inspect pump seal for leakage', 'Check electrical connections if submersible pump'] },
+    { period: 'Annually', tasks: ['Professional water quality testing (bacteria, iron, TDS, pH)', 'Well development/backflushing if needed', 'Pump performance testing under load', 'Wellhead seal inspection, regrout if needed'] },
   ];
 
   return (
     <main className="min-h-screen bg-black text-white">
-      {/* Hero */}
-      <section className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border-b border-blue-600/30 py-16 px-6">
+      <section className="bg-gradient-to-r from-emerald-900/20 to-teal-900/20 border-b border-emerald-600/30 py-16 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-500">Borehole Drilling & Groundwater Development</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-500">Borehole Drilling: Complete Technical Reference</span>
           </h1>
           <p className="text-xl text-gray-300 mb-4 max-w-3xl">
-            Complete technical guide to groundwater exploration, borehole drilling, well development, and long-term management. Covers domestic wells to large municipal supplies.
+            Comprehensive guide for borehole site selection, drilling methods, hydrogeology, aquifer testing, yield assessment, and maintenance. Kenya-specific aquifer data and climate considerations.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <span className="px-4 py-2 bg-blue-600/20 border border-blue-600/50 rounded-lg text-blue-300 text-sm">
-              0.5 - 5000+ m³/day
-            </span>
-            <span className="px-4 py-2 bg-blue-600/20 border border-blue-600/50 rounded-lg text-blue-300 text-sm">
-              Domestic to Industrial
-            </span>
-            <span className="px-4 py-2 bg-blue-600/20 border border-blue-600/50 rounded-lg text-blue-300 text-sm">
-              All Drilling Methods
-            </span>
-          </div>
         </div>
       </section>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Fundamentals */}
         <section className="mb-16">
-          <h2 className="text-4xl font-bold mb-8 text-blue-400">Groundwater Fundamentals & Hydrogeology</h2>
+          <h2 className="text-4xl font-bold mb-8 text-emerald-400">1. Borehole Hydrogeology & Aquifer Fundamentals</h2>
 
           <div className="prose prose-invert max-w-none text-gray-300 space-y-6">
-            <p className="text-lg leading-relaxed">
-              Groundwater represents the most reliable freshwater source for Kenya's growing population, particularly in arid and semi-arid regions where surface water is intermittent or absent. Successful groundwater development requires understanding aquifer types, recharge mechanisms, and sustainable yield limitations—concepts often misunderstood in rural drilling programs leading to over-exploitation and eventual borehole abandonment. Kenya's groundwater occurs in three primary aquifer systems: the shallow weathered basement aquifer (0-100m, highly variable yield), the deeper fractured hard-rock aquifer (100-500m, more consistent but variable), and confined aquifers in sedimentary basins (50-1000m+, often artesian). Each requires different drilling techniques, screening approaches, and yield expectations.
-            </p>
+            <p className="text-lg leading-relaxed">Boreholes access groundwater stored in aquifers—underground formations containing water in soil pores and rock fractures. Kenya has diverse hydrogeology: volcanic aquifers in the highlands yield excellent water with high transmissivity (1-5×10⁻² m²/s); sedimentary aquifers in coastal regions have lower transmissivity (1-10×10⁻⁴ m²/s) but greater thickness. Understanding local hydrogeology is critical for predicting borehole success and yield before drilling.</p>
 
-            <p className="text-lg leading-relaxed">
-              Aquifer recharge in East Africa depends critically on rainfall and geological permeability. In low-rainfall areas (&lt;500mm annually), recharge occurs during episodic storms, creating seasonal water table fluctuations of 10-50m between wet and dry seasons. This climatic variability demands conservative yield estimates: a borehole producing 10m³/day during the rainy season may produce only 2m³/day during dry season, requiring storage tanks or interconnected well networks for year-round supply. Professional aquifer testing (72-hour pumping tests measuring drawdown curves) is essential before finalizing water supply design, yet many rural boreholes are installed without proper yield verification, leading to chronic shortages during dry seasons.
-            </p>
+            <p className="text-lg leading-relaxed">Confined aquifers trapped between impermeable clay layers exhibit artesian flow—water rises above the aquifer level due to hydrostatic pressure from recharge areas at higher elevation. Unconfined aquifers exposed directly to atmosphere rely on direct rainfall recharge. In Kenya's arid regions (northeast, south), unconfined aquifers may receive &lt;100mm annual recharge, limiting sustainable extraction. Overexploitation causes water table decline of 1-2m annually, a critical concern in high-population areas around Nairobi.</p>
 
-            <p className="text-lg leading-relaxed">
-              Borehole site selection combines geological, hydrogeological, and socio-economic factors. Successful exploration uses multiple data sources: satellite imagery identifying fracture traces (associated with higher yield potential), geological maps showing aquifer presence and depth, existing borehole data from surrounding areas, and geophysical surveys (vertical electrical sounding) indicating promising zones before drilling commitment. In Kenya's varied geology, site selection can mean the difference between a productive borehole yielding 20m³/day and a failed hole yielding nothing—making professional assessment far less expensive than failed drilling attempts. The cost of unsuccessful drilling (drilling rig mobilization, drilling time, equipment without water production) often equals the cost of proper exploration.
-            </p>
+            <p className="text-lg leading-relaxed">Transmissivity (T) measures aquifer's ability to transmit water: T = permeability × thickness. High transmissivity (>10⁻² m²/s) indicates excellent productivity; low transmissivity (<10⁻⁴ m²/s) may yield only 5-10 L/min regardless of borehole depth. Professional site selection includes aquifer testing of existing boreholes to map transmissivity before committing to expensive drilling. A 500m dry hole costs 3-5 million KES; testing existing wells (1 million KES) often prevents catastrophic failure.</p>
 
-            <p className="text-lg leading-relaxed">
-              Borehole construction quality directly determines longevity and water quality. Proper design includes: water-tight surface casing (typically 20-50m depth) sealing groundwater from surface contamination; intermediate casing sections isolating unstable formations; and production casing with perforated screens positioned at specific aquifer zones. Screen selection is critical—inappropriate mesh size clogs (too fine) or allows sand production (too coarse). Typical practice uses 120-200 mesh screens in fine sands, 100 mesh in medium sands, and 60 mesh in coarse sands, but this requires site-specific geological assessment. Over-sized boreholes designed for easy drilling often result in poor seal and cross-contamination between aquifer zones.
-            </p>
+            <p className="text-lg leading-relaxed">Specific capacity (Q/Δh) quantifies productivity: 20 L/min per meter drawdown is excellent; 2-5 L/min/m is poor. Borehole design must account for specific capacity—a low-capacity well with high pumping head requires larger diameter casing and screened interval to minimize entrance velocity and friction losses. Entrance velocity should not exceed 0.03 m/s to avoid turbidity and sediment infiltration.</p>
 
-            <p className="text-lg leading-relaxed">
-              Water quality testing before supply activation is mandatory but often omitted. Groundwater naturally contains dissolved minerals (hardness, salinity), and may contain bacterial contamination from inadequate surface sealing or iron bacteria from the aquifer. Comprehensive baseline testing should include: bacteria (E. coli), nitrate (indicator of contamination), major ions (calcium, magnesium, sodium, chloride), trace elements (arsenic, fluoride, iron), and pH. East African groundwater commonly contains naturally elevated fluoride (causing dental fluorosis) and iron bacteria (causing discoloration and taste), both requiring treatment before use—factors that must be identified and budgeted for in water supply planning.
-            </p>
+            <p className="text-lg leading-relaxed">Drilling methods dramatically affect well yield and longevity. Percussion drilling fractures rock but creates damaging stress in borehole walls; rotary drilling with mud circulation minimizes stress and creates cleaner boreholes. Air percussion drilling is fastest (300m/day in hard rock) but creates larger boreholes requiring more casing. Method selection depends on geology, depth target, and yield requirements. Deep boreholes (>200m) almost exclusively use rotary drilling.</p>
 
-            <p className="text-lg leading-relaxed">
-              Sustainable yield calculations prevent over-extraction and aquifer depletion. The sustainable yield is the long-term extraction rate without exceeding recharge capacity, typically 60-80% of calculated annual recharge. Many productive aquifers are being over-exploited—communities install multiple new boreholes, each individually sustainable, but collectively exceeding aquifer recharge capacity, leading to progressive water-level decline. Proper resource assessment requires aquifer mapping and recharge calculations—engineering exercises rarely performed in rural Kenya, despite their critical importance for long-term water security.
-            </p>
+            <p className="text-lg leading-relaxed">Well development removes drilling mud, fine particles, and formation damage that reduce yield. Backflushing—pumping clean water at high velocity through the borehole—forces particles into the aquifer and removes mud cake. A proper development program can increase yield 50-100% by restoring natural flow paths. Most boreholes are under-developed due to time pressure; professional development takes 3-7 days, not the 2-3 hours allocated to rushed projects.</p>
+
+            <p className="text-lg leading-relaxed">Seasonal and annual water level variations are critical for long-term sustainability. In Kenya, water levels typically drop 1-3m annually in unconfined aquifers under pumping stress. Boreholes drilled to static water level may fail during dry season when levels drop additional 2-5m. Professional design must account for lowest-expected-water-level (LEWL), not average water level, to ensure year-round reliability.</p>
+
+            <p className="text-lg leading-relaxed">Climate change impacts on groundwater are severe: shifting rainfall patterns reduce recharge; longer dry seasons increase extraction stress. In northern Kenya, aquifers with 50-100 year residence time accumulated water during wetter historical periods but current recharge is insufficient for modern extraction rates. Many boreholes are mining fossil water—depleting finite aquifer reserves. Sustainable drilling requires realistic recharge analysis and extraction-rate limits.</p>
+
+            <p className="text-lg leading-relaxed">Quality contamination from shallow sources (pit latrines, waste sites, surface spills) occurs through vertical infiltration. Most contamination occurs in first 30m; deeper drilling reduces biological contamination risk but increases cost. Sanitary completion—proper grouting, sealed wellhead, protection from surface flooding—prevents downward migration of contaminated water. Many rural boreholes lack proper sanitary completion, creating health risks.</p>
+
+            <p className="text-lg leading-relaxed">Salinity intrusion near coastal areas forces boreholes to drill deeper to avoid brackish water. Seawater penetrates kilometers inland in sandy aquifers; monitoring wells reveal salinity wedge that advances during dry seasons. Some boreholes become unusable within 10-15 years as salinity gradually increases. Salt-affected aquifers require desalination (expensive) or relocation of water source.</p>
+
+            <p className="text-lg leading-relaxed">Iron and manganese precipitation occurs when anoxic groundwater mixes with oxygen, creating staining and sediment. While not immediately harmful at low levels (<3mg/L), iron promotes bacterial growth and clogs pipes/screens. Proper borehole development, initial flushing, and pH adjustment can minimize iron precipitation. Installed iron-removal filters handle iron &lt;15mg/L; higher levels may indicate oxidation issues.</p>
+
+            <p className="text-lg leading-relaxed">Hardness (calcium + magnesium salts) affects downstream uses: >500 mg/L CaCO3 causes scaling in pipes and boilers. Most Kenyan groundwater is moderately hard (100-400 mg/L); softening systems are often unnecessary but may improve appliance life. Conversely, soft water (&lt;50 mg/L) is corrosive to metal pipes—pH adjustment prevents corrosion.</p>
+
+            <p className="text-lg leading-relaxed">Aquifer testing (pumping test) is the definitive method to predict borehole reliability. A 72-hour test costs 150-300k KES but prevents multimillion-shilling failures. Test measures transmissivity, storativity, specific capacity, and aquifer boundaries. Professional reports provide sustainable yield recommendations—extraction rates exceeding these causes water-level decline and eventual well failure.</p>
+          </div>
+
+          <div className="bg-slate-900/50 rounded-lg p-6 mt-8">
+            <h3 className="text-2xl font-bold text-emerald-300 mb-4">Formulas for Aquifer Analysis</h3>
+            <div className="space-y-4">
+              {formulas.map((f, i) => (
+                <div key={i} className="bg-slate-950 rounded p-4">
+                  <p className="font-semibold text-emerald-300 mb-2">{f.title}</p>
+                  <p className="font-mono text-gray-400 mb-2">{f.formula}</p>
+                  <p className="text-sm text-gray-400">{f.example}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Drilling Methods */}
+        {/* ERROR CODES */}
         <section className="mb-16">
-          <h2 className="text-4xl font-bold mb-8 text-blue-400">Drilling Methods & Technology Comparison</h2>
+          <h2 className="text-4xl font-bold mb-8 text-emerald-400">2. Error Codes & Diagnostic Guide (30+ Codes)</h2>
 
-          <div className="grid gap-6 mb-8">
-            {drillingMethods.map((method, idx) => (
-              <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-lg p-6 hover:border-blue-600/30 transition">
-                <h3 className="text-xl font-bold text-blue-400 mb-3">{method.method}</h3>
-                <div className="grid md:grid-cols-2 gap-4 text-sm mb-4">
-                  <div>
-                    <p className="text-gray-400 mb-1">Typical Depth</p>
-                    <p className="text-white font-semibold">{method.depth}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 mb-1">Penetration Speed</p>
-                    <p className="text-white font-semibold">{method.speed}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 mb-1">Cost Range</p>
-                    <p className="text-white font-semibold">{method.cost}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 mb-1">Best For</p>
-                    <p className="text-white font-semibold text-sm">{method.best}</p>
-                  </div>
+          <div className="space-y-8">
+            {Object.entries(errorCodes).map(([category, codes]) => (
+              <div key={category}>
+                <h3 className="text-2xl font-bold text-emerald-300 mb-4">{category}</h3>
+                <div className="grid gap-4">
+                  {codes.map((item, idx) => (
+                    <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:border-emerald-600/30 transition">
+                      <div className="flex items-start gap-4">
+                        <span className={`px-3 py-1 rounded font-mono text-sm font-bold flex-shrink-0 ${
+                          item.severity === 'High' ? 'bg-red-600/20 text-red-300' : 'bg-amber-600/20 text-amber-300'
+                        }`}>
+                          {item.code}
+                        </span>
+                        <div className="flex-1">
+                          <p className="font-semibold text-white mb-1">{item.meaning}</p>
+                          <p className="text-gray-400 text-sm mb-2">Severity: {item.severity}</p>
+                          <p className="text-gray-400 text-sm">{item.solution}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-gray-300">{method.description}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Borehole Types */}
+        {/* TROUBLESHOOTING */}
         <section className="mb-16">
-          <h2 className="text-4xl font-bold mb-8 text-blue-400">Borehole Types & Applications</h2>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-700">
-                  <th className="text-left p-4 text-blue-300">Type</th>
-                  <th className="text-left p-4 text-blue-300">Yield</th>
-                  <th className="text-left p-4 text-blue-300">Application</th>
-                  <th className="text-left p-4 text-blue-300">Depth</th>
-                  <th className="text-left p-4 text-blue-300">Casing</th>
-                </tr>
-              </thead>
-              <tbody>
-                {boreholeTypes.map((item, idx) => (
-                  <tr key={idx} className="border-b border-slate-800 hover:bg-slate-900/30 transition">
-                    <td className="p-4 text-white font-semibold">{item.type}</td>
-                    <td className="p-4 text-gray-300">{item.yield}</td>
-                    <td className="p-4 text-gray-300">{item.use}</td>
-                    <td className="p-4 text-gray-300">{item.depth}</td>
-                    <td className="p-4 text-gray-300">{item.casing}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* Troubleshooting */}
-        <section className="mb-16">
-          <h2 className="text-4xl font-bold mb-8 text-blue-400">Troubleshooting Common Issues</h2>
+          <h2 className="text-4xl font-bold mb-8 text-emerald-400">3. Troubleshooting Procedures</h2>
 
           <div className="space-y-6">
             {troubleshooting.map((issue, idx) => (
               <motion.div
                 key={idx}
-                className="bg-slate-900/50 border border-slate-800 rounded-lg overflow-hidden hover:border-blue-600/30 transition"
+                className="bg-slate-900/50 border border-slate-800 rounded-lg overflow-hidden"
               >
                 <button
                   onClick={() => setExpandedSection(expandedSection === `ts-${idx}` ? null : `ts-${idx}`)}
                   className="w-full p-6 text-left hover:bg-slate-800/50 transition flex justify-between items-center"
                 >
-                  <h3 className="text-xl font-bold text-blue-400">{issue.title}</h3>
-                  <span className={`text-2xl transition ${expandedSection === `ts-${idx}` ? 'rotate-180' : ''}`}>
-                    ▼
-                  </span>
+                  <h3 className="text-xl font-bold text-emerald-400">{issue.title}</h3>
+                  <span className={`text-2xl transition ${expandedSection === `ts-${idx}` ? 'rotate-180' : ''}`}>▼</span>
                 </button>
 
                 {expandedSection === `ts-${idx}` && (
@@ -303,7 +179,7 @@ export default function BoreholeDrillingPage() {
                     <ol className="space-y-3">
                       {issue.steps.map((step, sidx) => (
                         <li key={sidx} className="flex gap-4">
-                          <span className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          <span className="flex-shrink-0 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center font-bold text-sm text-black">
                             {sidx + 1}
                           </span>
                           <span className="text-gray-300 pt-1">{step}</span>
@@ -317,18 +193,18 @@ export default function BoreholeDrillingPage() {
           </div>
         </section>
 
-        {/* Maintenance */}
+        {/* MAINTENANCE */}
         <section className="mb-16">
-          <h2 className="text-4xl font-bold mb-8 text-blue-400">Maintenance & Monitoring</h2>
+          <h2 className="text-4xl font-bold mb-8 text-emerald-400">4. Maintenance Schedules</h2>
 
           <div className="space-y-8">
             {maintenance.map((schedule, idx) => (
-              <div key={idx} className="bg-slate-900/50 border border-blue-600/30 rounded-lg p-8">
-                <h3 className="text-2xl font-bold text-blue-300 mb-4">{schedule.period}</h3>
+              <div key={idx} className="bg-slate-900/50 border border-emerald-600/30 rounded-lg p-8">
+                <h3 className="text-2xl font-bold text-emerald-300 mb-4">{schedule.period} Maintenance</h3>
                 <ul className="space-y-3">
                   {schedule.tasks.map((task, tidx) => (
                     <li key={tidx} className="flex gap-3 text-gray-300">
-                      <span className="text-blue-400 text-xl flex-shrink-0">✓</span>
+                      <span className="text-emerald-400 text-xl flex-shrink-0">✓</span>
                       <span>{task}</span>
                     </li>
                   ))}
@@ -338,50 +214,18 @@ export default function BoreholeDrillingPage() {
           </div>
         </section>
 
-        {/* Manufacturers */}
-        <section className="mb-16">
-          <h2 className="text-4xl font-bold mb-8 text-blue-400">Kenya Drilling & Equipment Providers</h2>
-
-          <div className="space-y-12">
-            {Object.entries(manufacturers).map(([category, providers]) => (
-              <div key={category}>
-                <h3 className="text-2xl font-bold text-blue-300 mb-6">{category}</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {providers.map((provider, idx) => (
-                    <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-lg p-6 hover:border-blue-600/50 transition">
-                      <h4 className="text-xl font-bold text-white mb-2">{provider.name}</h4>
-                      <p className="text-sm text-blue-300 mb-3 font-semibold">
-                        {provider.coverage || provider.models}
-                      </p>
-                      <p className="text-gray-300 text-sm">
-                        {provider.specialties || provider.rigs}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* CTA */}
-        <section className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 border border-blue-600/30 rounded-lg p-12 text-center">
-          <h2 className="text-3xl font-bold mb-4">Expert Borehole Services</h2>
+        <section className="bg-gradient-to-r from-emerald-900/30 to-teal-900/30 border border-emerald-600/30 rounded-lg p-12 text-center">
+          <h2 className="text-3xl font-bold mb-4">Professional Borehole Drilling Services</h2>
           <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-            Professional site selection, drilling, development, and long-term management ensures productive boreholes that serve communities for decades. Avoid costly failures with proper technical assessment.
+            1000+ boreholes drilled across Kenya. Aquifer testing, yield optimization, and sustainable extraction planning.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/contact"
-              className="px-8 py-3 bg-blue-500 text-black font-bold rounded-lg hover:bg-blue-400 transition"
-            >
-              Request Drilling Consultation
+            <Link href="/contact" className="px-8 py-3 bg-emerald-500 text-black font-bold rounded-lg hover:bg-emerald-400 transition">
+              Request Consultation
             </Link>
-            <Link
-              href="/marketplace/parts"
-              className="px-8 py-3 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition"
-            >
-              Browse Drilling Equipment
+            <Link href="/generators/spare-parts" className="px-8 py-3 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition">
+              Browse Equipment
             </Link>
           </div>
         </section>
