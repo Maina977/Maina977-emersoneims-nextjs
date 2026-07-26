@@ -140,7 +140,7 @@ export function MPPTEfficiencyGauge({ current = 75 }: { current?: number }) {
                 <div className="bg-yellow-500 h-4 rounded-full" style={{width: `${current}%`}}></div>
               </div>
             </div>
-            <p className="text-gray-400 text-sm">MPPT algorithm continuously adjusts inverter impedance to extract maximum power from solar array. Efficiency typically >97% under normal conditions.</p>
+            <p className="text-gray-400 text-sm">MPPT algorithm continuously adjusts inverter impedance to extract maximum power from solar array. Efficiency typically &gt;97% under normal conditions.</p>
           </div>
         </div>
       </div>
