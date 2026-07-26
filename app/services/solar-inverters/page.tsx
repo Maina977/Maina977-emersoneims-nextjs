@@ -3,6 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import TechnicalDiagrams, {
+  DCtoACCircuitDiagram,
+  TemperatureDeratingCurve,
+  MPPTEfficiencyGauge,
+  EfficiencyComparisonChart,
+  ErrorCodeSeverityMatrix,
+  MaintenanceTimeline
+} from '@/components/visualizations/TechnicalDiagrams';
 
 export default function SolarInvertersPage() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -191,6 +199,15 @@ export default function SolarInvertersPage() {
             </p>
           </div>
 
+          {/* VISUAL: DC-to-AC Circuit Diagram */}
+          <DCtoACCircuitDiagram />
+
+          {/* VISUAL: Temperature Derating Curve */}
+          <TemperatureDeratingCurve />
+
+          {/* VISUAL: MPPT Efficiency Gauge */}
+          <MPPTEfficiencyGauge current={82} />
+
           {/* Video Section */}
           <div className="bg-slate-900/50 rounded-lg p-8 mt-8 border border-slate-800">
             <h3 className="text-2xl font-bold mb-4">Educational Video: Inverter Principles</h3>
@@ -251,6 +268,9 @@ export default function SolarInvertersPage() {
         <section className="mb-16">
           <h2 className="text-4xl font-bold mb-8 text-yellow-400">Error Code Database & Solutions</h2>
 
+          {/* VISUAL: Error Code Severity Matrix */}
+          <ErrorCodeSeverityMatrix />
+
           <div className="space-y-8">
             {Object.entries(errorCodes).map(([category, codes]) => (
               <div key={category}>
@@ -278,6 +298,12 @@ export default function SolarInvertersPage() {
         {/* Section 4: Maintenance */}
         <section className="mb-16">
           <h2 className="text-4xl font-bold mb-8 text-yellow-400">Maintenance Schedules & Best Practices</h2>
+
+          {/* VISUAL: Maintenance Timeline */}
+          <MaintenanceTimeline />
+
+          {/* VISUAL: Efficiency Comparison */}
+          <EfficiencyComparisonChart />
 
           <div className="space-y-8">
             {maintenance.map((schedule, idx) => (
