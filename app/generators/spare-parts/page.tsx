@@ -19,12 +19,18 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 
 interface Part {
+  id?: string;
   code: string;
   name: string;
   category: string;
-  price: number;
+  subcategory?: string;
+  sellingPrice?: number;
+  price?: number;
   quantity: number;
   rating: number;
+  inStock?: boolean;
+  brand?: string;
+  description?: string;
 }
 
 export default function SparePartsPage() {
@@ -72,6 +78,14 @@ export default function SparePartsPage() {
     filterAndSortParts();
   }, [parts, searchQuery, selectedService, sortBy, minPrice, maxPrice, minRating, inStockOnly]);
 
+  const getPrice = (part: Part): number => {
+    return part.sellingPrice || part.price || 0;
+  };
+
+  const isInStock = (part: Part): number => {
+    return part.quantity || 0;
+  };
+
   const loadParts = async () => {
     setLoading(true);
     setError(null);
@@ -79,7 +93,14 @@ export default function SparePartsPage() {
       const response = await fetch('/api/parts/search?limit=10000');
       if (!response.ok) throw new Error('Failed to load parts');
       const data = await response.json();
-      setParts(data.parts || []);
+      // Ensure all parts have required fields
+      const normalizedParts = (data.parts || []).map((p: any) => ({
+        ...p,
+        price: p.sellingPrice || p.price || 0,
+        quantity: p.quantity || 0,
+        rating: p.rating || 0,
+      }));
+      setParts(normalizedParts);
     } catch (err) {
       setError(`Failed to load parts: ${err instanceof Error ? err.message : 'Unknown error'}`);
       console.error('Parts loading error:', err);
