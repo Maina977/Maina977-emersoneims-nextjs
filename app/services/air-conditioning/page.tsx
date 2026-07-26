@@ -50,7 +50,7 @@ export default function AirConditioningPage() {
     },
   ];
 
-  const errorCodes = {
+  const errorCodes: Record<string, Array<{ code: string; meaning: string; solution: string }>> = {
     'Daikin/Hitachi Models': [
       { code: 'F1', meaning: 'Indoor Unit Malfunction', solution: 'Check filters, verify thermistor connection, inspect PCB for damage' },
       { code: 'F2', meaning: 'Outdoor Unit Issue', solution: 'Check condenser fans, verify DC voltage, test compressor contactor' },
@@ -72,7 +72,7 @@ export default function AirConditioningPage() {
     ],
   };
 
-  const manufacturers = {
+  const manufacturers: Record<string, Array<{ name: string; models: string; strength: string }>> = {
     'Premium Brands (Global)': [
       { name: 'Daikin', models: '1-100+ kW', strength: 'Reliability, efficiency, smart features' },
       { name: 'Mitsubishi Heavy', models: '1-80+ kW', strength: 'Quiet operation, heating performance' },
@@ -89,7 +89,7 @@ export default function AirConditioningPage() {
       { name: 'Innovex', models: '1-5 kW', strength: 'Designed for unstable power' },
       { name: 'Nitel', models: '0.75-3 kW', strength: 'Local support, maintenance service' },
     ],
-  ];
+  };
 
   const troubleshooting = [
     {
@@ -278,7 +278,7 @@ export default function AirConditioningPage() {
 
         {/* Error Codes */}
         <section className="mb-16">
-          <h2 className="text-4xl font-bold mb-8 text-cyan-400">Error Codes & Diagnostics</h2>
+          <h2 className="text-4xl font-bold mb-8 text-cyan-400">Error Codes &amp; Diagnostics</h2>
 
           <div className="space-y-8">
             {Object.entries(errorCodes).map(([category, codes]) => (
