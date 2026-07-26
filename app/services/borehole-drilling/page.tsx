@@ -80,7 +80,7 @@ export default function BoreholeDrillingPage() {
         'Check for seasonal water table decline (compare to historical patterns)',
         'Inspect screens for bio-fouling (bacterial slime) - chlorine treatment recommended',
         'Verify pump is functioning correctly (head, impeller wear)',
-        'Test water chemistry for iron content >0.3mg/L indicates iron bacteria',
+        'Test water chemistry for iron content &gt;0.3mg/L indicates iron bacteria',
         'Check for confined aquifer pressure decline (if artesian borehole)',
         'May indicate over-extraction beyond sustainable yield',
       ],
@@ -195,7 +195,7 @@ export default function BoreholeDrillingPage() {
             </p>
 
             <p className="text-lg leading-relaxed">
-              Aquifer recharge in East Africa depends critically on rainfall and geological permeability. In low-rainfall areas (<500mm annually), recharge occurs during episodic storms, creating seasonal water table fluctuations of 10-50m between wet and dry seasons. This climatic variability demands conservative yield estimates: a borehole producing 10m³/day during the rainy season may produce only 2m³/day during dry season, requiring storage tanks or interconnected well networks for year-round supply. Professional aquifer testing (72-hour pumping tests measuring drawdown curves) is essential before finalizing water supply design, yet many rural boreholes are installed without proper yield verification, leading to chronic shortages during dry seasons.
+              Aquifer recharge in East Africa depends critically on rainfall and geological permeability. In low-rainfall areas (&lt;500mm annually), recharge occurs during episodic storms, creating seasonal water table fluctuations of 10-50m between wet and dry seasons. This climatic variability demands conservative yield estimates: a borehole producing 10m³/day during the rainy season may produce only 2m³/day during dry season, requiring storage tanks or interconnected well networks for year-round supply. Professional aquifer testing (72-hour pumping tests measuring drawdown curves) is essential before finalizing water supply design, yet many rural boreholes are installed without proper yield verification, leading to chronic shortages during dry seasons.
             </p>
 
             <p className="text-lg leading-relaxed">

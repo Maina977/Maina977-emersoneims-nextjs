@@ -85,7 +85,7 @@ export default function SolarInvertersPage() {
     {
       title: 'Inverter Keeps Shutting Down',
       steps: [
-        'Check ambient temperature - overheating at >50°C causes auto-shutdown',
+        'Check ambient temperature - overheating at &gt;50°C causes auto-shutdown',
         'Verify cooling fans are running (listen for fan noise)',
         'Check inlet/outlet for dust blockage - clean filters monthly',
         'Ensure proper ventilation space around inverter (10cm minimum)',
@@ -123,7 +123,7 @@ export default function SolarInvertersPage() {
         'Clean PV panels with soft brush and distilled water (no pressure washers)',
         'Clean inverter intake/exhaust filters',
         'Check battery terminals for corrosion (if battery backup)',
-        'Verify ground resistance measurement (should be <5Ω)',
+        'Verify ground resistance measurement (should be &lt;5Ω)',
         'Test GFCI protection functionality',
         'Review and backup inverter settings/data',
       ],
@@ -137,7 +137,7 @@ export default function SolarInvertersPage() {
         'Inverter firmware update if available',
         'Comprehensive safety inspection per IEC 61730',
         'Insurance documentation update with current system status',
-        'Service engineer inspection (recommended for >10kW systems)',
+        'Service engineer inspection (recommended for &gt;10kW systems)',
       ],
     },
   ];
@@ -183,7 +183,7 @@ export default function SolarInvertersPage() {
             </p>
 
             <p className="text-lg leading-relaxed">
-              Inverter efficiency directly impacts system energy yield and financial returns. High-efficiency inverters (>97%) reduce power losses to heat, while European efficiency ratings (which average efficiency across multiple operating points) better reflect real-world performance than peak efficiency ratings. Temperature plays a critical role—every 10°C above the 25°C standard test condition reduces inverter efficiency by approximately 0.3-0.5%, a significant factor in East African climates where ambient temperatures regularly exceed 40°C. Proper ventilation, cable sizing, and installation location are therefore not cosmetic choices but engineering requirements that directly affect system profitability.
+              Inverter efficiency directly impacts system energy yield and financial returns. High-efficiency inverters (&gt;97%) reduce power losses to heat, while European efficiency ratings (which average efficiency across multiple operating points) better reflect real-world performance than peak efficiency ratings. Temperature plays a critical role—every 10°C above the 25°C standard test condition reduces inverter efficiency by approximately 0.3-0.5%, a significant factor in East African climates where ambient temperatures regularly exceed 40°C. Proper ventilation, cable sizing, and installation location are therefore not cosmetic choices but engineering requirements that directly affect system profitability.
             </p>
 
             <p className="text-lg leading-relaxed">
@@ -389,7 +389,7 @@ export default function SolarInvertersPage() {
               <div>
                 <h3 className="text-xl font-bold text-yellow-300 mb-3">Kenya-Specific Requirements</h3>
                 <ul className="space-y-2 text-gray-300">
-                  <li>• Energy and Petroleum Regulatory Authority (EPRA) grid-connection approval for >100kW systems</li>
+                  <li>• Energy and Petroleum Regulatory Authority (EPRA) grid-connection approval for &gt;100kW systems</li>
                   <li>• Local building permits and electrical inspection compliance</li>
                   <li>• Kenya Bureau of Standards (KEBS) certification verification for imported equipment</li>
                   <li>• Utility company interconnection agreements and technical specifications</li>
@@ -401,7 +401,7 @@ export default function SolarInvertersPage() {
                 <ul className="space-y-2 text-gray-300">
                   <li>• DC disconnect switches must be accessible and clearly labeled</li>
                   <li>• All DC and AC circuits require appropriate overcurrent protection</li>
-                  <li>• Grounding system verification (resistance <5Ω) by licensed electrician</li>
+                  <li>• Grounding system verification (resistance &lt;5Ω) by licensed electrician</li>
                   <li>• Lightning surge protection for inverter inputs and outputs</li>
                   <li>• Proper ventilation ensuring 10cm clearance around inverter on all sides</li>
                   <li>• Fire-rated wiring isolation requirements in commercial installations</li>

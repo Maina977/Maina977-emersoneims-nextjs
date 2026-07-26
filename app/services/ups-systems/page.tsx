@@ -18,18 +18,18 @@ export default function UPSSystemsPage() {
     'Line-Interactive UPS': [
       { code: 'B01', meaning: 'Battery Low Voltage Alarm', solution: 'Check battery connections, measure battery voltage (should match rating), check for battery damage' },
       { code: 'B02', meaning: 'Battery Over Temperature', solution: 'Improve ventilation, check charger settings (float voltage), test battery temperature sensor' },
-      { code: 'B03', meaning: 'Battery Fault Detected', solution: 'Run battery self-test, verify battery age <3 years, check battery cable resistance' },
+      { code: 'B03', meaning: 'Battery Fault Detected', solution: 'Run battery self-test, verify battery age &lt;3 years, check battery cable resistance' },
       { code: 'O01', meaning: 'Output Overload', solution: 'Check connected devices, verify load is within UPS capacity, check for short circuits' },
     ],
     'Offline/Standby UPS': [
       { code: 'S01', meaning: 'Mains Voltage Out of Range', solution: 'Check utility voltage with multimeter, verify input wiring, contact utility provider' },
-      { code: 'S02', meaning: 'Battery Backup Failed', solution: 'Test battery with load, check battery terminals, verify battery age <5 years' },
+      { code: 'S02', meaning: 'Battery Backup Failed', solution: 'Test battery with load, check battery terminals, verify battery age &lt;5 years' },
       { code: 'S03', meaning: 'Transfer Switch Failure', solution: 'Check switch contacts, verify changeover voltage setting, test with load simulation' },
     ],
   };
 
   const makes = {
-    'Enterprise Solutions (>20kVA)': [
+    'Enterprise Solutions (&gt;20kVA)': [
       { name: 'Eaton 93PM', models: '10-500 kVA', specialty: 'High efficiency 96%, three-phase, modular' },
       { name: 'Schneider Electric Galaxy', models: '10-800 kVA', specialty: 'Industry leader, scalable architecture' },
       { name: 'ABB PowerWare', models: '15-700 kVA', specialty: 'High availability, fast switchover' },
@@ -93,7 +93,7 @@ export default function UPSSystemsPage() {
       title: 'UPS Not Providing Backup Power',
       steps: [
         'Check if battery is present and connected (look for battery terminal connections)',
-        'Verify battery age - lithium <10 years, AGM <5 years, lead-acid <3 years',
+        'Verify battery age - lithium &lt;10 years, AGM &lt;5 years, lead-acid &lt;3 years',
         'Test battery voltage with multimeter (should show ±5% of rated voltage)',
         'Check if "mains failed" indicator lights up when you cut power to the UPS',
         'Verify load is within UPS capacity (check nameplate kVA rating)',
@@ -106,7 +106,7 @@ export default function UPSSystemsPage() {
       steps: [
         'Calculate actual connected load - subtract low-priority devices first',
         'Battery capacity decreases with age - 3-year-old battery provides ~80% original capacity',
-        'Cold temperature reduces battery capacity - <10°C reduces output by 20-30%',
+        'Cold temperature reduces battery capacity - &lt;10°C reduces output by 20-30%',
         'Check battery connections for corrosion or loose terminals',
         'Verify charger is properly charging (check LED indicator on charger)',
         'For lithium batteries, check internal fuse is not blown (no output)',
@@ -120,7 +120,7 @@ export default function UPSSystemsPage() {
         'Continuous rapid beeping = critical battery low (save data, shutdown immediately)',
         'Beeping on power-up = may indicate fault - check error code display',
         'For network-managed UPS, check if alarm mute button is activated',
-        'Verify mains voltage is not too low (input <180V or >260V on 220V system)',
+        'Verify mains voltage is not too low (input &lt;180V or &gt;260V on 220V system)',
         'Check for overload condition - reduce load below UPS capacity',
       ],
     },
@@ -173,11 +173,11 @@ export default function UPSSystemsPage() {
       period: 'Annually',
       tasks: [
         'Professional load bank test (discharge battery fully, measure capacity)',
-        'Battery capacity analysis - if <80% original, plan replacement',
+        'Battery capacity analysis - if &lt;80% original, plan replacement',
         'Thermal imaging inspection for hot spots in inverter/rectifier',
         'Complete firmware update and settings audit',
         'Verify warranty status and compliance documentation',
-        'Service engineer inspection for large enterprise UPS (>10kVA)',
+        'Service engineer inspection for large enterprise UPS (&gt;10kVA)',
       ],
     },
   ];
@@ -266,7 +266,7 @@ export default function UPSSystemsPage() {
             </p>
 
             <p className="text-lg leading-relaxed">
-              Transfer time—the interval when UPS switches from mains to battery—must be sufficiently fast to prevent equipment shutdown. Most modern computers and network equipment require <4ms transfer time (less than one cycle of 50Hz power). Offline UPS models typically transfer in 5-10ms, causing brief power loss that can trigger UPS disconnection in some sensitive equipment. Line-interactive and online UPS achieve <4ms transfer, making them mandatory for production servers and critical infrastructure. For Kenya's grid infrastructure with frequent brownouts and sags, line-interactive UPS provides excellent protection without the cost premium of online models.
+              Transfer time—the interval when UPS switches from mains to battery—must be sufficiently fast to prevent equipment shutdown. Most modern computers and network equipment require &lt;4ms transfer time (less than one cycle of 50Hz power). Offline UPS models typically transfer in 5-10ms, causing brief power loss that can trigger UPS disconnection in some sensitive equipment. Line-interactive and online UPS achieve &lt;4ms transfer, making them mandatory for production servers and critical infrastructure. For Kenya's grid infrastructure with frequent brownouts and sags, line-interactive UPS provides excellent protection without the cost premium of online models.
             </p>
 
             <p className="text-lg leading-relaxed">
@@ -274,7 +274,7 @@ export default function UPSSystemsPage() {
             </p>
 
             <p className="text-lg leading-relaxed">
-              Environmental conditions profoundly impact UPS reliability. Temperature extremes reduce battery capacity and inverter efficiency; humidity promotes corrosion on battery terminals and contact points; and altitude above 2000m reduces cooling efficiency, requiring derating or additional ventilation. Kenya's data center environments at sea level (Nairobi coast) and 1600m elevation (Nairobi) present different cooling challenges. Inland locations with ambient temperatures frequently >40°C require either oversized cooling systems or lower-capacity units to ensure safe operation within temperature ratings.
+              Environmental conditions profoundly impact UPS reliability. Temperature extremes reduce battery capacity and inverter efficiency; humidity promotes corrosion on battery terminals and contact points; and altitude above 2000m reduces cooling efficiency, requiring derating or additional ventilation. Kenya's data center environments at sea level (Nairobi coast) and 1600m elevation (Nairobi) present different cooling challenges. Inland locations with ambient temperatures frequently &gt;40°C require either oversized cooling systems or lower-capacity units to ensure safe operation within temperature ratings.
             </p>
           </div>
         </section>
