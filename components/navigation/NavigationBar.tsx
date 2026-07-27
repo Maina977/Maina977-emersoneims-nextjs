@@ -78,7 +78,7 @@ export default function NavigationBar({
       dropdown: [
         { label: 'EIMS PRO (live workspace)', href: '/eims-pro', description: 'Embedded Flask UI — default http://127.0.0.1:5000', icon: '🏛️', badge: 'LIVE' },
         { label: 'Pro Building Suite™ (full AI)', href: '/solutions/building', description: 'In-browser AI architecture, structural & BOQ reports', icon: '📐', badge: 'AI' },
-        { label: 'Generator Oracle™', href: '/generator-oracle', description: '3,800+ fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
+        { label: 'Generator Oracle™', href: '/generator-oracle', description: '57,600+ verified fault codes, AI diagnostics', icon: '🔮', badge: 'AI-POWERED' },
         { label: 'Solar Genius Pro™', href: '/solar-genius-pro', description: '56 AI Engines, <3 min quotes', icon: '☀️', badge: '#1 WORLDWIDE' },
         { label: 'AquaScan Pro™', href: '/aquascan-pro-v3', description: 'AI water system diagnostics', icon: '💧', badge: 'AI' },
       ]

@@ -61,6 +61,17 @@ export interface CuratedFaultCode {
   downtime: string;
   preventive: string;
   verified: boolean;
+  // The controller data files carry a full diagnostic payload per code. An
+  // earlier version of this mapper kept only causes and solution, which threw
+  // away the ordered diagnostic sequence, the reset procedure and the safety
+  // warnings on 54,192 entries — the most valuable fields in the set. They are
+  // preserved now.
+  summary?: string;
+  diagnosticSteps?: { step: number; action: string; expectedResult: string; tools?: string[] }[];
+  safetyWarnings?: string[];
+  resetSteps?: string[];
+  causeDetail?: { likelihood: string; cause: string; verification: string }[];
+  enriched?: boolean;
 }
 
 const text = (v: unknown): string => (typeof v === 'string' ? v : '');
@@ -75,6 +86,40 @@ function fromController(c: any, family: string): CuratedFaultCode {
     ? c.solutions.map((s: any) => (typeof s === 'string' ? s : text(s?.solution) || text(s?.action))).filter(Boolean)
     : [];
 
+  // Ordered diagnostic sequence with the reading expected at each step.
+  const steps = Array.isArray(c?.diagnosticSteps)
+    ? c.diagnosticSteps.map((d: any, i: number) => ({
+        step: typeof d?.step === 'number' ? d.step : i + 1,
+        action: text(d?.action),
+        expectedResult: text(d?.expectedResult) || text(d?.expect),
+        tools: list(d?.tools),
+      })).filter((d: any) => d.action)
+    : [];
+
+  // Likelihood-weighted causes with how to verify each one.
+  const causeDetail = Array.isArray(c?.possibleCauses)
+    ? c.possibleCauses
+        .filter((x: any) => x && typeof x === 'object')
+        .map((x: any) => ({
+          likelihood: text(x?.likelihood) || 'medium',
+          cause: text(x?.cause),
+          verification: text(x?.verification),
+        }))
+        .filter((x: any) => x.cause)
+    : [];
+
+  // Reset pathway steps — how the fault is actually cleared on the controller.
+  const resetSteps = Array.isArray(c?.resetPathways)
+    ? c.resetPathways.flatMap((r: any) => list(r?.steps))
+    : [];
+
+  // Tools referenced by the diagnostic steps and the solutions.
+  const toolSet = new Set<string>();
+  for (const d of steps) for (const t of d.tools || []) toolSet.add(t);
+  if (Array.isArray(c?.solutions)) {
+    for (const s of c.solutions) for (const t of list(s?.tools)) toolSet.add(t);
+  }
+
   return {
     code: text(c?.code),
     brand: text(c?.brand) || family,
@@ -86,11 +131,17 @@ function fromController(c: any, family: string): CuratedFaultCode {
     symptoms: list(c?.symptoms),
     causes,
     solution: solutions.join('; '),
-    parts: [],
-    tools: [],
-    downtime: '',
+    parts: Array.isArray(c?.solutions) ? c.solutions.flatMap((s: any) => list(s?.parts)) : [],
+    tools: [...toolSet],
+    downtime: Array.isArray(c?.solutions) ? text(c.solutions[0]?.timeEstimate) : '',
     preventive: list(c?.preventiveMeasures).join('; '),
     verified: true,
+    summary: text(c?.description),
+    diagnosticSteps: steps,
+    safetyWarnings: list(c?.safetyWarnings),
+    resetSteps,
+    causeDetail,
+    enriched: steps.length > 0,
   };
 }
 
@@ -108,9 +159,12 @@ function fromSolar(c: any, kind: 'Inverter' | 'Battery'): CuratedFaultCode {
     solution: list(c?.solutions).join('; '),
     parts: list(c?.partsRequired),
     tools: [],
-    downtime: '',
+    downtime: text(c?.estimatedCost),
     preventive: list(c?.preventiveMeasures).join('; '),
     verified: true,
+    summary: text(c?.description),
+    resetSteps: list(c?.resetProcedure),
+    enriched: list(c?.solutions).length > 0,
   };
 }
 

@@ -182,6 +182,11 @@ export interface MatchedCode {
   safetyWarnings?: string[];
   tools?: string[];
   preventive?: string;
+  /** How the fault is cleared on the controller. */
+  resetSteps?: string[];
+  /** Likelihood-weighted causes, each with how to verify it. */
+  causeDetail?: { likelihood: string; cause: string; verification: string }[];
+  parts?: string[];
   /** True where diagnostic content was attached; false where only base data exists. */
   enriched?: boolean;
 }
@@ -635,6 +640,9 @@ export function getExactCode(codeStr: string): MatchedCode | null {
         safetyWarnings: code.safetyWarnings?.length ? code.safetyWarnings : undefined,
         tools: code.tools?.length ? code.tools : undefined,
         preventive: code.preventive || undefined,
+        resetSteps: code.resetSteps?.length ? code.resetSteps : undefined,
+        causeDetail: code.causeDetail?.length ? code.causeDetail : undefined,
+        parts: code.parts?.length ? code.parts : undefined,
         enriched: Boolean(code.enriched)
       };
     }
