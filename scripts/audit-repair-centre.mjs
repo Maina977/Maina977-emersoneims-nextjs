@@ -132,6 +132,39 @@ for (const a of REPAIR_ARTICLES) {
   }
 }
 
+// 9. JSON-LD must be emitted by a PLAIN <script> tag in these server components.
+//    next/script with no strategy defaults to afterInteractive, which injects
+//    the tag client-side only — it never appears in the initial HTML, so no
+//    crawler ever sees it. That shipped silently: TechArticle and
+//    BreadcrumbList were absent from every article page while the code looked
+//    correct. Verified by fetching the live HTML, not by reading the source.
+{
+  const ROUTE_FILES = [
+    'app/repair-centre/page.tsx',
+    'app/repair-centre/[hub]/page.tsx',
+    'app/repair-centre/[hub]/[slug]/page.tsx',
+  ];
+  for (const rel of ROUTE_FILES) {
+    let src;
+    try {
+      src = readFileSync(path.join(root, rel), 'utf8');
+    } catch {
+      errors.push(`${rel}: route file missing`);
+      continue;
+    }
+    if (!/type="application\/ld\+json"/.test(src)) {
+      errors.push(`${rel}: no JSON-LD block found — structured data lost`);
+      continue;
+    }
+    if (/<Script\s/.test(src) && !/strategy="beforeInteractive"/.test(src)) {
+      errors.push(`${rel}: JSON-LD uses next/script without strategy="beforeInteractive" — it will NOT appear in the server-rendered HTML. Use a plain <script> tag.`);
+    }
+    if (/from 'next\/script'/.test(src) && !/<Script\s/.test(src)) {
+      warnings.push(`${rel}: imports next/script but never uses it`);
+    }
+  }
+}
+
 // report
 console.log(`Repair Centre registry audit`);
 console.log(`  hubs:     ${REPAIR_HUBS.length}`);

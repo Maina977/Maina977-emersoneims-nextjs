@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Script from 'next/script';
 import { TARGET_SECTORS, getSectorCategories } from '@/lib/data/target-sectors';
 
 /**
@@ -67,7 +66,7 @@ export default function SectorsIndexPage() {
 
   return (
     <>
-      <Script
+      <script
         id="sectors-index-ld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}

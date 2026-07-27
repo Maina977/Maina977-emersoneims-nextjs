@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import { REPAIR_HUBS, getRepairHub, getArticlesForHub } from '@/lib/repair-centre';
 
@@ -57,7 +56,7 @@ export default async function RepairHubPage({ params }: Props) {
 
   return (
     <>
-      <Script id={`hub-ld-${hub.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
+      <script id={`hub-ld-${hub.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
       <main className="min-h-screen bg-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">

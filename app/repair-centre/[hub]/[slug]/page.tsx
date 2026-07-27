@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import { getAllRepairArticleSlugs, getRepairArticle } from '@/lib/repair-centre';
 import RepairArticleView from '@/components/repair-centre/RepairArticleView';
@@ -93,7 +92,7 @@ export default async function RepairArticlePage({ params }: Props) {
 
   return (
     <>
-      <Script id={`article-ld-${article.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
+      <script id={`article-ld-${article.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <main className="min-h-screen bg-slate-950">
         <RepairArticleView article={article} />
       </main>

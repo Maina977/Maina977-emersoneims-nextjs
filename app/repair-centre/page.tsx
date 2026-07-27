@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Script from 'next/script';
 import { REPAIR_HUBS, REPAIR_ARTICLES, getArticlesForHub } from '@/lib/repair-centre';
 
 export const metadata: Metadata = {
@@ -46,7 +45,7 @@ export default function RepairCentrePage() {
 
   return (
     <>
-      <Script id="repair-centre-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
+      <script id="repair-centre-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
       <main className="min-h-screen bg-slate-950">
         <section className="border-b border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950">
