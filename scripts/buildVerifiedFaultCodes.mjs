@@ -98,6 +98,25 @@ const out = `/**
  * Builder: scripts/buildVerifiedFaultCodes.mjs
  * Built  : ${new Date().toISOString().slice(0, 10)}
  *
+ * INDEPENDENT REFERENCE DATA
+ * ==========================
+ * Fault code numbers are industry-standard identifiers used here for
+ * identification purposes only. Fault descriptions are short factual
+ * descriptors of the condition (for example "Low Fuel Rail Pressure"), and the
+ * cause and remedy entries are brief technical statements of engineering fact.
+ * Nothing in this file is transcribed from a manufacturer service manual.
+ *
+ * This database is NOT affiliated with, endorsed by, or officially associated
+ * with Perkins, Cummins, Caterpillar, Deutz, SDMO, Atlas Copco, Weichai,
+ * Generac, Kohler, Doosan, or any other manufacturer. All brand names, model
+ * numbers and trademarks are the property of their respective owners. For
+ * official documentation always refer to the manufacturer's service manual for
+ * the specific engine.
+ *
+ * Diagnostic content attached to these codes at runtime comes from
+ * lib/data/faultKnowledge.ts, which is written from first principles in our own
+ * words and carries the same posture.
+ *
  * ${entries.length} unique brand+model+code entries across ${brands.length} brands.
  * Duplicates and malformed rows are removed by the builder; the CSV's spilled
  * cause/solution columns are re-classified per item (see the builder header).
