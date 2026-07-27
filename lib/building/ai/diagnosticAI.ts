@@ -163,6 +163,7 @@ export interface DiagnosticResult {
 export interface MatchedCode {
   code: string;
   brand: string;
+  model?: string;
   title: string;
   category: string;
   severity: string;
@@ -171,6 +172,18 @@ export interface MatchedCode {
   causes: string[];
   solution: string;
   matchReason: string;
+  // Diagnostic content from lib/data/faultKnowledge.ts. Present on codes whose
+  // fault type has content written for it. Without these the caller receives a
+  // fault name and a remedy list but no way to work through the fault, which
+  // defeats the purpose of the knowledge layer.
+  summary?: string;
+  symptoms?: string[];
+  diagnosticSteps?: { step: number; action: string; expectedResult: string; tools?: string[] }[];
+  safetyWarnings?: string[];
+  tools?: string[];
+  preventive?: string;
+  /** True where diagnostic content was attached; false where only base data exists. */
+  enriched?: boolean;
 }
 
 /**
@@ -607,14 +620,22 @@ export function getExactCode(codeStr: string): MatchedCode | null {
       return {
         code: code.code,
         brand: code.brand || 'Generic',
+        model: code.model || undefined,
         title: code.issue || code.title || 'Unknown',
         category: code.category || 'General',
         severity: code.severity || 'WARNING',
         confidence: 100,
-        description: code.description || '',
+        description: code.description || code.summary || '',
         causes: code.causes || [],
         solution: code.solution || '',
-        matchReason: 'Exact match'
+        matchReason: 'Exact match',
+        summary: code.summary || undefined,
+        symptoms: code.symptoms?.length ? code.symptoms : undefined,
+        diagnosticSteps: code.diagnosticSteps?.length ? code.diagnosticSteps : undefined,
+        safetyWarnings: code.safetyWarnings?.length ? code.safetyWarnings : undefined,
+        tools: code.tools?.length ? code.tools : undefined,
+        preventive: code.preventive || undefined,
+        enriched: Boolean(code.enriched)
       };
     }
   }
