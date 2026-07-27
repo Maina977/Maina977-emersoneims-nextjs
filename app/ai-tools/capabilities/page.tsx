@@ -38,7 +38,7 @@ const AI_TOOLS = [
   {
     id: 'generator-oracle',
     name: 'Generator Oracle™',
-    tagline: '2,900+ Fault Codes | AI Diagnostics | Controller Simulator',
+    tagline: '3,300+ Fault Codes | AI Diagnostics | Controller Simulator',
     ranking: 'FLAGSHIP SUITE',
     icon: '🔮',
     link: '/generator-oracle',

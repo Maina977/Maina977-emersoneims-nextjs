@@ -152,7 +152,7 @@ const structuredData = {
           position: 1,
           name: 'Generator Oracle',
           url: 'https://www.emersoneims.com/generator-oracle',
-          description: '2,900+ fault codes for generator diagnostics',
+          description: '3,300+ fault codes for generator diagnostics',
         },
         {
           '@type': 'ListItem',

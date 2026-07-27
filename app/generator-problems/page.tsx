@@ -168,7 +168,7 @@ export default function GeneratorProblemsPage() {
               Need More Detailed Diagnostics?
             </h2>
             <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
-              Generator Oracle provides AI-powered diagnostics with 2,900+ fault codes,
+              Generator Oracle provides AI-powered diagnostics with 3,300+ fault codes,
               step-by-step reset procedures, and professional repair guides.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

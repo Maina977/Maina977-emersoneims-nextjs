@@ -98,7 +98,7 @@ export default function FaultCodesPage() {
               Generator <span className="text-amber-400">Fault Code</span> Database
             </h1>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
-              Search over <span className="text-white font-semibold">2,900+ fault codes</span> from
+              Search over <span className="text-white font-semibold">3,300+ fault codes</span> from
               Cummins, Perkins, DSE, ComAp, and more. Get instant diagnosis and repair steps.
             </p>
 
@@ -288,7 +288,7 @@ export default function FaultCodesPage() {
             "@context": "https://schema.org",
             "@type": "WebPage",
             "name": "Generator Fault Code Database",
-            "description": "Search over 2,900+ generator fault codes from Cummins, Perkins, DSE, ComAp. Get instant diagnosis and repair steps.",
+            "description": "Search over 3,300+ generator fault codes from Cummins, Perkins, DSE, ComAp. Get instant diagnosis and repair steps.",
             "provider": {
               "@type": "Organization",
               "name": "EmersonEIMS",

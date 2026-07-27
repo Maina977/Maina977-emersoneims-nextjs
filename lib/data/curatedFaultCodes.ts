@@ -43,6 +43,7 @@ import { getSmartGenFaultCodes } from '@/lib/generator-oracle/data/smartgen-faul
 import { getVODIAFaultCodes } from '@/lib/generator-oracle/data/vodia-fault-codes';
 import { getWoodwardFaultCodes } from '@/lib/generator-oracle/data/woodward-fault-codes';
 import { INVERTER_FAULT_CODES, BATTERY_FAULT_CODES } from '@/lib/maintenance-hub/solar-fault-codes';
+import { J1939_FAULT_CODES } from '@/lib/data/j1939FaultCodes';
 
 export interface CuratedFaultCode {
   code: string;
@@ -139,12 +140,37 @@ const solarCodes: CuratedFaultCode[] = [
   ...(BATTERY_FAULT_CODES || []).map((c: any) => fromSolar(c, 'Battery')),
 ].filter(c => c.code);
 
+/**
+ * J1939 SPN/FMI entries. This is the code a technician actually reads off an
+ * electronic diesel engine, across every engine brand we service. Severity is
+ * taken from the FMI's defined severity class.
+ */
+const j1939Codes: CuratedFaultCode[] = J1939_FAULT_CODES.map(c => ({
+  code: c.code,
+  brand: c.brand,
+  model: c.model,
+  service: 'Engine ECU Diagnostics (J1939)',
+  category: c.category,
+  issue: c.title,
+  severity: c.severity.toUpperCase(),
+  symptoms: [],
+  causes: c.causes,
+  solution: c.remedies.join('; '),
+  parts: [],
+  tools: ['J1939 diagnostic adapter', 'Service tool or fault-code reader', 'Digital multimeter'],
+  downtime: '',
+  preventive: '',
+  verified: true,
+}));
+
 export const CURATED_CONTROLLER_FAULT_CODES = controllerCodes;
 export const CURATED_SOLAR_FAULT_CODES = solarCodes;
-export const CURATED_FAULT_CODES: CuratedFaultCode[] = [...controllerCodes, ...solarCodes];
+export const CURATED_J1939_FAULT_CODES = j1939Codes;
+export const CURATED_FAULT_CODES: CuratedFaultCode[] = [...controllerCodes, ...solarCodes, ...j1939Codes];
 
 export const CURATED_FAULT_CODE_STATS = {
   controllers: controllerCodes.length,
   solar: solarCodes.length,
+  j1939: j1939Codes.length,
   total: CURATED_FAULT_CODES.length,
 };

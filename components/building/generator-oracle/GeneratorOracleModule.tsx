@@ -1959,7 +1959,7 @@ export default function GeneratorOracleModule() {
                       <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-amber-400">
                         Fault Center
                       </h2>
-                      <p className="text-slate-400 text-sm">2,900+ Fault Codes, Deep Analysis & Interactive Troubleshooting</p>
+                      <p className="text-slate-400 text-sm">3,300+ Fault Codes, Deep Analysis & Interactive Troubleshooting</p>
                     </div>
 
                     {/* Sub-Tab Navigation */}
