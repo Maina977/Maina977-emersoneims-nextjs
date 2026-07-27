@@ -2271,7 +2271,7 @@ export default function GeneratorPage() {
       </motion.section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          CUMMINS AUTHORIZED DEALER - MAIN BRAND SHOWCASE
+          CUMMINS SALES & SERVICE - MAIN BRAND SHOWCASE
       ════════════════════════════════════════════════════════════════ */}
       <CumminsBanner variant="hero" showPricing={true} showCTA={true} />
 

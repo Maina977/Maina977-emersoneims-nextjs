@@ -118,7 +118,7 @@ export default function TrustBadgesSection() {
           </div>
         </motion.div>
 
-        {/* Authorized Partners */}
+        {/* Brands we sell and service */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -126,7 +126,7 @@ export default function TrustBadgesSection() {
           className="mb-16"
         >
           <h3 className="text-center text-sm text-gray-500 uppercase tracking-wider mb-8">
-            Authorized Partner
+            Brands We Sell & Service
           </h3>
           <div className="flex flex-wrap justify-center gap-6">
             {partners.map((partner, i) => (

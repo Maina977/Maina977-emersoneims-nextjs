@@ -49,8 +49,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const sector = getSectorBySlug(resolvedParams.sector);
   const county = getCountyBySlug(resolvedParams.location);
 
+  // SOFT-404 FIX (2026-07-27): returning a "Not Found" metadata object while
+  // the page body called notFound() left Next.js serving HTTP 200 — verified
+  // live on /sectors/nonexistent-sector-xyz/kenya/nairobi. Google treats
+  // 200 + "Not Found" as a soft-404 and it drags down site-wide quality.
+  // dynamicParams stays true here so legitimate sector/county pairs outside
+  // generateStaticParams still render; notFound() is what makes the 404
+  // status authoritative. Same defect and fix as
+  // app/locations/[location]/[service]/page.tsx (2026-07-18).
   if (!sector || !county) {
-    return { title: 'Not Found' };
+    notFound();
   }
 
   const title = generateSectorTitle(sector, county.name);

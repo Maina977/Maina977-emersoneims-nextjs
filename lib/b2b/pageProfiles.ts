@@ -51,7 +51,7 @@ export const B2B_PROFILES = {
     eyebrow: 'Power Continuity • Diesel Generators',
     headline: 'Cummins & Voltka diesel generators — sized, installed, and maintained for uptime-critical sites.',
     subtitle:
-      'Authorized dealer engineering for hospitals, manufacturers, telecom, banks, hotels and data-sensitive operations across Kenya. 10 kVA – 2,000 kVA, with ATS, synchronization, and SLA-backed maintenance.',
+      'Specialist generator engineering for hospitals, manufacturers, telecom, banks, hotels and data-sensitive operations across Kenya. 10 kVA – 2,000 kVA, with ATS, synchronization, and SLA-backed maintenance.',
     whoFor: [
       'Hospitals & clinics',
       'Manufacturing plants',
@@ -864,17 +864,17 @@ export const B2B_PROFILES = {
   },
 
   brands: {
-    eyebrow: 'Authorised Brands',
-    headline: 'Authorised partner for the brands serious Kenyan sites trust.',
+    eyebrow: 'Brands We Supply & Service',
+    headline: 'The brands serious Kenyan sites trust — supplied, installed and maintained.',
     subtitle:
       'Cummins, Voltka and other tier-one OEMs — supplied, installed and maintained by EmersonEIMS with genuine parts and factory-trained engineers.',
     whoFor: ['Facility managers', 'EPC & MEP contractors', 'Hospitals & critical sites', 'Manufacturing & agribusiness', 'Banks & financial', 'Government & NGOs'],
     pso: [
-      { problem: 'Grey-market kit voids warranty and fails inspection.', solution: 'Authorised supply with genuine parts and warranty.', outcome: 'Defensible warranty, longer asset life.' },
+      { problem: 'Grey-market kit voids warranty and fails inspection.', solution: 'Traceably sourced equipment and genuine parts, so the manufacturer warranty stands.', outcome: 'Defensible warranty, longer asset life.' },
       { problem: 'Multi-brand sites need one accountable partner.', solution: 'EmersonEIMS service desk covers all listed brands.', outcome: 'One contract, one SLA, one escalation path.' },
       { problem: 'No clear way to compare brand options.', solution: 'Brand-by-brand engineering guidance from the team.', outcome: 'Right brand for the application, not the spreadsheet.' },
     ],
-    trust: ['Authorised dealer (Cummins / Voltka)', 'Genuine parts only', 'Factory-trained engineers', 'Multi-brand service contracts'],
+    trust: ['Traceably sourced equipment', 'Genuine parts only', 'Factory-trained engineers', 'Multi-brand service contracts'],
     ctas: [
       { label: 'Request a Brand Quote', href: '/contact?topic=brand-quote', variant: 'primary' },
       { label: 'Book a Site Audit', href: '/booking?service=site-audit', variant: 'secondary' },
@@ -975,7 +975,7 @@ export const B2B_PROFILES = {
       { problem: 'Fault diagnosed but never properly closed out.', solution: 'Root-cause investigation with corrective actions.', outcome: 'Faults closed, not reset and forgotten.' },
       { problem: 'No PM regime = same problems every quarter.', solution: 'EmersonEIMS PM contract + genuine parts.', outcome: 'Fewer breakdowns, longer asset life.' },
     ],
-    trust: ['Multi-brand fault diagnosis', 'Authorised Cummins / Voltka', '24/7 emergency response', 'Documented job reports'],
+    trust: ['Multi-brand fault diagnosis', 'Cummins / Voltka sales & service', '24/7 emergency response', 'Documented job reports'],
     ctas: [
       { label: 'Call the Emergency Desk', href: TEL, variant: 'primary' },
       { label: 'WhatsApp an Engineer Now', href: WHATSAPP, variant: 'secondary' },

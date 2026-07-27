@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * CUMMINS AUTHORIZED DEALER BANNER
+ * CUMMINS SALES & SERVICE BANNER
  * Sci-Fi Black Design with Neon Accents, 3D Effects & Hover Animations
  * 3 Years Warranty + 1 Year Free Service
  */
@@ -87,14 +87,14 @@ export default function CumminsBanner({
                     transition={{ delay: 0.2 }}
                     className="text-center lg:text-left"
                   >
-                    {/* Authorized Badge */}
+                    {/* Sales & service badge */}
                     <motion.div
                       whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0, 255, 255, 0.5)' }}
                       className="inline-flex items-center gap-3 px-5 py-2.5 bg-gradient-to-r from-cyan-500/20 to-cyan-500/10 backdrop-blur-xl rounded-full border border-cyan-500/30 mb-8"
                       style={{ boxShadow: '0 0 20px rgba(0, 255, 255, 0.2)' }}
                     >
                       <Sparkles className="w-5 h-5 text-cyan-400" />
-                      <span className="text-cyan-300 font-semibold tracking-wide">AUTHORIZED CUMMINS DEALER</span>
+                      <span className="text-cyan-300 font-semibold tracking-wide">CUMMINS SALES & SERVICE</span>
                     </motion.div>
 
                     {/* Main Heading */}

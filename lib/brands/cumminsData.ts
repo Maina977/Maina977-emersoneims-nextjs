@@ -1,9 +1,9 @@
 /**
- * CUMMINS GENERATORS BY VOLTKA - AUTHORIZED DEALER DATA
- * EmersonEIMS is Kenya's Authorized Cummins/Voltka Dealer
+ * CUMMINS GENERATORS BY VOLTKA - BRAND DATA
+ * EmersonEIMS sells and services Cummins generators supplied by Voltka in Kenya
  *
  * SEO Keywords: Cummins generators Kenya, Voltka generators,
- * authorized Cummins dealer Kenya, Cummins 10-2000KVA
+ * Cummins generator supplier Kenya, Cummins 10-2000KVA
  */
 
 export const CUMMINS_BRAND_INFO = {
@@ -25,7 +25,7 @@ export const CUMMINS_BRAND_INFO = {
     description: '1 Year Free Service & Maintenance'
   },
   taglines: [
-    'Kenya\'s Authorized Cummins Dealer',
+    'Cummins Sales & Service Across Kenya',
     'Powered by Voltka - Trusted Worldwide',
     '3 Years Warranty + 1 Year Free Service',
     '10KVA to 2000KVA - All Power Needs Covered',
@@ -66,7 +66,7 @@ export const CUMMINS_BRAND_INFO = {
   seoKeywords: [
     'Cummins generators Kenya',
     'Voltka generators Kenya',
-    'authorized Cummins dealer Kenya',
+    'Cummins generator supplier Kenya',
     'Cummins generator price Kenya',
     'Cummins 10KVA generator',
     'Cummins 20KVA generator',
@@ -140,7 +140,7 @@ export const CUMMINS_BRAND_INFO = {
 
 export const CUMMINS_FAQ = [
   {
-    question: "Is EmersonEIMS an authorized Cummins dealer in Kenya?",
+    question: "Does EmersonEIMS supply and service Cummins generators in Kenya?",
     answer: "EmersonEIMS sells and services Cummins generators supplied by Voltka in Kenya. We supply genuine Cummins generators from 10KVA to 2000KVA with full manufacturer warranty and support."
   },
   {

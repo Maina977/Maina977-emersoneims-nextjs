@@ -185,7 +185,7 @@ export default function IndustryLeadingTrust() {
           ))}
         </motion.div>
 
-        {/* Authorized Partnerships */}
+        {/* Brands we sell and service */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -193,7 +193,7 @@ export default function IndustryLeadingTrust() {
           className="mb-20"
         >
           <h3 className="text-center text-sm text-gray-500 uppercase tracking-[0.3em] mb-8">
-            Authorized Partnerships
+            Brands We Sell & Service
           </h3>
           <div className="grid sm:grid-cols-3 gap-6">
             {PARTNERSHIPS.map((partner, i) => (
@@ -207,7 +207,7 @@ export default function IndustryLeadingTrust() {
               >
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-green-500">✓</span>
-                  <span className="text-xs text-green-400 uppercase tracking-wider">Verified Partner</span>
+                  <span className="text-xs text-green-400 uppercase tracking-wider">Sales & Service</span>
                 </div>
                 <h4 className="text-xl font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">
                   {partner.name}
