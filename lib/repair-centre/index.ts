@@ -14,6 +14,7 @@ import { generatorNoVoltageOutput } from './articles/generator-no-voltage-output
 import { generatorUnstableVoltage } from './articles/generator-unstable-voltage';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { upsNotChargingBatteries } from './articles/ups-not-charging-batteries';
+import { upsOnBatteryWithMainsPresent } from './articles/ups-on-battery-with-mains-present';
 
 export * from './types';
 
@@ -25,6 +26,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorUnstableVoltage,
   inverterSwitchesOffUnderLoad,
   upsNotChargingBatteries,
+  upsOnBatteryWithMainsPresent,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -64,7 +66,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Diagnosis for offline, line-interactive and online double-conversion UPS systems, including bypass behaviour, battery autonomy and the generator interaction that causes most critical-power failures.',
     scope: ['Will not power on', 'Bypass faults', 'Battery and autonomy faults', 'Rectifier and inverter faults', 'Generator interaction'],
-    articleSlugs: ['ups-not-charging-batteries'],
+    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present'],
   },
   {
     slug: 'controllers',

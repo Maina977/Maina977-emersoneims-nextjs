@@ -371,7 +371,7 @@ export const upsNotChargingBatteries: RepairArticle = {
     'Fit battery monitoring on any installation where an outage would be costly — continuous evidence beats an annual snapshot',
   ],
 
-  relatedSlugs: [],
+  relatedSlugs: ['ups-on-battery-with-mains-present'],
 
   faq: [
     {

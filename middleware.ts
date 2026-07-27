@@ -655,6 +655,7 @@ export function middleware(request: NextRequest) {
         'generator-unstable-voltage': 'generators',
         'inverter-switches-off-under-load': 'inverters',
         'ups-not-charging-batteries': 'ups',
+        'ups-on-battery-with-mains-present': 'ups',
       };
       const rm = pathname.match(/^\/repair-centre\/([^/]+)(?:\/([^/]+))?\/?$/);
       let ok = false;
