@@ -8,6 +8,7 @@ import {
 } from '@/lib/data/east-africa-locations';
 import sparePartsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
+import { REPAIR_HUBS, REPAIR_ARTICLES } from '@/lib/repair-centre';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -91,7 +92,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/contact`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${BASE_URL}/privacy`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/terms`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.4 },
-    { url: `${BASE_URL}/resources`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    // Repair Centre — hub, equipment categories and published diagnosis guides
+    { url: `${BASE_URL}/repair-centre`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    ...REPAIR_HUBS.map((h) => ({
+      url: `${BASE_URL}/repair-centre/${h.slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+    ...REPAIR_ARTICLES.map((a) => ({
+      url: `${BASE_URL}/repair-centre/${a.hub}/${a.slug}`,
+      lastModified: new Date(a.header.lastReviewed),
+      changeFrequency: 'monthly' as const,
+      priority: 0.85,
+    })),
+
+    { url: `${BASE_URL}/resources`, lastModified: currentDate, changeFrequency: 'weekly', priority:0.8 },
 
     // Solar & UPS Intelligence Hub (RESOURCES → Solar & UPS Intelligence Hub)
     { url: `${BASE_URL}/hub`,                       lastModified: currentDate, changeFrequency: 'weekly', priority: 0.95 },

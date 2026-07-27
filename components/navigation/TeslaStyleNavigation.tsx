@@ -193,6 +193,19 @@ const MEGA_MENUS = {
     description: 'Knowledge, stories, and nationwide coverage',
     sections: [
       {
+        // Repair Centre — technical fault-diagnosis guides. Added as a
+        // first-class Resources section so the articles are reachable through
+        // normal navigation rather than only via search or the sitemap.
+        title: 'Repair Centre',
+        items: [
+          { href: '/repair-centre', label: 'Repair Centre', icon: '🛠️', desc: 'Fault diagnosis & repair guides' },
+          { href: '/repair-centre/generators', label: 'Generator Repair', icon: '⚡', desc: 'Starting, shutdown & output faults' },
+          { href: '/repair-centre/inverters', label: 'Inverter Repair', icon: '🔌', desc: 'Output, charging & thermal faults' },
+          { href: '/repair-centre/ups', label: 'UPS Repair', icon: '🔋', desc: 'Bypass, battery & autonomy faults' },
+          { href: '/repair-centre/controllers', label: 'Controller Diagnostics', icon: '🎛️', desc: 'DSE, ComAp, SmartGen & more' },
+        ],
+      },
+      {
         // SURFACED: the Solar / UPS Hub workspace was previously orphaned from
         // the navbar (only the Quick Access band on /resources linked it).
         // Hub pages now live as a first-class section in the Resources mega.
