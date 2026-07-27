@@ -133,18 +133,22 @@ function handleLookup(query: string): DiagnosticAPIResponse {
   // acting on a neighbouring code's meaning is exactly the failure mode this
   // endpoint has to avoid. Report the miss plainly and offer the rest as
   // clearly-labelled suggestions.
+  // Quote what the user actually typed. Where we had to extract a fragment to
+  // search on, say so, rather than echoing the fragment as if it were their input.
+  const asked = searchCode === raw ? `"${raw}"` : `"${raw}" (searched as "${searchCode}")`;
+
   const suggestions = searchFaultCodes(searchCode, 5);
   if (suggestions.length > 0) {
     return {
       found: false,
       results: suggestions,
-      summary: `No verified entry for "${searchCode}". Showing ${suggestions.length} related code(s) — these are suggestions, not a match for the code you entered. Confirm any code against the OEM service manual before acting on it.`
+      summary: `No verified entry for ${asked}. Showing ${suggestions.length} related code(s) — these are suggestions, not a match for the code you entered. Confirm any code against the OEM service manual before acting on it.`
     };
   }
 
   return {
     found: false,
-    summary: `No verified entry for "${searchCode}". Our database carries hand-checked codes only, so an absent code means we have not verified it — not that your controller is faulty. Check the OEM service manual, or contact us with the controller make and model.`
+    summary: `No verified entry for ${asked}. Our database carries hand-checked codes only, so an absent code means we have not verified it — not that your controller is faulty. Check the OEM service manual, or contact us with the controller make and model.`
   };
 }
 
