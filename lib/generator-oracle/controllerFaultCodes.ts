@@ -233,6 +233,7 @@ export interface ControllerFaultCode {
 
 // ==================== IMPORT BRAND-SPECIFIC CODES ====================
 
+import { getKnowledgeBySubsystem } from '@/lib/data/faultKnowledge';
 import { getDSEFaultCodes } from './data/dse-fault-codes';
 import { getComApFaultCodes } from './data/comap-fault-codes';
 import { getWoodwardFaultCodes } from './data/woodward-fault-codes';
@@ -2006,6 +2007,12 @@ function createExtendedCode(
 ): ControllerFaultCode {
   const content = getDetailedFaultContent(category, subcategory, severity, model, code);
 
+  // Subsystem-level diagnostic content from lib/data/faultKnowledge.ts. The
+  // individual code meaning is unverified, but the subsystem is real, so the
+  // same engineering the curated codes carry applies here and every template
+  // entry ends up with the same structure and depth as the rest of the database.
+  const k = getKnowledgeBySubsystem(category, subcategory);
+
   // Title must not assert a severity we have not verified. These entries exist so
   // that a technician typing any code number in a controller's published range
   // gets a useful hit with subsystem context and a clear next step, rather than a
@@ -2025,14 +2032,30 @@ function createExtendedCode(
     title: detailedTitle,
     description: `${code} falls in the ${subcategory.toLowerCase()} code range for ${brand} ${model}. We have not verified the specific meaning of this individual code against the manufacturer's documentation, so treat the guidance below as general ${subcategory.toLowerCase()} diagnosis for this controller family and confirm the exact meaning in the OEM manual for your model before acting. ${content.description}`,
     triggerParameters: [],
-    symptoms: content.symptoms,
-    possibleCauses: content.causes,
-    diagnosticSteps: content.diagnostics.map(d => ({
-      step: d.step,
-      action: d.action,
-      expectedResult: d.expectedResult,
-      tools: d.tools
-    })),
+    // Subsystem knowledge first where we have it, so every entry carries the
+    // same depth as the curated codes; the generated content remains as the
+    // fallback for subsystems not yet written up.
+    symptoms: k ? k.symptoms : content.symptoms,
+    possibleCauses: k
+      ? k.diagnosis.slice(0, 4).map((d, i) => ({
+          likelihood: (i === 0 ? 'high' : i < 3 ? 'medium' : 'low') as 'high' | 'medium' | 'low',
+          cause: d.action,
+          verification: d.expect,
+        }))
+      : content.causes,
+    diagnosticSteps: k
+      ? k.diagnosis.map(d => ({
+          step: d.step,
+          action: d.action,
+          expectedResult: d.expect,
+          tools: d.tools || [],
+        }))
+      : content.diagnostics.map(d => ({
+          step: d.step,
+          action: d.action,
+          expectedResult: d.expectedResult,
+          tools: d.tools
+        })),
     resetPathways: [{
       method: severity === 'shutdown' ? 'keypad' : 'auto',
       applicableFirmware: ['All'],
@@ -2043,13 +2066,13 @@ function createExtendedCode(
     solutions: [{
       difficulty: content.solutions.difficulty as 'easy' | 'moderate' | 'advanced' | 'expert',
       timeEstimate: content.solutions.timeEstimate,
-      procedureSteps: content.solutions.steps,
-      tools: content.solutions.tools,
+      procedureSteps: k ? k.remedy : content.solutions.steps,
+      tools: k ? k.tools : content.solutions.tools,
       parts: content.solutions.parts,
       estimatedCost: { min: content.solutions.cost.min, max: content.solutions.cost.max, currency: 'USD' }
     }],
-    safetyWarnings: content.safetyWarnings,
-    preventiveMeasures: content.preventiveMeasures,
+    safetyWarnings: k ? k.safety : content.safetyWarnings,
+    preventiveMeasures: k ? k.preventive : content.preventiveMeasures,
     interactiveQuestions: content.interactiveQuestions,
     // Procedurally generated from manufacturer-published code-range templates.
     // Marked unverified so the API and UI can label them as "template / range-based"
