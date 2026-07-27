@@ -12,8 +12,26 @@
  *  5. Every relatedSlugs entry resolves to a real article (no dead links)
  *  6. No article relates to itself
  *  7. Required content sections are present and non-trivial
+ *  8. middleware guard 0f is in sync with the registry
+ *  9. JSON-LD is emitted so it reaches the server-rendered HTML
  *
- * Usage: node scripts/audit-repair-centre.mjs
+ * With --live it ALSO checks what the deployed server actually returns, which
+ * is the only thing that has ever caught the real defects here. Source that
+ * reads correctly has repeatedly shipped broken: notFound() and
+ * dynamicParams=false both still served HTTP 200, and next/script emitted
+ * JSON-LD that never appeared in the HTML. Both looked right in the editor.
+ *
+ * The live pass asserts, for every registry route:
+ *   - published URLs return 200
+ *   - a NEGATIVE CONTROL (a slug that must not exist) returns 404 — without
+ *     this, a soft-404 is indistinguishable from a healthy page
+ *   - articles carry TechArticle + BreadcrumbList in the initial HTML
+ *   - hubs and the index carry BreadcrumbList
+ *   - the article's own heading is actually in the HTML
+ *
+ * Usage:
+ *   node scripts/audit-repair-centre.mjs            # before commit
+ *   node scripts/audit-repair-centre.mjs --live     # after deploy
  */
 
 import { build } from 'esbuild';
@@ -165,6 +183,83 @@ for (const a of REPAIR_ARTICLES) {
   }
 }
 
+// 10. LIVE pass (--live): assert what the deployed server actually returns.
+//     Everything above reads source. This reads the wire.
+const LIVE = process.argv.includes('--live');
+const liveResults = [];
+if (LIVE) {
+  const BASE = process.env.AUDIT_BASE_URL || 'https://www.emersoneims.com';
+  const UA =
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+
+  async function fetchPage(url) {
+    const res = await fetch(url, { headers: { 'User-Agent': UA }, redirect: 'follow' });
+    return { status: res.status, html: res.status === 200 ? await res.text() : '' };
+  }
+  const schemaTypes = html =>
+    new Set([...html.matchAll(/"@type":"([A-Za-z]+)"/g)].map(m => m[1]));
+
+  // Positive: every published route must be 200 and carry its own schema.
+  const positives = [
+    { url: `${BASE}/repair-centre`, needs: ['BreadcrumbList', 'CollectionPage'] },
+    ...REPAIR_HUBS.map(h => ({ url: `${BASE}/repair-centre/${h.slug}`, needs: ['BreadcrumbList'] })),
+    ...REPAIR_ARTICLES.map(a => ({
+      url: `${BASE}/repair-centre/${a.hub}/${a.slug}`,
+      needs: ['TechArticle', 'BreadcrumbList'],
+      text: a.header.title,
+    })),
+  ];
+
+  for (const p of positives) {
+    let r;
+    try {
+      r = await fetchPage(p.url);
+    } catch (e) {
+      errors.push(`LIVE ${p.url}: request failed (${e.message})`);
+      continue;
+    }
+    if (r.status !== 200) {
+      errors.push(`LIVE ${p.url}: expected 200, got ${r.status}`);
+      continue;
+    }
+    const types = schemaTypes(r.html);
+    for (const t of p.needs) {
+      if (!types.has(t)) {
+        errors.push(`LIVE ${p.url}: schema "${t}" missing from server-rendered HTML`);
+      }
+    }
+    if (p.text && !r.html.includes(p.text)) {
+      errors.push(`LIVE ${p.url}: article heading not present in HTML — page rendered but content is missing`);
+    }
+    liveResults.push(`200 ${p.url.replace(BASE, '')}`);
+  }
+
+  // Negative controls. Without these a soft-404 looks exactly like success.
+  const firstArticle = REPAIR_ARTICLES[0];
+  const wrongHub = REPAIR_HUBS.find(h => h.slug !== firstArticle?.hub);
+  const negatives = [
+    `${BASE}/repair-centre/__no_such_hub__`,
+    `${BASE}/repair-centre/${REPAIR_HUBS[0]?.slug}/__no_such_article__`,
+    ...(firstArticle && wrongHub
+      ? [`${BASE}/repair-centre/${wrongHub.slug}/${firstArticle.slug}`]
+      : []),
+  ];
+  for (const url of negatives) {
+    let r;
+    try {
+      r = await fetchPage(url);
+    } catch (e) {
+      errors.push(`LIVE ${url}: request failed (${e.message})`);
+      continue;
+    }
+    if (r.status !== 404) {
+      errors.push(`LIVE ${url}: expected 404, got ${r.status} — SOFT-404, middleware guard not covering this`);
+    } else {
+      liveResults.push(`404 ${url.replace(BASE, '')} (negative control)`);
+    }
+  }
+}
+
 // report
 console.log(`Repair Centre registry audit`);
 console.log(`  hubs:     ${REPAIR_HUBS.length}`);
@@ -174,6 +269,13 @@ for (const h of REPAIR_HUBS) {
   console.log(`    ${h.slug.padEnd(14)} ${n} article(s)`);
 }
 console.log(`  routes:   ${1 + REPAIR_HUBS.length + REPAIR_ARTICLES.length} (index + hubs + articles)`);
+
+if (LIVE) {
+  console.log(`\nLIVE checks (${liveResults.length} passed):`);
+  liveResults.forEach(r => console.log(`  ${r}`));
+} else {
+  console.log(`  (source-only — run with --live after deploy to check what the server returns)`);
+}
 
 if (warnings.length) {
   console.log(`\nWARNINGS (${warnings.length}):`);
