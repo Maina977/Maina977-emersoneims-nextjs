@@ -1,0 +1,131 @@
+/**
+ * Repair Centre registry integrity audit.
+ *
+ * Bundles the TS registry with esbuild and EXECUTES it, so the numbers and the
+ * cross-references are real rather than parsed out of source with a regex.
+ *
+ * Checks:
+ *  1. Every article slug is unique
+ *  2. Every article's hub exists
+ *  3. Every hub articleSlugs entry resolves to a real article
+ *  4. Every article registered under a hub is listed in that hub's articleSlugs
+ *  5. Every relatedSlugs entry resolves to a real article (no dead links)
+ *  6. No article relates to itself
+ *  7. Required content sections are present and non-trivial
+ *
+ * Usage: node scripts/audit-repair-centre.mjs
+ */
+
+import { build } from 'esbuild';
+import { readFileSync, unlinkSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import path from 'node:path';
+
+const root = process.cwd();
+const out = path.join(root, '.repair-audit.bundle.mjs');
+
+await build({
+  entryPoints: [path.join(root, 'lib/repair-centre/index.ts')],
+  bundle: true,
+  format: 'esm',
+  platform: 'node',
+  outfile: out,
+  alias: { '@': root },
+  logLevel: 'silent',
+});
+
+const mod = await import(pathToFileURL(out).href);
+unlinkSync(out);
+
+const { REPAIR_ARTICLES, REPAIR_HUBS } = mod;
+const errors = [];
+const warnings = [];
+
+const slugs = REPAIR_ARTICLES.map(a => a.slug);
+const slugSet = new Set(slugs);
+const hubSet = new Set(REPAIR_HUBS.map(h => h.slug));
+
+// 1. unique slugs
+const seen = new Set();
+for (const s of slugs) {
+  if (seen.has(s)) errors.push(`Duplicate article slug: ${s}`);
+  seen.add(s);
+}
+
+// 2. hub exists
+for (const a of REPAIR_ARTICLES) {
+  if (!hubSet.has(a.hub)) errors.push(`Article ${a.slug} references unknown hub "${a.hub}"`);
+}
+
+// 3. hub articleSlugs resolve
+for (const h of REPAIR_HUBS) {
+  for (const s of h.articleSlugs) {
+    if (!slugSet.has(s)) errors.push(`Hub ${h.slug} lists unwritten article slug "${s}"`);
+    else {
+      const a = REPAIR_ARTICLES.find(x => x.slug === s);
+      if (a.hub !== h.slug) errors.push(`Hub ${h.slug} lists "${s}" but that article belongs to hub "${a.hub}"`);
+    }
+  }
+}
+
+// 4. every article is listed by its hub
+for (const a of REPAIR_ARTICLES) {
+  const h = REPAIR_HUBS.find(x => x.slug === a.hub);
+  if (h && !h.articleSlugs.includes(a.slug)) {
+    errors.push(`Article ${a.slug} is not listed in hub ${h.slug} articleSlugs`);
+  }
+}
+
+// 5 + 6. relatedSlugs resolve, and no self-reference
+for (const a of REPAIR_ARTICLES) {
+  for (const r of a.relatedSlugs ?? []) {
+    if (r === a.slug) errors.push(`Article ${a.slug} relates to itself`);
+    else if (!slugSet.has(r)) errors.push(`Article ${a.slug} has dead relatedSlug "${r}"`);
+  }
+}
+
+// 7. content completeness
+const MIN = {
+  directAnswer: 200,
+};
+for (const a of REPAIR_ARTICLES) {
+  const need = ['header', 'directAnswer', 'symptoms', 'whatItMeans', 'causes', 'safety', 'tools', 'decisionTree', 'diagnosis', 'repair', 'validation', 'whenNotToRepair', 'prevention', 'faq', 'references'];
+  for (const k of need) {
+    const v = a[k];
+    if (v == null) errors.push(`Article ${a.slug} missing section "${k}"`);
+    else if (Array.isArray(v) && v.length === 0) errors.push(`Article ${a.slug} has empty section "${k}"`);
+  }
+  if (typeof a.directAnswer === 'string' && a.directAnswer.length < MIN.directAnswer) {
+    warnings.push(`Article ${a.slug} directAnswer is short (${a.directAnswer.length} chars)`);
+  }
+  if (a.diagnosis && a.diagnosis.length < 6) warnings.push(`Article ${a.slug} has only ${a.diagnosis.length} diagnostic steps`);
+  if (a.faq && a.faq.length < 3) warnings.push(`Article ${a.slug} has only ${a.faq.length} FAQ entries`);
+  if (a.header && !a.header.lastReviewed) errors.push(`Article ${a.slug} missing lastReviewed date`);
+  // steps must be sequentially numbered
+  if (Array.isArray(a.diagnosis)) {
+    a.diagnosis.forEach((d, i) => {
+      if (d.step !== i + 1) errors.push(`Article ${a.slug} diagnosis step ${i + 1} is numbered ${d.step}`);
+    });
+  }
+}
+
+// report
+console.log(`Repair Centre registry audit`);
+console.log(`  hubs:     ${REPAIR_HUBS.length}`);
+console.log(`  articles: ${REPAIR_ARTICLES.length}`);
+for (const h of REPAIR_HUBS) {
+  const n = REPAIR_ARTICLES.filter(a => a.hub === h.slug).length;
+  console.log(`    ${h.slug.padEnd(14)} ${n} article(s)`);
+}
+console.log(`  routes:   ${1 + REPAIR_HUBS.length + REPAIR_ARTICLES.length} (index + hubs + articles)`);
+
+if (warnings.length) {
+  console.log(`\nWARNINGS (${warnings.length}):`);
+  warnings.forEach(w => console.log(`  ! ${w}`));
+}
+if (errors.length) {
+  console.log(`\nERRORS (${errors.length}):`);
+  errors.forEach(e => console.log(`  X ${e}`));
+  process.exit(1);
+}
+console.log(`\nOK — no integrity errors.`);

@@ -10,7 +10,10 @@ import type { RepairArticle, RepairHub } from './types';
 import { generatorCranksNoStart } from './articles/generator-cranks-no-start';
 import { generatorStartsThenStops } from './articles/generator-starts-then-stops';
 import { generatorLowOilPressureShutdown } from './articles/generator-low-oil-pressure-shutdown';
+import { generatorNoVoltageOutput } from './articles/generator-no-voltage-output';
+import { generatorUnstableVoltage } from './articles/generator-unstable-voltage';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
+import { upsNotChargingBatteries } from './articles/ups-not-charging-batteries';
 
 export * from './types';
 
@@ -18,7 +21,10 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorCranksNoStart,
   generatorStartsThenStops,
   generatorLowOilPressureShutdown,
+  generatorNoVoltageOutput,
+  generatorUnstableVoltage,
   inverterSwitchesOffUnderLoad,
+  upsNotChargingBatteries,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -40,6 +46,8 @@ export const REPAIR_HUBS: RepairHub[] = [
       'generator-cranks-but-will-not-start',
       'generator-starts-then-stops',
       'generator-low-oil-pressure-shutdown',
+      'generator-produces-no-voltage-output',
+      'generator-unstable-voltage',
     ],
   },
   {
@@ -56,7 +64,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Diagnosis for offline, line-interactive and online double-conversion UPS systems, including bypass behaviour, battery autonomy and the generator interaction that causes most critical-power failures.',
     scope: ['Will not power on', 'Bypass faults', 'Battery and autonomy faults', 'Rectifier and inverter faults', 'Generator interaction'],
-    articleSlugs: [],
+    articleSlugs: ['ups-not-charging-batteries'],
   },
   {
     slug: 'controllers',
