@@ -48,14 +48,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const brand = getBrandBySlug(resolvedParams.brand);
   const county = getCountyBySlug(resolvedParams.location);
 
-  // SOFT-404 FIX (2026-07-27): returning a "Not Found" metadata object while
-  // the page body called notFound() left Next.js serving HTTP 200 — verified
-  // live on /brands/nonexistent-brand-xyz/kenya/nairobi. Google treats
-  // 200 + "Not Found" as a soft-404 and it drags down site-wide quality.
-  // dynamicParams stays true here so legitimate brand/county pairs outside
-  // generateStaticParams still render; notFound() is what makes the 404
-  // status authoritative. Same defect and fix as
-  // app/locations/[location]/[service]/page.tsx (2026-07-18).
+  // Unknown brand/county pairs must not render. notFound() alone does NOT
+  // produce a 404 STATUS on Next 16 + Vercel — verified live on
+  // /brands/nonexistent-brand-xyz/kenya/nairobi, which still answered 200.
+  // The authoritative 404 comes from guard 0g in middleware.ts. dynamicParams
+  // stays true so legitimate pairs outside generateStaticParams still render.
   if (!brand || !county) {
     notFound();
   }

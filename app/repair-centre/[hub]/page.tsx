@@ -18,12 +18,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { hub: slug } = await params;
   const hub = getRepairHub(slug);
 
-  // SOFT-404 FIX (2026-07-27): returning a "Not found" metadata object while
-  // the page body called notFound() left Next.js serving HTTP 200 — verified
-  // live on /repair-centre/nonsense-hub. Google treats 200 + "Not found" as a
-  // soft-404 and it drags down site-wide quality. Calling notFound() HERE too
-  // makes the 404 status authoritative. Same defect and same fix as
-  // app/locations/[location]/[service]/page.tsx (2026-07-18).
+  // Unknown hubs must not render. Note that neither this call nor
+  // dynamicParams=false actually produces a 404 STATUS on Next 16 + Vercel —
+  // both were tried and /repair-centre/nonsense-hub still answered HTTP 200.
+  // The authoritative 404 comes from guard 0f in middleware.ts; keep the hub
+  // list there in sync with REPAIR_HUBS.
   if (!hub) notFound();
 
   return {

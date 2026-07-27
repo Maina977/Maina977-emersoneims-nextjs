@@ -19,13 +19,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { hub, slug } = await params;
   const a = getRepairArticle(slug);
 
-  // SOFT-404 FIX (2026-07-27): returning a "Not found" metadata object while
-  // the page body called notFound() left Next.js serving HTTP 200 — verified
-  // live on /repair-centre/ups/this-article-does-not-exist-xyz. Calling
-  // notFound() HERE too makes the 404 status authoritative. The hub check
-  // matters as well: a real slug under the wrong hub would otherwise emit a
-  // canonical pointing somewhere the reader did not request. Same defect and
-  // same fix as app/locations/[location]/[service]/page.tsx (2026-07-18).
+  // Unknown or mismatched params must not render. Note that neither this call
+  // nor dynamicParams=false actually produces a 404 STATUS on Next 16 + Vercel
+  // — both were tried and /repair-centre/ups/this-article-does-not-exist-xyz
+  // still answered HTTP 200. The authoritative 404 comes from guard 0f in
+  // middleware.ts; keep the article list there in sync with the registry.
+  // The hub check matters too: a real slug under the wrong hub would otherwise
+  // emit a canonical pointing somewhere the reader never requested.
   if (!a || a.hub !== hub) notFound();
 
   const url = `https://www.emersoneims.com/repair-centre/${a.hub}/${a.slug}`;

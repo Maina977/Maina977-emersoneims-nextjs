@@ -628,6 +628,95 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0f. HARD 404 for unknown /repair-centre/[hub] and /repair-centre/[hub]/[slug].
+  //
+  //     Verified live 2026-07-27: /repair-centre/nonsense-hub and
+  //     /repair-centre/ups/this-article-does-not-exist-xyz both answered
+  //     HTTP 200 with a "Not found" body. Setting dynamicParams=false on both
+  //     routes did NOT fix it — same Next-16-on-Vercel quirk as guards 0a–0e,
+  //     where notFound() inside an already-matched dynamic route still returns
+  //     200. Only a middleware 404 is authoritative.
+  //
+  //     Inlined deliberately: a cross-module '@/lib' import has been proven to
+  //     fail open in the edge runtime here (see guard 0a). Keep in sync by hand
+  //     with the registry in lib/repair-centre/index.ts — hubs are REPAIR_HUBS,
+  //     and each entry below maps an article slug to its owning hub, which also
+  //     404s a real article requested under the wrong hub.
+  {
+    // '/repair-centre/' is the index with a trailing slash — left to the normal
+    // trailing-slash redirect, not 404'd here.
+    if (pathname.startsWith('/repair-centre/') && pathname !== '/repair-centre/') {
+      const OK_REPAIR_HUBS = new Set(['generators', 'inverters', 'ups', 'controllers']);
+      const OK_REPAIR_ARTICLES: Record<string, string> = {
+        'generator-cranks-but-will-not-start': 'generators',
+        'generator-starts-then-stops': 'generators',
+        'generator-low-oil-pressure-shutdown': 'generators',
+        'generator-produces-no-voltage-output': 'generators',
+        'generator-unstable-voltage': 'generators',
+        'inverter-switches-off-under-load': 'inverters',
+        'ups-not-charging-batteries': 'ups',
+      };
+      const rm = pathname.match(/^\/repair-centre\/([^/]+)(?:\/([^/]+))?\/?$/);
+      let ok = false;
+      if (rm) {
+        const hub = decodeURIComponent(rm[1]).toLowerCase();
+        const slug = rm[2] ? decodeURIComponent(rm[2]).toLowerCase() : undefined;
+        ok = slug === undefined ? OK_REPAIR_HUBS.has(hub) : OK_REPAIR_ARTICLES[slug] === hub;
+      }
+      // Anything deeper than /repair-centre/[hub]/[slug] never matches rm and
+      // is rejected here too.
+      if (!ok) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': 'repair-centre-404',
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 0g. HARD 404 for unknown /brands/[brand]/kenya/[county] and
+  //     /sectors/[sector]/kenya/[county] combos.
+  //
+  //     Verified live 2026-07-27: /brands/nonexistent-brand-xyz/kenya/nairobi
+  //     and /sectors/nonexistent-sector-xyz/kenya/nairobi both answered
+  //     HTTP 200 with a "Not Found" title. Both routes keep dynamicParams=true
+  //     so legitimate combos outside generateStaticParams still render; this
+  //     guard supplies the status the route cannot.
+  //
+  //     The three sets below are COMPLETE, extracted by executing the same
+  //     modules the pages import (getAllBrandSlugs, getAllSectorSlugs,
+  //     getAllCounties): 17 brands, 27 sectors, 47 counties. An incomplete list
+  //     here would 404 real pages, which is worse than the soft-404 — so
+  //     regenerate them the same way rather than editing by hand.
+  {
+    const bm = pathname.match(/^\/(brands|sectors)\/([^/]+)\/kenya\/([^/]+)\/?$/);
+    if (bm) {
+      const OK_BRANDS = new Set(['cummins','perkins','sdmo','volvo-penta','volvo','honda','lister-petter','doosan','caterpillar','iveco','man','gesan','himoinsa','weichai','john-deere','olympian','leyland']);
+      const OK_SECTORS = new Set(['schools','private-schools','private-colleges','private-universities','hospitals','private-hospitals','banks','private-offices','supermarkets','hotels','tourist-hotels','restaurants','ngos','ngo-offices','embassies','consulates','industries','quarries','flower-farms','apartments','real-estates','homes','farms','ranches','churches','masai-mara','tourist-destinations']);
+      const OK_COUNTIES = new Set(['nairobi','kiambu','muranga','nyeri','kirinyaga','nyandarua','mombasa','kilifi','kwale','taita-taveta','tana-river','lamu','machakos','makueni','kitui','embu','tharaka-nithi','meru','isiolo','kisumu','siaya','homa-bay','kisii','nyamira','migori','nakuru','narok','kajiado','kericho','bomet','uasin-gishu','elgeyo-marakwet','nandi','baringo','laikipia','samburu','trans-nzoia','turkana','west-pokot','kakamega','bungoma','busia','vihiga','garissa','wajir','mandera','marsabit']);
+      const kind = bm[1];
+      const key = decodeURIComponent(bm[2]).toLowerCase();
+      const county = decodeURIComponent(bm[3]).toLowerCase();
+      const keyOk = kind === 'brands' ? OK_BRANDS.has(key) : OK_SECTORS.has(key);
+      if (!keyOk || !OK_COUNTIES.has(county)) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': `${kind}-county-404`,
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0c. HARD 404 for the root-level /[country]/[city] catch-all.
   //
   //     app/[country]/[city] matches ANY two-segment URL that no more specific
