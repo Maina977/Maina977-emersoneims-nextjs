@@ -109,6 +109,29 @@ for (const a of REPAIR_ARTICLES) {
   }
 }
 
+// 8. middleware guard 0f must stay in sync with the registry.
+//    The sitemap is generated FROM the registry, so a hub or article the guard
+//    does not know about would be published in the sitemap and then 404'd by
+//    middleware — an own goal that is easy to ship and hard to notice.
+{
+  const mw = readFileSync(path.join(root, 'middleware.ts'), 'utf8');
+  const hubBlock = mw.match(/const OK_REPAIR_HUBS = new Set\(\[([^\]]*)\]\)/);
+  const artBlock = mw.match(/const OK_REPAIR_ARTICLES: Record<string, string> = \{([\s\S]*?)\};/);
+  if (!hubBlock || !artBlock) {
+    errors.push('middleware.ts: could not find guard 0f OK_REPAIR_HUBS / OK_REPAIR_ARTICLES — did the guard get renamed or removed?');
+  } else {
+    const mwHubs = new Set([...hubBlock[1].matchAll(/'([^']+)'/g)].map(m => m[1]));
+    const mwArts = new Map([...artBlock[1].matchAll(/'([^']+)'\s*:\s*'([^']+)'/g)].map(m => [m[1], m[2]]));
+    for (const h of hubSet) if (!mwHubs.has(h)) errors.push(`middleware guard 0f is missing hub "${h}" — /repair-centre/${h} would 404`);
+    for (const h of mwHubs) if (!hubSet.has(h)) warnings.push(`middleware guard 0f lists hub "${h}" that is no longer in the registry`);
+    for (const a of REPAIR_ARTICLES) {
+      if (!mwArts.has(a.slug)) errors.push(`middleware guard 0f is missing article "${a.slug}" — it is in the sitemap but would 404`);
+      else if (mwArts.get(a.slug) !== a.hub) errors.push(`middleware guard 0f maps "${a.slug}" to hub "${mwArts.get(a.slug)}" but the registry says "${a.hub}"`);
+    }
+    for (const [s] of mwArts) if (!slugSet.has(s)) warnings.push(`middleware guard 0f lists article "${s}" that is no longer in the registry`);
+  }
+}
+
 // report
 console.log(`Repair Centre registry audit`);
 console.log(`  hubs:     ${REPAIR_HUBS.length}`);

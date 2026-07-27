@@ -404,6 +404,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'tourist-destinations',
     'masai-mara',
   ];
+  // The /sectors index itself — added 2026-07-27 when the page was created.
+  // It previously 404'd while every sector page's breadcrumb linked to it.
+  urls.push({
+    url: `${BASE_URL}/sectors`,
+    lastModified: currentDate,
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  });
   for (const slug of SECTORS_WITHOUT_INDUSTRY_HUB) {
     urls.push({
       url: `${BASE_URL}/sectors/${slug}`,
