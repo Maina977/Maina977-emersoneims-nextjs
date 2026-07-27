@@ -8,11 +8,17 @@
 
 import type { RepairArticle, RepairHub } from './types';
 import { generatorCranksNoStart } from './articles/generator-cranks-no-start';
+import { generatorStartsThenStops } from './articles/generator-starts-then-stops';
+import { generatorLowOilPressureShutdown } from './articles/generator-low-oil-pressure-shutdown';
+import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 
 export * from './types';
 
 export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorCranksNoStart,
+  generatorStartsThenStops,
+  generatorLowOilPressureShutdown,
+  inverterSwitchesOffUnderLoad,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -30,7 +36,11 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Controller and communication faults',
       'Transfer switching and load acceptance',
     ],
-    articleSlugs: ['generator-cranks-but-will-not-start'],
+    articleSlugs: [
+      'generator-cranks-but-will-not-start',
+      'generator-starts-then-stops',
+      'generator-low-oil-pressure-shutdown',
+    ],
   },
   {
     slug: 'inverters',
@@ -38,7 +48,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Fault diagnosis for off-grid, hybrid and grid-tied inverters, including output-stage, charging and thermal faults. Board-level guidance is published only where it can be given safely and accurately.',
     scope: ['No output', 'Shutdown under load', 'Charging faults', 'Overheating', 'DC bus faults', 'Power-stage failure'],
-    articleSlugs: [],
+    articleSlugs: ['inverter-switches-off-under-load'],
   },
   {
     slug: 'ups',
