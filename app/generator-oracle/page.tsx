@@ -80,7 +80,7 @@ function LoadingFallback() {
         {/* Loading Stats */}
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
-            <div className="text-amber-400 font-bold">400,000+</div>
+            <div className="text-amber-400 font-bold">270,000+</div>
             <div className="text-slate-500">Fault-Code References</div>
           </div>
           <div className="text-center">
