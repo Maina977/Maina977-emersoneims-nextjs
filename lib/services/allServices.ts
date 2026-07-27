@@ -1283,7 +1283,103 @@ SITE SURVEY: Our solar experts will analyze your energy consumption, roof space,
     primaryCTA: 'Get a Free Quote',
     secondaryCTA: 'Calculate Savings',
 
-    category: 'renewable'
+    category: 'renewable',
+
+    technicalContent: {
+      fundamentals: `Solar photovoltaic (PV) systems convert sunlight directly to electricity through semiconductor junction effect. Solar panels contain silicon cells that generate DC voltage when exposed to photons. Multiple panels connected in series (strings) increase voltage; parallel strings increase current. An inverter converts DC to AC for home use. In Kenya's equatorial climate with 5-6 peak-sun-hours daily, a 5kW system produces 25-30 kWh daily, cutting KPLC bills by 50-80%. Grid-tied systems export excess power to KPLC via net metering; hybrid systems include battery storage for night/cloudy operation. MPPT (Maximum Power Point Tracking) algorithms adjust voltage continuously to optimize power output, achieving 98-99% efficiency. Temperature derating is critical: solar panels lose 0.5% efficiency per °C above 25°C. At Kenya's 45°C peak, panels operate at 10-12% lower efficiency than rated. Professional system design accounts for this climate penalty through oversizing by 20-30%.`,
+
+      errorCodes: [
+        { code: 'E001', meaning: 'Low Power Output (<80% of rated)', severity: 'Medium', solution: 'Check for shading on panels, clean panels if dusty, verify inverter output with clamp meter' },
+        { code: 'E002', meaning: 'No AC Output Despite DC Present', severity: 'High', solution: 'Test inverter input voltage with multimeter, check for firmware update needed, restart inverter' },
+        { code: 'E003', meaning: 'MPPT Not Optimizing (Tracking Failure)', severity: 'Medium', solution: 'Reset inverter, verify current sensor function, check panel string connections' },
+        { code: 'E004', meaning: 'Grid Frequency Out of Range', severity: 'High', solution: 'Grid instability issue, inverter disconnects automatically for safety, wait for grid stabilization' },
+        { code: 'E005', meaning: 'Inverter Overheating (>75°C)', severity: 'High', solution: 'Improve ventilation around inverter, clean cooling fins, verify ambient temp under 45°C' },
+        { code: 'E006', meaning: 'DC Voltage Imbalance (String Voltage Unequal)', severity: 'Medium', solution: 'Test individual string voltages, identify low-output string, check for shading or damage' },
+        { code: 'E007', meaning: 'Battery Charging Slow (Hybrid Systems)', severity: 'Medium', solution: 'Verify solar irradiance adequate (800+ W/m² for charging), check battery connections' },
+        { code: 'E008', meaning: 'Inverter Won\'t Start', severity: 'High', solution: 'Verify DC voltage present (100V+ minimum), check AC supply to inverter if hybrid' },
+      ],
+
+      troubleshooting: [
+        {
+          title: 'Solar System Producing Less Than Expected',
+          steps: [
+            '1. Check time of year - output varies with season (peak noon to 3PM)',
+            '2. Measure actual irradiance with mobile app or meter (should be 800+ W/m²)',
+            '3. Inspect panels for shading - even small shadows reduce output 15-30%',
+            '4. Clean panels: dust/bird droppings reduce output 5-20%',
+            '5. Measure DC string voltage with multimeter - should be 300-500V depending on configuration',
+            '6. Measure inverter output current with clamp meter - compare to expected for irradiance level'
+          ]
+        },
+        {
+          title: 'High Temperature Shutdown (Inverter Derating)',
+          steps: [
+            '1. Verify ambient temperature - above 45°C causes automatic derating',
+            '2. Check cooling fans running - should run automatically at load',
+            '3. Improve ventilation - minimum 10cm clearance on all sides',
+            '4. Install shade structure if mounted in direct sun',
+            '5. Clean air intake filters of dust/debris',
+            '6. Measure heatsink temperature with IR thermometer - should not exceed 80°C'
+          ]
+        },
+        {
+          title: 'Net Metering Not Working (Export to Grid)',
+          steps: [
+            '1. Verify net metering agreement installed by KPLC',
+            '2. Check bidirectional meter - should have export counter',
+            '3. Verify changeover switch (ATS) configured for grid export',
+            '4. Check grid voltage and frequency normal (230V/50Hz ±2%)',
+            '5. Ensure inverter anti-islanding protection not triggered',
+            '6. Contact KPLC if export meter not advancing despite measured export'
+          ]
+        },
+      ],
+
+      maintenance: [
+        {
+          period: 'Monthly',
+          tasks: [
+            'Visual inspection of panels for damage/soiling',
+            'Check inverter display for error codes',
+            'Monitor energy production logs - compare to previous month',
+            'Listen for inverter cooling fan operation'
+          ]
+        },
+        {
+          period: 'Quarterly',
+          tasks: [
+            'Clean solar panels with soft brush and distilled water (not tap water)',
+            'Verify inverter cooling fins free of dust',
+            'Measure DC input voltage - verify within specification',
+            'Check AC output voltage and frequency normal'
+          ]
+        },
+        {
+          period: 'Annually',
+          tasks: [
+            'Professional electrical inspection (insulation resistance, harmonic analysis)',
+            'Thermal imaging of panels to detect defects',
+            'Battery capacity test if hybrid system',
+            'Verify grounding system integrity',
+            'Update inverter firmware if available'
+          ]
+        },
+      ],
+
+      specifications: `TYPICAL 10kW RESIDENTIAL SOLAR SYSTEM (Kenya, 35°C Rated):
+      Solar Array: 26× 400W panels = 10.4kW, arranged in 2 strings of 13 panels
+      String Voltage: 520V DC nominal (appropriate for hybrid inverter)
+      Daily Output: 50-60 kWh in dry season, 35-40 kWh in rainy season
+      Inverter: 10kW 3-phase or single-phase hybrid capable
+      Inverter Efficiency: 96-98% (real performance 92-95% in Kenya 40°C ambient)
+      Battery Storage: 20kWh Lithium (Pylontech, BYD brands), 48V nominal
+      Installation Cost: KES 800K-1.2M depending on configuration
+      Monthly Savings: KES 8,000-12,000 on typical KPLC bill (50-80% reduction)
+      Payback Period: 3-5 years average
+      Panel Lifespan: 25-30 years (manufacturers guarantee 80% output after 25yr)
+      Inverter Lifespan: 10-15 years typical
+      Climate Derating: -1.2% per °C above 35°C ambient (at 45°C = 8.8kW max output from 10kW rated)`,
+    }
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
