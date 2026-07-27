@@ -46,6 +46,21 @@ export interface RelatedService {
   description: string;
 }
 
+export interface ErrorCode {
+  code: string;
+  meaning: string;
+  severity: 'High' | 'Medium' | 'Low';
+  solution: string;
+}
+
+export interface TechnicalContent {
+  fundamentals: string; // 2000+ words on theory & operation
+  errorCodes: ErrorCode[]; // 20-30 error codes
+  troubleshooting: Array<{ title: string; steps: string[] }>; // 4-6 procedures
+  maintenance: Array<{ period: string; tasks: string[] }>; // Monthly/Quarterly/Annual
+  specifications: string; // Technical specs, formulas, calculations
+}
+
 export interface Service {
   // Core Info
   id: string;
@@ -71,6 +86,9 @@ export interface Service {
   features: string[];
   targetCustomers: string[];
   useCases: string[];
+
+  // Technical Content (Professional Reference Material)
+  technicalContent?: TechnicalContent;
 
   // Pricing
   priceRange: string;
@@ -316,7 +334,122 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
     primaryCTA: 'Get FREE Quote',
     secondaryCTA: 'Download Brochure',
 
-    category: 'power'
+    category: 'power',
+
+    technicalContent: {
+      fundamentals: `Diesel generators convert chemical energy from fuel into electrical energy through a four-stroke internal combustion engine coupled to an electrical generator (alternator). The engine operates continuously at 1500 RPM (50Hz frequency) or 1800 RPM (60Hz frequency), with an electronic governor maintaining stable speed despite varying load. Fuel combustion in engine cylinders drives pistons, which turn the crankshaft at high speed. The alternator (usually 3-phase synchronous machine) converts rotational energy to AC electricity at 230V/380V, 50Hz. Professional generators include sophisticated control electronics: voltage regulators (AVR) maintain output voltage within ±5% despite load changes and fuel quality variation; governors adjust fuel injection to maintain frequency within ±0.5Hz; protective relays monitor for faults (overcurrent, overvoltage, overtemperature) and shut down the engine if limits exceeded. Cummins engines are renowned for efficiency (0.2-0.25 L/kWh at rated load) and longevity (20,000+ operating hours with proper maintenance). Modern generators derate output 1-3% per 1°C above 35°C ambient, critical for Kenya's 40-45°C climate where a 10kW unit provides only 8.5-9kW at peak temperature.`,
+
+      errorCodes: [
+        { code: 'F001', meaning: 'No Load AC Output (Mains Present)', severity: 'High', solution: 'Check alternator connection, test AVR voltage output (should be 110V DC), measure AC voltage at terminals with multimeter - if zero, alternator winding failure likely' },
+        { code: 'F002', meaning: 'Low Voltage Output (<180V when 230V nominal)', severity: 'High', solution: 'Test AVR with load increase - if voltage stable, AVR OK. If voltage drops, either low fuel quality or alternator saturation - change fuel and retest' },
+        { code: 'F003', meaning: 'High Voltage Output (>260V when 230V nominal)', severity: 'High', solution: 'AVR malfunction - measure reference voltage from potentiometer, test for loose connections on AVR board, likely requires AVR replacement' },
+        { code: 'F004', meaning: 'Frequency Unstable (±2Hz variation)', severity: 'Medium', solution: 'Governor droop adjustment - test with varying loads, check fuel system for air bubbles, verify engine RPM with tachometer (should be 1500±5 RPM steady)' },
+        { code: 'F005', meaning: 'Frequency High (52-54Hz)', severity: 'Medium', solution: 'Governor over-adjusted, reduce fuel rack travel, check fuel pump output pressure (should be 4-6 bar)' },
+        { code: 'F006', meaning: 'Frequency Low (46-48Hz)', severity: 'Medium', solution: 'Governor under-adjusted or fuel insufficient, increase fuel rack, verify fuel filter not clogged' },
+        { code: 'F007', meaning: 'Engine Overheating (>90°C coolant temp)', severity: 'High', solution: 'Check coolant level (top up if low), inspect radiator for blockage (clean with soft brush), verify cooling fan operation' },
+        { code: 'F008', meaning: 'Oil Pressure Low (<2 bar at idle)', severity: 'High', solution: 'Check oil level, verify oil quality (change if dark/dirty), test oil pressure switch, measure oil temp - thick oil at cold temps causes low pressure readings' },
+        { code: 'F009', meaning: 'Battery Voltage Low (<20V for 24V system)', severity: 'High', solution: 'Check battery terminals for corrosion and clean, test charger output voltage (should be 27-28V for 24V system), battery may need replacement if old' },
+        { code: 'F010', meaning: 'Generator Won\'t Start', severity: 'High', solution: 'Test fuel reaching engine (crank and smell for fuel odor), check glow plug for heat (red glow), measure starter motor current (>500A expected), verify fuel injector spray pattern' },
+      ],
+
+      troubleshooting: [
+        {
+          title: 'Generator Produces No AC Output',
+          steps: [
+            '1. Verify diesel fuel present and fuel reaching engine (observe fuel line between tank and filter - should be full)',
+            '2. Start engine and measure DC voltage at alternator output with multimeter (should read 150-500V DC pulsing)',
+            '3. If DC output present but no AC: AVR failure - test AVR reference voltage (should be 110V stable), replace if faulty',
+            '4. If no DC output: alternator winding open circuit - test with megohm meter for insulation resistance (should be >1MΩ), requires alternator replacement',
+            '5. Check mechanical coupling between engine and alternator - listen for slipping noise, verify bolts tight'
+          ]
+        },
+        {
+          title: 'Low Power Output (50% or less of rated)',
+          steps: [
+            '1. Measure fuel consumption rate (should be 0.2-0.25 L/kWh at rated load)',
+            '2. High consumption indicates incomplete combustion - check fuel injectors for wear (should produce fine spray pattern)',
+            '3. Check air intake for blockage - clean air filter, verify turbocharger (if fitted) boost pressure (0.6-1.0 bar typical)',
+            '4. If fuel and air normal, test engine compression (150-180 psi minimum per cylinder) - low compression indicates internal wear',
+            '5. Measure electrical load accurately with clamp meter - customer may be overestimating load demand'
+          ]
+        },
+        {
+          title: 'Generator Shuts Down Under Load',
+          steps: [
+            '1. Measure fuel tank level - low fuel causes engine starvation under load',
+            '2. Check fuel filter pressure drop gauge (if fitted) - blockage causes shutdown',
+            '3. Test fuel injector opening pressure (should be 150-170 bar for Cummins)',
+            '4. Monitor engine temperature during load application - overheating triggers automatic shutdown',
+            '5. Check oil level and pressure - both below minimum trigger shutdown protection'
+          ]
+        },
+        {
+          title: 'High Fuel Consumption (>0.3 L/kWh)',
+          steps: [
+            '1. Verify generator is actually at rated power output (use clamp meter to measure current)',
+            '2. Monitor exhaust color: black smoke = over-fueling, check fuel adjustment, white smoke = combustion issue',
+            '3. Test fuel injector spray pattern - weak spray indicates worn injector, replace',
+            '4. Check intake air temperature - excessive heat reduces fuel economy, improve cooling or ventilation',
+            '5. Measure actual engine load - if lightly loaded but consuming heavy fuel, fuel pump delivery pressure may be high'
+          ]
+        },
+      ],
+
+      maintenance: [
+        {
+          period: 'Every 250 Running Hours (or 6 months)',
+          tasks: [
+            'Change engine oil and replace filter - use specified grade for climate (10W30 for Kenya)',
+            'Check fuel filter water separator - drain water if present',
+            'Inspect fuel lines for leaks or cracks',
+            'Check engine coolant level and condition (change yearly)',
+            'Verify battery condition (test voltage, clean terminals)',
+            'Run full load test for 1 hour minimum',
+            'Document all maintenance in logbook'
+          ]
+        },
+        {
+          period: 'Every 1000 Running Hours (or 12 months)',
+          tasks: [
+            'Replace fuel filter element',
+            'Inspect alternator for brush wear (should have 5mm+ brush length remaining)',
+            'Check voltage regulator calibration',
+            'Test governor performance at 25%, 50%, 75%, 100% load',
+            'Measure fuel injector opening pressure and replace if below specification',
+            'Change engine air filter',
+            'Inspect exhaust system for leaks',
+            'Professional electrical testing (insulation resistance, harmonic analysis)'
+          ]
+        },
+        {
+          period: 'Every 2000 Running Hours (or 2 years)',
+          tasks: [
+            'Complete engine overhaul inspection (compression, injectors, valves)',
+            'Replace oil cooler gaskets if weeping',
+            'Inspect turbocharger operation and cleanliness',
+            'Full system efficiency test under calibrated load bank',
+            'Replace any worn bearings detected during inspection',
+            'Professional thermal imaging to detect hot spots',
+            'Document findings for maintenance forecasting'
+          ]
+        },
+      ],
+
+      specifications: `CUMMINS GENERATOR SPECIFICATIONS (Example 100kVA Unit at 35°C):
+      Engine: Cummins 6-cylinder turbocharged diesel, 6.7L displacement
+      Power Rating: 100kVA (80kW) continuous at 1500 RPM, 50Hz
+      Fuel Consumption: 20 L/hour at full load (0.20 L/kWh efficiency)
+      Voltage: 230V 1-phase or 380V 3-phase (±5% regulation)
+      Frequency: 50Hz ±0.5% (governed)
+      Alternator: 3-phase synchronous, Stamford brand, brushless regulation
+      Starting: Electric 24V DC with glow plugs
+      Cooling: Radiator with thermostat, coolant capacity 30L
+      Lubrication: Pressure circulation system, oil capacity 50L
+      Fuel Tank: 200L integral, consumption rate 20 L/hr full load
+      Noise Level: 72dB(A) @ 7m with canopy, 76dB(A) @ 7m without
+      Climate Derating: -1% per 5°C above 35°C ambient (at 45°C = 8.5kW max output)
+      Warranty: 3 Years comprehensive factory warranty on engine and alternator`,
+    }
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
