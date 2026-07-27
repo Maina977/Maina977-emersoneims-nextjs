@@ -81,7 +81,7 @@ export const PRO_BUILDING_SUITE_CAPABILITIES: Capability[] = [
 // ============================================================================
 export const GENERATOR_ORACLE_CAPABILITIES: Capability[] = [
   // Fault Code Database - 15 capabilities
-  { name: 'Fault Code Database', description: '3,300+ codes from all major manufacturers', accuracy: 99.9, status: 'industry-leading', category: 'Database' },
+  { name: 'Fault Code Database', description: '3,800+ codes from all major manufacturers', accuracy: 99.9, status: 'industry-leading', category: 'Database' },
   { name: 'Multi-Brand Support', description: 'Cummins, CAT, Perkins, DeepSea, PowerWizard, etc.', accuracy: 99.8, status: 'certified', category: 'Database' },
   { name: 'Real-time Code Search', description: 'Instant search across entire database', accuracy: 99.9, status: 'certified', category: 'Database' },
   { name: 'Code Cross-Reference', description: 'Find equivalent codes across brands', accuracy: 98.5, status: 'verified', category: 'Database' },

@@ -8,7 +8,7 @@ const URL = `${SITE}/generator-oracle`;
 export const metadata: Metadata = {
   title: 'Generator Oracle — Generator Fault Diagnostic Intelligence | EmersonEIMS',
   description:
-    'Generator Oracle is the EmersonEIMS generator fault & controller diagnostic intelligence tool. 3,300+ fault codes for DeepSea (DSE), ComAp, Woodward, SmartGen and CAT PowerWizard — with reset pathways and direct escalation to Kenya engineers. Free to use.',
+    'Generator Oracle is the EmersonEIMS generator fault & controller diagnostic intelligence tool. 3,800+ fault codes for DeepSea (DSE), ComAp, Woodward, SmartGen and CAT PowerWizard — with reset pathways and direct escalation to Kenya engineers. Free to use.',
   keywords: [
     'generator diagnostics Kenya',
     'generator fault codes',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Generator Oracle — Generator Diagnostic Intelligence | EmersonEIMS',
     description:
-      '3,300+ fault codes for DSE, ComAp, Woodward, SmartGen and PowerWizard. Built and maintained by Kenya generator engineers. Free to use.',
+      '3,800+ fault codes for DSE, ComAp, Woodward, SmartGen and PowerWizard. Built and maintained by Kenya generator engineers. Free to use.',
     url: URL,
     type: 'website',
     locale: 'en_KE',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Generator Oracle — Generator Diagnostic Intelligence',
-    description: '3,300+ fault codes. Reset pathways. Engineer escalation. Free.',
+    description: '3,800+ fault codes. Reset pathways. Engineer escalation. Free.',
     images: [`${SITE}/og-image.jpg`],
     site: '@EmersonEIMS',
     creator: '@EmersonEIMS',
@@ -64,7 +64,7 @@ export default function GeneratorOracleLayout({ children }: { children: React.Re
       <FlagshipProductSchema
         name="Generator Oracle"
         url={URL}
-        description="Generator fault & controller diagnostic intelligence: 3,300+ fault codes for DSE, ComAp, Woodward, SmartGen and PowerWizard, with reset pathways and Kenya engineer escalation."
+        description="Generator fault & controller diagnostic intelligence: 3,800+ fault codes for DSE, ComAp, Woodward, SmartGen and PowerWizard, with reset pathways and Kenya engineer escalation."
         category="Generator Diagnostics"
         applicationCategory="EngineeringApplication"
         keywords={['Generator Diagnostics', 'Fault Codes', 'DSE', 'ComAp', 'Woodward', 'SmartGen', 'PowerWizard', 'Cummins', 'Voltka']}

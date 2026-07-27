@@ -14,7 +14,7 @@ export default function GeneratorOraclePage() {
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Generator Oracle</h1>
           <p className="text-2xl text-gray-300 mb-8">AI-Powered Generator Fault Diagnosis</p>
           <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-            Diagnose generator problems in minutes, not hours. Access 3,300+ diesel engine fault codes across all major brands.
+            Diagnose generator problems in minutes, not hours. Access 3,800+ diesel engine fault codes across all major brands.
           </p>
         </div>
       </section>

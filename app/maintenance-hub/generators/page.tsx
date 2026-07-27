@@ -3,7 +3,7 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
  * GENERATOR ORACLE - ENGINE ROOM COMMAND CENTER
- * Generator Diagnostic Platform - 3,300+ Fault Codes
+ * Generator Diagnostic Platform - 3,800+ Fault Codes
  * Sci-Fi Cockpit Interface with Detailed Fault Analysis
  * ═══════════════════════════════════════════════════════════════════════════════
  */
@@ -849,7 +849,7 @@ export default function GeneratorOracle() {
               </span>
               <span className="text-white ml-3">ORACLE</span>
             </motion.h1>
-            <p className="text-slate-400 mt-2">Generator Diagnostic Platform - 3,300+ Fault Codes</p>
+            <p className="text-slate-400 mt-2">Generator Diagnostic Platform - 3,800+ Fault Codes</p>
           </div>
 
           {/* Live gauges */}
@@ -989,7 +989,7 @@ export default function GeneratorOracle() {
           className="mt-12 text-center"
         >
           <p className="text-slate-500 text-sm">
-            GENERATOR ORACLE v3.0 | Generator Diagnostic Database - 3,300+ Fault Codes
+            GENERATOR ORACLE v3.0 | Generator Diagnostic Database - 3,800+ Fault Codes
           </p>
           <p className="text-amber-400/50 text-xs mt-2">
             {stats.totalFaultCodes}+ Fault Codes | {stats.totalRootCauses}+ Root Causes | {stats.totalDiagnosticSteps}+ Diagnostic Steps | 8+ Generator Brands

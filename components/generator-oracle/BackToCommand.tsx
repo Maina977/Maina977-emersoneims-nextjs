@@ -31,7 +31,7 @@ const PANEL_DESCRIPTIONS: Record<string, { title: string; purpose: string; howTo
   },
   faults: {
     title: 'Fault Code Database',
-    purpose: 'Search 3,300+ fault codes across 10 controller brands',
+    purpose: 'Search 3,800+ fault codes across 10 controller brands',
     howToUse: 'Enter the fault code from your controller display. Get instant diagnosis, causes, and step-by-step fixes.',
   },
   faultanalysis: {

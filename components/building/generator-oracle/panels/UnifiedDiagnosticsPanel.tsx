@@ -25,7 +25,7 @@ import {
   searchECMs,
   ECM_DATABASE,
   CONTROLLER_DATABASE,
-  // 3,300+ fault codes integration
+  // 3,800+ fault codes integration
   searchAllFaultCodes,
   getAllFaultCodeStats,
   getTotalFaultCodeCount,
