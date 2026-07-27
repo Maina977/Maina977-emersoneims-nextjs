@@ -6,6 +6,10 @@ import { REPAIR_HUBS, getRepairHub, getArticlesForHub } from '@/lib/repair-centr
 
 interface Props { params: Promise<{ hub: string }> }
 
+// The hub set is a fixed registry, so every valid path is enumerable below.
+// Anything else must be a hard 404, not a 200 carrying a "Not found" body.
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return REPAIR_HUBS.map(h => ({ hub: h.slug }));
 }
@@ -13,7 +17,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { hub: slug } = await params;
   const hub = getRepairHub(slug);
-  if (!hub) return { title: 'Not found | EmersonEIMS' };
+
+  // SOFT-404 FIX (2026-07-27): returning a "Not found" metadata object while
+  // the page body called notFound() left Next.js serving HTTP 200 — verified
+  // live on /repair-centre/nonsense-hub. Google treats 200 + "Not found" as a
+  // soft-404 and it drags down site-wide quality. Calling notFound() HERE too
+  // makes the 404 status authoritative. Same defect and same fix as
+  // app/locations/[location]/[service]/page.tsx (2026-07-18).
+  if (!hub) notFound();
 
   return {
     title: `${hub.title} | EmersonEIMS Repair Centre`,

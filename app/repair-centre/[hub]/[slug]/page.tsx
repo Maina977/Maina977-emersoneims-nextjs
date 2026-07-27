@@ -6,14 +6,27 @@ import RepairArticleView from '@/components/repair-centre/RepairArticleView';
 
 interface Props { params: Promise<{ hub: string; slug: string }> }
 
+// Every published article is enumerable from the registry below, so any other
+// (hub, slug) pair must be a hard 404 rather than a 200 carrying a
+// "Not found" body.
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return getAllRepairArticleSlugs();
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { hub, slug } = await params;
   const a = getRepairArticle(slug);
-  if (!a) return { title: 'Not found | EmersonEIMS' };
+
+  // SOFT-404 FIX (2026-07-27): returning a "Not found" metadata object while
+  // the page body called notFound() left Next.js serving HTTP 200 — verified
+  // live on /repair-centre/ups/this-article-does-not-exist-xyz. Calling
+  // notFound() HERE too makes the 404 status authoritative. The hub check
+  // matters as well: a real slug under the wrong hub would otherwise emit a
+  // canonical pointing somewhere the reader did not request. Same defect and
+  // same fix as app/locations/[location]/[service]/page.tsx (2026-07-18).
+  if (!a || a.hub !== hub) notFound();
 
   const url = `https://www.emersoneims.com/repair-centre/${a.hub}/${a.slug}`;
   const description = a.directAnswer.slice(0, 300);
