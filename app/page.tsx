@@ -304,7 +304,7 @@ function AITechnologyShowcase() {
       subtitle: 'AI Diagnostic System',
       // Audit 2026-07-18: removed a duplicate `description` key (pre-existing —
       // the first value was silently discarded by JS and flagged TS1117).
-      description: 'AI-assisted diagnostic assistant that analyses generator symptoms, looks them up against a 450,000+ fault-code database, and connects you with certified technicians.',
+      description: 'AI-assisted diagnostic assistant that analyses generator symptoms, looks them up against a 2,900+ fault-code database, and connects you with certified technicians.',
       features: ['Symptom-based Diagnosis', 'Voice-Activated', 'Fault Code Database', 'Real-time Analysis'],
       icon: '🔧',
       gradient: 'from-amber-500 to-orange-600',

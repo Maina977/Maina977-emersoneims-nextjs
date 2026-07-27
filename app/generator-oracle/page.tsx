@@ -19,7 +19,7 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * All brand names are trademarks of their respective owners.
  *
  * Features:
- * - 400,000+ fault-code references compatible with 10 controller types
+ * - 2,900+ fault-code references compatible with 10 controller types
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB

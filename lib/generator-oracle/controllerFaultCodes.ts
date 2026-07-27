@@ -1,6 +1,15 @@
 /**
  * Generator Oracle - Controller Fault Code Database
- * 400,000+ authentic fault codes for professional generator controller diagnostics
+ * Brand-curated controller fault codes PLUS a template expansion.
+ *
+ * IMPORTANT: generateExtendedCodes() below is a TEMPLATE EXPANSION, not curated
+ * data. It walks every integer in ~99 declared ranges x 81 controller models,
+ * titles each result `Extended ${subcat} Alarm ${code}`, assigns the
+ * subcategory by modulo and the severity from the code number's last digit.
+ * It is the origin of the former "400,000+ fault codes" headline and must not
+ * be presented to users as verified diagnostic data. The hand-written codes
+ * live in ./data/*-fault-codes.ts and are aggregated by
+ * lib/data/curatedFaultCodes.ts.
  *
  * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO, Volvo Penta VODIA
  *
@@ -214,7 +223,7 @@ import { getVODIAFaultCodes } from './data/vodia-fault-codes';
 
 // ==================== EXTENDED CODE GENERATION ====================
 
-// Generate additional alarm variations to reach 400,000+ codes
+// TEMPLATE EXPANSION - generated permutations, not curated data. See file header.
 function generateExtendedCodes(): ControllerFaultCode[] {
   const extendedCodes: ControllerFaultCode[] = [];
 

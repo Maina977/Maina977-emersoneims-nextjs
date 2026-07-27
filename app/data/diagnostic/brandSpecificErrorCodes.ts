@@ -29,6 +29,7 @@ import { CATERPILLAR_ERROR_CODES } from '@/lib/data/caterpillarErrorCodes';
 import { PERKINS_ERROR_CODES } from '@/lib/data/perkinsErrorCodes';
 import { GENERATOR_ERROR_CODES } from '@/lib/data/generatorErrorCodes';
 import { VERIFIED_FAULT_CODES } from '@/lib/data/verifiedFaultCodes';
+import { CURATED_FAULT_CODES } from '@/lib/data/curatedFaultCodes';
 
 // Helper function to format manufacturer codes
 const formatManufacturerCodes = (codes: any[], brand: string, service: string) => 
@@ -115,7 +116,12 @@ export const brandSpecificErrorCodes: any[] = [
   ...cumminsCodesFormatted,
   ...caterpillarCodesFormatted,
   ...perkinsCodesFormatted,
-  ...verifiedCsvCodes
+  ...verifiedCsvCodes,
+  // Hand-written controller families (DSE, ComAp, Woodward, SmartGen,
+  // PowerWizard, Datakom, Lovato, Siemens, Enko, Vodia) and solar
+  // inverter/battery codes. These carry per-code severities assigned by hand,
+  // so their severity is preserved rather than blanked.
+  ...CURATED_FAULT_CODES
 ];
 
 // Export code counts for statistics
@@ -125,5 +131,6 @@ export const CODE_STATISTICS = {
   caterpillar: caterpillarCodesFormatted.length,
   perkins: perkinsCodesFormatted.length,
   verifiedCsv: verifiedCsvCodes.length,
+  curatedControllerAndSolar: CURATED_FAULT_CODES.length,
   total: brandSpecificErrorCodes.length
 };

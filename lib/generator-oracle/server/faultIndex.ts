@@ -3,7 +3,7 @@
  *
  * Wraps the existing client-safe data layer (controllerFaultCodes.ts) with
  * server-only helpers used by /api/generator-oracle/* routes. Keeps the
- * 400,000+ dataset on the server so the browser does not have to ship it.
+ * large template-expanded dataset on the server so the browser does not ship it.
  *
  * Nothing here mocks or fabricates data; every helper reads from the same
  * brand-curated and template-extended sources already used by the UI.
