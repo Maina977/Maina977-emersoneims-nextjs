@@ -1,18 +1,21 @@
 /**
  * GENERATOR ERROR CODE DATABASE
- * The most comprehensive generator error code database in the world
- * 13,500+ error codes across all major brands
- * Updated: January 2026
  *
- * Sources:
- * - Primary database: 9,509 codes (comprehensiveErrorCodes.json)
- * - WordPress Plugin database: 3,996 codes (wordpressFaultCodes.ts)
- * - Manual additions: Additional brand-specific codes
+ * Hand-curated fault codes with verified code-to-meaning mappings, carrying
+ * J1939 SPN/FMI references where the code maps to one.
  *
- * Total: 13,505+ comprehensive error codes
+ * Content discipline: every entry here must be checkable by an engineer against
+ * the OEM service manual in front of them. A diagnostic tool that returns a
+ * plausible-sounding meaning for a code that does not exist is worse than one
+ * that returns nothing, because the technician acts on it.
+ *
+ * This file previously claimed "13,500+ error codes" and merged two generated
+ * sources — comprehensiveErrorCodes.json (9,509 combinatorial permutations) and
+ * errorCodeGenerator.ts (sequential numbers with modulo-assigned meanings).
+ * Both were removed; see the note above the codeMap below and git history.
+ * Counts quoted anywhere in the UI must be derived from TOTAL_ERROR_CODES
+ * rather than hardcoded.
  */
-
-import comprehensiveErrorCodes from '@/app/data/diagnostic/comprehensiveErrorCodes.json';
 
 export interface ErrorCode {
   code: string;
@@ -1295,59 +1298,27 @@ export const GENERATOR_ERROR_CODES: ErrorCode[] = [
 ];
 
 // =====================================================
-// COMBINED ERROR CODE DATABASE - 13,500+ CODES
+// COMBINED ERROR CODE DATABASE — verified codes only
 // =====================================================
 
-// Convert comprehensive error codes from JSON
-function convertComprehensiveCode(code: any): ErrorCode {
-  return {
-    code: code.code || code.errorCode || '',
-    brand: code.brand || code.manufacturer || 'Universal',
-    category: code.category || code.system || 'General',
-    severity: (code.severity || 'warning') as ErrorCode['severity'],
-    title: code.title || code.name || code.description?.substring(0, 50) || 'Unknown Error',
-    description: code.description || code.details || '',
-    symptoms: code.symptoms || code.indicators || [],
-    causes: code.causes || code.possibleCauses || [],
-    diagnosticSteps: (code.diagnosticSteps || code.troubleshooting || []).map((step: any, idx: number) => ({
-      step: step.step || idx + 1,
-      action: step.action || step.instruction || step,
-      expectedResult: step.expectedResult || step.expected || 'Check result',
-      tools: step.tools || []
-    })),
-    solutions: (code.solutions || code.fixes || []).map((sol: any) => ({
-      difficulty: (sol.difficulty || 'moderate') as 'easy' | 'moderate' | 'advanced' | 'expert',
-      timeEstimate: sol.timeEstimate || sol.time || '1-2 hours',
-      solution: sol.solution || sol.description || sol,
-      tools: sol.tools || [],
-      parts: sol.parts || [],
-      cost: sol.cost || 'Varies'
-    })),
-    preventiveMeasures: code.preventiveMeasures || code.prevention || [],
-    relatedCodes: code.relatedCodes || [],
-    safetyWarnings: code.safetyWarnings || code.warnings || [],
-    whenToCallExpert: code.whenToCallExpert || code.expertAdvice || 'If issue persists after basic troubleshooting'
-  };
-}
-
-// Combine all error code sources into one comprehensive database
-const comprehensiveCodes: ErrorCode[] = (comprehensiveErrorCodes as any[]).map(convertComprehensiveCode);
-
-// Create unified error code database - deduplicate by code+brand
+// Unified error code database — deduplicated by code+brand.
+//
+// This previously merged app/data/diagnostic/comprehensiveErrorCodes.json,
+// a 9 MB file of 9,509 entries. That file was not a fault-code database: its
+// rows were combinatorial permutations built from a pool of 115 subsystem names
+// and 58 symptom phrases, sharing just 14 distinct solution texts, 16 symptom
+// strings and 60 cause strings between all 9,509 entries. It produced entries
+// such as "Blower: memory overflow" and a UPS "Communication: thermal runaway
+// detected" graded INFO. None of the codes corresponded to anything an engineer
+// could verify against an OEM manual, and serving them from a diagnostic tool
+// put wrong severity ratings in front of technicians. It has been removed.
+//
+// Only hand-curated, verifiable codes are served.
 const codeMap = new Map<string, ErrorCode>();
 
-// Add base codes first
 GENERATOR_ERROR_CODES.forEach(code => {
   const key = `${code.brand}-${code.code}`.toLowerCase();
   codeMap.set(key, code);
-});
-
-// Add comprehensive codes
-comprehensiveCodes.forEach(code => {
-  const key = `${code.brand}-${code.code}`.toLowerCase();
-  if (!codeMap.has(key)) {
-    codeMap.set(key, code);
-  }
 });
 
 // Export the complete unified database
@@ -1357,10 +1328,10 @@ export const ALL_ERROR_CODES: ErrorCode[] = Array.from(codeMap.values());
 export const TOTAL_ERROR_CODES = ALL_ERROR_CODES.length;
 
 // =====================================================
-// SEARCH FUNCTIONS - Search through ALL 13,500+ codes
+// SEARCH FUNCTIONS — search the verified code set
 // =====================================================
 
-// Search function for error codes - searches ALL databases
+// Search function for error codes
 // Made robust against null/undefined values to prevent runtime errors
 export function searchErrorCodes(query: string): ErrorCode[] {
   if (!query) return [];

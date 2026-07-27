@@ -354,7 +354,7 @@ export default function AdvancedSEO() {
             name: 'How do I diagnose generator problems?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS offers Kenya\'s most comprehensive generator diagnostics with 13,500+ error codes covering all major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
+              text: 'EmersonEIMS offers Kenya\'s generator diagnostics built on verified fault codes covering major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
             },
           },
           {
@@ -362,7 +362,7 @@ export default function AdvancedSEO() {
             name: 'What generator brands do you service?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'We are authorized dealers for Cummins, Perkins, FG Wilson, Caterpillar, SDMO, John Deere, Volvo Penta, MTU, Kohler, and Generac. Our database covers 13,500+ error codes across all manufacturers with solutions.',
+              text: 'We are authorized dealers for Cummins, Perkins, FG Wilson, Caterpillar, SDMO, John Deere, Volvo Penta, MTU, Kohler, and Generac. Our fault-code database carries verified code-to-meaning mappings with diagnostic steps and solutions.',
             },
           },
           {

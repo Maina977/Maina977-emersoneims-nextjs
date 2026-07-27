@@ -16,7 +16,7 @@ const VERIFIED_STATS = {
   countiesServed: 47,          // All Kenya counties
   generatorBrands: 12,         // Brands we service
   certifiedTechnicians: 15,    // Team members
-  errorCodesDatabase: 13500,   // Diagnostic database size
+  errorCodesDatabase: 102,     // Verified fault codes (hand-curated, OEM-checkable)
   sparePartsInStock: 1560,     // Parts in catalog
   customerSatisfaction: 96,    // Based on feedback surveys
 };

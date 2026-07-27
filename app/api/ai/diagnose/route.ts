@@ -98,12 +98,27 @@ type DiagnosticAPIResponse = {
  * Direct fault code lookup
  */
 function handleLookup(query: string): DiagnosticAPIResponse {
-  // Extract code pattern from query
-  const codeMatch = query.match(/[A-Z]{1,3}[-_]?\d{2,5}/i);
-  const searchCode = codeMatch ? codeMatch[0] : query.trim();
-  
-  const code = getExactCode(searchCode);
-  
+  const raw = query.trim();
+
+  // Try the whole query as a code first. The previous pattern
+  // (/[A-Z]{1,3}[-_]?\d{2,5}/i) captured only the first letter-digit pair, so
+  // multi-segment codes were silently truncated before lookup — "UPS-COM-1154"
+  // was searched as "COM-1154" and "DS-7320-105" as "DS-7320", guaranteeing a
+  // miss on codes that do exist.
+  let code = getExactCode(raw);
+  let searchCode = raw;
+
+  if (!code) {
+    // Multi-segment alphanumeric codes (PW10-147, UPS-COM-1154), or a bare
+    // numeric code (Cummins 111). Keep all segments.
+    const codeMatch = raw.match(/\b[A-Za-z]{1,4}(?:[-_][A-Za-z0-9]{1,8})+\b/)
+      || raw.match(/\b\d{2,5}\b/);
+    if (codeMatch) {
+      searchCode = codeMatch[0];
+      code = getExactCode(searchCode);
+    }
+  }
+
   if (code) {
     return {
       found: true,
@@ -112,21 +127,24 @@ function handleLookup(query: string): DiagnosticAPIResponse {
       summary: `Found exact match for code ${code.code}: ${code.title}`
     };
   }
-  
-  // Try fuzzy search if exact match fails
-  const searchResults = searchFaultCodes(searchCode, 5);
-  if (searchResults.length > 0) {
+
+  // No exact match. Similar codes may still help, but they are NOT the code
+  // that was asked for, so this must not report found:true — a technician
+  // acting on a neighbouring code's meaning is exactly the failure mode this
+  // endpoint has to avoid. Report the miss plainly and offer the rest as
+  // clearly-labelled suggestions.
+  const suggestions = searchFaultCodes(searchCode, 5);
+  if (suggestions.length > 0) {
     return {
-      found: true,
-      confidence: searchResults[0].confidence,
-      results: searchResults,
-      summary: `Found ${searchResults.length} similar codes`
+      found: false,
+      results: suggestions,
+      summary: `No verified entry for "${searchCode}". Showing ${suggestions.length} related code(s) — these are suggestions, not a match for the code you entered. Confirm any code against the OEM service manual before acting on it.`
     };
   }
-  
+
   return {
     found: false,
-    summary: `No fault code found matching "${searchCode}"`
+    summary: `No verified entry for "${searchCode}". Our database carries hand-checked codes only, so an absent code means we have not verified it — not that your controller is faulty. Check the OEM service manual, or contact us with the controller make and model.`
   };
 }
 

@@ -18,15 +18,16 @@
  * Updated: January 2026
  */
 
-import { generatePowerWizardErrorCodes, generateDeepSeaErrorCodes } from '@/lib/errorCodeGenerator';
+// NOTE: PowerWizard and DeepSea codes were previously pulled from
+// lib/errorCodeGenerator.ts. That module did not contain real controller data —
+// it generated code numbers sequentially (i + 100) and assigned meanings by
+// `issues[idx % issues.length]`, so every 20th code number shared a meaning and
+// no number corresponded to anything a technician could verify against an OEM
+// manual. It has been removed. Only verified, hand-curated codes are served.
 import { CUMMINS_ERROR_CODES } from '@/lib/data/cumminsErrorCodes';
 import { CATERPILLAR_ERROR_CODES } from '@/lib/data/caterpillarErrorCodes';
 import { PERKINS_ERROR_CODES } from '@/lib/data/perkinsErrorCodes';
 import { GENERATOR_ERROR_CODES } from '@/lib/data/generatorErrorCodes';
-
-// Generate all controller codes
-const powerWizardCodes = generatePowerWizardErrorCodes();
-const deepSeaCodes = generateDeepSeaErrorCodes();
 
 // Helper function to format manufacturer codes
 const formatManufacturerCodes = (codes: any[], brand: string, service: string) => 
@@ -84,8 +85,6 @@ const detailedGeneratorCodes = formatDetailedGeneratorCodes(GENERATOR_ERROR_CODE
 // Combine all brand-specific codes
 export const brandSpecificErrorCodes: any[] = [
   ...detailedGeneratorCodes,
-  ...powerWizardCodes,
-  ...deepSeaCodes,
   ...cumminsCodesFormatted,
   ...caterpillarCodesFormatted,
   ...perkinsCodesFormatted
@@ -94,8 +93,6 @@ export const brandSpecificErrorCodes: any[] = [
 // Export code counts for statistics
 export const CODE_STATISTICS = {
   detailedGeneratorCodes: detailedGeneratorCodes.length,
-  powerWizard: powerWizardCodes.length,
-  deepSea: deepSeaCodes.length,
   cummins: cumminsCodesFormatted.length,
   caterpillar: caterpillarCodesFormatted.length,
   perkins: perkinsCodesFormatted.length,

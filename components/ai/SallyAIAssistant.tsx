@@ -11,7 +11,7 @@ import Image from 'next/image';
  * A comprehensive AI assistant with detailed knowledge of all EmersonEIMS services.
  * Provides accurate, helpful information about:
  * - 9 Core Services
- * - 13,500+ Error Codes Database
+ * - Verified fault-code database
  * - 1,560+ Spare Parts Catalog
  * - Pricing Guidance
  * - Technical Support
@@ -58,7 +58,7 @@ const SERVICE_KNOWLEDGE = {
       'Control panel upgrades',
       'Generator rentals (short & long term)',
     ],
-    errorCodes: '13,500+ error codes in our diagnostic database',
+    errorCodes: 'verified fault codes you can check against the OEM service manual',
     responseTime: 'Within 2 hours in Nairobi, same-day across Kenya',
     warranty: '12-month warranty on all repairs',
   },
@@ -218,7 +218,7 @@ export default function SallyAIAssistant() {
       const timer = setTimeout(() => {
         setIsOpen(true);
         sendSallyMessage(
-          "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,560+ spare parts.\n\nWhat's your name?",
+          "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, our verified generator fault-code database, and 1,560+ spare parts.\n\nWhat's your name?",
           []
         );
         localStorage.setItem('sally_seen', 'true');
@@ -427,7 +427,7 @@ export default function SallyAIAssistant() {
       );
     } else if (lowerQuestion.includes('error') || lowerQuestion.includes('fault') || lowerQuestion.includes('code')) {
       sendSallyMessage(
-        `${name}, we have a comprehensive diagnostic database with 13,500+ error codes!\n\n` +
+        `${name}, we have a verified fault-code database — every code checkable against the OEM manual.\n\n` +
         `**Supported Brands:**\n` +
         `Cummins, Caterpillar, Perkins, DeepSea, PowerCommand, Volvo, MTU, Deutz, Kohler, Generac, and more.\n\n` +
         `**What you can do:**\n` +
@@ -556,7 +556,7 @@ export default function SallyAIAssistant() {
                   setConversationStep(1);
                 } else {
                   sendSallyMessage(
-                    "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, 13,500+ generator error codes, and 1,560+ spare parts.\n\nWhat's your name?",
+                    "Hello! I'm Sally, your AI assistant at EmersonEIMS.\n\nI have detailed knowledge of all our 9 services, our verified generator fault-code database, and 1,560+ spare parts.\n\nWhat's your name?",
                     []
                   );
                 }
