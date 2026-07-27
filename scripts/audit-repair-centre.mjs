@@ -207,6 +207,9 @@ if (LIVE) {
       url: `${BASE}/repair-centre/${a.hub}/${a.slug}`,
       needs: ['TechArticle', 'BreadcrumbList'],
       text: a.header.title,
+      // Section 6 requires the decision tree as a VISUAL flowchart as well as
+      // written steps. Inline SVG must therefore be in the server HTML.
+      html: ['<svg', 'Diagnostic decision flowchart'],
     })),
   ];
 
@@ -230,6 +233,11 @@ if (LIVE) {
     }
     if (p.text && !r.html.includes(p.text)) {
       errors.push(`LIVE ${p.url}: article heading not present in HTML — page rendered but content is missing`);
+    }
+    for (const frag of p.html ?? []) {
+      if (!r.html.includes(frag)) {
+        errors.push(`LIVE ${p.url}: expected markup "${frag}" missing from server-rendered HTML`);
+      }
     }
     liveResults.push(`200 ${p.url.replace(BASE, '')}`);
   }

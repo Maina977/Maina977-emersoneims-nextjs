@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { RepairArticle } from '@/lib/repair-centre/types';
 import { CONTACT, getWhatsAppUrl, getTelUrl } from '@/lib/constants/contact';
+import DecisionFlowchart from './DecisionFlowchart';
 
 /**
  * Server component. Every section renders into the initial HTML so the whole
@@ -185,7 +186,8 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
       </Section>
 
       <Section id="decision-tree" n="06" title="Diagnostic decision tree">
-        <ol className="space-y-3">
+        <DecisionFlowchart nodes={article.decisionTree} title={article.header.title} />
+        <ol className="mt-6 space-y-3">
           {article.decisionTree.map((d, i) => (
             <li key={i} className="rounded-xl border border-slate-700 bg-slate-900/50 p-5">
               <p className="text-white font-semibold mb-3">{i + 1}. {d.question}</p>
