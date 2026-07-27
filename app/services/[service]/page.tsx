@@ -21,6 +21,7 @@ import {
 import { getServiceDiagnostics } from '@/lib/services/serviceDiagnostics';
 import { getServiceBible } from '@/lib/services/serviceBibles';
 import ServiceDeepDive from '@/components/services/ServiceDeepDive';
+import UPSVisualPack from '@/components/services/UPSVisualPack';
 
 // Import client components
 import ServiceDetailClient from './ServiceDetailClient';
@@ -193,6 +194,12 @@ export default async function ServiceDetailPage({ params }: Props) {
           /solutions/* equivalents redirect here (ups, motor-rewinding, ac,
           borehole, ats). Renders nothing for other slugs. */}
       <ServiceDeepDive slug={service.slug} />
+
+      {/* UPS schematic, curves and diagnostic gauges. Moved here from the
+          retired hardcoded route app/services/ups-systems/page.tsx, which was
+          shadowing this dynamic route and suppressing the bible, deep-dive,
+          diagnostics, pricing, FAQs and structured data for this slug. */}
+      {service.slug === 'ups-systems' && <UPSVisualPack />}
     </>
   );
 }
