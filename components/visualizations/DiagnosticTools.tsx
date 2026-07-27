@@ -89,7 +89,7 @@ export function GeneratorDiagnosticFlowchart() {
         <text x="90" y="965">   • Low freq (48-49Hz): Engine load too high OR governor failure → Reduce load</text>
 
         <text x="70" y="995">3. FUEL CONSUMPTION (normal = 0.2-0.25 L/kWh):</text>
-        <text x="90" y="1015">   • High (>0.3 L/kWh): Poor combustion, worn injectors, fuel quality issue → Service injectors</text>
+        <text x="90" y="1015">   • High (&gt;0.3 L/kWh): Poor combustion, worn injectors, fuel quality issue → Service injectors</text>
         <text x="90" y="1035">   • Black smoke: Over-fueling → Adjust injectors, check fuel system pressure</text>
 
         <text x="70" y="1065">4. TEMPERATURE (normal = 75-85°C):</text>

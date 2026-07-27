@@ -206,7 +206,7 @@ class PermitGeneratorAI {
       kenya: [
         { document: 'Site Plan', description: 'Detailed site layout showing panel placement', required: true, template: '/templates/site_plan.pdf' },
         { document: 'Single Line Diagram', description: 'Electrical schematic of the system', required: true, template: '/templates/sld_template.pdf' },
-        { document: 'Structural Assessment', description: 'Engineer's report on roof capacity', required: true },
+        { document: 'Structural Assessment', description: "Engineer's report on roof capacity", required: true },
         { document: 'Equipment Datasheets', description: 'Specifications for all components', required: true },
         { document: 'Installer Certification', description: 'Proof of installer qualifications', required: true },
         { document: 'Insurance Certificate', description: 'Public liability insurance', required: false }
@@ -269,7 +269,7 @@ class PermitGeneratorAI {
         'Inspection typically scheduled within 14 days'
       ],
       nigeria: [
-        'Submit application through NERC's online portal',
+        "Submit application through NERC's online portal",
         'Pay processing fee via REMITA',
         'Await technical assessment (2-3 weeks)',
         'Complete site inspection when scheduled',

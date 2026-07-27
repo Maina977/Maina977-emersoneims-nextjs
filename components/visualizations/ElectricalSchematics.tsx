@@ -488,7 +488,7 @@ export function ACCompressorPCB() {
 
         {/* Design Features */}
         <rect x="70" y="410" width="860" height="65" fill="slate-800" opacity="0.3" rx="5"/>
-        <text x="90" y="435" className="fill-blue-300 text-xs">PCB Design: 4-layer (Power, Ground, Signal, Signal) | 0.3mm trace width | 0.25mm clearance | <0.5mm via</text>
+        <text x="90" y="435" className="fill-blue-300 text-xs">PCB Design: 4-layer (Power, Ground, Signal, Signal) | 0.3mm trace width | 0.25mm clearance | &lt;0.5mm via</text>
         <text x="90" y="453" className="fill-blue-300 text-xs">Protection: Transient suppression on all relay coils, motor power connections shielded, input filtering 10mH @10A</text>
         <text x="90" y="468" className="fill-blue-300 text-xs">Reliability: MTBF &gt;50,000h (1000h burn-in test passed), ESD protection &gt;15kV HBM all signal pins</text>
       </svg>
