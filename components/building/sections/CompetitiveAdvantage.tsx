@@ -42,7 +42,7 @@ const COMPARISON_POINTS = [
   },
   {
     feature: 'Warranty Support',
-    emersonEIMS: 'Factory-authorized, warranty-compliant service',
+    emersonEIMS: 'Professional service using genuine parts',
     industry: 'May void manufacturer warranty',
     advantage: true,
   },

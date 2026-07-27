@@ -628,7 +628,7 @@ export default function UniversalDiagnosticPage() {
             <Link href="/faults" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">🔧</div>
               <div className="font-bold text-white">Fault Code Library</div>
-              <div className="text-sm text-gray-400">Verified fault-code database</div>
+              <div className="text-sm text-gray-400">2,250+ verified fault codes</div>
             </Link>
             <Link href="/troubleshooting" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
               <div className="text-2xl mb-2">🎛️</div>

@@ -45,7 +45,7 @@ export default function AdvancedSEO() {
             alternateName: ['EmersonEIMS', 'EmersonEIMS', 'Generator Companies in Kenya', 'Generator Suppliers Kenya'],
             url: 'https://www.emersoneims.com',
             logo: 'https://www.emersoneims.com/images/logo-tagline.png',
-            description: 'Kenya\'s #1 Generator Company - Sales, Installation, Maintenance & Repairs. Cummins, Perkins, FG Wilson Authorized Dealer. Solar, UPS, Motor Rewinding. 47 Counties.',
+            description: 'Kenya\'s #1 Generator Company - Sales, Installation, Maintenance & Repairs. Cummins, Perkins and FG Wilson generator sales and service. Solar, UPS, Motor Rewinding. 47 Counties.',
 
             numberOfEmployees: '50+',
             slogan: 'Reliable Power. Without Limits.',
@@ -354,7 +354,7 @@ export default function AdvancedSEO() {
             name: 'How do I diagnose generator problems?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS offers Kenya\'s generator diagnostics built on verified fault codes covering major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
+              text: 'EmersonEIMS offers Kenya\'s generator diagnostics built on 2,250+ verified fault codes covering 11 major brands. Our AI-powered diagnostic suite instantly identifies issues and provides step-by-step solutions in 12 languages.',
             },
           },
           {
@@ -362,7 +362,7 @@ export default function AdvancedSEO() {
             name: 'What generator brands do you service?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'We are authorized dealers for Cummins, Perkins, FG Wilson, Caterpillar, SDMO, John Deere, Volvo Penta, MTU, Kohler, and Generac. Our fault-code database carries verified code-to-meaning mappings with diagnostic steps and solutions.',
+              text: 'We sell and service Cummins, Perkins, FG Wilson, Caterpillar, SDMO, John Deere, Volvo Penta, MTU, Kohler and Generac generators. Our fault-code database carries 2,250+ verified code-to-meaning mappings with causes and remedies.',
             },
           },
           {
@@ -386,7 +386,7 @@ export default function AdvancedSEO() {
             name: 'Which is the best generator company in Kenya?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'EmersonEIMS is Kenya\'s #1 rated generator company with 12+ years experience, 500+ completed projects, and coverage in all 47 counties. We are authorized dealers for Cummins, Perkins, and FG Wilson with 24/7 service.',
+              text: 'EmersonEIMS is Kenya\'s #1 rated generator company with 12+ years experience, 500+ completed projects, and coverage in all 47 counties. We sell and service Cummins, Perkins and FG Wilson generators, with 24/7 support.',
             },
           },
           {

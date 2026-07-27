@@ -25,8 +25,8 @@ const COMPANY_FACTS = {
 const PARTNERSHIPS = [
   { 
     name: 'Cummins Voltka', 
-    type: 'Authorized Dealer', 
-    description: 'Factory-authorized sales and service partner',
+    type: 'Sales & Service', 
+    description: 'Generator sales and service',
     verified: true,
   },
 ];

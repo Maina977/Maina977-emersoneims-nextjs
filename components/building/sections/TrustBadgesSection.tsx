@@ -15,7 +15,7 @@ const capabilities = [
 
 // Only verified, authentic partnership
 const partners = [
-  { name: 'CUMMINS VOLTKA', tier: 'Authorized Dealer', description: 'Factory-authorized generator sales and service' },
+  { name: 'CUMMINS VOLTKA', tier: 'Sales & Service', description: 'Generator sales and service' },
 ];
 
 const stats = [

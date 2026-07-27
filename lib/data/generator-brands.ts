@@ -181,7 +181,7 @@ export const GENERATOR_BRANDS: GeneratorBrand[] = [
       },
       {
         question: 'Where can I get Volvo Penta parts in {location}?',
-        answer: 'We stock genuine Volvo Penta parts and provide authorized service for all Volvo Penta generators in {location}.'
+        answer: 'We stock genuine Volvo Penta parts and service all Volvo Penta generators in {location}.'
       }
     ]
   },

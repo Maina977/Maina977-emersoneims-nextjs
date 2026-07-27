@@ -9,7 +9,7 @@
 export const CUMMINS_BRAND_INFO = {
   brandName: 'Cummins',
   supplier: 'Voltka',
-  dealerStatus: 'Authorized Dealer',
+  dealerStatus: 'Sales & Service',
   country: 'Kenya',
   powerRange: {
     min: 10,
@@ -43,8 +43,8 @@ export const CUMMINS_BRAND_INFO = {
       icon: 'wrench'
     },
     {
-      title: 'Authorized Dealer',
-      description: 'Official Voltka/Cummins authorized dealer in Kenya',
+      title: 'Sales & Service',
+      description: 'Cummins (Voltka) generator sales and service in Kenya',
       icon: 'badge'
     },
     {
@@ -141,7 +141,7 @@ export const CUMMINS_BRAND_INFO = {
 export const CUMMINS_FAQ = [
   {
     question: "Is EmersonEIMS an authorized Cummins dealer in Kenya?",
-    answer: "Yes, EmersonEIMS is an official authorized dealer for Cummins generators supplied by Voltka in Kenya. We offer genuine Cummins generators from 10KVA to 2000KVA with full manufacturer warranty and support."
+    answer: "EmersonEIMS sells and services Cummins generators supplied by Voltka in Kenya. We supply genuine Cummins generators from 10KVA to 2000KVA with full manufacturer warranty and support."
   },
   {
     question: "What warranty do Cummins generators come with?",
@@ -161,7 +161,7 @@ export const CUMMINS_FAQ = [
   },
   {
     question: "Are genuine Cummins spare parts available?",
-    answer: "Yes, we maintain a comprehensive inventory of genuine Cummins spare parts. As an authorized dealer, all our parts come with full traceability and manufacturer guarantee."
+    answer: "Yes, we maintain a comprehensive inventory of genuine Cummins spare parts, with full traceability and manufacturer guarantee."
   },
   {
     question: "What industries do you serve?",

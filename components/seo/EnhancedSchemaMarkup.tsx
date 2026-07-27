@@ -401,7 +401,7 @@ export const GENERATOR_FAQS = [
   },
   {
     question: 'Which generator brand is best in Kenya?',
-    answer: 'The best generator brands in Kenya are Cummins, Perkins, FG Wilson, and Caterpillar. EmersonEIMS is an authorized dealer for all these brands, offering genuine products with full warranty.'
+    answer: 'The best generator brands in Kenya are Cummins, Perkins, FG Wilson, and Caterpillar. EmersonEIMS sells and services all these brands, supplying genuine parts.'
   },
   {
     question: 'How often should I service my generator?',

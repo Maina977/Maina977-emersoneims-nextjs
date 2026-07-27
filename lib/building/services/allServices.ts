@@ -153,7 +153,7 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
       'industrial generators Kenya',
       'diesel generators for sale Kenya',
       'backup power solutions Kenya',
-      'Cummins authorized dealer'
+      'Cummins generator sales and service Kenya'
     ],
 
     benefits: [

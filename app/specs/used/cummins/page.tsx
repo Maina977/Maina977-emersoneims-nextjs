@@ -91,7 +91,7 @@ export default function CumminsSpecsPage() {
 
             <div className="pt-6">
               <h3 className="text-2xl font-bold mb-4 text-white">Service & Support</h3>
-              <p className="text-gray-300 mb-4">Nationwide authorized service centers provide:</p>
+              <p className="text-gray-300 mb-4">Our nationwide service coverage provides:</p>
               <ul className="space-y-2 text-gray-300">
                 <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> OEM spare parts availability</li>
                 <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Factory-trained technicians</li>

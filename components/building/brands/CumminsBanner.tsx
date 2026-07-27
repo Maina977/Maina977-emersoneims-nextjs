@@ -190,7 +190,7 @@ export default function CumminsBanner({
                     {[
                       { icon: <Shield className="w-8 h-8" />, title: '3 Years Warranty', desc: 'Comprehensive coverage', color: 'green', glow: 'rgba(34, 197, 94, 0.3)' },
                       { icon: <Wrench className="w-8 h-8" />, title: '1 Year Free Service', desc: 'Included maintenance', color: 'blue', glow: 'rgba(59, 130, 246, 0.3)' },
-                      { icon: <Award className="w-8 h-8" />, title: 'Authorized Dealer', desc: 'Official Voltka partner', color: 'amber', glow: 'rgba(245, 158, 11, 0.3)' },
+                      { icon: <Award className="w-8 h-8" />, title: 'Sales & Service', desc: 'Cummins generator sales and service', color: 'amber', glow: 'rgba(245, 158, 11, 0.3)' },
                       { icon: <Zap className="w-8 h-8" />, title: '10-2000KVA', desc: 'All power needs', color: 'cyan', glow: 'rgba(0, 255, 255, 0.3)' },
                     ].map((item, i) => (
                       <motion.div
@@ -301,7 +301,7 @@ export default function CumminsBanner({
             </motion.div>
             <div>
               <h3 className="text-xl font-bold text-white">CUMMINS by VOLTKA</h3>
-              <p className="text-gray-400">Authorized Dealer | 10-2000KVA</p>
+              <p className="text-gray-400">Sales & Service | 10-2000KVA</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -365,7 +365,7 @@ export default function CumminsBanner({
 
           <div className="space-y-3 mb-6">
             {[
-              { text: 'Authorized Dealer', icon: <CheckCircle className="w-4 h-4" /> },
+              { text: 'Sales & Service', icon: <CheckCircle className="w-4 h-4" /> },
               { text: '3 Years Warranty', icon: <CheckCircle className="w-4 h-4" /> },
               { text: '1 Year Free Service', icon: <CheckCircle className="w-4 h-4" /> },
               { text: '10-2000KVA Range', icon: <CheckCircle className="w-4 h-4" /> },

@@ -34,7 +34,7 @@ export const EMERSON_SERVICES = [
     id: 'generators',
     name: 'Generator Services',
     fullName: 'Generator Sales, Installation, Maintenance & Repairs',
-    description: '3-Year Warranty on all generator installations. Cummins, Perkins, FG Wilson, Caterpillar authorized dealer. 400,000+ fault codes database.',
+    description: '3-Year Warranty on all generator installations. Cummins, Perkins, FG Wilson and Caterpillar generator sales and service. 2,250+ verified fault codes.',
     warranty: '3 YEARS',
     keywords: ['generator sales Kenya', 'generator installation', 'generator maintenance', 'generator repair', 'Cummins Kenya', 'Perkins Kenya', 'FG Wilson Kenya', 'diesel generator', 'industrial generator', 'commercial generator', 'standby generator', 'prime power generator', 'generator warranty Kenya', '3 year generator warranty'],
     targetAudience: ['hospitals', 'hotels', 'factories', 'schools', 'banks', 'supermarkets', 'malls', 'telecom towers', 'data centers', 'residential estates'],
@@ -415,7 +415,7 @@ export const SEO_FAQS = [
   },
   {
     question: "What generator brands does EmersonEIMS sell?",
-    answer: "EmersonEIMS is an authorized dealer for Cummins, Perkins, FG Wilson, and Caterpillar generators. We sell new, used, and refurbished generators from 10kVA to 2000kVA."
+    answer: "EmersonEIMS sells and services Cummins, Perkins, FG Wilson and Caterpillar generators. We sell new, used, and refurbished generators from 10kVA to 2000kVA."
   },
   {
     question: "How much does a generator cost in Kenya?",

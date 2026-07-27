@@ -28,6 +28,7 @@ import { CUMMINS_ERROR_CODES } from '@/lib/data/cumminsErrorCodes';
 import { CATERPILLAR_ERROR_CODES } from '@/lib/data/caterpillarErrorCodes';
 import { PERKINS_ERROR_CODES } from '@/lib/data/perkinsErrorCodes';
 import { GENERATOR_ERROR_CODES } from '@/lib/data/generatorErrorCodes';
+import { VERIFIED_FAULT_CODES } from '@/lib/data/verifiedFaultCodes';
 
 // Helper function to format manufacturer codes
 const formatManufacturerCodes = (codes: any[], brand: string, service: string) => 
@@ -83,11 +84,38 @@ const perkinsCodesFormatted = formatManufacturerCodes(PERKINS_ERROR_CODES, 'Perk
 const detailedGeneratorCodes = formatDetailedGeneratorCodes(GENERATOR_ERROR_CODES);
 
 // Combine all brand-specific codes
+// Curated CSV-sourced codes (lib/data/fault-codes-raw.csv via
+// scripts/buildVerifiedFaultCodes.mjs). Real brand/model/code/description data
+// that had never been wired into the app.
+//
+// severity is deliberately 'UNSPECIFIED'. The source carries no severity rating
+// and inventing one is precisely how this system previously told a technician
+// that low oil pressure was LOW severity. An unrated code must render as
+// unrated.
+const verifiedCsvCodes = VERIFIED_FAULT_CODES.map(c => ({
+  code: c.code,
+  brand: c.brand,
+  model: c.model || 'All Models',
+  service: `${c.brand} Generator Diagnostics`,
+  category: 'Fault Code',
+  issue: c.description,
+  severity: 'UNSPECIFIED',
+  symptoms: [],
+  causes: c.causes,
+  solution: c.remedies.join('; '),
+  parts: [],
+  tools: [],
+  downtime: '',
+  preventive: '',
+  verified: true
+}));
+
 export const brandSpecificErrorCodes: any[] = [
   ...detailedGeneratorCodes,
   ...cumminsCodesFormatted,
   ...caterpillarCodesFormatted,
-  ...perkinsCodesFormatted
+  ...perkinsCodesFormatted,
+  ...verifiedCsvCodes
 ];
 
 // Export code counts for statistics
@@ -96,5 +124,6 @@ export const CODE_STATISTICS = {
   cummins: cumminsCodesFormatted.length,
   caterpillar: caterpillarCodesFormatted.length,
   perkins: perkinsCodesFormatted.length,
+  verifiedCsv: verifiedCsvCodes.length,
   total: brandSpecificErrorCodes.length
 };
