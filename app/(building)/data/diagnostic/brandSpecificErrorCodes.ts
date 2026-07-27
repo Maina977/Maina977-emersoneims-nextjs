@@ -30,6 +30,7 @@ import { PERKINS_ERROR_CODES } from '@/lib/data/perkinsErrorCodes';
 import { GENERATOR_ERROR_CODES } from '@/lib/data/generatorErrorCodes';
 import { VERIFIED_FAULT_CODES } from '@/lib/data/verifiedFaultCodes';
 import { CURATED_FAULT_CODES } from '@/lib/data/curatedFaultCodes';
+import { getFaultKnowledge, type DiagnosticStep } from '@/lib/data/faultKnowledge';
 
 // Helper function to format manufacturer codes
 const formatManufacturerCodes = (codes: any[], brand: string, service: string) => 
@@ -93,23 +94,45 @@ const detailedGeneratorCodes = formatDetailedGeneratorCodes(GENERATOR_ERROR_CODE
 // and inventing one is precisely how this system previously told a technician
 // that low oil pressure was LOW severity. An unrated code must render as
 // unrated.
-const verifiedCsvCodes = VERIFIED_FAULT_CODES.map(c => ({
-  code: c.code,
-  brand: c.brand,
-  model: c.model || 'All Models',
-  service: `${c.brand} Generator Diagnostics`,
-  category: 'Fault Code',
-  issue: c.description,
-  severity: 'UNSPECIFIED',
-  symptoms: [],
-  causes: c.causes,
-  solution: c.remedies.join('; '),
-  parts: [],
-  tools: [],
-  downtime: '',
-  preventive: '',
-  verified: true
-}));
+// Each CSV code is enriched from lib/data/faultKnowledge.ts where its fault type
+// has diagnostic content written for it: symptoms, an ordered diagnostic
+// sequence with expected readings, remedies, safety constraints and tools.
+// Where no knowledge entry exists the code keeps its own data and severity stays
+// UNSPECIFIED — an absent entry must render as absent, never as generic filler.
+const verifiedCsvCodes = VERIFIED_FAULT_CODES.map(c => {
+  const k = getFaultKnowledge(c.description);
+  return {
+    code: c.code,
+    brand: c.brand,
+    model: c.model || 'All Models',
+    service: `${c.brand} Generator Diagnostics`,
+    category: k ? k.system : 'Fault Code',
+    issue: c.description,
+    // Severity from engineering judgement about the physical condition where we
+    // have written it; otherwise unrated rather than invented.
+    severity: k ? k.severity.toUpperCase() : 'UNSPECIFIED',
+    summary: k ? k.summary : '',
+    symptoms: k ? k.symptoms : [],
+    causes: c.causes.length ? c.causes : [],
+    diagnosticSteps: k
+      ? k.diagnosis.map((d: DiagnosticStep) => ({
+          step: d.step,
+          action: d.action,
+          expectedResult: d.expect,
+          tools: d.tools || [],
+        }))
+      : [],
+    // Prefer the code's own remedies from the CSV, then the fault-type remedies.
+    solution: [...c.remedies, ...(k ? k.remedy : [])].join('; '),
+    safetyWarnings: k ? k.safety : [],
+    parts: [],
+    tools: k ? k.tools : [],
+    downtime: '',
+    preventive: k ? k.preventive.join('; ') : '',
+    verified: true,
+    enriched: Boolean(k),
+  };
+});
 
 export const brandSpecificErrorCodes: any[] = [
   ...detailedGeneratorCodes,
