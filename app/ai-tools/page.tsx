@@ -135,7 +135,7 @@ export default function AIToolsPage() {
       subtitle: 'AI-Powered Diagnostic System',
       description: 'Generator diagnostic platform with 3,800+ verified fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
       features: [
-        '3,800+ verified codes + 270,000+ code-number coverage',
+        '3,800+ verified codes + 450,000+ code-number coverage',
         'Interactive wiring diagrams',
         'Generator simulator with controls',
         'Step-by-step repair guides',

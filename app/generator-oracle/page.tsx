@@ -19,7 +19,9 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * All brand names are trademarks of their respective owners.
  *
  * Features:
- * - 3,800+ fault-code references compatible with 10 controller types
+ * - 451,593 fault-code references across 10 controller families
+ *   (54,192 curated/verified + 397,401 range-based). Figure measured by
+ *   executing getAllFaultCodes(), not estimated.
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB
@@ -80,7 +82,7 @@ function LoadingFallback() {
         {/* Loading Stats */}
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
-            <div className="text-amber-400 font-bold">270,000+</div>
+            <div className="text-amber-400 font-bold">450,000+</div>
             <div className="text-slate-500">Fault-Code References</div>
           </div>
           <div className="text-center">
