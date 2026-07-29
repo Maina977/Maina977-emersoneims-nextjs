@@ -3352,6 +3352,11 @@ function WireColorReference() {
 export default function WiringDiagramsPanel() {
   const [selectedBrand, setSelectedBrand] = useState('DSE');
   const [selectedController, setSelectedController] = useState(CONTROLLERS[0]);
+  // The panel must not OPEN showing a populated controller. Defaulting to
+  // CONTROLLERS[0] (DSE 7320) made every visit look like '7320 wiring for
+  // everything', because 7320 is one of only a few models with verified pin
+  // data. Nothing is rendered until the technician actively picks their unit.
+  const [userHasChosen, setUserHasChosen] = useState(false);
   const [selectedCircuit, setSelectedCircuit] = useState('power');
   const [viewMode, setViewMode] = useState<'schematic' | 'diagnostics' | 'pinout' | 'colors'>('schematic');
 
@@ -3375,7 +3380,7 @@ export default function WiringDiagramsPanel() {
     selectedController.brand,
     selectedController.model,
   );
-  const currentPins = wiringGuard.ok ? rawPins : [];
+  const currentPins = userHasChosen && wiringGuard.ok ? rawPins : [];
   const hasVerifiedPinout = currentPins.length > 0;
 
   // Hard guard: even if a future bug ever wired CONTROLLER_PINS to a foreign
@@ -3595,6 +3600,7 @@ export default function WiringDiagramsPanel() {
                     setSelectedBrand(brand);
                     const firstController = CONTROLLERS.find(c => c.brand === brand);
                     if (firstController) setSelectedController(firstController);
+                    setUserHasChosen(false);
                   }}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                     selectedBrand === brand
@@ -3615,7 +3621,7 @@ export default function WiringDiagramsPanel() {
               {brandControllers.map((ctrl) => (
                 <button
                   key={ctrl.id}
-                  onClick={() => setSelectedController(ctrl)}
+                  onClick={() => { setSelectedController(ctrl); setUserHasChosen(true); }}
                   className={`w-full px-3 py-2 rounded-lg text-left transition-all ${
                     selectedController.id === ctrl.id
                       ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-400'
@@ -3625,6 +3631,12 @@ export default function WiringDiagramsPanel() {
                   <div className="font-bold text-sm">{ctrl.model}</div>
                   <div className="text-xs text-slate-500 mt-0.5">{ctrl.features.join(' • ')}</div>
                   <div className="text-xs text-slate-600 mt-0.5">{ctrl.pinCount} pins • {ctrl.voltage}</div>
+                  {/* Honest coverage marker: most listed controllers have no
+                      verified pinout yet. Showing which do prevents a
+                      technician clicking through models expecting data. */}
+                  <div className={`text-[10px] mt-1 font-semibold ${CONTROLLER_PINS[ctrl.id] ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    {CONTROLLER_PINS[ctrl.id] ? 'Verified pinout available' : 'No verified pinout — refer to OEM manual'}
+                  </div>
                 </button>
               ))}
             </div>

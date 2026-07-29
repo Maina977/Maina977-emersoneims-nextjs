@@ -3226,8 +3226,16 @@ export default function WiringDiagramsPanel() {
   const brands = [...new Set(CONTROLLERS.map(c => c.brand))];
   const brandControllers = CONTROLLERS.filter(c => c.brand === selectedBrand);
 
-  // Get current pin configuration
-  const currentPins = CONTROLLER_PINS[selectedController.id] || CONTROLLER_PINS['dse-7320'];
+  // Get current pin configuration.
+  // SAFETY (2026-07-27): this previously read
+  //   CONTROLLER_PINS[selectedController.id] || CONTROLLER_PINS['dse-7320']
+  // which silently served DSE 7320 terminal wiring for ANY controller with no
+  // entry of its own — ComAp, SmartGen, PowerWizard, Woodward, Datakom, Lovato,
+  // Siemens, ENKO and VODIA all inherited DSE pinouts. A technician wiring from
+  // that would connect a different OEM's terminals. Never substitute one
+  // manufacturer's wiring for another; render nothing instead.
+  // See lib/generator-oracle/wiringGuard.ts.
+  const currentPins = CONTROLLER_PINS[selectedController.id] ?? [];
 
   // Export to PDF function
   const exportToPDF = () => {
