@@ -654,6 +654,11 @@ export function middleware(request: NextRequest) {
         'generator-produces-no-voltage-output': 'generators',
         'generator-unstable-voltage': 'generators',
         'inverter-switches-off-under-load': 'inverters',
+        'inverter-will-not-switch-on': 'inverters',
+        'inverter-not-charging-batteries': 'inverters',
+        'inverter-mosfet-failure-diagnosis': 'inverters',
+        'inverter-igbt-testing-and-failure': 'inverters',
+        'solar-inverter-dc-bus-fault': 'inverters',
         'ups-not-charging-batteries': 'ups',
         'ups-on-battery-with-mains-present': 'ups',
       };

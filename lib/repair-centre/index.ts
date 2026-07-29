@@ -13,6 +13,11 @@ import { generatorLowOilPressureShutdown } from './articles/generator-low-oil-pr
 import { generatorNoVoltageOutput } from './articles/generator-no-voltage-output';
 import { generatorUnstableVoltage } from './articles/generator-unstable-voltage';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
+import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
+import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
+import { inverterMosfetFailureDiagnosis } from './articles/inverter-mosfet-failure-diagnosis';
+import { inverterIgbtTestingAndFailure } from './articles/inverter-igbt-testing-and-failure';
+import { solarInverterDcBusFault } from './articles/solar-inverter-dc-bus-fault';
 import { upsNotChargingBatteries } from './articles/ups-not-charging-batteries';
 import { upsOnBatteryWithMainsPresent } from './articles/ups-on-battery-with-mains-present';
 
@@ -25,6 +30,11 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorNoVoltageOutput,
   generatorUnstableVoltage,
   inverterSwitchesOffUnderLoad,
+  inverterWillNotSwitchOn,
+  inverterNotChargingBatteries,
+  inverterMosfetFailureDiagnosis,
+  inverterIgbtTestingAndFailure,
+  solarInverterDcBusFault,
   upsNotChargingBatteries,
   upsOnBatteryWithMainsPresent,
 ];
@@ -58,7 +68,14 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Fault diagnosis for off-grid, hybrid and grid-tied inverters, including output-stage, charging and thermal faults. Board-level guidance is published only where it can be given safely and accurately.',
     scope: ['No output', 'Shutdown under load', 'Charging faults', 'Overheating', 'DC bus faults', 'Power-stage failure'],
-    articleSlugs: ['inverter-switches-off-under-load'],
+    articleSlugs: [
+      'inverter-switches-off-under-load',
+      'inverter-will-not-switch-on',
+      'inverter-not-charging-batteries',
+      'inverter-mosfet-failure-diagnosis',
+      'inverter-igbt-testing-and-failure',
+      'solar-inverter-dc-bus-fault',
+    ],
   },
   {
     slug: 'ups',
