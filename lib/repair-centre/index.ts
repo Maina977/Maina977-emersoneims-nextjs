@@ -24,6 +24,7 @@ import { upsInverterFaultDiagnosis } from './articles/ups-inverter-fault-diagnos
 import { controllerAlarmInterpretation } from './articles/controller-alarm-interpretation';
 import { threePhaseMotorFailureDiagnosis } from './articles/three-phase-motor-failure-diagnosis';
 import { boreholePumpNoWaterDelivery } from './articles/borehole-pump-no-water-delivery';
+import { solarSystemUnderperforming } from './articles/solar-system-underperforming';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -53,6 +54,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   controllerAlarmInterpretation,
   threePhaseMotorFailureDiagnosis,
   boreholePumpNoWaterDelivery,
+  solarSystemUnderperforming,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -171,6 +173,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Dry-run protection and control',
     ],
     articleSlugs: ['borehole-pump-no-water-delivery'],
+  },
+  {
+    slug: 'solar',
+    title: 'Solar PV Diagnosis & Repair',
+    intro:
+      'Solar array and system faults — yield, strings, shading, soiling and the difference between a real fault and an expectation set against nameplate. Written to establish what output SHOULD be for the conditions first, because without that reference "underperforming" is an opinion rather than a measurement.',
+    scope: [
+      'Underperformance and yield loss',
+      'Soiling, shading and vegetation',
+      'String faults, fuses and connectors',
+      'Module degradation and bypass diodes',
+      'Inverter clipping and export limitation',
+      'DC bus and isolation faults',
+    ],
+    articleSlugs: ['solar-system-underperforming'],
   },
   {
     slug: 'controllers',
