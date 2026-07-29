@@ -21,6 +21,7 @@ import { motherboardPowerRailDiagnosis } from './articles/motherboard-power-rail
 import { atsNotChangingOver } from './articles/ats-not-changing-over';
 import { generatorBatteryNotCharging } from './articles/generator-battery-not-charging';
 import { upsInverterFaultDiagnosis } from './articles/ups-inverter-fault-diagnosis';
+import { controllerAlarmInterpretation } from './articles/controller-alarm-interpretation';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -47,6 +48,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   atsNotChangingOver,
   generatorBatteryNotCharging,
   upsInverterFaultDiagnosis,
+  controllerAlarmInterpretation,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -142,7 +144,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Fault interpretation for generator controllers including DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens, Enko and Volvo Penta VODIA.',
     scope: ['Alarm interpretation', 'Reset pathways', 'Communication faults', 'Configuration and timers', 'Sensing faults'],
-    articleSlugs: [],
+    articleSlugs: ['controller-alarm-interpretation'],
   },
 ];
 

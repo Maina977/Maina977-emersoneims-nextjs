@@ -662,6 +662,7 @@ export function middleware(request: NextRequest) {
         'ats-not-changing-over': 'ats-changeover',
         'generator-battery-not-charging': 'generators',
         'ups-inverter-fault-diagnosis': 'ups',
+        'controller-alarm-interpretation': 'controllers',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',

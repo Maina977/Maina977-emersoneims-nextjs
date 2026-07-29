@@ -340,7 +340,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     'Test the shutdown function periodically — a protection that has never been proven is an assumption',
   ],
 
-  relatedSlugs: ['generator-cranks-but-will-not-start', 'generator-overheating', 'generator-starts-then-stops'],
+  relatedSlugs: ['controller-alarm-interpretation', 'generator-cranks-but-will-not-start', 'generator-overheating', 'generator-starts-then-stops'],
 
   faq: [
     {
