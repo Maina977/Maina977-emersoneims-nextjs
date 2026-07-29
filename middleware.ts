@@ -646,7 +646,7 @@ export function middleware(request: NextRequest) {
     // '/repair-centre/' is the index with a trailing slash — left to the normal
     // trailing-slash redirect, not 404'd here.
     if (pathname.startsWith('/repair-centre/') && pathname !== '/repair-centre/') {
-      const OK_REPAIR_HUBS = new Set(['generators', 'inverters', 'ups', 'controllers', 'pcb-motherboards', 'ats-changeover', 'motors', 'pumps', 'solar', 'industrial-electronics', 'safety', 'fuel-systems']);
+      const OK_REPAIR_HUBS = new Set(['generators', 'inverters', 'ups', 'controllers', 'pcb-motherboards', 'ats-changeover', 'motors', 'pumps', 'solar', 'industrial-electronics', 'safety', 'fuel-systems', 'testing-tools']);
       const OK_REPAIR_ARTICLES: Record<string, string> = {
         'generator-cranks-but-will-not-start': 'generators',
         'generator-starts-then-stops': 'generators',
@@ -669,6 +669,7 @@ export function middleware(request: NextRequest) {
         'vfd-drive-fault-diagnosis': 'industrial-electronics',
         'safe-isolation-and-proving-dead': 'safety',
         'generator-excessive-smoke': 'fuel-systems',
+        'test-instruments-and-measurement-errors': 'testing-tools',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',

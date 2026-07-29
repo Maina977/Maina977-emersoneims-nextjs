@@ -334,7 +334,7 @@ export const safeIsolationAndProvingDead: RepairArticle = {
     'Make it normal for anyone to stop work when the isolation is not proven',
   ],
 
-  relatedSlugs: ['vfd-drive-fault-diagnosis', 'ups-bypass-fault', 'solar-system-underperforming'],
+  relatedSlugs: ['solar-system-underperforming', 'test-instruments-and-measurement-errors', 'ups-bypass-fault', 'vfd-drive-fault-diagnosis'],
 
   faq: [
     {

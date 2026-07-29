@@ -28,6 +28,7 @@ import { solarSystemUnderperforming } from './articles/solar-system-underperform
 import { vfdDriveFaultDiagnosis } from './articles/vfd-drive-fault-diagnosis';
 import { safeIsolationAndProvingDead } from './articles/safe-isolation-and-proving-dead';
 import { generatorExcessiveSmoke } from './articles/generator-excessive-smoke';
+import { testInstrumentsAndMeasurementErrors } from './articles/test-instruments-and-measurement-errors';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -61,6 +62,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   vfdDriveFaultDiagnosis,
   safeIsolationAndProvingDead,
   generatorExcessiveSmoke,
+  testInstrumentsAndMeasurementErrors,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -239,6 +241,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Altitude and ambient derating',
     ],
     articleSlugs: ['generator-excessive-smoke'],
+  },
+  {
+    slug: 'testing-tools',
+    title: 'Test Instruments & Measurement',
+    intro:
+      'Choosing instruments, using them safely, and knowing where each one misleads. Measurement category is a safety rating rather than an accuracy one, and the two commonest field errors — averaging meters on distorted waveforms, and ghost voltages on high-impedance inputs — both produce confident, entirely believable wrong numbers.',
+    scope: [
+      'Measurement categories and instrument selection',
+      'True-RMS versus averaging on distorted waveforms',
+      'Ghost voltages and low-impedance mode',
+      'AC versus DC clamp measurement',
+      'Insulation testing and protecting electronics',
+      'Interpreting readings in context',
+    ],
+    articleSlugs: ['test-instruments-and-measurement-errors'],
   },
   {
     slug: 'controllers',

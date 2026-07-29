@@ -379,7 +379,7 @@ export const threePhaseMotorFailureDiagnosis: RepairArticle = {
     'Specify inverter-rated motors where a variable-speed drive is used, particularly with long cable runs',
   ],
 
-  relatedSlugs: ['borehole-pump-no-water-delivery', 'pcb-short-circuit-diagnosis', 'vfd-drive-fault-diagnosis'],
+  relatedSlugs: ['borehole-pump-no-water-delivery', 'pcb-short-circuit-diagnosis', 'test-instruments-and-measurement-errors', 'vfd-drive-fault-diagnosis'],
 
   faq: [
     {
