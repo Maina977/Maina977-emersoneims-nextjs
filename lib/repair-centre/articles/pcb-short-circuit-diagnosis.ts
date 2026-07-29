@@ -348,7 +348,7 @@ export const pcbShortCircuitDiagnosis: RepairArticle = {
     'Keep equipment enclosures closed; insect ingress is a real and frequent cause in plant left standing',
   ],
 
-  relatedSlugs: ['inverter-igbt-testing-and-failure', 'inverter-mosfet-failure-diagnosis', 'motherboard-power-rail-diagnosis'],
+  relatedSlugs: ['inverter-igbt-testing-and-failure', 'inverter-mosfet-failure-diagnosis', 'motherboard-power-rail-diagnosis', 'three-phase-motor-failure-diagnosis'],
 
   faq: [
     {

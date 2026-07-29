@@ -22,6 +22,7 @@ import { atsNotChangingOver } from './articles/ats-not-changing-over';
 import { generatorBatteryNotCharging } from './articles/generator-battery-not-charging';
 import { upsInverterFaultDiagnosis } from './articles/ups-inverter-fault-diagnosis';
 import { controllerAlarmInterpretation } from './articles/controller-alarm-interpretation';
+import { threePhaseMotorFailureDiagnosis } from './articles/three-phase-motor-failure-diagnosis';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -49,6 +50,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorBatteryNotCharging,
   upsInverterFaultDiagnosis,
   controllerAlarmInterpretation,
+  threePhaseMotorFailureDiagnosis,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -137,6 +139,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Position indication and auxiliary contacts',
     ],
     articleSlugs: ['ats-not-changing-over'],
+  },
+  {
+    slug: 'motors',
+    title: 'Motor Diagnosis & Rewinding',
+    intro:
+      'Three-phase motor faults — windings, bearings and the supply problems that destroy otherwise healthy machines. Most burnt-out motors were killed by something outside them, so these guides diagnose the installation as well as the machine, and set out honestly when a rewind is worth it and when it is not.',
+    scope: [
+      'Winding failure and insulation testing',
+      'Single-phasing and supply faults',
+      'Bearing failure and mechanical causes',
+      'Overload protection and duty',
+      'Variable-speed drive interaction',
+      'Repair, rewind or replace',
+    ],
+    articleSlugs: ['three-phase-motor-failure-diagnosis'],
   },
   {
     slug: 'controllers',

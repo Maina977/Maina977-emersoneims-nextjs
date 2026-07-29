@@ -646,7 +646,7 @@ export function middleware(request: NextRequest) {
     // '/repair-centre/' is the index with a trailing slash — left to the normal
     // trailing-slash redirect, not 404'd here.
     if (pathname.startsWith('/repair-centre/') && pathname !== '/repair-centre/') {
-      const OK_REPAIR_HUBS = new Set(['generators', 'inverters', 'ups', 'controllers', 'pcb-motherboards', 'ats-changeover']);
+      const OK_REPAIR_HUBS = new Set(['generators', 'inverters', 'ups', 'controllers', 'pcb-motherboards', 'ats-changeover', 'motors']);
       const OK_REPAIR_ARTICLES: Record<string, string> = {
         'generator-cranks-but-will-not-start': 'generators',
         'generator-starts-then-stops': 'generators',
@@ -663,6 +663,7 @@ export function middleware(request: NextRequest) {
         'generator-battery-not-charging': 'generators',
         'ups-inverter-fault-diagnosis': 'ups',
         'controller-alarm-interpretation': 'controllers',
+        'three-phase-motor-failure-diagnosis': 'motors',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',
