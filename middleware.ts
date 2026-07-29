@@ -733,6 +733,71 @@ export function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // 0h. HARD 404 for unknown /services/[service] and /blog/[slug].
+  //
+  //     Verified live 2026-07-27: /services/__no_such_service__ and
+  //     /blog/__no_such_post__ both answered HTTP 200 with a "Not Found" body.
+  //     Neither route sets dynamicParams and both rely on notFound(), which does
+  //     not produce a 404 STATUS on Next 16 + Vercel once a dynamic route has
+  //     matched — the same quirk behind guards 0a-0g. /services is the
+  //     commercial core, so this was live SEO damage on the most valuable pages.
+  //
+  //     Each set below is the UNION of two things, and both parts matter:
+  //       - the dynamic slugs, extracted by executing the same modules the pages
+  //         import (getAllServiceSlugs, BLOG_ARTICLES) — these match the sitemap
+  //         exactly, 10 services and 22 posts
+  //       - the STATIC route folders under app/services and app/blog, which are
+  //         real pages that middleware sees before routing and would otherwise
+  //         be 404'd here even though they render perfectly
+  //
+  //     Cross-checked before deploy: every /services/* redirect destination in
+  //     next.config is present in OK_SERVICES, so no redirect lands on a 404.
+  //     Regenerate by execution rather than editing by hand.
+  {
+    const sm = pathname.match(/^\/(services|blog)\/([^/]+)\/?$/);
+    if (sm) {
+      const OK_SERVICES = new Set([
+        // dynamic, from getAllServiceSlugs()
+        'ac-installation','ats-changeover','borehole-pumps','cummins-generators','distribution-boards',
+        'generator-repairs','hospital-incinerators','motor-rewinding','solar-energy','ups-systems',
+        // static route folders under app/services
+        'air-conditioning','borehole-drilling','solar-inverters',
+      ]);
+      const OK_BLOG = new Set([
+        // dynamic, from BLOG_ARTICLES
+        'borehole-pump-selection-kenya','diesel-generator-best-practices','diy-generator-maintenance-home',
+        'earthing-lightning-protection-kenya','generator-altitude-derating-kenya','generator-buying-guide-kenya',
+        'generator-cost-saving-strategies','generator-fire-safety-prevention','generator-maintenance-tips-kenya',
+        'generator-procurement-kenya','generator-roi-analysis-kenya','generator-safety-tips-kenya',
+        'generator-servicing-cost-kenya','hv-intake-upgrade-kenya','hvac-cooling-load-sizing-kenya',
+        'power-factor-correction-kenya','solar-battery-chemistries-kenya','solar-energy-solutions-kenya',
+        'solar-installation-tips-kenya','true-cost-per-kwh-kenya','ups-sizing-runtime-kenya',
+        'weather-impact-generators-kenya-counties',
+        // static route folders under app/blog
+        'borehole-drilling-avoid-dry-holes','electrical-load-management','emergency-response-plan',
+        'generator-fuel-efficiency-reduce-costs','generator-roi','generator-wont-start-5-fixes',
+        'grid-reliability-africa','high-voltage-systems-industrial-power','hvac-sizing-kenya-climate',
+        'incinerator-systems-waste-management','maintenance-contracts-roi','motor-rewinding-repair-vs-replace',
+        'solar-generator-hybrid-integration','solar-roi-kenya-real-numbers','three-phase-power-explained',
+        'ups-vs-generator-which-is-right','water-pump-maintenance-5-checks',
+      ]);
+      const kind = sm[1];
+      const slug = decodeURIComponent(sm[2]).toLowerCase();
+      const ok = kind === 'services' ? OK_SERVICES.has(slug) : OK_BLOG.has(slug);
+      if (!ok) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': `${kind}-404`,
+          },
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // 0c. HARD 404 for the root-level /[country]/[city] catch-all.
   //
   //     app/[country]/[city] matches ANY two-segment URL that no more specific
