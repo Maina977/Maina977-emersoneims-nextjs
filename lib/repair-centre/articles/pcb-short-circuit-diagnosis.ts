@@ -11,7 +11,7 @@ export const pcbShortCircuitDiagnosis: RepairArticle = {
     diagnosisComplexity: 'High. Finding that a rail is shorted takes minutes; finding which of fifty components is doing it is the actual work.',
     competence: 'specialist-engineer',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Board supply per design; all work with the board isolated and the bus proven discharged',
@@ -348,7 +348,7 @@ export const pcbShortCircuitDiagnosis: RepairArticle = {
     'Keep equipment enclosures closed; insect ingress is a real and frequent cause in plant left standing',
   ],
 
-  relatedSlugs: ['inverter-mosfet-failure-diagnosis', 'inverter-igbt-testing-and-failure'],
+  relatedSlugs: ['inverter-igbt-testing-and-failure', 'inverter-mosfet-failure-diagnosis', 'motherboard-power-rail-diagnosis'],
 
   faq: [
     {

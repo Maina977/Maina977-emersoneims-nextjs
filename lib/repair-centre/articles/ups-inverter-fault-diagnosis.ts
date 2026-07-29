@@ -11,7 +11,7 @@ export const upsInverterFaultDiagnosis: RepairArticle = {
     diagnosisComplexity: 'Moderate. The important early distinction is whether the inverter failed or was overwhelmed, because those lead to entirely different repairs.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Output 240 V / 415 V 50 Hz nominal; DC bus per UPS design',

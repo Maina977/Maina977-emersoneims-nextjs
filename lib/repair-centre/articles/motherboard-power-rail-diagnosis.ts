@@ -11,7 +11,7 @@ export const motherboardPowerRailDiagnosis: RepairArticle = {
     diagnosisComplexity: 'High. A board with all rails present and a processor held in reset looks identical to a board with no supply at all.',
     competence: 'specialist-engineer',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Board supply per design; all work with the board isolated and the bus proven discharged',

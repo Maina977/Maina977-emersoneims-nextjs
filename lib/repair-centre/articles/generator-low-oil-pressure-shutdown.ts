@@ -12,7 +12,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     diagnosisComplexity: 'Straightforward to confirm, potentially serious to resolve. The critical decision is made in one step: is the reading real?',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '12 V or 24 V DC control',
@@ -340,7 +340,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     'Test the shutdown function periodically — a protection that has never been proven is an assumption',
   ],
 
-  relatedSlugs: ['generator-starts-then-stops', 'generator-cranks-but-will-not-start'],
+  relatedSlugs: ['generator-cranks-but-will-not-start', 'generator-overheating', 'generator-starts-then-stops'],
 
   faq: [
     {

@@ -81,7 +81,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
             ['Electrical system', h.electricalSystem],
             ['Safety classification', h.safetyClass.replace(/-/g, ' ')],
             ['Author', h.author],
-            ['Technical reviewer', h.technicalReviewer],
+            ['Technical review', h.technicalReviewer],
             ['Last reviewed', h.lastReviewed],
           ].map(([k, v]) => (
             <div key={k as string}>
@@ -90,6 +90,29 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
             </div>
           ))}
         </dl>
+
+        {/*
+          Review-status disclosure. Every article currently awaits independent
+          named-engineer sign-off, and the honest thing is to say so plainly
+          rather than leave a field that reads as an abandoned TODO — or, worse,
+          invent a reviewer. Stating exactly what has and has not been verified
+          is what makes the rest of the guide trustworthy.
+        */}
+        {/pending|awaiting/i.test(h.technicalReviewer) && (
+          <div className="mt-6 rounded-xl border border-slate-700 bg-slate-900/60 p-4 text-sm">
+            <p className="text-slate-300 font-semibold mb-1">Review status — read this before relying on the guide</p>
+            <p className="text-slate-400 leading-relaxed">
+              This guide was written and internally checked by EmersonEIMS Engineering. Independent
+              named-engineer sign-off is still outstanding, and we would rather tell you that than imply a
+              review that has not happened. What it does contain is diagnostic method, ranked causes and
+              safety requirements. What it deliberately does <strong className="text-slate-300">not</strong> contain is
+              equipment-specific numbers — test voltages, resistance and component values, torque figures,
+              acceptance windows and pin assignments are referred to the manufacturer&apos;s documentation for
+              your exact model rather than stated here, because a plausible-looking figure for the wrong
+              machine is more dangerous than no figure at all.
+            </p>
+          </div>
+        )}
       </header>
 
       {/* Direct technical answer */}

@@ -15,7 +15,7 @@ export const generatorCranksNoStart: RepairArticle = {
     diagnosisComplexity: 'Moderate. Most cases resolve at the fuel or air stage; a minority require compression testing or ECU diagnostics.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '12 V or 24 V DC starting; 240 V / 415 V 50 Hz output',
@@ -378,7 +378,7 @@ export const generatorCranksNoStart: RepairArticle = {
     'Record cranking behaviour at each service so a slow decline is visible before it becomes a no-start',
   ],
 
-  relatedSlugs: ['generator-starts-then-stops', 'generator-low-oil-pressure-shutdown'],
+  relatedSlugs: ['ats-not-changing-over', 'generator-battery-not-charging', 'generator-low-oil-pressure-shutdown', 'generator-starts-then-stops', 'starter-motor-clicks-but-will-not-crank'],
 
   faq: [
     {

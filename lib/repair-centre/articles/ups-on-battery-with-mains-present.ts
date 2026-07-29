@@ -11,7 +11,7 @@ export const upsOnBatteryWithMainsPresent: RepairArticle = {
     diagnosisComplexity: 'Moderate, but time-critical. The UPS is consuming a finite reserve while you diagnose, so the first job is to establish how long you have.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Mains or generator input 240 V / 415 V 50 Hz nominal; input acceptance window is configurable per unit',
@@ -365,7 +365,7 @@ export const upsOnBatteryWithMainsPresent: RepairArticle = {
     'Keep autonomy honest with real capacity testing, because this fault consumes whatever reserve genuinely exists — see the battery charging guide',
   ],
 
-  relatedSlugs: ['ups-not-charging-batteries'],
+  relatedSlugs: ['ups-bypass-fault', 'ups-inverter-fault-diagnosis', 'ups-not-charging-batteries'],
 
   faq: [
     {

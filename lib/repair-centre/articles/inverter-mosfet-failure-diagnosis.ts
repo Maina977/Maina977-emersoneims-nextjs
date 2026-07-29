@@ -11,7 +11,7 @@ export const inverterMosfetFailureDiagnosis: RepairArticle = {
     diagnosisComplexity: 'High. The failed device is usually easy to find; the reason it failed is not, and replacing it without finding that reason destroys the new one.',
     competence: 'specialist-engineer',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Battery DC bus per system design; board-level work only with the bus proven discharged',
@@ -336,7 +336,7 @@ export const inverterMosfetFailureDiagnosis: RepairArticle = {
     'Where a board has been repaired before, check the gate drive specifically — an incomplete earlier repair is a common cause',
   ],
 
-  relatedSlugs: ['inverter-switches-off-under-load', 'inverter-will-not-switch-on'],
+  relatedSlugs: ['inverter-igbt-testing-and-failure', 'inverter-switches-off-under-load', 'inverter-will-not-switch-on', 'pcb-short-circuit-diagnosis'],
 
   faq: [
     {

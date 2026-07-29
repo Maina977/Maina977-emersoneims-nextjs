@@ -11,7 +11,7 @@ export const inverterSwitchesOffUnderLoad: RepairArticle = {
     diagnosisComplexity: 'Straightforward if measured correctly. Nearly all cases are resolved by watching battery voltage at the terminals during the moment of load application.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '12 V / 24 V / 48 V DC battery side; 240 V 50 Hz AC output',
@@ -364,7 +364,7 @@ export const inverterSwitchesOffUnderLoad: RepairArticle = {
     'Size the bank for the load profile and surge demand, not only for the daily energy total',
   ],
 
-  relatedSlugs: [],
+  relatedSlugs: ['inverter-igbt-testing-and-failure', 'inverter-mosfet-failure-diagnosis', 'inverter-not-charging-batteries', 'inverter-will-not-switch-on', 'solar-inverter-dc-bus-fault'],
 
   faq: [
     {

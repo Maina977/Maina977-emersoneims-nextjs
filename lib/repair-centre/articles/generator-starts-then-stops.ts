@@ -11,7 +11,7 @@ export const generatorStartsThenStops: RepairArticle = {
     diagnosisComplexity: 'Moderate. The timing of the stop is the single most useful clue and narrows the field before any tool is picked up.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '12 V or 24 V DC control; 240 V / 415 V 50 Hz output',
@@ -370,7 +370,7 @@ export const generatorStartsThenStops: RepairArticle = {
     'Log run time and key parameters at each test, so a shortening run time is caught as a trend',
   ],
 
-  relatedSlugs: ['generator-cranks-but-will-not-start', 'generator-low-oil-pressure-shutdown'],
+  relatedSlugs: ['generator-cranks-but-will-not-start', 'generator-low-oil-pressure-shutdown', 'generator-overheating', 'generator-produces-no-voltage-output', 'generator-unstable-voltage', 'starter-motor-clicks-but-will-not-crank'],
 
   faq: [
     {

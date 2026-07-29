@@ -11,7 +11,7 @@ export const starterMotorClicksButWillNotCrank: RepairArticle = {
     diagnosisComplexity: 'Low. One measurement — voltage drop while cranking — resolves the great majority of these.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Starting system DC per set design; set output 240 V / 415 V 50 Hz nominal',
@@ -345,7 +345,7 @@ export const starterMotorClicksButWillNotCrank: RepairArticle = {
     'Record cranking voltage at each service so gradual deterioration is visible before a failure to start',
   ],
 
-  relatedSlugs: ['generator-cranks-but-will-not-start', 'generator-starts-then-stops'],
+  relatedSlugs: ['generator-battery-not-charging', 'generator-cranks-but-will-not-start', 'generator-starts-then-stops'],
 
   faq: [
     {

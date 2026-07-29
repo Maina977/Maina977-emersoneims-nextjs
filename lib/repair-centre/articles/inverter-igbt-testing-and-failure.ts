@@ -11,7 +11,7 @@ export const inverterIgbtTestingAndFailure: RepairArticle = {
     diagnosisComplexity: 'High. Module construction hides internal parallel dies, so a partially degraded module can pass a casual check and fail under load.',
     competence: 'specialist-engineer',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'DC bus per design; board-level work only with the bus proven discharged',
@@ -338,7 +338,7 @@ export const inverterIgbtTestingAndFailure: RepairArticle = {
     'Investigate intermittent trips under load immediately — they are frequently the early warning of a degrading module',
   ],
 
-  relatedSlugs: ['inverter-mosfet-failure-diagnosis', 'inverter-switches-off-under-load'],
+  relatedSlugs: ['inverter-mosfet-failure-diagnosis', 'inverter-switches-off-under-load', 'pcb-short-circuit-diagnosis'],
 
   faq: [
     {

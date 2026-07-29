@@ -11,7 +11,7 @@ export const upsBypassFault: RepairArticle = {
     diagnosisComplexity: 'Moderate, but the consequence is severe: a bypass fault removes the protection that catches an inverter failure.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Bypass supply 240 V / 415 V 50 Hz nominal; DC bus per UPS design',
@@ -343,7 +343,7 @@ export const upsBypassFault: RepairArticle = {
     'Thermally survey bypass terminations annually under load',
   ],
 
-  relatedSlugs: ['ups-on-battery-with-mains-present', 'ups-not-charging-batteries'],
+  relatedSlugs: ['ats-not-changing-over', 'ups-inverter-fault-diagnosis', 'ups-not-charging-batteries', 'ups-on-battery-with-mains-present'],
 
   faq: [
     {

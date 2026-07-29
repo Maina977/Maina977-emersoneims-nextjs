@@ -11,7 +11,7 @@ export const generatorBatteryNotCharging: RepairArticle = {
     diagnosisComplexity: 'Low to moderate. The key is establishing which charging source is supposed to be doing the work, because standby sets rely on a different one from running sets.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Starting system DC per set design; charger supply 240 V 50 Hz nominal',

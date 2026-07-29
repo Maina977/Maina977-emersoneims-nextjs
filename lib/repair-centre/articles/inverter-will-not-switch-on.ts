@@ -11,7 +11,7 @@ export const inverterWillNotSwitchOn: RepairArticle = {
     diagnosisComplexity: 'Low to moderate. Most units that appear dead are not faulty inside — they are not receiving usable DC.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Battery DC input per system design; AC output 240 V 50 Hz nominal',
@@ -347,7 +347,7 @@ export const inverterWillNotSwitchOn: RepairArticle = {
     'Verify polarity before every connection, without exception',
   ],
 
-  relatedSlugs: ['inverter-switches-off-under-load'],
+  relatedSlugs: ['inverter-mosfet-failure-diagnosis', 'inverter-not-charging-batteries', 'inverter-switches-off-under-load', 'motherboard-power-rail-diagnosis', 'solar-inverter-dc-bus-fault'],
 
   faq: [
     {

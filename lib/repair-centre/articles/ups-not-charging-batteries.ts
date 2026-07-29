@@ -11,7 +11,7 @@ export const upsNotChargingBatteries: RepairArticle = {
     diagnosisComplexity: 'Moderate. The common outcome is that the charger is working correctly and the battery can no longer accept charge, which is the opposite of the reported fault.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'EmersonEIMS Engineering — pending named reviewer sign-off',
+    technicalReviewer: 'Awaiting independent named-engineer sign-off',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Mains input 240 V / 415 V 50 Hz; DC bus voltage per UPS design',
@@ -371,7 +371,7 @@ export const upsNotChargingBatteries: RepairArticle = {
     'Fit battery monitoring on any installation where an outage would be costly — continuous evidence beats an annual snapshot',
   ],
 
-  relatedSlugs: ['ups-on-battery-with-mains-present'],
+  relatedSlugs: ['inverter-not-charging-batteries', 'ups-bypass-fault', 'ups-on-battery-with-mains-present'],
 
   faq: [
     {
