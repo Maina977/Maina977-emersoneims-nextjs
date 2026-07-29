@@ -345,7 +345,7 @@ export const controllerAlarmInterpretation: RepairArticle = {
     'Never normalise resetting alarms without investigation — it is how a real fault gets ignored until it becomes a failure',
   ],
 
-  relatedSlugs: ['generator-cranks-but-will-not-start', 'generator-low-oil-pressure-shutdown', 'generator-starts-then-stops'],
+  relatedSlugs: ['generator-cranks-but-will-not-start', 'generator-low-oil-pressure-shutdown', 'generator-starts-then-stops', 'j1939-spn-fmi-explained'],
 
   faq: [
     {

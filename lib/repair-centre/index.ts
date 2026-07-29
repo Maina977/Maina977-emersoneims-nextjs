@@ -29,6 +29,7 @@ import { vfdDriveFaultDiagnosis } from './articles/vfd-drive-fault-diagnosis';
 import { safeIsolationAndProvingDead } from './articles/safe-isolation-and-proving-dead';
 import { generatorExcessiveSmoke } from './articles/generator-excessive-smoke';
 import { testInstrumentsAndMeasurementErrors } from './articles/test-instruments-and-measurement-errors';
+import { j1939SpnFmiExplained } from './articles/j1939-spn-fmi-explained';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -63,6 +64,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   safeIsolationAndProvingDead,
   generatorExcessiveSmoke,
   testInstrumentsAndMeasurementErrors,
+  j1939SpnFmiExplained,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -256,6 +258,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Interpreting readings in context',
     ],
     articleSlugs: ['test-instruments-and-measurement-errors'],
+  },
+  {
+    slug: 'fault-codes',
+    title: 'Fault Codes & Diagnostic Messages',
+    intro:
+      'How to read the codes your equipment reports — the structure behind J1939 engine diagnostics, and why a code identifies a measurement rather than a cause. Written to make a code database usable: the aim is a technician who can interpret an unfamiliar code correctly, not one who looks up a number and stops thinking.',
+    scope: [
+      'J1939 SPN and FMI structure',
+      'Separating signal faults from real conditions',
+      'Occurrence counts and code history',
+      'Engine ECM versus controller-generated codes',
+      'Why generic code lists mislead',
+      'Recording codes before clearing them',
+    ],
+    articleSlugs: ['j1939-spn-fmi-explained'],
   },
   {
     slug: 'controllers',
