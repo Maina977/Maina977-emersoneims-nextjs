@@ -338,7 +338,7 @@ export const inverterIgbtTestingAndFailure: RepairArticle = {
     'Investigate intermittent trips under load immediately — they are frequently the early warning of a degrading module',
   ],
 
-  relatedSlugs: ['inverter-mosfet-failure-diagnosis', 'inverter-switches-off-under-load', 'pcb-short-circuit-diagnosis'],
+  relatedSlugs: ['inverter-mosfet-failure-diagnosis', 'inverter-switches-off-under-load', 'pcb-short-circuit-diagnosis', 'vfd-drive-fault-diagnosis'],
 
   faq: [
     {

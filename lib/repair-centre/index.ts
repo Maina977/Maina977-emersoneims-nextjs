@@ -25,6 +25,7 @@ import { controllerAlarmInterpretation } from './articles/controller-alarm-inter
 import { threePhaseMotorFailureDiagnosis } from './articles/three-phase-motor-failure-diagnosis';
 import { boreholePumpNoWaterDelivery } from './articles/borehole-pump-no-water-delivery';
 import { solarSystemUnderperforming } from './articles/solar-system-underperforming';
+import { vfdDriveFaultDiagnosis } from './articles/vfd-drive-fault-diagnosis';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -55,6 +56,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   threePhaseMotorFailureDiagnosis,
   boreholePumpNoWaterDelivery,
   solarSystemUnderperforming,
+  vfdDriveFaultDiagnosis,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -188,6 +190,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'DC bus and isolation faults',
     ],
     articleSlugs: ['solar-system-underperforming'],
+  },
+  {
+    slug: 'industrial-electronics',
+    title: 'Industrial Electronics & Drives',
+    intro:
+      'Variable-speed drives and industrial power electronics — reading a trip correctly, and separating a genuine drive failure from the load, ramp, cooling or installation defect that caused it. Includes the practices that reliably destroy drives and are still found on live installations.',
+    scope: [
+      'Drive trips and fault interpretation',
+      'DC bus over-voltage and regeneration',
+      'Thermal derating and cooling',
+      'Motor cable, screening and earth leakage',
+      'Installation defects that destroy drives',
+      'Capacitor ageing and storage',
+    ],
+    articleSlugs: ['vfd-drive-fault-diagnosis'],
   },
   {
     slug: 'controllers',
