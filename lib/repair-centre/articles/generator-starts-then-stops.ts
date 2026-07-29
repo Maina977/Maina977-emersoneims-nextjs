@@ -235,7 +235,7 @@ export const generatorStartsThenStops: RepairArticle = {
       where: 'Clear hose section fitted temporarily between tank and filter',
       instrument: 'Clear hose section',
       expected: 'A solid column of fuel with no bubbles for the whole run',
-      ifAbnormal: 'Bubbles confirm air ingress. The leak is frequently above the fuel level, so it draws air while running and does not weep when stopped — which is why it is so often missed.',
+      ifAbnormal: 'Bubbles confirm air ingress. The leak is frequently above the fuel level, so it draws air while running and does not weep when stopped, which is why it is so often missed.',
       next: 'Repair, bleed, re-run and re-time. Then Step 7.',
       warning: 'Bleed by the manufacturer\'s method. Do not crack high-pressure unions on a common-rail engine to bleed it.',
     },
@@ -383,7 +383,7 @@ export const generatorStartsThenStops: RepairArticle = {
     },
     {
       q: 'It runs fine with no load but stops the moment load is applied. Is that the same fault?',
-      a: 'No, it is a different class of problem. The engine is stable at no load but cannot meet the fuelling or air demand of the applied load. Work fuel supply under demand, air restriction, and governing response — and check whether a protective derate is active.',
+      a: 'No, it is a different class of problem. The engine is stable at no load but cannot meet the fuelling or air demand of the applied load. Work fuel supply under demand, air restriction, and governing response, and check whether a protective derate is active.',
     },
     {
       q: 'Bleeding it makes it run longer. Is the job finished?',

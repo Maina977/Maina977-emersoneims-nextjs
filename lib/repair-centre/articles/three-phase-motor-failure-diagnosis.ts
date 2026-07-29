@@ -19,7 +19,7 @@ export const threePhaseMotorFailureDiagnosis: RepairArticle = {
   },
 
   directAnswer:
-    'Diagnose the supply and the load before you condemn the motor, because most burnt-out motors were killed by something outside them. Single-phasing is the classic: lose one phase and the remaining two carry the load, the motor keeps turning and humming, and the windings cook within minutes — so a motor that failed while apparently running is a strong indicator that the supply, not the motor, is at fault. Measure all three phase voltages under load and compare them, then compare the three winding resistances against each other, since a healthy set is closely balanced and an imbalance points at a winding or connection fault. Insulation resistance to earth tells you whether the winding has failed to earth, but it will not find a turn-to-turn short, which is why a motor can pass an insulation test and still be dead — that requires surge comparison testing. Distinguish electrical from mechanical early: a motor that will not turn by hand, or that is noisy and hot at the drive end, is usually bearings rather than windings, and bearing failure is both cheaper to fix and a common cause of the winding failure that follows it. Take every acceptance value from the standard or the manufacturer, not from memory.',
+    'Diagnose the supply and the load before you condemn the motor, because most burnt-out motors were killed by something outside them. Single-phasing is the classic: lose one phase and the remaining two carry the load, the motor keeps turning and humming, and the windings cook within minutes, so a motor that failed while apparently running is a strong indicator that the supply, not the motor, is at fault. Measure all three phase voltages under load and compare them, then compare the three winding resistances against each other, since a healthy set is closely balanced and an imbalance points at a winding or connection fault. Insulation resistance to earth tells you whether the winding has failed to earth, but it will not find a turn-to-turn short, which is why a motor can pass an insulation test and still be dead — that requires surge comparison testing. Distinguish electrical from mechanical early: a motor that will not turn by hand, or that is noisy and hot at the drive end, is usually bearings rather than windings, and bearing failure is both cheaper to fix and a common cause of the winding failure that follows it. Take every acceptance value from the standard or the manufacturer, not from memory.',
 
   symptoms: {
     display: [
@@ -135,7 +135,7 @@ export const threePhaseMotorFailureDiagnosis: RepairArticle = {
   safety: {
     isolation: [
       'Isolate at the starter or drive, lock off, and prove dead at the motor terminals before opening the terminal box',
-      'A motor can be back-driven by its load — a fan windmilling in a duct, or a pump under head — and generate voltage at its terminals',
+      'A motor can be back-driven by its load — a fan windmilling in a duct, or a pump under head, and generate voltage at its terminals',
       'Where a variable-speed drive is fitted, its DC bus capacitors remain charged after isolation; observe and verify the discharge period',
       'Confirm the driven machine cannot start or move during the work',
     ],
@@ -192,7 +192,7 @@ export const threePhaseMotorFailureDiagnosis: RepairArticle = {
     { question: 'Are all three supply phases present and balanced at the motor terminals under load?', yes: 'Continue', no: 'That is the cause. Fix the supply before fitting anything, or the replacement fails identically.' },
     { question: 'Does the shaft turn freely by hand with the drive isolated?', yes: 'Continue — the fault is more likely electrical', no: 'Bearings or a seized load. This is mechanical, and cheaper.' },
     { question: 'Are the three winding resistances closely balanced?', yes: 'Continue', no: 'Winding fault, broken conductor or poor connection' },
-    { question: 'Is insulation resistance to earth acceptable for the machine and its temperature?', yes: 'Continue — but this does NOT clear the winding', no: 'Winding failed to earth, or moisture ingress — establish which before condemning it' },
+    { question: 'Is insulation resistance to earth acceptable for the machine and its temperature?', yes: 'Continue, but this does NOT clear the winding', no: 'Winding failed to earth, or moisture ingress — establish which before condemning it' },
     { question: 'Has a surge comparison test been done?', yes: 'Continue to the repair decision', no: 'A turn-to-turn fault is invisible to insulation testing. Passing the megger is not a clean bill of health.' },
     { question: 'Has the ROOT CAUSE been established?', yes: 'Correct it, then repair or replace', no: 'Do not fit a replacement — successive motors will fail the same way' },
   ],
@@ -264,7 +264,7 @@ export const threePhaseMotorFailureDiagnosis: RepairArticle = {
     },
     {
       step: 7,
-      title: 'Test insulation resistance to earth — and understand its limits',
+      title: 'Test insulation resistance to earth, and understand its limits',
       inspect: 'Insulation resistance from windings to frame, with winding temperature recorded',
       where: 'At the motor terminals, fully isolated',
       instrument: 'Insulation resistance tester',
@@ -388,7 +388,7 @@ export const threePhaseMotorFailureDiagnosis: RepairArticle = {
     },
     {
       q: 'What causes a motor to burn out while it is still running?',
-      a: 'Most often single-phasing. If one phase is lost the motor keeps turning on the remaining two, but the current in those rises sharply to maintain torque, and heating goes up with the square of the current — so the winding cooks within minutes while the machine appears to be working. That is why a motor that failed while running points at the supply first: a blown fuse, a failed contactor pole or a broken conductor.',
+      a: 'Most often single-phasing. If one phase is lost the motor keeps turning on the remaining two, but the current in those rises sharply to maintain torque, and heating goes up with the square of the current, so the winding cooks within minutes while the machine appears to be working. That is why a motor that failed while running points at the supply first: a blown fuse, a failed contactor pole or a broken conductor.',
     },
     {
       q: 'Should I rewind it or replace it?',

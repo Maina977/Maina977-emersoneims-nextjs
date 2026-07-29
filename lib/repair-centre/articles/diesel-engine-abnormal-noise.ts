@@ -19,7 +19,7 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
   },
 
   directAnswer:
-    'The first decision is not what the noise is but whether to keep running, and getting that wrong is far more expensive than any misdiagnosis. A deep, heavy knock that rises with load and speed — particularly one that appeared suddenly — should be treated as a bearing or bottom-end problem and the set stopped immediately, because a failing bearing that is allowed to run destroys the crankshaft and frequently the block, turning a repairable engine into scrap. The same applies to any metallic noise accompanied by falling oil pressure. Beyond that, the useful distinctions are these: injector or combustion knock is sharper and more rhythmic, changes with fuelling and often with temperature, and typically indicates injection timing or an injector rather than mechanical damage. Valve-train noise is a lighter, faster tapping tied to camshaft speed and usually related to clearances. Turbocharger noise is a whine or siren rather than a knock, and a change in its pitch or the appearance of a rattle warrants stopping before debris passes downstream. Note when the noise appears — cold or hot, on load or off, at what speed — because the pattern narrows it considerably before anything is dismantled.',
+    'The first decision is not what the noise is but whether to keep running, and getting that wrong is far more expensive than any misdiagnosis. A deep, heavy knock that rises with load and speed — particularly one that appeared suddenly — should be treated as a bearing or bottom-end problem and the set stopped immediately, because a failing bearing that is allowed to run destroys the crankshaft and frequently the block, turning a repairable engine into scrap. The same applies to any metallic noise accompanied by falling oil pressure. Beyond that, the useful distinctions are these: injector or combustion knock is sharper and more rhythmic, changes with fuelling and often with temperature, and typically indicates injection timing or an injector rather than mechanical damage. Valve-train noise is a lighter, faster tapping tied to camshaft speed and usually related to clearances. Turbocharger noise is a whine or siren rather than a knock, and a change in its pitch or the appearance of a rattle warrants stopping before debris passes downstream. Note when the noise appears — cold or hot, on load or off, at what speed, because the pattern narrows it considerably before anything is dismantled.',
 
   symptoms: {
     display: [
@@ -67,9 +67,9 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
 
   whatItMeans: {
     plain:
-      'Engines make characteristic noises, and a new one means something has changed. The important judgement is not identifying it precisely but deciding whether it is safe to keep running. A deep knock that gets worse with load usually means a bearing is failing, and every further minute of running makes the repair bigger and more expensive. Lighter, sharper noises are often fuel or valve related and less urgent — but they still need investigating rather than living with.',
+      'Engines make characteristic noises, and a new one means something has changed. The important judgement is not identifying it precisely but deciding whether it is safe to keep running. A deep knock that gets worse with load usually means a bearing is failing, and every further minute of running makes the repair bigger and more expensive. Lighter, sharper noises are often fuel or valve related and less urgent, but they still need investigating rather than living with.',
     technical:
-      'Mechanical noise in a diesel engine originates from clearances, combustion and rotating components, and the useful diagnostic dimensions are pitch, rhythm, and how the noise responds to load, speed and temperature. Bottom-end knock arises when bearing clearance grows enough for the journal to be driven against the shell under firing load, so it is deep, load-dependent, and worsens as the clearance and consequent oil-film failure progress. It is the most urgent because a failing bearing rapidly scores the journal and can, once the shell material has gone, damage the crankshaft and block beyond economic repair — which is why running on is what determines whether the engine is repairable. Combustion or injector knock is produced by an abnormal rate of pressure rise, from injection timing, an injector delivering poorly or fuel of the wrong characteristic, and it is therefore sharper, tied to fuelling and often temperature-dependent. Valve-train noise occurs at camshaft speed, so it is faster and lighter, and generally reflects clearances or wear rather than imminent failure. Turbocharger noise is aerodynamic rather than impulsive; a change in pitch, or a rattle, indicates bearing wear or contact and warrants shutdown before debris is carried into the engine. Two contextual findings raise the urgency of any noise: falling oil pressure, because it indicates the lubrication that protects every bearing is compromised, and oil contaminated by fuel or coolant, because both destroy the load-carrying capacity of the oil film and will cause bearing failure regardless of the original noise.',
+      'Mechanical noise in a diesel engine originates from clearances, combustion and rotating components, and the useful diagnostic dimensions are pitch, rhythm, and how the noise responds to load, speed and temperature. Bottom-end knock arises when bearing clearance grows enough for the journal to be driven against the shell under firing load, so it is deep, load-dependent, and worsens as the clearance and consequent oil-film failure progress. It is the most urgent because a failing bearing rapidly scores the journal and can, once the shell material has gone, damage the crankshaft and block beyond economic repair, which is why running on is what determines whether the engine is repairable. Combustion or injector knock is produced by an abnormal rate of pressure rise, from injection timing, an injector delivering poorly or fuel of the wrong characteristic, and it is therefore sharper, tied to fuelling and often temperature-dependent. Valve-train noise occurs at camshaft speed, so it is faster and lighter, and generally reflects clearances or wear rather than imminent failure. Turbocharger noise is aerodynamic rather than impulsive; a change in pitch, or a rattle, indicates bearing wear or contact and warrants shutdown before debris is carried into the engine. Two contextual findings raise the urgency of any noise: falling oil pressure, because it indicates the lubrication that protects every bearing is compromised, and oil contaminated by fuel or coolant, because both destroy the load-carrying capacity of the oil film and will cause bearing failure regardless of the original noise.',
   },
 
   causes: {
@@ -141,7 +141,7 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
       'Tag the changeover control so auto operation is not restored during the work',
     ],
     ppe: [
-      'Hearing protection whenever the set runs — and note that listening to a noisy engine is exactly when people neglect it',
+      'Hearing protection whenever the set runs, and note that listening to a noisy engine is exactly when people neglect it',
       'Eye protection and gloves',
       'Heat-resistant gloves near a recently run engine',
       'Close-fitting clothing near rotating parts',
@@ -361,7 +361,7 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
   faq: [
     {
       q: 'The engine has a knock but still runs. Can we finish the shift?',
-      a: 'If it is a deep knock that rises with load, no — and this is the single most expensive judgement in the whole guide. A failing bearing scores the journal within minutes, and once the shell material has gone it damages the crankshaft and often the block, turning a repairable engine into scrap. Stopping now may cost you a shift; running on can cost you the engine.',
+      a: 'If it is a deep knock that rises with load, no, and this is the single most expensive judgement in the whole guide. A failing bearing scores the journal within minutes, and once the shell material has gone it damages the crankshaft and often the block, turning a repairable engine into scrap. Stopping now may cost you a shift; running on can cost you the engine.',
     },
     {
       q: 'How do I tell a bearing knock from injector knock?',
@@ -373,7 +373,7 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
     },
     {
       q: 'The noise is only there when cold and goes once warm. Is that acceptable?',
-      a: 'It is less urgent than a load-dependent knock, and is often piston-related as clearances close up with expansion — but it should still be identified rather than lived with, because it indicates wear that will progress. Confirm oil pressure is normal and there is no metallic content in the filter, then investigate properly rather than accepting it as a characteristic of the engine.',
+      a: 'It is less urgent than a load-dependent knock, and is often piston-related as clearances close up with expansion, but it should still be identified rather than lived with, because it indicates wear that will progress. Confirm oil pressure is normal and there is no metallic content in the filter, then investigate properly rather than accepting it as a characteristic of the engine.',
     },
   ],
 

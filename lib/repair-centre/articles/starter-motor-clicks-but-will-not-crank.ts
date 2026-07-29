@@ -19,7 +19,7 @@ export const starterMotorClicksButWillNotCrank: RepairArticle = {
   },
 
   directAnswer:
-    'A click without cranking means the solenoid is receiving enough current to operate but the motor is not receiving enough to turn the engine — so the fault is almost always in the ability to deliver high current, not in the control circuit. Distinguish the sound first: a single solid click is the solenoid pulling in and holding while the motor fails to turn, whereas rapid repeated clicking is the solenoid pulling in, collapsing the supply, dropping out and repeating, which points strongly at battery capacity or a high-resistance connection. The measurement that settles it is voltage drop taken while cranking, not at rest, because a battery and its cabling look perfect until current is drawn. Measure across the battery terminals, then across each joint in turn — battery post to clamp, main cable to starter, and critically the earth return through the engine and chassis, which is the connection most often overlooked and one of the most common causes. Only when the supply is proven able to deliver current under load should the starter or solenoid itself be suspected, and only then is it worth considering a seized or hydraulically locked engine.',
+    'A click without cranking means the solenoid is receiving enough current to operate but the motor is not receiving enough to turn the engine, so the fault is almost always in the ability to deliver high current, not in the control circuit. Distinguish the sound first: a single solid click is the solenoid pulling in and holding while the motor fails to turn, whereas rapid repeated clicking is the solenoid pulling in, collapsing the supply, dropping out and repeating, which points strongly at battery capacity or a high-resistance connection. The measurement that settles it is voltage drop taken while cranking, not at rest, because a battery and its cabling look perfect until current is drawn. Measure across the battery terminals, then across each joint in turn — battery post to clamp, main cable to starter, and critically the earth return through the engine and chassis, which is the connection most often overlooked and one of the most common causes. Only when the supply is proven able to deliver current under load should the starter or solenoid itself be suspected, and only then is it worth considering a seized or hydraulically locked engine.',
 
   symptoms: {
     display: [
@@ -64,7 +64,7 @@ export const starterMotorClicksButWillNotCrank: RepairArticle = {
     plain:
       'The click is the solenoid working. What is missing is the very large current the motor needs to actually turn the engine. That current is usually being lost in a flat or worn battery, a corroded connection, or a poor earth return — not in the starter itself. Testing while cranking, rather than with everything at rest, is what shows where it is being lost.',
     technical:
-      'A starter motor draws a very high current for a short period, and the starting circuit is therefore intolerant of small resistances that are irrelevant elsewhere. The solenoid performs two functions: it engages the pinion with the ring gear, and it closes heavy contacts connecting the battery to the motor. It requires comparatively little current to operate, so it will click reliably from a battery or a circuit that cannot supply the motor at all — which is precisely why a click without cranking indicates a current-delivery problem rather than a control problem. Because power lost in a joint is proportional to its resistance and to the square of the current, a joint of negligible resistance at rest becomes a significant voltage drop at cranking current, which is why measurements taken at rest are misleading and only a drop measured while cranking is diagnostic. The earth return is a frequent culprit and a frequent oversight, since it commonly runs through the engine block, mounting feet and chassis, any of which may be corroded, painted or relying on a degraded strap. Battery condition must be assessed by its ability to deliver current rather than by terminal voltage, because an aged battery holds a plausible resting voltage and collapses immediately under load. Only when the supply is proven can internal starter faults — worn brushes, a failed solenoid contact set, or a faulty pinion drive — be reasonably suspected, and mechanical causes such as a seized or hydraulically locked engine considered.',
+      'A starter motor draws a very high current for a short period, and the starting circuit is therefore intolerant of small resistances that are irrelevant elsewhere. The solenoid performs two functions: it engages the pinion with the ring gear, and it closes heavy contacts connecting the battery to the motor. It requires comparatively little current to operate, so it will click reliably from a battery or a circuit that cannot supply the motor at all, which is precisely why a click without cranking indicates a current-delivery problem rather than a control problem. Because power lost in a joint is proportional to its resistance and to the square of the current, a joint of negligible resistance at rest becomes a significant voltage drop at cranking current, which is why measurements taken at rest are misleading and only a drop measured while cranking is diagnostic. The earth return is a frequent culprit and a frequent oversight, since it commonly runs through the engine block, mounting feet and chassis, any of which may be corroded, painted or relying on a degraded strap. Battery condition must be assessed by its ability to deliver current rather than by terminal voltage, because an aged battery holds a plausible resting voltage and collapses immediately under load. Only when the supply is proven can internal starter faults — worn brushes, a failed solenoid contact set, or a faulty pinion drive — be reasonably suspected, and mechanical causes such as a seized or hydraulically locked engine considered.',
   },
 
   causes: {
@@ -197,7 +197,7 @@ export const starterMotorClicksButWillNotCrank: RepairArticle = {
       inspect: 'Resting terminal voltage, recorded for reference only',
       where: 'Battery terminals',
       instrument: 'True-RMS multimeter',
-      expected: 'A plausible resting voltage — which proves very little',
+      expected: 'A plausible resting voltage, which proves very little',
       ifAbnormal: 'A low resting voltage confirms discharge, but a normal one proves nothing at all. This is why the next step matters more than this one.',
       next: 'Step 3',
     },
@@ -219,7 +219,7 @@ export const starterMotorClicksButWillNotCrank: RepairArticle = {
       where: 'Across each connection in turn, during a crank attempt',
       instrument: 'True-RMS multimeter',
       expected: 'Negligible drop across every joint',
-      ifAbnormal: 'Any joint showing meaningful drop under cranking current is the fault. Test the earth return specifically — engine to chassis and chassis to battery — because it is the most frequently overlooked and among the most common causes.',
+      ifAbnormal: 'Any joint showing meaningful drop under cranking current is the fault. Test the earth return specifically — engine to chassis and chassis to battery, because it is the most frequently overlooked and among the most common causes.',
       next: 'Step 5',
       warning: 'Keep leads and hands clear of belts, fan and coupling while the engine is being cranked.',
     },
@@ -354,7 +354,7 @@ export const starterMotorClicksButWillNotCrank: RepairArticle = {
     },
     {
       q: 'What is the difference between one click and rapid clicking?',
-      a: 'A single solid click means the solenoid pulled in and held, but the motor did not turn — so current is reaching the solenoid but not adequately reaching the motor. Rapid clicking means the solenoid pulls in, the supply collapses under the load, it drops out, and the cycle repeats. Rapid clicking points hard at battery capacity or a high-resistance connection.',
+      a: 'A single solid click means the solenoid pulled in and held, but the motor did not turn, so current is reaching the solenoid but not adequately reaching the motor. Rapid clicking means the solenoid pulls in, the supply collapses under the load, it drops out, and the cycle repeats. Rapid clicking points hard at battery capacity or a high-resistance connection.',
     },
     {
       q: 'It cranks fine from a jump start, so should I just replace the battery?',

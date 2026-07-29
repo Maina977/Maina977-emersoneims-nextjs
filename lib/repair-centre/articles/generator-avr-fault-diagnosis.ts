@@ -64,7 +64,7 @@ export const generatorAvrFaultDiagnosis: RepairArticle = {
 
   whatItMeans: {
     plain:
-      'The Automatic Voltage Regulator keeps the generator output steady by adjusting how strongly the alternator is magnetised. When output voltage is wrong, the regulator gets the blame — but it can only regulate what it can measure and what the rest of the excitation system lets it control. Very often the regulator is doing exactly the right thing in response to a problem somewhere else, most commonly a blown sensing fuse or an engine running slow.',
+      'The Automatic Voltage Regulator keeps the generator output steady by adjusting how strongly the alternator is magnetised. When output voltage is wrong, the regulator gets the blame, but it can only regulate what it can measure and what the rest of the excitation system lets it control. Very often the regulator is doing exactly the right thing in response to a problem somewhere else, most commonly a blown sensing fuse or an engine running slow.',
     technical:
       'In a brushless machine the AVR controls current into the stationary exciter field. That produces a rotating field in the exciter armature, whose output is rectified by the rotating rectifier assembly turning with the shaft, and the resulting DC feeds the main rotor field, which induces voltage in the main stator. The regulator senses output voltage and adjusts exciter field current to hold the setpoint. Two consequences follow. First, the AVR depends entirely on its sensing input: if sensing is lost through a blown fuse or an open lead, the regulator sees near-zero output and drives excitation to maximum, or shuts down, depending on design — either way behaving like a failure while functioning correctly. Second, every element downstream of the regulator can produce symptoms indistinguishable from regulator failure, and a failed rotating rectifier diode is the classic case: the machine produces reduced and often unstable output that collapses under load. AVRs also implement an under-frequency or volts-per-hertz characteristic which reduces the voltage setpoint proportionally below a threshold speed, protecting the machine from over-fluxing at low frequency. A set running below rated speed therefore produces low voltage as designed. Raising the voltage adjustment to correct that is a serious error, because at restored rated speed the machine is then over-excited, and sustained over-excitation overheats the windings.',
   },
@@ -262,7 +262,7 @@ export const generatorAvrFaultDiagnosis: RepairArticle = {
     },
     {
       step: 8,
-      title: 'Only now replace the AVR — and confirm the cause',
+      title: 'Only now replace the AVR, and confirm the cause',
       inspect: 'Correct AVR type and configuration for the machine, and the reason the original failed',
       where: 'At the AVR',
       instrument: 'Machine documentation',
@@ -347,7 +347,7 @@ export const generatorAvrFaultDiagnosis: RepairArticle = {
   faq: [
     {
       q: 'The output voltage is low. Can I just turn the AVR adjustment up?',
-      a: 'Not until you have checked frequency. If frequency is also low the engine is running slow, and the AVR is reducing voltage deliberately through its under-frequency protection. Turning the adjustment up masks that, and when the speed is restored the machine is over-excited — which overheats the windings. Fix the speed first, then set voltage at rated speed.',
+      a: 'Not until you have checked frequency. If frequency is also low the engine is running slow, and the AVR is reducing voltage deliberately through its under-frequency protection. Turning the adjustment up masks that, and when the speed is restored the machine is over-excited, which overheats the windings. Fix the speed first, then set voltage at rated speed.',
     },
     {
       q: 'I fitted a new AVR and it failed within days. Why?',

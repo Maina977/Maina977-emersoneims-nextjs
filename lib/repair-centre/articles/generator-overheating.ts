@@ -250,7 +250,7 @@ export const generatorOverheating: RepairArticle = {
       where: 'Around the canopy or in the plant room, set running',
       instrument: 'Anemometer, thermometer at intake and discharge',
       expected: 'Intake air close to ambient, discharge directed away with adequate clearance',
-      ifAbnormal: 'Intake air significantly above ambient proves recirculation. This is an installation defect — often created after commissioning when a wall, fence or another machine was added — and no work on the set will correct it.',
+      ifAbnormal: 'Intake air significantly above ambient proves recirculation. This is an installation defect — often created after commissioning when a wall, fence or another machine was added, and no work on the set will correct it.',
       next: 'Step 7',
     },
     {

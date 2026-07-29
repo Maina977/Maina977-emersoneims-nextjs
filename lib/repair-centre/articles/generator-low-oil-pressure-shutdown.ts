@@ -20,7 +20,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
   },
 
   directAnswer:
-    'Low oil pressure is the one shutdown you must never override, defeat or "test by running it a bit longer". Below the pressure that maintains a hydrodynamic film, the bearing shells and journals are in metal-to-metal contact and damage accumulates in seconds, not minutes. The entire diagnosis turns on a single question answered early: is the pressure genuinely low, or is the measurement wrong? Fit a mechanical gauge to the main gallery and compare it against what the controller reports. If the mechanical gauge confirms low pressure, stop and treat it as a mechanical fault. If the mechanical gauge shows normal pressure, you are chasing a sender, its wiring or the controller input — and the engine was never at risk.',
+    'Low oil pressure is the one shutdown you must never override, defeat or "test by running it a bit longer". Below the pressure that maintains a hydrodynamic film, the bearing shells and journals are in metal-to-metal contact and damage accumulates in seconds, not minutes. The entire diagnosis turns on a single question answered early: is the pressure genuinely low, or is the measurement wrong? Fit a mechanical gauge to the main gallery and compare it against what the controller reports. If the mechanical gauge confirms low pressure, stop and treat it as a mechanical fault. If the mechanical gauge shows normal pressure, you are chasing a sender, its wiring or the controller input, and the engine was never at risk.',
 
   symptoms: {
     display: [
@@ -61,7 +61,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     plain:
       'The engine protected itself because the oil pressure fell below a safe level. Oil pressure is what keeps a film of oil between moving metal parts. Without it, those parts touch and damage begins very quickly. The first job is not to fix the engine — it is to find out whether the pressure is really low or the gauge is lying.',
     technical:
-      'Journal bearings operate hydrodynamically: rotation drags oil into a converging wedge, generating a pressure film that separates the journal from the shell. Gallery pressure is the supply that sustains that film against leakage from the bearing clearances. Because leakage flow through a clearance rises sharply with clearance and falls with viscosity, gallery pressure is simultaneously a function of pump delivery, oil viscosity at temperature, and total bearing clearance. This is why genuine low pressure characteristically appears hot rather than cold, and why worn clearances present first as a hot-idle pressure fault. It also explains why fuel dilution is so destructive: it reduces viscosity, increasing leakage flow and lowering pressure while simultaneously weakening the film the pressure is meant to maintain. A low reading with normal mechanical pressure is a measurement fault — the sender, its wiring, or the controller input — and carries no mechanical risk, which is why the mechanical gauge check comes early and decides the entire direction of the work.',
+      'Journal bearings operate hydrodynamically: rotation drags oil into a converging wedge, generating a pressure film that separates the journal from the shell. Gallery pressure is the supply that sustains that film against leakage from the bearing clearances. Because leakage flow through a clearance rises sharply with clearance and falls with viscosity, gallery pressure is simultaneously a function of pump delivery, oil viscosity at temperature, and total bearing clearance. This is why genuine low pressure characteristically appears hot rather than cold, and why worn clearances present first as a hot-idle pressure fault. It also explains why fuel dilution is so destructive: it reduces viscosity, increasing leakage flow and lowering pressure while simultaneously weakening the film the pressure is meant to maintain. A low reading with normal mechanical pressure is a measurement fault — the sender, its wiring, or the controller input, and carries no mechanical risk, which is why the mechanical gauge check comes early and decides the entire direction of the work.',
   },
 
   causes: {
@@ -357,7 +357,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     },
     {
       q: 'The oil level was low. Can I just top it up and return the set to service?',
-      a: 'Top it up, yes — but find out where the oil went. Oil does not disappear. Investigate leaks and consumption, and check the oil is not diluted by fuel, which raises the level while lowering the viscosity and the pressure together.',
+      a: 'Top it up, yes, but find out where the oil went. Oil does not disappear. Investigate leaks and consumption, and check the oil is not diluted by fuel, which raises the level while lowering the viscosity and the pressure together.',
     },
   ],
 

@@ -208,7 +208,7 @@ export const testInstrumentsAndMeasurementErrors: RepairArticle = {
       where: 'The circuit being measured',
       instrument: 'True-RMS instrument where distortion is present',
       expected: 'True-RMS used for anything after an inverter, UPS or drive',
-      ifAbnormal: 'An averaging meter is calibrated for sine waves only. On a distorted waveform it reads incorrectly and displays a completely believable number with no indication that anything is wrong — which is why this error survives so long undetected.',
+      ifAbnormal: 'An averaging meter is calibrated for sine waves only. On a distorted waveform it reads incorrectly and displays a completely believable number with no indication that anything is wrong, which is why this error survives so long undetected.',
       next: 'Step 4',
     },
     {
@@ -302,7 +302,7 @@ export const testInstrumentsAndMeasurementErrors: RepairArticle = {
     'Confirm any unexpected voltage was resolved as genuine or induced, not simply dismissed',
     'Confirm electronics were disconnected before any insulation test, and the circuit discharged afterwards',
     'Cross-check a critical reading against a second instrument before acting on it',
-    'Record readings WITH the conditions they were taken in — irradiance, temperature, load — so they remain meaningful',
+    'Record readings WITH the conditions they were taken in — irradiance, temperature, load, so they remain meaningful',
     'Confirm instruments are within calibration and leads undamaged at the end of the work as well as the start',
   ],
 
@@ -336,7 +336,7 @@ export const testInstrumentsAndMeasurementErrors: RepairArticle = {
     },
     {
       q: 'What is a measurement category and does it really matter?',
-      a: 'It is a safety rating, not an accuracy one. It describes the transient overvoltage energy the instrument is constructed to survive at its position in an installation, so an under-rated meter measures perfectly right up until a transient arrives — and then fails in your hand. Check the rating on the leads as well as the meter, because leads are rated separately and are often the weakest part of an otherwise adequate set-up.',
+      a: 'It is a safety rating, not an accuracy one. It describes the transient overvoltage energy the instrument is constructed to survive at its position in an installation, so an under-rated meter measures perfectly right up until a transient arrives, and then fails in your hand. Check the rating on the leads as well as the meter, because leads are rated separately and are often the weakest part of an otherwise adequate set-up.',
     },
     {
       q: 'Can I megger a motor cable without disconnecting the drive?',

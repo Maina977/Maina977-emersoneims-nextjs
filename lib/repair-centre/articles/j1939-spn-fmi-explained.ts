@@ -172,7 +172,7 @@ export const j1939SpnFmiExplained: RepairArticle = {
     { question: 'Is the code a protective condition — oil pressure, coolant temperature, overspeed?', yes: 'Do NOT clear and restart to test it. Establish the physical condition first.', no: 'Continue' },
     { question: 'Did the code originate in the ENGINE ECM or the generator controller?', yes: 'Look it up in the matching documentation — engine codes are not in the controller manual', no: 'Establish the source before interpreting the number' },
     { question: 'Have you recorded the full code list and occurrence counts?', yes: 'Continue', no: 'Record before clearing anything — clearing destroys the history you need' },
-    { question: 'Which SPN — which parameter is implicated?', yes: 'That tells you WHERE to look', no: 'Look it up against the engine documentation' },
+    { question: 'Which SPN, which parameter is implicated?', yes: 'That tells you WHERE to look', no: 'Look it up against the engine documentation' },
     { question: 'What does the FMI say about the NATURE of the fault?', yes: 'Electrically implausible values point at wiring or sensor; out-of-range-but-plausible points at a real condition', no: 'This is the most valuable half of the code — do not skip it' },
     { question: 'Does an independent measurement agree with the reported value?', yes: 'The condition is real — diagnose the engine', no: 'Sensor or wiring — the engine may be entirely healthy' },
     { question: 'Is the sensor circuit sound — continuity, no short to earth or supply?', yes: 'Suspect the sensor or a genuine condition', no: 'The harness is the fault' },
@@ -202,7 +202,7 @@ export const j1939SpnFmiExplained: RepairArticle = {
     },
     {
       step: 3,
-      title: 'Read the SPN — which parameter',
+      title: 'Read the SPN, which parameter',
       inspect: 'The parameter the SPN identifies, against the engine manufacturer documentation',
       where: 'Engine documentation for that exact engine and calibration',
       instrument: 'Manufacturer documentation',
@@ -349,7 +349,7 @@ export const j1939SpnFmiExplained: RepairArticle = {
     },
     {
       q: 'There is a code but the engine seems to run fine. Can I clear it?',
-      a: 'Record it first, then investigate rather than clear. A code with no observable symptom very often indicates a sensor or wiring fault — a chafed harness, a corroded pin, moisture in a connector — which is real, is developing, and is cheap to fix now. Clearing it without investigation destroys the occurrence count, which is exactly the information that would have told you whether it was a one-off or a pattern.',
+      a: 'Record it first, then investigate rather than clear. A code with no observable symptom very often indicates a sensor or wiring fault — a chafed harness, a corroded pin, moisture in a connector, which is real, is developing, and is cheap to fix now. Clearing it without investigation destroys the occurrence count, which is exactly the information that would have told you whether it was a one-off or a pattern.',
     },
   ],
 
