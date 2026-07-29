@@ -373,7 +373,7 @@ export const boreholePumpNoWaterDelivery: RepairArticle = {
     'Treat repeated failures on one borehole as a borehole investigation, not a pump replacement cycle',
   ],
 
-  relatedSlugs: ['three-phase-motor-failure-diagnosis'],
+  relatedSlugs: ['pump-runs-continuously', 'three-phase-motor-failure-diagnosis'],
 
   faq: [
     {

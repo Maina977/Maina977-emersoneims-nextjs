@@ -33,6 +33,7 @@ import { j1939SpnFmiExplained } from './articles/j1939-spn-fmi-explained';
 import { dieselEngineAbnormalNoise } from './articles/diesel-engine-abnormal-noise';
 import { solarChargeControllerNotCharging } from './articles/solar-charge-controller-not-charging';
 import { motorOverloadTripping } from './articles/motor-overload-tripping';
+import { pumpRunsContinuously } from './articles/pump-runs-continuously';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -71,6 +72,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   dieselEngineAbnormalNoise,
   solarChargeControllerNotCharging,
   motorOverloadTripping,
+  pumpRunsContinuously,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -188,7 +190,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Drop cable, splice and motor testing',
       'Dry-run protection and control',
     ],
-    articleSlugs: ['borehole-pump-no-water-delivery'],
+    articleSlugs: ['borehole-pump-no-water-delivery', 'pump-runs-continuously'],
   },
   {
     slug: 'solar',
