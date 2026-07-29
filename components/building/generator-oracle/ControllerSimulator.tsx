@@ -1587,7 +1587,11 @@ const DEFAULT_WIRING_DIAGRAM: WiringDiagram = {
 
 // Helper function to get wiring diagram
 function getWiringDiagram(modelId: string): WiringDiagram {
-  return WIRING_DIAGRAMS[modelId] || DEFAULT_WIRING_DIAGRAM;
+  // SAFETY (2026-07-27): previously fell back to DEFAULT_WIRING_DIAGRAM for any
+  // model without its own entry. Callers must surface a wiring-unavailable
+  // notice rather than present generic wiring as if it were the selected
+  // model's. See lib/generator-oracle/wiringGuard.ts.
+  return WIRING_DIAGRAMS[modelId] ?? null;
 }
 
 // ==================== MAINTENANCE ALARM RESET PROCEDURES ====================
@@ -2333,7 +2337,9 @@ const CONTROLLER_DATASHEETS: Record<string, {
 };
 
 // Default datasheet for models without specific data
-const DEFAULT_DATASHEET = CONTROLLER_DATASHEETS['dse-7320'];
+// REMOVED (2026-07-27): DEFAULT_DATASHEET aliased the DSE 7320 datasheet and was
+// used as a fallback for every controller, presenting one manufacturer's
+// specifications as another's. Do not reintroduce a default datasheet.
 
 // ==================== AI DIAGNOSTIC ANALYZER ====================
 interface DiagnosticResult {
@@ -2861,7 +2867,11 @@ export default function ControllerSimulator({
 
   // Get datasheet
   const getDatasheet = () => {
-    return CONTROLLER_DATASHEETS[selectedModel.id] || DEFAULT_DATASHEET;
+    // SAFETY (2026-07-27): DEFAULT_DATASHEET was CONTROLLER_DATASHEETS['dse-7320'],
+    // so ANY controller without its own datasheet silently displayed DSE 7320
+    // specifications — voltages, ratings and parameters belonging to a different
+    // manufacturer's unit. Return null and let the caller say so instead.
+    return CONTROLLER_DATASHEETS[selectedModel.id] ?? null;
   };
 
   // AI Analysis of tech problem - generates solution shown on controller display
