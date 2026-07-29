@@ -12,6 +12,8 @@ import { generatorStartsThenStops } from './articles/generator-starts-then-stops
 import { generatorLowOilPressureShutdown } from './articles/generator-low-oil-pressure-shutdown';
 import { generatorNoVoltageOutput } from './articles/generator-no-voltage-output';
 import { generatorUnstableVoltage } from './articles/generator-unstable-voltage';
+import { generatorOverheating } from './articles/generator-overheating';
+import { generatorAvrFaultDiagnosis } from './articles/generator-avr-fault-diagnosis';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -29,6 +31,8 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorLowOilPressureShutdown,
   generatorNoVoltageOutput,
   generatorUnstableVoltage,
+  generatorOverheating,
+  generatorAvrFaultDiagnosis,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -60,6 +64,8 @@ export const REPAIR_HUBS: RepairHub[] = [
       'generator-low-oil-pressure-shutdown',
       'generator-produces-no-voltage-output',
       'generator-unstable-voltage',
+      'generator-overheating',
+      'generator-avr-fault-diagnosis',
     ],
   },
   {

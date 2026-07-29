@@ -653,6 +653,8 @@ export function middleware(request: NextRequest) {
         'generator-low-oil-pressure-shutdown': 'generators',
         'generator-produces-no-voltage-output': 'generators',
         'generator-unstable-voltage': 'generators',
+        'generator-overheating': 'generators',
+        'generator-avr-fault-diagnosis': 'generators',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',
