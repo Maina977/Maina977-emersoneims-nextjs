@@ -18,6 +18,9 @@ import { starterMotorClicksButWillNotCrank } from './articles/starter-motor-clic
 import { upsBypassFault } from './articles/ups-bypass-fault';
 import { pcbShortCircuitDiagnosis } from './articles/pcb-short-circuit-diagnosis';
 import { motherboardPowerRailDiagnosis } from './articles/motherboard-power-rail-diagnosis';
+import { atsNotChangingOver } from './articles/ats-not-changing-over';
+import { generatorBatteryNotCharging } from './articles/generator-battery-not-charging';
+import { upsInverterFaultDiagnosis } from './articles/ups-inverter-fault-diagnosis';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -41,6 +44,9 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   upsBypassFault,
   pcbShortCircuitDiagnosis,
   motherboardPowerRailDiagnosis,
+  atsNotChangingOver,
+  generatorBatteryNotCharging,
+  upsInverterFaultDiagnosis,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -75,6 +81,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'generator-overheating',
       'generator-avr-fault-diagnosis',
       'starter-motor-clicks-but-will-not-crank',
+      'generator-battery-not-charging',
     ],
   },
   {
@@ -98,7 +105,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Diagnosis for offline, line-interactive and online double-conversion UPS systems, including bypass behaviour, battery autonomy and the generator interaction that causes most critical-power failures.',
     scope: ['Will not power on', 'Bypass faults', 'Battery and autonomy faults', 'Rectifier and inverter faults', 'Generator interaction'],
-    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present', 'ups-bypass-fault'],
+    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present', 'ups-bypass-fault', 'ups-inverter-fault-diagnosis'],
   },
   {
     slug: 'pcb-motherboards',
@@ -114,6 +121,20 @@ export const REPAIR_HUBS: RepairHub[] = [
       'When to repair and when to replace',
     ],
     articleSlugs: ['pcb-short-circuit-diagnosis', 'motherboard-power-rail-diagnosis'],
+  },
+  {
+    slug: 'ats-changeover',
+    title: 'ATS & Changeover Panel Diagnosis',
+    intro:
+      'Automatic transfer switch and changeover panel faults — why a switch refuses to transfer, how to separate a control decision from a mechanical failure, and the interlock rules that exist to stop utility and generator being connected together.',
+    scope: [
+      'Failure to transfer on mains loss',
+      'Failure to return to utility',
+      'Sensing, thresholds and timer settings',
+      'Contactor, motor operator and interlock faults',
+      'Position indication and auxiliary contacts',
+    ],
+    articleSlugs: ['ats-not-changing-over'],
   },
   {
     slug: 'controllers',
