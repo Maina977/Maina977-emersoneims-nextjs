@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import {
   CONTROLLER_SOURCES,
@@ -22,6 +24,9 @@ import {
  *      InteliGen, SmartGen HGM9320, Woodward easYgen-3000).
  *   4. Verified citations include a publisher + document title; URLs (when
  *      present) point to OEM property domains, never forum/blog hosts.
+ *   5. NEW 2026-07-29 — nothing may ship pin data without being 'verified'
+ *      here, and a partial map must declare itself partial. See the block
+ *      comment on that describe() for why.
  */
 
 const ALL_CONTROLLER_IDS = [
@@ -111,5 +116,109 @@ describe('controllerSources registry', () => {
       const expected = EXPECTED_VERIFIED_IDS.has(id);
       expect(isControllerVerified(id), `${id} verified mismatch`).toBe(expected);
     }
+  });
+});
+
+/**
+ * Added 2026-07-29, after an audit found four of the five shipped pin maps
+ * were fabricated.
+ *
+ * The specific hole these close:
+ *
+ *   - CAT PowerWizard 2.0 shipped 21 invented pins in CONTROLLER_PINS while
+ *     this registry recorded it as 'unsupported'. The registry already knew
+ *     the data had no source; nothing checked. `pin data implies verified`
+ *     below is the check that was missing.
+ *
+ *   - 'verified' was being read as 'complete'. The Woodward map covers only
+ *     the power supply and relay outputs R1-R4, which is genuinely useful but
+ *     must not read as the module's whole terminal list — a technician who
+ *     cannot find a terminal would conclude it does not exist.
+ */
+describe('pin data may never outrun its provenance', () => {
+  const PANEL = path.join(
+    process.cwd(),
+    'components/generator-oracle/panels/WiringDiagramsPanel.tsx',
+  );
+
+  /** Top-level controller ids that ship a pin array in the panel. */
+  function shippedPinControllerIds(): string[] {
+    const src = fs.readFileSync(PANEL, 'utf8');
+    const start = src.indexOf('const CONTROLLER_PINS');
+    expect(start, 'CONTROLLER_PINS declaration not found').toBeGreaterThan(-1);
+    // The map ends at the first line that is exactly "};" at column 0.
+    const end = src.indexOf('\n};', start);
+    expect(end, 'CONTROLLER_PINS terminator not found').toBeGreaterThan(start);
+    const body = src.slice(start, end);
+    const ids: string[] = [];
+    const re = /^ {2}'([a-z0-9-]+)':\s*\[/gm;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(body)) !== null) ids.push(m[1]);
+    return ids;
+  }
+
+  it('the source scan actually finds the shipped maps (guards the scan itself)', () => {
+    // If the regex ever stops matching, every assertion below would pass
+    // vacuously. Fail loudly instead.
+    const ids = shippedPinControllerIds();
+    expect(ids.length, 'no CONTROLLER_PINS entries parsed — scan is broken').toBeGreaterThan(0);
+    expect(ids).toContain('dse-7320');
+  });
+
+  it('every controller shipping pin data is verified in the registry', () => {
+    for (const id of shippedPinControllerIds()) {
+      const entry = getControllerSource(id);
+      expect(entry, `${id} ships pin data but has no registry entry`).toBeDefined();
+      expect(
+        entry!.status,
+        `${id} ships pin data while the registry marks it '${entry!.status}'. ` +
+          `Either cite an OEM document for it, or remove the pin map.`,
+      ).toBe('verified');
+    }
+  });
+
+  it('no unsupported controller ships pin data', () => {
+    const shipped = new Set(shippedPinControllerIds());
+    for (const [id, entry] of Object.entries(CONTROLLER_SOURCES)) {
+      if (entry.status !== 'unsupported') continue;
+      expect(shipped.has(id), `${id} is unsupported but ships pin data`).toBe(false);
+    }
+  });
+
+  it('every verified entry declares its completeness', () => {
+    for (const id of EXPECTED_VERIFIED_IDS) {
+      const e = getControllerSource(id) as VerifiedControllerSource;
+      expect(['complete', 'partial'], `${id} completeness missing/invalid`).toContain(
+        e.completeness,
+      );
+    }
+  });
+
+  it('partial entries explain what they do not cover', () => {
+    for (const [id, entry] of Object.entries(CONTROLLER_SOURCES)) {
+      if (entry.status !== 'verified' || entry.completeness !== 'partial') continue;
+      expect(
+        entry.coverageNote?.length ?? 0,
+        `${id} is partial but has no coverageNote saying what is missing`,
+      ).toBeGreaterThan(40);
+    }
+  });
+
+  it('no verified pin map claims an OEM wire colour it cannot source', () => {
+    // Every OEM consulted so far publishes cable SIZE but not conductor
+    // colour. The fabricated maps invented Red/Black/Purple/Orange/Pink.
+    // If a future map does carry real OEM colours, cite them in the registry
+    // notes and relax this test deliberately — do not weaken it in passing.
+    const src = fs.readFileSync(PANEL, 'utf8');
+    const start = src.indexOf('const CONTROLLER_PINS');
+    const end = src.indexOf('\n};', start);
+    const body = src.slice(start, end);
+    const colours = [...body.matchAll(/wireColor:\s*'([^']*)'/g)].map((m) => m[1]);
+    expect(colours.length, 'no wireColor fields parsed').toBeGreaterThan(0);
+    const invented = colours.filter((c) => c !== 'Not specified by OEM');
+    expect(
+      invented,
+      `wire colours present with no OEM source: ${[...new Set(invented)].join(', ')}`,
+    ).toEqual([]);
   });
 });

@@ -27,6 +27,7 @@ import {
 } from '@/lib/generator-oracle/wiringGuard';
 import {
   getControllerSource,
+  isControllerVerified,
   type ControllerSourceEntry,
 } from '@/lib/generator-oracle/controllerSources';
 
@@ -50,6 +51,12 @@ function ControllerSourceBlock({ controllerId }: { controllerId: string }) {
         <div className="font-semibold text-emerald-300 mb-1">
           Verified pinout source ({entry.verificationConfidence} confidence)
         </div>
+        {entry.completeness === 'partial' && (
+          <div className="mb-2 rounded border border-amber-500/40 bg-amber-500/10 p-2">
+            <div className="font-semibold text-amber-300">Partial coverage</div>
+            <p className="text-slate-300 mt-0.5">{entry.coverageNote}</p>
+          </div>
+        )}
         <ul className="list-disc pl-5 space-y-1 text-slate-300">
           {entry.sources.map((s, i) => (
             <li key={i}>
@@ -402,7 +409,9 @@ const CONTROLLERS: ControllerModel[] = [
   { id: 'comap-intelisys', brand: 'ComAp', model: 'InteliSys NT', type: 'load-share', features: ['Advanced Sync', 'PMS'], pinCount: 48, voltage: '8-36V DC' },
   { id: 'comap-intelimains', brand: 'ComAp', model: 'InteliMains NT', type: 'mains', features: ['Mains Decoupling'], pinCount: 20, voltage: '8-36V DC' },
   // Woodward Controllers
-  { id: 'woodward-easygen3000', brand: 'Woodward', model: 'easYgen 3000', type: 'genset', features: ['AMF', 'Load Share', 'Modbus'], pinCount: 40, voltage: '8-32V DC' },
+  // Supply range corrected 2026-07-29: Woodward specify 8 to 40.0 V DC on
+  // terminal 63 for the easYgen-3000, not 8-32 V DC.
+  { id: 'woodward-easygen3000', brand: 'Woodward', model: 'easYgen 3000', type: 'genset', features: ['AMF', 'Load Share', 'Modbus'], pinCount: 40, voltage: '8-40V DC' },
   { id: 'woodward-easygen2000', brand: 'Woodward', model: 'easYgen 2000', type: 'genset', features: ['AMF', 'Basic'], pinCount: 28, voltage: '8-32V DC' },
   { id: 'woodward-dtsc200', brand: 'Woodward', model: 'DTSC-200', type: 'genset', features: ['Digital', 'CAN'], pinCount: 24, voltage: '9-32V DC' },
   // SmartGen Controllers
@@ -447,6 +456,14 @@ const CIRCUIT_CATEGORIES = [
   { id: 'generator', name: 'Generator Output', icon: '⚡', color: '#eab308' },
   { id: 'protection', name: 'Protection', icon: '🛡️', color: '#22c55e' },
   { id: 'communication', name: 'Communication', icon: '🔗', color: '#14b8a6' },
+  // Added 2026-07-29. Real OEM terminal tables use these groupings, and without
+  // a category here the pin table printed the raw slug and the circuit filter
+  // could not reach the terminals at all.
+  { id: 'auxiliary', name: 'Auxiliary Outputs', icon: '🔌', color: '#8b5cf6' },
+  { id: 'inputs', name: 'Digital Inputs', icon: '🎛️', color: '#0ea5e9' },
+  { id: 'metering', name: 'Current Metering', icon: '📊', color: '#f59e0b' },
+  { id: 'charging', name: 'Battery Charging', icon: '🔄', color: '#10b981' },
+  { id: 'mains', name: 'Mains / Utility', icon: '🏭', color: '#94a3b8' },
 ];
 
 // ==================== WIRE COLOR STANDARDS ====================
@@ -479,95 +496,168 @@ interface PinConfig {
 }
 
 const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
+  // Deep Sea Electronics DSE7320 MKII (shares the terminal layout of the DSE7310 MKII,
+  // except that terminals 38-41 mains sensing are not fitted to the 7310).
+  //
+  // VERIFIED 2026-07-29 against DSE document 057-253 ISSUE 7, "DSE7310 MKII &
+  // DSE7320 MKII Operator Manual", section 3.2 CONNECTION DESCRIPTIONS, pages
+  // 48-54. Terminal numbers, descriptions, cable sizes and current ratings are
+  // read from those tables.
+  //
+  // The data previously here was FABRICATED and hazardous:
+  //   - terminal 1 was labelled "B+ Battery Positive" when DSE define it as the
+  //     DC plant supply NEGATIVE, and terminal 2 as the POSITIVE - reversed;
+  //   - terminal 3 was labelled "Chassis Ground" when it is the EMERGENCY STOP
+  //     input carrying plant supply positive;
+  //   - terminals 4/5/6 were labelled START / START-RETURN / FUEL when they are
+  //     fuel output, start output and the charge alternator excite input;
+  //   - fuel and start were rated 3 A and 5 A when DSE rate both at 15 A DC.
+  // It also invented 32 terminals for a module that has 58.
+  //
+  // Wire COLOUR is "Not specified by OEM": DSE publish cable SIZE only and do
+  // not specify conductor colours. Do not invent them.
   'dse-7320': [
-    // Power Supply
-    { pin: '1', name: 'B+', function: 'Battery Positive Input', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-35V DC', current: '2A max' },
-    { pin: '2', name: 'B-', function: 'Battery Negative/Ground', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: '3', name: 'CHASSIS', function: 'Chassis Ground', wireColor: 'Green/Yellow', wireGauge: '2.5mm²', circuit: 'power' },
-    // Starting Circuit
-    { pin: '4', name: 'START', function: 'Crank/Start Output', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', voltage: 'B+', current: '3A max' },
-    { pin: '5', name: 'START-RET', function: 'Start Return', wireColor: 'Purple/White', wireGauge: '1.5mm²', circuit: 'starting' },
-    // Fuel System
-    { pin: '6', name: 'FUEL', function: 'Fuel Solenoid Output', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', voltage: 'B+', current: '5A max' },
-    { pin: '7', name: 'FUEL-RET', function: 'Fuel Return', wireColor: 'Orange/White', wireGauge: '1.5mm²', circuit: 'fuel' },
-    // Stop Circuit
-    { pin: '8', name: 'STOP', function: 'Stop Solenoid Output', wireColor: 'Pink', wireGauge: '1.5mm²', circuit: 'protection', voltage: 'B+', current: '3A max' },
-    // Glow Plug
-    { pin: '9', name: 'PRE-HEAT', function: 'Glow Plug Relay Output', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '3A max' },
-    // Sensing Inputs
-    { pin: '10', name: 'OIL-P', function: 'Oil Pressure Sender (VDO/Datcon)', wireColor: 'Yellow', wireGauge: '0.75mm²', circuit: 'sensing', voltage: '0-5V' },
-    { pin: '11', name: 'OIL-GND', function: 'Oil Pressure Ground', wireColor: 'Yellow/Black', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '12', name: 'TEMP', function: 'Coolant Temp Sender (NTC/PT100)', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '13', name: 'TEMP-GND', function: 'Coolant Temp Ground', wireColor: 'Brown/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '14', name: 'FUEL-LVL', function: 'Fuel Level Sender (Resistive)', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing', voltage: '0-90Ω / 0-180Ω' },
-    { pin: '15', name: 'FUEL-GND', function: 'Fuel Level Ground', wireColor: 'Green/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    // Speed Sensing
-    { pin: '16', name: 'MPU+', function: 'Magnetic Pickup Positive', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing', voltage: '0.5-70V AC' },
-    { pin: '17', name: 'MPU-', function: 'Magnetic Pickup Negative', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '18', name: 'MPU-SH', function: 'MPU Shield/Screen', wireColor: 'Gray', wireGauge: '0.5mm²', circuit: 'sensing' },
-    // Generator Voltage Sensing
-    { pin: '19', name: 'GEN-L1', function: 'Generator Voltage L1 (Phase A)', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator', voltage: '0-300V AC' },
-    { pin: '20', name: 'GEN-L2', function: 'Generator Voltage L2 (Phase B)', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator', voltage: '0-300V AC' },
-    { pin: '21', name: 'GEN-L3', function: 'Generator Voltage L3 (Phase C)', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator', voltage: '0-300V AC' },
-    { pin: '22', name: 'GEN-N', function: 'Generator Neutral', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    // Current Transformers
-    { pin: '23', name: 'CT-L1-S1', function: 'CT L1 Secondary S1', wireColor: 'Red/White', wireGauge: '1.0mm²', circuit: 'generator', current: '5A secondary' },
-    { pin: '24', name: 'CT-L1-S2', function: 'CT L1 Secondary S2', wireColor: 'Red/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '25', name: 'CT-L2-S1', function: 'CT L2 Secondary S1', wireColor: 'Yellow/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '26', name: 'CT-L2-S2', function: 'CT L2 Secondary S2', wireColor: 'Yellow/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '27', name: 'CT-L3-S1', function: 'CT L3 Secondary S1', wireColor: 'Blue/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '28', name: 'CT-L3-S2', function: 'CT L3 Secondary S2', wireColor: 'Blue/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    // CAN Bus
-    { pin: '29', name: 'CAN-H', function: 'CAN Bus High (J1939)', wireColor: 'Green', wireGauge: '0.5mm² Twisted', circuit: 'communication' },
-    { pin: '30', name: 'CAN-L', function: 'CAN Bus Low (J1939)', wireColor: 'Yellow', wireGauge: '0.5mm² Twisted', circuit: 'communication' },
-    { pin: '31', name: 'CAN-SH', function: 'CAN Shield', wireColor: 'Gray', wireGauge: 'Braid', circuit: 'communication' },
-    // Digital I/O
-    { pin: '32', name: 'E-STOP', function: 'Emergency Stop Input (NC)', wireColor: 'Red/Yellow', wireGauge: '1.0mm²', circuit: 'protection' },
+    { pin: '1', name: 'DC Supply (Negative)', function: 'DC plant supply input, negative. Connect to ground where applicable.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'power' },
+    { pin: '2', name: 'DC Supply (Positive)', function: 'DC plant supply input, positive. Supplies the module and DC outputs E, F, G, H, I and J.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'power', voltage: '8-35 V DC' },
+    { pin: '3', name: 'Emergency Stop', function: 'Emergency stop input, fed from plant supply positive. It also supplies DC outputs A and B, so breaking it removes both fuel and start.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'protection' },
+    { pin: '4', name: 'DC Output A (FUEL)', function: 'Fuel relay output. Plant supply positive comes from terminal 3. Fixed as the fuel relay unless an electronic engine is configured.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'fuel', current: '15 A DC' },
+    { pin: '5', name: 'DC Output B (START)', function: 'Start relay output. Plant supply positive comes from terminal 3. Fixed as the start relay unless an electronic engine is configured.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'starting', current: '15 A DC' },
+    { pin: '6', name: 'Charge Fail / Excite', function: 'Charge alternator D+ (W/L) input. Do not connect to ground. Leave disconnected if no charge alternator is fitted.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'charging' },
+    { pin: '7', name: 'Do Not Connect', function: 'Reserved by DSE. Do not connect.', wireColor: 'Not specified by OEM', wireGauge: 'Not connected', circuit: 'power' },
+    { pin: '8', name: 'DC Output E', function: 'Configurable DC output E. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '9', name: 'DC Output F', function: 'Configurable DC output F. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '10', name: 'DC Output G', function: 'Configurable DC output G. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '11', name: 'DC Output H', function: 'Configurable DC output H. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '12', name: 'DC Output I', function: 'Configurable DC output I. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '13', name: 'DC Output J', function: 'Configurable DC output J. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '14', name: 'Sensor Common Return', function: 'Ground return for the sensors. DSE require this to be earthed to the ENGINE BLOCK, not inside the panel, and it must not provide an earth for any other terminal or device.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '15', name: 'Analogue Sensor Input A', function: 'Analogue sensor input A. Connect to the oil pressure sensor.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '16', name: 'Analogue Sensor Input B', function: 'Analogue sensor input B. Connect to the coolant temperature sensor.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '17', name: 'Analogue Sensor Input C', function: 'Analogue sensor input C. Connect to the fuel level sensor.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '18', name: 'Analogue Sensor Input D', function: 'Analogue sensor input D. Additional sensor, user configurable.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '19', name: 'Analogue Sensor Input E', function: 'Analogue sensor input E. Additional sensor, user configurable.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '20', name: 'Analogue Sensor Input F', function: 'Analogue sensor input F. Additional sensor, user configurable.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '21', name: 'Magnetic Pickup Positive', function: 'Magnetic pickup positive. Connect to the magnetic pickup device.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '22', name: 'Magnetic Pickup Negative', function: 'Magnetic pickup negative. Connect to the magnetic pickup device.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '23', name: 'Magnetic Pickup Screen', function: 'Magnetic pickup cable screen. Earth at one end only.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'sensing' },
+    { pin: '24', name: 'ECU Port H', function: 'Engine ECU CAN high. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '25', name: 'ECU Port L', function: 'Engine ECU CAN low. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '26', name: 'ECU Port Screen', function: 'Engine ECU CAN screen. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'communication' },
+    { pin: '27', name: 'DSENet Expansion B', function: 'DSENet expansion port B. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '28', name: 'DSENet Expansion A', function: 'DSENet expansion port A. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '29', name: 'DSENet Expansion Screen', function: 'DSENet expansion screen. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'communication' },
+    { pin: '30', name: 'Relay Output C (NC)', function: 'Volt-free relay output C, normally closed. Normally configured to control the mains contactor coil.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary' },
+    { pin: '31', name: 'Relay Output C (NC)', function: 'Volt-free relay output C, normally closed. Second contact of the same relay.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary' },
+    { pin: '32', name: 'Relay Output D (NO)', function: 'Volt-free relay output D, normally open. Normally configured to control the generator contactor coil.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary' },
+    { pin: '33', name: 'Relay Output D (NO)', function: 'Volt-free relay output D, normally open. Second contact of the same relay.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary' },
+    { pin: '34', name: 'Generator L1 (U)', function: 'Generator L1 (U) voltage and frequency sensing. DSE recommend a 2 A fuse.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'generator' },
+    { pin: '35', name: 'Generator L2 (V)', function: 'Generator L2 (V) voltage and frequency sensing. DSE recommend a 2 A fuse.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'generator' },
+    { pin: '36', name: 'Generator L3 (W)', function: 'Generator L3 (W) voltage and frequency sensing. DSE recommend a 2 A fuse.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'generator' },
+    { pin: '37', name: 'Generator Neutral (N)', function: 'Generator neutral input. Connect to the generator neutral terminal.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'generator' },
+    { pin: '38', name: 'Mains L1 (R)', function: 'Mains L1 (R) voltage and frequency sensing. DSE recommend a 2 A fuse. Not fitted to the DSE7310 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'mains' },
+    { pin: '39', name: 'Mains L2 (S)', function: 'Mains L2 (S) voltage and frequency sensing. DSE recommend a 2 A fuse. Not fitted to the DSE7310 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'mains' },
+    { pin: '40', name: 'Mains L3 (T)', function: 'Mains L3 (T) voltage and frequency sensing. DSE recommend a 2 A fuse. Not fitted to the DSE7310 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'mains' },
+    { pin: '41', name: 'Mains Neutral (N)', function: 'Mains neutral input. Not fitted to the DSE7310 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'mains' },
+    { pin: '42', name: 'CT Secondary L1', function: 'Current transformer secondary for L1. Connect to s1 of the L1 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '43', name: 'CT Secondary L2', function: 'Current transformer secondary for L2. Connect to s1 of the L2 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '44', name: 'CT Secondary L3', function: 'Current transformer secondary for L3. Connect to s1 of the L3 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '45', name: 'Earth Fault CT', function: 'Function depends on the earth fault topology in use. Not connected where no earth fault measuring is fitted; otherwise it takes s2 of the L1/L2/L3/N CTs, or s2 of the CT on the neutral to earth link.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '46', name: 'CT Common', function: 'Function depends on the earth fault topology in use. Normally the common s2 of the L1/L2/L3/N CTs; with an unrestricted earth fault CT it also takes s1 of the CT on the neutral to earth link.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '47', name: 'Do Not Connect', function: 'Reserved by DSE across all earth fault topologies. Do not connect.', wireColor: 'Not specified by OEM', wireGauge: 'Not connected', circuit: 'metering' },
+    { pin: '48', name: 'Digital Input A', function: 'Configurable digital input A. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '49', name: 'Digital Input B', function: 'Configurable digital input B. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '50', name: 'Digital Input C', function: 'Configurable digital input C. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '51', name: 'Digital Input D', function: 'Configurable digital input D. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '52', name: 'Digital Input E', function: 'Configurable digital input E. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '53', name: 'Digital Input F', function: 'Configurable digital input F. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '54', name: 'Digital Input G', function: 'Configurable digital input G. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '55', name: 'Digital Input H', function: 'Configurable digital input H. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '56', name: 'RS485 Port Screen', function: 'RS485 port screen. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'communication' },
+    { pin: '57', name: 'RS485 Port B (+)', function: 'RS485 port B (+). Connect to RXD+ and TXD+.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '58', name: 'RS485 Port A (-)', function: 'RS485 port A (-). Connect to RXD- and TXD-.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
   ],
+  // ComAp InteliGen NT (IG-NT / IG-NTC / IG-NT-BB / IG-NTC-BB)
+  //
+  // VERIFIED 2026-07-29 against the ComAp "IGS-NT Installation Guide",
+  // section 7 "Terminals, Jumpers and I/O overview" and section 20
+  // "Technical data".
+  //
+  // ComAp identify their terminals by NAME (L1k, BI1, BO1, D+, RPM-IN ...),
+  // not by a numbered pin sequence, so the name is used as the pin id.
+  //
+  // The data previously here was FABRICATED. It invented a numbered
+  // A1/A2/A3, B1..Bn layout and assigned FIXED functions - CRANK, FUEL,
+  // IDLE, STOP, PREHEAT - to the binary outputs. ComAp state plainly that
+  // "the name and function or alarm type for each binary input have to be
+  // assigned during the configuration"; the binary outputs are likewise
+  // user-configurable open-collector outputs. Printing them as fixed engine
+  // functions is wrong on real hardware.
+  //
+  // Wire COLOUR is "Not specified by OEM": ComAp publish cable size and
+  // screening requirements, not conductor colours.
   'comap-inteligen': [
-    // Power
-    { pin: 'A1', name: 'B+', function: 'Power Supply Positive', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-36V DC' },
-    { pin: 'A2', name: 'B-', function: 'Power Supply Negative', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'A3', name: 'PE', function: 'Protective Earth', wireColor: 'Green/Yellow', wireGauge: '2.5mm²', circuit: 'power' },
-    // Outputs
-    { pin: 'B1', name: 'CRANK', function: 'Starter Output', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', current: '2A' },
-    { pin: 'B2', name: 'FUEL', function: 'Fuel Solenoid', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '4A' },
-    { pin: 'B3', name: 'IDLE', function: 'Idle Solenoid', wireColor: 'Yellow/Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '2A' },
-    { pin: 'B4', name: 'STOP', function: 'Stop Output', wireColor: 'Pink', wireGauge: '1.5mm²', circuit: 'protection', current: '2A' },
-    { pin: 'B5', name: 'PREHEAT', function: 'Preheat Relay', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '2A' },
-    { pin: 'B6', name: 'GCB', function: 'Gen Breaker Close', wireColor: 'Gray', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: 'B7', name: 'MCB', function: 'Mains Breaker Close', wireColor: 'Gray/White', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    // Analog Inputs
-    { pin: 'C1', name: 'OIL', function: 'Oil Pressure 4-20mA', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C2', name: 'COOL', function: 'Coolant Temp PT100/NTC', wireColor: 'Blue', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C3', name: 'FUEL-S', function: 'Fuel Level 0-10V', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C4', name: 'AIN1', function: 'Analog Input 1', wireColor: 'White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C5', name: 'AIN2', function: 'Analog Input 2', wireColor: 'White/Black', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'C6', name: 'A-GND', function: 'Analog Ground', wireColor: 'Black/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    // Speed Input
-    { pin: 'D1', name: 'SPEED+', function: 'Speed Pickup +', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'D2', name: 'SPEED-', function: 'Speed Pickup -', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    // Generator Sensing
-    { pin: 'E1', name: 'GEN-L1', function: 'Gen Voltage L1-N', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'E2', name: 'GEN-L2', function: 'Gen Voltage L2-N', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'E3', name: 'GEN-L3', function: 'Gen Voltage L3-N', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'E4', name: 'GEN-N', function: 'Gen Neutral', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    // CT Inputs
-    { pin: 'F1', name: 'CT1-S1', function: 'CT1 Secondary S1', wireColor: 'Red/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F2', name: 'CT1-S2', function: 'CT1 Secondary S2', wireColor: 'Red/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F3', name: 'CT2-S1', function: 'CT2 Secondary S1', wireColor: 'Yellow/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F4', name: 'CT2-S2', function: 'CT2 Secondary S2', wireColor: 'Yellow/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F5', name: 'CT3-S1', function: 'CT3 Secondary S1', wireColor: 'Blue/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'F6', name: 'CT3-S2', function: 'CT3 Secondary S2', wireColor: 'Blue/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    // CAN Bus
-    { pin: 'G1', name: 'CAN1-H', function: 'CAN Bus 1 High', wireColor: 'Green', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'G2', name: 'CAN1-L', function: 'CAN Bus 1 Low', wireColor: 'Yellow', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'G3', name: 'CAN2-H', function: 'CAN Bus 2 High', wireColor: 'Green/White', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'G4', name: 'CAN2-L', function: 'CAN Bus 2 Low', wireColor: 'Yellow/White', wireGauge: '0.5mm²', circuit: 'communication' },
-    // RS485
-    { pin: 'H1', name: 'RS485-A', function: 'RS485 Data A (+)', wireColor: 'Blue', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'H2', name: 'RS485-B', function: 'RS485 Data B (-)', wireColor: 'Orange', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'H3', name: 'RS-GND', function: 'RS485 Ground', wireColor: 'Black', wireGauge: '0.5mm²', circuit: 'communication' },
+    { pin: '+', name: 'Power Supply +', function: 'Controller power supply, positive.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'power', voltage: '8-36 V DC' },
+    { pin: '-', name: 'Power Supply -', function: 'Controller power supply, negative. Binary inputs are activated by switching to this rail.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'power' },
+    { pin: 'D+', name: 'D+', function: 'Charging alternator D+ input and excitation output. ComAp guarantee the Charging OK signal at 80% of supply voltage.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'charging', current: '300 mA max output' },
+    { pin: 'Gen L1', name: 'Generator L1', function: 'Generator voltage measuring input L1. 3x277 V phase-neutral or 480 V phase-phase nominal, 350/600 V AC maximum, CAT III. Neutral is not required.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'generator', voltage: 'max 350 V Ph-N / 600 V Ph-Ph' },
+    { pin: 'Gen L2', name: 'Generator L2', function: 'Generator voltage measuring input L2. 3x277 V phase-neutral or 480 V phase-phase nominal, 350/600 V AC maximum, CAT III. Neutral is not required.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'generator', voltage: 'max 350 V Ph-N / 600 V Ph-Ph' },
+    { pin: 'Gen L3', name: 'Generator L3', function: 'Generator voltage measuring input L3. 3x277 V phase-neutral or 480 V phase-phase nominal, 350/600 V AC maximum, CAT III. Neutral is not required.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'generator', voltage: 'max 350 V Ph-N / 600 V Ph-Ph' },
+    { pin: 'Gen N', name: 'Generator N', function: 'Generator voltage measuring input N. 3x277 V phase-neutral or 480 V phase-phase nominal, 350/600 V AC maximum, CAT III. Neutral is not required.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'generator', voltage: 'max 350 V Ph-N / 600 V Ph-Ph' },
+    { pin: 'Mains L1', name: 'Mains / Bus L1', function: 'Mains or bus voltage measuring input L1. Same range as the generator inputs, CAT III. Neutral is not required.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'mains', voltage: 'max 350 V Ph-N / 600 V Ph-Ph' },
+    { pin: 'Mains L2', name: 'Mains / Bus L2', function: 'Mains or bus voltage measuring input L2. Same range as the generator inputs, CAT III. Neutral is not required.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'mains', voltage: 'max 350 V Ph-N / 600 V Ph-Ph' },
+    { pin: 'Mains L3', name: 'Mains / Bus L3', function: 'Mains or bus voltage measuring input L3. Same range as the generator inputs, CAT III. Neutral is not required.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'mains', voltage: 'max 350 V Ph-N / 600 V Ph-Ph' },
+    { pin: 'Mains N', name: 'Mains / Bus N', function: 'Mains or bus voltage measuring input N. Same range as the generator inputs, CAT III. Neutral is not required.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'mains', voltage: 'max 350 V Ph-N / 600 V Ph-Ph' },
+    { pin: 'L1k', name: 'L1k', function: 'Generator current transformer input L1, k terminal. 1 A or 5 A secondary. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'metering' },
+    { pin: 'L1l', name: 'L1l', function: 'Generator current transformer input L1, l terminal.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'metering' },
+    { pin: 'L2k', name: 'L2k', function: 'Generator current transformer input L2, k terminal. 1 A or 5 A secondary. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'metering' },
+    { pin: 'L2l', name: 'L2l', function: 'Generator current transformer input L2, l terminal.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'metering' },
+    { pin: 'L3k', name: 'L3k', function: 'Generator current transformer input L3, k terminal. 1 A or 5 A secondary. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'metering' },
+    { pin: 'L3l', name: 'L3l', function: 'Generator current transformer input L3, l terminal.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'metering' },
+    { pin: 'LNk', name: 'LNk', function: 'Neutral / mains current transformer input, k terminal. 1 A or 5 A secondary.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'metering' },
+    { pin: 'LNl', name: 'LNl', function: 'Neutral / mains current transformer input, l terminal.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', circuit: 'metering' },
+    { pin: 'BI1', name: 'Binary Input 1', function: 'Configurable binary input 1. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI2', name: 'Binary Input 2', function: 'Configurable binary input 2. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI3', name: 'Binary Input 3', function: 'Configurable binary input 3. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI4', name: 'Binary Input 4', function: 'Configurable binary input 4. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI5', name: 'Binary Input 5', function: 'Configurable binary input 5. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI6', name: 'Binary Input 6', function: 'Configurable binary input 6. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI7', name: 'Binary Input 7', function: 'Configurable binary input 7. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI8', name: 'Binary Input 8', function: 'Configurable binary input 8. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI9', name: 'Binary Input 9', function: 'Configurable binary input 9. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI10', name: 'Binary Input 10', function: 'Configurable binary input 10. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI11', name: 'Binary Input 11', function: 'Configurable binary input 11. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BI12', name: 'Binary Input 12', function: 'Configurable binary input 12. Activated by switching to power supply minus. Function is assigned during configuration in GenConfig, not fixed in hardware. Input resistance 4.7 kilohm; closed contact indicated at 0-2 V, open contact at 8-36 V.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² minimum', circuit: 'inputs', voltage: '0-36 V DC' },
+    { pin: 'BO1', name: 'Binary Output 1', function: 'Configurable binary open-collector output 1. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO2', name: 'Binary Output 2', function: 'Configurable binary open-collector output 2. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO3', name: 'Binary Output 3', function: 'Configurable binary open-collector output 3. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO4', name: 'Binary Output 4', function: 'Configurable binary open-collector output 4. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO5', name: 'Binary Output 5', function: 'Configurable binary open-collector output 5. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO6', name: 'Binary Output 6', function: 'Configurable binary open-collector output 6. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO7', name: 'Binary Output 7', function: 'Configurable binary open-collector output 7. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO8', name: 'Binary Output 8', function: 'Configurable binary open-collector output 8. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO9', name: 'Binary Output 9', function: 'Configurable binary open-collector output 9. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO10', name: 'Binary Output 10', function: 'Configurable binary open-collector output 10. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO11', name: 'Binary Output 11', function: 'Configurable binary open-collector output 11. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'BO12', name: 'Binary Output 12', function: 'Configurable binary open-collector output 12. The load is connected to power supply plus. Function is assigned during configuration in GenConfig, not fixed in hardware.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'auxiliary', voltage: 'max 36 V DC', current: 'max 0.5 A' },
+    { pin: 'AI1', name: 'Analog Input 1', function: 'Configurable analog sensor input 1. Jumper selectable for resistance, voltage or current sensors. Not electrically separated. Ranges: up to 2500 ohm, 5 V, or 0-20 mA.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'sensing' },
+    { pin: 'AI2', name: 'Analog Input 2', function: 'Configurable analog sensor input 2. Jumper selectable for resistance, voltage or current sensors. Not electrically separated. Ranges: up to 2500 ohm, 5 V, or 0-20 mA.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'sensing' },
+    { pin: 'AI3', name: 'Analog Input 3', function: 'Configurable analog sensor input 3. Jumper selectable for resistance, voltage or current sensors. Not electrically separated. Ranges: up to 2500 ohm, 5 V, or 0-20 mA.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', circuit: 'sensing' },
+    { pin: 'SG-OUT', name: 'Speed Governor Out', function: 'Speed governor output interface. 10 V or 5 V PWM, 500-3000 Hz.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', circuit: 'auxiliary' },
+    { pin: 'SG-COM', name: 'Speed Governor Common', function: 'Speed governor output common.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', circuit: 'auxiliary' },
+    { pin: 'RPM-IN', name: 'RPM In', function: 'Magnetic pick-up speed input. Minimum 2 Vpk-pk from 4 Hz to 4 kHz, maximum 50 Veff, measured range 4 Hz to 10 kHz.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² screened', circuit: 'sensing' },
+    { pin: 'RPM-COM', name: 'RPM Common', function: 'Magnetic pick-up input common.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² screened', circuit: 'sensing' },
+    { pin: 'AVRI-OUT', name: 'AVRi Out', function: 'TTL (5 V PWM) interface output to an IG-AVRi module.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', circuit: 'auxiliary' },
+    { pin: 'AVRI-COM', name: 'AVRi Common', function: 'IG-AVRi interface common.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', circuit: 'auxiliary' },
+    { pin: 'A1', name: 'RS485 A1', function: 'RS485 (1) line A. Remote display, InteliVision 8, or PC via an RS485 converter. Maximum 1000 m.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² screened', circuit: 'communication' },
+    { pin: 'B1', name: 'RS485 B1', function: 'RS485 (1) line B.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² screened', circuit: 'communication' },
+    { pin: 'COMR1', name: 'RS485 Common', function: 'RS485 (1) common.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² screened', circuit: 'communication' },
+    { pin: 'CAN1 H1', name: 'CAN1 High', function: 'CAN1 high. Extension modules (IS-AIN, IS-BIN, IGS-PTM, IGL-RA15, I-AOUT). 120 ohm shielded twisted pair, maximum 200 m, 250 kBd.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² twisted screened', circuit: 'communication' },
+    { pin: 'CAN1 L1', name: 'CAN1 Low', function: 'CAN1 low.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² twisted screened', circuit: 'communication' },
+    { pin: 'COMC1', name: 'CAN1 Common', function: 'CAN1 common.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² twisted screened', circuit: 'communication' },
+    { pin: 'CAN2 H2', name: 'CAN2 High', function: 'CAN2 high. Inter-controller load and VAR sharing, power management, and monitoring modules.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² twisted screened', circuit: 'communication' },
+    { pin: 'CAN2 L2', name: 'CAN2 Low', function: 'CAN2 low.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² twisted screened', circuit: 'communication' },
+    { pin: 'COMC2', name: 'CAN2 Common', function: 'CAN2 common.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² twisted screened', circuit: 'communication' },
+    { pin: 'RS232', name: 'RS232 (1)', function: 'D-SUB9 male. PC (InteliMonitor, GenConfig), modem, GSM modem, engine ECU, or InteliVision 8. Maximum 10 m.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'communication' },
   ],
   // SmartGen HGM9320 (HGM9320MPU / HGM9320CAN)
   // VERIFIED 2026-07-27 against the SmartGen HGM9310MPU/9320MPU/9310CAN/9320CAN
@@ -586,7 +676,7 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
     { pin: '1', name: 'B-', function: 'Battery negative', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'power' },  // Connects to the starter battery negative.
     { pin: '2', name: 'B+', function: 'Battery positive', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-35V DC', current: '20A fuse recommended' },  // Connects to starter battery positive. Double the conductors in parallel if the run exceeds 30 m.
     { pin: '3', name: 'Emergency stop', function: 'Emergency stop supply', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'protection' },  // Fed from B+ through the emergency stop button. Terminals 4 and 5 take their B+ from here, so releasing this removes both fuel and crank.
-    { pin: '4', name: 'Fuel relay output', function: 'Fuel relay output', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'starting', current: '16A' },  // B+ supplied from terminal 3.
+    { pin: '4', name: 'Fuel relay output', function: 'Fuel relay output', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'fuel', current: '16A' },  // B+ supplied from terminal 3.
     { pin: '5', name: 'Crank relay output', function: 'Crank relay output', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'starting', current: '16A' },  // B+ supplied from terminal 3. Connects to the starter coil.
     { pin: '6', name: 'Aux. output 1', function: 'Auxiliary relay output 1', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary', current: '7A' },  // B+ supplied from terminal 2. Function is configurable.
     { pin: '7', name: 'Aux. output 2', function: 'Auxiliary relay output 2', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary', current: '7A' },  // B+ supplied from terminal 2. Function is configurable.
@@ -598,9 +688,9 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
     { pin: '13', name: 'Aux. input 4', function: 'Auxiliary digital input 4', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
     { pin: '14', name: 'Aux. input 5', function: 'Auxiliary digital input 5', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
     { pin: '15', name: 'Aux. input 6', function: 'Auxiliary digital input 6', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
-    { pin: '16', name: 'Magnetic pickup screen', function: 'Speed sensor cable screen', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensors' },  // Screen of the speed sensor cable, earthed at this end only. Two-core screened cable.
-    { pin: '17', name: 'Magnetic pickup 2', function: 'Speed sensor signal 2', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensors', voltage: '1.0-24V RMS' },  // Speed sensor signal. Around 12V AC at rated speed is typical.
-    { pin: '18', name: 'Magnetic pickup 1', function: 'Speed sensor signal 1', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensors', voltage: '1.0-24V RMS' },  // Speed sensor signal.
+    { pin: '16', name: 'Magnetic pickup screen', function: 'Speed sensor cable screen', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensing' },  // Screen of the speed sensor cable, earthed at this end only. Two-core screened cable.
+    { pin: '17', name: 'Magnetic pickup 2', function: 'Speed sensor signal 2', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensing', voltage: '1.0-24V RMS' },  // Speed sensor signal. Around 12V AC at rated speed is typical.
+    { pin: '18', name: 'Magnetic pickup 1', function: 'Speed sensor signal 1', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensing', voltage: '1.0-24V RMS' },  // Speed sensor signal.
     { pin: '19', name: 'Aux. input 7', function: 'Auxiliary digital input 7', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
     { pin: '20', name: 'Aux. output 4 NC', function: 'Auxiliary output 4, normally closed', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary', current: '7A' },  // Volt-free contact.
     { pin: '21', name: 'Aux. output 4 COM', function: 'Auxiliary output 4, common', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary' },  // Relay common point.
@@ -632,68 +722,54 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
     { pin: '53', name: 'Earth current', function: 'Earth fault CT input', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'metering', current: '5A' },  // From the CT secondary where earth fault detection is used.
     { pin: '54', name: 'Earth current return', function: 'Earth fault CT return', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'metering' },
     { pin: '55', name: 'Aux. input 8', function: 'Auxiliary digital input 8', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
-    { pin: '56', name: 'Aux. sensor 1', function: 'Configurable analogue sensor 1', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },  // For temperature, oil pressure or level senders.
-    { pin: '57', name: 'Aux. sensor 2', function: 'Configurable analogue sensor 2', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },  // For temperature, oil pressure or level senders.
-    { pin: '58', name: 'Oil pressure sensor', function: 'Oil pressure sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },
-    { pin: '59', name: 'Temperature sensor', function: 'Coolant temperature sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },
-    { pin: '60', name: 'Fuel level sensor', function: 'Fuel level sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },
-    { pin: '61', name: 'Sensor COM', function: 'Sender common', wireColor: 'Not specified by OEM', wireGauge: '-', circuit: 'sensors' },  // Common return for the senders; already tied to B-.
+    { pin: '56', name: 'Aux. sensor 1', function: 'Configurable analogue sensor 1', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // For temperature, oil pressure or level senders.
+    { pin: '57', name: 'Aux. sensor 2', function: 'Configurable analogue sensor 2', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // For temperature, oil pressure or level senders.
+    { pin: '58', name: 'Oil pressure sensor', function: 'Oil pressure sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },
+    { pin: '59', name: 'Temperature sensor', function: 'Coolant temperature sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },
+    { pin: '60', name: 'Fuel level sensor', function: 'Fuel level sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },
+    { pin: '61', name: 'Sensor COM', function: 'Sender common', wireColor: 'Not specified by OEM', wireGauge: '-', circuit: 'sensing' },  // Common return for the senders; already tied to B-.
     { pin: '62', name: 'RS232 GND', function: 'RS232 ground', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },  // Used for a GSM module.
     { pin: '63', name: 'RS232 RX', function: 'RS232 receive', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },
     { pin: '64', name: 'RS232 TX', function: 'RS232 transmit', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },
   ],
+  // Woodward easYgen-3000 Series - PARTIAL TERMINAL SET
+  //
+  // VERIFIED 2026-07-29 against Woodward easYgen-3000 Series documentation
+  // (installation manual 37223, power supply and relay output sections).
+  //
+  // COVERAGE IS DELIBERATELY PARTIAL. Only the power supply and the R1-R4
+  // relay outputs have been read from Woodward documentation. The discrete
+  // inputs, analog inputs, voltage and current measuring terminals and the
+  // serial interfaces are NOT included, because the full terminal
+  // allocation table has not yet been obtained from Woodward. The registry
+  // in lib/generator-oracle/controllerSources.ts records this entry as
+  // completeness: 'partial' and the panel states so.
+  //
+  // The data previously here was FABRICATED: it invented an "X1:1 / X2:1"
+  // connector scheme and a DO1..DO5 output order. Woodward number these
+  // terminals 61 (PE), 63 (supply +) and 64 (0 V), and the relays are R1
+  // centralised alarm (30), R2 stopping alarm (31), R3 starter (32) and R4
+  // fuel solenoid / gas valve (33), all commoned on 35 - a different
+  // ordering entirely.
+  //
+  // Wire COLOUR is "Not specified by OEM".
   'woodward-easygen3000': [
-    { pin: 'X1:1', name: '+UB', function: 'Power Supply +', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-32V DC' },
-    { pin: 'X1:2', name: '-UB', function: 'Power Supply -', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'X1:3', name: 'PE', function: 'Protective Earth', wireColor: 'Green/Yellow', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'X2:1', name: 'DO1', function: 'Start Output', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: 'X2:2', name: 'DO2', function: 'Fuel Output', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '5A' },
-    { pin: 'X2:3', name: 'DO3', function: 'GCB Close', wireColor: 'Gray', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: 'X2:4', name: 'DO4', function: 'MCB Close', wireColor: 'Gray/White', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: 'X2:5', name: 'DO5', function: 'Preheat', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: 'X2:6', name: 'DO-COM', function: 'DO Common', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'X3:1', name: 'MPU+', function: 'Speed Pickup +', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X3:2', name: 'MPU-', function: 'Speed Pickup -', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X3:3', name: 'SH', function: 'MPU Shield', wireColor: 'Gray', wireGauge: 'Braid', circuit: 'sensing' },
-    { pin: 'X4:1', name: 'AI1', function: 'Oil Pressure 4-20mA', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X4:2', name: 'AI2', function: 'Coolant Temp PT100', wireColor: 'Blue', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X4:3', name: 'AI3', function: 'Fuel Level 0-10V', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X4:4', name: 'AI4', function: 'Auxiliary Input', wireColor: 'White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X4:5', name: 'A-GND', function: 'Analog Ground', wireColor: 'Black/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'X5:1', name: 'L1-N', function: 'Gen Voltage L1', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'X5:2', name: 'L2-N', function: 'Gen Voltage L2', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'X5:3', name: 'L3-N', function: 'Gen Voltage L3', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'X5:4', name: 'N', function: 'Gen Neutral', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'X6:1', name: 'CAN-H', function: 'CAN High', wireColor: 'Green', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X6:2', name: 'CAN-L', function: 'CAN Low', wireColor: 'Yellow', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X6:3', name: 'CAN-GND', function: 'CAN Ground', wireColor: 'Black', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X7:1', name: 'RS485-A', function: 'Modbus A (+)', wireColor: 'Blue', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X7:2', name: 'RS485-B', function: 'Modbus B (-)', wireColor: 'Orange', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'X7:3', name: 'RS-GND', function: 'Modbus GND', wireColor: 'Black', wireGauge: '0.5mm²', circuit: 'communication' },
+    { pin: '61', name: 'PE', function: 'Protective earth. Woodward require a conductor of 2.5 mm² (14 AWG) or larger, connected via the screw-plug terminal on the back of the unit.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (14 AWG) minimum', circuit: 'power' },
+    { pin: '63', name: 'Supply +', function: 'Power supply input, 12/24 V DC nominal. Woodward specify a 6 A protective device (fuse or circuit breaker) in this supply line.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² maximum', circuit: 'power', voltage: '8 to 40.0 V DC' },
+    { pin: '64', name: 'Supply 0 V', function: 'Power supply return, 0 V DC.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² maximum', circuit: 'power' },
+    { pin: '30', name: 'Relay Output R1', function: 'Relay output R1, centralised alarm. Switches against the common terminal 35.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² maximum', circuit: 'protection' },
+    { pin: '31', name: 'Relay Output R2', function: 'Relay output R2, stopping alarm. Switches against the common terminal 35.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² maximum', circuit: 'protection' },
+    { pin: '32', name: 'Relay Output R3', function: 'Relay output R3, starter. Switches against the common terminal 35.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² maximum', circuit: 'starting' },
+    { pin: '33', name: 'Relay Output R4', function: 'Relay output R4, fuel solenoid or gas valve. Switches against the common terminal 35.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² maximum', circuit: 'fuel' },
+    { pin: '35', name: 'Relay Common', function: 'Shared common terminal for relay outputs R1 to R4.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² maximum', circuit: 'auxiliary' },
   ],
-  'powerwizard-20': [
-    { pin: 'J1-1', name: 'BATT+', function: 'Battery Positive', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '9-32V DC' },
-    { pin: 'J1-2', name: 'BATT-', function: 'Battery Negative', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: 'J1-3', name: 'CRANK', function: 'Crank Relay', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: 'J1-4', name: 'FUEL', function: 'Fuel Solenoid', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '5A' },
-    { pin: 'J1-5', name: 'RUN', function: 'Run Relay', wireColor: 'Green', wireGauge: '1.5mm²', circuit: 'fuel', current: '3A' },
-    { pin: 'J1-6', name: 'PREHEAT', function: 'Preheat Relay', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: 'J2-1', name: 'OIL-P', function: 'Oil Pressure Sender', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J2-2', name: 'COOL-T', function: 'Coolant Temp Sender', wireColor: 'Blue', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J2-3', name: 'FUEL-L', function: 'Fuel Level', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J2-4', name: 'A-GND', function: 'Analog Ground', wireColor: 'Black/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J3-1', name: 'MPU+', function: 'Speed Sensor +', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J3-2', name: 'MPU-', function: 'Speed Sensor -', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: 'J4-1', name: 'GEN-L1', function: 'Gen Voltage L1', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J4-2', name: 'GEN-L2', function: 'Gen Voltage L2', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J4-3', name: 'GEN-L3', function: 'Gen Voltage L3', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J4-4', name: 'GEN-N', function: 'Gen Neutral', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J5-1', name: 'CT1-S1', function: 'CT1 Secondary S1', wireColor: 'Red/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J5-2', name: 'CT1-S2', function: 'CT1 Secondary S2', wireColor: 'Red/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: 'J6-1', name: 'CAN-H', function: 'CAT Data Link +', wireColor: 'Green', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'J6-2', name: 'CAN-L', function: 'CAT Data Link -', wireColor: 'Yellow', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: 'J7-1', name: 'E-STOP', function: 'Emergency Stop', wireColor: 'Red/Yellow', wireGauge: '1.0mm²', circuit: 'protection' },
-  ],
+  // 'powerwizard-20' (CAT PowerWizard 2.0) intentionally has NO entry.
+  // Its 21 shipped pins were fabricated - the same invented template
+  // used for DSE, SmartGen, ComAp and Woodward. Caterpillar publish the
+  // PowerWizard terminal data only through the paywalled Service Information
+  // System, so nothing verifiable was available to replace it with. The
+  // registry marks it 'unsupported' and the panel shows the wiring-unavailable
+  // notice instead. Do NOT repopulate this without a traceable OEM document.
 };
 
 // ==================== DETAILED SCHEMATIC DIAGRAMS ====================
@@ -3115,7 +3191,8 @@ function DiagnosticFlowPanel({
 function PinoutTable({ controller }: { controller: ControllerModel }) {
   const [filter, setFilter] = useState('');
   const [selectedCircuit, setSelectedCircuit] = useState<string | null>(null);
-  const pins = CONTROLLER_PINS[controller.id] || [];
+  // Registry-gated: see the note on registryVerified below.
+  const pins = isControllerVerified(controller.id) ? CONTROLLER_PINS[controller.id] ?? [] : [];
 
   if (pins.length === 0) {
     return (
@@ -3200,7 +3277,11 @@ function PinoutTable({ controller }: { controller: ControllerModel }) {
           <tbody className="divide-y divide-slate-800">
             {filteredPins.map((pin, idx) => {
               const circuitCat = CIRCUIT_CATEGORIES.find(c => c.id === pin.circuit);
-              const wireColor = WIRE_COLORS[pin.wireColor.toLowerCase().replace('/', '-')] || WIRE_COLORS['gray'];
+              const wireColor = WIRE_COLORS[pin.wireColor.toLowerCase().replace('/', '-')];
+              // Most OEMs publish cable SIZE but not conductor colour. Where the
+              // colour is unknown we must not paint a swatch, because a coloured
+              // square reads as "this wire is grey" — an invented fact.
+              const colourKnown = Boolean(wireColor);
               return (
                 <tr key={pin.pin} className="hover:bg-slate-800/50 transition-colors">
                   <td className="px-3 py-2 font-mono text-cyan-400 font-bold">{pin.pin}</td>
@@ -3208,11 +3289,20 @@ function PinoutTable({ controller }: { controller: ControllerModel }) {
                   <td className="px-3 py-2 text-slate-300">{pin.function}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
-                      <div
-                        className="w-4 h-4 rounded border border-slate-600"
-                        style={{ backgroundColor: wireColor?.hex || '#6b7280' }}
-                      />
-                      <span className="text-slate-400">{pin.wireColor}</span>
+                      {colourKnown ? (
+                        <div
+                          className="w-4 h-4 rounded border border-slate-600 shrink-0"
+                          style={{ backgroundColor: wireColor.hex }}
+                        />
+                      ) : (
+                        <div
+                          className="w-4 h-4 rounded border border-dashed border-slate-600 shrink-0"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span className={colourKnown ? 'text-slate-400' : 'text-slate-500 italic'}>
+                        {pin.wireColor}
+                      </span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-slate-400 font-mono text-xs">{pin.wireGauge}</td>
@@ -3264,7 +3354,9 @@ function DetailedSchematicView({
     );
   }
 
-  const verifiedPins = CONTROLLER_PINS[controller.id] ?? [];
+  // Registry-gated: an entry in CONTROLLER_PINS is not on its own evidence
+  // that the data came from an OEM document.
+  const verifiedPins = isControllerVerified(controller.id) ? CONTROLLER_PINS[controller.id] ?? [] : [];
   const hasVerifiedPinout = verifiedPins.length > 0;
 
   return (
@@ -3412,7 +3504,17 @@ export default function WiringDiagramsPanel() {
 
   // Get current pin configuration. Never fall back to DSE 7320 — see
   // lib/generator-oracle/wiringGuard.ts for the reasoning.
-  const rawPins = CONTROLLER_PINS[selectedController.id] ?? [];
+  // The provenance registry — not this file — decides what may be rendered.
+  //
+  // Added 2026-07-29. Until then a controller rendered its pins purely because
+  // an entry existed in CONTROLLER_PINS, with nothing checking whether that
+  // entry had ever been read out of an OEM document. Four of the five shipped
+  // maps turned out to be fabricated, and CAT PowerWizard 2.0 rendered 21
+  // invented pins while controllerSources.ts recorded it as 'unsupported' —
+  // the registry already knew, and nothing consulted it. Consult it here, so
+  // pin data can never outrun its own provenance again.
+  const registryVerified = isControllerVerified(selectedController.id);
+  const rawPins = registryVerified ? CONTROLLER_PINS[selectedController.id] ?? [] : [];
   // Defense-in-depth: validate that the wiring data we are about to render
   // belongs to the same brand as the selected controller. Today CONTROLLER_PINS
   // is keyed by controller.id so a mismatch is impossible, but this guard
@@ -3677,13 +3779,38 @@ export default function WiringDiagramsPanel() {
                 >
                   <div className="font-bold text-sm">{ctrl.model}</div>
                   <div className="text-xs text-slate-500 mt-0.5">{ctrl.features.join(' • ')}</div>
-                  <div className="text-xs text-slate-600 mt-0.5">{ctrl.pinCount} pins • {ctrl.voltage}</div>
+                  {/* Terminal count comes from the verified pin map, never from
+                      the catalog's `pinCount` field — that field was populated
+                      with invented round numbers (the DSE 7320 was listed as 32
+                      pins; DSE publish 58). Where there is no verified map we
+                      show no count at all rather than a made-up one. */}
+                  <div className="text-xs text-slate-600 mt-0.5">
+                    {isControllerVerified(ctrl.id) && CONTROLLER_PINS[ctrl.id]
+                      ? `${CONTROLLER_PINS[ctrl.id].length} terminals • ${ctrl.voltage}`
+                      : ctrl.voltage}
+                  </div>
                   {/* Honest coverage marker: most listed controllers have no
                       verified pinout yet. Showing which do prevents a
-                      technician clicking through models expecting data. */}
-                  <div className={`text-[10px] mt-1 font-semibold ${CONTROLLER_PINS[ctrl.id] ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    {CONTROLLER_PINS[ctrl.id] ? 'Verified pinout available' : 'No verified pinout — refer to OEM manual'}
-                  </div>
+                      technician clicking through models expecting data.
+                      Driven by the provenance registry, not by the presence of
+                      a CONTROLLER_PINS entry — an entry existing has never been
+                      evidence that anyone read an OEM document. */}
+                  {(() => {
+                    const src = getControllerSource(ctrl.id);
+                    const label =
+                      src?.status !== 'verified'
+                        ? 'No verified pinout — refer to OEM manual'
+                        : src.completeness === 'partial'
+                          ? 'Partial verified pinout — some terminals not covered'
+                          : 'Verified pinout available';
+                    const tone =
+                      src?.status !== 'verified'
+                        ? 'text-slate-500'
+                        : src.completeness === 'partial'
+                          ? 'text-amber-400'
+                          : 'text-emerald-400';
+                    return <div className={`text-[10px] mt-1 font-semibold ${tone}`}>{label}</div>;
+                  })()}
                 </button>
               ))}
             </div>

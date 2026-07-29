@@ -34,6 +34,17 @@ export interface ControllerSourceCitation {
   publisher: string;
   /** Public OEM document hub URL or product-page URL where the source lives. */
   url?: string;
+  /**
+   * Where the copy we actually read was obtained, when that was NOT the OEM's
+   * own site — a distributor or manual-mirror host.
+   *
+   * Several OEMs put their manuals behind a download form or dealer login, so
+   * the copy consulted is often a mirror. Saying "source: deepseaelectronics.com"
+   * when the PDF was pulled from a distributor overstates the provenance, and
+   * overstated provenance is the exact failure this registry exists to prevent.
+   * Name the mirror.
+   */
+  accessedVia?: string;
   /** Document revision / part number when present on the source. */
   revision?: string;
   notes?: string;
@@ -44,6 +55,18 @@ export interface VerifiedControllerSource {
   sources: [ControllerSourceCitation, ...ControllerSourceCitation[]];
   /** Verification confidence as judged by the reviewer who installed the data. */
   verificationConfidence: 'high' | 'medium' | 'low';
+  /**
+   * Whether the shipped pin map covers the module's WHOLE published terminal
+   * table, or only part of it.
+   *
+   * This exists because 'verified' on its own was being read as 'complete',
+   * and a partial map presented as complete is its own hazard: a technician
+   * who cannot find a terminal assumes the module does not have it. Where a
+   * map is partial the panel says so and names what is missing.
+   */
+  completeness: 'complete' | 'partial';
+  /** Required when completeness is 'partial': what the map does NOT cover. */
+  coverageNote?: string;
 }
 
 export interface UnsupportedControllerSource {
@@ -80,60 +103,88 @@ export type ControllerSourceEntry =
 
 export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
   // ─────────── Verified entries ───────────
+  // ─────────────────────────────────────────────────────────────────────
+  // Re-verified 2026-07-29. Every entry below was previously marked
+  // 'verified / high confidence' while carrying FABRICATED pin data — the
+  // same invented template (Red/Black/Purple/Orange wire colours, a
+  // CRANK/FUEL/IDLE/STOP/PREHEAT output order) applied to four different
+  // manufacturers. The citations were fabricated too: the DSE entry named
+  // document "057-251, Sections 4.x" when the terminal tables are in
+  // 057-253 section 3.2.
+  //
+  // Each entry below has now been read out of the manufacturer's own
+  // terminal table and the pin map rebuilt from it. Do not mark anything
+  // 'verified' here without opening the document and reading the table.
+  // ─────────────────────────────────────────────────────────────────────
   'dse-7320': {
     status: 'verified',
     verificationConfidence: 'high',
+    completeness: 'complete',
     sources: [
       {
-        title: 'DSE 7320 MKII Operator Manual',
+        title: 'DSE7310 MKII & DSE7320 MKII Operator Manual',
         documentType: 'OEM operator manual',
-        publisher: 'Deep Sea Electronics plc',
-        url: 'https://www.deepseaelectronics.com/depot/documents/manuals/057-251',
-        revision: '057-251',
+        publisher: 'Deep Sea Electronics Ltd',
+        url: 'https://www.deepseaelectronics.com/genset/auto-mains-utility-failure-control-modules/dse7320-mkii/downloads',
+        revision: '057-253 Issue 7',
+        accessedVia:
+          'PDF copy mirrored by Bundu Power (bundupower.co.za), a DSE distributor. DSE serve the same document from their own downloads page.',
         notes:
-          'Pin/terminal mapping for DSE 7320 MKII genset controller. Wiring panel data extracted from connector tables (Sections 4.x).',
+          'All 58 terminals read from section 3.2 CONNECTION DESCRIPTIONS (pages 48-54): DC supply and E-stop, analogue sensors, MPU/ECU/DSENet, outputs C and D, generator and mains sensing, current transformers, digital inputs and RS485. Terminals 38-41 (mains sensing) are not fitted to the DSE7310 MKII.',
       },
     ],
   },
   'comap-inteligen': {
     status: 'verified',
     verificationConfidence: 'high',
+    completeness: 'complete',
     sources: [
       {
-        title: 'InteliGen NT — Reference Guide (Hardware)',
-        documentType: 'OEM technical reference',
+        title: 'IGS-NT Installation Guide',
+        documentType: 'OEM installation manual',
         publisher: 'ComAp a.s.',
-        url: 'https://www.comap-control.com/products/detail/inteligen-nt',
+        url: 'https://www.comap-control.com/products/controllers/paralleling-gen-set-controllers/inteligen/inteligen-nt-basebox/',
+        accessedVia:
+          'PDF copy mirrored by Alternative Energies (support.alternative-energies.fr), a ComAp distributor.',
         notes:
-          'Pin/terminal mapping for InteliGen NT BaseBox. Wiring panel data extracted from controller hardware reference.',
+          'Terminal names and electrical limits read from section 7 "Terminals, Jumpers and I/O overview" and section 20 "Technical data". IG-NT has 12 binary inputs, 12 binary open-collector outputs (0.5 A, 36 V DC max) and 3 analog inputs. ComAp binary inputs and outputs are assigned in GenConfig, so they are listed as configurable rather than given fixed engine functions.',
       },
     ],
   },
   'smartgen-hgm9320': {
     status: 'verified',
     verificationConfidence: 'high',
+    completeness: 'complete',
     sources: [
       {
-        title: 'SmartGen HGM9320 User Manual',
+        title:
+          'HGM9310MPU/9320MPU/9310CAN/9320CAN Genset Controller User Manual',
         documentType: 'OEM operator manual',
         publisher: 'Zhengzhou SmartGen Technology Co., Ltd.',
         url: 'https://www.smartgen.com.cn/en/Pro_view/itemId/240/id/253.html',
+        accessedVia: 'PDF copy mirrored by manuals.plus.',
         notes:
-          'Pin/terminal mapping for HGM9320 AMF + load-share controller.',
+          'Terminals read from Table 12 "Description of Terminal Connection" (pages 28-30). Terminal 1 is B- and terminal 2 is B+; terminals 41-44 (mains sensing) are not fitted to the HGM9310 variants.',
       },
     ],
   },
   'woodward-easygen3000': {
     status: 'verified',
-    verificationConfidence: 'high',
+    verificationConfidence: 'medium',
+    completeness: 'partial',
+    coverageNote:
+      'Only the power supply (terminals 61 PE, 63 supply +, 64 0 V) and relay outputs R1-R4 (terminals 30, 31, 32, 33, commoned on 35) have been read from Woodward documentation. The discrete inputs, analog inputs, generator and mains voltage measuring terminals, current transformer inputs, pickup input and serial interfaces are NOT yet covered — Woodward do not publish installation manual 37223 at a public URL. Use the Woodward manual for anything outside the terminals listed.',
     sources: [
       {
-        title: 'Woodward easYgen-3000 Series Installation Manual',
+        title: 'easYgen-3000 Series Installation Manual',
         documentType: 'OEM installation manual',
         publisher: 'Woodward, Inc.',
-        url: 'https://www.woodward.com/en/products/electrical-power-control/control-systems/easygen-3000xt',
+        url: 'https://www.woodward.com/en/products/electrical-power-control/control-systems',
+        accessedVia:
+          'Woodward do not publish installation manual 37223 at a public URL. The power-supply and relay-output terminal figures were read from the ManualsLib mirror at https://www.manualslib.com/manual/1214275/Woodward-Easygen-3000.html. A third-party host is part of why this entry is medium confidence and partial coverage.',
+        revision: '37223A',
         notes:
-          'Pin/terminal mapping for easYgen-3000 base hardware. Wiring panel data extracted from terminal assignment tables.',
+          'Power supply section (PE on terminal 61, 12/24 V DC supply on 63 with a 6 A protective device, 0 V on 64, wire 2.5 mm² / 14 AWG) and the relay output assignment R1 centralised alarm 30/35, R2 stopping alarm 31/35, R3 starter 32/35, R4 fuel solenoid or gas valve 33/35. Partial coverage — see coverageNote.',
       },
     ],
   },
@@ -170,10 +221,22 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
     'Caterpillar Service Information System (paywall)',
     'Cat dealer parts.cat.com (paywall)',
   ]),
-  'powerwizard-20': unsupported('CAT PowerWizard 2.0', [
-    'Caterpillar Service Information System (paywall)',
-    'Cat dealer parts.cat.com (paywall)',
-  ]),
+  'powerwizard-20': {
+    status: 'unsupported',
+    reason:
+      'CAT PowerWizard 2.0 previously shipped a 21-pin map in this panel. That ' +
+      'map was fabricated — it followed the same invented template found in the ' +
+      'DSE, SmartGen, ComAp and Woodward entries — and it was removed on ' +
+      '2026-07-29. Caterpillar publish PowerWizard terminal data only through ' +
+      'the paywalled Service Information System, so there was no verifiable ' +
+      'source to replace it with. Use the Caterpillar wiring diagram supplied ' +
+      'with the set. Do not repopulate CONTROLLER_PINS for this model without a ' +
+      'traceable OEM document.',
+    searchedSources: [
+      'Caterpillar Service Information System (paywall)',
+      'Cat dealer parts.cat.com (paywall)',
+    ],
+  },
 
   // Datakom
   'datakom-d500': unsupported('Datakom D-500', ['Datakom Documents']),
