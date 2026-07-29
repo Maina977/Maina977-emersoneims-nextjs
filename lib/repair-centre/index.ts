@@ -35,6 +35,7 @@ import { solarChargeControllerNotCharging } from './articles/solar-charge-contro
 import { motorOverloadTripping } from './articles/motor-overload-tripping';
 import { pumpRunsContinuously } from './articles/pump-runs-continuously';
 import { generatorStartsInManualNotAuto } from './articles/generator-starts-in-manual-not-auto';
+import { upsBatteryReplacement } from './articles/ups-battery-replacement';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -75,6 +76,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   motorOverloadTripping,
   pumpRunsContinuously,
   generatorStartsInManualNotAuto,
+  upsBatteryReplacement,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -133,7 +135,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Diagnosis for offline, line-interactive and online double-conversion UPS systems, including bypass behaviour, battery autonomy and the generator interaction that causes most critical-power failures.',
     scope: ['Will not power on', 'Bypass faults', 'Battery and autonomy faults', 'Rectifier and inverter faults', 'Generator interaction'],
-    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present', 'ups-bypass-fault', 'ups-inverter-fault-diagnosis'],
+    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present', 'ups-bypass-fault', 'ups-inverter-fault-diagnosis', 'ups-battery-replacement'],
   },
   {
     slug: 'pcb-motherboards',

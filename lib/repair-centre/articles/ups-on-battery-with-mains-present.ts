@@ -365,7 +365,7 @@ export const upsOnBatteryWithMainsPresent: RepairArticle = {
     'Keep autonomy honest with real capacity testing, because this fault consumes whatever reserve genuinely exists — see the battery charging guide',
   ],
 
-  relatedSlugs: ['ups-bypass-fault', 'ups-inverter-fault-diagnosis', 'ups-not-charging-batteries'],
+  relatedSlugs: ['ups-battery-replacement', 'ups-bypass-fault', 'ups-inverter-fault-diagnosis', 'ups-not-charging-batteries'],
 
   faq: [
     {

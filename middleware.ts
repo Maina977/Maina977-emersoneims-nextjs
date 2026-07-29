@@ -676,6 +676,7 @@ export function middleware(request: NextRequest) {
         'motor-overload-tripping': 'motors',
         'pump-runs-continuously': 'pumps',
         'generator-starts-in-manual-not-auto': 'controllers',
+        'ups-battery-replacement': 'ups',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',
