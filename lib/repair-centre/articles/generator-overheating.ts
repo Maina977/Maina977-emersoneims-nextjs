@@ -357,7 +357,7 @@ export const generatorOverheating: RepairArticle = {
     'Size sets with margin for local ambient temperature and altitude rather than to nominal ratings',
   ],
 
-  relatedSlugs: ['generator-starts-then-stops', 'generator-low-oil-pressure-shutdown'],
+  relatedSlugs: ['generator-excessive-smoke', 'generator-low-oil-pressure-shutdown', 'generator-starts-then-stops'],
 
   faq: [
     {

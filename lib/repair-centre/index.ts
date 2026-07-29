@@ -27,6 +27,7 @@ import { boreholePumpNoWaterDelivery } from './articles/borehole-pump-no-water-d
 import { solarSystemUnderperforming } from './articles/solar-system-underperforming';
 import { vfdDriveFaultDiagnosis } from './articles/vfd-drive-fault-diagnosis';
 import { safeIsolationAndProvingDead } from './articles/safe-isolation-and-proving-dead';
+import { generatorExcessiveSmoke } from './articles/generator-excessive-smoke';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -59,6 +60,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   solarSystemUnderperforming,
   vfdDriveFaultDiagnosis,
   safeIsolationAndProvingDead,
+  generatorExcessiveSmoke,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -222,6 +224,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'When to stop and escalate',
     ],
     articleSlugs: ['safe-isolation-and-proving-dead'],
+  },
+  {
+    slug: 'fuel-systems',
+    title: 'Fuel & Combustion Diagnosis',
+    intro:
+      'Diesel fuel, air and combustion faults — smoke diagnosis, fuel contamination, injection and the loading problems that damage engines without any component failing. Written for Kenyan conditions, where dust loading, altitude derating and long-stored fuel matter more than temperate assumptions allow.',
+    scope: [
+      'Smoke diagnosis — black, blue and white',
+      'Air restriction and turbocharger faults',
+      'Wet stacking and light-load damage',
+      'Fuel contamination, water and filtration',
+      'Injection and combustion faults',
+      'Altitude and ambient derating',
+    ],
+    articleSlugs: ['generator-excessive-smoke'],
   },
   {
     slug: 'controllers',
