@@ -20,6 +20,7 @@ import {
 } from '@/lib/services/allServices';
 import { getServiceDiagnostics } from '@/lib/services/serviceDiagnostics';
 import { getServiceBible } from '@/lib/services/serviceBibles';
+import ServiceRepairLinks from '@/components/repair-centre/ServiceRepairLinks';
 import ServiceDeepDive from '@/components/services/ServiceDeepDive';
 import UPSVisualPack from '@/components/services/UPSVisualPack';
 
@@ -194,6 +195,12 @@ export default async function ServiceDetailPage({ params }: Props) {
           /solutions/* equivalents redirect here (ups, motor-rewinding, ac,
           borehole, ats). Renders nothing for other slugs. */}
       <ServiceDeepDive slug={service.slug} />
+
+      {/* Contextual links into the Repair Centre. Added 2026-07-27 after an SEO
+          audit found the Repair Centre had ONE inbound internal link from the
+          whole site, leaving 54 routes and ~115,000 words isolated. Renders
+          nothing for service slugs with no matching hub. */}
+      <ServiceRepairLinks slug={service.slug} />
 
       {/* UPS schematic, curves and diagnostic gauges. Moved here from the
           retired hardcoded route app/services/ups-systems/page.tsx, which was
