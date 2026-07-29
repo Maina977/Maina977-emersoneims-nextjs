@@ -11,7 +11,7 @@ export const inverterMosfetFailureDiagnosis: RepairArticle = {
     diagnosisComplexity: 'High. The failed device is usually easy to find; the reason it failed is not, and replacing it without finding that reason destroys the new one.',
     competence: 'specialist-engineer',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Battery DC bus per system design; board-level work only with the bus proven discharged',

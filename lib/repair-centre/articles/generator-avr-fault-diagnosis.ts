@@ -11,7 +11,7 @@ export const generatorAvrFaultDiagnosis: RepairArticle = {
     diagnosisComplexity: 'Moderate. The AVR is the most frequently replaced component in the excitation chain and the least frequently at fault.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Set output 240 V / 415 V 50 Hz nominal; excitation from main output or a separate PMG',

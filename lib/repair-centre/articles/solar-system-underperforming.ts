@@ -11,7 +11,7 @@ export const solarSystemUnderperforming: RepairArticle = {
     diagnosisComplexity: 'Moderate. The hard part is establishing what output SHOULD be right now, because without that "low output" is an opinion rather than a measurement.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'PV array DC per string design; AC output 240 V / 415 V 50 Hz nominal',

@@ -11,7 +11,7 @@ export const inverterWillNotSwitchOn: RepairArticle = {
     diagnosisComplexity: 'Low to moderate. Most units that appear dead are not faulty inside — they are not receiving usable DC.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Battery DC input per system design; AC output 240 V 50 Hz nominal',

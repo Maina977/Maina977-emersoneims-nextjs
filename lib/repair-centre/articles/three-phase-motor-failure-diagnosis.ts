@@ -11,7 +11,7 @@ export const threePhaseMotorFailureDiagnosis: RepairArticle = {
     diagnosisComplexity: 'Moderate. Establishing that a motor has failed is easy; establishing WHY, so the replacement does not fail the same way, is the real work.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Three-phase 415 V 50 Hz nominal; motor rating per nameplate',

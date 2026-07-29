@@ -11,7 +11,7 @@ export const boreholePumpNoWaterDelivery: RepairArticle = {
     diagnosisComplexity: 'Moderate. Most of the diagnosis is done at the surface; pulling the pump is expensive and should be the last step, not the first.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Single-phase 240 V or three-phase 415 V 50 Hz nominal; pump rating per nameplate',

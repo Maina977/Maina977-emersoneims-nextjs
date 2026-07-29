@@ -11,7 +11,7 @@ export const generatorNoVoltageOutput: RepairArticle = {
     diagnosisComplexity: 'Systematic rather than difficult. The excitation chain has a fixed order and each link can be proved or eliminated in turn.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '240 V / 415 V 50 Hz output; excitation typically supplied from the main output or a separate PMG',

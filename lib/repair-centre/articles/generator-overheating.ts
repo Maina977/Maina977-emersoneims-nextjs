@@ -11,7 +11,7 @@ export const generatorOverheating: RepairArticle = {
     diagnosisComplexity: 'Moderate. The cause is usually airflow or coolant rather than the engine, and it is frequently visible before any instrument is used.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Set output 240 V / 415 V 50 Hz nominal; cooling system per engine design',

@@ -11,7 +11,7 @@ export const starterMotorClicksButWillNotCrank: RepairArticle = {
     diagnosisComplexity: 'Low. One measurement — voltage drop while cranking — resolves the great majority of these.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Starting system DC per set design; set output 240 V / 415 V 50 Hz nominal',

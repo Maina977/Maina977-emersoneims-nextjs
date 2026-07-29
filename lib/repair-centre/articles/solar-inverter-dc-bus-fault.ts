@@ -11,7 +11,7 @@ export const solarInverterDcBusFault: RepairArticle = {
     diagnosisComplexity: 'Moderate. Many of these are design or configuration issues that only appear under particular conditions, so a spot check on a mild afternoon can find nothing wrong.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'PV array DC per string design; AC output 240 V / 415 V 50 Hz nominal',

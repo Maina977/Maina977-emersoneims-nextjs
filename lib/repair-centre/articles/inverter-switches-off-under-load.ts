@@ -11,7 +11,7 @@ export const inverterSwitchesOffUnderLoad: RepairArticle = {
     diagnosisComplexity: 'Straightforward if measured correctly. Nearly all cases are resolved by watching battery voltage at the terminals during the moment of load application.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '12 V / 24 V / 48 V DC battery side; 240 V 50 Hz AC output',

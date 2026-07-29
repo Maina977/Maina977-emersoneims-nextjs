@@ -11,7 +11,7 @@ export const testInstrumentsAndMeasurementErrors: RepairArticle = {
     diagnosisComplexity: 'Not a fault diagnosis. This is the instrument knowledge every other guide assumes, and the source of a surprising share of wrong conclusions.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'All systems — AC 240 V / 415 V 50 Hz, DC battery and bus systems, PV arrays, drive outputs',

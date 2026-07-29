@@ -11,7 +11,7 @@ export const generatorExcessiveSmoke: RepairArticle = {
     diagnosisComplexity: 'Low to moderate. Smoke colour narrows the cause to a specific system before any tool is picked up, which makes this one of the more tractable engine diagnostics.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Set output 240 V / 415 V 50 Hz nominal; fuel and air systems per engine design',

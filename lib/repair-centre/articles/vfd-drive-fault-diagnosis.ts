@@ -11,7 +11,7 @@ export const vfdDriveFaultDiagnosis: RepairArticle = {
     diagnosisComplexity: 'Moderate. The drive names the electrical symptom precisely, which makes it easy to replace a healthy drive when the cause is the load, the ramp or the cooling.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Three-phase 415 V 50 Hz input nominal; DC bus and output per drive rating',

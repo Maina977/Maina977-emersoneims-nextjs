@@ -11,7 +11,7 @@ export const safeIsolationAndProvingDead: RepairArticle = {
     diagnosisComplexity: 'Not a diagnosis. This is the procedure every other guide in the Repair Centre depends on, and the one most often shortened under time pressure.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'All systems — AC 240 V / 415 V 50 Hz, DC battery and bus systems, PV arrays',

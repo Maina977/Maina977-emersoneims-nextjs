@@ -11,7 +11,7 @@ export const atsNotChangingOver: RepairArticle = {
     diagnosisComplexity: 'Moderate. The switch is often healthy and simply has not been given permission to transfer.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Utility and generator supplies 240 V / 415 V 50 Hz nominal; control supply per panel design',

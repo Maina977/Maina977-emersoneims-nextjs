@@ -12,7 +12,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     diagnosisComplexity: 'Straightforward to confirm, potentially serious to resolve. The critical decision is made in one step: is the reading real?',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Awaiting independent named-engineer sign-off',
+    technicalReviewer: 'Mr. Kararaho — review pending',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '12 V or 24 V DC control',
