@@ -655,6 +655,8 @@ export function middleware(request: NextRequest) {
         'generator-unstable-voltage': 'generators',
         'generator-overheating': 'generators',
         'generator-avr-fault-diagnosis': 'generators',
+        'starter-motor-clicks-but-will-not-crank': 'generators',
+        'ups-bypass-fault': 'ups',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',

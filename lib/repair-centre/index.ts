@@ -14,6 +14,8 @@ import { generatorNoVoltageOutput } from './articles/generator-no-voltage-output
 import { generatorUnstableVoltage } from './articles/generator-unstable-voltage';
 import { generatorOverheating } from './articles/generator-overheating';
 import { generatorAvrFaultDiagnosis } from './articles/generator-avr-fault-diagnosis';
+import { starterMotorClicksButWillNotCrank } from './articles/starter-motor-clicks-but-will-not-crank';
+import { upsBypassFault } from './articles/ups-bypass-fault';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -33,6 +35,8 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorUnstableVoltage,
   generatorOverheating,
   generatorAvrFaultDiagnosis,
+  starterMotorClicksButWillNotCrank,
+  upsBypassFault,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -66,6 +70,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'generator-unstable-voltage',
       'generator-overheating',
       'generator-avr-fault-diagnosis',
+      'starter-motor-clicks-but-will-not-crank',
     ],
   },
   {
@@ -89,7 +94,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Diagnosis for offline, line-interactive and online double-conversion UPS systems, including bypass behaviour, battery autonomy and the generator interaction that causes most critical-power failures.',
     scope: ['Will not power on', 'Bypass faults', 'Battery and autonomy faults', 'Rectifier and inverter faults', 'Generator interaction'],
-    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present'],
+    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present', 'ups-bypass-fault'],
   },
   {
     slug: 'controllers',
