@@ -252,6 +252,51 @@ if (LIVE) {
       ? [`${BASE}/repair-centre/${wrongHub.slug}/${firstArticle.slug}`]
       : []),
   ];
+  // Site-wide soft-404 controls. These routes are outside the Repair Centre but
+  // have each shipped a soft-404 at some point, and /services is the commercial
+  // core. Checking them here means one command catches a regression anywhere the
+  // problem has previously occurred, rather than only where it was last fixed.
+  const siteNegatives = [
+    `${BASE}/services/__no_such_service__`,
+    `${BASE}/blog/__no_such_post__`,
+    `${BASE}/brands/__no_such_brand__/kenya/nairobi`,
+    `${BASE}/sectors/__no_such_sector__/kenya/nairobi`,
+  ];
+  // And the pages that must NOT be caught by those guards.
+  const sitePositives = [
+    `${BASE}/services`,
+    `${BASE}/services/generator-repairs`,
+    `${BASE}/services/air-conditioning`,
+    `${BASE}/blog`,
+    `${BASE}/blog/generator-buying-guide-kenya`,
+    `${BASE}/blog/three-phase-power-explained`,
+    `${BASE}/sectors`,
+  ];
+  for (const url of siteNegatives) {
+    try {
+      const r = await fetchPage(url);
+      if (r.status !== 404) {
+        errors.push(`LIVE ${url}: expected 404, got ${r.status} — SOFT-404 regression outside the Repair Centre`);
+      } else {
+        liveResults.push(`404 ${url.replace(BASE, '')} (site negative control)`);
+      }
+    } catch (e) {
+      errors.push(`LIVE ${url}: request failed (${e.message})`);
+    }
+  }
+  for (const url of sitePositives) {
+    try {
+      const r = await fetchPage(url);
+      if (r.status !== 200) {
+        errors.push(`LIVE ${url}: expected 200, got ${r.status} — a guard is 404ing a real page`);
+      } else {
+        liveResults.push(`200 ${url.replace(BASE, '')}`);
+      }
+    } catch (e) {
+      errors.push(`LIVE ${url}: request failed (${e.message})`);
+    }
+  }
+
   for (const url of negatives) {
     let r;
     try {
