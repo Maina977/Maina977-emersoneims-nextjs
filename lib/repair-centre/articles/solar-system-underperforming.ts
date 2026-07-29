@@ -367,7 +367,7 @@ export const solarSystemUnderperforming: RepairArticle = {
     'Set expectations at handover against achievable output for the site, not against nameplate — most "underperformance" complaints start here',
   ],
 
-  relatedSlugs: ['safe-isolation-and-proving-dead', 'solar-inverter-dc-bus-fault'],
+  relatedSlugs: ['safe-isolation-and-proving-dead', 'solar-charge-controller-not-charging', 'solar-inverter-dc-bus-fault'],
 
   faq: [
     {

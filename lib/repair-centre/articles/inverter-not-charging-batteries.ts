@@ -352,7 +352,7 @@ export const inverterNotChargingBatteries: RepairArticle = {
     'Where a generator charges the bank, confirm its frequency stability under load rather than assuming it',
   ],
 
-  relatedSlugs: ['inverter-will-not-switch-on', 'inverter-switches-off-under-load', 'ups-not-charging-batteries'],
+  relatedSlugs: ['inverter-switches-off-under-load', 'inverter-will-not-switch-on', 'solar-charge-controller-not-charging', 'ups-not-charging-batteries'],
 
   faq: [
     {
