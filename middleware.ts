@@ -675,6 +675,7 @@ export function middleware(request: NextRequest) {
         'solar-charge-controller-not-charging': 'solar',
         'motor-overload-tripping': 'motors',
         'pump-runs-continuously': 'pumps',
+        'generator-starts-in-manual-not-auto': 'controllers',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',

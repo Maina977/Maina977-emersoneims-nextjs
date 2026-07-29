@@ -34,6 +34,7 @@ import { dieselEngineAbnormalNoise } from './articles/diesel-engine-abnormal-noi
 import { solarChargeControllerNotCharging } from './articles/solar-charge-controller-not-charging';
 import { motorOverloadTripping } from './articles/motor-overload-tripping';
 import { pumpRunsContinuously } from './articles/pump-runs-continuously';
+import { generatorStartsInManualNotAuto } from './articles/generator-starts-in-manual-not-auto';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -73,6 +74,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   solarChargeControllerNotCharging,
   motorOverloadTripping,
   pumpRunsContinuously,
+  generatorStartsInManualNotAuto,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -303,7 +305,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Fault interpretation for generator controllers including DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens, Enko and Volvo Penta VODIA.',
     scope: ['Alarm interpretation', 'Reset pathways', 'Communication faults', 'Configuration and timers', 'Sensing faults'],
-    articleSlugs: ['controller-alarm-interpretation'],
+    articleSlugs: ['controller-alarm-interpretation', 'generator-starts-in-manual-not-auto'],
   },
 ];
 

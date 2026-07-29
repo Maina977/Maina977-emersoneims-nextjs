@@ -378,7 +378,7 @@ export const generatorCranksNoStart: RepairArticle = {
     'Record cranking behaviour at each service so a slow decline is visible before it becomes a no-start',
   ],
 
-  relatedSlugs: ['ats-not-changing-over', 'controller-alarm-interpretation', 'generator-battery-not-charging', 'generator-low-oil-pressure-shutdown', 'generator-starts-then-stops', 'starter-motor-clicks-but-will-not-crank'],
+  relatedSlugs: ['ats-not-changing-over', 'controller-alarm-interpretation', 'generator-battery-not-charging', 'generator-low-oil-pressure-shutdown', 'generator-starts-in-manual-not-auto', 'generator-starts-then-stops', 'starter-motor-clicks-but-will-not-crank'],
 
   faq: [
     {

@@ -356,7 +356,7 @@ export const atsNotChangingOver: RepairArticle = {
     'Thermally survey the panel under load annually',
   ],
 
-  relatedSlugs: ['generator-cranks-but-will-not-start', 'ups-bypass-fault'],
+  relatedSlugs: ['generator-cranks-but-will-not-start', 'generator-starts-in-manual-not-auto', 'ups-bypass-fault'],
 
   faq: [
     {
