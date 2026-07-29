@@ -569,31 +569,78 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
     { pin: 'H2', name: 'RS485-B', function: 'RS485 Data B (-)', wireColor: 'Orange', wireGauge: '0.5mm²', circuit: 'communication' },
     { pin: 'H3', name: 'RS-GND', function: 'RS485 Ground', wireColor: 'Black', wireGauge: '0.5mm²', circuit: 'communication' },
   ],
+  // SmartGen HGM9320 (HGM9320MPU / HGM9320CAN)
+  // VERIFIED 2026-07-27 against the SmartGen HGM9310MPU/9320MPU/9310CAN/9320CAN
+  // Genset Controller User Manual, Table 12 "Description of Terminal Connection"
+  // (pages 28-30). Terminal numbers, functions and cable sizes are read from that
+  // table; remarks are written in our own words.
+  //
+  // The data previously here was WRONG and hazardous. It listed pin 1 as "DC+"
+  // and pin 2 as "DC-", whereas SmartGen define terminal 1 as B- (negative) and
+  // terminal 2 as B+ (positive) - reversed polarity - and it mislabelled 3/4/5 as
+  // START/STOP/FUEL when they are emergency stop, fuel output and crank output.
+  //
+  // Wire COLOUR is intentionally "Not specified by OEM": the manual gives cable
+  // SIZE only. Do not invent colours.
   'smartgen-hgm9320': [
-    { pin: '1', name: 'DC+', function: 'Power Supply +', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-35V DC' },
-    { pin: '2', name: 'DC-', function: 'Power Supply -', wireColor: 'Black', wireGauge: '2.5mm²', circuit: 'power' },
-    { pin: '3', name: 'START', function: 'Start Relay', wireColor: 'Purple', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: '4', name: 'STOP', function: 'Stop Relay', wireColor: 'Pink', wireGauge: '1.5mm²', circuit: 'protection', current: '3A' },
-    { pin: '5', name: 'FUEL', function: 'Fuel Valve', wireColor: 'Orange', wireGauge: '1.5mm²', circuit: 'fuel', current: '5A' },
-    { pin: '6', name: 'PREHEAT', function: 'Preheat Relay', wireColor: 'Orange/Black', wireGauge: '1.5mm²', circuit: 'starting', current: '3A' },
-    { pin: '7', name: 'IDLE', function: 'Idle Control', wireColor: 'Yellow/Orange', wireGauge: '1.0mm²', circuit: 'fuel', current: '2A' },
-    { pin: '8', name: 'GCB-CL', function: 'Gen Breaker Close', wireColor: 'Gray', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: '9', name: 'MCB-CL', function: 'Mains Breaker Close', wireColor: 'Gray/White', wireGauge: '1.0mm²', circuit: 'protection', current: '2A' },
-    { pin: '10', name: 'OIL-P', function: 'Oil Pressure Input', wireColor: 'Brown', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '11', name: 'WATER-T', function: 'Water Temp Input', wireColor: 'Blue', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '12', name: 'FUEL-L', function: 'Fuel Level', wireColor: 'Green', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '13', name: 'SPEED+', function: 'Speed Sensor +', wireColor: 'Cyan', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '14', name: 'SPEED-', function: 'Speed Sensor -', wireColor: 'Cyan/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '15', name: 'A-GND', function: 'Analog Ground', wireColor: 'Black/White', wireGauge: '0.75mm²', circuit: 'sensing' },
-    { pin: '16', name: 'GEN-L1', function: 'Generator L1', wireColor: 'Red', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '17', name: 'GEN-L2', function: 'Generator L2', wireColor: 'Yellow', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '18', name: 'GEN-L3', function: 'Generator L3', wireColor: 'Blue', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '19', name: 'GEN-N', function: 'Generator N', wireColor: 'White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '20', name: 'CT1+', function: 'CT1 S1', wireColor: 'Red/White', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '21', name: 'CT1-', function: 'CT1 S2', wireColor: 'Red/Black', wireGauge: '1.0mm²', circuit: 'generator' },
-    { pin: '22', name: 'CAN-H', function: 'CAN High', wireColor: 'Green', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: '23', name: 'CAN-L', function: 'CAN Low', wireColor: 'Yellow', wireGauge: '0.5mm²', circuit: 'communication' },
-    { pin: '24', name: 'E-STOP', function: 'Emergency Stop', wireColor: 'Red/Yellow', wireGauge: '1.0mm²', circuit: 'protection' },
+    { pin: '1', name: 'B-', function: 'Battery negative', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'power' },  // Connects to the starter battery negative.
+    { pin: '2', name: 'B+', function: 'Battery positive', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-35V DC', current: '20A fuse recommended' },  // Connects to starter battery positive. Double the conductors in parallel if the run exceeds 30 m.
+    { pin: '3', name: 'Emergency stop', function: 'Emergency stop supply', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'protection' },  // Fed from B+ through the emergency stop button. Terminals 4 and 5 take their B+ from here, so releasing this removes both fuel and crank.
+    { pin: '4', name: 'Fuel relay output', function: 'Fuel relay output', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'starting', current: '16A' },  // B+ supplied from terminal 3.
+    { pin: '5', name: 'Crank relay output', function: 'Crank relay output', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'starting', current: '16A' },  // B+ supplied from terminal 3. Connects to the starter coil.
+    { pin: '6', name: 'Aux. output 1', function: 'Auxiliary relay output 1', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary', current: '7A' },  // B+ supplied from terminal 2. Function is configurable.
+    { pin: '7', name: 'Aux. output 2', function: 'Auxiliary relay output 2', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary', current: '7A' },  // B+ supplied from terminal 2. Function is configurable.
+    { pin: '8', name: 'Aux. output 3', function: 'Auxiliary relay output 3', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary', current: '7A' },  // B+ supplied from terminal 2. Function is configurable.
+    { pin: '9', name: 'Charger D+', function: 'Charge alternator D+ (WL)', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'charging' },  // Connects to the charging alternator D+ / WL terminal. Left unconnected where the alternator has no such terminal.
+    { pin: '10', name: 'Aux. input 1', function: 'Auxiliary digital input 1', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-. Function is configurable.
+    { pin: '11', name: 'Aux. input 2', function: 'Auxiliary digital input 2', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
+    { pin: '12', name: 'Aux. input 3', function: 'Auxiliary digital input 3', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
+    { pin: '13', name: 'Aux. input 4', function: 'Auxiliary digital input 4', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
+    { pin: '14', name: 'Aux. input 5', function: 'Auxiliary digital input 5', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
+    { pin: '15', name: 'Aux. input 6', function: 'Auxiliary digital input 6', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
+    { pin: '16', name: 'Magnetic pickup screen', function: 'Speed sensor cable screen', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensors' },  // Screen of the speed sensor cable, earthed at this end only. Two-core screened cable.
+    { pin: '17', name: 'Magnetic pickup 2', function: 'Speed sensor signal 2', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensors', voltage: '1.0-24V RMS' },  // Speed sensor signal. Around 12V AC at rated speed is typical.
+    { pin: '18', name: 'Magnetic pickup 1', function: 'Speed sensor signal 1', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'sensors', voltage: '1.0-24V RMS' },  // Speed sensor signal.
+    { pin: '19', name: 'Aux. input 7', function: 'Auxiliary digital input 7', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
+    { pin: '20', name: 'Aux. output 4 NC', function: 'Auxiliary output 4, normally closed', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary', current: '7A' },  // Volt-free contact.
+    { pin: '21', name: 'Aux. output 4 COM', function: 'Auxiliary output 4, common', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary' },  // Relay common point.
+    { pin: '22', name: 'Aux. output 4 NO', function: 'Auxiliary output 4, normally open', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'auxiliary', current: '7A' },  // Volt-free contact.
+    { pin: '23', name: 'ECU CAN screen', function: 'Engine ECU CAN screen', wireColor: 'Not specified by OEM', wireGauge: '-', circuit: 'communication' },  // Screened cable recommended, earthed at one end only.
+    { pin: '24', name: 'ECU CANH', function: 'Engine ECU CAN high', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },  // J1939 link to the engine ECU.
+    { pin: '25', name: 'ECU CANL', function: 'Engine ECU CAN low', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },  // J1939 link to the engine ECU.
+    { pin: '26', name: 'Reserved', function: 'Not used', wireColor: 'Not specified by OEM', wireGauge: '-', circuit: 'communication' },  // Empty terminal.
+    { pin: '33', name: 'RS485 screen', function: 'RS485 cable screen', wireColor: 'Not specified by OEM', wireGauge: '-', circuit: 'communication' },  // Screened cable recommended, earthed at one end only.
+    { pin: '34', name: 'RS485 A+', function: 'RS485 A+', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },
+    { pin: '35', name: 'RS485 B-', function: 'RS485 B-', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },
+    { pin: '36', name: 'Aux. output 5 NC', function: 'Auxiliary output 5, normally closed', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'auxiliary', current: '7A' },  // Volt-free contact.
+    { pin: '37', name: 'Aux. output 5 NO', function: 'Auxiliary output 5, normally open', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'auxiliary', current: '7A' },  // Volt-free contact.
+    { pin: '38', name: 'Aux. output 5 COM', function: 'Auxiliary output 5, common', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'auxiliary' },  // Relay common point.
+    { pin: '39', name: 'Aux. output 6 NO', function: 'Auxiliary output 6, normally open', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'auxiliary', current: '7A' },  // Volt-free contact.
+    { pin: '40', name: 'Aux. output 6 COM', function: 'Auxiliary output 6, common', wireColor: 'Not specified by OEM', wireGauge: '2.5mm²', circuit: 'auxiliary' },  // Relay common point.
+    { pin: '41', name: 'Mains L1', function: 'Mains L1 voltage sensing', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // 2A fuse recommended. Not fitted on HGM9310MPU / HGM9310CAN.
+    { pin: '42', name: 'Mains L2', function: 'Mains L2 voltage sensing', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // 2A fuse recommended. Not fitted on HGM9310MPU / HGM9310CAN.
+    { pin: '43', name: 'Mains L3', function: 'Mains L3 voltage sensing', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // 2A fuse recommended. Not fitted on HGM9310MPU / HGM9310CAN.
+    { pin: '44', name: 'Mains N', function: 'Mains neutral sensing', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // Not fitted on HGM9310MPU / HGM9310CAN.
+    { pin: '45', name: 'Genset L1', function: 'Generator L1 voltage sensing', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // 2A fuse recommended.
+    { pin: '46', name: 'Genset L2', function: 'Generator L2 voltage sensing', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // 2A fuse recommended.
+    { pin: '47', name: 'Genset L3', function: 'Generator L3 voltage sensing', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },  // 2A fuse recommended.
+    { pin: '48', name: 'Genset N', function: 'Generator neutral sensing', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensing' },
+    { pin: '49', name: 'CT1', function: 'Current transformer 1 input', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'metering', current: '5A' },  // From the CT secondary. Never open-circuit a CT secondary while primary current flows.
+    { pin: '50', name: 'CT2', function: 'Current transformer 2 input', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'metering', current: '5A' },  // From the CT secondary.
+    { pin: '51', name: 'CT3', function: 'Current transformer 3 input', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'metering', current: '5A' },  // From the CT secondary.
+    { pin: '52', name: 'CT COM', function: 'Current transformer common', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'metering' },
+    { pin: '53', name: 'Earth current', function: 'Earth fault CT input', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'metering', current: '5A' },  // From the CT secondary where earth fault detection is used.
+    { pin: '54', name: 'Earth current return', function: 'Earth fault CT return', wireColor: 'Not specified by OEM', wireGauge: '1.5mm²', circuit: 'metering' },
+    { pin: '55', name: 'Aux. input 8', function: 'Auxiliary digital input 8', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'inputs' },  // Active when connected to B-.
+    { pin: '56', name: 'Aux. sensor 1', function: 'Configurable analogue sensor 1', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },  // For temperature, oil pressure or level senders.
+    { pin: '57', name: 'Aux. sensor 2', function: 'Configurable analogue sensor 2', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },  // For temperature, oil pressure or level senders.
+    { pin: '58', name: 'Oil pressure sensor', function: 'Oil pressure sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },
+    { pin: '59', name: 'Temperature sensor', function: 'Coolant temperature sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },
+    { pin: '60', name: 'Fuel level sensor', function: 'Fuel level sender input', wireColor: 'Not specified by OEM', wireGauge: '1.0mm²', circuit: 'sensors' },
+    { pin: '61', name: 'Sensor COM', function: 'Sender common', wireColor: 'Not specified by OEM', wireGauge: '-', circuit: 'sensors' },  // Common return for the senders; already tied to B-.
+    { pin: '62', name: 'RS232 GND', function: 'RS232 ground', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },  // Used for a GSM module.
+    { pin: '63', name: 'RS232 RX', function: 'RS232 receive', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },
+    { pin: '64', name: 'RS232 TX', function: 'RS232 transmit', wireColor: 'Not specified by OEM', wireGauge: '0.5mm²', circuit: 'communication' },
   ],
   'woodward-easygen3000': [
     { pin: 'X1:1', name: '+UB', function: 'Power Supply +', wireColor: 'Red', wireGauge: '2.5mm²', circuit: 'power', voltage: '8-32V DC' },
