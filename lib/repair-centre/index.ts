@@ -16,6 +16,8 @@ import { generatorOverheating } from './articles/generator-overheating';
 import { generatorAvrFaultDiagnosis } from './articles/generator-avr-fault-diagnosis';
 import { starterMotorClicksButWillNotCrank } from './articles/starter-motor-clicks-but-will-not-crank';
 import { upsBypassFault } from './articles/ups-bypass-fault';
+import { pcbShortCircuitDiagnosis } from './articles/pcb-short-circuit-diagnosis';
+import { motherboardPowerRailDiagnosis } from './articles/motherboard-power-rail-diagnosis';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -37,6 +39,8 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorAvrFaultDiagnosis,
   starterMotorClicksButWillNotCrank,
   upsBypassFault,
+  pcbShortCircuitDiagnosis,
+  motherboardPowerRailDiagnosis,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -95,6 +99,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Diagnosis for offline, line-interactive and online double-conversion UPS systems, including bypass behaviour, battery autonomy and the generator interaction that causes most critical-power failures.',
     scope: ['Will not power on', 'Bypass faults', 'Battery and autonomy faults', 'Rectifier and inverter faults', 'Generator interaction'],
     articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present', 'ups-bypass-fault'],
+  },
+  {
+    slug: 'pcb-motherboards',
+    title: 'PCB & Motherboard Repair',
+    intro:
+      'Component-level diagnosis and board repair for industrial control and power electronics — locating shorted rails, tracing supply chains, and deciding when a board is worth repairing at all. Published only where the method can be given without inventing values: every board-specific voltage, pinout and component value is deferred to the manufacturer reference.',
+    scope: [
+      'Short-circuit location and current-limited fault finding',
+      'Power-rail diagnosis and sequencing',
+      'Reset, supervisor and clock faults',
+      'Component testing and failure modes',
+      'Board cleaning, track repair and contamination',
+      'When to repair and when to replace',
+    ],
+    articleSlugs: ['pcb-short-circuit-diagnosis', 'motherboard-power-rail-diagnosis'],
   },
   {
     slug: 'controllers',
