@@ -92,29 +92,28 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
         </dl>
 
         {/*
-          Review-status disclosure. The reviewer is NAMED, but his sign-off is
-          not yet complete on these articles — so the page says exactly that.
-          Naming someone as technical reviewer asserts they have read and
-          approved the content, and publishing that before it is true would
-          attach a real person's professional name to work he has not seen.
-          Remove this block only when the review has actually happened.
+          Scope note. The reviewer is named and has signed off (owner-confirmed
+          2026-07-27), so the former "review pending" disclosure is gone. This
+          block stays because it states what the guide deliberately does NOT
+          contain, which is a standing editorial position rather than a review
+          status — equipment-specific numbers are always referred to the
+          manufacturer, and readers need to know that before relying on it.
+
+          If an article is ever added that has NOT been reviewed, set its
+          technicalReviewer to include "pending" and restore a review-status
+          notice — do not let an unreviewed article inherit a signed-off page.
         */}
-        {/pending|awaiting/i.test(h.technicalReviewer) && (
-          <div className="mt-6 rounded-xl border border-slate-700 bg-slate-900/60 p-4 text-sm">
-            <p className="text-slate-300 font-semibold mb-1">Review status — read this before relying on the guide</p>
-            <p className="text-slate-400 leading-relaxed">
-              This guide was written and internally checked by EmersonEIMS Engineering, and is assigned to
-              Mr.&nbsp;Kararaho for technical review. His sign-off is not yet complete, and we would rather
-              tell you that than imply a review that has not happened. What the guide does contain is
-              diagnostic method, ranked causes and safety requirements. What it deliberately does{' '}
-              <strong className="text-slate-300">not</strong> contain is equipment-specific numbers — test
-              voltages, resistance and component values, torque figures, acceptance windows and pin
-              assignments are referred to the manufacturer&apos;s documentation for your exact model rather
-              than stated here, because a plausible-looking figure for the wrong machine is more dangerous
-              than no figure at all.
-            </p>
-          </div>
-        )}
+        <div className="mt-6 rounded-xl border border-slate-700 bg-slate-900/60 p-4 text-sm">
+          <p className="text-slate-300 font-semibold mb-1">Scope — read this before relying on the guide</p>
+          <p className="text-slate-400 leading-relaxed">
+            This guide sets out diagnostic method, ranked causes and safety requirements. It deliberately
+            does <strong className="text-slate-300">not</strong> state equipment-specific numbers — test
+            voltages, resistance and component values, torque figures, acceptance windows and pin
+            assignments are referred to the manufacturer&apos;s documentation for your exact model rather
+            than given here, because a plausible-looking figure for the wrong machine is more dangerous than
+            no figure at all.
+          </p>
+        </div>
       </header>
 
       {/* Direct technical answer */}

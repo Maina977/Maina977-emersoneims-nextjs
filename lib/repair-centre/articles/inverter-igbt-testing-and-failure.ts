@@ -11,7 +11,7 @@ export const inverterIgbtTestingAndFailure: RepairArticle = {
     diagnosisComplexity: 'High. Module construction hides internal parallel dies, so a partially degraded module can pass a casual check and fail under load.',
     competence: 'specialist-engineer',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'DC bus per design; board-level work only with the bus proven discharged',

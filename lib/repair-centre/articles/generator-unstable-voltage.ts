@@ -11,7 +11,7 @@ export const generatorUnstableVoltage: RepairArticle = {
     diagnosisComplexity: 'Moderate once the fault is correctly classified. The critical early step is separating a voltage problem from a speed problem, because they look identical on a voltmeter.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '240 V / 415 V 50 Hz output',

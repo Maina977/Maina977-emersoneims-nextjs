@@ -11,7 +11,7 @@ export const generatorStartsThenStops: RepairArticle = {
     diagnosisComplexity: 'Moderate. The timing of the stop is the single most useful clue and narrows the field before any tool is picked up.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '12 V or 24 V DC control; 240 V / 415 V 50 Hz output',

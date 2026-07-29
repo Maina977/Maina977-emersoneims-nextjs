@@ -11,7 +11,7 @@ export const pcbShortCircuitDiagnosis: RepairArticle = {
     diagnosisComplexity: 'High. Finding that a rail is shorted takes minutes; finding which of fifty components is doing it is the actual work.',
     competence: 'specialist-engineer',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Board supply per design; all work with the board isolated and the bus proven discharged',

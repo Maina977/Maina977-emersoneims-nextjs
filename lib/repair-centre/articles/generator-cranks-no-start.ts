@@ -15,7 +15,7 @@ export const generatorCranksNoStart: RepairArticle = {
     diagnosisComplexity: 'Moderate. Most cases resolve at the fuel or air stage; a minority require compression testing or ECU diagnostics.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: '12 V or 24 V DC starting; 240 V / 415 V 50 Hz output',

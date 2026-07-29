@@ -11,7 +11,7 @@ export const j1939SpnFmiExplained: RepairArticle = {
     diagnosisComplexity: 'Low to moderate. The code structure is systematic and readable once understood, which is exactly why it is so often over-read.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Engine ECM and controller CAN network; set output 240 V / 415 V 50 Hz nominal',

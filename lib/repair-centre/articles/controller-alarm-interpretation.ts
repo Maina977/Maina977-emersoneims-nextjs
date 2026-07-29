@@ -11,7 +11,7 @@ export const controllerAlarmInterpretation: RepairArticle = {
     diagnosisComplexity: 'Low to moderate. The controller tells you what it measured, not what failed — and confusing those two is the most common error in the field.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Set output 240 V / 415 V 50 Hz nominal; controller supply from the starting battery',

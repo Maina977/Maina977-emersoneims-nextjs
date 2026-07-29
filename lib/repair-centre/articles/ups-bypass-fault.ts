@@ -11,7 +11,7 @@ export const upsBypassFault: RepairArticle = {
     diagnosisComplexity: 'Moderate, but the consequence is severe: a bypass fault removes the protection that catches an inverter failure.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Bypass supply 240 V / 415 V 50 Hz nominal; DC bus per UPS design',

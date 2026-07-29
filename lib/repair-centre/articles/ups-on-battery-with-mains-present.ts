@@ -11,7 +11,7 @@ export const upsOnBatteryWithMainsPresent: RepairArticle = {
     diagnosisComplexity: 'Moderate, but time-critical. The UPS is consuming a finite reserve while you diagnose, so the first job is to establish how long you have.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Mains or generator input 240 V / 415 V 50 Hz nominal; input acceptance window is configurable per unit',

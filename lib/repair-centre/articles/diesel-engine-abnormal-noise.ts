@@ -11,7 +11,7 @@ export const dieselEngineAbnormalNoise: RepairArticle = {
     diagnosisComplexity: 'Moderate to interpret, but the urgent decision is simple: some noises mean stop immediately, and continuing to run is what turns a repair into a replacement.',
     competence: 'technician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'Set output 240 V / 415 V 50 Hz nominal; engine mechanical per design',

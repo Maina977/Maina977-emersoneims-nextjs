@@ -11,7 +11,7 @@ export const inverterNotChargingBatteries: RepairArticle = {
     diagnosisComplexity: 'Low to moderate. A large share of these are configuration rather than failure, and are resolved without opening the unit.',
     competence: 'qualified-electrician',
     author: 'EmersonEIMS Engineering',
-    technicalReviewer: 'Mr. Kararaho — review pending',
+    technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
     lastReviewed: '2026-07-27',
     electricalSystem: 'AC input 240 V 50 Hz nominal; battery DC per system design',
