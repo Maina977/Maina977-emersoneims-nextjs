@@ -677,6 +677,7 @@ export function middleware(request: NextRequest) {
         'pump-runs-continuously': 'pumps',
         'generator-starts-in-manual-not-auto': 'controllers',
         'ups-battery-replacement': 'ups',
+        'ats-will-not-return-to-mains': 'ats-changeover',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',

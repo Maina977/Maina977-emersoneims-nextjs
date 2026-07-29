@@ -351,7 +351,7 @@ export const generatorStartsInManualNotAuto: RepairArticle = {
     'Verify phase rotation and sensing integrity after any upstream electrical work',
   ],
 
-  relatedSlugs: ['controller-alarm-interpretation', 'ats-not-changing-over', 'generator-cranks-but-will-not-start'],
+  relatedSlugs: ['ats-not-changing-over', 'ats-will-not-return-to-mains', 'controller-alarm-interpretation', 'generator-cranks-but-will-not-start'],
 
   faq: [
     {

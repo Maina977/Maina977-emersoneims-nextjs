@@ -36,6 +36,7 @@ import { motorOverloadTripping } from './articles/motor-overload-tripping';
 import { pumpRunsContinuously } from './articles/pump-runs-continuously';
 import { generatorStartsInManualNotAuto } from './articles/generator-starts-in-manual-not-auto';
 import { upsBatteryReplacement } from './articles/ups-battery-replacement';
+import { atsWillNotReturnToMains } from './articles/ats-will-not-return-to-mains';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -77,6 +78,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   pumpRunsContinuously,
   generatorStartsInManualNotAuto,
   upsBatteryReplacement,
+  atsWillNotReturnToMains,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -164,7 +166,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Contactor, motor operator and interlock faults',
       'Position indication and auxiliary contacts',
     ],
-    articleSlugs: ['ats-not-changing-over'],
+    articleSlugs: ['ats-not-changing-over', 'ats-will-not-return-to-mains'],
   },
   {
     slug: 'motors',
