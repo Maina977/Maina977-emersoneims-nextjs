@@ -30,6 +30,7 @@ import { safeIsolationAndProvingDead } from './articles/safe-isolation-and-provi
 import { generatorExcessiveSmoke } from './articles/generator-excessive-smoke';
 import { testInstrumentsAndMeasurementErrors } from './articles/test-instruments-and-measurement-errors';
 import { j1939SpnFmiExplained } from './articles/j1939-spn-fmi-explained';
+import { dieselEngineAbnormalNoise } from './articles/diesel-engine-abnormal-noise';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -65,6 +66,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorExcessiveSmoke,
   testInstrumentsAndMeasurementErrors,
   j1939SpnFmiExplained,
+  dieselEngineAbnormalNoise,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -273,6 +275,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Recording codes before clearing them',
     ],
     articleSlugs: ['j1939-spn-fmi-explained'],
+  },
+  {
+    slug: 'engine-systems',
+    title: 'Engine Mechanical Diagnosis',
+    intro:
+      'Diesel engine mechanical condition — abnormal noise, lubrication and the judgements where continuing to run costs far more than stopping. The urgent decision on this equipment is usually not what the fault is, but whether the engine should be running while you work it out.',
+    scope: [
+      'Abnormal noise and knock identification',
+      'Bearing failure and when to stop immediately',
+      'Oil pressure, contamination and analysis',
+      'Valve train and clearances',
+      'Turbocharger mechanical condition',
+      'Repair versus replacement judgements',
+    ],
+    articleSlugs: ['diesel-engine-abnormal-noise'],
   },
   {
     slug: 'controllers',
