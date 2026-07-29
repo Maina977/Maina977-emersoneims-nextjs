@@ -32,6 +32,7 @@ import { testInstrumentsAndMeasurementErrors } from './articles/test-instruments
 import { j1939SpnFmiExplained } from './articles/j1939-spn-fmi-explained';
 import { dieselEngineAbnormalNoise } from './articles/diesel-engine-abnormal-noise';
 import { solarChargeControllerNotCharging } from './articles/solar-charge-controller-not-charging';
+import { motorOverloadTripping } from './articles/motor-overload-tripping';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -69,6 +70,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   j1939SpnFmiExplained,
   dieselEngineAbnormalNoise,
   solarChargeControllerNotCharging,
+  motorOverloadTripping,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -171,7 +173,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Variable-speed drive interaction',
       'Repair, rewind or replace',
     ],
-    articleSlugs: ['three-phase-motor-failure-diagnosis'],
+    articleSlugs: ['three-phase-motor-failure-diagnosis', 'motor-overload-tripping'],
   },
   {
     slug: 'pumps',

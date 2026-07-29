@@ -673,6 +673,7 @@ export function middleware(request: NextRequest) {
         'j1939-spn-fmi-explained': 'fault-codes',
         'diesel-engine-abnormal-noise': 'engine-systems',
         'solar-charge-controller-not-charging': 'solar',
+        'motor-overload-tripping': 'motors',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',
