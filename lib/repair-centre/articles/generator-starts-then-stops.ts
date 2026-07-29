@@ -370,7 +370,7 @@ export const generatorStartsThenStops: RepairArticle = {
     'Log run time and key parameters at each test, so a shortening run time is caught as a trend',
   ],
 
-  relatedSlugs: ['controller-alarm-interpretation', 'generator-cranks-but-will-not-start', 'generator-excessive-smoke', 'generator-low-oil-pressure-shutdown', 'generator-overheating', 'generator-produces-no-voltage-output', 'generator-unstable-voltage', 'starter-motor-clicks-but-will-not-crank'],
+  relatedSlugs: ['controller-alarm-interpretation', 'diesel-fuel-contamination', 'generator-cranks-but-will-not-start', 'generator-excessive-smoke', 'generator-low-oil-pressure-shutdown', 'generator-overheating', 'generator-produces-no-voltage-output', 'generator-unstable-voltage', 'starter-motor-clicks-but-will-not-crank'],
 
   faq: [
     {

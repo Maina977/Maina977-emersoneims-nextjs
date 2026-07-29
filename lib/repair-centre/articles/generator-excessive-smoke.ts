@@ -365,7 +365,7 @@ export const generatorExcessiveSmoke: RepairArticle = {
     'Investigate a change in smoke promptly — it is an early indicator, and most causes are cheap when caught early',
   ],
 
-  relatedSlugs: ['diesel-engine-abnormal-noise', 'generator-overheating', 'generator-starts-then-stops'],
+  relatedSlugs: ['diesel-engine-abnormal-noise', 'diesel-fuel-contamination', 'generator-overheating', 'generator-starts-then-stops'],
 
   faq: [
     {

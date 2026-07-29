@@ -678,6 +678,7 @@ export function middleware(request: NextRequest) {
         'generator-starts-in-manual-not-auto': 'controllers',
         'ups-battery-replacement': 'ups',
         'ats-will-not-return-to-mains': 'ats-changeover',
+        'diesel-fuel-contamination': 'fuel-systems',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',

@@ -37,6 +37,7 @@ import { pumpRunsContinuously } from './articles/pump-runs-continuously';
 import { generatorStartsInManualNotAuto } from './articles/generator-starts-in-manual-not-auto';
 import { upsBatteryReplacement } from './articles/ups-battery-replacement';
 import { atsWillNotReturnToMains } from './articles/ats-will-not-return-to-mains';
+import { dieselFuelContamination } from './articles/diesel-fuel-contamination';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -79,6 +80,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorStartsInManualNotAuto,
   upsBatteryReplacement,
   atsWillNotReturnToMains,
+  dieselFuelContamination,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -256,7 +258,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Injection and combustion faults',
       'Altitude and ambient derating',
     ],
-    articleSlugs: ['generator-excessive-smoke'],
+    articleSlugs: ['generator-excessive-smoke', 'diesel-fuel-contamination'],
   },
   {
     slug: 'testing-tools',
