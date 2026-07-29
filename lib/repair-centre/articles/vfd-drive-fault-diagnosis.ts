@@ -379,7 +379,7 @@ export const vfdDriveFaultDiagnosis: RepairArticle = {
     'Reform capacitors on drives held in long storage before putting them into service',
   ],
 
-  relatedSlugs: ['three-phase-motor-failure-diagnosis', 'inverter-igbt-testing-and-failure'],
+  relatedSlugs: ['inverter-igbt-testing-and-failure', 'safe-isolation-and-proving-dead', 'three-phase-motor-failure-diagnosis'],
 
   faq: [
     {

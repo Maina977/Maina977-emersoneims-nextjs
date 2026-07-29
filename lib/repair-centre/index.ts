@@ -26,6 +26,7 @@ import { threePhaseMotorFailureDiagnosis } from './articles/three-phase-motor-fa
 import { boreholePumpNoWaterDelivery } from './articles/borehole-pump-no-water-delivery';
 import { solarSystemUnderperforming } from './articles/solar-system-underperforming';
 import { vfdDriveFaultDiagnosis } from './articles/vfd-drive-fault-diagnosis';
+import { safeIsolationAndProvingDead } from './articles/safe-isolation-and-proving-dead';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -57,6 +58,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   boreholePumpNoWaterDelivery,
   solarSystemUnderperforming,
   vfdDriveFaultDiagnosis,
+  safeIsolationAndProvingDead,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -205,6 +207,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Capacitor ageing and storage',
     ],
     articleSlugs: ['vfd-drive-fault-diagnosis'],
+  },
+  {
+    slug: 'safety',
+    title: 'Electrical Safety & Safe Isolation',
+    intro:
+      'The disciplines every other guide in the Repair Centre depends on — identifying every source, locking off, proving dead at the point of work, and controlling stored energy. Power equipment routinely has more than one source, and several of them cannot be switched off at all.',
+    scope: [
+      'Safe isolation and proving dead',
+      'Lockout, tagout and multi-person working',
+      'Multiple and hidden sources — backfeed, auto-start, PV, batteries',
+      'Stored energy: DC bus, capacitors, springs, pressure, heat',
+      'Test instrument selection and proving',
+      'When to stop and escalate',
+    ],
+    articleSlugs: ['safe-isolation-and-proving-dead'],
   },
   {
     slug: 'controllers',

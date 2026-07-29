@@ -343,7 +343,7 @@ export const upsBypassFault: RepairArticle = {
     'Thermally survey bypass terminations annually under load',
   ],
 
-  relatedSlugs: ['ats-not-changing-over', 'ups-inverter-fault-diagnosis', 'ups-not-charging-batteries', 'ups-on-battery-with-mains-present'],
+  relatedSlugs: ['ats-not-changing-over', 'safe-isolation-and-proving-dead', 'ups-inverter-fault-diagnosis', 'ups-not-charging-batteries', 'ups-on-battery-with-mains-present'],
 
   faq: [
     {
