@@ -23,6 +23,7 @@ import { generatorBatteryNotCharging } from './articles/generator-battery-not-ch
 import { upsInverterFaultDiagnosis } from './articles/ups-inverter-fault-diagnosis';
 import { controllerAlarmInterpretation } from './articles/controller-alarm-interpretation';
 import { threePhaseMotorFailureDiagnosis } from './articles/three-phase-motor-failure-diagnosis';
+import { boreholePumpNoWaterDelivery } from './articles/borehole-pump-no-water-delivery';
 import { inverterSwitchesOffUnderLoad } from './articles/inverter-switches-off-under-load';
 import { inverterWillNotSwitchOn } from './articles/inverter-will-not-switch-on';
 import { inverterNotChargingBatteries } from './articles/inverter-not-charging-batteries';
@@ -51,6 +52,7 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   upsInverterFaultDiagnosis,
   controllerAlarmInterpretation,
   threePhaseMotorFailureDiagnosis,
+  boreholePumpNoWaterDelivery,
   inverterSwitchesOffUnderLoad,
   inverterWillNotSwitchOn,
   inverterNotChargingBatteries,
@@ -154,6 +156,21 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Repair, rewind or replace',
     ],
     articleSlugs: ['three-phase-motor-failure-diagnosis'],
+  },
+  {
+    slug: 'pumps',
+    title: 'Pump Diagnosis & Repair',
+    intro:
+      'Borehole and water pump faults — level, hydraulics, delivery path and the electrical side down the hole. Most of the diagnosis belongs at the surface, because pulling a pump is expensive and hazardous and is frequently unnecessary once the water level has actually been measured.',
+    scope: [
+      'No delivery and reduced flow',
+      'Water level, drawdown and borehole yield',
+      'Non-return valves and rising main faults',
+      'Hydraulic wear and sand abrasion',
+      'Drop cable, splice and motor testing',
+      'Dry-run protection and control',
+    ],
+    articleSlugs: ['borehole-pump-no-water-delivery'],
   },
   {
     slug: 'controllers',
