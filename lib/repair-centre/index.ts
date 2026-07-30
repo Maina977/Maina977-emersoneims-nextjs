@@ -57,6 +57,8 @@ import { pcbRepairOrReplaceDecision } from './articles/pcb-repair-or-replace-dec
 import { driveThermalDeratingAndCooling } from './articles/drive-thermal-derating-and-cooling';
 import { driveMotorCableScreeningEarthLeakage } from './articles/drive-motor-cable-screening-earth-leakage';
 import { driveCapacitorAgeingAndStorage } from './articles/drive-capacitor-ageing-and-storage';
+import { atsContactorInterlockFaults } from './articles/ats-contactor-interlock-faults';
+import { atsPositionIndicationAuxiliaryContacts } from './articles/ats-position-indication-auxiliary-contacts';
 
 export * from './types';
 
@@ -111,6 +113,8 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   driveThermalDeratingAndCooling,
   driveMotorCableScreeningEarthLeakage,
   driveCapacitorAgeingAndStorage,
+  atsContactorInterlockFaults,
+  atsPositionIndicationAuxiliaryContacts,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -190,7 +194,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Contactor, motor operator and interlock faults',
       'Position indication and auxiliary contacts',
     ],
-    articleSlugs: ['ats-not-changing-over', 'ats-will-not-return-to-mains'],
+    articleSlugs: ['ats-not-changing-over', 'ats-will-not-return-to-mains', 'ats-contactor-interlock-faults', 'ats-position-indication-auxiliary-contacts'],
   },
   {
     slug: 'motors',

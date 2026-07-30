@@ -121,6 +121,8 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
     covers: {
       'Failure to transfer on mains loss': ['ats-not-changing-over'],
       'Failure to return to utility': ['ats-will-not-return-to-mains'],
+      'Contactor, motor operator and interlock faults': ['ats-contactor-interlock-faults'],
+      'Position indication and auxiliary contacts': ['ats-position-indication-auxiliary-contacts'],
       'Sensing, thresholds and timer settings': [
         'ats-not-changing-over',
         'ats-will-not-return-to-mains',
