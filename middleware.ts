@@ -673,6 +673,8 @@ export function middleware(request: NextRequest) {
         'j1939-spn-fmi-explained': 'fault-codes',
         'diesel-engine-abnormal-noise': 'engine-systems',
         'solar-charge-controller-not-charging': 'solar',
+        'solar-string-fault-diagnosis': 'solar',
+        'solar-module-degradation-bypass-diodes': 'solar',
         'motor-overload-tripping': 'motors',
         'pump-runs-continuously': 'pumps',
         'generator-starts-in-manual-not-auto': 'controllers',

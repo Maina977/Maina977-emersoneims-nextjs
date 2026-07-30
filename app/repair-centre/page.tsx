@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { REPAIR_HUBS, REPAIR_ARTICLES, getArticlesForHub } from '@/lib/repair-centre';
+import RepairCentreMap from '@/components/repair-centre/RepairCentreMap';
 
 export const metadata: Metadata = {
   title: 'Repair Centre | Generator, Inverter & UPS Fault Diagnosis | EmersonEIMS',
@@ -66,6 +67,12 @@ export default function RepairCentrePage() {
 
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-14">
           <h2 className="text-2xl font-bold text-white mb-6">Equipment categories</h2>
+          <RepairCentreMap
+            hubs={REPAIR_HUBS}
+            counts={Object.fromEntries(
+              REPAIR_HUBS.map(h => [h.slug, getArticlesForHub(h.slug).length]),
+            )}
+          />
           <div className="grid md:grid-cols-2 gap-5">
             {REPAIR_HUBS.map(hub => {
               const count = getArticlesForHub(hub.slug).length;

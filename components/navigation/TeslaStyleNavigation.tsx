@@ -40,6 +40,51 @@ function prefetchForHref(href: string) {
 // AI POWERHOUSE; case studies / coverage under RESOURCES.
 // ─────────────────────────────────────────────────────────────────────────────
 const MEGA_MENUS = {
+  // Every hub in lib/repair-centre/index.ts appears here. If a hub is added
+  // there and not here, it is reachable only from /repair-centre itself.
+  repairCentre: {
+    title: 'Repair Centre',
+    description: 'Free fault-diagnosis and repair guides written by our engineers',
+    sections: [
+      {
+        title: 'Power Generation',
+        items: [
+          { href: '/repair-centre', label: 'All Guides', icon: '🛠️', desc: '15 categories · 39 guides' },
+          { href: '/repair-centre/generators', label: 'Generator Repair', icon: '⚡', desc: 'Starting, shutdown & output faults' },
+          { href: '/repair-centre/engine-systems', label: 'Engine Mechanical', icon: '⚙️', desc: 'Noise, bearings, oil pressure' },
+          { href: '/repair-centre/fuel-systems', label: 'Fuel & Combustion', icon: '⛽', desc: 'Smoke, contamination, wet stacking' },
+          { href: '/repair-centre/controllers', label: 'Controller Diagnostics', icon: '🎛️', desc: 'DSE, ComAp, SmartGen & more' },
+          { href: '/repair-centre/fault-codes', label: 'Fault Codes', icon: '🔢', desc: 'J1939 SPN & FMI explained' },
+        ],
+      },
+      {
+        title: 'Backup & Renewable',
+        items: [
+          { href: '/repair-centre/inverters', label: 'Inverter Repair', icon: '🔌', desc: 'Output, charging & power stage' },
+          { href: '/repair-centre/ups', label: 'UPS Repair', icon: '🔋', desc: 'Bypass, battery & autonomy' },
+          { href: '/repair-centre/solar', label: 'Solar PV Diagnosis', icon: '☀️', desc: 'Yield loss, strings & DC bus' },
+          { href: '/repair-centre/ats-changeover', label: 'ATS & Changeover', icon: '🔁', desc: 'Transfer and return faults' },
+        ],
+      },
+      {
+        title: 'Electrical & Electronics',
+        items: [
+          { href: '/repair-centre/motors', label: 'Motor Diagnosis', icon: '🌀', desc: 'Windings, single-phasing, overload' },
+          { href: '/repair-centre/pumps', label: 'Pump Diagnosis', icon: '💧', desc: 'Borehole delivery & control' },
+          { href: '/repair-centre/industrial-electronics', label: 'Drives & Electronics', icon: '📟', desc: 'VFD trips and DC bus' },
+          { href: '/repair-centre/pcb-motherboards', label: 'PCB & Board Repair', icon: '🔬', desc: 'Shorted rails, component testing' },
+        ],
+      },
+      {
+        title: 'Method & Safety',
+        items: [
+          { href: '/repair-centre/safety', label: 'Safe Isolation', icon: '🛡️', desc: 'Proving dead, lockout, stored energy' },
+          { href: '/repair-centre/testing-tools', label: 'Test Instruments', icon: '📏', desc: 'Measurement errors that mislead' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Talk to an Engineer', phone: '+254 768 860 665' },
+  },
   generators: {
     title: 'Generator Solutions',
     description: 'Sales, service & support — from spec to lifecycle',
@@ -278,6 +323,11 @@ const MEGA_MENUS = {
 // ═══════════════════════════════════════════════════════════════════════════════
 const NAV_ITEMS = [
   { href: '/', label: 'HOME', type: 'link' },
+  // REPAIR CENTRE promoted to top level 2026-07-30. It was reachable only as a
+  // third-level item inside the Resources mega, so 39 diagnostic guides across
+  // 15 categories read as a subpage of a subpage. It is a destination in its
+  // own right and now carries its own menu.
+  { key: 'repairCentre', label: 'REPAIR CENTRE', type: 'mega', featured: true },
   { href: '/about-us', label: 'ABOUT', type: 'link' },
   { href: '/why-emersoneims', label: 'WHY US', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },

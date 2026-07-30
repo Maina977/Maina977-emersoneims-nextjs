@@ -32,6 +32,8 @@ import { testInstrumentsAndMeasurementErrors } from './articles/test-instruments
 import { j1939SpnFmiExplained } from './articles/j1939-spn-fmi-explained';
 import { dieselEngineAbnormalNoise } from './articles/diesel-engine-abnormal-noise';
 import { solarChargeControllerNotCharging } from './articles/solar-charge-controller-not-charging';
+import { solarStringFaultDiagnosis } from './articles/solar-string-fault-diagnosis';
+import { solarModuleDegradationBypassDiodes } from './articles/solar-module-degradation-bypass-diodes';
 import { motorOverloadTripping } from './articles/motor-overload-tripping';
 import { pumpRunsContinuously } from './articles/pump-runs-continuously';
 import { generatorStartsInManualNotAuto } from './articles/generator-starts-in-manual-not-auto';
@@ -75,6 +77,8 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   j1939SpnFmiExplained,
   dieselEngineAbnormalNoise,
   solarChargeControllerNotCharging,
+  solarStringFaultDiagnosis,
+  solarModuleDegradationBypassDiodes,
   motorOverloadTripping,
   pumpRunsContinuously,
   generatorStartsInManualNotAuto,
@@ -217,7 +221,12 @@ export const REPAIR_HUBS: RepairHub[] = [
       // on the page under a scope list that never claimed the subject.
       'Charge controllers and battery charging',
     ],
-    articleSlugs: ['solar-system-underperforming', 'solar-charge-controller-not-charging'],
+    articleSlugs: [
+      'solar-system-underperforming',
+      'solar-charge-controller-not-charging',
+      'solar-string-fault-diagnosis',
+      'solar-module-degradation-bypass-diodes',
+    ],
   },
   {
     slug: 'industrial-electronics',

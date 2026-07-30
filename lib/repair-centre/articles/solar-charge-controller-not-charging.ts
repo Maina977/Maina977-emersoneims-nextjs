@@ -345,7 +345,7 @@ export const solarChargeControllerNotCharging: RepairArticle = {
     'Reselect the battery profile whenever the bank is replaced — this single step prevents a large share of these callouts',
   ],
 
-  relatedSlugs: ['solar-system-underperforming', 'inverter-not-charging-batteries'],
+  relatedSlugs: ['solar-string-fault-diagnosis', 'solar-module-degradation-bypass-diodes', 'solar-system-underperforming', 'inverter-not-charging-batteries'],
 
   faq: [
     {

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { REPAIR_HUBS, REPAIR_ARTICLES, getRepairHub, getArticlesForHub } from '@/lib/repair-centre';
 import { getHubCoverage } from '@/lib/repair-centre/hubCoverage';
+import HubScopeDiagram from '@/components/repair-centre/HubScopeDiagram';
 
 interface Props { params: Promise<{ hub: string }> }
 
@@ -60,6 +61,14 @@ export default async function RepairHubPage({ params }: Props) {
   const uncovered = hub.scope.filter(
     label => !(coverage?.covers[label] ?? []).some(s => bySlug.has(s)),
   );
+  // Same source as the text above, so the diagram can never show coverage the
+  // page does not actually have.
+  const coveredCounts: Record<string, number> = Object.fromEntries(
+    hub.scope.map(label => [
+      label,
+      (coverage?.covers[label] ?? []).filter(s => bySlug.has(s)).length,
+    ]),
+  );
 
   // Guides that live in another hub but genuinely belong on this page — the
   // orphan case: /repair-centre/solar advertised "DC bus and isolation faults"
@@ -112,6 +121,8 @@ export default async function RepairHubPage({ params }: Props) {
             over two articles. Each topic now either links to the guide that
             covers it, or is declared unwritten below. Nothing is implied.
           */}
+          <HubScopeDiagram hub={hub} coveredCounts={coveredCounts} />
+
           <h2 className="mt-10 text-xl font-bold text-white mb-4">What this covers</h2>
           <ul className="space-y-3">
             {covered.map(({ label, articles: hits }) => (

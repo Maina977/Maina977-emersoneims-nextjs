@@ -346,7 +346,7 @@ export const solarInverterDcBusFault: RepairArticle = {
     'Protect DC cabling against UV, abrasion and rodent damage at installation',
   ],
 
-  relatedSlugs: ['inverter-switches-off-under-load', 'inverter-will-not-switch-on', 'solar-system-underperforming'],
+  relatedSlugs: ['solar-string-fault-diagnosis', 'solar-module-degradation-bypass-diodes', 'inverter-switches-off-under-load', 'inverter-will-not-switch-on', 'solar-system-underperforming'],
 
   faq: [
     {

@@ -109,6 +109,8 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
       // solar hub advertised the topic while linking nowhere.
       'DC bus and isolation faults': ['solar-inverter-dc-bus-fault'],
       'Charge controllers and battery charging': ['solar-charge-controller-not-charging'],
+      'String faults, fuses and connectors': ['solar-string-fault-diagnosis'],
+      'Module degradation and bypass diodes': ['solar-module-degradation-bypass-diodes'],
     },
   },
 
