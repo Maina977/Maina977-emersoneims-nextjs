@@ -54,6 +54,9 @@ import { boreholeDropCableAndMotorTesting } from './articles/borehole-drop-cable
 import { pcbResetSupervisorClockFaults } from './articles/pcb-reset-supervisor-clock-faults';
 import { pcbCleaningTrackRepairContamination } from './articles/pcb-cleaning-track-repair-contamination';
 import { pcbRepairOrReplaceDecision } from './articles/pcb-repair-or-replace-decision';
+import { driveThermalDeratingAndCooling } from './articles/drive-thermal-derating-and-cooling';
+import { driveMotorCableScreeningEarthLeakage } from './articles/drive-motor-cable-screening-earth-leakage';
+import { driveCapacitorAgeingAndStorage } from './articles/drive-capacitor-ageing-and-storage';
 
 export * from './types';
 
@@ -105,6 +108,9 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   pcbResetSupervisorClockFaults,
   pcbCleaningTrackRepairContamination,
   pcbRepairOrReplaceDecision,
+  driveThermalDeratingAndCooling,
+  driveMotorCableScreeningEarthLeakage,
+  driveCapacitorAgeingAndStorage,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -253,7 +259,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Installation defects that destroy drives',
       'Capacitor ageing and storage',
     ],
-    articleSlugs: ['vfd-drive-fault-diagnosis'],
+    articleSlugs: ['vfd-drive-fault-diagnosis', 'drive-thermal-derating-and-cooling', 'drive-motor-cable-screening-earth-leakage', 'drive-capacitor-ageing-and-storage'],
   },
   {
     slug: 'safety',

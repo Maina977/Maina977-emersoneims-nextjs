@@ -176,7 +176,10 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
         'vfd-drive-fault-diagnosis',
         'solar-inverter-dc-bus-fault',
       ],
-      'Installation defects that destroy drives': ['vfd-drive-fault-diagnosis'],
+      'Installation defects that destroy drives': ['vfd-drive-fault-diagnosis', 'drive-motor-cable-screening-earth-leakage'],
+      'Thermal derating and cooling': ['drive-thermal-derating-and-cooling'],
+      'Motor cable, screening and earth leakage': ['drive-motor-cable-screening-earth-leakage'],
+      'Capacitor ageing and storage': ['drive-capacitor-ageing-and-storage'],
     },
   },
 
