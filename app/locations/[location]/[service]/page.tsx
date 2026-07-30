@@ -130,7 +130,7 @@ export default async function ServiceLocationPage({ params }: Props) {
               Call Now: +254 768 860 665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               className="px-8 py-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all"
             >
               WhatsApp for Quote
@@ -231,7 +231,7 @@ export default async function ServiceLocationPage({ params }: Props) {
                 </a>
 
                 <a
-                  href="https://wa.me/254768860665"
+                  href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                   className="flex items-center gap-3 p-4 bg-green-900/30 border border-green-700/50 rounded-lg hover:bg-green-900/50 transition-all"
                 >
                   <span className="text-2xl">💬</span>

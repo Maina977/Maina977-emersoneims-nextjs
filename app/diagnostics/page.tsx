@@ -561,7 +561,7 @@ export default function UniversalDiagnosticPage() {
                             {/* CTA Buttons */}
                             <div className="flex gap-3 mt-4 pt-4 border-t border-gray-700">
                               <a 
-                                href="https://wa.me/254768860665" 
+                                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20a%20generator%20fault%20diagnosis." 
                                 target="_blank"
                                 className="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded text-center text-sm font-bold"
                               >
@@ -603,7 +603,7 @@ export default function UniversalDiagnosticPage() {
                   <p className="text-gray-400 text-sm mb-4">Our certified technicians are available 24/7</p>
                   <div className="space-y-2">
                     <a 
-                      href="https://wa.me/254768860665"
+                      href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20a%20generator%20fault%20diagnosis."
                       className="block w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded font-bold text-center"
                     >
                       💬 WhatsApp: +254768860665

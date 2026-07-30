@@ -966,7 +966,7 @@ export default function SciFiContactPage() {
               title="INSTANT_LINK"
               value="WhatsApp"
               subtext="Quick response channel for urgent queries and real-time support."
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20an%20enquiry."
               delay={0.2}
               gradient="from-green-600 to-green-700"
             />

@@ -75,7 +75,7 @@ export default function PurchasePage() {
               Open Generator Oracle →
             </Link>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20the%20Generator%20Oracle."
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition-colors"

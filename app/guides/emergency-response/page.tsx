@@ -252,7 +252,7 @@ export default function EmergencyResponseGuide() {
               📞 Call: 0768 860 665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
               className="px-8 py-4 bg-green-500 text-white font-bold text-lg rounded-full hover:bg-green-400 transition-colors"
             >
               💬 WhatsApp Now

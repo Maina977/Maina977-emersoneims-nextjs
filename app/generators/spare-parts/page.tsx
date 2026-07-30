@@ -687,7 +687,7 @@ export default function SparePartsPage() {
               📞 +254 768 860665
             </a>
             <a
-              href="https://wa.me/254768860665"
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20generators."
               className="px-8 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition"
             >
               💬 WhatsApp

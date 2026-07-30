@@ -936,7 +936,7 @@ function AIAnalysisPanelImpl({ className = '', card }: AIAnalysisPanelProps) {
                     📞 Call Now
                   </a>
                   <a
-                    href="https://wa.me/254768860665"
+                    href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-green-500/20 border border-green-500/50 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors"

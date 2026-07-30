@@ -511,7 +511,7 @@ export default function FAQPage() {
                   🔧 Try Diagnostic Suite
                 </Link>
                 <a
-                  href="https://wa.me/254768860665"
+                  href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20have%20a%20question%20about%20your%20services."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-8 py-4 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-colors"

@@ -976,7 +976,7 @@ export default function BoreholePumpsPage() {
                   <a href="tel:+254768860665" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-600 rounded-full font-bold hover:bg-cyan-50 transition-colors">
                     <span>📞</span> Call Now: +254 768 860 665
                   </a>
-                  <a href="https://wa.me/254768860665" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 bg-green-500 text-white rounded-full font-bold hover:bg-green-600 transition-colors">
+                  <a href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 bg-green-500 text-white rounded-full font-bold hover:bg-green-600 transition-colors">
                     <span>💬</span> WhatsApp Us
                   </a>
                 </div>

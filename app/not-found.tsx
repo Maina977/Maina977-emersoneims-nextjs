@@ -101,7 +101,7 @@ export default function NotFound() {
               <span>📞</span> +254782914717
             </a>
             <a
-              href="https://wa.me/254768860665" 
+              href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services." 
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-green-500 hover:text-green-400 transition"

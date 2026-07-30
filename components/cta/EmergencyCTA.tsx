@@ -90,7 +90,7 @@ export default function EmergencyCTA({ variant = 'full', showStats = true }: Eme
           Emergency: 0768 860 665
         </a>
         <a
-          href="https://wa.me/254768860665"
+          href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20your%20services."
           className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-500 transition-all hover:scale-105"
         >
           <MessageCircle className="w-5 h-5" />

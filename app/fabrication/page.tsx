@@ -472,7 +472,7 @@ export default function FabricationPage() {
                 📞 Call Fabrication Shop
               </a>
               <a
-                href="https://wa.me/254768860665"
+                href="https://wa.me/254768860665?text=Hello%20EmersonEIMS%2C%20I%20would%20like%20to%20ask%20about%20steel%20fabrication."
                 className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all"
               >
                 💬 WhatsApp Quote
