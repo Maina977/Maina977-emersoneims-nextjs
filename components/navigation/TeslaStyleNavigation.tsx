@@ -7,10 +7,9 @@ import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Dynamically import language switcher (client-only)
-const LanguageSwitcher = dynamic(
-  () => import('@/components/shared/LanguageSwitcher'),
-  { ssr: false }
-);
+// LanguageSwitcher import removed 2026-07-31 — the component is no longer
+// rendered anywhere in this navigation. The file itself is retained for a
+// future, real localisation effort.
 
 interface TeslaStyleNavigationProps {
   activeSection?: string;
@@ -648,15 +647,36 @@ export default function TeslaStyleNavigation({
                 </div>
               )}
 
-              {/* Divider + Language Switcher + CTA — never allowed to overflow */}
+              {/* Pinned CTA — measured as a reserved tail and never allowed to
+                  overflow into MORE.
+
+                  LANGUAGE SWITCHER REMOVED 2026-07-31. It offered eleven languages
+                  and delivered none of them. Only nine strings were ever translated
+                  — all of them nav labels — and the component that consumed them,
+                  SciFiHeader, is not imported by any route. The navigation that is
+                  actually rendered site-wide, this file, calls useTranslation zero
+                  times. Selecting Kiswahili, French, Arabic, Amharic or Somali
+                  changed nothing whatsoever on screen.
+
+                  Advertising a capability the site does not have is worse than not
+                  offering it, particularly to the engineers and institutions this
+                  site is written for. components/shared/LanguageSwitcher.tsx is left
+                  in place so a real localisation effort can use it — but it must not
+                  be shown again until the site is genuinely translated.
+
+                  GET QUOTE was href="tel:..." on a DESKTOP-ONLY bar, where a tel:
+                  link does nothing useful. A button promising a quote that silently
+                  does nothing is the same class of problem. It now goes to /contact,
+                  which carries the working enquiry form, WhatsApp and the phone
+                  number — a real quote path. */}
               <div ref={tailRef} className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
-                <LanguageSwitcher />
-                <a
-                  href="tel:+254768860665"
+                <Link
+                  href="/contact"
+                  prefetch={prefetchForHref('/contact')}
                   className="px-4 py-2 text-[11px] xl:text-[12px] font-bold tracking-[0.08em] uppercase rounded-md bg-amber-500 text-black hover:bg-amber-400 transition-colors duration-200 whitespace-nowrap"
                 >
                   Get Quote
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -892,10 +912,9 @@ export default function TeslaStyleNavigation({
                   </a>
                 </div>
 
-                {/* Mobile Language */}
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <LanguageSwitcher />
-                </div>
+                {/* Mobile language switcher removed for the same reason as the desktop
+                    one — see the note in the desktop tail. It promised eleven
+                    languages and delivered none. */}
               </div>
             </motion.div>
           </>
