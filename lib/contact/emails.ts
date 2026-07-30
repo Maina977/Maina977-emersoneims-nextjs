@@ -19,7 +19,7 @@ export type EmailEntry = {
 export const COMPANY = {
   phonePrimary: '+254768860665',
   phoneEmergency: '+254782914717',
-  whatsapp: 'https://wa.me/254768860665',
+  whatsapp: `https://wa.me/254768860665?text=${encodeURIComponent('Hello EmersonEIMS, I am following up on my enquiry.')}`,
   websiteUrl: 'https://www.emersoneims.com',
 } as const;
 

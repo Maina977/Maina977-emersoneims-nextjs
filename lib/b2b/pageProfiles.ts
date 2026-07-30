@@ -43,7 +43,7 @@ export type B2BProfile = {
   accent?: 'amber' | 'cyan' | 'emerald' | 'violet' | 'sky' | 'rose' | 'orange' | 'indigo';
 };
 
-const WHATSAPP = 'https://wa.me/254768860665';
+const WHATSAPP = `https://wa.me/254768860665?text=${encodeURIComponent('Hello EmersonEIMS, I would like to ask about a site requirement.')}`;
 const TEL = 'tel:+254768860665';
 
 export const B2B_PROFILES = {

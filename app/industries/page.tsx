@@ -85,7 +85,7 @@ export default function IndustriesPage() {
             ctas: [
               { label: 'Get Industry Proposal', href: '/contact?topic=industry-proposal', variant: 'primary' },
               { label: 'Book a Site Survey', href: '/booking?service=industry-audit', variant: 'secondary' },
-              { label: 'WhatsApp Industry Desk', href: 'https://wa.me/254768860665', variant: 'tertiary' },
+              { label: 'WhatsApp Industry Desk', href: `https://wa.me/254768860665?text=${encodeURIComponent('Hello EmersonEIMS, I would like to ask about your industrial services.')}`, variant: 'tertiary' },
             ],
             accent: 'cyan',
           }} />
