@@ -499,7 +499,14 @@ export default function TeslaStyleNavigation({
             </Link>
 
             {/* Desktop Navigation — clean, evenly spaced */}
-            <div ref={navRowRef} className="hidden lg:flex items-center flex-1 justify-end gap-1 xl:gap-2">
+            {/* min-w-0 is load-bearing. A flex child defaults to min-width:auto, so it
+                refuses to shrink below its content and instead overflows its PARENT.
+                Measured on the live site at a 1366px viewport this row reported
+                clientWidth 1701 — wider than the screen — so the overflow logic
+                correctly concluded everything fitted and MORE never appeared.
+                With min-w-0 the row shrinks to the width actually available and the
+                measurement becomes true. */}
+            <div ref={navRowRef} className="hidden lg:flex items-center flex-1 min-w-0 justify-end gap-1 xl:gap-2">
               {NAV_ITEMS.map((item) =>
                 item.type === 'mega' && item.key ? (
                   <div
