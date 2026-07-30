@@ -322,24 +322,34 @@ const MEGA_MENUS = {
 // SERVICES, RESOURCES, ABOUT, CONTACT.
 // ═══════════════════════════════════════════════════════════════════════════════
 const NAV_ITEMS = [
-  // HOME removed from the bar 2026-07-30: the logo already links to /, which is
-  // the convention on every premium site, and it buys width the bar genuinely needs.
-  // REPAIR CENTRE promoted to top level 2026-07-30. It was reachable only as a
-  // third-level item inside the Resources mega, so 39 diagnostic guides across
-  // 15 categories read as a subpage of a subpage. It is a destination in its
-  // own right and now carries its own menu.
+  // ORDER IS COMMERCIAL PRIORITY, and it is load-bearing.
+  //
+  // Priority+ collapses from the END of this list, so whatever sits last is what
+  // disappears into MORE first. The header container caps at 1440px, so eleven
+  // items never all fit on the bar at any realistic laptop width — the question
+  // was never whether something collapses, only WHAT.
+  //
+  // Measured before this reorder: at 1366px the bar was showing ABOUT and WHY US
+  // while hiding GENERATORS and SOLAR. Those two are core commercial categories
+  // and must never be the ones that go.
+  //
+  // The six that stay visible at every realistic width are the six that sell.
+  // HOME is not here because the logo already links to /.
   { key: 'repairCentre', label: 'REPAIR CENTRE', type: 'mega', featured: true },
-  { href: '/about-us', label: 'ABOUT', type: 'link' },
-  { href: '/why-emersoneims', label: 'WHY US', type: 'link' },
   { key: 'services', label: 'SERVICES', type: 'mega' },
-  // INDUSTRIES — direct link to the live B2B sector hub at /industries.
-  // (We previously experimented with a parallel /solutions/<sector> system;
-  // that was retired to avoid duplicating /industries.)
-  { href: '/industries', label: 'INDUSTRIES', type: 'link' },
-  { key: 'aiPowerhouse', label: 'AI SOLUTIONS', type: 'mega', featured: true },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
   { key: 'solar', label: 'SOLAR', type: 'mega' },
+  { key: 'aiPowerhouse', label: 'AI SOLUTIONS', type: 'mega', featured: true },
+  // INDUSTRIES — direct link to the live B2B sector hub at /industries.
+  // (A parallel /solutions/<sector> system was retired to avoid duplicating it.)
+  { href: '/industries', label: 'INDUSTRIES', type: 'link' },
   { key: 'resources', label: 'RESOURCES', type: 'mega' },
+  // Below here are the items that may fall into MORE. CONTACT is deliberately
+  // last: the pinned GET QUOTE button next to it goes to the same conversion
+  // path and is never allowed to overflow, so nothing is lost by CONTACT
+  // collapsing.
+  { href: '/about-us', label: 'ABOUT', type: 'link' },
+  { href: '/why-emersoneims', label: 'WHY US', type: 'link' },
   { href: '/phase-4', label: 'PHASE 4', type: 'link', badge: 'NEW' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
