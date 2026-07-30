@@ -63,6 +63,10 @@ import { generatorAirRestrictionTurbocharger } from './articles/generator-air-re
 import { generatorAltitudeAmbientDerating } from './articles/generator-altitude-ambient-derating';
 import { dieselValveTrainAndClearances } from './articles/diesel-valve-train-and-clearances';
 import { turbochargerMechanicalCondition } from './articles/turbocharger-mechanical-condition';
+import { pumpHydraulicWearSandAbrasion } from './articles/pump-hydraulic-wear-sand-abrasion';
+import { inverterOverheatingDiagnosis } from './articles/inverter-overheating-diagnosis';
+import { insulationTestingProtectingElectronics } from './articles/insulation-testing-protecting-electronics';
+import { controllerCommunicationFaults } from './articles/controller-communication-faults';
 
 export * from './types';
 
@@ -123,6 +127,10 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   generatorAltitudeAmbientDerating,
   dieselValveTrainAndClearances,
   turbochargerMechanicalCondition,
+  pumpHydraulicWearSandAbrasion,
+  inverterOverheatingDiagnosis,
+  insulationTestingProtectingElectronics,
+  controllerCommunicationFaults,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -165,6 +173,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'inverter-mosfet-failure-diagnosis',
       'inverter-igbt-testing-and-failure',
       'solar-inverter-dc-bus-fault',
+      'inverter-overheating-diagnosis',
     ],
   },
   {
@@ -232,7 +241,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Drop cable, splice and motor testing',
       'Dry-run protection and control',
     ],
-    articleSlugs: ['borehole-pump-no-water-delivery', 'pump-runs-continuously', 'borehole-drop-cable-and-motor-testing'],
+    articleSlugs: ['borehole-pump-no-water-delivery', 'pump-runs-continuously', 'borehole-drop-cable-and-motor-testing', 'pump-hydraulic-wear-sand-abrasion'],
   },
   {
     slug: 'solar',
@@ -316,7 +325,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Insulation testing and protecting electronics',
       'Interpreting readings in context',
     ],
-    articleSlugs: ['test-instruments-and-measurement-errors'],
+    articleSlugs: ['test-instruments-and-measurement-errors', 'insulation-testing-protecting-electronics'],
   },
   {
     slug: 'fault-codes',
@@ -354,7 +363,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Fault interpretation for generator controllers including DSE, ComAp, Woodward, SmartGen, PowerWizard, Datakom, Lovato, Siemens, Enko and Volvo Penta VODIA.',
     scope: ['Alarm interpretation', 'Reset pathways', 'Communication faults', 'Configuration and timers', 'Sensing faults'],
-    articleSlugs: ['controller-alarm-interpretation', 'generator-starts-in-manual-not-auto'],
+    articleSlugs: ['controller-alarm-interpretation', 'generator-starts-in-manual-not-auto', 'controller-communication-faults'],
   },
 ];
 

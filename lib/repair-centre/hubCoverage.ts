@@ -78,6 +78,7 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
     covers: {
       'No output': ['inverter-will-not-switch-on'],
       'Shutdown under load': ['inverter-switches-off-under-load'],
+      'Overheating': ['inverter-overheating-diagnosis'],
       'Charging faults': ['inverter-not-charging-batteries'],
       'DC bus faults': ['solar-inverter-dc-bus-fault'],
       'Power-stage failure': [
@@ -152,6 +153,7 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
       'Non-return valves and rising main faults': ['borehole-pump-no-water-delivery'],
       'Drop cable, splice and motor testing': ['borehole-drop-cable-and-motor-testing'],
       'Dry-run protection and control': ['pump-runs-continuously'],
+      'Hydraulic wear and sand abrasion': ['pump-hydraulic-wear-sand-abrasion'],
     },
   },
 
@@ -226,6 +228,7 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
       'Ghost voltages and low-impedance mode': ['test-instruments-and-measurement-errors'],
       'AC versus DC clamp measurement': ['test-instruments-and-measurement-errors'],
       'Interpreting readings in context': ['test-instruments-and-measurement-errors'],
+      'Insulation testing and protecting electronics': ['insulation-testing-protecting-electronics'],
     },
   },
 
@@ -265,6 +268,7 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
     siblings: ['generators', 'fault-codes', 'ats-changeover'],
     covers: {
       'Alarm interpretation': ['controller-alarm-interpretation'],
+      'Communication faults': ['controller-communication-faults'],
       'Reset pathways': ['controller-alarm-interpretation'],
       'Configuration and timers': ['generator-starts-in-manual-not-auto'],
       'Sensing faults': ['controller-alarm-interpretation', 'generator-starts-in-manual-not-auto'],
