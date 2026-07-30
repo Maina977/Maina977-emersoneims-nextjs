@@ -322,7 +322,8 @@ const MEGA_MENUS = {
 // SERVICES, RESOURCES, ABOUT, CONTACT.
 // ═══════════════════════════════════════════════════════════════════════════════
 const NAV_ITEMS = [
-  { href: '/', label: 'HOME', type: 'link' },
+  // HOME removed from the bar 2026-07-30: the logo already links to /, which is
+  // the convention on every premium site, and it buys width the bar genuinely needs.
   // REPAIR CENTRE promoted to top level 2026-07-30. It was reachable only as a
   // third-level item inside the Resources mega, so 39 diagnostic guides across
   // 15 categories read as a subpage of a subpage. It is a destination in its
@@ -351,6 +352,64 @@ export default function TeslaStyleNavigation({
   const [activeMega, setActiveMega] = useState<string | null>(null);
   const [mobileSubmenu, setMobileSubmenu] = useState<string | null>(null);
   const megaTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // ── Priority+ overflow ────────────────────────────────────────────────────
+  // Adding REPAIR CENTRE to the bar pushed RESOURCES, PHASE 4 and CONTACT off
+  // screen at 1366px — the most common laptop width — and CONTACT is the worst
+  // item to lose. A horizontal scrollbar was considered and rejected: users do
+  // not discover horizontally-scrolled nav items, so it hides rather than solves,
+  // and it reads as an unfinished layout.
+  //
+  // Instead the bar measures itself and moves whatever does not fit into a MORE
+  // menu. Nothing is ever lost at any width, and adding a future nav item cannot
+  // silently drop an existing one.
+  const navRowRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const tailRef = useRef<HTMLDivElement | null>(null);
+  const itemWidths = useRef<number[]>([]);
+  const [visibleCount, setVisibleCount] = useState(NAV_ITEMS.length);
+  const [overflowOpen, setOverflowOpen] = useState(false);
+
+  useEffect(() => {
+    const row = navRowRef.current;
+    if (!row) return;
+
+    // Cache widths: once an item collapses into MORE its offsetWidth reads 0, so
+    // a naive re-measure on resize would compute nonsense. Measure each item once
+    // while it is laid out, keep the width, and recompute from the cache after.
+    const widths = itemWidths.current;
+
+    const measure = () => {
+      for (let i = 0; i < NAV_ITEMS.length; i++) {
+        const w = itemRefs.current[i]?.offsetWidth ?? 0;
+        if (w > 0) widths[i] = w;
+      }
+      const rowWidth = row.clientWidth;
+      const tailWidth = tailRef.current?.offsetWidth ?? 0;
+      const MORE_WIDTH = 92; // width reserved for the MORE control
+      let used = 0;
+      let fit = 0;
+      for (let i = 0; i < NAV_ITEMS.length; i++) {
+        const w = widths[i] ?? 0;
+        if (!w) { fit++; continue; }
+        // Reserve room for MORE only while items still remain after this one.
+        const reserve = i < NAV_ITEMS.length - 1 ? MORE_WIDTH : 0;
+        if (used + w + tailWidth + reserve > rowWidth) break;
+        used += w;
+        fit++;
+      }
+      setVisibleCount(prev => (prev === fit ? prev : fit));
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(row);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
   const mobileMenuId = 'tesla-primary-mobile-menu';
 
   useEffect(() => {
@@ -440,12 +499,13 @@ export default function TeslaStyleNavigation({
             </Link>
 
             {/* Desktop Navigation — clean, evenly spaced */}
-            <div className="hidden lg:flex items-center flex-1 justify-end gap-1 xl:gap-2">
+            <div ref={navRowRef} className="hidden lg:flex items-center flex-1 justify-end gap-1 xl:gap-2">
               {NAV_ITEMS.map((item) =>
                 item.type === 'mega' && item.key ? (
                   <div
                     key={item.key}
-                    className="relative"
+                    ref={el => { itemRefs.current[NAV_ITEMS.indexOf(item)] = el; }}
+                    className={`relative ${NAV_ITEMS.indexOf(item) < visibleCount ? '' : 'hidden'}`}
                     onMouseEnter={() => handleMegaEnter(item.key!)}
                     onMouseLeave={handleMegaLeave}
                   >
@@ -478,19 +538,82 @@ export default function TeslaStyleNavigation({
                     </button>
                   </div>
                 ) : (
-                  <Link
+                  <div
                     key={item.href}
+                    ref={el => { itemRefs.current[NAV_ITEMS.indexOf(item)] = el; }}
+                    className={NAV_ITEMS.indexOf(item) < visibleCount ? '' : 'hidden'}
+                  >
+                  <Link
                     href={item.href!}
                     prefetch={prefetchForHref(item.href!)}
                     className="px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 whitespace-nowrap rounded-md text-white/75 hover:text-white"
                   >
                     {item.label}
                   </Link>
+                  </div>
                 )
               )}
 
-              {/* Divider + Language Switcher + CTA */}
-              <div className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
+              {/* Priority+ overflow. Only appears when the bar genuinely runs out
+                  of room, so nothing is ever dropped at any viewport width. */}
+              {visibleCount < NAV_ITEMS.length && (
+                <div
+                  className="relative"
+                  onMouseEnter={() => setOverflowOpen(true)}
+                  onMouseLeave={() => setOverflowOpen(false)}
+                >
+                  <button
+                    type="button"
+                    aria-haspopup="true"
+                    aria-expanded={overflowOpen}
+                    onClick={() => setOverflowOpen(v => !v)}
+                    className={`relative px-3 xl:px-4 py-2 text-[11px] xl:text-[12px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap rounded-md ${overflowOpen ? 'text-white' : 'text-white/75 hover:text-white'}`}
+                  >
+                    More
+                    <svg className={`w-3 h-3 transition-transform duration-200 ${overflowOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    <span className={`absolute left-3 right-3 -bottom-px h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent transition-opacity duration-200 ${overflowOpen ? 'opacity-100' : 'opacity-0'}`} />
+                  </button>
+
+                  <AnimatePresence>
+                    {overflowOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.16 }}
+                        className="absolute right-0 top-full mt-1 min-w-[220px] rounded-xl bg-gray-950 border border-amber-500/20 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.9)] py-2 z-50"
+                      >
+                        {NAV_ITEMS.slice(visibleCount).map(over =>
+                          over.type === 'mega' && over.key ? (
+                            <button
+                              key={over.key}
+                              onClick={() => { setOverflowOpen(false); handleMegaEnter(over.key!); }}
+                              className="w-full text-left px-4 py-2.5 text-[12px] font-semibold tracking-[0.08em] uppercase text-white/75 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              {over.label}
+                            </button>
+                          ) : (
+                            <Link
+                              key={over.href}
+                              href={over.href!}
+                              prefetch={prefetchForHref(over.href!)}
+                              onClick={() => setOverflowOpen(false)}
+                              className="block px-4 py-2.5 text-[12px] font-semibold tracking-[0.08em] uppercase text-white/75 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              {over.label}
+                            </Link>
+                          )
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Divider + Language Switcher + CTA — never allowed to overflow */}
+              <div ref={tailRef} className="ml-2 pl-3 flex items-center gap-3 border-l border-white/10">
                 <LanguageSwitcher />
                 <a
                   href="tel:+254768860665"
