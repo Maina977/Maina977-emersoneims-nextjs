@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 
+// Internal roadmap document, not a customer-facing page. It states business
+// strategy and positioning in plain terms, which is not something to publish to
+// competitors or to rank for. It was already absent from the sitemap; this makes
+// that explicit rather than incidental. The page stays reachable by URL for
+// internal use.
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: 'Phase 4: Market Leader Transformation | EmersonEIMS',
   description: 'Phase 4 infrastructure: YouTube channel, podcast series, partner marketplace, certification program, mobile strategy. Building Africa\'s leading backup power ecosystem.',
 };

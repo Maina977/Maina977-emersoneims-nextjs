@@ -384,7 +384,13 @@ const NAV_ITEMS = [
   // path and is never allowed to overflow, so nothing is lost by CONTACT
   // collapsing.
   // ABOUT and WHY US now live inside the HOME menu above.
-  { href: '/phase-4', label: 'PHASE 4', type: 'link', badge: 'NEW' },
+  // PHASE 4 removed from the bar 2026-07-31. It had TWO visitors in the whole
+  // analytics history against 43 for /about-us and 20 for /industries, and its
+  // content is an internal roadmap — "Five Pillars", "Strategic Goals",
+  // "Establish EmersonEIMS as the market leader". "PHASE 4" means nothing to a
+  // technician looking for a generator repair, and it was holding a top-level
+  // slot with a NEW badge on a bar where commercial categories were being
+  // pushed into MORE. The page still exists at /phase-4.
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
 
