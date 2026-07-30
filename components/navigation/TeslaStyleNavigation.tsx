@@ -39,6 +39,36 @@ function prefetchForHref(href: string) {
 // AI POWERHOUSE; case studies / coverage under RESOURCES.
 // ─────────────────────────────────────────────────────────────────────────────
 const MEGA_MENUS = {
+  // HOME carries the company pages beneath it (owner decision 2026-07-31).
+  // Following the pattern every other menu here uses, the FIRST item is the
+  // page the top-level label refers to — so Home is still one click away — and
+  // ABOUT and WHY US move off the top-level bar into this menu, which also
+  // returns two slots to a bar that had none to spare.
+  home: {
+    title: 'EmersonEIMS',
+    description: 'Who we are, why clients stay, and where we work',
+    sections: [
+      {
+        title: 'The Company',
+        items: [
+          { href: '/', label: 'Home', icon: '🏠', desc: 'Front page' },
+          { href: '/about-us', label: 'About Us', icon: '🏢', desc: 'Who we are and what we do' },
+          { href: '/why-emersoneims', label: 'Why EmersonEIMS', icon: '⭐', desc: 'What sets our engineering apart' },
+          { href: '/careers', label: 'Careers', icon: '💼', desc: 'Work with our engineers' },
+        ],
+      },
+      {
+        title: 'Proof of Work',
+        items: [
+          { href: '/case-studies', label: 'Case Studies', icon: '📈', desc: 'Projects we have delivered' },
+          { href: '/gallery', label: 'Gallery', icon: '📷', desc: 'Site and workshop photography' },
+          { href: '/certification', label: 'Training & Certification', icon: '🎓', desc: 'Technical training programmes' },
+          { href: '/faq', label: 'FAQ', icon: '❓', desc: 'Common questions answered' },
+        ],
+      },
+    ],
+    cta: { href: '/contact', label: 'Talk to an Engineer', phone: '+254 768 860 665' },
+  },
   // Every hub in lib/repair-centre/index.ts appears here. If a hub is added
   // there and not here, it is reachable only from /repair-centre itself.
   repairCentre: {
@@ -339,7 +369,7 @@ const NAV_ITEMS = [
   // the owner wants it explicit and that is the call that stands. It costs roughly
   // one slot on the bar, which Priority+ absorbs into MORE from the bottom of this
   // list rather than by dropping anything.
-  { href: '/', label: 'HOME', type: 'link' },
+  { key: 'home', label: 'HOME', type: 'mega' },
   { key: 'repairCentre', label: 'REPAIR CENTRE', type: 'mega', featured: true },
   { key: 'services', label: 'SERVICES', type: 'mega' },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
@@ -353,8 +383,7 @@ const NAV_ITEMS = [
   // last: the pinned GET QUOTE button next to it goes to the same conversion
   // path and is never allowed to overflow, so nothing is lost by CONTACT
   // collapsing.
-  { href: '/about-us', label: 'ABOUT', type: 'link' },
-  { href: '/why-emersoneims', label: 'WHY US', type: 'link' },
+  // ABOUT and WHY US now live inside the HOME menu above.
   { href: '/phase-4', label: 'PHASE 4', type: 'link', badge: 'NEW' },
   { href: '/contact', label: 'CONTACT', type: 'link' },
 ];
