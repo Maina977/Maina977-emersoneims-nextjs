@@ -407,7 +407,10 @@ export default function TeslaStyleNavigation({
       let fit = 0;
       for (let i = 0; i < NAV_ITEMS.length; i++) {
         const w = widths[i] ?? 0;
-        if (!w) { fit++; continue; }
+        // A width we have not captured yet must NOT be treated as fitting for
+        // free — doing so inflated the count until the bar overflowed and pushed
+        // MORE itself out of reach. Bail and let the next frame measure instead.
+        if (!w) return;
         // Reserve room for MORE only while items still remain after this one.
         const reserve = i < NAV_ITEMS.length - 1 ? MORE_WIDTH : 0;
         if (used + w + tailWidth + reserve > rowWidth) break;
@@ -417,7 +420,17 @@ export default function TeslaStyleNavigation({
       setVisibleCount(prev => (prev === fit ? prev : fit));
     };
 
-    measure();
+    // Widths are only readable once the row has laid out, and on a slow first
+    // paint some are still zero. Keep measuring across a few frames until every
+    // item has reported a width, then let ResizeObserver take over.
+    let frames = 0;
+    const settle = () => {
+      measure();
+      const allKnown = NAV_ITEMS.every((_, i) => (widths[i] ?? 0) > 0);
+      if (!allKnown && frames++ < 30) requestAnimationFrame(settle);
+    };
+    settle();
+
     const ro = new ResizeObserver(measure);
     ro.observe(row);
     window.addEventListener('resize', measure);
