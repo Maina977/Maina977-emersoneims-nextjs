@@ -59,6 +59,8 @@ import { driveMotorCableScreeningEarthLeakage } from './articles/drive-motor-cab
 import { driveCapacitorAgeingAndStorage } from './articles/drive-capacitor-ageing-and-storage';
 import { atsContactorInterlockFaults } from './articles/ats-contactor-interlock-faults';
 import { atsPositionIndicationAuxiliaryContacts } from './articles/ats-position-indication-auxiliary-contacts';
+import { generatorAirRestrictionTurbocharger } from './articles/generator-air-restriction-turbocharger';
+import { generatorAltitudeAmbientDerating } from './articles/generator-altitude-ambient-derating';
 
 export * from './types';
 
@@ -115,6 +117,8 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   driveCapacitorAgeingAndStorage,
   atsContactorInterlockFaults,
   atsPositionIndicationAuxiliaryContacts,
+  generatorAirRestrictionTurbocharger,
+  generatorAltitudeAmbientDerating,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -293,7 +297,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Injection and combustion faults',
       'Altitude and ambient derating',
     ],
-    articleSlugs: ['generator-excessive-smoke', 'diesel-fuel-contamination'],
+    articleSlugs: ['generator-excessive-smoke', 'diesel-fuel-contamination', 'generator-air-restriction-turbocharger', 'generator-altitude-ambient-derating'],
   },
   {
     slug: 'testing-tools',

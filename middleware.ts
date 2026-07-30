@@ -689,6 +689,8 @@ export function middleware(request: NextRequest) {
         'ats-contactor-interlock-faults': 'ats-changeover',
         'ats-position-indication-auxiliary-contacts': 'ats-changeover',
         'diesel-fuel-contamination': 'fuel-systems',
+        'generator-air-restriction-turbocharger': 'fuel-systems',
+        'generator-altitude-ambient-derating': 'fuel-systems',
         'inverter-switches-off-under-load': 'inverters',
         'inverter-will-not-switch-on': 'inverters',
         'inverter-not-charging-batteries': 'inverters',

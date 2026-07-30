@@ -212,6 +212,8 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
       'Smoke diagnosis — black, blue and white': ['generator-excessive-smoke'],
       'Wet stacking and light-load damage': ['generator-excessive-smoke'],
       'Fuel contamination, water and filtration': ['diesel-fuel-contamination'],
+      'Air restriction and turbocharger faults': ['generator-air-restriction-turbocharger'],
+      'Altitude and ambient derating': ['generator-altitude-ambient-derating'],
       'Injection and combustion faults': ['generator-excessive-smoke'],
     },
   },

@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FAULT_CODES, FaultCode } from '@/lib/data/faultCodes';
+import FaultCodeRepairLinks from '@/components/repair-centre/FaultCodeRepairLinks';
 
 /**
  * Individual Fault Code Page
@@ -266,6 +267,13 @@ export default async function FaultCodePage({ params }: Props) {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Bridge into the Repair Centre. Fault-code pages carry the site's
+              most diagnostic-intent traffic and previously linked to none of
+              the 50+ guides that diagnose these exact faults. */}
+          <div className="max-w-7xl mx-auto">
+            <FaultCodeRepairLinks category={fault.category} code={fault.code} />
           </div>
         </div>
       </section>
