@@ -158,6 +158,9 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
     covers: {
       'Short-circuit location and current-limited fault finding': ['pcb-short-circuit-diagnosis'],
       'Power-rail diagnosis and sequencing': ['motherboard-power-rail-diagnosis'],
+      'Reset, supervisor and clock faults': ['pcb-reset-supervisor-clock-faults'],
+      'Board cleaning, track repair and contamination': ['pcb-cleaning-track-repair-contamination'],
+      'When to repair and when to replace': ['pcb-repair-or-replace-decision'],
       'Component testing and failure modes': [
         'inverter-mosfet-failure-diagnosis',
         'inverter-igbt-testing-and-failure',

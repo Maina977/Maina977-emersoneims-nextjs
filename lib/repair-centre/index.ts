@@ -51,6 +51,9 @@ import { upsOnBatteryWithMainsPresent } from './articles/ups-on-battery-with-mai
 import { upsWillNotPowerOn } from './articles/ups-will-not-power-on';
 import { motorBearingFailureDiagnosis } from './articles/motor-bearing-failure-diagnosis';
 import { boreholeDropCableAndMotorTesting } from './articles/borehole-drop-cable-and-motor-testing';
+import { pcbResetSupervisorClockFaults } from './articles/pcb-reset-supervisor-clock-faults';
+import { pcbCleaningTrackRepairContamination } from './articles/pcb-cleaning-track-repair-contamination';
+import { pcbRepairOrReplaceDecision } from './articles/pcb-repair-or-replace-decision';
 
 export * from './types';
 
@@ -99,6 +102,9 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   upsWillNotPowerOn,
   motorBearingFailureDiagnosis,
   boreholeDropCableAndMotorTesting,
+  pcbResetSupervisorClockFaults,
+  pcbCleaningTrackRepairContamination,
+  pcbRepairOrReplaceDecision,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -164,7 +170,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Board cleaning, track repair and contamination',
       'When to repair and when to replace',
     ],
-    articleSlugs: ['pcb-short-circuit-diagnosis', 'motherboard-power-rail-diagnosis'],
+    articleSlugs: ['pcb-short-circuit-diagnosis', 'motherboard-power-rail-diagnosis', 'pcb-reset-supervisor-clock-faults', 'pcb-cleaning-track-repair-contamination', 'pcb-repair-or-replace-decision'],
   },
   {
     slug: 'ats-changeover',
