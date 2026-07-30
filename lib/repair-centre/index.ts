@@ -212,6 +212,10 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Module degradation and bypass diodes',
       'Inverter clipping and export limitation',
       'DC bus and isolation faults',
+      // Added 2026-07-30. The hub already carried an article on charge
+      // controllers, but no scope line acknowledged it — so a genuine guide sat
+      // on the page under a scope list that never claimed the subject.
+      'Charge controllers and battery charging',
     ],
     articleSlugs: ['solar-system-underperforming', 'solar-charge-controller-not-charging'],
   },

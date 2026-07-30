@@ -42,6 +42,19 @@ import path from 'node:path';
 const root = process.cwd();
 const out = path.join(root, '.repair-audit.bundle.mjs');
 
+const coverageOut = path.join(root, '.repair-audit.coverage.mjs');
+await build({
+  entryPoints: [path.join(root, 'lib/repair-centre/hubCoverage.ts')],
+  bundle: true,
+  format: 'esm',
+  platform: 'node',
+  outfile: coverageOut,
+  alias: { '@': root },
+  logLevel: 'silent',
+});
+const { HUB_COVERAGE } = await import(pathToFileURL(coverageOut).href);
+unlinkSync(coverageOut);
+
 await build({
   entryPoints: [path.join(root, 'lib/repair-centre/index.ts')],
   bundle: true,
@@ -99,6 +112,51 @@ for (const a of REPAIR_ARTICLES) {
   for (const r of a.relatedSlugs ?? []) {
     if (r === a.slug) errors.push(`Article ${a.slug} relates to itself`);
     else if (!slugSet.has(r)) errors.push(`Article ${a.slug} has dead relatedSlug "${r}"`);
+  }
+}
+
+// 6b. Hub scope must not promise coverage the site does not have.
+//
+// A hub page prints its scope list to a technician. Before this check, ten of
+// the fifteen hubs listed more topics than they had guides for — /repair-centre/solar
+// advertised six topics over two articles, and the article covering one of them
+// ("DC bus and isolation faults") sat in the inverters hub, linked from nowhere.
+// The page made a promise the site did not keep.
+//
+// The rule is not "every scope item must have a guide" — writing takes time, and
+// declaring a gap honestly is fine. The rule is that the mapping must be REAL:
+// every hub needs a coverage entry, every key must be an actual scope label on
+// that hub, and every slug must be an actual article. That way an uncovered topic
+// is a deliberate, visible gap rather than an accident nobody noticed.
+for (const h of REPAIR_HUBS) {
+  const cov = HUB_COVERAGE[h.slug];
+  if (!cov) {
+    errors.push(`Hub "${h.slug}" has no entry in hubCoverage.ts — its scope list would render unlinked`);
+    continue;
+  }
+  const scopeSet = new Set(h.scope);
+  for (const label of Object.keys(cov.covers)) {
+    if (!scopeSet.has(label)) {
+      errors.push(`Hub "${h.slug}" coverage key "${label}" is not one of its scope items (typo or stale label)`);
+    }
+    for (const s of cov.covers[label]) {
+      if (!slugSet.has(s)) {
+        errors.push(`Hub "${h.slug}" scope "${label}" claims article "${s}" which does not exist`);
+      }
+    }
+  }
+  for (const sib of cov.siblings) {
+    if (!hubSet.has(sib)) errors.push(`Hub "${h.slug}" sibling "${sib}" is not a real hub`);
+    if (sib === h.slug) errors.push(`Hub "${h.slug}" lists itself as a sibling`);
+  }
+  // Every article filed in a hub must be reachable from that hub's scope, or it
+  // is an orphan sitting under a scope list that never claims its subject —
+  // exactly what happened to solar-charge-controller-not-charging.
+  const claimed = new Set(Object.values(cov.covers).flat());
+  for (const a of REPAIR_ARTICLES.filter(x => x.hub === h.slug)) {
+    if (!claimed.has(a.slug)) {
+      errors.push(`Article "${a.slug}" is in hub "${h.slug}" but no scope item claims it`);
+    }
   }
 }
 

@@ -2209,6 +2209,37 @@ export default function SolarBible() {
         </div>
       </footer>
 
+      {/*
+        Inbound link to the Repair Centre. An audit on 2026-07-30 found this page
+        — the main commercial solar page — had ZERO links to /repair-centre/solar,
+        so the diagnostic guides got no internal authority from the one page most
+        likely to send them qualified readers. Only the hub is linked, not the
+        individual guides: the hub is enumerated in the registry and guarded in
+        middleware, so this link cannot rot when articles are renamed.
+      */}
+      <section className="bg-slate-950 border-t border-slate-800">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+          <p className="text-xs uppercase tracking-[0.2em] text-yellow-400 font-semibold mb-2">
+            Free diagnostic guides
+          </p>
+          <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+            Solar system already installed and underperforming?
+          </h2>
+          <p className="mt-3 text-slate-300 leading-relaxed max-w-3xl">
+            Before you replace anything, work out what the array should be producing for the
+            conditions on the day. Our engineers have written the same diagnostic sequence they use
+            on site — yield loss, soiling and shading, charge controllers, and DC bus and isolation
+            faults.
+          </p>
+          <Link
+            href="/repair-centre/solar"
+            className="inline-block mt-6 px-6 py-3 rounded-lg border border-yellow-500/60 text-yellow-300 hover:bg-yellow-500/10 transition-colors font-semibold"
+          >
+            Solar PV diagnosis &amp; repair guides
+          </Link>
+        </div>
+      </section>
+
       {/* Solar CTA Section */}
       <ServiceCTASection
         title="Ready for Solar Power?"
