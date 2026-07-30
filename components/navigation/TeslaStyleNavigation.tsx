@@ -333,8 +333,14 @@ const NAV_ITEMS = [
   // while hiding GENERATORS and SOLAR. Those two are core commercial categories
   // and must never be the ones that go.
   //
-  // The six that stay visible at every realistic width are the six that sell.
-  // HOME is not here because the logo already links to /.
+  // The items that stay visible at every realistic width are the ones that sell.
+  //
+  // HOME is first by owner decision (2026-07-31). It was briefly removed on the
+  // reasoning that the logo already links to / — that is the usual convention, but
+  // the owner wants it explicit and that is the call that stands. It costs roughly
+  // one slot on the bar, which Priority+ absorbs into MORE from the bottom of this
+  // list rather than by dropping anything.
+  { href: '/', label: 'HOME', type: 'link' },
   { key: 'repairCentre', label: 'REPAIR CENTRE', type: 'mega', featured: true },
   { key: 'services', label: 'SERVICES', type: 'mega' },
   { key: 'generators', label: 'GENERATORS', type: 'mega' },
