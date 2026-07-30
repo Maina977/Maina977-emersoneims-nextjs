@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
+import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -2984,6 +2985,16 @@ export default function GeneratorPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           💬 FLOATING WHATSAPP - Always Available
       ════════════════════════════════════════════════════════════════ */}
+      {/* Funnel into the Repair Centre. This page carries real generator-buying
+          traffic and previously offered no route to the 9 generator diagnosis
+          guides. See the funnel audit note in RepairCentreCallout. */}
+      <RepairCentreCallout
+        hub="generators"
+        accent="amber"
+        heading="Already own a generator that is playing up?"
+        body="Before you replace a set, it is worth knowing what is actually wrong with it. Our engineers have written up the diagnostic sequences they use on site — starting faults, protective shutdowns, output problems, cooling and fuel. Free to read, no sign-up."
+      />
+
       <FloatingWhatsApp />
     </main>
   );

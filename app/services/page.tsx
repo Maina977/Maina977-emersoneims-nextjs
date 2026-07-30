@@ -13,6 +13,7 @@
  */
 
 import Link from 'next/link';
+import RepairCentreCallout from '@/components/repair-centre/RepairCentreCallout';
 import MobileWorkshopBand from '@/components/trust/MobileWorkshopBand';
 import dynamic from 'next/dynamic';
 import {
@@ -552,6 +553,14 @@ export default function ServicesPage() {
           effectively invisible on the site before 2026-07-20. Placed after the
           service list so a visitor who has just read WHAT we do immediately
           learns WHERE we can do it. */}
+      {/* Funnel into the Repair Centre from the services index. A visitor who
+          has just read what we do is the right reader for the guides on how
+          the faults are actually diagnosed. */}
+      <RepairCentreCallout
+        heading="Want to understand the fault before you call us?"
+        body="Our engineers have published the diagnostic sequences they use on site across 15 equipment categories — generators, inverters, UPS, solar, motors, pumps, drives and control boards. Free to read, no sign-up."
+      />
+
       <MobileWorkshopBand />
     </div>
   );
