@@ -678,6 +678,8 @@ export function middleware(request: NextRequest) {
         'test-instruments-and-measurement-errors': 'testing-tools',
         'j1939-spn-fmi-explained': 'fault-codes',
         'diesel-engine-abnormal-noise': 'engine-systems',
+        'diesel-valve-train-and-clearances': 'engine-systems',
+        'turbocharger-mechanical-condition': 'engine-systems',
         'solar-charge-controller-not-charging': 'solar',
         'solar-string-fault-diagnosis': 'solar',
         'solar-module-degradation-bypass-diodes': 'solar',

@@ -61,6 +61,8 @@ import { atsContactorInterlockFaults } from './articles/ats-contactor-interlock-
 import { atsPositionIndicationAuxiliaryContacts } from './articles/ats-position-indication-auxiliary-contacts';
 import { generatorAirRestrictionTurbocharger } from './articles/generator-air-restriction-turbocharger';
 import { generatorAltitudeAmbientDerating } from './articles/generator-altitude-ambient-derating';
+import { dieselValveTrainAndClearances } from './articles/diesel-valve-train-and-clearances';
+import { turbochargerMechanicalCondition } from './articles/turbocharger-mechanical-condition';
 
 export * from './types';
 
@@ -119,6 +121,8 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   atsPositionIndicationAuxiliaryContacts,
   generatorAirRestrictionTurbocharger,
   generatorAltitudeAmbientDerating,
+  dieselValveTrainAndClearances,
+  turbochargerMechanicalCondition,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -342,7 +346,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Turbocharger mechanical condition',
       'Repair versus replacement judgements',
     ],
-    articleSlugs: ['diesel-engine-abnormal-noise'],
+    articleSlugs: ['diesel-engine-abnormal-noise', 'diesel-valve-train-and-clearances', 'turbocharger-mechanical-condition'],
   },
   {
     slug: 'controllers',

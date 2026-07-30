@@ -254,7 +254,9 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
       'Abnormal noise and knock identification': ['diesel-engine-abnormal-noise'],
       'Bearing failure and when to stop immediately': ['diesel-engine-abnormal-noise'],
       'Oil pressure, contamination and analysis': ['generator-low-oil-pressure-shutdown'],
-      'Repair versus replacement judgements': ['diesel-engine-abnormal-noise'],
+      'Repair versus replacement judgements': ['diesel-engine-abnormal-noise', 'turbocharger-mechanical-condition'],
+      'Valve train and clearances': ['diesel-valve-train-and-clearances'],
+      'Turbocharger mechanical condition': ['turbocharger-mechanical-condition'],
     },
   },
 
