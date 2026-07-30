@@ -48,6 +48,9 @@ import { inverterIgbtTestingAndFailure } from './articles/inverter-igbt-testing-
 import { solarInverterDcBusFault } from './articles/solar-inverter-dc-bus-fault';
 import { upsNotChargingBatteries } from './articles/ups-not-charging-batteries';
 import { upsOnBatteryWithMainsPresent } from './articles/ups-on-battery-with-mains-present';
+import { upsWillNotPowerOn } from './articles/ups-will-not-power-on';
+import { motorBearingFailureDiagnosis } from './articles/motor-bearing-failure-diagnosis';
+import { boreholeDropCableAndMotorTesting } from './articles/borehole-drop-cable-and-motor-testing';
 
 export * from './types';
 
@@ -93,6 +96,9 @@ export const REPAIR_ARTICLES: RepairArticle[] = [
   solarInverterDcBusFault,
   upsNotChargingBatteries,
   upsOnBatteryWithMainsPresent,
+  upsWillNotPowerOn,
+  motorBearingFailureDiagnosis,
+  boreholeDropCableAndMotorTesting,
 ];
 
 export const REPAIR_HUBS: RepairHub[] = [
@@ -143,7 +149,7 @@ export const REPAIR_HUBS: RepairHub[] = [
     intro:
       'Diagnosis for offline, line-interactive and online double-conversion UPS systems, including bypass behaviour, battery autonomy and the generator interaction that causes most critical-power failures.',
     scope: ['Will not power on', 'Bypass faults', 'Battery and autonomy faults', 'Rectifier and inverter faults', 'Generator interaction'],
-    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present', 'ups-bypass-fault', 'ups-inverter-fault-diagnosis', 'ups-battery-replacement'],
+    articleSlugs: ['ups-not-charging-batteries', 'ups-on-battery-with-mains-present', 'ups-bypass-fault', 'ups-inverter-fault-diagnosis', 'ups-battery-replacement', 'ups-will-not-power-on'],
   },
   {
     slug: 'pcb-motherboards',
@@ -187,7 +193,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Variable-speed drive interaction',
       'Repair, rewind or replace',
     ],
-    articleSlugs: ['three-phase-motor-failure-diagnosis', 'motor-overload-tripping'],
+    articleSlugs: ['three-phase-motor-failure-diagnosis', 'motor-overload-tripping', 'motor-bearing-failure-diagnosis'],
   },
   {
     slug: 'pumps',
@@ -202,7 +208,7 @@ export const REPAIR_HUBS: RepairHub[] = [
       'Drop cable, splice and motor testing',
       'Dry-run protection and control',
     ],
-    articleSlugs: ['borehole-pump-no-water-delivery', 'pump-runs-continuously'],
+    articleSlugs: ['borehole-pump-no-water-delivery', 'pump-runs-continuously', 'borehole-drop-cable-and-motor-testing'],
   },
   {
     slug: 'solar',

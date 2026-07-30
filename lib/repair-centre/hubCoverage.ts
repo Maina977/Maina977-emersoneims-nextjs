@@ -93,6 +93,7 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
     covers: {
       'Bypass faults': ['ups-bypass-fault'],
       'Battery and autonomy faults': ['ups-battery-replacement', 'ups-not-charging-batteries'],
+      'Will not power on': ['ups-will-not-power-on'],
       'Rectifier and inverter faults': ['ups-inverter-fault-diagnosis'],
       'Generator interaction': ['ups-on-battery-with-mains-present'],
     },
@@ -133,6 +134,7 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
     covers: {
       'Winding failure and insulation testing': ['three-phase-motor-failure-diagnosis'],
       'Single-phasing and supply faults': ['three-phase-motor-failure-diagnosis'],
+      'Bearing failure and mechanical causes': ['motor-bearing-failure-diagnosis'],
       'Overload protection and duty': ['motor-overload-tripping'],
       'Variable-speed drive interaction': ['vfd-drive-fault-diagnosis'],
       'Repair, rewind or replace': ['three-phase-motor-failure-diagnosis'],
@@ -146,6 +148,7 @@ export const HUB_COVERAGE: Record<string, HubCoverage> = {
       'No delivery and reduced flow': ['borehole-pump-no-water-delivery'],
       'Water level, drawdown and borehole yield': ['borehole-pump-no-water-delivery'],
       'Non-return valves and rising main faults': ['borehole-pump-no-water-delivery'],
+      'Drop cable, splice and motor testing': ['borehole-drop-cable-and-motor-testing'],
       'Dry-run protection and control': ['pump-runs-continuously'],
     },
   },

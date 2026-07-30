@@ -689,6 +689,9 @@ export function middleware(request: NextRequest) {
         'solar-inverter-dc-bus-fault': 'inverters',
         'ups-not-charging-batteries': 'ups',
         'ups-on-battery-with-mains-present': 'ups',
+        'ups-will-not-power-on': 'ups',
+        'motor-bearing-failure-diagnosis': 'motors',
+        'borehole-drop-cable-and-motor-testing': 'pumps',
       };
       const rm = pathname.match(/^\/repair-centre\/([^/]+)(?:\/([^/]+))?\/?$/);
       let ok = false;
