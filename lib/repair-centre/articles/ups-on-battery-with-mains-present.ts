@@ -13,7 +13,7 @@ export const upsOnBatteryWithMainsPresent: RepairArticle = {
     author: 'EmersonEIMS Engineering',
     technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
-    lastReviewed: '2026-07-27',
+    lastReviewed: '2026-07-29',
     electricalSystem: 'Mains or generator input 240 V / 415 V 50 Hz nominal; input acceptance window is configurable per unit',
     safetyClass: 'stored-energy',
   },

@@ -13,7 +13,7 @@ export const inverterSwitchesOffUnderLoad: RepairArticle = {
     author: 'EmersonEIMS Engineering',
     technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
-    lastReviewed: '2026-07-27',
+    lastReviewed: '2026-07-29',
     electricalSystem: '12 V / 24 V / 48 V DC battery side; 240 V 50 Hz AC output',
     safetyClass: 'stored-energy',
   },

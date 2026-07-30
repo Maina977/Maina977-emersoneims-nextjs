@@ -17,7 +17,7 @@ export const generatorCranksNoStart: RepairArticle = {
     author: 'EmersonEIMS Engineering',
     technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
-    lastReviewed: '2026-07-27',
+    lastReviewed: '2026-07-29',
     electricalSystem: '12 V or 24 V DC starting; 240 V / 415 V 50 Hz output',
     safetyClass: 'multiple-hazard',
   },

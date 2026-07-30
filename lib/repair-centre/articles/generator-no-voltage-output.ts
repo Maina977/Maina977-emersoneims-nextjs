@@ -13,7 +13,7 @@ export const generatorNoVoltageOutput: RepairArticle = {
     author: 'EmersonEIMS Engineering',
     technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
-    lastReviewed: '2026-07-27',
+    lastReviewed: '2026-07-29',
     electricalSystem: '240 V / 415 V 50 Hz output; excitation typically supplied from the main output or a separate PMG',
     safetyClass: 'live-electrical',
   },

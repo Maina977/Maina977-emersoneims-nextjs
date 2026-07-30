@@ -14,7 +14,7 @@ export const generatorLowOilPressureShutdown: RepairArticle = {
     author: 'EmersonEIMS Engineering',
     technicalReviewer: 'Mr. Kararaho',
     published: '2026-07-27',
-    lastReviewed: '2026-07-27',
+    lastReviewed: '2026-07-29',
     electricalSystem: '12 V or 24 V DC control',
     safetyClass: 'multiple-hazard',
   },
