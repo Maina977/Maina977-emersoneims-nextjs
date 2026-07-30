@@ -2,6 +2,9 @@ import Link from 'next/link';
 import type { RepairArticle } from '@/lib/repair-centre/types';
 import { CONTACT, getWhatsAppUrl, getTelUrl } from '@/lib/constants/contact';
 import DecisionFlowchart from './DecisionFlowchart';
+import SystemComponentDiagram from './SystemComponentDiagram';
+import DiagnosticSequenceDiagram from './DiagnosticSequenceDiagram';
+import RepairStageDiagram from './RepairStageDiagram';
 
 /**
  * Server component. Every section renders into the initial HTML so the whole
@@ -122,6 +125,10 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
         <p className="text-slate-200 leading-relaxed">{article.directAnswer}</p>
       </div>
 
+      {/* Labelled component schematic for this equipment type. Named parts and
+          what flows between them, so the fault has a place in a system. */}
+      <SystemComponentDiagram hub={article.hub} />
+
       <Section id="symptoms" n="01" title="Symptom description">
         <div className="grid sm:grid-cols-2 gap-5">
           {([
@@ -225,6 +232,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
       </Section>
 
       <Section id="diagnosis" n="07" title="Step-by-step diagnosis">
+        <DiagnosticSequenceDiagram steps={article.diagnosis} slug={article.slug} />
         <div className="space-y-5">
           {article.diagnosis.map(s => (
             <div key={s.step} className="rounded-xl border border-slate-700 bg-slate-900/50 p-5">
@@ -255,6 +263,7 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
       </Section>
 
       <Section id="repair" n="08" title="Repair procedure">
+        <RepairStageDiagram repair={article.repair} slug={article.slug} />
         <div className="space-y-4">
           {article.repair.map((r, i) => (
             <div key={i} className="rounded-xl border border-slate-700 bg-slate-900/50 p-5">
