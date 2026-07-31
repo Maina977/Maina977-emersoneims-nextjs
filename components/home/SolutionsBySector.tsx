@@ -39,7 +39,11 @@ const SECTORS: { slug: string; label: string; pain: string; icon: string }[] = [
     pain: 'Cold rooms, irrigation pumps and pack-house lines that simply must run, every shift.',
   },
   {
-    slug: 'real-estate',
+    // 'real-estate' is NOT an industry slug — lib/seo/industryData.ts defines
+    // 'real-estate-construction'. /industries/real-estate answered HTTP 200 with
+    // the title "Industry Not Found", so the homepage was sending visitors and
+    // crawlers into a soft-404.
+    slug: 'real-estate-construction',
     label: 'Real Estate & Apartments',
     icon: '🏢',
     pain: 'Lifts, water pumps, common-area lighting — tenants notice within minutes.',

@@ -10,6 +10,7 @@ import sparePartsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
 import { REPAIR_HUBS, REPAIR_ARTICLES } from '@/lib/repair-centre';
 import { FAULT_CODES } from '@/lib/data/faultCodes';
+import { getAllIndustries } from '@/lib/seo/industryData';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -23,17 +24,28 @@ const majorTowns = [
   'westlands', 'karen', 'ngong', 'ongata-rongai', 'mtwapa', 'nyali', 'diani'
 ];
 
-// Industries - Critical for B2B SEO
+/**
+ * Industries — critical for B2B SEO.
+ *
+ * The dynamic slugs come from getAllIndustries(), the same registry that
+ * app/industries/[industry] builds generateStaticParams from. This list used to
+ * be typed by hand and had drifted: it emitted 'real-estate' and
+ * 'government-ngo' while the registry defines 'real-estate-construction' and
+ * 'government-ngos'. Both wrong URLs answered HTTP 200 with the title
+ * "Industry Not Found" — soft-404s, advertised to Google by our own sitemap.
+ *
+ * The four entries below the spread are STATIC routes with their own directories
+ * under app/industries/. They are real, distinct pages (e.g. /industries/
+ * manufacturing has different content from the registry's
+ * manufacturing-industries) and three of them were missing from the sitemap
+ * entirely. They must be listed explicitly because they are not in the registry.
+ */
 const industries = [
-  'hotels-hospitality',
-  'hospitals-healthcare',
-  'schools-universities',
-  'banks-financial',
+  ...getAllIndustries().map(i => i.slug),
+  'commercial-property',
+  'healthcare',
   'manufacturing',
-  'flower-farms',
-  'real-estate',
-  'churches-religious',
-  'government-ngo'
+  'telecommunications',
 ];
 
 // Services for location combinations.

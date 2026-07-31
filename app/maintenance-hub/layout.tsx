@@ -92,9 +92,23 @@ export const metadata: Metadata = {
     images: ['/images/maintenance-hub-og.jpg'],
     creator: '@EmersonEiMS',
   },
-  alternates: {
-    canonical: 'https://www.emersoneims.com/maintenance-hub',
-  },
+  /*
+   * NO `alternates.canonical` HERE — deliberately.
+   *
+   * In the App Router a layout's metadata is INHERITED by every page beneath
+   * it. Hard-coding the canonical here made all ten child pages
+   * (/maintenance-hub/generators, /solar, /hvac, /borehole, /electrical,
+   * /motors, /incinerators, /fabrication, /general) declare
+   * <link rel="canonical" href=".../maintenance-hub">, which tells Google to
+   * index the parent and drop them. They were in the sitemap at the same time,
+   * so the site was asking for indexing and refusing it on the same URL.
+   * A Googlebot scan on 2026-07-31 found all ten in that state.
+   *
+   * The root layout already emits a correct self-referential canonical from the
+   * `x-pathname` header (see app/layout.tsx). Leaving this unset lets every page
+   * canonicalise to itself. Only set a canonical in a layout that has no child
+   * routes, or set it per-page.
+   */
   category: 'Business',
 };
 

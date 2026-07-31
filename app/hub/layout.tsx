@@ -19,7 +19,13 @@ export const metadata: Metadata = {
     'solar product intelligence',
     'EmersonEIMS Hub',
   ],
-  alternates: { canonical: URL },
+  /*
+   * NO canonical here — layout metadata is INHERITED by every child page, so
+   * this made each sub-page canonicalise to the section root and forfeit its
+   * own indexing while still being listed in the sitemap. The root layout
+   * (app/layout.tsx) emits a correct self-referential canonical from the
+   * x-pathname header.
+   */
   openGraph: {
     title: 'Solar & UPS Intelligence Hub | EmersonEIMS',
     description:

@@ -24,9 +24,14 @@ export const metadata: Metadata = {
     title: 'Cummins Generators Kenya | EmersonEIMS',
     description: 'Buy NEW Cummins generators in Kenya. 10kVA-2000kVA. 1 year free service.',
   },
-  alternates: {
-    canonical: 'https://www.emersoneims.com/generators',
-  },
+  /*
+   * NO `alternates.canonical` HERE — a layout's metadata is inherited by every
+   * page beneath it, so this hard-coded value made /generators/used,
+   * /generators/leasing, /generators/systems, /generators/case-studies and
+   * /generators/maintenance-companion all canonicalise to /generators and lose
+   * their own ranking. Those are commercial pages. The root layout emits a
+   * correct self-referential canonical from `x-pathname`.
+   */
   robots: {
     index: true,
     follow: true,

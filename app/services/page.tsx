@@ -301,11 +301,16 @@ export default function ServicesPage() {
               { href: '/industries/manufacturing', icon: '🏭', name: 'Manufacturing', tag: 'Production-line uptime, motor & VFD support' },
               { href: '/industries/hospitals-healthcare', icon: '🏥', name: 'Hospitals & Healthcare', tag: 'Critical-care backup, NEMA-compliant incineration' },
               { href: '/industries/banks-financial', icon: '🏦', name: 'Telecom & Financial', tag: 'Branch UPS, data-room cooling, ATM uptime' },
-              { href: '/industries/real-estate', icon: '🏢', name: 'Commercial Buildings', tag: 'BMS-ready gensets, solar PV, fuel management' },
+              // Was /industries/real-estate — not a real slug, served "Industry
+              // Not Found" at HTTP 200. /industries/commercial-property is a
+              // published page and matches this card exactly.
+              { href: '/industries/commercial-property', icon: '🏢', name: 'Commercial Buildings', tag: 'BMS-ready gensets, solar PV, fuel management' },
               { href: '/industries/hotels-hospitality', icon: '🏨', name: 'Hotels & Hospitality', tag: 'Silent canopies, HVAC, hot-water automation' },
               { href: '/industries/schools-universities', icon: '🎓', name: 'Schools & Campuses', tag: 'Hostel solar, lab UPS, lecture-hall cooling' },
               { href: '/industries/flower-farms', icon: '🌸', name: 'Agribusiness & Farms', tag: 'Borehole pumping, cold-room, irrigation power' },
-              { href: '/industries/government-ngo', icon: '🏛️', name: 'Government & NGO', tag: 'Tendered installs, training, regulatory reporting' },
+              // Was /industries/government-ngo (singular) — the registry slug is
+              // 'government-ngos'. The singular form soft-404'd at HTTP 200.
+              { href: '/industries/government-ngos', icon: '🏛️', name: 'Government & NGO', tag: 'Tendered installs, training, regulatory reporting' },
               { href: '/industries', icon: '🚧', name: 'Construction & Sites', tag: 'Rental gensets, distribution, fabrication' },
               { href: '/industries', icon: '🔋', name: 'Data Centres', tag: 'Online UPS, N+1 backup, power quality' },
             ].map((i) => (
