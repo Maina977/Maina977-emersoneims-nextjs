@@ -46,6 +46,31 @@ export default function CaseStudiesPage() {
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
       <B2BCommercialBand profile={B2B_PROFILES.caseStudies} />
 
+      {/*
+        CRAWLABLE HEADER — deliberately placed here, before any framer-motion.
+        This page is a SERVER component that imports `motion` from framer-motion.
+        The motion subtree fails during server rendering, and React discards the
+        whole container that holds it, so a Googlebot scan on 2026-07-31 found
+        the entire <main> content missing from the HTML: no <h1>, no hero copy,
+        not even the plain wrapper divs — only this band and the footer.
+        An earlier attempt put the <h1> inside that container and it was dropped
+        with everything else; it has to sit outside.
+
+        Users are unaffected — the animated hero still renders on the client.
+        This block is what search engines get without executing JavaScript.
+        Removing framer-motion from this server component would let the real
+        hero render server-side and make this redundant.
+      */}
+      <header className="relative z-10 container mx-auto px-6 pt-20 text-center">
+        <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-white via-amber-200 to-white bg-clip-text text-transparent">
+          Case Studies
+        </h1>
+        <p className="mt-6 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto font-light">
+          Real engineering work across Kenya — generators, solar PV, UPS, motor rewinding and borehole
+          installations. Published only with signed client release and verifiable evidence.
+        </p>
+      </header>
+
       {/* Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
       <div className="fixed inset-0 opacity-20">
@@ -54,29 +79,14 @@ export default function CaseStudiesPage() {
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-20">
-        {/*
-          The <h1> sits OUTSIDE the motion wrapper deliberately.
-          framer-motion's motion.* are client-only, so nothing inside them
-          reached the server HTML — a Googlebot scan on 2026-07-31 found this
-          page serving zero <h1> and none of its hero copy, with only the
-          footer's headings present. Keeping the heading outside the animation
-          puts it in the initial HTML at no visual cost beyond the h1 not
-          fading in.
-        */}
-        <div className="text-center">
-          <h1 className="text-7xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-white via-amber-200 to-white bg-clip-text text-transparent">
-            Case Studies
-          </h1>
-        </div>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-20"
         >
-          <p className="text-2xl md:text-3xl text-gray-300 max-w-4xl mx-auto font-light">
-            Real engineering work across Kenya — published only with signed client release and verifiable evidence.
-          </p>
+          {/* The intro paragraph now lives in the server-rendered <header> above,
+              so it is not repeated here. */}
           {published.length > 0 && (
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <span className="px-6 py-3 bg-white/10 rounded-full text-sm backdrop-blur-sm border border-white/20">
