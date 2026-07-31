@@ -9,6 +9,7 @@ import {
 import sparePartsDb from '@/app/data/spare-parts-database-COMPLETE.json';
 import { getEngineIndex } from '@/lib/parts/engineIndex';
 import { REPAIR_HUBS, REPAIR_ARTICLES } from '@/lib/repair-centre';
+import { FAULT_CODES } from '@/lib/data/faultCodes';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPREHENSIVE SITEMAP - All pages for maximum SEO visibility
@@ -75,12 +76,8 @@ const blogSlugs = [
   'hvac-cooling-load-sizing-kenya'
 ];
 
-// Fault codes for SEO (sample - full list is in faultCodes.ts)
-const faultCodes = [
-  'spn-111', 'spn-115', 'spn-190', 'spn-94', 'spn-100', 'spn-1514',
-  'dse-e020', 'dse-e040', 'dse-e047', 'dse-e070',
-  'comap-a001', 'comap-a015'
-];
+// Fault code URLs are derived from FAULT_CODES further down — see the comment
+// at that loop for why the previous hand-written list was removed.
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date();
@@ -266,10 +263,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/case-studies`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.85 }
   );
 
-  // Add fault code pages (HIGH-INTENT - people searching for specific codes)
-  for (const code of faultCodes) {
+  /*
+   * Fault code pages (HIGH-INTENT — people search for the exact code).
+   *
+   * Derived from FAULT_CODES, the same registry app/faults/[code] builds its
+   * generateStaticParams from, using the identical slug rule
+   * (fault.code.toLowerCase()). It used to be a hand-written list of 12 slugs,
+   * and one of them — dse-e047 — had no record behind it. That URL was
+   * advertised in the sitemap and answered HTTP 200 with the title "Fault Code
+   * Not Found": a soft-404, the class of defect that damages the whole domain
+   * rather than the one page (Next 16 on Vercel returns 200 even when
+   * notFound() fires inside a matched dynamic route).
+   *
+   * Deriving the list makes that impossible, and publishes every real code page
+   * instead of an arbitrary 12. Never hand-add a slug here.
+   */
+  for (const fault of FAULT_CODES) {
     urls.push({
-      url: `${BASE_URL}/faults/${code}`,
+      url: `${BASE_URL}/faults/${fault.code.toLowerCase()}`,
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.85,

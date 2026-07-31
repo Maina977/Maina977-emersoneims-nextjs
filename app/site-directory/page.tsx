@@ -81,10 +81,16 @@ const SECTORS_WITHOUT_INDUSTRY_HUB = [
 const CRAWLABLE_FROM_OWN_INDEX = [
   '/kenya/',
   '/locations/',
-  '/faults/',
   '/blog/',
   '/repair-centre/',
 ];
+/*
+ * '/faults/' is deliberately NOT excluded. /faults renders a filtered view and
+ * links only 30 of the 36 published code pages, so it is not a complete index —
+ * measured on live, not assumed. The remaining six reach crawlers only through
+ * the computed group below. Add a prefix here only after checking that its index
+ * really does link everything under it.
+ */
 
 type L = { href: string; label: string };
 
