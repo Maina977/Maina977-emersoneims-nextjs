@@ -54,16 +54,26 @@ export default function CaseStudiesPage() {
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-20">
-        {/* Hero */}
+        {/*
+          The <h1> sits OUTSIDE the motion wrapper deliberately.
+          framer-motion's motion.* are client-only, so nothing inside them
+          reached the server HTML — a Googlebot scan on 2026-07-31 found this
+          page serving zero <h1> and none of its hero copy, with only the
+          footer's headings present. Keeping the heading outside the animation
+          puts it in the initial HTML at no visual cost beyond the h1 not
+          fading in.
+        */}
+        <div className="text-center">
+          <h1 className="text-7xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-white via-amber-200 to-white bg-clip-text text-transparent">
+            Case Studies
+          </h1>
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-20"
         >
-          <h1 className="text-7xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-white via-amber-200 to-white bg-clip-text text-transparent">
-            Case Studies
-          </h1>
           <p className="text-2xl md:text-3xl text-gray-300 max-w-4xl mx-auto font-light">
             Real engineering work across Kenya — published only with signed client release and verifiable evidence.
           </p>

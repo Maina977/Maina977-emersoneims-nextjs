@@ -38,6 +38,15 @@ export default function BuildingPage() {
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
       <link rel="prefetch" href="/eims-building-suite-v20260503.html" as="document" />
       <B2BCommercialBand profile={B2B_PROFILES.mepClash} />
+      {/*
+        Server-rendered heading. ProBuildingSuiteClient is a client component,
+        so a Googlebot scan on 2026-07-31 found this page — and the /all-tools
+        and /pro-building-suite aliases that canonicalise to it — serving no
+        <h1>. Fixing it here fixes all three.
+      */}
+      <h1 className="sr-only">
+        Pro Building Suite — AI Architectural Design, Structural Analysis &amp; BOQ Generation
+      </h1>
       <ProBuildingSuiteClient />
     </>
   );

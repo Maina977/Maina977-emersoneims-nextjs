@@ -54,6 +54,14 @@ export default function EimsProPage() {
         industry="EPCs, QS, Architects, Project Managers"
       />
       <B2BCommercialBand profile={B2B_PROFILES.eimsPro} />
+      {/*
+        EimsProClient is dynamically imported with ssr:false, so NOTHING it
+        renders reaches the initial HTML. A Googlebot scan on 2026-07-31 found
+        this page serving no <h1> at all. This heading is server-rendered so the
+        page states what it is before any JavaScript runs; the visual design is
+        unchanged because the client workspace renders its own chrome below.
+      */}
+      <h1 className="sr-only">EIMS PRO — Building Intelligence &amp; Construction Engineering Workspace</h1>
       <EimsProClient />
     </>
   );
