@@ -97,7 +97,11 @@ const FOOTER_LINKS = {
     { label: 'Spare Parts Marketplace', href: '/marketplace' },
     { label: 'Sectors We Serve', href: '/sectors' },
     { label: 'Brands We Service', href: '/brands' },
-    { label: 'All Engineering Tools', href: '/all-tools' },
+    // NOT /all-tools — that is a Building Suite Pro console feature that
+    // redirects into /solutions/building, so labelling it "All Engineering
+    // Tools" sent people somewhere they did not ask for. /ai-tools is the
+    // actual index of Generator Oracle, Solar Genius Pro, AquaScan Pro etc.
+    { label: 'All Engineering Tools', href: '/ai-tools' },
     { label: 'Resources & Learning Hub', href: '/resources' },
     { label: 'Knowledge Base', href: '/knowledge-base' },
     { label: 'Technical Bible', href: '/technical-bible' },

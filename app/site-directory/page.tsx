@@ -135,8 +135,11 @@ export default async function SiteDirectoryPage() {
   ];
 
   const toolPages: L[] = [
-    { href: '/all-tools', label: 'All Tools' },
-    { href: '/ai-tools', label: 'AI Tools' },
+    // /all-tools is deliberately NOT listed: it is a Building Suite Pro console
+    // feature that redirects to /solutions/building and canonicalises there, so
+    // listing it as a tools index would mislead readers and add nothing for
+    // crawlers. /solutions/building is reachable from the services groups.
+    { href: '/ai-tools', label: 'All Engineering Tools' },
     { href: '/calculators', label: 'Power Calculators' },
     { href: '/generator-oracle', label: 'Generator Oracle' },
     { href: '/solar-genius-pro', label: 'Solar Genius Pro' },

@@ -65,7 +65,7 @@ export default function AquaScanProV3Layout({ children }: { children: ReactNode 
         priceKes="Free"
       />
       {children}
-      <ToolSeoContent tool="aquascan-pro-v3" />
+      <ToolSeoContent tool="aquascan-pro-v3" headingLevel="h1" />
     </>
   );
 }

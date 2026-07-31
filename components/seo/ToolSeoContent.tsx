@@ -192,7 +192,14 @@ const TOOLS: Record<string, ToolCopy> = {
   },
 };
 
-export default function ToolSeoContent({ tool }: { tool: keyof typeof TOOLS | string }) {
+export default function ToolSeoContent({
+  tool,
+  headingLevel = 'h2',
+}: {
+  tool: keyof typeof TOOLS | string;
+  /** Use 'h1' only when the host page renders no <h1> of its own. */
+  headingLevel?: 'h1' | 'h2';
+}) {
   const c = TOOLS[tool as string];
   if (!c) return null;
   const faqLd = {
@@ -207,7 +214,21 @@ export default function ToolSeoContent({ tool }: { tool: keyof typeof TOOLS | st
   return (
     <section aria-label="About this tool" className="mx-auto max-w-4xl px-6 py-14 text-slate-300">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-      <h2 className="text-2xl font-bold text-white">{c.h2}</h2>
+      {/*
+        Heading level is opt-in. Most hosts (/calculators, /diagnostics,
+        /generator-oracle, /maintenance-hub, /solar ...) already render their own
+        <h1>, so this block must stay an <h2> there.
+
+        The interactive tool pages do NOT: a Googlebot scan on 2026-07-31 found
+        /aquascan-pro-v3 and /solar-genius-pro and their sub-pages serving 700–1000
+        words with no <h1> at all, because the app itself is client-rendered.
+        Those layouts pass headingLevel="h1" so the page has exactly one.
+      */}
+      {headingLevel === 'h1' ? (
+        <h1 className="text-2xl font-bold text-white">{c.h2}</h1>
+      ) : (
+        <h2 className="text-2xl font-bold text-white">{c.h2}</h2>
+      )}
       <p className="mt-4 leading-relaxed">{c.intro}</p>
       <h3 className="mt-8 text-lg font-semibold text-white">What it does</h3>
       <ul className="mt-3 list-disc space-y-2 pl-6">

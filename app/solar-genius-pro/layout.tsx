@@ -62,7 +62,7 @@ export default function SolarGeniusProLayout({ children }: { children: ReactNode
         priceKes="Free"
       />
       {children}
-      <ToolSeoContent tool="solar-genius-pro" />
+      <ToolSeoContent tool="solar-genius-pro" headingLevel="h1" />
     </>
   );
 }
