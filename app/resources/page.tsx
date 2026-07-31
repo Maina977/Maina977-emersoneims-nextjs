@@ -67,10 +67,16 @@ const RESOURCE_CATEGORIES = [
     icon: '🔬',
     color: 'blue',
     resources: [
+      /*
+       * /diagnostic-journey and /diagnostic-qa were listed here as working
+       * tools. Neither route has ever existed — both returned 404. They are
+       * replaced with the real resources that do what their descriptions
+       * promised, and the duplicate /diagnostics entry is dropped.
+       */
       { href: '/diagnostics', title: 'Diagnostic Cockpit', desc: 'Aerospace-style control interface', type: 'Tool' },
-      { href: '/diagnostic-journey', title: 'Diagnostic Journey', desc: 'Step-by-step diagnosis flow', type: 'Tool' },
-      { href: '/diagnostic-qa', title: 'Expert Q&A', desc: 'AI-powered technical answers', type: 'AI' },
-      { href: '/diagnostics', title: 'Full Diagnostic Suite', desc: 'Complete diagnostic platform', type: 'Suite' },
+      { href: '/troubleshooting', title: 'Troubleshooting Wizard', desc: 'Step-by-step diagnosis flow', type: 'Tool' },
+      { href: '/repair-centre', title: 'Repair Centre', desc: '60 diagnosis guides across 15 categories', type: 'Guides' },
+      { href: '/generator-oracle', title: 'Generator Oracle', desc: 'Fault code and controller intelligence', type: 'Suite' },
     ],
   },
 ];

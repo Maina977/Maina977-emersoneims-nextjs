@@ -11,6 +11,7 @@ import {
   generateCityDescription,
   generateCityH1,
   generateCityKeywords,
+  getCountryHubPath,
 } from '@/lib/data/east-africa-locations';
 import { SEO_SERVICES } from '@/lib/data/seo-services';
 import LocalBusinessSchema from '@/components/seo/LocalBusinessSchema';
@@ -162,7 +163,7 @@ export default async function InternationalCityPage({ params }: Props) {
           </li>
           <li>/</li>
           <li>
-            <Link href={`/${country.slug}`} className="hover:text-white">{country.name}</Link>
+            <Link href={getCountryHubPath(country.slug)} className="hover:text-white">{country.name}</Link>
           </li>
           <li>/</li>
           <li className="text-amber-400">{city.name}</li>

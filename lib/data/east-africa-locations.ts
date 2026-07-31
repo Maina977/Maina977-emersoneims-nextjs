@@ -307,6 +307,24 @@ export function getAllCountrySlugs(): string[] {
 }
 
 /**
+ * Country hub pages that actually exist under app/east-africa/.
+ *
+ * There is NO app/[country]/page.tsx — only app/[country]/[city]. City pages
+ * were linking their breadcrumb to `/${country.slug}`, so /uganda, /tanzania,
+ * /rwanda and /south-sudan all returned 404 from every one of the 36 city
+ * pages. Keep this set in sync with the app/east-africa directory.
+ */
+const COUNTRY_HUB_PAGES = new Set(['uganda', 'tanzania', 'rwanda']);
+
+/**
+ * Where a country's breadcrumb should point. Falls back to the regional hub for
+ * countries that have no page of their own, so it can never emit a 404.
+ */
+export function getCountryHubPath(countrySlug: string): string {
+  return COUNTRY_HUB_PAGES.has(countrySlug) ? `/east-africa/${countrySlug}` : '/east-africa';
+}
+
+/**
  * Get all city slugs for a country
  */
 export function getCitySlugsForCountry(countrySlug: string): string[] {
