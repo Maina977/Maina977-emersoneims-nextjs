@@ -212,6 +212,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/knowledge-base`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/careers`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/locations`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.9 },
+    /*
+     * Added 2026-07-31 after a live crawl found these published, reachable and
+     * absent from the sitemap:
+     *   /east-africa    the regional hub above the 36 /<country>/<city> pages
+     *   /marketplace    the spare-parts marketplace
+     *   /all-tools      the engineering tools index
+     *   /site-directory the HTML index of every section (see that page's header
+     *                   for why it exists — the mega-menu nav renders no hrefs)
+     */
+    { url: `${BASE_URL}/east-africa`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/marketplace`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
+    { url: `${BASE_URL}/all-tools`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
+    { url: `${BASE_URL}/site-directory`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.6 },
     // /counties is permanently redirected to /kenya — keep only the canonical.
     { url: `${BASE_URL}/kenya`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
 

@@ -48,6 +48,38 @@ export interface Service {
 // SERVICES WE OFFER
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/**
+ * Where a location-service slug's CANONICAL national page actually lives.
+ *
+ * The slugs in `SERVICES` are the second segment of /locations/[location]/[service].
+ * They are not top-level routes. Linking to `/${service.slug}` happened to work
+ * for `generators` and `solar` — which do exist at the root — and 404'd for
+ * every other one. A live crawl caught /ups, /electrical, /motors, /borehole,
+ * /ac, /generator-diagnostics and /spare-parts all returning 404 from links the
+ * site itself published.
+ *
+ * Every path below was verified to return HTTP 200 on the live site before
+ * being written here. `electrical` has no dedicated service page, so it points
+ * at the maintenance hub section that does cover it rather than at a route that
+ * does not exist.
+ */
+const SERVICE_CANONICAL_PATH: Record<string, string> = {
+  generators: '/generators',
+  solar: '/solar',
+  ups: '/services/ups-systems',
+  electrical: '/maintenance-hub/electrical',
+  motors: '/services/motor-rewinding',
+  borehole: '/services/borehole-pumps',
+  ac: '/services/air-conditioning',
+  'generator-diagnostics': '/diagnostics',
+  'spare-parts': '/marketplace',
+};
+
+/** Canonical national page for a location-service slug. Falls back to the services index. */
+export function getServicePath(slug: string): string {
+  return SERVICE_CANONICAL_PATH[slug] ?? '/services';
+}
+
 export const SERVICES: Service[] = [
   {
     slug: 'generators',

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { RepairArticle } from '@/lib/repair-centre/types';
+import { getRepairArticle } from '@/lib/repair-centre';
 import { CONTACT, getWhatsAppUrl, getTelUrl } from '@/lib/constants/contact';
 import DecisionFlowchart from './DecisionFlowchart';
 import SystemComponentDiagram from './SystemComponentDiagram';
@@ -55,6 +56,20 @@ function CauseBlock({ label, items, weight }: { label: string; items: string[]; 
 export default function RepairArticleView({ article }: { article: RepairArticle }) {
   const h = article.header;
   const wa = getWhatsAppUrl(CONTACT.PRIMARY_WHATSAPP, `Fault diagnosis enquiry — ${h.title}`);
+
+  /*
+   * Related guides must be resolved to the article they name, NOT built from
+   * this article's own hub. relatedSlugs are cross-hub by design — a generator
+   * guide legitimately points at the ATS and safety guides — and the route is
+   * /repair-centre/<the target article's hub>/<slug>. Interpolating
+   * `article.hub` here produced live 404s across the whole section (a live
+   * crawl found 20 of them), because middleware validates the slug against its
+   * real hub and rejects the mismatch. Anything that does not resolve to a
+   * published article is dropped rather than linked into a 404.
+   */
+  const related = (article.relatedSlugs ?? [])
+    .map(s => getRepairArticle(s))
+    .filter((a): a is RepairArticle => Boolean(a));
 
   return (
     <article className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
@@ -337,14 +352,14 @@ export default function RepairArticleView({ article }: { article: RepairArticle 
         </div>
       </section>
 
-      {article.relatedSlugs?.length > 0 && (
+      {related.length > 0 && (
         <section className="mt-12">
           <h2 className="text-xl font-bold text-white mb-4">Related diagnosis guides</h2>
           <ul className="space-y-2">
-            {article.relatedSlugs.map(s => (
-              <li key={s}>
-                <Link href={`/repair-centre/${article.hub}/${s}`} className="text-cyan-400 hover:text-cyan-300 underline-offset-4 hover:underline">
-                  {s.replace(/-/g, ' ')}
+            {related.map(r => (
+              <li key={r.slug}>
+                <Link href={`/repair-centre/${r.hub}/${r.slug}`} className="text-cyan-400 hover:text-cyan-300 underline-offset-4 hover:underline">
+                  {r.header.title.split(' — ')[0]}
                 </Link>
               </li>
             ))}

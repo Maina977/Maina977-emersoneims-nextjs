@@ -177,7 +177,9 @@ export default function KenyaPage() {
               { county: 'kiambu', service: 'generators', label: 'Generators in Kiambu' },
               { county: 'machakos', service: 'diesel-generators', label: 'Diesel Generators in Machakos' },
               { county: 'kajiado', service: 'generator-spare-parts', label: 'Generator Parts in Kajiado' },
-              { county: 'kilifi', service: 'generator-not-starting', label: 'Generator Troubleshooting in Kilifi' },
+              // 'generator-not-starting' is a Repair Centre fault topic, not a
+              // /kenya service slug — this link 404'd on the live site.
+              { county: 'kilifi', service: 'generator-repairs', label: 'Generator Repairs in Kilifi' },
               { county: 'uasin-gishu', service: 'solar-installation', label: 'Solar Installation in Eldoret' },
             ].map((item) => (
               <Link

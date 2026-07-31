@@ -480,7 +480,12 @@ export const HUB_GOVERNANCE = {
   version: 'v1.0.0-rc.1',
   approvalState: 'staging' as 'staging' | 'approved' | 'production',
   approver: 'pending engineering sign-off',
-  auditTrail: '/docs/governance/hub-audit-trail.md',
+  // `auditTrail` used to be here, pointing at /docs/governance/hub-audit-trail.md
+  // and rendered as a clickable link on all 18 /hub pages. That file has never
+  // existed in this repository, so every hub page published a governance link
+  // that returned 404. Citing an audit trail that cannot be read is worse than
+  // citing none. Restore the field only when the document is actually written
+  // and served at a URL verified to return 200.
   rollbackTarget: 'previous release tag · 1-step revert',
   lastReviewedISO: '2026-05-03',
 } as const;
@@ -517,16 +522,6 @@ export function GovernanceStrip() {
           <span className="text-ink-muted">Approval</span>
           <span className={`status-chip ${stateChip}`}>{g.approvalState}</span>
           <span className="text-ink-muted">· {g.approver}</span>
-        </span>
-        <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
-          <span className="text-ink-muted">Audit trail</span>
-          <Link
-            href={g.auditTrail}
-            className="block min-w-0 truncate font-mono text-ink-link hover:underline"
-            title={g.auditTrail}
-          >
-            {g.auditTrail}
-          </Link>
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="text-ink-muted">Rollback</span>
@@ -577,14 +572,6 @@ export function CompactGovernanceLine() {
       <span>
         Reviewed <span className="font-mono">{g.lastReviewedISO}</span>
       </span>
-      <Sep />
-      <Link
-        href={g.auditTrail}
-        className="hover:underline underline-offset-2"
-        style={{ color: '#4cd2ee' }}
-      >
-        Audit trail
-      </Link>
     </div>
   );
 }

@@ -405,11 +405,18 @@ export default function HospitalBlackoutStory() {
                 <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 Emergency Hotline: +254-768-860665
               </Link>
+              {/*
+                Was href="/diagnostic-journey" — a route that has never existed,
+                so this CTA 404'd. The label also carried a "57,600+" figure that
+                no fault-code registry in this repository supports; it is dropped
+                rather than restated. See lib/data/verifiedFaultCodes.ts for the
+                number that is actually backed by data.
+              */}
               <Link
-                href="/diagnostic-journey"
+                href="/faults"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-xl hover:scale-105 transition-transform"
               >
-                Explore 57,600+ Error Codes
+                Explore the Fault Code Library
               </Link>
             </div>
           </motion.div>

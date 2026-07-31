@@ -860,7 +860,17 @@ export function middleware(request: NextRequest) {
   {
     const seg = pathname.split('/').filter(Boolean);
     if (seg.length === 2 && !pathname.startsWith('/api/')) {
-      const ROUTE_SEGMENTS = new Set(['about-us','repair-centre','admin','ai-tools','all-tools','alltools','analytics','api','aquascan-pro','aquascan-pro-v3','blog','booking','brands','calculators','careers','case-studies','case-study','collab','components','console','contact','counties','curation','data','diagnostics','eims-pro','fabrication','faq','faults','gallery','generator','generator-oracle','generator-parts','generator-problems','generator-services','generators','guides','healthcare','high-rise','hub','industries','innovations','interior','kenya','knowledge-base','lib','locations','maintenance-hub','mep-clash','privacy','pro-building-suite','pro-console','products','qs','resources','safety','sectors','service','services','solar','solar-design-studio','solar-genius-pro','solar-genius-pro-futuristic','solar-genius-pro-tools','solution','solutions','styles','swoosh-preview','swoosh-x','technical-bible','terms','troubleshooting']);
+      //     2026-07-31: eight segments below were MISSING from this set even
+      //     though app/<segment>/<child>/page.tsx exists for each, so the guard
+      //     hard-404'd real published pages. A live crawl found them all
+      //     returning 404 with X-Loc-Guard: catchall-404 — including the entire
+      //     /marketplace checkout, orders, parts and returns flow, and all of
+      //     /east-africa, whose hub page linked to three of its own 404s.
+      //     Only segments that genuinely own child routes are added; listing a
+      //     segment with no children would let /that/anything fall through to
+      //     [country]/[city] and soft-404 at HTTP 200, which is the defect this
+      //     whole block exists to prevent.
+      const ROUTE_SEGMENTS = new Set(['about-us','repair-centre','admin','africa','ai-tools','all-tools','alltools','analytics','api','aquascan-pro','aquascan-pro-v3','blog','booking','brands','calculators','careers','case-studies','case-study','collab','components','console','contact','counties','curation','dashboard','data','diagnostics','east-africa','eims-pro','fabrication','faq','faults','gallery','generator','generator-oracle','generator-parts','generator-problems','generator-services','generators','guides','healthcare','high-rise','hub','industries','industry-solutions','innovations','interior','kenya','knowledge-base','lib','locations','maintenance-hub','marketplace','mep-clash','podcasts','privacy','pro-building-suite','pro-console','products','qs','resources','safety','sectors','service','services','solar','solar-design-studio','solar-genius-pro','solar-genius-pro-futuristic','solar-genius-pro-tools','solution','solutions','specs','styles','swoosh-preview','swoosh-x','technical-bible','terms','tools','troubleshooting']);
       const EA_COUNTRIES = new Set(['uganda','tanzania','rwanda','south-sudan','drc','ethiopia','djibouti','eritrea','somaliland']);
       const first = seg[0].toLowerCase();
       if (!ROUTE_SEGMENTS.has(first) && !EA_COUNTRIES.has(first)) {

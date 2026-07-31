@@ -85,6 +85,19 @@ const FOOTER_LINKS = {
     { label: 'Fabrication & Welding', href: '/maintenance-hub/fabrication' },
   ],
   resources: [
+    /*
+     * Repair Centre, the marketplace, sectors, brands and the tools index are
+     * listed HERE because the footer is the site's only server-rendered link
+     * surface. The main navigation is a mega-menu whose panel renders only when
+     * opened, so a crawler receives its button labels and no hrefs at all — a
+     * live crawl on 2026-07-31 reached none of these sections from any path,
+     * despite /repair-centre alone owning 76 published routes.
+     */
+    { label: 'Repair Centre — 60 free guides', href: '/repair-centre' },
+    { label: 'Spare Parts Marketplace', href: '/marketplace' },
+    { label: 'Sectors We Serve', href: '/sectors' },
+    { label: 'Brands We Service', href: '/brands' },
+    { label: 'All Engineering Tools', href: '/all-tools' },
     { label: 'Resources & Learning Hub', href: '/resources' },
     { label: 'Knowledge Base', href: '/knowledge-base' },
     { label: 'Technical Bible', href: '/technical-bible' },
@@ -102,6 +115,18 @@ const FOOTER_LINKS = {
     { label: 'Nakuru', href: '/kenya/nakuru' },
     { label: 'Kiambu', href: '/kenya/kiambu' },
     { label: 'All Service Locations', href: '/locations' },
+    /*
+     * East Africa. The 36 city pages under /uganda, /tanzania, /rwanda and
+     * /south-sudan were all in the sitemap and reachable by nothing — and the
+     * /east-africa hub itself linked to three routes that returned 404. Capitals
+     * are listed here; the full city list is on /site-directory.
+     */
+    { label: 'East Africa', href: '/east-africa' },
+    { label: 'Kampala, Uganda', href: '/uganda/kampala' },
+    { label: 'Dar es Salaam, Tanzania', href: '/tanzania/dar-es-salaam' },
+    { label: 'Kigali, Rwanda', href: '/rwanda/kigali' },
+    { label: 'Juba, South Sudan', href: '/south-sudan/juba' },
+    { label: 'Site Directory — every page', href: '/site-directory' },
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy' },

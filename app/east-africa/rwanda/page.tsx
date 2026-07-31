@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 
 export const metadata: Metadata = {
   title: 'Power Solutions Rwanda | Kigali Tech Hub | EmersonEIMS',
@@ -275,6 +276,8 @@ export default function RwandaPage() {
           </p>
         </div>
       </section>
+
+      <EastAfricaCityLinks country="rwanda" />
     </main>
   );
 }

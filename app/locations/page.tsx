@@ -7,7 +7,7 @@
 
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { COUNTIES, SERVICES, TOTAL_LOCATIONS, TOTAL_SERVICE_PAGES } from '@/lib/seo/kenyaLocations';
+import { COUNTIES, SERVICES, TOTAL_LOCATIONS, TOTAL_SERVICE_PAGES, getServicePath } from '@/lib/seo/kenyaLocations';
 
 export const metadata: Metadata = {
   title: 'Service Locations | Generator & Solar Services Across Kenya | EmersonEIMS',
@@ -90,7 +90,7 @@ export default function LocationsPage() {
             {SERVICES.map(service => (
               <Link
                 key={service.slug}
-                href={`/${service.slug}`}
+                href={getServicePath(service.slug)}
                 className="px-4 py-2 bg-cyan-900/30 border border-cyan-500/30 rounded-lg text-cyan-400 hover:bg-cyan-900/50 hover:border-cyan-500 transition-all"
               >
                 {service.shortName}

@@ -18,7 +18,8 @@ import {
   getCountyBySlug,
   generateLocationSEO,
   SERVICES,
-  COUNTIES
+  COUNTIES,
+  getServicePath
 } from '@/lib/seo/kenyaLocations';
 import { notFound } from 'next/navigation';
 
@@ -96,7 +97,7 @@ export default async function ServiceLocationPage({ params }: Props) {
             <ol className="flex items-center gap-2 text-slate-400 flex-wrap">
               <li><Link href="/" className="hover:text-cyan-400">Home</Link></li>
               <li>/</li>
-              <li><Link href={`/${service.slug}`} className="hover:text-cyan-400">{service.shortName}</Link></li>
+              <li><Link href={getServicePath(service.slug)} className="hover:text-cyan-400">{service.shortName}</Link></li>
               <li>/</li>
               <li><Link href="/locations" className="hover:text-cyan-400">Locations</Link></li>
               {!isCounty && county && (

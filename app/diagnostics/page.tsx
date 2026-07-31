@@ -635,10 +635,11 @@ export default function UniversalDiagnosticPage() {
               <div className="font-bold text-white">Troubleshooting Wizard</div>
               <div className="text-sm text-gray-400">Step-by-step problem solver</div>
             </Link>
-            <Link href="/diagnostic-qa" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
-              <div className="text-2xl mb-2">❓</div>
-              <div className="font-bold text-white">Q&A Database</div>
-              <div className="text-sm text-gray-400">Comprehensive troubleshooting</div>
+            {/* Was /diagnostic-qa — a route that has never existed, so this card 404'd. */}
+            <Link href="/repair-centre" className="p-4 bg-gray-900 border border-gray-700 rounded-lg hover:border-cyan-500 transition-colors">
+              <div className="text-2xl mb-2">📘</div>
+              <div className="font-bold text-white">Repair Centre</div>
+              <div className="text-sm text-gray-400">60 diagnosis guides across 15 categories</div>
             </Link>
           </div>
         </section>

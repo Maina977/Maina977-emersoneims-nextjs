@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import EastAfricaCityLinks from '@/components/east-africa/EastAfricaCityLinks';
 
 export const metadata: Metadata = {
   title: 'Power Solutions Tanzania | Dar es Salaam • Arusha • Mbeya | EmersonEIMS',
@@ -285,6 +286,8 @@ export default function TanzaniaPage() {
           </p>
         </div>
       </section>
+
+      <EastAfricaCityLinks country="tanzania" />
     </main>
   );
 }
