@@ -15,7 +15,7 @@
  * - Wire integrity and connection analysis
  * - Multi-image batch processing
  * - Before/after comparison analysis
- * - Cross-reference with 57,600+ fault code database
+ * - Cross-reference with 6,700+ fault code database
  * - AI-powered repair guidance with step-by-step instructions
  * - Parts identification with OEM numbers and pricing
  * - PDF report generation
@@ -574,7 +574,7 @@ export default function AIVisualDiagnostic({ onAnalysisComplete, onClose }: AIVi
       { progress: 55, stage: 'Detecting corrosion and wear patterns...' },
       { progress: 60, stage: 'Evaluating fluid conditions...' },
       { progress: 65, stage: 'Inspecting wiring integrity...' },
-      { progress: 70, stage: 'Cross-referencing 57,600+ verified fault codes...' },
+      { progress: 70, stage: 'Cross-referencing 6,700+ verified fault codes...' },
       { progress: 75, stage: 'Matching similar historical issues...' },
       { progress: 80, stage: 'Computing damage severity scores...' },
       { progress: 85, stage: 'Generating repair procedures...' },

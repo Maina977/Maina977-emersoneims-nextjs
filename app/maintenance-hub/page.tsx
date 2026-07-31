@@ -23,7 +23,7 @@ const SERVICES = [
     id: 'generators',
     name: 'Generator Oracle',
     icon: '⚡',
-    description: 'A detailed generator diagnostic platform with 57,600+ verified fault codes, AI-powered diagnostics, and expert repair guides for all major controller brands.',
+    description: 'A detailed generator diagnostic platform with 6,700+ verified fault codes, AI-powered diagnostics, and expert repair guides for all major controller brands.',
     href: '/maintenance-hub/generators',
     stats: { value: '230K+', label: 'Fault Codes' },
     color: 'amber',
@@ -497,7 +497,7 @@ export default function UniversalCommandBridge() {
               <span className="text-white">COMMAND BRIDGE</span>
             </h1>
             <p className="text-slate-400 text-lg">
-              Multi-Discipline Maintenance Hub • 57,600+ Fault Codes • All 47 Kenya Counties
+              Multi-Discipline Maintenance Hub • 6,700+ Fault Codes • All 47 Kenya Counties
             </p>
           </div>
 

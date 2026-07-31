@@ -4,7 +4,7 @@
  * The central integration layer that connects:
  * - ECM Database (11+ ECM manufacturers)
  * - Controller Database (DSE, ComAp, Woodward, SmartGen, etc.)
- * - 57,600+ Fault Codes
+ * - 6,700+ Fault Codes
  * - AI Diagnostic Engine
  *
  * Provides unified diagnostic flow:
@@ -15,7 +15,7 @@ import { getFaultByCode, searchFaultCodes as searchEnhancedFaults, type Enhanced
 import { COMPREHENSIVE_FAULT_CODES } from './comprehensiveFaultCodes';
 import { performAIDiagnosis, performHybridDiagnosis, type GeneratorReadings, type AIAnalysisResult } from './ai-diagnostic-engine';
 import { getAIDiagnosis, streamAIDiagnosis, type StreamingDiagnosticEvent } from './aiDiagnosticService';
-// Import the full 57,600+ fault code database for comprehensive coverage
+// Import the full 6,700+ fault code database for comprehensive coverage
 import {
   getAllFaultCodes,
   searchFaultCodes as searchControllerFaults,
@@ -1154,11 +1154,11 @@ export async function* streamIntegratedDiagnosis(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIFIED FAULT CODE SEARCH - Combines 57,600+ controller codes with enhanced database
+// UNIFIED FAULT CODE SEARCH - Combines 6,700+ controller codes with enhanced database
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Search across ALL fault code databases (57,600+ codes)
+ * Search across ALL fault code databases (6,700+ codes)
  * Returns combined results from both controller codes and enhanced descriptions
  */
 export function searchAllFaultCodes(query: string, options?: {
@@ -1172,7 +1172,7 @@ export function searchAllFaultCodes(query: string, options?: {
 } {
   const maxResults = options?.maxResults || 100;
 
-  // Search controller fault codes (57,600+)
+  // Search controller fault codes (6,700+)
   let controllerCodes: ControllerFaultCode[] = [];
   if (options?.brand) {
     controllerCodes = getFaultCodesByBrand(options.brand)
@@ -1224,7 +1224,7 @@ export {
   // From enhanced-fault-database
   getFaultByCode,
   searchEnhancedFaults,
-  // From controllerFaultCodes (57,600+ codes)
+  // From controllerFaultCodes (6,700+ codes)
   getAllFaultCodes,
   searchControllerFaults,
   getFaultCodesByBrand,

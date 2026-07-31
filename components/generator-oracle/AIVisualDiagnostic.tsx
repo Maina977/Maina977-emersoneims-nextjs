@@ -18,7 +18,7 @@
  * - Demo / unavailable / error states are clearly separated from real output
  * - Multi-image batch processing
  * - Before/after comparison analysis
- * - Cross-reference with 57,600+ fault code database
+ * - Cross-reference with 6,700+ fault code database
  * - AI-powered repair guidance with step-by-step instructions
  * - Parts identification with OEM numbers and pricing
  * - PDF report generation

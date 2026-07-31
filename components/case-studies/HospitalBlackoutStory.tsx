@@ -395,7 +395,7 @@ export default function HospitalBlackoutStory() {
               Your Emergency Could Be Next
             </h3>
             <p className="text-xl text-gray-400 mb-8">
-              24/7 emergency response. 57,600+ error codes. 12-minute average diagnosis.
+              24/7 emergency response. 6,700+ error codes. 12-minute average diagnosis.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -407,10 +407,10 @@ export default function HospitalBlackoutStory() {
               </Link>
               {/*
                 Was href="/diagnostic-journey" — a route that has never existed,
-                so this CTA 404'd. The label also carried a "57,600+" figure that
-                no fault-code registry in this repository supports; it is dropped
-                rather than restated. See lib/data/verifiedFaultCodes.ts for the
-                number that is actually backed by data.
+                so this CTA 404'd. Its label also carried the old "57,600+"
+                figure, which counted one code once per applicable engine model.
+                The measured distinct total is 6,756 across 79 brands; see
+                lib/data/curatedFaultCodes.ts.
               */}
               <Link
                 href="/faults"

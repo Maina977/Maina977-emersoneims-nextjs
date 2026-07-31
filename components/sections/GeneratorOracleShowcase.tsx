@@ -71,7 +71,7 @@ const ADVANCED_FEATURES = [
 
 // Core Features
 const CORE_FEATURES = [
-  { icon: '🔍', stat: '57,600+', label: 'Fault Codes', desc: 'Comprehensive database' },
+  { icon: '🔍', stat: '6,700+', label: 'Fault Codes', desc: 'Comprehensive database' },
   { icon: '⚡', stat: '10', label: 'Controller Brands', desc: 'Wide compatibility' },
   { icon: '🔄', stat: '100%', label: 'Reset Pathways', desc: 'Step-by-step guides' },
   { icon: '📴', stat: '100%', label: 'Offline Ready', desc: 'No internet required' },
@@ -198,7 +198,7 @@ export default function GeneratorOracleShowcase() {
         { value: `${health.totals.brands}`, label: 'Major brands', color: '#8b5cf6' },
       ]
     : [
-        { value: '57,600+', label: 'Fault-code references', color: '#06b6d4' },
+        { value: '6,700+', label: 'Fault-code references', color: '#06b6d4' },
         { value: 'Verified', label: 'Manufacturer-curated', color: '#22c55e' },
         { value: '80+', label: 'Controller models', color: '#f59e0b' },
         { value: '10', label: 'Major brands', color: '#8b5cf6' },
@@ -259,7 +259,7 @@ export default function GeneratorOracleShowcase() {
 
           <p className="text-lg text-slate-400 max-w-3xl mx-auto">
             Manufacturer-aware diagnostic lookup with{' '}
-            <span className="text-amber-400 font-bold">57,600+ fault-code references</span>,{' '}
+            <span className="text-amber-400 font-bold">6,700+ fault-code references</span>,{' '}
             verified troubleshooting steps, and AI-assisted analysis across{' '}
             <span className="text-white font-bold">10 controller brands</span>.
           </p>
@@ -502,7 +502,7 @@ export default function GeneratorOracleShowcase() {
                 <span className="text-5xl">🎉</span>
               </div>
               <p className="text-slate-300 max-w-2xl mx-auto">
-                Use Generator Oracle free for life — full access to 57,600+ fault-code references,
+                Use Generator Oracle free for life — full access to 6,700+ fault-code references,
                 AI-assisted analysis, and 10 supported controller brands. Built for technicians across Africa.
               </p>
               <p className="text-amber-400 font-bold mt-4">

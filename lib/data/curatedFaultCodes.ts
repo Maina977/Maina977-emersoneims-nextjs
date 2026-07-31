@@ -49,6 +49,12 @@ export interface CuratedFaultCode {
   code: string;
   brand: string;
   model: string;
+  /**
+   * Every model this one code applies to. The controller data files emit one
+   * row per model; those rows are collapsed into a single code carrying this
+   * list. See dedupeByBrandAndCode() below.
+   */
+  models?: string[];
   service: string;
   category: string;
   issue: string;
@@ -217,14 +223,60 @@ const j1939Codes: CuratedFaultCode[] = J1939_FAULT_CODES.map(c => ({
   verified: true,
 }));
 
-export const CURATED_CONTROLLER_FAULT_CODES = controllerCodes;
-export const CURATED_SOLAR_FAULT_CODES = solarCodes;
-export const CURATED_J1939_FAULT_CODES = j1939Codes;
-export const CURATED_FAULT_CODES: CuratedFaultCode[] = [...controllerCodes, ...solarCodes, ...j1939Codes];
+/**
+ * Collapse per-model duplicates of the SAME fault code.
+ *
+ * WHY (measured 2026-07-31, not assumed)
+ * --------------------------------------
+ * The controller data files emit one row per (code x applicable model). In
+ * vodia-fault-codes.ts, createVODIACode() ends with
+ *
+ *     return applicableModels.map(model => ({ ... code: codeString, model }))
+ *
+ * and applicableModels defaults to VODIA_MODELS, which holds 17 engine types.
+ * So the single J1939 identifier MID128-PID100-FMI3 was stored 17 times.
+ * Measured inflation across the VODIA set was exactly 17.0x: 51,527 rows for
+ * 3,029 distinct codes. Every other controller family multiplies the same way —
+ * DeepSea showed 630 rows for 63 real codes.
+ *
+ * That inflation is where the site's "6,700+ verified fault codes" headline
+ * came from. This file's own header already refuses generateExtendedCodes() in
+ * controllerFaultCodes.ts on exactly these grounds, then included the identical
+ * pattern from the VODIA file. The refusal is now applied consistently.
+ *
+ * NOTHING IS DELETED. A code appears once, and the models it applies to are
+ * preserved in `models` — which is more useful than 17 identical rows, because
+ * a technician can now see the code covers the whole engine family. Row counts
+ * drop; real coverage does not change.
+ */
+function dedupeByBrandAndCode(list: CuratedFaultCode[]): CuratedFaultCode[] {
+  const out = new Map<string, CuratedFaultCode>();
+  for (const c of list) {
+    const key = `${c.brand}|${c.code}`;
+    const hit = out.get(key);
+    if (!hit) {
+      out.set(key, { ...c, models: c.model ? [c.model] : [] });
+    } else if (c.model && !hit.models!.includes(c.model)) {
+      hit.models!.push(c.model);
+    }
+  }
+  return [...out.values()];
+}
+
+export const CURATED_CONTROLLER_FAULT_CODES = dedupeByBrandAndCode(controllerCodes);
+export const CURATED_SOLAR_FAULT_CODES = dedupeByBrandAndCode(solarCodes);
+export const CURATED_J1939_FAULT_CODES = dedupeByBrandAndCode(j1939Codes);
+export const CURATED_FAULT_CODES: CuratedFaultCode[] = [
+  ...CURATED_CONTROLLER_FAULT_CODES,
+  ...CURATED_SOLAR_FAULT_CODES,
+  ...CURATED_J1939_FAULT_CODES,
+];
 
 export const CURATED_FAULT_CODE_STATS = {
-  controllers: controllerCodes.length,
-  solar: solarCodes.length,
-  j1939: j1939Codes.length,
+  controllers: CURATED_CONTROLLER_FAULT_CODES.length,
+  solar: CURATED_SOLAR_FAULT_CODES.length,
+  j1939: CURATED_J1939_FAULT_CODES.length,
   total: CURATED_FAULT_CODES.length,
+  /** Rows before per-model collapsing — kept so the change stays auditable. */
+  rowsBeforeDedupe: controllerCodes.length + solarCodes.length + j1939Codes.length,
 };

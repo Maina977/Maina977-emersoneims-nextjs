@@ -1471,7 +1471,7 @@ export default function SettingsPanel({
                   </div>
                   <p className="text-slate-300 mb-6">
                     The world&apos;s most comprehensive generator diagnostic system. Supporting 10+ major controller brands
-                    with 57,600+ verified fault codes and AI-powered troubleshooting.
+                    with 6,700+ verified fault codes and AI-powered troubleshooting.
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-4 bg-slate-900/50 rounded-lg text-center">

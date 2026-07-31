@@ -133,9 +133,9 @@ export default function AIToolsPage() {
     {
       title: 'Generator Oracle',
       subtitle: 'AI-Powered Diagnostic System',
-      description: 'Generator diagnostic platform with 57,600+ verified fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
+      description: 'Generator diagnostic platform with 6,700+ verified fault codes, interactive wiring diagrams, and AI-powered troubleshooting.',
       features: [
-        '57,600+ verified codes + 450,000+ code-number coverage',
+        '6,700+ verified codes + 450,000+ code-number coverage',
         'Interactive wiring diagrams',
         'Generator simulator with controls',
         'Step-by-step repair guides',
@@ -198,7 +198,7 @@ export default function AIToolsPage() {
   const additionalTools = [
     {
       title: 'Fault Code Lookup',
-      description: 'Search 57,600+ error codes instantly',
+      description: 'Search 6,700+ error codes instantly',
       icon: <Search className="w-6 h-6" />,
       href: '/faults',
     },

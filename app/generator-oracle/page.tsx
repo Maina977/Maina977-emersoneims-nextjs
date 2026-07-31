@@ -19,9 +19,16 @@ const GeneratorOracleModule = lazy(() => import('@/components/generator-oracle/G
  * All brand names are trademarks of their respective owners.
  *
  * Features:
- * - 451,593 fault-code references across 10 controller families
- *   (54,192 curated/verified + 397,401 range-based). Figure measured by
- *   executing getAllFaultCodes(), not estimated.
+ * - Fault-code references across 10 controller families, measured by executing
+ *   the registries rather than estimated:
+ *     Tier 1 verified  — 6,756 DISTINCT codes over 79 brands
+ *     Tier 2 range     — ~397,401 code numbers, each titled "meaning not
+ *                        verified" and carrying verified:false
+ *   The Tier 1 figure was previously quoted as 54,192. That counted one code
+ *   once per applicable engine model — exactly 17x over-count on the VODIA set
+ *   (51,527 rows for 3,029 real codes). Rows are now collapsed per code in
+ *   lib/data/curatedFaultCodes.ts, which preserves every code and records the
+ *   models it applies to. No code was removed.
  * - Step-by-step reset pathways for every fault
  * - Parameter-based diagnosis with live readings
  * - 100% offline capability via IndexedDB
@@ -82,8 +89,20 @@ function LoadingFallback() {
         {/* Loading Stats */}
         <div className="mt-6 flex justify-center gap-6 text-sm">
           <div className="text-center">
+            {/*
+              Was a bare "450,000+ Fault-Code References", which read as verified
+              data. That figure is Tier 2 range-based coverage — every code
+              number in each controller's published ranges, each entry titled
+              "meaning not verified" and carrying verified:false. The verified
+              count is a separate, much smaller number. Both are shown so neither
+              is mistaken for the other.
+            */}
+            <div className="text-amber-400 font-bold">6,700+</div>
+            <div className="text-slate-500">Verified Fault Codes</div>
+          </div>
+          <div className="text-center">
             <div className="text-amber-400 font-bold">450,000+</div>
-            <div className="text-slate-500">Fault-Code References</div>
+            <div className="text-slate-500">Code Numbers Covered</div>
           </div>
           <div className="text-center">
             <div className="text-amber-400 font-bold">10</div>

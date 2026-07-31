@@ -187,7 +187,7 @@ export default function HeroSection() {
             <span>✓ 47 Counties</span>
             <span>✓ 24/7 Support</span>
             <Link href="/generator-oracle" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-              🔮 57,600+ Fault Codes
+              🔮 6,700+ Fault Codes
             </Link>
           </motion.div>
         </motion.div>

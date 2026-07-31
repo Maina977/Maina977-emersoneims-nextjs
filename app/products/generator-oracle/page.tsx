@@ -15,7 +15,7 @@ import { motion } from 'framer-motion';
 const FEATURES = [
   {
     icon: '🔍',
-    title: '57,600+ Fault Codes',
+    title: '6,700+ Fault Codes',
     description: 'The largest fault code database for generators in Africa. Cummins, Perkins, CAT, DSE, ComAp, and more.',
   },
   {
@@ -431,7 +431,7 @@ export default function GeneratorOracleProductPage() {
             >
               <div className="text-4xl mb-4">📊</div>
               <h3 className="text-xl font-bold mb-2 group-hover:text-amber-400 transition-colors">Fault Code Database</h3>
-              <p className="text-gray-400 mb-4">57,600+ verified fault codes with detailed explanations and repair guides.</p>
+              <p className="text-gray-400 mb-4">6,700+ verified fault codes with detailed explanations and repair guides.</p>
               <span className="text-amber-400 font-medium">Browse Codes →</span>
             </Link>
 
@@ -474,7 +474,7 @@ export default function GeneratorOracleProductPage() {
               "priceCurrency": "KES",
               "description": "Free trial available"
             },
-            "description": "Africa's #1 generator diagnostic platform with 57,600+ verified fault codes, AI-powered diagnosis, and step-by-step repair guides.",
+            "description": "Africa's #1 generator diagnostic platform with 6,700+ verified fault codes, AI-powered diagnosis, and step-by-step repair guides.",
             "provider": {
               "@type": "Organization",
               "name": "EmersonEIMS",

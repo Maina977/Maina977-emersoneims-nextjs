@@ -1,6 +1,6 @@
 /**
  * Generator Oracle - Controller Fault Code Database
- * 57,600+ authentic fault codes for professional generator controller diagnostics
+ * 6,700+ authentic fault codes for professional generator controller diagnostics
  *
  * Covers: DSE, ComAp, Woodward, SmartGen, CAT PowerWizard, Datakom, Lovato, Siemens, ENKO, Volvo Penta VODIA
  */
@@ -313,7 +313,9 @@ import { getVODIAFaultCodes } from './data/vodia-fault-codes';
 
 // ==================== EXTENDED CODE GENERATION ====================
 
-// Generate additional alarm variations to reach 57,600+ codes
+// Tier 2 range-based expansion. NOT verified data and not part of the verified
+// code count — every entry it produces is titled "meaning not verified" and
+// carries verified:false. See the file header.
 function generateExtendedCodes(): ControllerFaultCode[] {
   const extendedCodes: ControllerFaultCode[] = [];
 
