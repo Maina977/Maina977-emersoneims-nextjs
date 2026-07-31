@@ -64,8 +64,21 @@ export async function generateMetadata(): Promise<Metadata> {
   // this. Previously the root layout hard-coded the canonical to the site root,
   // so every page canonicalised to the homepage — the root cause of Search
   // Console's "Duplicate without user-selected canonical".
-  const pathname = (await headers()).get("x-pathname") || "/";
-  const canonical = pathname === "/" ? siteUrl : `${siteUrl}${pathname}`;
+  //
+  // The `|| "/"` fallback used to run whenever the header was absent, which is
+  // exactly what happens on a STATICALLY PRERENDERED route — headers() has no
+  // request to read at build time. /generators/case-studies hit this and
+  // shipped canonical=<homepage>, re-creating the very bug described above on
+  // that page. An absent header now yields NO canonical rather than a wrong
+  // one: Google treating a URL as its own canonical is far less damaging than
+  // being told it duplicates the homepage. Any statically prerendered page must
+  // declare its own alternates.canonical.
+  const pathname = (await headers()).get("x-pathname");
+  const canonical = !pathname
+    ? undefined
+    : pathname === "/"
+      ? siteUrl
+      : `${siteUrl}${pathname}`;
 
   return {
   metadataBase: new URL(siteUrl),
@@ -138,9 +151,8 @@ export async function generateMetadata(): Promise<Metadata> {
     ...(googleSiteVerification ? { google: googleSiteVerification } : {}),
     ...(yandexVerification ? { yandex: yandexVerification } : {}),
   },
-  alternates: {
-    canonical,
-  },
+  // Omitted entirely when the path is unknown — see the note above generateMetadata.
+  ...(canonical ? { alternates: { canonical } } : {}),
   category: 'technology',
   };
 }

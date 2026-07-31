@@ -476,6 +476,23 @@ const nextConfig: NextConfig = {
   // ═══════════════════════════════════════════════════════════════════
   async redirects() {
     return [
+      /*
+       * /generators/case-studies -> /case-studies
+       *
+       * app/generators/case-studies/page.tsx called permanentRedirect() but
+       * also declared `export const dynamic = 'force-static'`. Next baked the
+       * route at build time and Vercel served it as HTTP 200, not a 308 — so
+       * the URL sat in the sitemap answering 200 with the /generators title and
+       * a canonical pointing at the HOMEPAGE. Verified live on 2026-07-31.
+       *
+       * A config-level redirect runs before routing and cannot be defeated by
+       * static optimisation, so the stub page was deleted.
+       */
+      {
+        source: '/generators/case-studies',
+        destination: '/case-studies',
+        permanent: true,
+      },
       // Fix solution/solutions duplicate
       {
         source: '/solution',

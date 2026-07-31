@@ -240,7 +240,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Generator sub-routes (commercial intent)
     { url: `${BASE_URL}/generators/leasing`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/generators/systems`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/generators/case-studies`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.7 },
+    // /generators/case-studies is 308-redirected to /case-studies in
+    // next.config.ts and must NOT be listed — a sitemap advertises canonical
+    // destinations, not redirect sources. /case-studies is listed below.
     { url: `${BASE_URL}/generators/maintenance-companion`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
 
     // Industry pages - Critical for B2B SEO
