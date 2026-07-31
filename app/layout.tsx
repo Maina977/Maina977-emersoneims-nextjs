@@ -158,8 +158,15 @@ export default async function RootLayout({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    // NAP consistency with the Google Business Profile matters for local
+    // ranking: Google associates a site with a listing partly by matching name,
+    // address and phone. The listing is registered as "EMERSON INDUSTRIAL
+    // MAINTENANCE SERVICES - GENERATOR SALES AND MAINTENANCE IN KENYA" while this
+    // schema declared only "EmersonEIMS", so the two did not corroborate each
+    // other. The trading name stays primary; the registered listing name is now
+    // carried as alternateName so both match something.
     "name": "EmersonEIMS",
-    "alternateName": "EmersonEIMS",
+    "alternateName": "EMERSON INDUSTRIAL MAINTENANCE SERVICES - GENERATOR SALES AND MAINTENANCE IN KENYA",
     "url": siteUrl,
     "logo": `${siteUrl}/images/EmersonEIMS Logo and Tagline PNG-Picsart-BackgroundRemover.png`,
     "image": `${siteUrl}/og-image.jpg`,
