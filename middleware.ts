@@ -886,6 +886,78 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // 0i. HARD 404 for unknown single-segment slugs on the dynamic hub routes.
+  //
+  //     WHY (measured from Search Console, 2026-08-01)
+  //     Google reported 145,024 URLs for a site that publishes 2,077:
+  //       63,201 indexed · 81,823 not indexed, of which
+  //       40,103 "Excluded by noindex"  ·  26,161 "Blocked by 403"
+  //       11,075 "Crawled - currently not indexed"
+  //
+  //     Cause: eight dynamic routes accepted ANY slug and answered HTTP 200.
+  //     Verified live before writing this guard:
+  //       /faults/zzz999              200 + noindex  "Fault Code Not Found"
+  //       /brands/zzz999              200 + noindex
+  //       /sectors/zzz999             200 + noindex
+  //       /industries/zzz999          200 + noindex
+  //       /locations/zzz999           200 + noindex
+  //       /kenya/zzz999               200 + noindex
+  //       /generator-problems/zzz999  200, NO noindex, self-canonical  <-- indexable
+  //       /solutions/zzz999           200, NO noindex, self-canonical  <-- indexable
+  //
+  //     The last two are the damaging ones: they are fully indexable soft-404s
+  //     that canonicalise to themselves, so every URL Google invents becomes a
+  //     thin page in the index. The rest burn crawl budget and inflate the
+  //     "excluded by noindex" pile.
+  //
+  //     notFound() cannot fix this — Next 16 on Vercel still answers 200 once a
+  //     dynamic route has matched. Only middleware yields a real 404, which is
+  //     why guards 0a-0g exist. This guard MUST stay above the verified-crawler
+  //     fast-path below, or Googlebot skips it entirely.
+  //
+  //     The sets are INLINED deliberately: importing from @/lib inside the edge
+  //     runtime fails open (proven when the /locations guard silently did
+  //     nothing). Regenerate them from the registries rather than editing by
+  //     hand — see the generator noted in the commit for this guard.
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    const seg = pathname.split('/').filter(Boolean);
+    if (seg.length === 2 && !pathname.startsWith('/api/')) {
+      const OK_FAULTS = new Set(['comap-a001','comap-a015','comap-a020','comap-a030','comap-a040','comap-a050','comap-a060','dse-e020','dse-e040','dse-e070','dse-e090','dse-e100','dse-e110','dse-e120','dse-e125','dse-e130','dse-e140','perkins-100','perkins-110','perkins-111','perkins-115','perkins-190','perkins-2387','perkins-94','spn-100','spn-102','spn-105','spn-110','spn-111','spn-115','spn-1514','spn-157','spn-190','spn-3556','spn-639','spn-94']);
+      const OK_BRANDS = new Set(['caterpillar','cummins','doosan','gesan','himoinsa','honda','iveco','john-deere','leyland','lister-petter','man','olympian','perkins','sdmo','volvo','volvo-penta','weichai']);
+      const OK_SECTORS = new Set(['apartments','banks','churches','consulates','embassies','farms','flower-farms','homes','hospitals','hotels','industries','masai-mara','ngo-offices','ngos','private-colleges','private-hospitals','private-offices','private-schools','private-universities','quarries','ranches','real-estates','restaurants','schools','supermarkets','tourist-destinations','tourist-hotels']);
+      const OK_INDUSTRIES = new Set(['banks-financial','churches-religious','commercial-property','flower-farms','government-ngos','healthcare','hospitals-healthcare','hotels-hospitality','manufacturing','manufacturing-industries','real-estate-construction','schools-universities','telecommunications']);
+      const OK_COUNTIES = new Set(['baringo','bomet','bungoma','busia','elgeyo-marakwet','embu','garissa','homa-bay','isiolo','kajiado','kakamega','kericho','kiambu','kilifi','kirinyaga','kisii','kisumu','kitui','kwale','laikipia','lamu','machakos','makueni','mandera','marsabit','meru','migori','mombasa','muranga','nairobi','nakuru','nandi','narok','nyamira','nyandarua','nyeri','samburu','siaya','taita-taveta','tana-river','tharaka-nithi','trans-nzoia','turkana','uasin-gishu','vihiga','wajir','west-pokot']);
+      const OK_LOCATIONS = new Set(['ahero','ainabkoi','ainamoi','aldai','alego-usonga','archer-post','athi-river','awendo','bahati','balambala','bamburi','banana','banissa','baragoi','baringo','baringo-central','baringo-north','baringo-south','belgut','bissil','bobasi','bomachoge-borabu','bomachoge-chache','bombolulu','bomet','bomet-central','bomet-east','bonchari','bondo','borabu','brooke','budalangi','bumula','bungoma','bura','bureti','burnt-forest','buruburu','busia','bute','butere','butula','buuri','cbd','central-imenti','changamwe','chavakali','chepalungu','chepareria','chepkorio','cherangany','chesumei','chogoria','chuka','chuka-igambangombe','chwele','dadaab','dagoretti-north','dagoretti-south','diani','doldol','donholm','eastleigh','ekerenyo','el-wak','eldama-ravine','eldas','eldoret','elementaita','elgeyo-marakwet','elwak','emali','embakasi','embakasi-central','embakasi-east','embakasi-north','embakasi-south','embakasi-west','embu','emgwen','emuhaya','emurua-dikirr','endebess','engineer','ewaso-nyiro','fafi','faza','funyula','galole','ganjoni','ganze','garbatulla','garissa','garissa-township','garsen','gatanga','gatundu','gatundu-north','gatundu-south','gem','gichugu','gigiri','gilgil','githunguri','githurai','griftu','habaswein','hamisi','hindi','hola','homa-bay','homa-bay-town','hurlingham','igembe-central','igembe-north','igembe-south','ijara','ikolomani','industrial-area','isebania','ishiara','isiolo','isiolo-north','isiolo-south','iten','jamhuri','jomvu','juja','kaanwa','kabarnet','kabartonjo','kabete','kabondo-kasipul','kabuchai','kacheliba','kagio','kahawa','kahawa-sukari','kaiti','kajiado','kajiado-central','kajiado-east','kajiado-north','kajiado-south','kajiado-west','kakamega','kakuma','kalokol','kaloleni','kamiti','kamukunji','kandara','kanduyi','kangari','kangema','kangemi','kangundo','kapenguria','kapsabet','kapseret','kapsowar','karachuonyo','karatina','karen','karuri','kasarani','kasipul','kathiani','kawangware','kehancha','keiyo-north','keiyo-south','kendu-bay','kenol','kenyatta-road','kericho','keroka','kerugoya','kesses','khwisero','kiambaa','kiambu','kianjai','kianyaga','kibera','kibra','kibwezi','kibwezi-east','kibwezi-west','kieni','kigumo','kiharu','kikuyu','kileleshwa','kilgoris','kilifi','kilifi-north','kilifi-south','kilimani','kilome','kimana','kimilili','kiminini','kinamba','kinango','kinangop','kinna','kinoo','kipini','kipipiri','kipkelion','kipkelion-east','kipkelion-west','kirinyaga','kirinyaga-central','kiritiri','kisauni','kiserian','kisii','kisumu','kisumu-central','kisumu-east','kisumu-west','kitale','kitengela','kitisuru','kitui','kitui-central','kitui-east','kitui-rural','kitui-south','kitui-west','kitutu-chache-north','kitutu-chache-south','kitutu-masaba','kizingo','kobujoi','kombewa','kondele','kongowea','konoin','kuresoi-north','kuresoi-south','kuria-east','kuria-west','kutus','kwale','kwanza','kyuso','laare','lafey','lagdera','laikipia','laikipia-east','laikipia-north','laikipia-west','laisamis','lamu','lamu-east','lamu-west','langata','lari','lavington','likoni','likuyani','limuru','litein','lodwar','loima','loitokitok','lokichar','lokichoggio','lokitaung','lolgorian','londiani','longisa','loresho','luanda','lugari','lunga-lunga','lurambi','maara','machakos','machakos-town','madogo','magadi','magarini','magutuni','mai-mahiu','majengo','makadara','makindu','makueni','makutano','makuyu','malaba','malakisi','malava','malindi','mandera','mandera-east','mandera-north','mandera-south','mandera-west','manga','manyatta','maragua','maragwa','marakwet-east','marakwet-west','maralal','marani','mariakani','marigat','marimanti','marsabit','masalani','maseno','masinga','matayos','mathare','mathioya','mathira','matuga','matungu','matungulu','matuu','maua','maungu','mavoko','mazeras','mbale','mbeere-north','mbeere-south','mbita','mbooni','membley','merti','meru','migori','migwani','mikindani','milimani','miritini','mlolongo','modogashe','mogotio','moi-bridge','moiben','mokowe','molo','mombasa','mombasa-cbd','mombasa-road','mosop','mosoriot','mount-elgon','mountain-view','moyale','mpeketoni','msambweni','mtito-andei','mtwapa','muhoroni','muhuru','mukurweini','mulot','mumias','mumias-east','mumias-west','muranga','muthaiga','mutomo','mvita','mwala','mwatate','mwea','mweiga','mwingi','mwingi-central','mwingi-north','mwingi-west','nairobi','nairobi-west','naivasha','nakuru','nakuru-town-east','nakuru-town-west','namanga','nambale','nandi','nandi-hills','nanyuki','narok','narok-east','narok-junction','narok-north','narok-south','narok-west','narumoru','navakholo','ndanai','ndaragwa','ndenderu','ndhiwa','ndia','ngara','ngong','ngong-road','ngumo','njabini','njoro','nkubu','north-horr','north-imenti','north-mugirango','nuu','nyahururu','nyakach','nyali','nyamache','nyamira','nyandarua','nyando','nyansiongo','nyaribari-chache','nyaribari-masaba','nyatike','nyeri','nyeri-town','ogembo','ol-jorok','ol-kalou','old-town','oloitokitok','ololulunga','ongata-rongai','ortum','othaya','oyugis','parklands','pokot-south','port-reitz','port-victoria','rabai','rangwe','rarieda','rhamu','rongai','rongo','roysambu','ruaraka','ruiru','rumuruti','runda','runyenjes','sabatia','saboti','sagana','saku','salgaa','samburu','samburu-east','samburu-north','samburu-west','seme','serem','shanzu','shimanzi','shimba-hills','shinyalu','siakago','siaya','sigor','sigowet-soin','silibwet','sirisia','sololo','sosiot','sotik','south-b','south-c','south-imenti','south-kinangop','south-mugirango','soy','spring-valley','starehe','suba-north','suba-south','subukia','suguta-marmar','sultan-hamud','suna-east','suna-west','suneka','suswa','syokimau','taita-taveta','takaba','takaungu','tala','tambach','tana-river','tarbaj','taveta','teso-north','teso-south','tetu','tharaka','tharaka-nithi','thika','thika-road','thika-town','tiaty','tigania-east','tigania-west','timau','tinderet','tongaren','trans-nzoia','tsavo','tudor','turbo','turkana','turkana-central','turkana-east','turkana-north','turkana-south','turkana-west','uasin-gishu','ugenya','ugunja','ukunda','ukwala','umoja','upperhill','uriri','usenge','vihiga','vipingo','voi','wajir','wajir-east','wajir-north','wajir-south','wajir-west','wamba','wamunyu','wangige','wanguru','watamu','webuye','webuye-east','webuye-west','west-mugirango','west-pokot','westlands','witu','woodley','wote','wundanyi','yala','yatta','zambezi','zimmerman','ziwa']);
+      const OK_PROBLEMS = new Set(['exhaust-smoke','low-oil-pressure','overheating','voltage-frequency-unstable','wont-start']);
+      const OK_SOLUTIONS = new Set(['ac','borehole-pumps','building','contact','controls','diesel-automation','fabrication','factories','farms','generators','high-voltage','hospitals','hotels','incinerators','motor-rewinding','motors','power-interruptions','real-estate','schools','solar','solar-sizing','ups']);
+
+      const SLUG_GUARDS: Record<string, Set<string>> = {
+        faults: OK_FAULTS,
+        brands: OK_BRANDS,
+        sectors: OK_SECTORS,
+        industries: OK_INDUSTRIES,
+        kenya: OK_COUNTIES,
+        locations: OK_LOCATIONS,
+        'generator-problems': OK_PROBLEMS,
+        solutions: OK_SOLUTIONS,
+      };
+
+      const allowed = SLUG_GUARDS[seg[0].toLowerCase()];
+      if (allowed && !allowed.has(decodeURIComponent(seg[1]).toLowerCase())) {
+        return new NextResponse('Not Found', {
+          status: 404,
+          headers: {
+            'X-Robots-Tag': 'noindex, follow',
+            'Content-Type': 'text/plain',
+            'X-Loc-Guard': 'slug-404',
+          },
+        });
+      }
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
   // 0. VERIFIED CRAWLER FAST-PATH (Googlebot, Bingbot, etc.)
   //     Search engines & social previewers MUST never be rate-limited,
