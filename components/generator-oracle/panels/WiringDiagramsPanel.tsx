@@ -1040,6 +1040,87 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
   //
   // Wire COLOUR is "Not specified by OEM".
   /*
+   * Datakom D-500 — Terminal Description table, pages 48-50 of the Datakom
+   * D-500 User Manual, read via page-level HTML rendering on ManualsLib.
+   *
+   * TERMINAL NUMBERING JUMPS. The manufacturer's table runs 1-31 and then
+   * resumes at 51; there are no terminals 32-50. This was checked against the
+   * following page of the manual to be sure it was not a transcription loss —
+   * page 51 is Technical Specifications, so the table genuinely ends at 72.
+   * The AC section is likewise sparse by design: 53, 55, 57 and 66, 68, 70 are
+   * absent from the printed table.
+   *
+   * ⚠ TERMINALS 52, 54 AND 56 — the generator phase voltage inputs — ARE
+   * DELIBERATELY WITHHELD. Two independent reads of page 50 disagreed on which
+   * phase sits on which terminal (one gave L1/L2/L3 ascending, the other gave
+   * L2/L3/L3, which is self-contradictory). Generator phase sensing is a
+   * high-consequence connection and a coin-flip is not good enough, so those
+   * three terminals are absent rather than guessed. Everything else on the page
+   * read identically both times and is shipped. The registry records this as
+   * completeness: 'partial' so the panel raises the amber banner.
+   *
+   * Datakom's table gives NO cable sizes anywhere, so every gauge here is
+   * recorded as not stated rather than inferred from the current rating.
+   *
+   * Terminal 2 is a live safety instruction, not a spare: the manual says do not
+   * connect it. It is carried through for exactly that reason.
+   *
+   * The six digital outputs and eight digital inputs are all programmable; the
+   * factory default function is named because that is what an untouched unit
+   * will actually do.
+   */
+  'datakom-d500': [
+    { pin: '1', name: 'Battery Positive', function: 'Positive terminal of the DC supply.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '+12 or 24 V DC', circuit: 'power', current: '-' },
+    { pin: '2', name: 'Do Not Connect', function: 'The manufacturer instructs that this terminal must be left unconnected. It is listed here so it is not mistaken for a spare.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'power', current: '-' },
+    { pin: '3', name: 'Battery Negative', function: 'DC supply negative connection.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0 V DC', circuit: 'power', current: '-' },
+    { pin: '4', name: 'Digital Output 1 — factory CRANK', function: 'Programmable output, selectable from a list. Factory set as the crank output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'starting', current: '1 A protected semiconductor output' },
+    { pin: '5', name: 'Digital Output 2 — factory FUEL', function: 'Programmable output, selectable from a list. Factory set as the fuel output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'fuel', current: '1 A protected semiconductor output' },
+    { pin: '6', name: 'Digital Output 3 — factory ALARM', function: 'Programmable output, selectable from a list. Factory set as the alarm output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A protected semiconductor output' },
+    { pin: '7', name: 'Digital Output 4 — factory PREHEAT', function: 'Programmable output, selectable from a list. Factory set as the preheat output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A protected semiconductor output' },
+    { pin: '8', name: 'Digital Output 5 — factory STOP', function: 'Programmable output, selectable from a list. Factory set as the stop output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A protected semiconductor output' },
+    { pin: '9', name: 'Digital Output 6 — factory IDLE SPEED', function: 'Programmable output, selectable from a list. Factory set as the idle speed output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A protected semiconductor output' },
+    { pin: '10', name: 'Charge', function: 'Charge alternator terminal, used to supply excitation current. Acts as both an input and an output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '11', name: 'Digital Input 1 — factory LOW OIL PRESSURE', function: 'Programmable input. Factory set as the low oil pressure switch.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '12', name: 'Digital Input 2 — factory HIGH TEMP', function: 'Programmable input. Factory set as the high temperature switch.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '13', name: 'Digital Input 3', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '14', name: 'Digital Input 4', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '15', name: 'Digital Input 5', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '16', name: 'Digital Input 6', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '17', name: 'Digital Input 7', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '18', name: 'Digital Input 8', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-30 V DC', circuit: 'inputs', current: '-' },
+    { pin: '19', name: 'Sender Ground', function: 'Ground reference for the analogue senders.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '20', name: 'Analog Sender 1 — Oil Pressure', function: 'Oil pressure sender input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '21', name: 'Analog Sender 2 — Coolant Temperature', function: 'Coolant temperature sender input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '22', name: 'Analog Sender 3 — Fuel Level', function: 'Fuel level sender input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '23', name: 'Analog Sender 4 — Oil Temperature', function: 'Oil temperature sender input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '24', name: 'Protection Ground (RS-485)', function: 'Termination for the protective screen of the RS-485 cable.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '25', name: 'RS-485 B', function: 'RS-485 data line B. Runs MODBUS-RTU.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '26', name: 'RS-485 A', function: 'RS-485 data line A. Runs MODBUS-RTU.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '27', name: 'MPU +', function: 'Magnetic pickup input, positive leg.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '28', name: 'MPU -', function: 'Magnetic pickup input, negative leg.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '29', name: 'Protection Ground (MPU / CANBUS)', function: 'Screen termination shared by the magnetic pickup and CANBUS cables.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '30', name: 'CANBUS-H', function: 'J1939 port of an electronic engine, high line.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '31', name: 'CANBUS-L', function: 'J1939 port of an electronic engine, low line.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    // Terminals 32-50 do not exist on this module — the manufacturer's table
+    // runs 1-31 and resumes at 51.
+    { pin: '51', name: 'Generator Contactor', function: 'Relay output that energises the generator contactor.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'generator', current: '16 A AC' },
+    // Terminals 52, 54 and 56 (generator phase voltage inputs) are WITHHELD —
+    // two reads of the source disagreed on the phase order. See the block
+    // comment above and the registry coverage note.
+    { pin: '58', name: 'Generator Neutral', function: 'Neutral reference for the generator phase inputs.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '59', name: 'CURR_1+', function: 'Current transformer input 1, positive.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC' },
+    { pin: '60', name: 'CURR_1-', function: 'Current transformer input 1, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC' },
+    { pin: '61', name: 'CURR_2+', function: 'Current transformer input 2, positive.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC' },
+    { pin: '62', name: 'CURR_2-', function: 'Current transformer input 2, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC' },
+    { pin: '63', name: 'CURR_3+', function: 'Current transformer input 3, positive.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC' },
+    { pin: '64', name: 'CURR_3-', function: 'Current transformer input 3, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC' },
+    { pin: '65', name: 'Mains Neutral', function: 'Neutral reference for the mains phase inputs.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '67', name: 'MAINS-L3', function: 'Mains phase L3 voltage input. Note the mains phases run in DESCENDING order across the block (67 L3, 69 L2, 71 L1) — this was consistent across both reads of the source.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '69', name: 'MAINS-L2', function: 'Mains phase L2 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '71', name: 'MAINS-L1', function: 'Mains phase L1 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '72', name: 'Mains Contactor', function: 'Relay output that energises the mains contactor.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'mains', current: '16 A AC' },
+  ],
+  /*
    * SmartGen HGM9510 — read from SmartGen's OWN site (smartgen.cn), Table 12
    * "Terminal Connection Description" of the HGM9510 Parallel Controller User
    * Manual. Text-extractable PDF, read directly.

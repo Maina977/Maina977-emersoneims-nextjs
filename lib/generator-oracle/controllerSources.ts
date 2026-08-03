@@ -426,7 +426,32 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
   },
 
   // Datakom
-  'datakom-d500': unsupported('Datakom D-500', ['Datakom Documents']),
+  'datakom-d500': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'partial',
+    coverageNote:
+      'Terminals 52, 54 and 56 — the GENERATOR PHASE VOLTAGE INPUTS — are not published here. ' +
+      'Two independent reads of the source page disagreed on which phase sits on which terminal (one gave ' +
+      'L1/L2/L3 ascending, the other L2/L3/L3, which contradicts itself). Generator phase sensing is a ' +
+      'high-consequence connection, so those three are withheld rather than guessed — confirm them against the ' +
+      'manual before wiring. Everything else in the table is published and read identically on both passes. ' +
+      'Separately, terminals 32-50 are NOT missing data: they do not exist on this module, and neither do ' +
+      '53, 55, 57, 66, 68 and 70 — the manufacturer\'s numbering genuinely jumps. This entry is for the base ' +
+      'D-500; the MK2 and MK3 revisions were not consulted and may differ.',
+    sources: [
+      {
+        title: 'Datakom D-500 Advanced Genset Controller User Manual',
+        documentType: 'OEM operator manual',
+        publisher: 'Datakom',
+        url: 'https://www.datakom.com.tr',
+        accessedVia:
+          'Page-level HTML rendering of the manual on ManualsLib (manualslib.com), pages 48-50 (the "Terminal Description" table). Datakom serve their manuals through a site section that did not resolve directly, so the copy consulted is a mirror — named here rather than overstated as an OEM download.',
+        notes:
+          'Terminal numbers, voltage and current ratings are facts read from the manufacturer table; each description is our own wording. Datakom print NO cable sizes anywhere in this table, so every gauge is recorded as "not stated by OEM" rather than inferred from the current rating. The table ending at 72 was confirmed by checking the following manual page, which is Technical Specifications. Terminal 2 is carried through deliberately: the manual instructs that it must be left unconnected, and listing it prevents it being mistaken for a spare. The six digital outputs and eight digital inputs are all programmable; the factory default function is named because that is what an untouched unit will do. Mains phases run in DESCENDING order across the block (67 = L3, 69 = L2, 71 = L1), which was consistent across both reads.',
+      },
+    ],
+  },
   'datakom-d700': unsupported('Datakom D-700', ['Datakom Documents']),
   'datakom-dkg309': unsupported('Datakom DKG-309', ['Datakom Documents']),
   'datakom-dkg517': unsupported('Datakom DKG-517', ['Datakom Documents']),
