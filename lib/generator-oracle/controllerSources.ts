@@ -280,7 +280,24 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       },
     ],
   },
-  'dse-6120': unsupported('DSE 6120 MKII', ['Deep Sea Electronics document depot']),
+  'dse-6120': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'complete',
+    sources: [
+      {
+        title: 'DSE6110 MKII & DSE6120 MKII Operator Manual',
+        documentType: 'OEM operator manual',
+        publisher: 'Deep Sea Electronics Ltd',
+        url: 'https://www.deepseaelectronics.com/genset/auto-mains-utility-failure-control-modules/dse6120-mkii/downloads',
+        revision: '057-236 Issue 1',
+        accessedVia:
+          'Page-level HTML rendering of the manual on ManualsLib (manualslib.com), pages 29-33. The PDF is subset-font encoded and decodes to control characters, as with every other DSE operator manual tried.',
+        notes:
+          'Terminal numbers and cable sizes are facts read from the manufacturer tables; the description against each terminal is our own wording. Terminal 37 is deliberately absent from our data because the manual prints no description or cable size against it. Model difference recorded in the same manual: terminals 29-32 (mains sensing) are not fitted to the DSE6110 MKII. Despite the similar name this module is NOT the DSE6020 MKII — the magnetic pickup and CAN terminal numbers differ between the two, which is why numbers are never carried across DSE families.',
+      },
+    ],
+  },
   /*
    * DSE4520 — complete, all 32 terminals.
    *
