@@ -340,7 +340,30 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
   'woodward-dtsc200': unsupported('Woodward DTSC-200', ['Woodward Manuals']),
 
   // SmartGen
-  'smartgen-hgm6120': unsupported('SmartGen HGM6120', ['SmartGen Document Center']),
+  'smartgen-hgm6120': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'partial',
+    coverageNote:
+      'The terminal table itself is complete (all 44 terminals), but it is VARIANT-SPECIFIC. ' +
+      'It was read from the manual for the HGM6110N-4G / HGM6120N-4G / HGM6110CAN-4G / HGM6120CAN-4G. ' +
+      'The base HGM6110N/6120N series is wired differently and this map must NOT be used for it: on the base series ' +
+      'the fuel and start outputs (terminals 4 and 5) are 1.5 mm² rather than 2.5 mm², and Auxiliary Relay Outputs 2, 3 and 4 ' +
+      'sit at terminals 8, 11 and 13 instead of 7, 10 and 12. The HGM6120 U, T and K series variants were not consulted ' +
+      'and are not covered. Confirm the exact model suffix on the controller label before wiring.',
+    sources: [
+      {
+        title: 'HGM6100N-4G Series Genset Controller User Manual (HGM6110N-4G / HGM6120N-4G / HGM6110CAN-4G / HGM6120CAN-4G)',
+        documentType: 'OEM operator manual',
+        publisher: 'SmartGen Technology',
+        url: 'https://www.smartgen.cn/data/download/HGM6110N-4G_6120N-4G_6110CAN-4G_6120CAN-4G_en.pdf',
+        accessedVia:
+          "Downloaded directly from SmartGen's own site (smartgen.cn) — no mirror involved. Unlike the DSE manuals, this PDF is text-extractable, so Table 6 was read from the document itself.",
+        notes:
+          'Table 6, "Terminal Connection Description", terminals 1-44. Terminal numbers and cable sizes are facts read from the manufacturer table; each description is our own wording. Terminal 44 is printed as NULL (present but unassigned) and is carried through as such. The manual uses merged cells for the auxiliary relay groups; our entries state the grouping explicitly (7/8/9 = relay 2 NC/common/NO, 10+11 and 12+13 = the volt-free pairs for relays 3 and 4). The base HGM6100N series table was cross-checked against the SmartGen HGM6100N series manual and genuinely differs — see coverageNote.',
+      },
+    ],
+  },
   'smartgen-hgm7220': unsupported('SmartGen HGM7220', ['SmartGen Document Center']),
   'smartgen-hgm9510': unsupported('SmartGen HGM9510', ['SmartGen Document Center']),
 
