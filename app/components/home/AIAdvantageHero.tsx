@@ -143,32 +143,47 @@ export default function AIAdvantageHero() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-16 pt-12 border-t border-gray-700"
         >
+          {/*
+            REWRITTEN 2026-08-03 (owner instruction). These three cards were
+            headed "vs Jua Energy (Solar-Only)", "vs Fenix (Battery-Focused)" and
+            "vs All Others (Nairobi-Only)" — naming real trading companies on our
+            own homepage to argue we are better. The owner's standing position is
+            that we never use another company's name to promote ourselves. It was
+            also legally exposed, and it asserted a figure we cannot evidence
+            ("40-60% more efficient").
+
+            Replaced with what we actually do. No comparison, no named parties,
+            nothing that cannot be shown elsewhere on this site.
+          */}
           <h3 className="text-2xl font-bold text-white mb-8 text-center">
-            Why We're Different From Every Other Power Company
+            How We Approach a Power Problem
           </h3>
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-amber-400 mb-3">🔍</div>
-              <h4 className="text-white font-bold mb-2">vs Jua Energy (Solar-Only)</h4>
+              <h4 className="text-white font-bold mb-2">We design the whole system</h4>
               <p className="text-gray-400 text-sm">
-                They sell panels. We design intelligent systems that integrate generators, solar, UPS, and automation with AI optimization.
+                Generators, solar, UPS and automation specified together as one system — so the
+                changeover, the load profile and the protection settings actually match.
               </p>
             </div>
 
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-400 mb-3">🌍</div>
-              <h4 className="text-white font-bold mb-2">vs Fenix (Battery-Focused)</h4>
+              <h4 className="text-white font-bold mb-2">We publish our engineering</h4>
               <p className="text-gray-400 text-sm">
-                They sell batteries. We design systems that make batteries 40-60% more efficient through AI power management.
+                Free diagnosis guides and fault-code references for every category we work in. Read
+                the work before you ever speak to us.
               </p>
             </div>
 
             <div className="text-center">
               <div className="text-3xl font-bold text-green-400 mb-3">📍</div>
-              <h4 className="text-white font-bold mb-2">vs All Others (Nairobi-Only)</h4>
+              <h4 className="text-white font-bold mb-2">The workshop travels to you</h4>
               <p className="text-gray-400 text-sm">
-                They're in Nairobi. We're in ALL 47 counties with mobile workshop capability and same-day emergency response.
+                Our mobile workshop covers all 47 counties, so plant that cannot move still gets
+                bench-grade repair on site.
               </p>
             </div>
           </div>

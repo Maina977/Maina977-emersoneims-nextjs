@@ -234,6 +234,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/marketplace`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.85 },
     { url: `${BASE_URL}/all-tools`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.75 },
     { url: `${BASE_URL}/site-directory`, lastModified: currentDate, changeFrequency: 'weekly', priority: 0.6 },
+    // /why-emersoneims was published, live and reachable from NOTHING — not one
+    // internal link and not in the sitemap. That is how a page built around
+    // naming six competitors survived unreviewed. Rebuilt and listed 2026-08-03.
+    { url: `${BASE_URL}/why-emersoneims`, lastModified: currentDate, changeFrequency: 'monthly', priority: 0.7 },
     // /counties is permanently redirected to /kenya — keep only the canonical.
     { url: `${BASE_URL}/kenya`, lastModified: currentDate, changeFrequency: 'daily', priority: 0.9 },
 
