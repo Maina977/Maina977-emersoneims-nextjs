@@ -397,7 +397,13 @@ interface ControllerModel {
 const CONTROLLERS: ControllerModel[] = [
   // DSE Controllers
   { id: 'dse-7320', brand: 'DSE', model: '7320 MKII', type: 'genset', features: ['AMF', 'Load Share', 'CAN', 'J1939'], pinCount: 32, voltage: '8-35V DC' },
-  { id: 'dse-7310', brand: 'DSE', model: '7310 MKII', type: 'genset', features: ['AMF', 'CAN'], pinCount: 28, voltage: '8-35V DC' },
+  // NOT an AMF module. DSE list the 7310 MKII under "Manual & Auto Start
+  // Control Modules" and the 7320 MKII under "Auto Mains (Utility) Failure
+  // Control Modules". Their Installation Instructions (053-181 Issue 7) state
+  // "Terminals 38, 39, 40 & 41 are not fitted to the DSE7310 MKII" — those four
+  // are the Mains L1/L2/L3/N sensing inputs, so it cannot perform mains failure
+  // detection. pinCount corrected 28 -> 54 to match the verified terminal list.
+  { id: 'dse-7310', brand: 'DSE', model: '7310 MKII', type: 'genset', features: ['Manual/Auto Start', 'CAN'], pinCount: 54, voltage: '8-35V DC' },
   { id: 'dse-6020', brand: 'DSE', model: '6020 MKII', type: 'genset', features: ['Manual', 'Auto'], pinCount: 20, voltage: '8-35V DC' },
   { id: 'dse-6120', brand: 'DSE', model: '6120 MKII', type: 'genset', features: ['AMF', 'Auto'], pinCount: 24, voltage: '8-35V DC' },
   { id: 'dse-4520', brand: 'DSE', model: '4520', type: 'genset', features: ['Compact', 'Basic'], pinCount: 16, voltage: '8-35V DC' },
@@ -558,6 +564,74 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
     { pin: '39', name: 'Mains L2 (S)', function: 'Mains L2 (S) voltage and frequency sensing. DSE recommend a 2 A fuse. Not fitted to the DSE7310 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'mains' },
     { pin: '40', name: 'Mains L3 (T)', function: 'Mains L3 (T) voltage and frequency sensing. DSE recommend a 2 A fuse. Not fitted to the DSE7310 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'mains' },
     { pin: '41', name: 'Mains Neutral (N)', function: 'Mains neutral input. Not fitted to the DSE7310 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'mains' },
+    { pin: '42', name: 'CT Secondary L1', function: 'Current transformer secondary for L1. Connect to s1 of the L1 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '43', name: 'CT Secondary L2', function: 'Current transformer secondary for L2. Connect to s1 of the L2 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '44', name: 'CT Secondary L3', function: 'Current transformer secondary for L3. Connect to s1 of the L3 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '45', name: 'Earth Fault CT', function: 'Function depends on the earth fault topology in use. Not connected where no earth fault measuring is fitted; otherwise it takes s2 of the L1/L2/L3/N CTs, or s2 of the CT on the neutral to earth link.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '46', name: 'CT Common', function: 'Function depends on the earth fault topology in use. Normally the common s2 of the L1/L2/L3/N CTs; with an unrestricted earth fault CT it also takes s1 of the CT on the neutral to earth link.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
+    { pin: '47', name: 'Do Not Connect', function: 'Reserved by DSE across all earth fault topologies. Do not connect.', wireColor: 'Not specified by OEM', wireGauge: 'Not connected', circuit: 'metering' },
+    { pin: '48', name: 'Digital Input A', function: 'Configurable digital input A. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '49', name: 'Digital Input B', function: 'Configurable digital input B. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '50', name: 'Digital Input C', function: 'Configurable digital input C. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '51', name: 'Digital Input D', function: 'Configurable digital input D. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '52', name: 'Digital Input E', function: 'Configurable digital input E. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '53', name: 'Digital Input F', function: 'Configurable digital input F. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '54', name: 'Digital Input G', function: 'Configurable digital input G. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '55', name: 'Digital Input H', function: 'Configurable digital input H. Switches to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'inputs' },
+    { pin: '56', name: 'RS485 Port Screen', function: 'RS485 port screen. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'communication' },
+    { pin: '57', name: 'RS485 Port B (+)', function: 'RS485 port B (+). Connect to RXD+ and TXD+.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '58', name: 'RS485 Port A (-)', function: 'RS485 port A (-). Connect to RXD- and TXD-.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+  ],
+  /*
+   * DSE7310 MKII — derived from the SAME OEM manual as the DSE7320 MKII.
+   *
+   * DSE publish one document for both modules: DSE7310 MKII & DSE7320 MKII
+   * Operator Manual, DSE Publication 057-253. Their Installation Instructions
+   * (DSE Publication 053-181 Issue 7, deepseaelectronics.com) state verbatim:
+   *     "Terminals 38, 39, 40 & 41 are not fitted to the DSE7310 MKII."
+   * Those four are the Mains (utility) L1/L2/L3/Neutral sensing inputs, which
+   * is why DSE list the 7310 as Manual & Auto Start and the 7320 as Auto Mains
+   * Failure. Every entry below is the OEM wording already verified for the
+   * 7320; the four absent terminals are simply not present.
+   */
+  'dse-7310': [
+    { pin: '1', name: 'DC Supply (Negative)', function: 'DC plant supply input, negative. Connect to ground where applicable.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'power' },
+    { pin: '2', name: 'DC Supply (Positive)', function: 'DC plant supply input, positive. Supplies the module and DC outputs E, F, G, H, I and J.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'power', voltage: '8-35 V DC' },
+    { pin: '3', name: 'Emergency Stop', function: 'Emergency stop input, fed from plant supply positive. It also supplies DC outputs A and B, so breaking it removes both fuel and start.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'protection' },
+    { pin: '4', name: 'DC Output A (FUEL)', function: 'Fuel relay output. Plant supply positive comes from terminal 3. Fixed as the fuel relay unless an electronic engine is configured.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'fuel', current: '15 A DC' },
+    { pin: '5', name: 'DC Output B (START)', function: 'Start relay output. Plant supply positive comes from terminal 3. Fixed as the start relay unless an electronic engine is configured.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'starting', current: '15 A DC' },
+    { pin: '6', name: 'Charge Fail / Excite', function: 'Charge alternator D+ (W/L) input. Do not connect to ground. Leave disconnected if no charge alternator is fitted.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'charging' },
+    { pin: '7', name: 'Do Not Connect', function: 'Reserved by DSE. Do not connect.', wireColor: 'Not specified by OEM', wireGauge: 'Not connected', circuit: 'power' },
+    { pin: '8', name: 'DC Output E', function: 'Configurable DC output E. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '9', name: 'DC Output F', function: 'Configurable DC output F. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '10', name: 'DC Output G', function: 'Configurable DC output G. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '11', name: 'DC Output H', function: 'Configurable DC output H. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '12', name: 'DC Output I', function: 'Configurable DC output I. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '13', name: 'DC Output J', function: 'Configurable DC output J. Plant supply positive comes from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary', current: '2 A DC' },
+    { pin: '14', name: 'Sensor Common Return', function: 'Ground return for the sensors. DSE require this to be earthed to the ENGINE BLOCK, not inside the panel, and it must not provide an earth for any other terminal or device.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '15', name: 'Analogue Sensor Input A', function: 'Analogue sensor input A. Connect to the oil pressure sensor.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '16', name: 'Analogue Sensor Input B', function: 'Analogue sensor input B. Connect to the coolant temperature sensor.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '17', name: 'Analogue Sensor Input C', function: 'Analogue sensor input C. Connect to the fuel level sensor.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '18', name: 'Analogue Sensor Input D', function: 'Analogue sensor input D. Additional sensor, user configurable.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '19', name: 'Analogue Sensor Input E', function: 'Analogue sensor input E. Additional sensor, user configurable.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '20', name: 'Analogue Sensor Input F', function: 'Analogue sensor input F. Additional sensor, user configurable.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '21', name: 'Magnetic Pickup Positive', function: 'Magnetic pickup positive. Connect to the magnetic pickup device.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '22', name: 'Magnetic Pickup Negative', function: 'Magnetic pickup negative. Connect to the magnetic pickup device.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'sensing' },
+    { pin: '23', name: 'Magnetic Pickup Screen', function: 'Magnetic pickup cable screen. Earth at one end only.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'sensing' },
+    { pin: '24', name: 'ECU Port H', function: 'Engine ECU CAN high. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '25', name: 'ECU Port L', function: 'Engine ECU CAN low. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '26', name: 'ECU Port Screen', function: 'Engine ECU CAN screen. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'communication' },
+    { pin: '27', name: 'DSENet Expansion B', function: 'DSENet expansion port B. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '28', name: 'DSENet Expansion A', function: 'DSENet expansion port A. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² (AWG 20)', circuit: 'communication' },
+    { pin: '29', name: 'DSENet Expansion Screen', function: 'DSENet expansion screen. Use 120 ohm CAN or RS485 approved cable only.', wireColor: 'Not specified by OEM', wireGauge: 'Screened cable', circuit: 'communication' },
+    { pin: '30', name: 'Relay Output C (NC)', function: 'Volt-free relay output C, normally closed. Normally configured to control the mains contactor coil.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary' },
+    { pin: '31', name: 'Relay Output C (NC)', function: 'Volt-free relay output C, normally closed. Second contact of the same relay.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary' },
+    { pin: '32', name: 'Relay Output D (NO)', function: 'Volt-free relay output D, normally open. Normally configured to control the generator contactor coil.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary' },
+    { pin: '33', name: 'Relay Output D (NO)', function: 'Volt-free relay output D, normally open. Second contact of the same relay.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'auxiliary' },
+    { pin: '34', name: 'Generator L1 (U)', function: 'Generator L1 (U) voltage and frequency sensing. DSE recommend a 2 A fuse.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'generator' },
+    { pin: '35', name: 'Generator L2 (V)', function: 'Generator L2 (V) voltage and frequency sensing. DSE recommend a 2 A fuse.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'generator' },
+    { pin: '36', name: 'Generator L3 (W)', function: 'Generator L3 (W) voltage and frequency sensing. DSE recommend a 2 A fuse.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'generator' },
+    { pin: '37', name: 'Generator Neutral (N)', function: 'Generator neutral input. Connect to the generator neutral terminal.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² (AWG 18)', circuit: 'generator' },
     { pin: '42', name: 'CT Secondary L1', function: 'Current transformer secondary for L1. Connect to s1 of the L1 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
     { pin: '43', name: 'CT Secondary L2', function: 'Current transformer secondary for L2. Connect to s1 of the L2 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },
     { pin: '44', name: 'CT Secondary L3', function: 'Current transformer secondary for L3. Connect to s1 of the L3 monitoring CT. Never break this connection while the CT primary is carrying current.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'metering' },

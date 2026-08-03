@@ -134,6 +134,48 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       },
     ],
   },
+  /*
+   * DSE7310 MKII — same OEM manual as the DSE7320 MKII, one documented delta.
+   *
+   * DSE publish a single document for both modules (057-253). Their own
+   * Installation Instructions state verbatim: "Terminals 38, 39, 40 & 41 are not
+   * fitted to the DSE7310 MKII." In the verified 7320 data those four are the
+   * Mains (utility) L1/L2/L3/Neutral sensing inputs — which is exactly why DSE
+   * categorise the 7310 as Manual & Auto Start and the 7320 as Auto Mains
+   * Failure. The 7310 therefore carries 54 of the 7320's 58 terminals, with no
+   * value invented: every entry is the OEM wording already verified for the 7320.
+   */
+  'dse-7310': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'complete',
+    coverageNote:
+      '54 terminals. Terminals 38-41 (Mains L1/L2/L3/N) are absent on this model per DSE 053-181.',
+    sources: [
+      {
+        title: 'DSE7310 MKII & DSE7320 MKII Installation Instructions',
+        documentType: 'OEM installation manual',
+        publisher: 'Deep Sea Electronics Ltd',
+        url: 'https://www.deepseaelectronics.com/genset/manual-auto-start-control-modules/dse7310-mkii/downloads/installation-instructions',
+        revision: '053-181 Issue 7',
+        accessedVia:
+          'Served directly by Deep Sea Electronics from deepseaelectronics.com — not a distributor mirror.',
+        notes:
+          'Carries the verbatim note "Terminals 38, 39, 40 & 41 are not fitted to the DSE7310 MKII", and directs the reader to DSE Publication 057-253 for the full wiring diagram. That single sentence is the only terminal-level difference between the two modules.',
+      },
+      {
+        title: 'DSE7310 MKII & DSE7320 MKII Operator Manual',
+        documentType: 'OEM operator manual',
+        publisher: 'Deep Sea Electronics Ltd',
+        url: 'https://www.deepseaelectronics.com/genset/manual-auto-start-control-modules/dse7310-mkii/downloads',
+        revision: '057-253 Issue 7',
+        accessedVia:
+          'Same document as the DSE7320 MKII entry below — DSE publish one manual covering both modules.',
+        notes:
+          'Section 3.2 CONNECTION DESCRIPTIONS is the source for all 54 retained terminals.',
+      },
+    ],
+  },
   'comap-inteligen': {
     status: 'verified',
     verificationConfidence: 'high',
@@ -191,7 +233,10 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
 
   // ─────────── Unsupported entries (17) ───────────
   // DSE — additional models. Keep separate per-model entries; do NOT collapse.
-  'dse-7310': unsupported('DSE 7310 MKII', ['Deep Sea Electronics document depot']),
+  // 'dse-7310' is no longer listed here — it is VERIFIED above, sourced from the
+  // DSE7310/DSE7320 shared manual (057-253) plus DSE's own Installation
+  // Instructions (053-181 Issue 7). Leaving the stub here as well produced a
+  // duplicate object key, which TypeScript rejects.
   'dse-6020': unsupported('DSE 6020 MKII', ['Deep Sea Electronics document depot']),
   'dse-6120': unsupported('DSE 6120 MKII', ['Deep Sea Electronics document depot']),
   'dse-4520': unsupported('DSE 4520', ['Deep Sea Electronics document depot']),
