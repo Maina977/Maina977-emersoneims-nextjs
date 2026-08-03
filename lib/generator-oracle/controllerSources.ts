@@ -381,23 +381,72 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
   'lovato-rgk900': unsupported('Lovato RGK900', ['Lovato Electric documentation portal']),
   'lovato-atl800': unsupported('Lovato ATL800', ['Lovato Electric documentation portal']),
 
-  // Siemens
-  'siemens-sicam': unsupported('Siemens SICAM A8000', ['Siemens Industry Online Support']),
-  'siemens-sentron': unsupported('Siemens SENTRON PAC', ['Siemens Industry Online Support']),
-  'siemens-siprotec': unsupported('Siemens SIPROTEC 7SJ', ['Siemens Industry Online Support']),
+  // ───────────────────────────────────────────────────────────────────────
+  // Siemens — REAL Siemens products, but none of them is a genset controller.
+  // They appear in and around generator switchgear, which is presumably how
+  // they entered this catalog, but none has a genset control terminal block,
+  // so none can ever gain a pinout here. Entries retained, reason corrected.
+  // Triaged 2026-08-03.
+  // ───────────────────────────────────────────────────────────────────────
+  'siemens-sicam': notAGensetController(
+    'Siemens SICAM A8000',
+    'a substation automation and remote-terminal-unit (RTU) platform',
+    ['Siemens Industry Online Support'],
+  ),
+  'siemens-sentron': notAGensetController(
+    'Siemens SENTRON PAC',
+    'a power monitoring device (panel-mounted energy meter)',
+    ['Siemens Industry Online Support'],
+  ),
+  'siemens-siprotec': notAGensetController(
+    'Siemens SIPROTEC 7SJ',
+    'a digital overcurrent protection relay',
+    ['Siemens Industry Online Support'],
+  ),
 
-  // ENKO
-  'enko-gcu300': unsupported('ENKO GCU-300', ['ENKO product documents']),
-  'enko-gcu500': unsupported('ENKO GCU-500', ['ENKO product documents']),
-  'enko-sync200': unsupported('ENKO SYNC-200', ['ENKO product documents']),
+  // ───────────────────────────────────────────────────────────────────────
+  // ENKO — the manufacturer is real (ENKO Elektronik, Turkey, genset
+  // controllers) but these three MODEL NUMBERS are not in their range.
+  // ENKO name their genset modules in the AMF and MSU series. Flagged for the
+  // owner rather than deleted. Triaged 2026-08-03.
+  // ───────────────────────────────────────────────────────────────────────
+  'enko-gcu300': modelNotFoundInOemRange(
+    'ENKO GCU-300',
+    'ENKO Elektronik',
+    'ENKO designate their genset modules in the AMF series (AMF 2.0, 3.1, 3.2, 3.4, 3.4L, 4.0, 5.1, 5.2, AMF-L, AMF-M) and the MSU manual-start series (MSU 3.1, 3.4L, 5.1, 5.2). No "GCU" series appears in their catalog.',
+    ['ENKO product documents', 'enkoelektronik.com product range'],
+  ),
+  'enko-gcu500': modelNotFoundInOemRange(
+    'ENKO GCU-500',
+    'ENKO Elektronik',
+    'ENKO designate their genset modules in the AMF and MSU series; no "GCU" series appears in their catalog.',
+    ['ENKO product documents', 'enkoelektronik.com product range'],
+  ),
+  'enko-sync200': modelNotFoundInOemRange(
+    'ENKO SYNC-200',
+    'ENKO Elektronik',
+    'ENKO designate their genset modules in the AMF and MSU series; no "SYNC" series appears in their catalog.',
+    ['ENKO product documents', 'enkoelektronik.com product range'],
+  ),
 
-  // Volvo Penta VODIA
-  'vodia-vodia5': unsupported('Volvo Penta VODIA5', [
-    'Volvo Penta dealer technical portal (dealer-only)',
-  ]),
-  'vodia-vodia6': unsupported('Volvo Penta VODIA6', [
-    'Volvo Penta dealer technical portal (dealer-only)',
-  ]),
+  // ───────────────────────────────────────────────────────────────────────
+  // Volvo Penta — VODIA is Volvo Penta's DIAGNOSTIC SOFTWARE, run on a PC
+  // through a VOCOM interface. It is not a controller and has no terminals at
+  // all, so a "wiring diagram" for it is a category error. The D13 ECU is real
+  // hardware but is an engine ECU, not a genset controller, and its pinout is
+  // released only through the dealer channel. Entries retained, reasons
+  // corrected. Triaged 2026-08-03.
+  // ───────────────────────────────────────────────────────────────────────
+  'vodia-vodia5': notAGensetController(
+    'Volvo Penta VODIA5',
+    'PC diagnostic software for Volvo Penta marine and industrial engines, used with a VOCOM interface',
+    ['Volvo Penta dealer technical portal (dealer-only)'],
+  ),
+  'vodia-vodia6': notAGensetController(
+    'Volvo Penta VODIA6',
+    'a release of Volvo Penta\'s PC diagnostic software, used with a VOCOM interface',
+    ['Volvo Penta dealer technical portal (dealer-only)'],
+  ),
   'vodia-ecu': unsupported('Volvo Penta D13 ECU', [
     'Volvo Penta dealer technical portal (dealer-only)',
   ]),
@@ -415,6 +464,60 @@ function unsupported(
       `synthesise or substitute (e.g. DSE 7320) pinouts. Add an entry to this ` +
       `file AND the corresponding pin map to CONTROLLER_PINS in ` +
       `WiringDiagramsPanel.tsx once an OEM document is obtained.`,
+    searchedSources,
+  };
+}
+
+/**
+ * For catalog entries where NO amount of sourcing will ever produce a pinout,
+ * because the named product is not a genset controller with a terminal block.
+ *
+ * The generic `unsupported()` reason says the data "has not been added yet",
+ * which implies a document exists and merely needs to be found. For these
+ * entries that is false and would send a technician looking for a manual that
+ * cannot exist. Status stays 'unsupported' so UI behaviour is identical — no
+ * diagram, no export — but the stated reason is now true.
+ *
+ * Entries are kept, not removed: the catalog is the owner's, and a wrong reason
+ * is fixed by correcting the reason.
+ */
+function notAGensetController(
+  displayName: string,
+  whatItActuallyIs: string,
+  searchedSources: string[],
+): UnsupportedControllerSource {
+  return {
+    status: 'unsupported',
+    reason:
+      `${displayName} is ${whatItActuallyIs}. It is not a genset control module ` +
+      `with a terminal block, so there is no controller pinout to publish and no ` +
+      `OEM wiring table to source. This entry is retained in the catalog for ` +
+      `search and reference purposes only; the wiring panel will never render a ` +
+      `diagram for it.`,
+    searchedSources,
+  };
+}
+
+/**
+ * For catalog entries whose MODEL NUMBER could not be found in the
+ * manufacturer's published range at all.
+ *
+ * Recorded rather than deleted so the discrepancy stays visible and the owner
+ * can decide: correct the model number to a real one, or drop the entry.
+ */
+function modelNotFoundInOemRange(
+  displayName: string,
+  manufacturer: string,
+  actualRange: string,
+  searchedSources: string[],
+): UnsupportedControllerSource {
+  return {
+    status: 'unsupported',
+    reason:
+      `No product called "${displayName}" could be located in ${manufacturer}'s ` +
+      `published range. ${actualRange} Because the model itself is unconfirmed, ` +
+      `no pinout can be sourced or published. Flagged for the owner to correct ` +
+      `the model designation or retire the entry — it has NOT been removed.`,
     searchedSources,
   };
 }
