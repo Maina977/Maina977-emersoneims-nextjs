@@ -128,12 +128,25 @@ export const ALL_SERVICES: Service[] = [
     name: 'Cummins Generators',
     shortName: 'Cummins Generators',
     tagline: 'Premium Power with Industry-Leading 3-Year Warranty',
-    description: 'Authorized Cummins generator dealer in Kenya. Sales, installation, and maintenance of 10kVA to 2000kVA diesel generators with comprehensive 3-YEAR WARRANTY.',
-    longDescription: `EmersonEIMS is Kenya's premier authorized Cummins generator dealer. We provide complete power solutions including sales, professional installation, and ongoing maintenance support for businesses across East Africa.
+    // CLAIM POLICY — read before editing this block.
+    // THIS IS THE LIVE FILE. lib/building/services/allServices.ts is a dead
+    // mirror imported by nothing; fixing that one alone leaves the false claim
+    // on the live site, which is exactly what happened on the first pass here.
+    // Check the import path before trusting an edit in either file.
+    //
+    // EmersonEIMS SELLS AND SERVICES these brands but is NOT an authorised
+    // dealer, and there is no evidence on file behind any factory-training
+    // claim. Both used to appear here, and this block feeds the Service schema
+    // rendered on /generators — so it was asserting the claim to Google as
+    // structured data. See app/why-emersoneims/page.tsx for the full policy.
+    description: 'Cummins generator supply, installation and maintenance in Kenya. 10kVA to 2000kVA diesel generators, backed by a 3-year warranty and one year of free servicing.',
+    longDescription: `EmersonEIMS supplies, installs and maintains Cummins generators across Kenya. We are an independent power engineering firm — we are not tied to a single manufacturer, so the set we recommend is the one that fits your load, your fuel budget and your site, not the one we are obliged to move.
 
-Our Cummins generators range from compact 10kVA units perfect for small businesses and homes, to massive 2000kVA industrial powerhouses for factories, hospitals, and data centers. Every generator comes with our UNMATCHED 3-YEAR WARRANTY - the best in the industry.
+Our Cummins range runs from compact 10kVA units for small businesses and homes up to 2000kVA industrial sets for factories, hospitals and data centres. Every generator we supply carries a 3-year warranty and one year of free servicing.
 
-Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel efficiency, and longevity. With proper maintenance, a Cummins generator can provide decades of dependable service. Our certified technicians are factory-trained to ensure your generator performs at peak efficiency.`,
+Support does not stop at the gate. Our mobile workshop reaches all 47 counties, so a set in Kisumu, Eldoret or Mombasa is serviced to the same standard as one in Nairobi — and we hold genuine spare parts rather than sourcing them after your set has already stopped.
+
+Why Cummins? The engines are known worldwide for reliability, fuel efficiency and long service life. Maintained properly, a Cummins generator will run dependably for decades — and maintenance is precisely what we do.`,
 
     icon: '⚡',
     heroImage: '/images/GEN%202-1920x1080.png',
@@ -144,7 +157,7 @@ Why Cummins? Cummins engines are renowned worldwide for their reliability, fuel 
     ],
 
     metaTitle: 'Cummins Generators Kenya | 3-Year Warranty | 10kVA-2000kVA | EmersonEIMS',
-    metaDescription: 'Authorized Cummins generator dealer in Kenya. 10kVA to 2000kVA diesel generators with 3-YEAR WARRANTY. Professional installation, maintenance. Call +254768860665',
+    metaDescription: 'Cummins generators in Kenya, 10kVA to 2000kVA, with a 3-year warranty and one year free servicing. Supply, installation and maintenance in all 47 counties. Call +254768860665',
     keywords: [
       'Cummins generators Kenya',
       'Cummins generator dealer Kenya',

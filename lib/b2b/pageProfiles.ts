@@ -939,7 +939,11 @@ export const B2B_PROFILES = {
       { problem: 'Aging gensets trip on start-up loads.', solution: 'Independent load study and corrective works.', outcome: 'Stable voltage and frequency.' },
       { problem: 'Reactive call-outs cost more than scheduled service.', solution: 'EmersonEIMS SLA: scheduled service + parts + reports.', outcome: 'Fewer breakdowns, full audit history.' },
     ],
-    trust: ['Authorised Cummins / Voltka dealer', '3-year warranty + 1 year free service', '24/7 emergency response', 'Genuine parts, factory-trained'],
+    // Second copy of the dealer claim, in a different B2B profile and using the
+    // British spelling — which is how it survived the first sweep. Same policy
+    // as the profile earlier in this file: we supply, install and service, we
+    // are not authorised, and no training certificates are on file.
+    trust: ['Cummins & VOLTKA supply, installation and service', '3-year warranty + 1 year free service', '24/7 emergency response', 'Genuine spare parts held in stock'],
     ctas: [
       { label: 'Request a Generator Quote', href: '/contact?topic=generator-quote', variant: 'primary' },
       { label: 'Book a Free Site Audit', href: '/booking?service=generator-audit', variant: 'secondary' },
