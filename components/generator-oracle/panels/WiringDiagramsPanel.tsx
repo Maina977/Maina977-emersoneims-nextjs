@@ -504,6 +504,11 @@ const CIRCUIT_CATEGORIES = [
   { id: 'metering', name: 'Current Metering', icon: '📊', color: '#f59e0b' },
   { id: 'charging', name: 'Battery Charging', icon: '🔄', color: '#10b981' },
   { id: 'mains', name: 'Mains / Utility', icon: '🏭', color: '#94a3b8' },
+  // Added 2026-08-03 for paralleling controllers (e.g. SmartGen HGM9510), whose
+  // terminal tables sense the PARALLELING BUS as a separate set of inputs from
+  // both the generator and the utility. Filing bus terminals under 'mains'
+  // would tell a technician they are utility inputs, which they are not.
+  { id: 'bus', name: 'Paralleling Bus', icon: '🔀', color: '#c084fc' },
 ];
 
 // ==================== WIRE COLOR STANDARDS ====================
@@ -1034,6 +1039,175 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
   // ordering entirely.
   //
   // Wire COLOUR is "Not specified by OEM".
+  /*
+   * SmartGen HGM9510 — read from SmartGen's OWN site (smartgen.cn), Table 12
+   * "Terminal Connection Description" of the HGM9510 Parallel Controller User
+   * Manual. Text-extractable PDF, read directly.
+   *
+   * This is a PARALLELING controller, which is why it senses a bus (41-44) as
+   * well as the genset (45-48), and carries an MSC CAN link (26-28) between
+   * paralleled sets alongside the engine ECU CAN (23-25).
+   *
+   * TERMINALS 53, 54 AND 55 ARE ABSENT. The published table runs 49-52 and then
+   * jumps straight to 56. They are omitted here rather than invented; the gap is
+   * the manufacturer's, not a transcription loss.
+   *
+   * Relay contact ORDER is not uniform in this table and is reproduced exactly
+   * as printed rather than normalised:
+   *     Aux. output 4 → 20 NC, 21 common, 22 NO
+   *     Aux. output 5 → 36 NC, 37 NO,     38 common   (NO and common swapped)
+   *     Aux. output 6 → 39 NO, 40 common
+   * Normalising these to a tidy NC/common/NO pattern would have been an
+   * invention, and would put a technician on the wrong contact.
+   *
+   * RS485 polarity here is 34 = "+" and 35 = "-". Note this is the OPPOSITE
+   * order from the HGM7220 above (48 = "-", 49 = "+"). Each table was read on
+   * its own; polarity is never carried across models.
+   *
+   * Where the Cable Size column prints "/" (the CAN and RS485 commons, and
+   * sensor common) the gauge is recorded as not stated rather than guessed.
+   */
+  'smartgen-hgm9510': [
+    { pin: '1', name: 'B-', function: 'Battery negative.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'power', current: '-' },
+    { pin: '2', name: 'B+', function: 'Battery positive. SmartGen advise doubling the conductor in parallel beyond 30 m of run, and fitting a 20 A fuse maximum.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'power', current: 'Max. 20 A fuse recommended' },
+    { pin: '3', name: 'Emergency Stop', function: 'Fed from B+ through the normally closed contact of the emergency stop button.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'protection', current: '-' },
+    { pin: '4', name: 'Fuel Relay', function: 'Fuel solenoid drive. B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'fuel', current: '16 A rated' },
+    { pin: '5', name: 'Crank Relay', function: 'Starter coil drive. B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'starting', current: '16 A rated' },
+    { pin: '6', name: 'Aux. Output 1', function: 'Configurable auxiliary output, B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '7', name: 'Aux. Output 2', function: 'Configurable auxiliary output, B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '8', name: 'Aux. Output 3', function: 'Configurable auxiliary output, B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '9', name: 'Charger (D+)', function: 'Charge alternator D+ input. Left unconnected where the alternator has no such terminal.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '10', name: 'Aux. Input 1', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '11', name: 'Aux. Input 2', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '12', name: 'Aux. Input 3', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '13', name: 'Aux. Input 4', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '14', name: 'Aux. Input 5', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '15', name: 'Aux. Input 6', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '16', name: 'Magnetic Pickup', function: 'Speed sensor connection. SmartGen recommend screened cable and note that B- is already commoned to speed sensor 2 inside the controller.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '17', name: 'MP2', function: 'Magnetic pickup channel 2.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '18', name: 'MP1', function: 'Magnetic pickup channel 1.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '19', name: 'Aux. Input 7', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '20', name: 'Aux. Output 4 — normally closed', function: 'Normally closed contact of auxiliary relay 4. Group: 20 NC, 21 common, 22 NO.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '21', name: 'Aux. Output 4 — common', function: 'Common pole of auxiliary relay 4.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '22', name: 'Aux. Output 4 — normally open', function: 'Normally open contact of auxiliary relay 4.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '23', name: 'ECU CAN COM (GND)', function: 'Engine ECU CAN common / screen. Earthed at one end only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '24', name: 'ECU CAN H', function: 'Engine ECU CAN high.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '25', name: 'ECU CAN L', function: 'Engine ECU CAN low.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '26', name: 'MSC CAN COM (GND)', function: 'Multi-set control CAN common / screen, the link between paralleled controllers. Earthed at one end only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '27', name: 'MSC CAN H', function: 'Multi-set control CAN high.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '28', name: 'MSC CAN L', function: 'Multi-set control CAN low.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '29', name: 'GOV B(+)', function: 'Governor control link, positive leg. Screened cable recommended, screen earthed at the governor end.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '30', name: 'GOV A(-)', function: 'Governor control link, negative leg.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '31', name: 'AVR B(+)', function: 'AVR control link, positive leg. Screened cable recommended, screen earthed at the AVR end.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '32', name: 'AVR A(-)', function: 'AVR control link, negative leg.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '33', name: 'RS485 COM (GND)', function: 'RS485 common / screen. Earthed at one end only.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '34', name: 'RS485+', function: 'RS485 serial data, positive leg. Note the polarity order differs from the HGM7220.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '35', name: 'RS485-', function: 'RS485 serial data, negative leg.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '36', name: 'Aux. Output 5 — normally closed', function: 'Normally closed contact of auxiliary relay 5. Group: 36 NC, 37 NO, 38 common — note the common is LAST on this relay, unlike Aux. Output 4.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '37', name: 'Aux. Output 5 — normally open', function: 'Normally open contact of auxiliary relay 5.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '38', name: 'Aux. Output 5 — common', function: 'Common pole of auxiliary relay 5.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '39', name: 'Aux. Output 6 — normally open', function: 'Normally open contact of auxiliary relay 6. Group: 39 NO, 40 common.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '40', name: 'Aux. Output 6 — common', function: 'Common pole of auxiliary relay 6.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '41', name: 'Bus A-Phase Voltage Input', function: 'Paralleling bus A phase sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'bus', current: '2 A fuse recommended' },
+    { pin: '42', name: 'Bus B-Phase Voltage Input', function: 'Paralleling bus B phase sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'bus', current: '2 A fuse recommended' },
+    { pin: '43', name: 'Bus C-Phase Voltage Input', function: 'Paralleling bus C phase sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'bus', current: '2 A fuse recommended' },
+    { pin: '44', name: 'Bus N-Wire Input', function: 'Paralleling bus neutral reference.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'bus', current: '-' },
+    { pin: '45', name: 'Gen-set A-Phase Voltage Input', function: 'Generator A phase sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'generator', current: '2 A fuse recommended' },
+    { pin: '46', name: 'Gen-set B-Phase Voltage Input', function: 'Generator B phase sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'generator', current: '2 A fuse recommended' },
+    { pin: '47', name: 'Gen-set C-Phase Voltage Input', function: 'Generator C phase sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'generator', current: '2 A fuse recommended' },
+    { pin: '48', name: 'Gen-set N-Wire Input', function: 'Generator neutral reference.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '49', name: 'CT A-Phase Input', function: 'Current transformer secondary, A phase.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'metering', current: '5 A rated secondary' },
+    { pin: '50', name: 'CT B-Phase Input', function: 'Current transformer secondary, B phase.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'metering', current: '5 A rated secondary' },
+    { pin: '51', name: 'CT C-Phase Input', function: 'Current transformer secondary, C phase.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'metering', current: '5 A rated secondary' },
+    { pin: '52', name: 'CT COM', function: 'Common return for the three CT secondaries.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    // Terminals 53, 54 and 55 are not listed in the manufacturer's table — it
+    // runs 49-52 and resumes at 56. Omitted rather than invented.
+    { pin: '56', name: 'Aux. Sensor 1', function: 'Configurable sender input — temperature, oil pressure or fuel level.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '57', name: 'Aux. Sensor 2', function: 'Configurable sender input — temperature, oil pressure or fuel level.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '58', name: 'Oil Pressure', function: 'Oil pressure sender input.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '59', name: 'Engine Temperature', function: 'Engine temperature sender input.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '60', name: 'Fuel Level', function: 'Fuel level sender input.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '61', name: 'Sensor COM', function: 'Common return for the sender inputs; commoned to B- inside the controller.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+  ],
+  /*
+   * SmartGen HGM7220 — terminals 1-52, read from SmartGen's OWN site
+   * (smartgen.cn), Table 13 "Terminal Connection Description" of the HGM7200
+   * Series Genset Controller User Manual. Text-extractable PDF, read directly.
+   *
+   * This is the correct base document for the HGM7220: the manual covers the
+   * HGM7200 series and marks the mains sensing terminals 40-43 "HGM7X10
+   * without", i.e. absent on the HGM7210 and PRESENT on the HGM7220. Suffixed
+   * variants (N, -4G) were not consulted — see the HGM6120 note above for why
+   * SmartGen suffixes matter.
+   *
+   * Relay grouping, which the manual conveys by merging cells: 7/8/9 are the
+   * NC / common / NO contacts of Aux. output 2; 10+11 and 12+13 are the
+   * volt-free contact pairs of Aux. outputs 3 and 4.
+   *
+   * Terminal 36 is recorded as 1.5 mm² because that is what the manual prints,
+   * even though the other two genset phase terminals (37, 38) are given as
+   * 1.0 mm². That asymmetry looks like an error in SmartGen's own table. It is
+   * reproduced rather than silently "corrected" — but a technician sizing all
+   * three phases alike should use the larger figure. Flagged in the registry.
+   *
+   * Where the manual leaves the Diameter column blank (the magnetic pickup, the
+   * three sender inputs, sensor common and the two configurable senders) the
+   * gauge is recorded as not stated rather than filled in by analogy.
+   */
+  'smartgen-hgm7220': [
+    { pin: '1', name: 'DC B-', function: 'Battery negative.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'power', current: '-' },
+    { pin: '2', name: 'DC B+', function: 'Battery positive. SmartGen advise doubling the conductor in parallel beyond 30 m of run, and fitting a 20 A fuse maximum.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'power', current: 'Max. 20 A fuse recommended' },
+    { pin: '3', name: 'Emergency Stop', function: 'Fed from B+ through the emergency stop button.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: '-', circuit: 'protection', current: '-' },
+    { pin: '4', name: 'Fuel Relay Output', function: 'Fuel solenoid drive. B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'fuel', current: '16 A rated' },
+    { pin: '5', name: 'Start Relay Output', function: 'Starter coil drive. B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'power', current: '16 A rated' },
+    { pin: '6', name: 'Aux. Output 1', function: 'Configurable auxiliary output, B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '7', name: 'Aux. Output 2 — normally closed', function: 'Normally closed contact of auxiliary relay 2. Group: 7 NC, 8 common, 9 NO.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '8', name: 'Aux. Output 2 — common', function: 'Common pole of auxiliary relay 2.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '9', name: 'Aux. Output 2 — normally open', function: 'Normally open contact of auxiliary relay 2.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '10', name: 'Aux. Output 3', function: 'Volt-free normally open contact, first pole. Pairs with terminal 11.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Volt-free', circuit: 'auxiliary', current: '16 A rated' },
+    { pin: '11', name: 'Aux. Output 3', function: 'Volt-free normally open contact, second pole. Pairs with terminal 10.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Volt-free', circuit: 'auxiliary', current: '16 A rated' },
+    { pin: '12', name: 'Aux. Output 4', function: 'Volt-free normally open contact, first pole. Pairs with terminal 13.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Volt-free', circuit: 'auxiliary', current: '16 A rated' },
+    { pin: '13', name: 'Aux. Output 4', function: 'Volt-free normally open contact, second pole. Pairs with terminal 12.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm²', voltage: 'Volt-free', circuit: 'auxiliary', current: '16 A rated' },
+    { pin: '14', name: 'Charge Generator D+ Input', function: 'Charge alternator D+ (W/L) input. Left unconnected where the alternator has no such terminal.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '15', name: 'Aux. Output 5', function: 'Configurable auxiliary output, B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '16', name: 'Aux. Output 6', function: 'Configurable auxiliary output, B+ supplied.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: 'B+', circuit: 'auxiliary', current: '7 A rated' },
+    { pin: '17', name: 'Magnetic Pickup', function: 'Flywheel magnetic speed pickup. SmartGen recommend screened cable.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '18', name: 'Magnetic Pickup', function: 'Second leg of the magnetic pickup input; commoned to battery negative inside the controller.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '19', name: 'Temperature Sensor Input', function: 'Engine temperature sender input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '20', name: 'Oil Pressure Sensor Input', function: 'Oil pressure sender input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '21', name: 'Oil / Fuel Level Sensor Input', function: 'Fuel level sender input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '22', name: 'Aux. Input 1', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '23', name: 'Aux. Input 2', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '24', name: 'Aux. Input 3', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '25', name: 'Aux. Input 4', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '26', name: 'Aux. Input 5', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '27', name: 'Sensor COM', function: 'Common return for the sender inputs; commoned to battery negative inside the controller.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '28', name: 'Aux. Input 6', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '29', name: 'Aux. Input 7', function: 'Configurable digital input, active when pulled to ground (B-).', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '30', name: 'Configurable Sensor 1', function: 'Configurable sender input — temperature, oil pressure or fuel level.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '31', name: 'Configurable Sensor 2', function: 'Configurable sender input — temperature, oil pressure or fuel level.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '32', name: 'CT A-Phase Sensing Input', function: 'Current transformer secondary, A phase.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'metering', current: '5 A rated secondary' },
+    { pin: '33', name: 'CT B-Phase Sensing Input', function: 'Current transformer secondary, B phase.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'metering', current: '5 A rated secondary' },
+    { pin: '34', name: 'CT C-Phase Sensing Input', function: 'Current transformer secondary, C phase.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'metering', current: '5 A rated secondary' },
+    { pin: '35', name: 'CT Common', function: 'Common return for the three CT secondaries.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm²', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '36', name: 'Genset A-Phase Voltage Sensing', function: 'Generator A phase sensing. A 2 A fuse is recommended. The manual prints 1.5 mm² here while giving 1.0 mm² for the other two phases — see the registry note.', wireColor: 'Not specified by OEM', wireGauge: '1.5 mm² (as printed)', voltage: '-', circuit: 'generator', current: '2 A fuse recommended' },
+    { pin: '37', name: 'Genset B-Phase Voltage Sensing', function: 'Generator B phase sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'generator', current: '2 A fuse recommended' },
+    { pin: '38', name: 'Genset C-Phase Voltage Sensing', function: 'Generator C phase sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'generator', current: '2 A fuse recommended' },
+    { pin: '39', name: 'Genset N-Wire Input', function: 'Generator neutral reference.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '40', name: 'Mains A-Phase Voltage Sensing', function: 'Utility A phase sensing. A 2 A fuse is recommended. Not fitted on the HGM7X10.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'mains', current: '2 A fuse recommended' },
+    { pin: '41', name: 'Mains B-Phase Voltage Sensing', function: 'Utility B phase sensing. A 2 A fuse is recommended. Not fitted on the HGM7X10.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'mains', current: '2 A fuse recommended' },
+    { pin: '42', name: 'Mains C-Phase Voltage Sensing', function: 'Utility C phase sensing. A 2 A fuse is recommended. Not fitted on the HGM7X10.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'mains', current: '2 A fuse recommended' },
+    { pin: '43', name: 'Mains N-Wire Input', function: 'Utility neutral reference. Not fitted on the HGM7X10.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm²', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '44', name: 'CAN GND', function: 'CAN screen / common. 120 ohm screened cable recommended, earthed at one end only. Absent on controllers in the series without CAN.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '45', name: 'CAN-', function: 'Engine ECU CAN, negative leg.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '46', name: 'CAN+', function: 'Engine ECU CAN, positive leg.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '47', name: 'RS485 GND', function: 'RS485 screen / common, earthed at one end only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '48', name: 'RS485-', function: 'RS485 serial data, negative leg.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '49', name: 'RS485+', function: 'RS485 serial data, positive leg.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '50', name: 'RS232 GND', function: 'RS232 common. Used for the GSM module connection.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '51', name: 'RS232 RX', function: 'RS232 receive.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '52', name: 'RS232 TX', function: 'RS232 transmit.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm²', voltage: '-', circuit: 'communication', current: '-' },
+  ],
   /*
    * SmartGen HGM6120 — terminals 1-44, read from SmartGen's OWN site
    * (smartgen.cn), Table 6 "Terminal Connection Description" of the

@@ -364,8 +364,40 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       },
     ],
   },
-  'smartgen-hgm7220': unsupported('SmartGen HGM7220', ['SmartGen Document Center']),
-  'smartgen-hgm9510': unsupported('SmartGen HGM9510', ['SmartGen Document Center']),
+  'smartgen-hgm7220': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'complete',
+    sources: [
+      {
+        title: 'HGM7200 Series Genset Controller User Manual',
+        documentType: 'OEM operator manual',
+        publisher: 'SmartGen Technology',
+        url: 'https://www.smartgen.cn/data/download/HGM7200_en.pdf',
+        accessedVia:
+          "Downloaded directly from SmartGen's own site (smartgen.cn) — no mirror involved. The PDF is text-extractable, so Table 13 was read from the document itself.",
+        notes:
+          'Table 13, "Terminal Connection Description", terminals 1-52, complete. This is the correct base document for the HGM7220: the manual marks the mains sensing terminals 40-43 "HGM7X10 without", i.e. absent on the HGM7210 and present on the HGM7220. Terminal numbers and cable sizes are facts read from the manufacturer table; each description is our own wording. TWO THINGS TO KNOW: (1) the manual prints 1.5 mm² for terminal 36 (genset A phase) while giving 1.0 mm² for the other two genset phases at 37 and 38 — that asymmetry appears to be an error in SmartGen\'s own table, and is reproduced as printed rather than silently corrected; a technician sizing all three phases alike should use the larger figure. (2) Suffixed variants (N, -4G) were not consulted — SmartGen suffixes can shift terminal assignments, as documented on the HGM6120 entry.',
+      },
+    ],
+  },
+  'smartgen-hgm9510': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'complete',
+    sources: [
+      {
+        title: 'HGM9510 Parallel Controller User Manual',
+        documentType: 'OEM operator manual',
+        publisher: 'SmartGen Technology',
+        url: 'https://www.smartgen.cn/data/download/HGM9510_en.pdf',
+        accessedVia:
+          "Downloaded directly from SmartGen's own site (smartgen.cn) — no mirror involved. The PDF is text-extractable, so Table 12 was read from the document itself.",
+        notes:
+          'Table 12, "Terminal Connection Description", transcribed in full: terminals 1-52 and 56-61. TERMINALS 53, 54 AND 55 DO NOT APPEAR in the manufacturer\'s table — it runs 49-52 then resumes at 56 — so they are absent here rather than invented; the gap is SmartGen\'s, not a transcription loss. This is a paralleling controller, hence separate bus sensing (41-44) alongside genset sensing (45-48), and an MSC CAN link between paralleled sets (26-28) alongside the engine ECU CAN (23-25). Relay contact ORDER is not uniform in this table and is reproduced exactly as printed rather than normalised: Aux. output 4 is NC/common/NO at 20/21/22, but Aux. output 5 is NC/NO/common at 36/37/38. RS485 polarity is 34 = "+" and 35 = "-", which is the opposite order from the HGM7220 — each table was read on its own and polarity is never carried across models. Where the Cable Size column prints "/" the gauge is recorded as not stated. Terminal numbers and cable sizes are facts from the manufacturer table; each description is our own wording.',
+      },
+    ],
+  },
 
   // PowerWizard (Caterpillar)
   'powerwizard-10': unsupported('CAT PowerWizard 1.0', [
