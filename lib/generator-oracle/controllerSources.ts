@@ -486,14 +486,28 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
   },
 
   // PowerWizard (Caterpillar)
-  'powerwizard-10': unsupported('CAT PowerWizard 1.0', [
-    'Caterpillar Service Information System (paywall)',
-    'Cat dealer parts.cat.com (paywall)',
-  ]),
-  'powerwizard-11': unsupported('CAT PowerWizard 1.1', [
-    'Caterpillar Service Information System (paywall)',
-    'Cat dealer parts.cat.com (paywall)',
-  ]),
+  // Re-checked 2026-08-03. The searches DO return material for these two, which
+  // is exactly what makes them risky — see the reason text. Consistent with the
+  // powerwizard-20 entry below, whose fabricated 21-pin map was removed on
+  // 2026-07-29 for want of any verifiable source.
+  'powerwizard-10': dealerChannelOnly(
+    'CAT PowerWizard 1.0',
+    'What is publicly reachable is third-party material: panel wiring diagrams re-hosted on document-sharing sites (for example a "PowerWizard 1.0 panel" drawing, D41468), reseller schematic collections, and generator-set operator manuals that describe the control module without giving its terminal table.',
+    [
+      'Caterpillar Service Information System (paywall)',
+      'Cat dealer parts.cat.com (paywall)',
+      'Third-party re-hosted panel schematics (rejected as a source)',
+    ],
+  ),
+  'powerwizard-11': dealerChannelOnly(
+    'CAT PowerWizard 1.1',
+    'What is publicly reachable is third-party material: re-hosted panel schematics and generator-set operator and maintenance manuals that mention the PowerWizard 1.1, 1.1+ and 2.1 control modules without publishing their terminal tables.',
+    [
+      'Caterpillar Service Information System (paywall)',
+      'Cat dealer parts.cat.com (paywall)',
+      'Third-party re-hosted panel schematics (rejected as a source)',
+    ],
+  ),
   'powerwizard-20': {
     status: 'unsupported',
     reason:
@@ -689,9 +703,14 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
     'a release of Volvo Penta\'s PC diagnostic software, used with a VOCOM interface',
     ['Volvo Penta dealer technical portal (dealer-only)'],
   ),
-  'vodia-ecu': unsupported('Volvo Penta D13 ECU', [
-    'Volvo Penta dealer technical portal (dealer-only)',
-  ]),
+  // The D13 ECU is genuine hardware, unlike the two VODIA entries above which
+  // are software. It is still not a genset controller — it is the engine's own
+  // electronic control unit, and its harness pinout is a service document.
+  'vodia-ecu': dealerChannelOnly(
+    'Volvo Penta D13 ECU',
+    'This is the engine ECU rather than a genset control module: it speaks to a controller over J1939 instead of presenting a genset terminal block, and its harness pinout is released as a service document through the dealer technical portal.',
+    ['Volvo Penta dealer technical portal (dealer-only)'],
+  ),
 };
 
 function unsupported(
@@ -843,6 +862,36 @@ function conflictingReads(
       `partial map is shipped either. DO NOT resolve this by choosing the more ` +
       `plausible-looking reading: that is exactly the failure this registry exists to ` +
       `prevent. It needs a clean read of the printed table.`,
+    searchedSources,
+  };
+}
+
+/**
+ * For controllers whose manufacturer distributes the terminal documentation
+ * only through a dealer or service channel.
+ *
+ * The trap here is that a search DOES return plenty of material — third-party
+ * panel schematics, reseller uploads, document-sharing sites. None of it is the
+ * manufacturer's controller terminal table, and a panel-level drawing showing
+ * how one integrator wired one cabinet is not a pinout for the controller.
+ * Building an entry from that would attach OEM authority to somebody else's
+ * installation.
+ */
+function dealerChannelOnly(
+  displayName: string,
+  whatIsPublic: string,
+  searchedSources: string[],
+): UnsupportedControllerSource {
+  return {
+    status: 'unsupported',
+    reason:
+      `The manufacturer does not publish the ${displayName} terminal documentation ` +
+      `openly — it is distributed through the dealer/service channel. ${whatIsPublic} ` +
+      `None of that is the manufacturer's own controller terminal table, and a ` +
+      `panel-level drawing showing how one integrator wired one cabinet is not a ` +
+      `pinout for the controller. Publishing from it would put OEM authority behind ` +
+      `somebody else's installation, so nothing is shipped. A dealer-supplied service ` +
+      `document is what this entry needs.`,
     searchedSources,
   };
 }
