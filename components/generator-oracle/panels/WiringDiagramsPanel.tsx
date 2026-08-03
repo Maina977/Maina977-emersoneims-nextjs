@@ -16,6 +16,40 @@
  * OEM's wiring for another. Controllers without verified pinout data
  * render an explicit "data not yet available" notice and PDF export
  * is refused. See lib/generator-oracle/wiringGuard.ts.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * INTELLECTUAL PROPERTY POSTURE — binding on every future addition
+ * ─────────────────────────────────────────────────────────────────────────────
+ * This is an INDEPENDENT reference. It is not affiliated with, endorsed by, or
+ * associated with Deep Sea Electronics, ComAp, Woodward, SmartGen, Caterpillar,
+ * Datakom, Lovato, Siemens, ENKO, Volvo Penta or any other manufacturer. All
+ * brand names, model numbers and trademarks are the property of their
+ * respective owners.
+ *
+ * What may be recorded here, and why it is lawful:
+ *   - TERMINAL NUMBERS and the SIGNAL each carries (e.g. "terminal 1 is DC
+ *     negative"). These are facts about a physical product. Facts are not
+ *     protected by copyright, and they are the only thing a technician needs.
+ *   - CABLE SIZES and electrical limits, likewise factual.
+ *
+ * What must NEVER be copied:
+ *   - The manufacturer's PROSE. Every `function:` string in this file must be
+ *     written in our own words, describing what the terminal does. Do not
+ *     transcribe sentences, warnings, tables or diagrams out of an OEM manual,
+ *     and do not paraphrase so closely that the original wording survives.
+ *   - Any figure, drawing or artwork from a manual.
+ *
+ * What must NEVER be invented:
+ *   - Wire COLOURS. Most manuals give cable size only; where colour is unstated
+ *     the value is 'Not specified by OEM'.
+ *   - Terminal assignments for a controller whose manual has not been read. An
+ *     entry in CONTROLLER_PINS is not evidence — isControllerVerified() gates on
+ *     lib/generator-oracle/controllerSources.ts, which must name the document,
+ *     its publication/revision number and where it was obtained.
+ *
+ * Deriving one model from another is permitted ONLY where the manufacturer
+ * publishes a single document covering both and states the differences (as DSE
+ * do for the 7310/7320). Record the delta and the sentence that establishes it.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
@@ -587,8 +621,8 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
    *
    * DSE publish one document for both modules: DSE7310 MKII & DSE7320 MKII
    * Operator Manual, DSE Publication 057-253. Their Installation Instructions
-   * (DSE Publication 053-181 Issue 7, deepseaelectronics.com) state verbatim:
-   *     "Terminals 38, 39, 40 & 41 are not fitted to the DSE7310 MKII."
+   * (DSE Publication 053-181 Issue 7, deepseaelectronics.com) record that
+   * terminals 38 to 41 are absent on the 7310 MKII.
    * Those four are the Mains (utility) L1/L2/L3/Neutral sensing inputs, which
    * is why DSE list the 7310 as Manual & Auto Start and the 7320 as Auto Mains
    * Failure. Every entry below is the OEM wording already verified for the

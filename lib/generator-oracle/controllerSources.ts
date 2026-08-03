@@ -138,12 +138,15 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
    * DSE7310 MKII — same OEM manual as the DSE7320 MKII, one documented delta.
    *
    * DSE publish a single document for both modules (057-253). Their own
-   * Installation Instructions state verbatim: "Terminals 38, 39, 40 & 41 are not
-   * fitted to the DSE7310 MKII." In the verified 7320 data those four are the
-   * Mains (utility) L1/L2/L3/Neutral sensing inputs — which is exactly why DSE
-   * categorise the 7310 as Manual & Auto Start and the 7320 as Auto Mains
-   * Failure. The 7310 therefore carries 54 of the 7320's 58 terminals, with no
-   * value invented: every entry is the OEM wording already verified for the 7320.
+   * Installation Instructions record that terminals 38 to 41 are absent on the
+   * 7310 MKII. In the verified 7320 data those four are the Mains (utility)
+   * L1/L2/L3/Neutral sensing inputs — which is exactly why DSE categorise the
+   * 7310 as Manual & Auto Start and the 7320 as Auto Mains Failure.
+   *
+   * The 7310 therefore carries 54 of the 7320's 58 terminals. The terminal
+   * NUMBERS and the signal each carries are facts read from the manufacturer's
+   * table; the descriptive text is our own wording, already reviewed for the
+   * 7320. Nothing is transcribed from the manual and nothing is invented.
    */
   'dse-7310': {
     status: 'verified',
@@ -161,7 +164,7 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
         accessedVia:
           'Served directly by Deep Sea Electronics from deepseaelectronics.com — not a distributor mirror.',
         notes:
-          'Carries the verbatim note "Terminals 38, 39, 40 & 41 are not fitted to the DSE7310 MKII", and directs the reader to DSE Publication 057-253 for the full wiring diagram. That single sentence is the only terminal-level difference between the two modules.',
+          'States that terminals 38 to 41 are absent on the 7310 MKII, and directs the reader to DSE Publication 057-253 for the full wiring diagram. That single sentence is the only terminal-level difference between the two modules.',
       },
       {
         title: 'DSE7310 MKII & DSE7320 MKII Operator Manual',
