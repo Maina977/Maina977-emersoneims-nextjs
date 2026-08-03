@@ -24,11 +24,34 @@ export const CONTACT = {
   SUPPORT_EMAIL: 'support@emersoneims.com',
 
   // Physical address
+  /*
+   * VERIFIED PHYSICAL ADDRESS.
+   *
+   * This constant said "Industrial Area" until 2026-08-03, which
+   * components/seo/LocalBusinessSchema.tsx has explicitly flagged as WRONG since
+   * 2026-07-18: "Correct location: Embakasi, off Airport North Road — near KEMSA
+   * Head Office, behind Coca-Cola, close to Pride Centre. NOT Industrial Area /
+   * Commercial Street (that was wrong)."
+   *
+   * The corrected address was already in ~30 places across the site (footers,
+   * LocalBusiness schema, og:street-address, the QR generator and the map) while
+   * this constant still carried the old one — so the site contradicted itself.
+   * Aligned here. Nothing was invented; this is the address the codebase already
+   * treats as authoritative.
+   *
+   * Postal code 00519 comes from that same verified schema block. Note
+   * lib/seo/seoConfig.ts separately carries a P.O. Box (387-00521) — that is a
+   * postal box, not the physical location, and the two are not interchangeable
+   * for LocalBusiness schema.
+   */
   ADDRESS: {
-    street: 'Industrial Area',
+    street: 'Embakasi, off Airport North Road',
+    landmark: 'Near KEMSA Head Office, behind Coca-Cola, close to Pride Centre',
     city: 'Nairobi',
+    region: 'Nairobi',
+    postalCode: '00519',
     country: 'Kenya',
-    full: 'Industrial Area, Nairobi, Kenya'
+    full: 'Embakasi, off Airport North Road, Nairobi 00519, Kenya'
   },
 
   // Business hours
