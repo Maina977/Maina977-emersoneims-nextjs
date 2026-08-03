@@ -657,6 +657,31 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
     { pin: '13', name: 'Coolant Temperature Sensor', function: 'Analogue input for the engine coolant temperature sender.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
     { pin: '14', name: 'Fuel Level Sensor', function: 'Analogue input for the fuel level sender.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
     { pin: '15', name: 'Flexible Sensor', function: 'Configurable analogue sensor input.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    // ─── GAP: terminals 16-24 and 37 are deliberately absent ───
+    // Two separate readings of the source disagreed on where the magnetic
+    // pickup group ends and the CAN group begins — one gave MPU 18-20 with CAN
+    // 19-21, the other MPU 18-19, screen 20, CAN 21-22. Terminals 16, 17, 23,
+    // 24 and 37 did not appear at all. Rather than pick a reading, the range is
+    // omitted and named in coverageNote. Putting a technician on a CAN terminal
+    // while they wire a magnetic pickup is the failure this panel prevents.
+    { pin: '25', name: 'Generator L1 (U)', function: 'Generator phase 1 voltage sensing.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '26', name: 'Generator L2 (V)', function: 'Generator phase 2 voltage sensing.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '27', name: 'Generator L3 (W)', function: 'Generator phase 3 voltage sensing.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '28', name: 'Generator Neutral (N)', function: 'Generator neutral reference for voltage sensing.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '29', name: 'Mains L1 (R)', function: 'Utility phase 1 voltage sensing. Fitted to the DSE6020 MKII; absent on the DSE6010 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '30', name: 'Mains L2 (S)', function: 'Utility phase 2 voltage sensing. Fitted to the DSE6020 MKII; absent on the DSE6010 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '31', name: 'Mains L3 (T)', function: 'Utility phase 3 voltage sensing. Fitted to the DSE6020 MKII; absent on the DSE6010 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '32', name: 'Mains Neutral (N)', function: 'Utility neutral reference. Fitted to the DSE6020 MKII; absent on the DSE6010 MKII.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '33', name: 'CT Secondary L1', function: 'Current transformer secondary for generator phase 1.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '34', name: 'CT Secondary L2', function: 'Current transformer secondary for generator phase 2.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '35', name: 'CT Secondary L3', function: 'Current transformer secondary for generator phase 3.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '36', name: 'CT Common', function: 'Common return for the three CT secondaries — the s2 side of each CT commons here.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '38', name: 'Digital Input A', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '39', name: 'Digital Input B', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '40', name: 'Digital Input C', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '41', name: 'Digital Input D', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '42', name: 'Digital Input E', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '43', name: 'Digital Input F', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
   ],
   'dse-7310': [
     { pin: '1', name: 'DC Supply (Negative)', function: 'DC plant supply input, negative. Connect to ground where applicable.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'power' },

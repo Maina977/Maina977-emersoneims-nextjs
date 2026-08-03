@@ -265,7 +265,7 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
     verificationConfidence: 'medium',
     completeness: 'partial',
     coverageNote:
-      'Terminals 1-15 only (DC supply, emergency stop, fuel and start outputs, charge fail, configurable outputs C-F, analogue sensors). Terminals 16 onward — magnetic pickup, CAN, generator and mains sensing, CTs and digital inputs — are not yet verified and are deliberately not shown.',
+      '33 of the module terminals are shown: 1-15 (DC supply, emergency stop, fuel and start outputs, charge fail, configurable outputs C-F, analogue sensors), 25-32 (generator and mains voltage sensing), 33-36 (current transformers) and 38-43 (configurable digital inputs). Terminals 16-24 and 37 are NOT shown — two readings of the manual disagreed on where the magnetic pickup group ends and the CAN group begins, so that range is withheld rather than guessed. Use the manufacturer documentation for those terminals.',
     sources: [
       {
         title: 'DSE6010 MKII & DSE6020 MKII Operator Manual',
