@@ -29,8 +29,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${brand.name} Generators Kenya | ${brand.name} Dealer & Service`,
-    description: `${brand.name} generators in Kenya. Authorized ${brand.name} dealer offering sales, installation, service & genuine spare parts. ${brand.powerRange}. Call +254768860665`,
+    // NOTE: this template fires for EVERY brand, so a wrong word here is wrong
+    // on every brand page at once. It previously read "Authorized ${brand.name}
+    // dealer", which EmersonEIMS is not. We sell, install, service and supply
+    // genuine parts — all true, all worth saying. Authorisation is not ours to
+    // claim. Do not reintroduce it.
+    title: `${brand.name} Generators Kenya | Supply, Service & Parts`,
+    description: `${brand.name} generators in Kenya — supply, installation, servicing and genuine spare parts, backed by a mobile workshop covering all 47 counties. ${brand.powerRange}. Call +254768860665`,
     keywords: [
       ...brand.keywords,
       `${brand.name} kenya`,

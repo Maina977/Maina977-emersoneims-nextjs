@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cummins Generators Kenya | Diesel Generators 10-2000kVA | 3-Year Warranty | EmersonEIMS",
-  description: "Cummins generator sales, maintenance & spare-parts specialist in Kenya. 10KVA-2000KVA diesel generators with 3-YEAR WARRANTY + 1 YEAR FREE SERVICE. Genuine parts, expert installation, 24/7 support. Serving all 47 counties. Call +254768860665",
+  /*
+   * TITLE LENGTH — do not append "| EmersonEIMS" here.
+   * The root layout applies the template "%s | EmersonEIMS Kenya", so anything
+   * added here is on top of that. The previous title ended in "| EmersonEIMS"
+   * and rendered as "... | EmersonEIMS | EmersonEIMS Kenya" — 107 characters
+   * with the brand twice, which Google truncates at roughly 60 and which reads
+   * as keyword stuffing. Keep this field to ~45 characters.
+   */
+  title: "Diesel Generators | Cummins & VOLTKA 10-2000kVA",
+  description: "Diesel generators in Kenya from 10kVA to 2000kVA, supplied with a 3-year warranty and one year of free servicing. Independent specialists — supply, installation, servicing and genuine parts, with a mobile workshop covering all 47 counties. Call +254768860665",
   // NOTE: keywords meta tag removed - Google ignores it since 2009
   openGraph: {
     title: 'Cummins & Voltka Generators Kenya | 10-2000kVA | EmersonEIMS',

@@ -22,6 +22,10 @@ import { usePerformanceTier } from '@/components/performance/usePerformanceTier'
 import { CUMMINS_BRAND_INFO, CUMMINS_FAQ } from '@/lib/brands/cumminsData';
 import GeneratorEngineeringDeepDive from '@/components/generators/GeneratorEngineeringDeepDive';
 import ConversionCTA from '@/components/cta/ConversionCTA';
+// Lead capture for the #quote section. Imported statically rather than lazily:
+// it is the page's only form and sits directly under the hero, so it must be
+// present the moment the primary CTA is clicked.
+import QuickInquiryForm from '@/components/forms/QuickInquiryForm';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HEAVY COMPONENTS - Lazy loaded (Chart.js ~70KB, GSAP ~30KB saved)
@@ -1388,7 +1392,12 @@ const WhyChooseUs = () => {
     {
       icon: '🏆',
       title: 'Cummins Specialist',
-      description: 'Factory-trained technicians. Genuine parts access. Multi-brand expertise (Cummins, Perkins, Caterpillar, FG Wilson).',
+      // "Factory-trained" removed here and in the two places below. The claim
+      // has no evidence behind it on file (see app/why-emersoneims/page.tsx),
+      // and an unverifiable badge is worth less than a specific one. If
+      // training certificates DO exist, this is worth restoring with the
+      // certificate named — say so and it goes back.
+      description: 'Technicians who work these platforms daily. Genuine parts in stock. Multi-brand capability across Cummins, Perkins, Caterpillar and FG Wilson.',
       highlight: 'EXPERT'
     },
     {
@@ -1406,7 +1415,7 @@ const WhyChooseUs = () => {
     {
       icon: '🔧',
       title: '11+ Years Track Record',
-      description: 'Our senior technicians have serviced generators across Kenya since 2013. Factory-trained on Cummins, Perkins, Caterpillar and 10+ other brands.',
+      description: 'Our senior technicians have serviced generators across Kenya since 2013, on Cummins, Perkins, Caterpillar and 10+ other brands.',
       highlight: 'PROVEN EXPERTISE'
     },
     {
@@ -1600,7 +1609,7 @@ const FAQSection = () => {
     },
     {
       question: 'What brands do you carry?',
-      answer: 'We specialize in Cummins and Voltka generators, with expert service and genuine parts for Perkins, Caterpillar, FG Wilson, SDMO, and 20+ other brands. Our technicians are factory-trained on all major platforms.'
+      answer: 'We specialise in Cummins and VOLTKA generators, with servicing and genuine parts for Perkins, Caterpillar, FG Wilson, SDMO and 20+ other brands. Being independent, we are free to recommend the set that fits your load rather than the one we are obliged to sell.'
     },
     {
       question: 'How quickly can you deliver and install?',
@@ -2230,33 +2239,47 @@ export default function GeneratorPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
+          {/*
+            NO `opacity: 0` IN `initial` ON THE H1 AND SUB-HEADLINE.
+            framer-motion writes the initial state into the server-rendered
+            markup, so `initial={{ opacity: 0 }}` shipped this page's H1 as
+            style="opacity:0" \u2014 invisible until JavaScript ran, and invisible
+            for good if it failed. On the single most important element on a
+            commercial page that is not a risk worth taking for an animation.
+            The entrance is kept, driven by scale/position only, so the text is
+            legible from the first paint. 118 elements on this page still open
+            at opacity:0; these are the ones that carry the ranking and the
+            first impression.
+          */}
           <motion.h1
-            className="text-6xl md:text-8xl font-display text-brand-gold drop-shadow-glow mb-6"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
+            className="text-5xl md:text-7xl font-display text-brand-gold drop-shadow-glow mb-6"
+            initial={{ scale: 0.96 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.1, duration: 0.7 }}
           >
-            Cummins Generators
+            Cummins &amp; VOLTKA Diesel Generators
           </motion.h1>
           <motion.p
             className="mt-4 max-w-3xl text-white/90 text-xl md:text-2xl font-light"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
+            initial={{ y: 14 }}
+            animate={{ y: 0 }}
+            transition={{ delay: 0.25, duration: 0.7 }}
           >
-            From 20kVA to 2000kVA, verified specs, Hollywood{'\u2011'}grade visuals, and engineering mastery.
+            10kVA to 2000kVA, sized to your actual load rather than a catalogue guess.
             <br />
-            <span className="text-[#fbbf24]">3D View {'\u2022'} AR Preview {'\u2022'} Real-time Monitoring</span>
+            <span className="text-[#fbbf24]">
+              3-year warranty {'\u2022'} 1 year free servicing {'\u2022'} mobile workshop in all 47 counties
+            </span>
           </motion.p>
           <motion.div
             className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
+            initial={{ y: 14 }}
+            animate={{ y: 0 }}
+            transition={{ delay: 0.4, duration: 0.7 }}
           >
-            <a href="#models" className="cta-button-primary">Explore Models {'\u2192'}</a>
-            <a href="#comparison" className="cta-button-secondary">Compare Generators {'\u2192'}</a>
-            <a href="/contact" className="cta-button-secondary">Get Quote {'\u2192'}</a>
+            <a href="#quote" className="cta-button-primary">Get a Quote {'\u2192'}</a>
+            <a href="#new-generators" className="cta-button-secondary">See the Range {'\u2192'}</a>
+            <a href="#comparison" className="cta-button-secondary">Compare Sets {'\u2192'}</a>
           </motion.div>
         </motion.div>
 
@@ -2270,6 +2293,78 @@ export default function GeneratorPage() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          QUOTE CAPTURE — the page's only form.
+
+          Before this was added, /generators had ZERO forms. A page with 29
+          sections and 80 sub-headings offered a buyer exactly three ways to
+          act: ring a phone number, open WhatsApp, or leave. For capital
+          equipment at 10kVA-2000kVA that is a real leak — this is researched
+          out of hours, by people who will not phone a stranger, and a visitor
+          who leaves without giving a name leaves no way to follow up.
+
+          It sits immediately below the hero deliberately: the hero's primary
+          CTA is #quote, so the first click lands here rather than bouncing the
+          visitor to /contact and off this page's story.
+
+          The form posts to /api/contact, which is the path that actually
+          stores and delivers a lead. Do NOT repoint it at
+          /api/notifications/new-lead — that endpoint returns success without
+          storing or delivering anything.
+      ════════════════════════════════════════════════════════════════ */}
+      <section id="quote" className="py-16 bg-gradient-to-b from-black via-amber-950/20 to-black scroll-mt-28">
+        <div className="eims-shell py-0">
+          <div className="grid lg:grid-cols-2 gap-10 items-start">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-display text-brand-gold mb-4">
+                Tell us the load. We&apos;ll size the set.
+              </h2>
+              <p className="text-white/80 text-lg leading-relaxed mb-6">
+                Send the equipment you need to run and we will come back with the correct
+                kVA, the fuel figure, and a written price — not a brochure range. If a
+                smaller set does the job, we will say so.
+              </p>
+              <ul className="space-y-3 text-white/75">
+                <li className="flex gap-3">
+                  <span className="text-brand-gold font-bold">✓</span>
+                  <span>3-year warranty and one year of free servicing on new sets</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-brand-gold font-bold">✓</span>
+                  <span>Installation and servicing in all 47 counties, by mobile workshop</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-brand-gold font-bold">✓</span>
+                  <span>Genuine spare parts held in stock, not ordered after a breakdown</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-brand-gold font-bold">✓</span>
+                  <span>Independent — we fit the set to your load, not to a quota</span>
+                </li>
+              </ul>
+              <p className="mt-6 text-white/60 text-sm">
+                Prefer to talk? Call{' '}
+                <a href="tel:+254768860665" className="text-brand-gold hover:underline">
+                  +254 768 860 665
+                </a>
+                {' '}— Embakasi, off Airport North Road.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-amber-500/30 bg-black/60 p-6 md:p-8 backdrop-blur">
+              <h3 className="text-xl font-bold text-white mb-1">Request a generator quote</h3>
+              <p className="text-white/60 text-sm mb-6">
+                We reply the same working day.
+              </p>
+              <QuickInquiryForm
+                service="Generator supply"
+                ctaLabel="Get My Quote"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
           CUMMINS SALES & SERVICE - MAIN BRAND SHOWCASE
@@ -2606,11 +2701,23 @@ export default function GeneratorPage() {
       </section>
 
       {/* Enhanced Models Preview */}
-      <section id="models" className="py-16 bg-black">
+      {/*
+        Anchor target for "New Generators".
+        GENERATOR_HUB_SECTIONS above and the main navigation bar
+        (components/navigation/NavigationBar.tsx) both point at
+        /generators#new-generators, but nothing on the page carried that id —
+        so the top-level "New Generators" menu item scrolled nowhere and every
+        visitor who clicked it thought the site was broken.
+        It cannot simply be added to the <section> below, because that element's
+        id="models" is itself linked from two other places. Hence a dedicated
+        anchor. scroll-mt-28 stops the sticky header covering the heading.
+      */}
+      <span id="new-generators" aria-hidden="true" className="block scroll-mt-28" />
+      <section id="models" className="py-16 bg-black scroll-mt-28">
         <div className="eims-shell py-0">
           <SectionLead
-            title="Popular Models"
-            subtitle="From compact 20kVA to industrial 2000kVA"
+            title="New Generators — Cummins & VOLTKA"
+            subtitle="From compact 20kVA to industrial 2000kVA, supplied with a 3-year warranty and one year of free servicing"
             centered
           />
           

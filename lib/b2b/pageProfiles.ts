@@ -78,11 +78,15 @@ export const B2B_PROFILES = {
         outcome: 'Fewer breakdowns, full service history for audits and warranty claims.',
       },
     ],
+    // Two claims were removed here on 2026-08-04: "Authorized Cummins / Voltka
+    // dealer" (we are not authorised) and "factory-trained engineers" (no
+    // evidence behind it). What is left is stronger anyway, because all of it
+    // is checkable.
     trust: [
-      'Authorized Cummins / Voltka dealer',
+      'Cummins & VOLTKA supply, installation and service',
       '3-year warranty + 1 year free service',
       '24/7 emergency response, all 47 counties',
-      'Genuine parts, factory-trained engineers',
+      'Genuine spare parts held in stock',
     ],
     ctas: [
       { label: 'Request a Generator Quote', href: '/contact?topic=generator-quote', variant: 'primary' },

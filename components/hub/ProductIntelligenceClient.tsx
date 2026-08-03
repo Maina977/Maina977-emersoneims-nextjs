@@ -253,7 +253,11 @@ export default function ProductIntelligenceClient() {
           {[
             'Manufacturer seal intact',
             'Tamper labels verified',
-            'Authorised dealer confirmed',
+            // Reworded 2026-08-04. This is a checklist of what WE verify about
+            // incoming stock, but "Authorised dealer confirmed" reads as if
+            // EmersonEIMS is claiming to be one. The check itself is about the
+            // supply chain the part came through, so say that instead.
+            'Authorised supply chain confirmed',
             'Photo evidence captured',
             'System labelling printed',
             'Warranty record filed',
