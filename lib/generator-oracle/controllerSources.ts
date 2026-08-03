@@ -478,8 +478,46 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       },
     ],
   },
-  'datakom-dkg309': unsupported('Datakom DKG-309', ['Datakom Documents']),
-  'datakom-dkg517': unsupported('Datakom DKG-517', ['Datakom Documents']),
+  'datakom-dkg309': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'partial',
+    coverageNote:
+      'All 37 terminals are published, but TERMINALS 36 AND 37 DEPEND ON WHICH HARDWARE VERSION OF THE DKG-309 ' +
+      'YOU HAVE. Datakom print two sub-headings against the same two numbers: on CANBUS versions 36 is CANBUS-L ' +
+      'and 37 is CANBUS-H, while on MPU input versions 36 is MPU- and 37 is MPU+. Both readings are carried in the ' +
+      'terminal name because choosing one would land a speed-pickup pair on a CAN port, or the reverse. Identify ' +
+      'your version before connecting those two.',
+    sources: [
+      {
+        title: 'Datakom DKG-309 User Manual V-29 (23.08.2013) — section 2, Inputs and Outputs',
+        documentType: 'OEM operator manual',
+        publisher: 'Datakom',
+        url: 'https://datakom.com.tr/upload/Files/309_USER.pdf',
+        accessedVia:
+          "Downloaded directly from Datakom's own site (datakom.com.tr) — no mirror involved. Text-extractable, so the terminal table was read from the document itself.",
+        notes:
+          'Terminal numbers and ratings are facts read from the manufacturer table; each description is our own wording. Datakom give no per-terminal cable sizes in this manual, so every gauge is recorded as not stated. PHASE ORDER IS MIXED ON THIS UNIT and is reproduced as printed rather than normalised: generator phases ASCEND (2 = L1, 3 = L2, 4 = L3) while mains phases DESCEND (7 = L3, 8 = L2, 9 = L1) — the descending mains run matches the D-500 and D-700 house style. Datakom advise interlocking the two contactor outputs: wire the mains contactor NC contact in series with terminal 1, and the generator contactor NC contact in series with terminal 10.',
+      },
+    ],
+  },
+  'datakom-dkg517': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'complete',
+    sources: [
+      {
+        title: 'Datakom DKG-517 User Manual V-01.13 (08.04.2008) — section 2, Inputs and Outputs',
+        documentType: 'OEM operator manual',
+        publisher: 'Datakom',
+        url: 'https://datakom.com.tr/upload/Files/517_USER.pdf',
+        accessedVia:
+          "Downloaded directly from Datakom's own site (datakom.com.tr) — no mirror involved. Text-extractable, so the terminal table was read from the document itself.",
+        notes:
+          'Terminals 1-34, complete. THIS UNIT HAS NO MAINS SENSING AND NO MAINS CONTACTOR — unlike the DKG-309 it is not an auto mains failure unit. That is why terminals 1 and 6-10 are printed with an asterisk and the instruction "No connection to these terminals"; they are carried here as explicit no-connect entries rather than dropped, so nobody assumes the numbering merely skipped and lands a mains phase on a dead pin. Do NOT read this pinout against the DKG-309: the relays here are rated 10 A where the 309\'s are 1 A, the generator phases are named U/V/W rather than L1/L2/L3, and the CT terminals are CURR_U/V/W rather than CURR_1/2/3. Cable size: the manual gives no per-terminal figure but states a blanket rule of at least 0.75 mm² with adequate current carrying capacity, and that general minimum is what appears in the gauge column, labelled as such. Terminal 20 is internally tied to terminal 16 to supply the charge alternator excitation current.',
+      },
+    ],
+  },
 
   // Lovato
   'lovato-rgk800': unsupported('Lovato RGK800', ['Lovato Electric documentation portal']),

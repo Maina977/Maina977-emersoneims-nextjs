@@ -1040,6 +1040,122 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
   //
   // Wire COLOUR is "Not specified by OEM".
   /*
+   * Datakom DKG-309 — "INPUTS AND OUTPUTS" terminal table of the DKG-309 User
+   * Manual V-29 (23.08.2013), downloaded from DATAKOM'S OWN SITE
+   * (datakom.com.tr/upload/Files/309_USER.pdf). Text-extractable, read directly.
+   *
+   * Terminals 1-37, complete.
+   *
+   * ⚠ TERMINALS 36 AND 37 DEPEND ON WHICH HARDWARE VERSION YOU HAVE. Datakom
+   * print two separate sub-headings against the same two terminal numbers:
+   *     CANBUS VERSIONS   → 36 = CANBUS-L, 37 = CANBUS-H
+   *     MPU INPUT VERSIONS → 36 = MPU-,    37 = MPU+
+   * Both readings are carried in the terminal name so neither can be missed.
+   * Picking one would land a speed-pickup pair on a CAN port, or the reverse.
+   *
+   * PHASE ORDER IS MIXED ON THIS UNIT and is reproduced as printed: the
+   * generator phases ASCEND (2 = L1, 3 = L2, 4 = L3) while the mains phases
+   * DESCEND (7 = L3, 8 = L2, 9 = L1). The descending mains run matches the
+   * D-500 and D-700 house style.
+   *
+   * Datakom give no per-terminal cable sizes in this manual.
+   */
+  'datakom-dkg309': [
+    { pin: '1', name: 'Generator Contactor', function: 'Relay output energising the generator contactor. De-energises if generator voltage or frequency leaves limits. Datakom advise wiring the mains contactor NC contact in series with this output for added security.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'generator', current: '16 A AC' },
+    { pin: '2', name: 'GEN-L1', function: 'Generator phase L1 voltage input. Upper and lower limits are programmable.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '3', name: 'GEN-L2', function: 'Generator phase L2 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '4', name: 'GEN-L3', function: 'Generator phase L3 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '5', name: 'Generator Neutral', function: 'Neutral reference for the generator phases.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '6', name: 'Mains Neutral', function: 'Neutral reference for the mains phases.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '7', name: 'MAINS-L3', function: 'Mains phase L3 voltage input. Note the mains phases run DESCENDING against terminal number (7 = L3, 8 = L2, 9 = L1) while the generator phases ascend.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '8', name: 'MAINS-L2', function: 'Mains phase L2 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '9', name: 'MAINS-L1', function: 'Mains phase L1 voltage input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0-300 V AC', circuit: 'mains', current: '-' },
+    { pin: '10', name: 'Mains Contactor', function: 'Relay output energising the mains contactor. Datakom advise wiring the generator contactor NC contact in series with this output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'mains', current: '16 A AC' },
+    { pin: '11', name: 'Ground', function: 'Power supply negative connection.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0 V DC', circuit: 'power', current: '-' },
+    { pin: '12', name: 'Battery Positive', function: 'DC supply positive. The unit runs on both 12 V and 24 V battery systems.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '+12 or 24 V DC', circuit: 'power', current: '-' },
+    { pin: '13', name: 'Fuel Level Sender', function: 'Analogue fuel level sender. Must not be shared with other devices.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '14', name: 'Oil Pressure Sender', function: 'Analogue oil pressure sender. Programmable characteristics, accepts any sender type. Must not be shared.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '15', name: 'Coolant Temperature Sender', function: 'Analogue coolant temperature sender. Programmable characteristics. Must not be shared.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '16', name: 'Charge', function: 'Charge alternator terminal. Supplies excitation current and measures charge alternator voltage. Acts as both input and output.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '17', name: 'Relay 2 (Horn Relay)', function: 'Programmable output, selectable from a list.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A' },
+    { pin: '18', name: 'Relay 1 (Stop Relay)', function: 'Programmable output, selectable from a list.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'auxiliary', current: '1 A' },
+    { pin: '19', name: 'Start Relay', function: 'Controls engine cranking.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'starting', current: '1 A' },
+    { pin: '20', name: 'Fuel Relay', function: 'Fuel solenoid control.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '28 V DC', circuit: 'fuel', current: '1 A' },
+    { pin: '21', name: 'Emergency Stop', function: 'Programmable digital input. Each input may be driven by a switch to either battery positive or battery negative, and the effect is selectable from a list.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'protection', current: '-' },
+    { pin: '22', name: 'Spare 2', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '23', name: 'Program Lock', function: 'Programmable digital input, factory assigned to program lock.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '24', name: 'Spare 1', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '25', name: 'Coolant Level', function: 'Programmable digital input, factory assigned to coolant level.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '26', name: 'High Temperature', function: 'Programmable digital input, factory assigned to high temperature.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '27', name: 'Low Oil Pressure', function: 'Programmable digital input, factory assigned to low oil pressure.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '28', name: 'Rectifier Fail', function: 'Programmable digital input, factory assigned to rectifier failure.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '29', name: 'CURR_1+', function: 'Generator current transformer phase 1, positive. Correct polarity is vital, CTs must not be shared with other instruments, and no common terminals or grounding may be used.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '30', name: 'CURR_1-', function: 'Generator current transformer phase 1, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '31', name: 'CURR_2+', function: 'Generator current transformer phase 2, positive.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '32', name: 'CURR_2-', function: 'Generator current transformer phase 2, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '33', name: 'CURR_3+', function: 'Generator current transformer phase 3, positive.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '34', name: 'CURR_3-', function: 'Generator current transformer phase 3, negative.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '35', name: 'Oil Temperature Sender', function: 'Analogue oil temperature sender. Must not be shared with other devices.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '36', name: 'CANBUS-L (CAN versions) / MPU- (MPU versions)', function: 'THIS TERMINAL DIFFERS BY HARDWARE VERSION. On CANBUS versions it is the J1939 CAN low line, with 120 ohm terminating resistors internal — Datakom instruct that no external resistors be fitted. On MPU input versions it is the magnetic pickup negative leg, 0.5 to 30 V AC. Confirm which version you have before connecting.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0.5 to 30 V AC on MPU versions', circuit: 'communication', current: '-' },
+    { pin: '37', name: 'CANBUS-H (CAN versions) / MPU+ (MPU versions)', function: 'THIS TERMINAL DIFFERS BY HARDWARE VERSION. On CANBUS versions it is the J1939 CAN high line; on MPU input versions it is the magnetic pickup positive leg. Datakom recommend twisted pair or coaxial cable either way.', wireColor: 'Not specified by OEM', wireGauge: 'Not stated by OEM', voltage: '0.5 to 30 V AC on MPU versions', circuit: 'communication', current: '-' },
+  ],
+  /*
+   * Datakom DKG-517 — "INPUTS AND OUTPUTS" terminal table of the DKG-517 User
+   * Manual V-01.13 (08.04.2008), downloaded from DATAKOM'S OWN SITE
+   * (datakom.com.tr/upload/Files/517_USER.pdf). Text-extractable, read directly.
+   *
+   * Terminals 1-34, complete. THIS UNIT HAS NO MAINS SENSING AND NO MAINS
+   * CONTACTOR — unlike the DKG-309 it is not an auto mains failure unit, which
+   * is why terminals 1 and 6-10 are printed with an asterisk and the
+   * instruction "No connection to these terminals". They are carried here as
+   * explicit no-connect entries rather than dropped, so nobody assumes the
+   * numbering simply skipped and lands a mains phase on a dead pin.
+   *
+   * Do not read this against the DKG-309: the relays here are rated 10 A where
+   * the 309's are 1 A, the CT terminals are named U/V/W where the 309 uses
+   * 1/2/3, and the generator phases are named U/V/W rather than L1/L2/L3.
+   *
+   * Cable size: the manual gives no per-terminal figure but does state a blanket
+   * rule — cables of adequate current carrying capacity, at least 0.75 mm².
+   * That general minimum is what appears in the gauge column, labelled as such.
+   */
+  'datakom-dkg517': [
+    { pin: '1', name: 'No Connection', function: 'Printed with an asterisk in the manufacturer table: no connection is to be made to this terminal.', wireColor: 'Not specified by OEM', wireGauge: 'Not applicable', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '2', name: 'U', function: 'Generator phase U voltage input. Upper and lower limits are programmable.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '3', name: 'V', function: 'Generator phase V voltage input.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '4', name: 'W', function: 'Generator phase W voltage input.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '5', name: 'Generator Neutral', function: 'Neutral reference for the generator phases.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '0-300 V AC', circuit: 'generator', current: '-' },
+    { pin: '6', name: 'No Connection', function: 'Printed with an asterisk: no connection to be made. This unit has no mains sensing.', wireColor: 'Not specified by OEM', wireGauge: 'Not applicable', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '7', name: 'No Connection', function: 'Printed with an asterisk: no connection to be made.', wireColor: 'Not specified by OEM', wireGauge: 'Not applicable', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '8', name: 'No Connection', function: 'Printed with an asterisk: no connection to be made.', wireColor: 'Not specified by OEM', wireGauge: 'Not applicable', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '9', name: 'No Connection', function: 'Printed with an asterisk: no connection to be made.', wireColor: 'Not specified by OEM', wireGauge: 'Not applicable', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '10', name: 'No Connection', function: 'Printed with an asterisk: no connection to be made.', wireColor: 'Not specified by OEM', wireGauge: 'Not applicable', voltage: '-', circuit: 'auxiliary', current: '-' },
+    { pin: '11', name: 'Ground', function: 'Power supply negative connection.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '0 V DC', circuit: 'power', current: '-' },
+    { pin: '12', name: 'Battery Positive', function: 'DC supply positive. The unit runs on both 12 V and 24 V battery systems.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '+12 or 24 V DC', circuit: 'power', current: '-' },
+    { pin: '13', name: 'Fuel Level Sender', function: 'Analogue fuel level sender, programmed for VDO type senders. Must not be shared with other devices.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '14', name: 'Oil Pressure Sender', function: 'Analogue oil pressure sender. Programmable characteristics, accepts any sender type. Must not be shared.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '15', name: 'Coolant Temperature Sender', function: 'Analogue coolant temperature sender. Programmable characteristics. Must not be shared.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: 'Resistance input, 0-5000 ohms' },
+    { pin: '16', name: 'Charge', function: 'Connect the charge alternator D+ terminal here. Supplies excitation current and measures charge alternator voltage. Internally tied to terminal 20.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '17', name: 'Relay 2 (Horn Relay)', function: 'Programmable output, selectable from a list.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '28 V DC', circuit: 'auxiliary', current: '10 A' },
+    { pin: '18', name: 'Relay 1 (Stop Relay)', function: 'Programmable output, selectable from a list.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '28 V DC', circuit: 'auxiliary', current: '10 A' },
+    { pin: '19', name: 'Start Relay', function: 'Controls engine cranking.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '28 V DC', circuit: 'starting', current: '10 A' },
+    { pin: '20', name: 'Fuel Relay', function: 'Fuel solenoid control. Internally connected to terminal 16 to supply the charge alternator excitation current.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '28 V DC', circuit: 'fuel', current: '10 A' },
+    { pin: '21', name: 'Emergency Stop', function: 'Programmable digital input. Inputs may be driven by a normally open or normally closed contact, switching either battery positive or battery negative.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'protection', current: '-' },
+    { pin: '22', name: 'Spare 2', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '23', name: 'Program Lock', function: 'Programmable digital input, factory assigned to program lock.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '24', name: 'Spare 1', function: 'Programmable digital input.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '25', name: 'Coolant Level', function: 'Programmable digital input, factory assigned to coolant level.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '26', name: 'High Temperature', function: 'Programmable digital input, factory assigned to high temperature.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '27', name: 'Low Oil Pressure', function: 'Programmable digital input, factory assigned to low oil pressure.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '28', name: 'Rectifier Fail', function: 'Programmable digital input, factory assigned to rectifier failure.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '29', name: 'CURR_U+', function: 'Generator current transformer phase U, positive. Correct polarity is vital, CTs must not be shared with other instruments, and no common terminals or grounding may be used.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '30', name: 'CURR_U-', function: 'Generator current transformer phase U, negative.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '31', name: 'CURR_V+', function: 'Generator current transformer phase V, positive.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '32', name: 'CURR_V-', function: 'Generator current transformer phase V, negative.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '33', name: 'CURR_W+', function: 'Generator current transformer phase W, positive.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+    { pin: '34', name: 'CURR_W-', function: 'Generator current transformer phase W, negative.', wireColor: 'Not specified by OEM', wireGauge: '0.75 mm² minimum (manual general rule)', voltage: '-', circuit: 'metering', current: '5 A AC secondary' },
+  ],
+  /*
    * Datakom D-700 MK3 — section 8 "TERMINAL DESCRIPTION" of the D-700 MK3 User
    * Manual, Firmware V-16.8, downloaded from DATAKOM'S OWN SITE
    * (datakom.com.tr/upload/Files/700_MK3_USER.pdf). Text-extractable, read
