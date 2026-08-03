@@ -240,7 +240,46 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
   // DSE7310/DSE7320 shared manual (057-253) plus DSE's own Installation
   // Instructions (053-181 Issue 7). Leaving the stub here as well produced a
   // duplicate object key, which TypeScript rejects.
-  'dse-6020': unsupported('DSE 6020 MKII', ['Deep Sea Electronics document depot']),
+  /*
+   * DSE6020 MKII — PARTIAL. Terminals 1-15 only.
+   *
+   * Read from the DSE6010 MKII & DSE6020 MKII Operator Manual (DSE Publication
+   * 057-230), page 29 (DC supply, emergency stop, DC outputs, charge fail) and
+   * page 30 (analogue sensors). Terminals 1-15 are common to both modules.
+   *
+   * WHY IT STOPS AT 15, and why that is deliberate:
+   *   - terminals 16-17 did not render in the source consulted, and
+   *   - terminals 18-21 came back ambiguous: the same numbers were returned for
+   *     BOTH the magnetic pickup and the CAN port, which cannot both be right.
+   * Putting a technician on a CAN terminal when they are wiring a magnetic
+   * pickup is precisely the hazard this registry exists to prevent, so the
+   * ambiguous range is omitted rather than guessed. The panel shows the
+   * coverageNote below so nobody reads the short list as the whole module.
+   *
+   * To complete: read pages 30-32 of 057-230 and add terminals 16 onward,
+   * including the mains sensing terminals 29-32 (fitted to the 6020, absent on
+   * the 6010).
+   */
+  'dse-6020': {
+    status: 'verified',
+    verificationConfidence: 'medium',
+    completeness: 'partial',
+    coverageNote:
+      'Terminals 1-15 only (DC supply, emergency stop, fuel and start outputs, charge fail, configurable outputs C-F, analogue sensors). Terminals 16 onward — magnetic pickup, CAN, generator and mains sensing, CTs and digital inputs — are not yet verified and are deliberately not shown.',
+    sources: [
+      {
+        title: 'DSE6010 MKII & DSE6020 MKII Operator Manual',
+        documentType: 'OEM operator manual',
+        publisher: 'Deep Sea Electronics Ltd',
+        url: 'https://www.deepseaelectronics.com/genset/auto-mains-utility-failure-control-modules/dse6020-mkii/downloads',
+        revision: '057-230 Issue 1',
+        accessedVia:
+          'Page-level HTML rendering of the manual on ManualsLib (manualslib.com), pages 29-30. The PDF DSE serve, and the distributor mirrors of it, are subset-font encoded and decode to control characters.',
+        notes:
+          'Terminal numbers and cable sizes are facts read from the manufacturer table; the description text against each terminal is our own wording. Terminals 29-32 are mains sensing and are noted in the manual as not fitted to the DSE6010 MKII.',
+      },
+    ],
+  },
   'dse-6120': unsupported('DSE 6120 MKII', ['Deep Sea Electronics document depot']),
   'dse-4520': unsupported('DSE 4520', ['Deep Sea Electronics document depot']),
   'dse-8610': unsupported('DSE 8610 MKII', ['Deep Sea Electronics document depot']),

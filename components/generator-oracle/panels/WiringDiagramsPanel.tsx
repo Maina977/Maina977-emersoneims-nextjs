@@ -628,6 +628,36 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
    * Failure. Every entry below is the OEM wording already verified for the
    * 7320; the four absent terminals are simply not present.
    */
+  /*
+   * DSE6020 MKII — PARTIAL, terminals 1-15 only.
+   *
+   * Read from the DSE6010 MKII & DSE6020 MKII Operator Manual (DSE 057-230),
+   * pages 29-30. Terminal numbers and cable sizes are facts from the
+   * manufacturer's table; the wording below is our own.
+   *
+   * Terminals 16 onward are OMITTED on purpose. In the source consulted,
+   * terminals 16-17 did not render and 18-21 returned the same numbers for BOTH
+   * the magnetic pickup and the CAN port. Guessing between those two would put a
+   * technician on the wrong terminal, so the range is left out and
+   * controllerSources.ts declares completeness: 'partial' with a coverage note.
+   */
+  'dse-6020': [
+    { pin: '1', name: 'DC Supply (Negative)', function: 'Battery negative to the module. Also the return for the DC outputs.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '8-35 V DC', circuit: 'power', current: '-' },
+    { pin: '2', name: 'DC Supply (Positive)', function: 'Battery positive to the module. Feeds the module itself and DC outputs A to F.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '8-35 V DC', circuit: 'power', current: '-' },
+    { pin: '3', name: 'Emergency Stop', function: 'Emergency stop input taken from plant supply positive. Breaking it removes the fuel and start outputs.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '8-35 V DC', circuit: 'protection', current: '-' },
+    { pin: '4', name: 'DC Output A (FUEL)', function: 'Fuel solenoid output.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: 'Plant supply', circuit: 'fuel', current: '-' },
+    { pin: '5', name: 'DC Output B (START)', function: 'Starter motor relay output.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: 'Plant supply', circuit: 'power', current: '-' },
+    { pin: '6', name: 'Charge Fail / Excite', function: 'Charge alternator D+ / W-L connection, used to excite the alternator and to detect charge failure. Leave open if no charge alternator is fitted.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '7', name: 'DC Output C', function: 'Configurable DC output, supplied from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: 'Plant supply', circuit: 'auxiliary', current: '2 A' },
+    { pin: '8', name: 'DC Output D', function: 'Configurable DC output, supplied from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: 'Plant supply', circuit: 'auxiliary', current: '2 A' },
+    { pin: '9', name: 'DC Output E', function: 'Configurable DC output, supplied from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: 'Plant supply', circuit: 'auxiliary', current: '2 A' },
+    { pin: '10', name: 'DC Output F', function: 'Configurable DC output, supplied from terminal 2.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: 'Plant supply', circuit: 'auxiliary', current: '2 A' },
+    { pin: '11', name: 'Sensor Common Return', function: 'Common return for the analogue sensor inputs on terminals 12 to 15.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '12', name: 'Oil Pressure Sensor', function: 'Analogue input for the engine oil pressure sender.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '13', name: 'Coolant Temperature Sensor', function: 'Analogue input for the engine coolant temperature sender.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '14', name: 'Fuel Level Sensor', function: 'Analogue input for the fuel level sender.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '15', name: 'Flexible Sensor', function: 'Configurable analogue sensor input.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+  ],
   'dse-7310': [
     { pin: '1', name: 'DC Supply (Negative)', function: 'DC plant supply input, negative. Connect to ground where applicable.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'power' },
     { pin: '2', name: 'DC Supply (Positive)', function: 'DC plant supply input, positive. Supplies the module and DC outputs E, F, G, H, I and J.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² (AWG 13)', circuit: 'power', voltage: '8-35 V DC' },
