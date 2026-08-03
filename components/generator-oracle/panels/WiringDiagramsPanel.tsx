@@ -629,6 +629,59 @@ const CONTROLLER_PINS: { [key: string]: PinConfig[] } = {
    * 7320; the four absent terminals are simply not present.
    */
   /*
+   * DSE4520 — COMPLETE, terminals 1-32.
+   *
+   * Read from the DSE4510 & DSE4520 Operator Manual (DSE Publication 057-171
+   * Issue 4), pages 26-29, via the page-level HTML rendering. Every table came
+   * back unambiguous with no overlapping terminal numbers.
+   *
+   * Note this module numbers differently from the 6000/7000 series: there is no
+   * separate emergency stop terminal, so the fuel output sits at terminal 3 and
+   * start at 4. Do not pattern-match terminal numbers across DSE families.
+   *
+   * Model differences recorded in the same manual:
+   *   terminals 8 & 9   not fitted to the DSE4510
+   *   terminals 25-28   (mains sensing) not fitted to the DSE4510
+   *   terminals 29-32   (current sensing) not available on the DSE45xx-01 variant
+   *
+   * Terminal numbers and cable sizes are facts from the manufacturer's table;
+   * the description text is our own wording.
+   */
+  'dse-4520': [
+    { pin: '1', name: 'DC Supply (Negative)', function: 'Battery negative to the module.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '8-35 V DC', circuit: 'power', current: '-' },
+    { pin: '2', name: 'DC Supply (Positive)', function: 'Battery positive to the module. Feeds the module and its DC outputs.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '8-35 V DC', circuit: 'power', current: '-' },
+    { pin: '3', name: 'DC Output A (FUEL)', function: 'Fuel solenoid output.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: 'Plant supply', circuit: 'fuel', current: '-' },
+    { pin: '4', name: 'DC Output B (START)', function: 'Starter motor relay output.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: 'Plant supply', circuit: 'power', current: '-' },
+    { pin: '5', name: 'Charge Fail / Excite', function: 'Charge alternator D+ / W-L connection. Excites the alternator and detects charge failure.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '-', circuit: 'charging', current: '-' },
+    { pin: '6', name: 'DC Output C', function: 'Configurable DC output.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: 'Plant supply', circuit: 'auxiliary', current: '-' },
+    { pin: '7', name: 'DC Output D', function: 'Configurable DC output.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: 'Plant supply', circuit: 'auxiliary', current: '-' },
+    { pin: '8', name: 'DC Output E', function: 'Configurable DC output. Not fitted to the DSE4510.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: 'Plant supply', circuit: 'auxiliary', current: '-' },
+    { pin: '9', name: 'DC Output F', function: 'Configurable DC output. Not fitted to the DSE4510.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: 'Plant supply', circuit: 'auxiliary', current: '-' },
+    { pin: '10', name: 'Sensor Common Return', function: 'Common return for the analogue sensors. Requires its own dedicated connection to an engine block earth point, not shared with other devices.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '11', name: 'Oil Pressure Sensor', function: 'Analogue input for the engine oil pressure sender.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '12', name: 'Coolant Temperature Sensor', function: 'Analogue input for the engine coolant temperature sender.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '13', name: 'Fuel Level Sensor', function: 'Analogue input for the fuel level sender.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '14', name: 'Digital Input A', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '15', name: 'Digital Input B', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '16', name: 'Digital Input C', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '17', name: 'Digital Input D', function: 'Configurable digital input, switched to negative.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'inputs', current: '-' },
+    { pin: '18', name: 'CAN Port H', function: 'CAN high. Use 120 ohm CAN-approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '19', name: 'CAN Port L', function: 'CAN low. Use 120 ohm CAN-approved cable only.', wireColor: 'Not specified by OEM', wireGauge: '0.5 mm² / AWG 20', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '20', name: 'CAN Port Screen', function: 'CAN cable screen. Ground at one end only.', wireColor: 'Not specified by OEM', wireGauge: 'Shield', voltage: '-', circuit: 'communication', current: '-' },
+    { pin: '21', name: 'Generator L1 (U)', function: 'Generator phase 1 voltage sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '22', name: 'Generator L2 (V)', function: 'Generator phase 2 voltage sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '23', name: 'Generator L3 (W)', function: 'Generator phase 3 voltage sensing. A 2 A fuse is recommended.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '24', name: 'Generator Neutral (N)', function: 'Generator neutral reference for voltage sensing.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'generator', current: '-' },
+    { pin: '25', name: 'Mains L1 (R)', function: 'Utility phase 1 voltage sensing. A 2 A fuse is recommended. Not fitted to the DSE4510.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '26', name: 'Mains L2 (S)', function: 'Utility phase 2 voltage sensing. A 2 A fuse is recommended. Not fitted to the DSE4510.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '27', name: 'Mains L3 (T)', function: 'Utility phase 3 voltage sensing. A 2 A fuse is recommended. Not fitted to the DSE4510.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '28', name: 'Mains Neutral (N)', function: 'Utility neutral reference. Not fitted to the DSE4510.', wireColor: 'Not specified by OEM', wireGauge: '1.0 mm² / AWG 18', voltage: '-', circuit: 'mains', current: '-' },
+    { pin: '29', name: 'CT Secondary L1', function: 'Current transformer secondary for generator phase 1. Not available on the DSE45xx-01 variant.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '30', name: 'CT Secondary L2', function: 'Current transformer secondary for generator phase 2. Not available on the DSE45xx-01 variant.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '31', name: 'CT Secondary L3', function: 'Current transformer secondary for generator phase 3. Not available on the DSE45xx-01 variant.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '-', circuit: 'metering', current: '-' },
+    { pin: '32', name: 'CT Common', function: 'Common return for the three CT secondaries. Not available on the DSE45xx-01 variant.', wireColor: 'Not specified by OEM', wireGauge: '2.5 mm² / AWG 13', voltage: '-', circuit: 'metering', current: '-' },
+  ],
+  /*
    * DSE6020 MKII — PARTIAL, terminals 1-15 only.
    *
    * Read from the DSE6010 MKII & DSE6020 MKII Operator Manual (DSE 057-230),

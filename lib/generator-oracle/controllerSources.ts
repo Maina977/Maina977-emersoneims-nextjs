@@ -281,7 +281,35 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
     ],
   },
   'dse-6120': unsupported('DSE 6120 MKII', ['Deep Sea Electronics document depot']),
-  'dse-4520': unsupported('DSE 4520', ['Deep Sea Electronics document depot']),
+  /*
+   * DSE4520 — complete, all 32 terminals.
+   *
+   * Every table on pages 26-29 of 057-171 came back unambiguous with no
+   * overlapping terminal numbers, which is why this one is 'complete' where the
+   * DSE6020 is 'partial'.
+   *
+   * This module numbers differently from the 6000/7000 series — no separate
+   * emergency stop terminal, so fuel sits at 3 and start at 4. Terminal numbers
+   * must never be pattern-matched across DSE families.
+   */
+  'dse-4520': {
+    status: 'verified',
+    verificationConfidence: 'high',
+    completeness: 'complete',
+    sources: [
+      {
+        title: 'DSE4510 & DSE4520 Operator Manual',
+        documentType: 'OEM operator manual',
+        publisher: 'Deep Sea Electronics Ltd',
+        url: 'https://www.deepseaelectronics.com/genset/auto-mains-utility-failure-control-modules/dse4520/downloads',
+        revision: '057-171 Issue 4',
+        accessedVia:
+          'Page-level HTML rendering of the manual on ManualsLib (manualslib.com), pages 26-29. The PDF is subset-font encoded and decodes to control characters, as with every other DSE operator manual tried.',
+        notes:
+          'Terminal numbers and cable sizes are facts read from the manufacturer tables; the description against each terminal is our own wording. Model differences recorded in the same manual: terminals 8 and 9 are not fitted to the DSE4510, terminals 25-28 (mains sensing) are not fitted to the DSE4510, and terminals 29-32 (current sensing) are not available on the DSE45xx-01 variant.',
+      },
+    ],
+  },
   'dse-8610': unsupported('DSE 8610 MKII', ['Deep Sea Electronics document depot']),
   'dse-8660': unsupported('DSE 8660 MKII', ['Deep Sea Electronics document depot']),
 
