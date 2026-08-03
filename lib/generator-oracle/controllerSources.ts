@@ -327,13 +327,47 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
       },
     ],
   },
-  'dse-8610': unsupported('DSE 8610 MKII', ['Deep Sea Electronics document depot']),
+  'dse-8610': conflictingReads(
+    'DSE 8610 MKII',
+    'The DSE 8610 MKII Operator\'s Manual (188 pages) was located and its terminal subsections identified: DC supply/E-stop/DC outputs/charge fail on page 48, analogue sensors and CAN on 49, MPU/ECU/MSC/DSENet on 50, generator and bus sensing on 51, current transformers on 52-53, digital inputs on 53, RS485 on 54, RS232 on 55.',
+    'Page 48 was read twice and the two readings conflicted. The charge fail / excite terminal came back as terminal 6 (labelled D+) on one pass and terminal 7 (labelled W/L) on the other; the DC output block came back as outputs E to J on one pass and E to L on the other, and the second reading assigned eight named outputs across only seven terminal numbers, which cannot be right.',
+    [
+      'Deep Sea Electronics document depot',
+      "DSE 8610 MKII Operator's Manual, pages 48-56, via ManualsLib page-level rendering",
+    ],
+  ),
   'dse-8660': unsupported('DSE 8660 MKII', ['Deep Sea Electronics document depot']),
 
   // ComAp
-  'comap-intelilite': unsupported('ComAp InteliLite NT', ['ComAp Resource Hub']),
-  'comap-intelisys': unsupported('ComAp InteliSys NT', ['ComAp Resource Hub']),
-  'comap-intelimains': unsupported('ComAp InteliMains NT', ['ComAp Resource Hub']),
+  // ───────────────────────────────────────────────────────────────────────
+  // ComAp NT platform — investigated 2026-08-03 and found to be a different
+  // KIND of controller from every other entry in this registry, not merely one
+  // whose manual is hard to obtain.
+  //
+  // The InteliLite NT reference manual states: "Any Binary input or output can
+  // be configured to any IL-NT controller terminal or changed to different
+  // function by LiteEdit software." The larger InteliSys NT and InteliMains NT
+  // are the same architecture, configured with GenConfig. So the published
+  // BI1 = GCB Feedback, BI2 = MCB Feedback, BI3 = Emergency Stop list is a
+  // FACTORY DEFAULT, not a terminal fact.
+  //
+  // Note the contrast with the already-verified 'comap-inteligen' entry, whose
+  // pinout came from a numbered terminal table. Same manufacturer, different
+  // documentation model — which is exactly why each entry is judged on its own
+  // source rather than by brand.
+  // ───────────────────────────────────────────────────────────────────────
+  'comap-intelilite': configurableIoMapping('ComAp InteliLite NT', 'LiteEdit', [
+    'ComAp Resource Hub',
+    'InteliLite NT AMF Series Reference Manual (sections "IL-NT Terminals" and "Inputs and Outputs")',
+  ]),
+  'comap-intelisys': configurableIoMapping('ComAp InteliSys NT', 'GenConfig', [
+    'ComAp Resource Hub',
+    'IGS-NT Installation Guide (09-2019)',
+  ]),
+  'comap-intelimains': configurableIoMapping('ComAp InteliMains NT', 'GenConfig', [
+    'ComAp Resource Hub',
+    'InteliMains NT IM-NT-BB Reference Manual',
+  ]),
 
   // Woodward
   'woodward-easygen2000': unsupported('Woodward easYgen-2000', ['Woodward Manuals']),
@@ -520,7 +554,20 @@ export const CONTROLLER_SOURCES: Record<string, ControllerSourceEntry> = {
   },
 
   // Lovato
-  'lovato-rgk800': unsupported('Lovato RGK800', ['Lovato Electric documentation portal']),
+  // Investigated 2026-08-03. The RGK900 and ATL800 below were NOT individually
+  // opened and keep the generic reason — Lovato may well document them the same
+  // way, but "probably the same as its sibling" is precisely the reasoning this
+  // registry exists to refuse.
+  'lovato-rgk800': diagramOnlyLayout(
+    'Lovato RGK800',
+    'Both the RGK800 instruction manual (section "Terminal Arrangement", page 40) and the separate installation manual (section "Terminal Position", page 6) were opened; both present the layout as labelled drawings.',
+    'What could be made out was only coarse grouping — terminals running 1 to 60, mains on 1-3, battery on 27-30, and RS-485 A/B/SG — with no legible per-terminal function list.',
+    [
+      'Lovato Electric documentation portal',
+      'RGK800 Instruction Manual, "Terminal Arrangement" (page 40)',
+      'RGK800 Installation Manual, "Terminal Position" (page 6)',
+    ],
+  ),
   'lovato-rgk900': unsupported('Lovato RGK900', ['Lovato Electric documentation portal']),
   'lovato-atl800': unsupported('Lovato ATL800', ['Lovato Electric documentation portal']),
 
@@ -637,6 +684,113 @@ function notAGensetController(
       `OEM wiring table to source. This entry is retained in the catalog for ` +
       `search and reference purposes only; the wiring panel will never render a ` +
       `diagram for it.`,
+    searchedSources,
+  };
+}
+
+/**
+ * For controllers whose terminals are identified by FUNCTION LABEL rather than
+ * by number, AND whose label-to-function mapping is configured per unit in
+ * software.
+ *
+ * ComAp's NT platform is the case this was written for. Its terminals are
+ * printed BI1-BI16, BO1-BO16, AI1-AI4 and so on, and the manual states plainly
+ * that any binary input or output can be reassigned to any terminal using
+ * LiteEdit (InteliLite NT) or GenConfig (InteliSys NT, InteliMains NT). The
+ * "defaults" published in the reference manual are therefore a factory
+ * configuration, not a wiring fact — a commissioned machine may legitimately
+ * have BI3 doing something entirely different from the book.
+ *
+ * Publishing that as a pinout would produce the most dangerous kind of wrong:
+ * a table that is right on an untouched unit and wrong on a configured one,
+ * with nothing on the page to tell them apart. Status stays 'unsupported'.
+ */
+function configurableIoMapping(
+  displayName: string,
+  configTool: string,
+  searchedSources: string[],
+): UnsupportedControllerSource {
+  return {
+    status: 'unsupported',
+    reason:
+      `${displayName} does not have a fixed terminal-to-function pinout to publish. ` +
+      `Its terminals are identified by function label (BI1-BI16, BO1-BO16, AI1-AI4 and ` +
+      `similar) rather than by number, and the manufacturer states that any binary input ` +
+      `or output can be reassigned to any terminal using ${configTool}. The assignments ` +
+      `printed in the reference manual are a factory default, not a wiring fact: a ` +
+      `commissioned machine may legitimately differ. A published map would be correct on ` +
+      `an untouched unit and wrong on a configured one, with nothing to distinguish them, ` +
+      `so none is shipped. Read the unit's own configuration with ${configTool} instead. ` +
+      `The physical connector layout is published by the manufacturer as a face and ` +
+      `wiring diagram rather than as a machine-readable terminal table.`,
+    searchedSources,
+  };
+}
+
+/**
+ * For controllers whose terminal layout the manufacturer publishes ONLY as a
+ * drawing, with no machine-readable terminal table anywhere in the document.
+ *
+ * This is a real and common case, and it is worth distinguishing from "we have
+ * not looked yet". The document was obtained and read; what it contains is a
+ * labelled picture. Coarse groupings can sometimes be made out from the
+ * surrounding text — enough to tempt a reconstruction, and nowhere near enough
+ * to be sure of it. A pinout assembled that way would be a guess wearing the
+ * clothes of a citation.
+ *
+ * These stay 'unsupported' until a numbered table, or a legible copy of the
+ * drawing, can be read terminal by terminal.
+ */
+function diagramOnlyLayout(
+  displayName: string,
+  documentDescription: string,
+  whatWasLegible: string,
+  searchedSources: string[],
+): UnsupportedControllerSource {
+  return {
+    status: 'unsupported',
+    reason:
+      `The manufacturer publishes the ${displayName} terminal layout only as a wiring ` +
+      `drawing, not as a terminal table. ${documentDescription} ${whatWasLegible} ` +
+      `That is enough to hint at a layout and not enough to be certain of any single ` +
+      `terminal, so no pinout is published — a map reconstructed from a partly legible ` +
+      `drawing would be a guess presented as a citation. This entry will be filled in ` +
+      `when a numbered terminal table, or a legible copy of the drawing, can be read ` +
+      `terminal by terminal.`,
+    searchedSources,
+  };
+}
+
+/**
+ * For controllers where the OEM document WAS located and read, but repeated
+ * reads of the terminal table disagreed with each other.
+ *
+ * This is the most dangerous near-miss in the whole exercise, because the data
+ * looks obtainable. It is recorded loudly so nobody "finishes the job" later by
+ * picking whichever read looked tidier.
+ *
+ * The DSE 6020 MKII went the same way on one terminal range and that range is
+ * still withheld from its otherwise-shipped map. Where a conflict is confined
+ * to part of a table, ship the rest and withhold the conflicting terminals via
+ * completeness: 'partial'. Where it lands on the power and starting block, as
+ * here, there is no safe remainder worth shipping.
+ */
+function conflictingReads(
+  displayName: string,
+  documentDescription: string,
+  theConflict: string,
+  searchedSources: string[],
+): UnsupportedControllerSource {
+  return {
+    status: 'unsupported',
+    reason:
+      `The OEM manual for the ${displayName} was located and its terminal pages were ` +
+      `read, but the readings did not agree with each other, so nothing is published. ` +
+      `${documentDescription} ${theConflict} Because the disagreement falls on the DC ` +
+      `supply and starting terminals — the ones where an error does the most harm — no ` +
+      `partial map is shipped either. DO NOT resolve this by choosing the more ` +
+      `plausible-looking reading: that is exactly the failure this registry exists to ` +
+      `prevent. It needs a clean read of the printed table.`,
     searchedSources,
   };
 }
